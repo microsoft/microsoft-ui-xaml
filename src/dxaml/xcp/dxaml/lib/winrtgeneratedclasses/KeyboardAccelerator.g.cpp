@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::get_IsEnabled(_Out_ BOOLE
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::KeyboardAccelerator_IsEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::put_IsEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::put_IsEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::KeyboardAccelerator_IsEnabled, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::get_Key(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::KeyboardAccelerator_Key, pValue));
 }
-IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::put_Key(_In_ ABI::Windows::System::VirtualKey value)
+IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::put_Key(ABI::Windows::System::VirtualKey value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::KeyboardAccelerator_Key, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::get_Modifiers(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::KeyboardAccelerator_Modifiers, pValue));
 }
-IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::put_Modifiers(_In_ ABI::Windows::System::VirtualKeyModifiers value)
+IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::put_Modifiers(ABI::Windows::System::VirtualKeyModifiers value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::KeyboardAccelerator_Modifiers, value));
@@ -115,7 +115,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::remove_Invoked(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::KeyboardAcceleratorGenerated::remove_Invoked(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     InvokedEventSourceType* pEventSource = nullptr;

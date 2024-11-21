@@ -16,11 +16,6 @@ class CUIElement;
 #include <ComTemplates.h>
 #include "DirectManipulationContainerHandler.h"
 #include "DirectManipulationContainer.h"
-#include <FrameworkUdk/Containment.h>
-
-// Bug 54433864: WinAppSDK 1.7: Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
-// Bug 54705344: WinAppSDK 1.6.2 Servicing: Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
-#define WINAPPSDK_CHANGEID_54705344 54705344
 
 class CUIDMContainer : public ctl::implements<IUnknown>
 {
@@ -174,7 +169,7 @@ private:
     // Constructor
     CUIDMContainer(_In_ CCoreServices* pCoreServices, _In_ CUIElement* pUIElement)
         : m_pCoreServices(pCoreServices)
-        , m_pDMContainerHandler(NULL)
+        , m_pDMContainerHandler(nullptr)
     {
 #ifdef DMCNTNR_DBG
         IGNOREHR(gps->DebugOutputSzNoEndl(L"DMC[0x%p]:   CUIDMContainer - constructor.\r\n", this));
@@ -185,16 +180,7 @@ private:
         pCoreServices->AddRef();
 
         ASSERT(pUIElement);
-
-        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-        {
-            m_pUIElementWeakRef = xref::get_weakref(pUIElement);
-        }
-        else
-        {
-            m_pUIElement = pUIElement;
-            pUIElement->AddRef();
-        }
+        m_pUIElementWeakRef = xref::get_weakref(pUIElement);
     }
 
 protected:
@@ -208,31 +194,19 @@ protected:
         if (m_pCoreServices)
         {
             m_pCoreServices->Release();
-            m_pCoreServices = NULL;
-        }
-
-        if (m_pUIElement)
-        {
-            m_pUIElement->Release();
-            m_pUIElement = NULL;
+            m_pCoreServices = nullptr;
         }
 
         if (m_pDMContainerHandler)
         {
             m_pDMContainerHandler->Release();
-            m_pDMContainerHandler = NULL;
+            m_pDMContainerHandler = nullptr;
         }
     }
 
 private:    
     CCoreServices* m_pCoreServices;
-
-    // Used when WinAppSDK 1.6.2 fix for 54705344 is not applied:
-    CUIElement* m_pUIElement; // CUIElement object associated to this implementation
-
-    // Used when WinAppSDK 1.6.2 fix for 54705344 is applied:
     xref::weakref_ptr<CUIElement> m_pUIElementWeakRef; // CUIElement object associated to this implementation
-
     IDirectManipulationContainerHandler* m_pDMContainerHandler;
 };
 

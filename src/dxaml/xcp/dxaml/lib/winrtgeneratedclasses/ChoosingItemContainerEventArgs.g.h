@@ -39,13 +39,13 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsContainerPrepared)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsContainerPrepared)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsContainerPrepared)(BOOLEAN value) override;
         IFACEMETHOD(get_Item)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         _Check_return_ HRESULT put_Item(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_ItemContainer)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelectorItem** ppValue) override;
         IFACEMETHOD(put_ItemContainer)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelectorItem* pValue) override;
         IFACEMETHOD(get_ItemIndex)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_ItemIndex(_In_ INT value);
+        _Check_return_ HRESULT put_ItemIndex(INT value);
 
         // Events.
 

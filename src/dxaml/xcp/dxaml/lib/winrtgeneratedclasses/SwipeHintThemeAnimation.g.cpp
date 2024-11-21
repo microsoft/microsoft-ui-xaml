@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::SwipeHintThemeAnimationGenerated::get_ToHorizontalOffse
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SwipeHintThemeAnimation_ToHorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::SwipeHintThemeAnimationGenerated::put_ToHorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SwipeHintThemeAnimationGenerated::put_ToHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SwipeHintThemeAnimation_ToHorizontalOffset, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::SwipeHintThemeAnimationGenerated::get_ToVerticalOffset(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SwipeHintThemeAnimation_ToVerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::SwipeHintThemeAnimationGenerated::put_ToVerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SwipeHintThemeAnimationGenerated::put_ToVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SwipeHintThemeAnimation_ToVerticalOffset, value));

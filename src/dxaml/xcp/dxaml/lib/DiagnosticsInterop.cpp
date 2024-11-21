@@ -567,7 +567,7 @@ DiagnosticsInterop::ClearPropertyValue(
 HRESULT
 DiagnosticsInterop::ClearCustomProperty(
     _In_ IInspectable* reference,
-    const CCustomProperty* customProp)
+    _In_ const CCustomProperty* customProp)
 {
     ASSERT(customProp != nullptr);
     // For non-DOs/non-DPs, ResetValue should just create a default value of the property type
@@ -582,7 +582,7 @@ DiagnosticsInterop::ClearCustomProperty(
 HRESULT
 DiagnosticsInterop::ClearDependencyProperty(
     _In_ CDependencyObject* obj,
-    const CDependencyProperty* prop)
+    _In_ const CDependencyProperty* prop)
 {
     ASSERT(!prop->Is<CCustomProperty>());
     if (PropertyChainIterator::IsValidPropertyForObject(prop, obj))
@@ -739,6 +739,7 @@ DiagnosticsInterop::GetAt(
     ctl::ComPtr<wfc::IVector<xaml::Controls::ICommandBarElement*>> spCommandBarCollection;
     ctl::ComPtr<wfc::IVector<xaml::DependencyObject*>> spDOCollection;
     IFCPTR_RETURN(pCollection);
+    IFCPTR_RETURN(ppInstance);
 
     if (SUCCEEDED(spCollection.As(&spUntypedCollection)))
     {

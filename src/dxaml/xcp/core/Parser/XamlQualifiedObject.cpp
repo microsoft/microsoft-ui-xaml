@@ -198,7 +198,7 @@ _Check_return_ HRESULT XamlQualifiedObject::CreateNoAddRef(_In_ CCoreServices *,
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlQualifiedObject::CreateFromXStringPtr(_In_ xstring_ptr& inputString, _Out_ std::shared_ptr<XamlQualifiedObject>& createdQO)
+_Check_return_ HRESULT XamlQualifiedObject::CreateFromXStringPtr(_In_ xstring_ptr& inputString, _Inout_ std::shared_ptr<XamlQualifiedObject>& createdQO)
 {
     std::shared_ptr<XamlSchemaContext> spSchemaContext;
     CValue boxedString;

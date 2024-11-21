@@ -44,13 +44,13 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_Delay(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_Delay(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_Delay(DOUBLE value);
         _Check_return_ HRESULT get_DelayReduce(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_DelayReduce(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_DelayReduce(DOUBLE value);
         _Check_return_ HRESULT get_Maximum(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_Maximum(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_Maximum(DOUBLE value);
         _Check_return_ HRESULT get_Reverse(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_Reverse(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_Reverse(BOOLEAN value);
 
         // Events.
 

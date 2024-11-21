@@ -228,7 +228,7 @@ public:
 
     IFACEMETHOD(HitTestForXamlRoot)(
         _In_ InstanceHandle instanceHandle,
-        _In_ RECT rect,
+        RECT rect,
         _Out_ unsigned int* pCount,
         _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles) override;
 

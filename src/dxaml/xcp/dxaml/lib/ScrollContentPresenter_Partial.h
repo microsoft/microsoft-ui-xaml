@@ -108,7 +108,7 @@ namespace DirectUI
                 _In_opt_ DependencyObject* pCandidateTabStopElement,
                 const bool isBackward,
                 const bool didCycleFocusAtRootVisualScope,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsTabStopOverridden) override;
 
             // Override the default tab-based navigation order when headers are present such that
@@ -119,16 +119,16 @@ namespace DirectUI
                 _In_ DependencyObject* pCandidateTabStopElement,
                 _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
                 const bool isBackward,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsCandidateTabStopOverridden) override;
 
             // Returns the first focusable element among the headers and content with a TabIndex equal to m_tabIndex.
             _Check_return_ HRESULT GetFirstFocusableElementOverride(
-                _Outptr_ DependencyObject** ppFirstFocusable) override;
+                _Outptr_result_maybenull_ DependencyObject** ppFirstFocusable) override;
 
             // Returns the last focusable element among the headers and content with a TabIndex equal to m_tabIndex.
             _Check_return_ HRESULT GetLastFocusableElementOverride(
-                _Outptr_ DependencyObject** ppLastFocusable) override;
+                _Outptr_result_maybenull_ DependencyObject** ppLastFocusable) override;
 
             // Overriding this method and returning TRUE in order to navigate among automation children
             // of content and headers in reverse order.
@@ -303,7 +303,7 @@ namespace DirectUI
             IFACEMETHOD(MeasureOverride)(
                 // Measurement constraints, a control cannot return a size
                 // larger than the constraint.
-                _In_ wf::Size availableSize,
+                wf::Size availableSize,
                 // The desired size of the control.
                 _Out_ wf::Size* pReturnValue);
 
@@ -312,7 +312,7 @@ namespace DirectUI
             // behavior.
             IFACEMETHOD(ArrangeOverride)(
                 // The computed size that is used to arrange the content.
-                _In_ wf::Size finalSize,
+                wf::Size finalSize,
                 // The size of the control.
                 _Out_ wf::Size* pReturnValue);
 
@@ -533,7 +533,7 @@ namespace DirectUI
 
             // Retrieves the primary child as a IUIElement, taking the potential headers into account.
             _Check_return_ HRESULT GetPrimaryChild(
-                _Outptr_ xaml::IUIElement** ppChild);
+                _Outptr_result_maybenull_ xaml::IUIElement** ppChild);
 
             // Adds a header to this ScrollContentPresenter's children.
             _Check_return_ HRESULT AddHeader(
@@ -585,7 +585,7 @@ namespace DirectUI
                 BOOLEAN isFocusedElementInTopHeader,
                 BOOLEAN isFocusedElementInLeftHeader,
                 BOOLEAN isFocusedElementInContent,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsTabStopOverridden);
 
             // Determines the location of the first focusable element in scenarios where a custom TabIndex value is set for a header or the content.

@@ -1450,16 +1450,8 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
             // This MoveAndResize call results in a WM_WINDOWPOSCHANGED message, and we're seeing cases where a
             // third-party library is hooking into the wndproc, responding to WM_WINDOWPOSCHANGED, and is calling
             // SendMessage in response. That causes messages to be pumped, which causes reentrancy in to Xaml and a
-            // crash. For now, disable lifted CoreMessaging's dispatching for the duration of the MoveAndResize call.
-            // In the future, we'll want a mechanism that can protect against reentrancy without messing with the lifted
-            // CoreMessaging dispatcher. See https://task.ms/49218302.
-            CXcpDispatcher* dispatcher = nullptr;
-            auto hostSite = GetContext()->GetHostSite();
-            if (hostSite)
-            {
-                dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
-            }
-            PauseNewDispatch deferReentrancy(dispatcher ? dispatcher->GetMessageLoopExtensionsNoRef() : nullptr);
+            // crash. Disable Xaml dispatching for the duration of the MoveAndResize call.
+            PauseNewDispatch deferReentrancy(GetContext());
             IFC_RETURN(m_desktopBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
         }
     }
@@ -1942,16 +1934,8 @@ _Check_return_ HRESULT CPopup::AdjustWindowedPopupBoundsForDropShadow(_In_ const
             // This MoveAndResize call results in a WM_WINDOWPOSCHANGED message, and we're seeing cases where a
             // third-party library is hooking into the wndproc, responding to WM_WINDOWPOSCHANGED, and is calling
             // SendMessage in response. That causes messages to be pumped, which causes reentrancy in to Xaml and a
-            // crash. For now, disable lifted CoreMessaging's dispatching for the duration of the MoveAndResize call.
-            // In the future, we'll want a mechanism that can protect against reentrancy without messing with the lifted
-            // CoreMessaging dispatcher. See https://task.ms/49218302.
-            CXcpDispatcher* dispatcher = nullptr;
-            auto hostSite = GetContext()->GetHostSite();
-            if (hostSite)
-            {
-                dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
-            }
-            PauseNewDispatch deferReentrancy(dispatcher ? dispatcher->GetMessageLoopExtensionsNoRef() : nullptr);
+            // crash. Disable Xaml dispatching for the duration of the MoveAndResize call.
+            PauseNewDispatch deferReentrancy(GetContext());
             IFC_RETURN(m_desktopBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
         }
     }
@@ -2027,6 +2011,12 @@ bool CPopup::MeetsRenderingRequirementsForWindowedPopup()
                 return false;
             }
         }
+    }
+
+    if (GetDesktopSiteBridge() == nullptr)
+    {
+        ::OutputDebugString(L"WARNING: CPopup::MeetsRenderingRequirementsForWindowedPopup: Windowed popups are NOT enabled, falling back to windowless.\n");
+        return false;
     }
 
     return true;

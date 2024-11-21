@@ -38,7 +38,7 @@ TickBar::~TickBar()
 // Arranges the tick marks of a TickBar.
 IFACEMETHODIMP
 TickBar::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     HRESULT hr = S_OK;

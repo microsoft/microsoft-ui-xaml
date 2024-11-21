@@ -24,7 +24,7 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_ShowAsMonochrome)(_Out_ BOOLEAN* pValue) override { return This()->get_ShowAsMonochrome(pValue); }
-        IFACEMETHOD(put_ShowAsMonochrome)(_In_ BOOLEAN value) override { return This()->put_ShowAsMonochrome(value); }
+        IFACEMETHOD(put_ShowAsMonochrome)(BOOLEAN value) override { return This()->put_ShowAsMonochrome(value); }
         IFACEMETHOD(get_UriSource)(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue) override { return This()->get_UriSource(ppValue); }
         IFACEMETHOD(put_UriSource)(_In_opt_ ABI::Windows::Foundation::IUriRuntimeClass* pValue) override { return This()->put_UriSource(pValue); }
     };
@@ -65,7 +65,7 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ShowAsMonochrome(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_ShowAsMonochrome(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_ShowAsMonochrome(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_UriSource(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_UriSource(_In_opt_ ABI::Windows::Foundation::IUriRuntimeClass* pValue);
 

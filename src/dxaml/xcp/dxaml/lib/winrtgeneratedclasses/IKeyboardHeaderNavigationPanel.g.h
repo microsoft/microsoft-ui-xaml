@@ -20,6 +20,6 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetTargetHeaderIndexFromNavigationAction)(_In_ UINT sourceIndex, _In_ ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _Out_ UINT* pComputedTargetIndex, _Out_ BOOLEAN* pActionHandled) = 0;
+        IFACEMETHOD(GetTargetHeaderIndexFromNavigationAction)(UINT sourceIndex, ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _Out_ UINT* pComputedTargetIndex, _Out_ BOOLEAN* pActionHandled) = 0;
     };
 }

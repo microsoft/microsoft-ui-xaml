@@ -91,7 +91,7 @@ HRESULT DirectUI::WriteableBitmapFactory::QueryInterfaceImpl(_In_ REFIID iid, _O
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::WriteableBitmapFactory::CreateInstanceWithDimensions(_In_ INT pixelWidth, _In_ INT pixelHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap** ppInstance)
+IFACEMETHODIMP DirectUI::WriteableBitmapFactory::CreateInstanceWithDimensions(INT pixelWidth, INT pixelHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap** ppInstance)
 {
     HRESULT hr = S_OK;
     

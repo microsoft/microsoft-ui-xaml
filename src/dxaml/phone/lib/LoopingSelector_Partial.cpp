@@ -2051,7 +2051,7 @@ _Check_return_ HRESULT LoopingSelector::AutomationGetSelectedItem(_Outptr_result
     return S_OK;
 }
 
-HRESULT xaml_primitives::LoopingSelector::RetreiveItemFromAPRealizedItems(UINT32 moddeItemdIdx, ILoopingSelectorItem ** ppItem)
+_Check_return_ HRESULT xaml_primitives::LoopingSelector::RetreiveItemFromAPRealizedItems(_In_ UINT32 moddeItemdIdx, _Outptr_result_maybenull_ ILoopingSelectorItem ** ppItem)
 {
     *ppItem = nullptr;
     std::map<int, wrl::ComPtr<ILoopingSelectorItem>>::iterator iter;

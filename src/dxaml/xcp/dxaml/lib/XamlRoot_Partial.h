@@ -56,7 +56,7 @@ namespace DirectUI
             _In_ DirectUI::DependencyObject* pElement,
             _In_ xaml::IXamlRoot* pXamlRoot);
 
-        _Check_return_ IFACEMETHOD(get_HostWindow)(_Out_ HWND* pValue) override;
+        _Check_return_ IFACEMETHOD(get_HostWindow)(HWND* pValue) override;
 
         _Check_return_ HRESULT GetContentDialogMetadata(_Outptr_ ContentDialogMetadata** ppContentDialogMetadata);
 

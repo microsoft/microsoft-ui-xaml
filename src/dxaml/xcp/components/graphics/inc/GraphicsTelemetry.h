@@ -16,37 +16,6 @@ class GraphicsTelemetry final : public TelemetryBase
 
 public:
 
-    // Enqueuing a task on Xaml's DeferredInvoke queue. The first time something enters this queue, we'll start the
-    // Composition DispatcherQueueTimer that calls us back to process items in this queue - see
-    // CXcpDispatcher::QueueDeferredInvoke.
-    DEFINE_TRACELOGGING_EVENT_PARAM1(DeferredInvoke_Enqueue,
-        uint32_t, WorkCount,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
-    // Dequeuing a task from Xaml's DeferredInvoke queue. This happens before the task starts executing - see
-    // CDeferredInvoke::DispatchQueuedMessage.
-    DEFINE_TRACELOGGING_EVENT_PARAM1(DeferredInvoke_Dequeue,
-        uint32_t, WorkCount,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
-    // Starting the Composition DispatcherQueueTimer as a result of enqueuing the first work item in the DeferredInvoke
-    // queue. This timer runs at the same priority as input, and is the mechanism that ensures rendering and input do
-    // not starve each other.
-    DEFINE_TRACELOGGING_EVENT(DispatcherQueueTimer_Start,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
-    // The callback for the DispatcherQueueTimer that causes Xaml to do work. This will pop a single item off of the
-    // DeferredInvoke queue...
-    DEFINE_TRACELOGGING_EVENT(DispatcherQueueTimer_Callback,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
-    // ...and if the DeferredInvoke queue has more items in it, then the callback method automatically restarts the
-    // DispatcherQueueTimer so we get called back again to process the queue. Note that processing a work item may
-    // enqueue more work into the DeferredInvoke queue. We'll just keep requesting timer ticks until we get through them
-    // all.
-    DEFINE_TRACELOGGING_EVENT(DispatcherQueueTimer_Callback_Restart,
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
     //
     // The imaging pipeline makes use of the DeferredInvoke mechanism, but with an extra layer of indirection. The
     // ImageTaskDispatcher has a separate queue of imaging-related work to be done on the UI thread, and it puts an

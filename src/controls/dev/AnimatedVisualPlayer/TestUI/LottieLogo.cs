@@ -59,7 +59,7 @@ namespace AnimatedVisuals
     // Frame rate:  30 fps
     // Frame count: 179
     // Duration:    5966.7 mS
-    public sealed class LottieLogo
+    public sealed partial class LottieLogo
         : Microsoft.UI.Xaml.Controls.IAnimatedVisualSource
     {
         // Animation duration: 5.967 seconds.
@@ -131,7 +131,7 @@ namespace AnimatedVisuals
         {
         }
 
-        sealed class LottieLogo_AnimatedVisual : Microsoft.UI.Xaml.Controls.IAnimatedVisual2
+        sealed partial class LottieLogo_AnimatedVisual : Microsoft.UI.Xaml.Controls.IAnimatedVisual2
         {
             const long c_durationTicks = 59666666;
             readonly Compositor _c;

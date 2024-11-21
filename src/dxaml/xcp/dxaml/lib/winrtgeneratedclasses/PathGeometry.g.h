@@ -51,7 +51,7 @@ namespace DirectUI
         IFACEMETHOD(get_Figures)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathFigure*>** ppValue) override;
         IFACEMETHOD(put_Figures)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathFigure*>* pValue) override;
         IFACEMETHOD(get_FillRule)(_Out_ ABI::Microsoft::UI::Xaml::Media::FillRule* pValue) override;
-        IFACEMETHOD(put_FillRule)(_In_ ABI::Microsoft::UI::Xaml::Media::FillRule value) override;
+        IFACEMETHOD(put_FillRule)(ABI::Microsoft::UI::Xaml::Media::FillRule value) override;
 
         // Events.
 

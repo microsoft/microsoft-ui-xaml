@@ -350,7 +350,7 @@ namespace Resources {
         _In_ CDependencyObject* resolutionContext,
         const xstring_ptr& resourceKey,
         ResourceType resourceType,
-        ResolvedResource& resolvedResource,
+        _Out_ ResolvedResource& resolvedResource,
         _Out_ bool* hadContext)
     {
         *hadContext = false;
@@ -387,7 +387,7 @@ namespace Resources {
 
 
     void ResourceResolver::GetAmbientValuesRuntime(
-        CDependencyObject* resolutionContext,
+        _In_ CDependencyObject* resolutionContext,
         _Out_ AmbientValuesVector& ambientValues)
     {
         // Build the markup tree looking for all resource dictionaries
@@ -687,8 +687,8 @@ namespace Resources {
 
     _Check_return_ HRESULT ResourceResolver::FallbackGetKeyForResourceResolutionNoRef(
         _In_ CCoreServices *pCore,
-        const xstring_ptr_view& resourceKey,
-        Resources::LookupScope scope,
+        _In_ const xstring_ptr_view& resourceKey,
+        _In_ Resources::LookupScope scope,
         _Outptr_ CDependencyObject** keyNoRef,
         _Out_ xref_ptr<CResourceDictionary>* dictionaryReadFrom)
     {

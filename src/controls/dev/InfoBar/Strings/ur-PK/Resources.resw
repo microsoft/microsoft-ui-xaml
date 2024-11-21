@@ -126,27 +126,27 @@
     <comment>The tooltip that appears on the Close button in InfoBar.</comment>
   </data>
   <data name="InfoBarClosedNotification" xml:space="preserve">
-    <value>InfoBar برخاست کر دی گئی</value>
+    <value>انفو بار برخاست کر دی گئی</value>
     <comment>The string read by narrator when the InfoBar closes.</comment>
   </data>
   <data name="InfoBarCustomLandmarkName" xml:space="preserve">
-    <value>InfoBar</value>
+    <value>انفو بار</value>
     <comment>This is the custom landmark used to denote an InfoBar to narrator.</comment>
   </data>
   <data name="InfoBarIconSeverityErrorName" xml:space="preserve">
-    <value>نقص کا آئکن</value>
+    <value>نقص کی شبیہ</value>
     <comment>Automation name used to announce the severity error icon.</comment>
   </data>
   <data name="InfoBarIconSeverityInformationalName" xml:space="preserve">
-    <value>معلوماتی آئکن</value>
+    <value>معلوماتی شبیہ</value>
     <comment>Automation name used to announce the severity informational icon.</comment>
   </data>
   <data name="InfoBarIconSeveritySuccessName" xml:space="preserve">
-    <value>کامیابی کا آئکن</value>
+    <value>کامیابی کی شبیہ</value>
     <comment>Automation name used to announce the severity success icon.</comment>
   </data>
   <data name="InfoBarIconSeverityWarningName" xml:space="preserve">
-    <value>تنبیہ کا آئکن</value>
+    <value>انتباہ کی شبیہ</value>
     <comment>Automation name used to announce the severity warning icon.</comment>
   </data>
   <data name="InfoBarOpenedNotification" xml:space="preserve">

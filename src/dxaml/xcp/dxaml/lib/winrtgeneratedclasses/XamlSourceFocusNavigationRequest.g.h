@@ -91,9 +91,9 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
-        IFACEMETHOD(CreateInstanceWithHintRect)(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _In_ ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
-        IFACEMETHOD(CreateInstanceWithHintRectAndCorrelationId)(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _In_ ABI::Windows::Foundation::Rect hintRect, _In_ GUID correlationId, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
+        IFACEMETHOD(CreateInstance)(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
+        IFACEMETHOD(CreateInstanceWithHintRect)(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
+        IFACEMETHOD(CreateInstanceWithHintRectAndCorrelationId)(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, ABI::Windows::Foundation::Rect hintRect, GUID correlationId, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
 
         // Static properties.
 
@@ -112,9 +112,9 @@ namespace DirectUI
         _Check_return_ HRESULT CheckActivationAllowed() override;
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
-        _Check_return_ HRESULT CreateInstanceWithHintRectImpl(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _In_ ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
-        _Check_return_ HRESULT CreateInstanceWithHintRectAndCorrelationIdImpl(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _In_ ABI::Windows::Foundation::Rect hintRect, _In_ GUID correlationId, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithHintRectImpl(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithHintRectAndCorrelationIdImpl(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, ABI::Windows::Foundation::Rect hintRect, GUID correlationId, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance);
 
         // Customized static properties.
 

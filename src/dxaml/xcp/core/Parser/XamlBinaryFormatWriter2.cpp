@@ -118,6 +118,9 @@ _Check_return_ HRESULT XamlBinaryFormatWriter2::ProcessSubNodes(
     _In_ const std::shared_ptr<ObjectWriterNodeList>& spObjectNodeList,
     _Out_ std::vector<unsigned int>& streamOffsetList)
 {
+    // Intialize streamOffsetList for SAL
+    streamOffsetList.clear();
+    
     // remember this subsegment by adding to the sub lists
     std::shared_ptr<XamlBinaryFormatSubWriter2> spSubWriter = 
         std::make_shared<XamlBinaryFormatSubWriter2>(m_pCore, m_spMetadataStore, m_fGenerateLineInfo);

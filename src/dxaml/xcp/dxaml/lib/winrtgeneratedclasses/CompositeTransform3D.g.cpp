@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_CenterX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_CenterX, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_CenterX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_CenterX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_CenterX, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_CenterY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_CenterY, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_CenterY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_CenterY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_CenterY, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_CenterZ(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_CenterZ, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_CenterZ(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_CenterZ(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_CenterZ, value));
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_RotationX(_Out_ DOUBLE* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_RotationX, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_RotationX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_RotationX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_RotationX, value));
@@ -113,7 +113,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_RotationY(_Out_ DOUBLE* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_RotationY, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_RotationY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_RotationY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_RotationY, value));
@@ -130,7 +130,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_RotationZ(_Out_ DOUBLE* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_RotationZ, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_RotationZ(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_RotationZ(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_RotationZ, value));
@@ -147,7 +147,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_ScaleX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_ScaleX, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_ScaleX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_ScaleX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_ScaleX, value));
@@ -164,7 +164,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_ScaleY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_ScaleY, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_ScaleY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_ScaleY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_ScaleY, value));
@@ -181,7 +181,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_ScaleZ(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_ScaleZ, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_ScaleZ(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_ScaleZ(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_ScaleZ, value));
@@ -198,7 +198,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_TranslateX(_Out_ DOUBLE* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_TranslateX, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_TranslateX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_TranslateX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_TranslateX, value));
@@ -215,7 +215,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_TranslateY(_Out_ DOUBLE* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_TranslateY, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_TranslateY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_TranslateY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_TranslateY, value));
@@ -232,7 +232,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform3D::get_TranslateZ(_Out_ DOUBLE* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_TranslateZ, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform3D::put_TranslateZ(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform3D::put_TranslateZ(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform3D_TranslateZ, value));

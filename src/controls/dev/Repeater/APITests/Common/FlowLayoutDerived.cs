@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
-    public class FlowLayoutDerived : FlowLayout
+    public partial class FlowLayoutDerived : FlowLayout
     {
         public Func<Size, VirtualizingLayoutContext, Size, Size> MeasureLayoutFunc { get; set; }
         public Func<Size, VirtualizingLayoutContext, Size, Size> ArrangeLayoutFunc { get; set; }

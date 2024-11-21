@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::get_ExclusionRect(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::put_ExclusionRect(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue)
+IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::put_ExclusionRect(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::get_Placement(_Out_ ABI::Mi
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::put_Placement(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode value)
+IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::put_Placement(ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -84,7 +84,7 @@ IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::get_Position(_Out_ ABI::Win
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::put_Position(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue)
+IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::put_Position(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -101,7 +101,7 @@ IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::get_ShowMode(_Out_ ABI::Mic
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::put_ShowMode(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode value)
+IFACEMETHODIMP DirectUI::FlyoutShowOptionsGenerated::put_ShowMode(ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

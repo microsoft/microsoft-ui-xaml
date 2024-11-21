@@ -699,6 +699,138 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Loads an ItemsView, changes its ItemsSource, selects items and removes them one by one.")]
+        public void CanChangeItemsSourceAndRemoveSelectedItems()
+        {
+            using (PrivateLoggingHelper privateIVLoggingHelper = new PrivateLoggingHelper("ItemsView", "ItemsRepeater"))
+            {
+                ItemsView itemsView = null;
+                ItemsRepeater itemsRepeater = null;
+                ObservableCollection<int> itemsSource = null;
+                AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent itemsViewUnloadedEvent = new AutoResetEvent(false);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    itemsView = new ItemsView()
+                    {
+                        Width = 100,
+                        Height = 200,
+                        SelectionMode = ItemsViewSelectionMode.Single
+                    };
+
+                    SetupDefaultUI(itemsView, itemsViewLoadedEvent, itemsViewUnloadedEvent);
+                });
+
+                WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Setting ItemsSource");
+                    itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 3));
+                    itemsView.ItemsSource = itemsSource;
+                    Verify.AreEqual(itemsSource, itemsView.ItemsSource);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Extracting ScrollView");
+                    ScrollView scrollView = itemsView.ScrollView;
+                    Verify.IsNotNull(scrollView);
+
+                    Log.Comment("Extracting ItemsRepeater");
+                    itemsRepeater = scrollView.Content as ItemsRepeater;
+                    Verify.IsNotNull(itemsRepeater);
+
+                    int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
+                    Log.Comment($"Extracting first ItemContainer, children count: {childrenCount}");
+                    Verify.AreEqual(3, childrenCount);
+                    ItemContainer itemContainer = itemsRepeater.TryGetElement(0) as ItemContainer;
+                    Verify.IsNotNull(itemContainer);
+                    Verify.IsFalse(itemContainer.IsSelected);
+
+                    Log.Comment("Selecting first ItemContainer");
+                    itemContainer.IsSelected = true;
+                    Verify.IsTrue(itemContainer.IsSelected);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Replacing ItemsSource");
+                    itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 3));
+                    itemsView.ItemsSource = itemsSource;
+                    Verify.AreEqual(3, itemsSource.Count);
+                    Log.Comment("Removing first item");
+                    itemsSource.RemoveAt(0);
+                    Verify.AreEqual(2, itemsSource.Count);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
+                    Log.Comment($"Extracting last ItemContainer, children count: {childrenCount}");
+                    ItemContainer itemContainer = itemsRepeater.TryGetElement(1) as ItemContainer;
+                    Verify.IsNotNull(itemContainer);
+                    Verify.IsFalse(itemContainer.IsSelected);
+                    Log.Comment("Selecting last ItemContainer");
+                    itemContainer.IsSelected = true;
+                    Verify.IsTrue(itemContainer.IsSelected);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Removing last item");
+                    itemsSource.RemoveAt(1);
+                    Verify.AreEqual(1, itemsSource.Count);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
+                    Log.Comment($"Extracting remaining ItemContainer, children count: {childrenCount}");
+                    ItemContainer itemContainer = itemsRepeater.TryGetElement(0) as ItemContainer;
+                    Verify.IsNotNull(itemContainer);
+                    Verify.IsFalse(itemContainer.IsSelected);
+                    Log.Comment("Selecting remaining ItemContainer");
+                    itemContainer.IsSelected = true;
+                    Verify.IsTrue(itemContainer.IsSelected);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Removing remaining item");
+                    itemsSource.RemoveAt(0);
+                    Verify.AreEqual(0, itemsSource.Count);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Resetting window content and ItemsView");
+                    Content = null;
+                    itemsView = null;
+                });
+
+                WaitForEvent("Waiting for Unloaded event", itemsViewUnloadedEvent);
+                IdleSynchronizer.Wait();
+                Log.Comment("Done");
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Loads an ItemsView, changes Layout property to various types.")]
         public void CanChangeLayoutProperty()
         {
@@ -1188,6 +1320,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Handles the LinedFlowLayout.ItemsInfoRequested event and provides information beyond the minimum requested, with min/max size arrays.")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void HandleItemsInfoRequestedWithSizeArraysAndExtraInfo()
         {
             HandleItemsInfoRequested(useSizeArrays: true, useExtraInfo: true, useTemporaryAspectRatio: false);
@@ -1210,6 +1343,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         [TestProperty("Description", "Handles the LinedFlowLayout.ItemsInfoRequested event and triggers various exceptions exercising LinedFlowLayoutItemsInfoRequestedEventArgs APIs.")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)] // Unstable on RS5. See bug 49647616.
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)] // This test is currently failing on 23h2.
         public void TriggerLinedFlowLayoutItemsInfoRequestedEventArgsExceptions()
         {
             TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexNegative);

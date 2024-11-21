@@ -43,7 +43,7 @@ namespace DirectUI
         IFACEMETHOD(get_GroupHeaderContainer)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IListViewBaseHeaderItem** ppValue) override;
         IFACEMETHOD(put_GroupHeaderContainer)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IListViewBaseHeaderItem* pValue) override;
         IFACEMETHOD(get_GroupIndex)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_GroupIndex(_In_ INT value);
+        _Check_return_ HRESULT put_GroupIndex(INT value);
 
         // Events.
 

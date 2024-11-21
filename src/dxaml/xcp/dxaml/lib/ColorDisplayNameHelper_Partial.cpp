@@ -9,7 +9,7 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT ColorDisplayNameHelperFactory::ToDisplayNameImpl(
-    _In_ wu::Color color,
+    wu::Color color,
     _Out_ HSTRING* returnValue)
 {
     IFCPTR_RETURN(returnValue);

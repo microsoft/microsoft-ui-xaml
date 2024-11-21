@@ -95,7 +95,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenera
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::put_ShouldConstrainPopupsToWorkArea(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::put_ShouldConstrainPopupsToWorkArea(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -162,7 +162,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::remove_GotFocus(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::remove_GotFocus(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     GotFocusEventSourceType* pEventSource = nullptr;
@@ -192,7 +192,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::remove_TakeFocusRequested(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::remove_TakeFocusRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TakeFocusRequestedEventSourceType* pEventSource = nullptr;
@@ -208,7 +208,7 @@ Cleanup:
 }
 
 // Methods.
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::Initialize(_In_ ABI::Microsoft::UI::WindowId parentWindowId)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DesktopWindowXamlSourceGenerated::Initialize(ABI::Microsoft::UI::WindowId parentWindowId)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

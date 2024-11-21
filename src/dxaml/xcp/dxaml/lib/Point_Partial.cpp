@@ -10,8 +10,8 @@ using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT
 PointHelperFactory::FromCoordinatesImpl(
-    _In_ FLOAT x,
-    _In_ FLOAT y,
+    FLOAT x,
+    FLOAT y,
     _Out_ wf::Point* pReturnValue)
 {
     pReturnValue->X = x;

@@ -416,7 +416,7 @@ protected:
     virtual _Check_return_ HRESULT GetPrintGeometryVirtual(
         _In_ const D2DPrecomputeParams& cp,
         _In_ const D2DRenderParams &printParams,
-        _Outptr_ IPALAcceleratedGeometry** ppGeometry
+        _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
         );
 };
 
@@ -518,7 +518,7 @@ protected:
     _Check_return_ HRESULT GetPrintGeometryVirtual(
         _In_ const D2DPrecomputeParams& cp,
         _In_ const D2DRenderParams &printParams,
-        _Outptr_ IPALAcceleratedGeometry** ppGeometry
+        _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
         ) override;
 };
 
@@ -573,7 +573,7 @@ protected:
     _Check_return_ HRESULT GetPrintGeometryVirtual(
         _In_ const D2DPrecomputeParams& cp,
         _In_ const D2DRenderParams &printParams,
-        _Outptr_ IPALAcceleratedGeometry** ppGeometry
+        _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
         ) override;
 
 private:
@@ -625,7 +625,7 @@ public:
     // IUnknown
     IFACEMETHODIMP QueryInterface(
         _In_ REFIID iid,
-        _Outptr_opt_ void ** ppvObject) override
+        _Outptr_ void ** ppvObject) override
     {
         if (iid == __uuidof(wgr::IGeometrySource2DInterop))
         {

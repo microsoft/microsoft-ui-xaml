@@ -36,7 +36,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
         IFACEMETHOD(get_IsCancelable)(_Out_ BOOLEAN* pValue) override;
 
         // Methods.
@@ -71,7 +71,7 @@ namespace DirectUI
     public:
         // Factory methods.
         IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs** ppInstance);
-        IFACEMETHOD(CreateWithCancelableParameter)(_In_ BOOLEAN isCancelable, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs** ppInstance);
+        IFACEMETHOD(CreateWithCancelableParameter)(BOOLEAN isCancelable, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs** ppInstance);
 
         // Static properties.
 
@@ -89,7 +89,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateWithCancelableParameterImpl(_In_ BOOLEAN isCancelable, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs** ppInstance);
+        _Check_return_ HRESULT CreateWithCancelableParameterImpl(BOOLEAN isCancelable, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs** ppInstance);
 
         // Customized static properties.
 

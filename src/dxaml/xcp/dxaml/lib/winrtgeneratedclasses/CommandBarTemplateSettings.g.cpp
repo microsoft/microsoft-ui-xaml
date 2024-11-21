@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_ContentHeight(_Out_ DOU
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_ContentHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_ContentHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_ContentHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_ContentHeight, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_EffectiveOverflowButton
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_EffectiveOverflowButtonVisibility, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_EffectiveOverflowButtonVisibility(_In_ ABI::Microsoft::UI::Xaml::Visibility value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_EffectiveOverflowButtonVisibility(ABI::Microsoft::UI::Xaml::Visibility value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_EffectiveOverflowButtonVisibility, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_NegativeOverflowContent
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_NegativeOverflowContentHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_NegativeOverflowContentHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_NegativeOverflowContentHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_NegativeOverflowContentHeight, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentClipRect
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentClipRect, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentClipRect(_In_ ABI::Windows::Foundation::Rect value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentClipRect(ABI::Windows::Foundation::Rect value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentClipRect, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentCompactY
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentCompactYTranslation, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentCompactYTranslation(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentCompactYTranslation(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentCompactYTranslation, value));
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentHeight(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentHeight, value));
@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentHiddenYT
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentHiddenYTranslation, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentHiddenYTranslation(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentHiddenYTranslation(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentHiddenYTranslation, value));
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentHorizont
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentHorizontalOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentHorizontalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentHorizontalOffset, value));
@@ -117,7 +117,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentMaxHeigh
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMaxHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentMaxHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentMaxHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMaxHeight, value));
@@ -126,7 +126,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentMaxWidth
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMaxWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentMaxWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentMaxWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMaxWidth, value));
@@ -135,7 +135,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentMinimalY
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMinimalYTranslation, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentMinimalYTranslation(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentMinimalYTranslation(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMinimalYTranslation, value));
@@ -144,7 +144,7 @@ IFACEMETHODIMP DirectUI::CommandBarTemplateSettings::get_OverflowContentMinWidth
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMinWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentMinWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CommandBarTemplateSettings::put_OverflowContentMinWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBarTemplateSettings_OverflowContentMinWidth, value));

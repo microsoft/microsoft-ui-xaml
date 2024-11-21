@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_AreScrollSnapPointsRegular(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StackPanel_AreScrollSnapPointsRegular, pValue));
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::put_AreScrollSnapPointsRegular(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::put_AreScrollSnapPointsRegular(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StackPanel_AreScrollSnapPointsRegular, value));
@@ -91,7 +91,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_BackgroundSizing(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StackPanel_BackgroundSizing, pValue));
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::put_BackgroundSizing(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::put_BackgroundSizing(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StackPanel_BackgroundSizing, value));
@@ -109,7 +109,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_BorderThickness(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StackPanel_BorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::put_BorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::put_BorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StackPanel_BorderThickness, value));
@@ -118,7 +118,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_CornerRadius(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StackPanel_CornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::put_CornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::put_CornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StackPanel_CornerRadius, value));
@@ -127,7 +127,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_Orientation(_Out_ ABI::Microso
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StackPanel_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StackPanel_Orientation, value));
@@ -136,7 +136,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_Padding(_Out_ ABI::Microsoft::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StackPanel_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StackPanel_Padding, value));
@@ -145,7 +145,7 @@ IFACEMETHODIMP DirectUI::StackPanelGenerated::get_Spacing(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StackPanel_Spacing, pValue));
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::put_Spacing(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::put_Spacing(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StackPanel_Spacing, value));
@@ -188,7 +188,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::StackPanelGenerated::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -243,7 +243,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::StackPanelGenerated::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -264,7 +264,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::StackPanelGenerated::GetInsertionIndexes(_In_ ABI::Windows::Foundation::Point position, _Out_ INT* pFirst, _Out_ INT* pSecond)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::GetInsertionIndexes(ABI::Windows::Foundation::Point position, _Out_ INT* pFirst, _Out_ INT* pSecond)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -282,7 +282,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::GetIrregularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::GetIrregularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -301,7 +301,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackPanelGenerated::GetRegularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
+IFACEMETHODIMP DirectUI::StackPanelGenerated::GetRegularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

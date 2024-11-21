@@ -1,0 +1,56 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.Samples.StackLayoutDemoPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp.Samples">
+
+    <ScrollView>
+        <StackPanel>
+            <Grid
+                RowDefinitions="Auto, Auto, Auto, Auto"
+                ColumnDefinitions="Auto, Auto, Auto, Auto">
+                <TextBlock Text="ItemsRepeater Properties" Grid.ColumnSpan="4" Foreground="Red" Margin="4,8,4,0"/>
+
+                <TextBlock Text="HorizontalAlignment:" Grid.Row="1" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbItemsRepeatersHorizontalAlignment" Margin="1" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+                    HorizontalAlignment="Left" VerticalAlignment="Center" SelectionChanged="CmbItemsRepeatersHorizontalAlignment_SelectionChanged">
+                    <ComboBoxItem>Left</ComboBoxItem>
+                    <ComboBoxItem>Center</ComboBoxItem>
+                    <ComboBoxItem>Right</ComboBoxItem>
+                    <ComboBoxItem>Stretch</ComboBoxItem>
+                </ComboBox>
+
+                <TextBlock Text="VerticalCacheLength:" Grid.Row="2" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtItemsRepeatersVerticalCacheLength" Width="100" Margin="1" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetItemsRepeatersVerticalCacheLength" Content="G" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetItemsRepeatersVerticalCacheLength_Click"/>
+                <Button x:Name="btnSetItemsRepeatersVerticalCacheLength" Content="S" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetItemsRepeatersVerticalCacheLength_Click"/>
+
+                <TextBlock Text="ItemsSource.Count:" Grid.Row="3" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtItemsRepeatersItemsSourceCount" Text="100" Width="100" Margin="1" Grid.Row="3" Grid.Column="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetItemsRepeatersItemsSourceCount" Content="G" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetItemsRepeatersItemsSourceCount_Click"/>
+                <Button x:Name="btnSetItemsRepeatersItemsSourceCount" Content="S" Margin="1" Grid.Row="3" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetItemsRepeatersItemsSourceCount_Click"/>
+            </Grid>
+
+            <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+                <TextBlock Text="ItemsRepeater in Border" Grid.ColumnSpan="4" Foreground="Red" Margin="4,8,4,0"/>
+                <Border Background="LightYellow" Height="300" Grid.Row="1" Margin="4">
+                    <ItemsRepeater x:Name="itemsRepeater1"/>
+                </Border>
+                
+                <TextBlock Text="ItemsRepeater in vertically-scrollable ScrollView" Grid.Row="2" Foreground="Red" Margin="4,8,4,0"/>
+                <ScrollView Grid.Row="3" Background="Beige" Width="300" Height="300" Margin="4" HorizontalAlignment="Left">
+                    <ItemsRepeater x:Name="itemsRepeater2"/>
+                </ScrollView>
+
+                <TextBlock Text="ItemsRepeater in horizontally/vertically-scrollable ScrollView" Grid.Row="4" Foreground="Red" Margin="4,8,4,0"/>
+                <ScrollView ContentOrientation="Both" Grid.Row="5" Background="Beige" Width="300" Height="300" Margin="4" HorizontalAlignment="Left">
+                    <ItemsRepeater x:Name="itemsRepeater3"/>
+                </ScrollView>
+
+                <TextBlock Text="Built-in ItemsRepeater in horizontally/vertically-scrollable ItemsView" Grid.Row="6" Foreground="Red" Margin="4,8,4,0"/>
+                <ItemsView x:Name="itemsView1" Grid.Row="7" Background="Azure" Width="300" Height="300" Margin="4,4,4,400" HorizontalAlignment="Left"/>
+            </Grid>
+        </StackPanel>
+    </ScrollView>
+</Page>

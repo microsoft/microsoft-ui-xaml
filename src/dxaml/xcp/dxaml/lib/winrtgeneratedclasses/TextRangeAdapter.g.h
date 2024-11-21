@@ -56,20 +56,20 @@ namespace DirectUI
         IFACEMETHOD(AddToSelection)() override;
         IFACEMETHOD(Clone)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue) override;
         IFACEMETHOD(Compare)(_In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(CompareEndpoints)(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, _In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint targetEndpoint, _Out_ INT* pReturnValue) override;
-        IFACEMETHOD(ExpandToEnclosingUnit)(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit) override;
-        IFACEMETHOD(FindAttribute)(_In_ INT attributeId, _In_ IInspectable* pValue, _In_ BOOLEAN backward, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue) override;
-        IFACEMETHOD(FindText)(_In_ HSTRING text, _In_ BOOLEAN backward, _In_ BOOLEAN ignoreCase, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue) override;
-        IFACEMETHOD(GetAttributeValue)(_In_ INT attributeId, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(CompareEndpoints)(ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint targetEndpoint, _Out_ INT* pReturnValue) override;
+        IFACEMETHOD(ExpandToEnclosingUnit)(ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit) override;
+        IFACEMETHOD(FindAttribute)(INT attributeId, _In_ IInspectable* pValue, BOOLEAN backward, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue) override;
+        IFACEMETHOD(FindText)(_In_ HSTRING text, BOOLEAN backward, BOOLEAN ignoreCase, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue) override;
+        IFACEMETHOD(GetAttributeValue)(INT attributeId, _Outptr_ IInspectable** ppReturnValue) override;
         IFACEMETHOD(GetBoundingRectangles)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) DOUBLE** ppReturnValue) override;
         IFACEMETHOD(GetChildren)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple*** ppReturnValue) override;
         IFACEMETHOD(GetEnclosingElement)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple** ppReturnValue) override;
-        IFACEMETHOD(GetText)(_In_ INT maxLength, _Out_ HSTRING* pReturnValue) override;
-        IFACEMETHOD(Move)(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit, _In_ INT count, _Out_ INT* pReturnValue) override;
-        IFACEMETHOD(MoveEndpointByRange)(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, _In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint targetEndpoint) override;
-        IFACEMETHOD(MoveEndpointByUnit)(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit, _In_ INT count, _Out_ INT* pReturnValue) override;
+        IFACEMETHOD(GetText)(INT maxLength, _Out_ HSTRING* pReturnValue) override;
+        IFACEMETHOD(Move)(ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit, INT count, _Out_ INT* pReturnValue) override;
+        IFACEMETHOD(MoveEndpointByRange)(ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint targetEndpoint) override;
+        IFACEMETHOD(MoveEndpointByUnit)(ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit, INT count, _Out_ INT* pReturnValue) override;
         IFACEMETHOD(RemoveFromSelection)() override;
-        IFACEMETHOD(ScrollIntoView)(_In_ BOOLEAN alignToTop) override;
+        IFACEMETHOD(ScrollIntoView)(BOOLEAN alignToTop) override;
         IFACEMETHOD(Select)() override;
 
 

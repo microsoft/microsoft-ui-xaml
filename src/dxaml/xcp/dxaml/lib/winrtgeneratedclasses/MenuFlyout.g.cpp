@@ -107,7 +107,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::MenuFlyoutGenerated::ShowAt(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pTargetElement, _In_ ABI::Windows::Foundation::Point point)
+IFACEMETHODIMP DirectUI::MenuFlyoutGenerated::ShowAt(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pTargetElement, ABI::Windows::Foundation::Point point)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

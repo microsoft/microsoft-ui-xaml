@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Kind)(_Out_ ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind* pValue) override;
-        IFACEMETHOD(put_Kind)(_In_ ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind value) override;
+        IFACEMETHOD(put_Kind)(ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind value) override;
 
         // Events.
 
@@ -88,7 +88,7 @@ namespace DirectUI
     public:
         // Factory methods.
         IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IStandardUICommand** ppInstance);
-        IFACEMETHOD(CreateInstanceWithKind)(_In_ ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind kind, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IStandardUICommand** ppInstance);
+        IFACEMETHOD(CreateInstanceWithKind)(ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind kind, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IStandardUICommand** ppInstance);
 
         // Static properties.
         IFACEMETHOD(get_KindProperty)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
@@ -112,7 +112,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithKindImpl(_In_ ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind kind, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IStandardUICommand** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithKindImpl(ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind kind, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IStandardUICommand** ppInstance);
 
         // Customized static properties.
          _Check_return_ HRESULT get_KindPropertyImpl(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue); 

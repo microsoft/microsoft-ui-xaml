@@ -49,18 +49,18 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_Key)(_Out_ ABI::Windows::System::VirtualKey* pValue) override;
-        IFACEMETHOD(put_Key)(_In_ ABI::Windows::System::VirtualKey value) override;
+        IFACEMETHOD(put_Key)(ABI::Windows::System::VirtualKey value) override;
         IFACEMETHOD(get_Modifiers)(_Out_ ABI::Windows::System::VirtualKeyModifiers* pValue) override;
-        IFACEMETHOD(put_Modifiers)(_In_ ABI::Windows::System::VirtualKeyModifiers value) override;
+        IFACEMETHOD(put_Modifiers)(ABI::Windows::System::VirtualKeyModifiers value) override;
         IFACEMETHOD(get_ScopeOwner)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_ScopeOwner)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
 
         // Events.
         _Check_return_ HRESULT GetInvokedEventSourceNoRef(_Outptr_ InvokedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Invoked)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Input::KeyboardAccelerator*, ABI::Microsoft::UI::Xaml::Input::KeyboardAcceleratorInvokedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Invoked)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Invoked)(EventRegistrationToken token) override;
 
         // Methods.
 

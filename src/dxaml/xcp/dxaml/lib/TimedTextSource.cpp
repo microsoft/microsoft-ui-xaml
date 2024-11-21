@@ -350,7 +350,7 @@ bool CTimedTextSource::IsSupportedCue(_In_ const ctl::ComPtr<wmc::IMediaCue>& sp
 }
 
 _Check_return_ HRESULT
-CTimedTextSource::AddCueCallbacks(wmc::ITimedMetadataTrack * pTrack, _In_ unsigned int trackIndex)
+CTimedTextSource::AddCueCallbacks(_In_ wmc::ITimedMetadataTrack * pTrack, _In_ unsigned int trackIndex)
 {
     ctl::WeakRefPtr wrThis;
     // We need to use a weak reference to avoid a circular reference.

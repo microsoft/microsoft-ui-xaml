@@ -16,7 +16,7 @@ using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 
 namespace MUXControlsTestApp
 {
-    public sealed class ToggleAnimatedIconHost : CheckBox
+    public sealed partial class ToggleAnimatedIconHost : CheckBox
     {
         Border m_iconPresenter;
         TextBlock m_transitionTextBlock;

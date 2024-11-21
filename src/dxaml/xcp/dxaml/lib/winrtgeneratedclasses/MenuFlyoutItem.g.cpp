@@ -94,7 +94,7 @@ _Check_return_ HRESULT DirectUI::MenuFlyoutItemGenerated::get_PreventDismissOnPo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MenuFlyoutItem_PreventDismissOnPointer, pValue));
 }
-_Check_return_ HRESULT DirectUI::MenuFlyoutItemGenerated::put_PreventDismissOnPointer(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::MenuFlyoutItemGenerated::put_PreventDismissOnPointer(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MenuFlyoutItem_PreventDismissOnPointer, value));
 }
@@ -154,7 +154,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::MenuFlyoutItemGenerated::remove_Click(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::MenuFlyoutItemGenerated::remove_Click(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClickEventSourceType* pEventSource = nullptr;

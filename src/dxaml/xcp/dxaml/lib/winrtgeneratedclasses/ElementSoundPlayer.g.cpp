@@ -83,7 +83,7 @@ IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::get_Volume(_Out_ DOUBLE* pVa
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::put_Volume(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::put_Volume(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -102,7 +102,7 @@ IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::get_State(_Out_ ABI::Microso
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::put_State(_In_ ABI::Microsoft::UI::Xaml::ElementSoundPlayerState value)
+IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::put_State(ABI::Microsoft::UI::Xaml::ElementSoundPlayerState value)
 {
     HRESULT hr = S_OK;
     
@@ -121,7 +121,7 @@ IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::get_SpatialAudioMode(_Out_ A
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::put_SpatialAudioMode(_In_ ABI::Microsoft::UI::Xaml::ElementSpatialAudioMode value)
+IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::put_SpatialAudioMode(ABI::Microsoft::UI::Xaml::ElementSpatialAudioMode value)
 {
     HRESULT hr = S_OK;
     
@@ -132,7 +132,7 @@ Cleanup:
 }
 
 // Static methods.
-IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::Play(_In_ ABI::Microsoft::UI::Xaml::ElementSoundKind sound)
+IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::Play(ABI::Microsoft::UI::Xaml::ElementSoundKind sound)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -149,7 +149,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::RequestInteractionSoundForElement(_In_ ABI::Microsoft::UI::Xaml::ElementSoundKind sound, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement)
+IFACEMETHODIMP DirectUI::ElementSoundPlayerFactory::RequestInteractionSoundForElement(ABI::Microsoft::UI::Xaml::ElementSoundKind sound, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

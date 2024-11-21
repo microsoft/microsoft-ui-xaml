@@ -124,8 +124,9 @@ namespace Private
         }
 
         _Check_return_
-        virtual bool QueryInterfaceOverride(_In_ REFIID /*riid*/, _Outptr_ void** /*ppInterface*/)
+        virtual bool QueryInterfaceOverride(_In_ REFIID /*riid*/, _Outptr_ void** ppInterface)
         {
+            *ppInterface = nullptr;
             return false;
         }
 

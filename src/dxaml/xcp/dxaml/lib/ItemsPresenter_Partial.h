@@ -197,9 +197,9 @@ namespace DirectUI
 
         // Events.
         IFACEMETHOD(add_HorizontalSnapPointsChanged)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_HorizontalSnapPointsChanged)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_HorizontalSnapPointsChanged)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_VerticalSnapPointsChanged)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_VerticalSnapPointsChanged)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_VerticalSnapPointsChanged)(EventRegistrationToken tToken) override;
 
         // End of IScrollSnapPointsInfo interface implementation
 
@@ -307,12 +307,12 @@ namespace DirectUI
         // end of IScrollOwner interface implementation
 
         IFACEMETHOD(MeasureOverride)(
-            _In_ wf::Size availableSize,
+            wf::Size availableSize,
             _Out_ wf::Size* pReturnValue)
             override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size finalSize,
+            wf::Size finalSize,
             _Out_ wf::Size* pReturnValue)
             override;
 

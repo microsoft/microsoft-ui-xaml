@@ -65,7 +65,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_BackStackDepth(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Frame_BackStackDepth, pValue));
 }
-_Check_return_ HRESULT DirectUI::FrameGenerated::put_BackStackDepth(_In_ INT value)
+_Check_return_ HRESULT DirectUI::FrameGenerated::put_BackStackDepth(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Frame_BackStackDepth, value));
@@ -74,7 +74,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_CacheSize(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Frame_CacheSize, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameGenerated::put_CacheSize(_In_ INT value)
+IFACEMETHODIMP DirectUI::FrameGenerated::put_CacheSize(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Frame_CacheSize, value));
@@ -83,7 +83,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_CanGoBack(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Frame_CanGoBack, pValue));
 }
-_Check_return_ HRESULT DirectUI::FrameGenerated::put_CanGoBack(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::FrameGenerated::put_CanGoBack(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Frame_CanGoBack, value));
@@ -92,7 +92,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_CanGoForward(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Frame_CanGoForward, pValue));
 }
-_Check_return_ HRESULT DirectUI::FrameGenerated::put_CanGoForward(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::FrameGenerated::put_CanGoForward(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Frame_CanGoForward, value));
@@ -101,7 +101,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_CurrentSourcePageType(_Out_ ABI::Wi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Frame_CurrentSourcePageType, pValue));
 }
-_Check_return_ HRESULT DirectUI::FrameGenerated::put_CurrentSourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value)
+_Check_return_ HRESULT DirectUI::FrameGenerated::put_CurrentSourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Frame_CurrentSourcePageType, value));
@@ -120,7 +120,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_IsNavigationStackEnabled(_Out_ BOOL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Frame_IsNavigationStackEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameGenerated::put_IsNavigationStackEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FrameGenerated::put_IsNavigationStackEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Frame_IsNavigationStackEnabled, value));
@@ -129,7 +129,7 @@ IFACEMETHODIMP DirectUI::FrameGenerated::get_SourcePageType(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Frame_SourcePageType, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameGenerated::put_SourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value)
+IFACEMETHODIMP DirectUI::FrameGenerated::put_SourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Frame_SourcePageType, value));
@@ -172,7 +172,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::FrameGenerated::remove_Navigated(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::FrameGenerated::remove_Navigated(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     NavigatedEventSourceType* pEventSource = nullptr;
@@ -227,7 +227,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::FrameGenerated::remove_Navigating(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::FrameGenerated::remove_Navigating(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     NavigatingEventSourceType* pEventSource = nullptr;
@@ -282,7 +282,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::FrameGenerated::remove_NavigationFailed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::FrameGenerated::remove_NavigationFailed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     NavigationFailedEventSourceType* pEventSource = nullptr;
@@ -337,7 +337,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::FrameGenerated::remove_NavigationStopped(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::FrameGenerated::remove_NavigationStopped(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     NavigationStoppedEventSourceType* pEventSource = nullptr;
@@ -449,7 +449,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameGenerated::Navigate(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::FrameGenerated::Navigate(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -468,7 +468,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameGenerated::Navigate(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::FrameGenerated::Navigate(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -487,7 +487,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameGenerated::NavigateToType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Navigation::IFrameNavigationOptions* pNavigationOptions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::FrameGenerated::NavigateToType(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Navigation::IFrameNavigationOptions* pNavigationOptions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -506,7 +506,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameGenerated::NavigateWithTransitionInfo(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pInfoOverride, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::FrameGenerated::NavigateWithTransitionInfo(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pInfoOverride, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -543,7 +543,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameGenerated::SetNavigationStateWithNavigationControl(_In_ HSTRING navigationState, _In_ BOOLEAN suppressNavigate)
+IFACEMETHODIMP DirectUI::FrameGenerated::SetNavigationStateWithNavigationControl(_In_ HSTRING navigationState, BOOLEAN suppressNavigate)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

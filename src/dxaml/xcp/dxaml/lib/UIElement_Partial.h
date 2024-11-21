@@ -117,9 +117,9 @@ namespace DirectUI
             _Check_return_ HRESULT StartAnimationImpl(_In_ WUComp::ICompositionAnimationBase* animation);
             _Check_return_ HRESULT StopAnimationImpl(_In_ WUComp::ICompositionAnimationBase* animation);
 
-            _Check_return_ HRESULT STDMETHODCALLTYPE PopulatePropertyInfo(
-                _In_ HSTRING propertyName,
-                _In_ WUComp::IAnimationPropertyInfo* animationPropertyInfo
+            HRESULT STDMETHODCALLTYPE PopulatePropertyInfo(
+                HSTRING propertyName,
+                WUComp::IAnimationPropertyInfo* animationPropertyInfo
                 ) override;
 
             _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(
@@ -127,7 +127,7 @@ namespace DirectUI
                 _In_ WUComp::IAnimationPropertyInfo* animationPropertyInfo
                 );
 
-            _Check_return_ HRESULT STDMETHODCALLTYPE GetVisualInternal(_Outptr_ WUComp::IVisual** visual) override;
+            HRESULT STDMETHODCALLTYPE GetVisualInternal(WUComp::IVisual** visual) override;
 
             _Check_return_ HRESULT get_InteractionsImpl(_Out_ wfc::IVector<xaml::InteractionBase*>** interactions);
 
@@ -141,7 +141,7 @@ namespace DirectUI
             // method from their own MeasureOverride implementations to form a
             // recursive layout update.
             _Check_return_ HRESULT MeasureImpl(
-                _In_ wf::Size availableSize);
+                wf::Size availableSize);
 
             _Check_return_ HRESULT InvalidateArrangeImpl();
             _Check_return_ HRESULT InvalidateMeasureImpl();
@@ -407,7 +407,7 @@ namespace DirectUI
                 _In_opt_ DependencyObject* pCandidateTabStopElement,
                 const bool isBackward,
                 const bool didCycleFocusAtRootVisualScope,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsTabStopOverridden)
             {
                 RRETURN(S_OK);
@@ -419,7 +419,7 @@ namespace DirectUI
                 _In_ DependencyObject* pCandidateTabStopElement,
                 _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
                 const bool isBackward,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsCandidateTabStopOverridden)
             {
                 RRETURN(S_OK);
@@ -427,14 +427,14 @@ namespace DirectUI
 
 #pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetNextTabStopOverride(
-                _Outptr_ DependencyObject** ppNextTabStop)
+                _Outptr_result_maybenull_ DependencyObject** ppNextTabStop)
             {
                 RRETURN(S_OK);
             }
 
 #pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetPreviousTabStopOverride(
-                _Outptr_ DependencyObject** ppPreviousTabStop)
+                _Outptr_result_maybenull_ DependencyObject** ppPreviousTabStop)
             {
                 RRETURN(S_OK);
             }
@@ -461,14 +461,14 @@ namespace DirectUI
 
 #pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetFirstFocusableElementOverride(
-                _Outptr_ DependencyObject** ppFirstFocusable)
+                _Outptr_result_maybenull_ DependencyObject** ppFirstFocusable)
             {
                 RRETURN(S_OK);
             }
 
 #pragma warning( suppress : 6101 ) // Out params don't get set, but this copy of the function should never be called.
             virtual _Check_return_ HRESULT GetLastFocusableElementOverride(
-                _Outptr_ DependencyObject** ppLastFocusable)
+                _Outptr_result_maybenull_ DependencyObject** ppLastFocusable)
             {
                 RRETURN(S_OK);
             }
@@ -703,24 +703,24 @@ namespace DirectUI
                 _In_opt_ CDependencyObject* pCandidateTabStopElement,
                 const bool isBackward,
                 const bool didCycleFocusAtRootVisualScope,
-                _Outptr_ CDependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ CDependencyObject** ppNewTabStop,
                 _Out_ bool* pIsTabStopOverridden);
 
             static _Check_return_ HRESULT GetNextTabStop(
                 _In_ CDependencyObject* pFocusedElement,
-                _Outptr_ CDependencyObject** ppNextTabStop);
+                _Outptr_result_maybenull_ CDependencyObject** ppNextTabStop);
 
             static _Check_return_ HRESULT GetPreviousTabStop(
                 _In_ CDependencyObject* pFocusedElement,
-                _Outptr_ CDependencyObject** ppPreviousTabStop);
+                _Outptr_result_maybenull_ CDependencyObject** ppPreviousTabStop);
 
             static _Check_return_ HRESULT GetFirstFocusableElement(
                 _In_ CDependencyObject* pSearchStart,
-                _Outptr_ CDependencyObject** ppFirstFocusable);
+                _Outptr_result_maybenull_ CDependencyObject** ppFirstFocusable);
 
             static _Check_return_ HRESULT GetLastFocusableElement(
                 _In_ CDependencyObject* pSearchStart,
-                _Outptr_ CDependencyObject** ppLastFocusable);
+                _Outptr_result_maybenull_ CDependencyObject** ppLastFocusable);
 
             static _Check_return_ HRESULT IsDraggableOrPannable(
                 _In_ CUIElement* pElement,
@@ -731,14 +731,14 @@ namespace DirectUI
                 _In_opt_ DependencyObject* pCandidateTabStop,
                 const bool isBackward,
                 const bool didCycleFocusAtRootVisualScope,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsTabStopOverridden);
 
             _Check_return_ HRESULT ProcessCandidateTabStopInternal(
                 _In_opt_ DependencyObject* pCurrentTabStop,
                 _In_opt_ DependencyObject* pOverriddenCandidateTabStop,
                 _In_ BOOLEAN isBackward,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsCandidateTabStopOverridden);
 
             _Check_return_ HRESULT OnPointerPressed(
@@ -802,17 +802,17 @@ namespace DirectUI
                 _Out_  ctl::ComPtr<xaml::IUIElement>* pUIElementCandidate);
 
             _Check_return_ HRESULT STDMETHODCALLTYPE add_PreviewKeyDown(_In_ xaml_input::IKeyEventHandler* pValue, _Out_ EventRegistrationToken* pToken) final;
-            _Check_return_ HRESULT STDMETHODCALLTYPE remove_PreviewKeyDown(_In_ EventRegistrationToken token) final;
+            _Check_return_ HRESULT STDMETHODCALLTYPE remove_PreviewKeyDown(EventRegistrationToken token) final;
 
             _Check_return_ HRESULT STDMETHODCALLTYPE add_PreviewKeyUp(_In_ xaml_input::IKeyEventHandler* pValue, _Out_ EventRegistrationToken* pToken) final;
-            _Check_return_ HRESULT STDMETHODCALLTYPE remove_PreviewKeyUp(_In_ EventRegistrationToken token) final;
+            _Check_return_ HRESULT STDMETHODCALLTYPE remove_PreviewKeyUp(EventRegistrationToken token) final;
 
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
             _Check_return_ HRESULT STDMETHODCALLTYPE add_Shown(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) final;
-            _Check_return_ HRESULT STDMETHODCALLTYPE remove_Shown(_In_ EventRegistrationToken token) final;
+            _Check_return_ HRESULT STDMETHODCALLTYPE remove_Shown(EventRegistrationToken token) final;
 
             _Check_return_ HRESULT STDMETHODCALLTYPE add_Hidden(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) final;
-            _Check_return_ HRESULT STDMETHODCALLTYPE remove_Hidden(_In_ EventRegistrationToken token) final;
+            _Check_return_ HRESULT STDMETHODCALLTYPE remove_Hidden(EventRegistrationToken token) final;
 #endif
 
             bool HasShownHiddenHandlers();

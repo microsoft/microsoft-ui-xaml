@@ -38,7 +38,7 @@ void DirectUI::SymbolIcon::SetFontSize(_In_ float fontSize)
 }
 
 _Check_return_ HRESULT SymbolIconFactory::CreateInstanceWithSymbolImpl(
-    _In_ xaml_controls::Symbol symbol,
+    xaml_controls::Symbol symbol,
     _Outptr_ xaml_controls::ISymbolIcon** ppInstance)
 {
     HRESULT hr = S_OK;

@@ -16,20 +16,25 @@ public:
     void UninitializeForContext(const winrt::VirtualizingLayoutContext& context);
     void OnElementMeasured(int elementIndex, double majorSize, double minorSize);
     void OnMeasureStart();
+    void OnElementSizesReset();
 
     ::FlowLayoutAlgorithm& FlowAlgorithm() { return m_flowAlgorithm; }
     double TotalElementSize() const { return m_totalElementSize; }
     double MaxArrangeBounds() const { return m_maxArrangeBounds; }
+    bool AreElementsMeasuredRegular() const { return m_areElementsMeasuredRegular; }
     int TotalElementsMeasured() const { return m_totalElementsMeasured; }
 
 private:
     ::FlowLayoutAlgorithm m_flowAlgorithm{ this };
     std::vector<double> m_estimationBuffer{};
+    double m_lastElementSize{};
     double m_totalElementSize{};
     // During the measure pass, as we measure the elements, we will keep track
     // of the largest arrange bounds in the non-virtualizing direction. This value
     // is going to be used in the calculation of the extent.
     double m_maxArrangeBounds{};
+    bool m_areElementsMeasuredRegular{ true };
     int m_totalElementsMeasured{};
+
     static const int BufferSize = 100;
 };

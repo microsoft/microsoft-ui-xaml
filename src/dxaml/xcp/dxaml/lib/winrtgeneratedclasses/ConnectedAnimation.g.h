@@ -53,16 +53,16 @@ namespace DirectUI
         IFACEMETHOD(get_Configuration)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimationConfiguration** ppValue) override;
         IFACEMETHOD(put_Configuration)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::IConnectedAnimationConfiguration* pValue) override;
         IFACEMETHOD(get_IsScaleAnimationEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsScaleAnimationEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsScaleAnimationEnabled)(BOOLEAN value) override;
 
         // Events.
         _Check_return_ HRESULT GetCompletedEventSourceNoRef(_Outptr_ CompletedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Completed)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimation*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Completed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Completed)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(Cancel)() override;
-        IFACEMETHOD(SetAnimationComponent)(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimationComponent component, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
+        IFACEMETHOD(SetAnimationComponent)(ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimationComponent component, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
         IFACEMETHOD(TryStart)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pDestination, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(TryStartWithCoordinatedElements)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pDestination, _In_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::UIElement*>* pCoordinatedElements, _Out_ BOOLEAN* pReturnValue) override;
 

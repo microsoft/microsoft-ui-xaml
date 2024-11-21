@@ -154,8 +154,8 @@ public:
         _In_ IImageAvailableResponse* pResponse
         );
 
-    virtual _Check_return_ HRESULT GetTitle(_Outptr_ HSTRING *output) {*output = nullptr; return S_OK;}
-    virtual _Check_return_ HRESULT GetDescription(_Outptr_ HSTRING *output) {*output = nullptr; return S_OK;}
+    virtual _Check_return_ HRESULT GetTitle(_Outptr_result_maybenull_ HSTRING *output) {*output = nullptr; return S_OK;}
+    virtual _Check_return_ HRESULT GetDescription(_Outptr_result_maybenull_ HSTRING *output) {*output = nullptr; return S_OK;}
 
     wf::Size GetMaxRootSize();
 

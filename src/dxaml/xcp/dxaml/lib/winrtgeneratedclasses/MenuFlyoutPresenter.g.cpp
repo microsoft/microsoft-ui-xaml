@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutPresenterGenerated::get_IsDefaultShadowEnable
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MenuFlyoutPresenter_IsDefaultShadowEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::MenuFlyoutPresenterGenerated::put_IsDefaultShadowEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::MenuFlyoutPresenterGenerated::put_IsDefaultShadowEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MenuFlyoutPresenter_IsDefaultShadowEnabled, value));

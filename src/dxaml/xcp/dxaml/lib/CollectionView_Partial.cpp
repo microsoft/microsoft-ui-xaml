@@ -423,7 +423,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP CollectionView::remove_VectorChanged(
-    _In_ EventRegistrationToken token)
+    EventRegistrationToken token)
 {
     RRETURN(m_vectorChangedHandlers.RemoveHandler(token));
 }
@@ -832,7 +832,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DirectUI::CollectionView::remove_CurrentChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CollectionView::remove_CurrentChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CurrentChangedEventSourceType* pEventSource = NULL;
@@ -865,7 +865,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DirectUI::CollectionView::remove_CurrentChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CollectionView::remove_CurrentChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CurrentChangingEventSourceType* pEventSource = NULL;

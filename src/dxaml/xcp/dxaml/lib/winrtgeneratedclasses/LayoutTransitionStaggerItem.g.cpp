@@ -51,7 +51,7 @@ _Check_return_ HRESULT DirectUI::LayoutTransitionStaggerItemGenerated::get_Index
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LayoutTransitionStaggerItem_Index, pValue));
 }
-_Check_return_ HRESULT DirectUI::LayoutTransitionStaggerItemGenerated::put_Index(_In_ INT value)
+_Check_return_ HRESULT DirectUI::LayoutTransitionStaggerItemGenerated::put_Index(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LayoutTransitionStaggerItem_Index, value));

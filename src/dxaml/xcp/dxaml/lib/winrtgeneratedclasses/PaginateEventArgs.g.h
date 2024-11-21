@@ -38,7 +38,7 @@ namespace DirectUI
         IFACEMETHOD(get_PrintTaskOptions)(_Outptr_result_maybenull_ ABI::Windows::Graphics::Printing::IPrintTaskOptionsCore** ppValue) override;
         _Check_return_ HRESULT put_PrintTaskOptions(_In_opt_ ABI::Windows::Graphics::Printing::IPrintTaskOptionsCore* pValue);
         IFACEMETHOD(get_CurrentPreviewPageNumber)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_CurrentPreviewPageNumber(_In_ INT value);
+        _Check_return_ HRESULT put_CurrentPreviewPageNumber(INT value);
 
         // Methods.
 

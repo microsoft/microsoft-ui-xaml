@@ -16,11 +16,11 @@ namespace DirectUI
     {
         public:
             _Check_return_ IFACEMETHOD(add_Rendering)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-            _Check_return_ IFACEMETHOD(remove_Rendering)(_In_ EventRegistrationToken tToken) override;
+            _Check_return_ IFACEMETHOD(remove_Rendering)(EventRegistrationToken tToken) override;
             _Check_return_ IFACEMETHOD(add_Rendered)(_In_ wf::IEventHandler<xaml_media::RenderedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-            _Check_return_ IFACEMETHOD(remove_Rendered)(_In_ EventRegistrationToken tToken) override;
+            _Check_return_ IFACEMETHOD(remove_Rendered)(EventRegistrationToken tToken) override;
             _Check_return_ IFACEMETHOD(add_SurfaceContentsLost)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-            _Check_return_ IFACEMETHOD(remove_SurfaceContentsLost)(_In_ EventRegistrationToken tToken) override;
+            _Check_return_ IFACEMETHOD(remove_SurfaceContentsLost)(EventRegistrationToken tToken) override;
             _Check_return_ IFACEMETHOD(SuspendRendering)(_In_ BOOLEAN isSuspended) override;
             _Check_return_ IFACEMETHOD(GetCompositorForCurrentThread)(_Outptr_ WUComp::ICompositor** compositor) override;
 

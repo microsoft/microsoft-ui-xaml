@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxTextChangedEventArgsGenerated::get_Reason
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBoxTextChangedEventArgs_Reason, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxTextChangedEventArgsGenerated::put_Reason(_In_ ABI::Microsoft::UI::Xaml::Controls::AutoSuggestionBoxTextChangeReason value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxTextChangedEventArgsGenerated::put_Reason(ABI::Microsoft::UI::Xaml::Controls::AutoSuggestionBoxTextChangeReason value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBoxTextChangedEventArgs_Reason, value));

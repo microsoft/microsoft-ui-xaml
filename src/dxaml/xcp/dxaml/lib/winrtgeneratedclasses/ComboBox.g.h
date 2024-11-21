@@ -99,25 +99,25 @@ namespace DirectUI
         IFACEMETHOD(get_Header)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Header)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_HeaderPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement* pValue) FEATURE_HEADERPLACEMENT_OVERRIDE;
-        IFACEMETHOD(put_HeaderPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
+        IFACEMETHOD(put_HeaderPlacement)(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) override;
         IFACEMETHOD(get_InputValidationKind)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(put_InputValidationKind)(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(put_InputValidationKind)(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_InputValidationMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(put_InputValidationMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(put_InputValidationMode)(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_IsDropDownOpen)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsDropDownOpen)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsDropDownOpen)(BOOLEAN value) override;
         IFACEMETHOD(get_IsEditable)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsEditable)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsEditable)(BOOLEAN value) override;
         IFACEMETHOD(get_IsSelectionBoxHighlighted)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_IsSelectionBoxHighlighted(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsSelectionBoxHighlighted(BOOLEAN value);
         IFACEMETHOD(get_IsTextSearchEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsTextSearchEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsTextSearchEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_LightDismissOverlayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode* pValue) override;
-        IFACEMETHOD(put_LightDismissOverlayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
+        IFACEMETHOD(put_LightDismissOverlayMode)(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
         IFACEMETHOD(get_MaxDropDownHeight)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_MaxDropDownHeight)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_MaxDropDownHeight)(DOUBLE value) override;
         IFACEMETHOD(get_PlaceholderForeground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_PlaceholderForeground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_PlaceholderText)(_Out_ HSTRING* pValue) override;
@@ -127,7 +127,7 @@ namespace DirectUI
         IFACEMETHOD(get_SelectionBoxItemTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         _Check_return_ HRESULT put_SelectionBoxItemTemplate(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue);
         IFACEMETHOD(get_SelectionChangedTrigger)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ComboBoxSelectionChangedTrigger* pValue) override;
-        IFACEMETHOD(put_SelectionChangedTrigger)(_In_ ABI::Microsoft::UI::Xaml::Controls::ComboBoxSelectionChangedTrigger value) override;
+        IFACEMETHOD(put_SelectionChangedTrigger)(ABI::Microsoft::UI::Xaml::Controls::ComboBoxSelectionChangedTrigger value) override;
         IFACEMETHOD(get_TemplateSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IComboBoxTemplateSettings** ppValue) override;
         _Check_return_ HRESULT put_TemplateSettings(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IComboBoxTemplateSettings* pValue);
         IFACEMETHOD(get_Text)(_Out_ HSTRING* pValue) override;
@@ -143,22 +143,22 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetDropDownClosedEventSourceNoRef(_Outptr_ DropDownClosedEventSourceType** ppEventSource);
         IFACEMETHOD(add_DropDownClosed)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DropDownClosed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DropDownClosed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDropDownOpenedEventSourceNoRef(_Outptr_ DropDownOpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_DropDownOpened)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DropDownOpened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DropDownOpened)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
         _Check_return_ HRESULT GetHasValidationErrorsChangedEventSourceNoRef(_Outptr_ HasValidationErrorsChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_HasValidationErrorsChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl*, ABI::Microsoft::UI::Xaml::Controls::HasValidationErrorsChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(remove_HasValidationErrorsChanged)(_In_ EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(remove_HasValidationErrorsChanged)(EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
 #endif
         _Check_return_ HRESULT GetTextSubmittedEventSourceNoRef(_Outptr_ TextSubmittedEventSourceType** ppEventSource);
         IFACEMETHOD(add_TextSubmitted)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ComboBox*, ABI::Microsoft::UI::Xaml::Controls::ComboBoxTextSubmittedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_TextSubmitted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_TextSubmitted)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
         _Check_return_ HRESULT GetValidationErrorEventSourceNoRef(_Outptr_ ValidationErrorEventSourceType** ppEventSource);
         IFACEMETHOD(add_ValidationError)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl*, ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(remove_ValidationError)(_In_ EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(remove_ValidationError)(EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
 #endif
 
         // Methods.

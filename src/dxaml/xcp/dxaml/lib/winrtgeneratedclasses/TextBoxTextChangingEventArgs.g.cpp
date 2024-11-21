@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::TextBoxTextChangingEventArgs::get_IsContentChanging(_Ou
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::TextBoxTextChangingEventArgs::put_IsContentChanging(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TextBoxTextChangingEventArgs::put_IsContentChanging(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

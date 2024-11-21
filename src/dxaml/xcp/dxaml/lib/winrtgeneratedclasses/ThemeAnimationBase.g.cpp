@@ -50,7 +50,7 @@ HRESULT DirectUI::ThemeAnimationBaseGenerated::QueryInterfaceImpl(_In_ REFIID ii
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::ThemeAnimationBaseGenerated::CreateTimelinesInternal(_In_ BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection)
+IFACEMETHODIMP DirectUI::ThemeAnimationBaseGenerated::CreateTimelinesInternal(BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -69,7 +69,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::ThemeAnimationBaseGenerated::CreateTimelinesInternalProtected(_In_ BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection)
+_Check_return_ HRESULT DirectUI::ThemeAnimationBaseGenerated::CreateTimelinesInternalProtected(BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Media::Animation::IThemeAnimationBaseOverrides* pVirtuals = NULL;

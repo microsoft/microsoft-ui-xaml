@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ClosedLength)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ClosedLength)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ClosedLength)(DOUBLE value) override;
         IFACEMETHOD(get_ClosedTarget)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_ClosedTarget)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_ClosedTargetName)(_Out_ HSTRING* pValue) override;
@@ -59,13 +59,13 @@ namespace DirectUI
         IFACEMETHOD(get_ContentTargetName)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_ContentTargetName)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_ContentTranslationDirection)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection* pValue) override;
-        IFACEMETHOD(put_ContentTranslationDirection)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value) override;
+        IFACEMETHOD(put_ContentTranslationDirection)(ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value) override;
         IFACEMETHOD(get_ContentTranslationOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ContentTranslationOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ContentTranslationOffset)(DOUBLE value) override;
         IFACEMETHOD(get_OffsetFromCenter)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_OffsetFromCenter)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_OffsetFromCenter)(DOUBLE value) override;
         IFACEMETHOD(get_OpenedLength)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_OpenedLength)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_OpenedLength)(DOUBLE value) override;
         IFACEMETHOD(get_OpenedTarget)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_OpenedTarget)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_OpenedTargetName)(_Out_ HSTRING* pValue) override;

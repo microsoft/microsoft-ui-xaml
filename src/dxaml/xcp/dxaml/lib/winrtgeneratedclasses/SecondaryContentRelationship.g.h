@@ -50,9 +50,9 @@ namespace DirectUI
         // Properties.
         _Check_return_ HRESULT get_Curves(_Outptr_result_maybenull_ DirectUI::ParametricCurveCollection** ppValue);
         _Check_return_ HRESULT get_IsDescendant(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsDescendant(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsDescendant(BOOLEAN value);
         _Check_return_ HRESULT get_ShouldTargetClip(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_ShouldTargetClip(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_ShouldTargetClip(BOOLEAN value);
 
         // Events.
 
@@ -108,10 +108,10 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(CreateStickyHeaderRelationship)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPanelObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pPanelTransform, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeaderTransform, _In_ DOUBLE groupTopY, _In_ DOUBLE groupBottomY, _In_ DOUBLE headerHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult) override;
-        IFACEMETHOD(CreateClipTransformRelationship)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pClipOwner, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pClipTransform, _In_ DOUBLE listExtentHeight, _In_ DOUBLE listViewportHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult) override;
+        IFACEMETHOD(CreateStickyHeaderRelationship)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPanelObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pPanelTransform, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeaderTransform, DOUBLE groupTopY, DOUBLE groupBottomY, DOUBLE headerHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult) override;
+        IFACEMETHOD(CreateClipTransformRelationship)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pClipOwner, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pClipTransform, DOUBLE listExtentHeight, DOUBLE listViewportHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult) override;
         IFACEMETHOD(CreateParallaxRelationship)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pHeaderObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeaderTransform, _In_ UINT primaryOffsetsCount, _In_reads_(primaryOffsetsCount) DOUBLE primaryOffsets[], _In_ UINT secondaryOffsetsCount, _In_reads_(secondaryOffsetsCount) DOUBLE secondaryOffsets[], _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult) override;
-        IFACEMETHOD(CreateStaticElementRelationship)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pStaticElement, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElementTransform, _In_ BOOLEAN isHorizontallyStatic, _In_ BOOLEAN isInverted, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult) override;
+        IFACEMETHOD(CreateStaticElementRelationship)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pStaticElement, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElementTransform, BOOLEAN isHorizontallyStatic, BOOLEAN isInverted, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult) override;
 
         // Static events.
 
@@ -129,9 +129,9 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT CreateStickyHeaderRelationshipImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPanelObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pPanelTransform, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeaderTransform, _In_ DOUBLE groupTopY, _In_ DOUBLE groupBottomY, _In_ DOUBLE headerHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult); 
-         _Check_return_ HRESULT CreateClipTransformRelationshipImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pClipOwner, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pClipTransform, _In_ DOUBLE listExtentHeight, _In_ DOUBLE listViewportHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult); 
+         _Check_return_ HRESULT CreateStickyHeaderRelationshipImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPanelObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pPanelTransform, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeaderTransform, DOUBLE groupTopY, DOUBLE groupBottomY, DOUBLE headerHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult); 
+         _Check_return_ HRESULT CreateClipTransformRelationshipImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pClipOwner, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pClipTransform, DOUBLE listExtentHeight, DOUBLE listViewportHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult); 
          _Check_return_ HRESULT CreateParallaxRelationshipImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pHeaderObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeaderTransform, _In_ UINT primaryOffsetsCount, _In_reads_(primaryOffsetsCount) DOUBLE primaryOffsets[], _In_ UINT secondaryOffsetsCount, _In_reads_(secondaryOffsetsCount) DOUBLE secondaryOffsets[], _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult); 
-         _Check_return_ HRESULT CreateStaticElementRelationshipImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pStaticElement, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElementTransform, _In_ BOOLEAN isHorizontallyStatic, _In_ BOOLEAN isInverted, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult); 
+         _Check_return_ HRESULT CreateStaticElementRelationshipImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pStaticElement, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElementTransform, BOOLEAN isHorizontallyStatic, BOOLEAN isInverted, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult); 
     };
 }

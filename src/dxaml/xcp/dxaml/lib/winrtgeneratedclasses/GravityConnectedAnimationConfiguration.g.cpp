@@ -51,7 +51,7 @@ IFACEMETHODIMP DirectUI::GravityConnectedAnimationConfigurationGenerated::get_Is
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::GravityConnectedAnimationConfigurationGenerated::put_IsShadowEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::GravityConnectedAnimationConfigurationGenerated::put_IsShadowEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     

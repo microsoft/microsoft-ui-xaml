@@ -175,7 +175,7 @@ namespace DirectUI
                     _Out_ EventRegistrationToken* ptToken) override;
 
             IFACEMETHOD(remove_IsEnabledChanged)(
-                    _In_ EventRegistrationToken tToken) override;
+                    EventRegistrationToken tToken) override;
 
             // Show the context menu if the ContextFlyout property has been set for the control
             _Check_return_ HRESULT ShowContextFlyout(

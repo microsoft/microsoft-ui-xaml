@@ -222,6 +222,9 @@ Cleanup:
 _Check_return_ HRESULT
 CItemsPresenter::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
+    desiredSize.width = 0;
+    desiredSize.height = 0;
+
     if (HasManagedPeer())
     {
         IFC_RETURN(FxCallbacks::FrameworkElement_MeasureOverride(

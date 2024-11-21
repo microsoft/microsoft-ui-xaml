@@ -118,7 +118,7 @@ void SplitButton::OnVisualPropertyChanged(const winrt::DependencyObject& sender,
 void SplitButton::UpdateVisualStates(bool useTransitions)
 {
     // place the secondary button
-    if (m_lastPointerDeviceType == winrt::PointerDeviceType::Touch || m_isKeyDown)
+    if (m_isKeyDown)
     {
         winrt::VisualStateManager::GoToState(*this, L"SecondaryButtonSpan", useTransitions);
     }

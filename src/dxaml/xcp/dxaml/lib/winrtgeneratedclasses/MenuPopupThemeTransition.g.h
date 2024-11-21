@@ -44,11 +44,11 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_ClosedRatio(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_ClosedRatio(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_ClosedRatio(DOUBLE value);
         _Check_return_ HRESULT get_Direction(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection* pValue);
-        _Check_return_ HRESULT put_Direction(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value);
+        _Check_return_ HRESULT put_Direction(ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value);
         _Check_return_ HRESULT get_OpenedLength(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_OpenedLength(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OpenedLength(DOUBLE value);
 
         // Events.
 

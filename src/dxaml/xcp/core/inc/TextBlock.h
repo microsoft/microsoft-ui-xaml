@@ -214,7 +214,7 @@ public:
     _Check_return_ HRESULT GetTextElementBoundRect(
         _In_ CTextElement* pElement,
         _Out_ XRECTF* pRectFocus,
-        _In_ bool ignoreClip
+        bool ignoreClip
         );
 
     _Check_return_ HRESULT HitTestLink(

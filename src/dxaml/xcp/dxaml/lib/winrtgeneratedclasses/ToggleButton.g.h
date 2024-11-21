@@ -54,20 +54,20 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsChecked)(_Out_ ABI::Windows::Foundation::IReference<bool>** ppValue) override;
-        IFACEMETHOD(put_IsChecked)(_In_ ABI::Windows::Foundation::IReference<bool>* pValue) override;
+        IFACEMETHOD(put_IsChecked)(ABI::Windows::Foundation::IReference<bool>* pValue) override;
         IFACEMETHOD(get_IsThreeState)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsThreeState)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsThreeState)(BOOLEAN value) override;
 
         // Events.
         _Check_return_ HRESULT GetCheckedEventSourceNoRef(_Outptr_ CheckedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Checked)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Checked)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Checked)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetIndeterminateEventSourceNoRef(_Outptr_ IndeterminateEventSourceType** ppEventSource);
         IFACEMETHOD(add_Indeterminate)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Indeterminate)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Indeterminate)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetUncheckedEventSourceNoRef(_Outptr_ UncheckedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Unchecked)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Unchecked)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Unchecked)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(OnToggle)() override;

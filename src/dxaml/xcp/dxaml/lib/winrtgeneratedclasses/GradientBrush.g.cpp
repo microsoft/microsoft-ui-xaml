@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::GradientBrush::get_ColorInterpolationMode(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GradientBrush_ColorInterpolationMode, pValue));
 }
-IFACEMETHODIMP DirectUI::GradientBrush::put_ColorInterpolationMode(_In_ ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode value)
+IFACEMETHODIMP DirectUI::GradientBrush::put_ColorInterpolationMode(ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GradientBrush_ColorInterpolationMode, value));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::GradientBrush::get_MappingMode(_Out_ ABI::Microsoft::UI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GradientBrush_MappingMode, pValue));
 }
-IFACEMETHODIMP DirectUI::GradientBrush::put_MappingMode(_In_ ABI::Microsoft::UI::Xaml::Media::BrushMappingMode value)
+IFACEMETHODIMP DirectUI::GradientBrush::put_MappingMode(ABI::Microsoft::UI::Xaml::Media::BrushMappingMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GradientBrush_MappingMode, value));
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::GradientBrush::get_SpreadMethod(_Out_ ABI::Microsoft::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GradientBrush_SpreadMethod, pValue));
 }
-IFACEMETHODIMP DirectUI::GradientBrush::put_SpreadMethod(_In_ ABI::Microsoft::UI::Xaml::Media::GradientSpreadMethod value)
+IFACEMETHODIMP DirectUI::GradientBrush::put_SpreadMethod(ABI::Microsoft::UI::Xaml::Media::GradientSpreadMethod value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GradientBrush_SpreadMethod, value));

@@ -121,7 +121,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT ClearTextBoxQueryButtonIcon();
 
-        _Check_return_ HRESULT SubmitQuery(_In_ IInspectable* pChosenSuggestion);
+        _Check_return_ HRESULT SubmitQuery(_In_opt_ IInspectable* pChosenSuggestion);
 
         _Check_return_ HRESULT UpdateText(_In_ HSTRING value);
 

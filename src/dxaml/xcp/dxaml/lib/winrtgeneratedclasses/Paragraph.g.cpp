@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::ParagraphGenerated::get_TextIndent(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Paragraph_TextIndent, pValue));
 }
-IFACEMETHODIMP DirectUI::ParagraphGenerated::put_TextIndent(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ParagraphGenerated::put_TextIndent(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Paragraph_TextIndent, value));

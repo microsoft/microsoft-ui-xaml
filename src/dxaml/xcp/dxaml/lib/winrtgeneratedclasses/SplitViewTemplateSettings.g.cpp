@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::SplitViewTemplateSettings::get_CompactPaneGridLength(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_CompactPaneGridLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_CompactPaneGridLength(_In_ ABI::Microsoft::UI::Xaml::GridLength value)
+_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_CompactPaneGridLength(ABI::Microsoft::UI::Xaml::GridLength value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_CompactPaneGridLength, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::SplitViewTemplateSettings::get_NegativeOpenPaneLength(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_NegativeOpenPaneLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_NegativeOpenPaneLength(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_NegativeOpenPaneLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_NegativeOpenPaneLength, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::SplitViewTemplateSettings::get_NegativeOpenPaneLengthMi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_NegativeOpenPaneLengthMinusCompactLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_NegativeOpenPaneLengthMinusCompactLength(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_NegativeOpenPaneLengthMinusCompactLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_NegativeOpenPaneLengthMinusCompactLength, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::SplitViewTemplateSettings::get_OpenPaneGridLength(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_OpenPaneGridLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_OpenPaneGridLength(_In_ ABI::Microsoft::UI::Xaml::GridLength value)
+_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_OpenPaneGridLength(ABI::Microsoft::UI::Xaml::GridLength value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_OpenPaneGridLength, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::SplitViewTemplateSettings::get_OpenPaneLength(_Out_ DOU
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_OpenPaneLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_OpenPaneLength(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_OpenPaneLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_OpenPaneLength, value));
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::SplitViewTemplateSettings::get_OpenPaneLengthMinusCompa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_OpenPaneLengthMinusCompactLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_OpenPaneLengthMinusCompactLength(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::SplitViewTemplateSettings::put_OpenPaneLengthMinusCompactLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitViewTemplateSettings_OpenPaneLengthMinusCompactLength, value));

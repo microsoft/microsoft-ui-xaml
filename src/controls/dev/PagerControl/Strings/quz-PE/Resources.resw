@@ -126,7 +126,7 @@
     <comment>Automation name and tooltip text for the last page button</comment>
   </data>
   <data name="PagerControlNextPageButtonText" xml:space="preserve">
-    <value>Qatiq rapi</value>
+    <value>Qatiqnin rapi</value>
     <comment>Automation name and tooltip text for the next page button</comment>
   </data>
   <data name="PagerControlPageText" xml:space="preserve">
@@ -138,11 +138,11 @@
     <comment>Text indicating "Page" 2 of 4</comment>
   </data>
   <data name="PagerControlPreviousPageButtonText" xml:space="preserve">
-    <value>Ñawpaq rapi</value>
+    <value>Ñawpaq kaq rapi</value>
     <comment>Automation name and tooltip text for the previous page button</comment>
   </data>
   <data name="PagerControlSuffixText" xml:space="preserve">
-    <value>napa</value>
+    <value>kaypa</value>
     <comment>Text indicating Page 2 "of" 4</comment>
   </data>
 </root>

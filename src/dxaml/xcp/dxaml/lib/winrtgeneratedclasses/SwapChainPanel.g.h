@@ -55,10 +55,10 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetCompositionScaleChangedEventSourceNoRef(_Outptr_ CompositionScaleChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_CompositionScaleChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SwapChainPanel*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_CompositionScaleChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_CompositionScaleChanged)(EventRegistrationToken token) override;
 
         // Methods.
-        IFACEMETHOD(CreateCoreIndependentInputSource)(_In_ ABI::Microsoft::UI::Input::InputPointerSourceDeviceKinds deviceKinds, _Outptr_ ABI::Microsoft::UI::Input::IInputPointerSource** ppReturnValue) override;
+        IFACEMETHOD(CreateCoreIndependentInputSource)(ABI::Microsoft::UI::Input::InputPointerSourceDeviceKinds deviceKinds, _Outptr_ ABI::Microsoft::UI::Input::IInputPointerSource** ppReturnValue) override;
 
 
     protected:

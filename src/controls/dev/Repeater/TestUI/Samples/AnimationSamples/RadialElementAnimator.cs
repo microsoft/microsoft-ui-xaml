@@ -16,7 +16,7 @@ using System.Linq;
 
 namespace MUXControlsTestApp.Samples
 {
-    public class RadialItemCollectionTransitionProvider : ItemCollectionTransitionProvider
+    public partial class RadialItemCollectionTransitionProvider : ItemCollectionTransitionProvider
     {
         private const double DefaultAnimationDurationInMs = 600.0;
 

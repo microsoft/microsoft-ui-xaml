@@ -48,13 +48,13 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsClosed)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsClosed)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsClosed)(BOOLEAN value) override;
         IFACEMETHOD(get_IsFilled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsFilled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsFilled)(BOOLEAN value) override;
         IFACEMETHOD(get_Segments)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathSegment*>** ppValue) override;
         IFACEMETHOD(put_Segments)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::PathSegment*>* pValue) override;
         IFACEMETHOD(get_StartPoint)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_StartPoint)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_StartPoint)(ABI::Windows::Foundation::Point value) override;
 
         // Events.
 

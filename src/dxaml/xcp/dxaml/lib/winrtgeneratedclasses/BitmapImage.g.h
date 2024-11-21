@@ -52,15 +52,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_AutoPlay)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AutoPlay)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AutoPlay)(BOOLEAN value) override;
         IFACEMETHOD(get_CreateOptions)(_Out_ ABI::Microsoft::UI::Xaml::Media::Imaging::BitmapCreateOptions* pValue) override;
-        IFACEMETHOD(put_CreateOptions)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::BitmapCreateOptions value) override;
+        IFACEMETHOD(put_CreateOptions)(ABI::Microsoft::UI::Xaml::Media::Imaging::BitmapCreateOptions value) override;
         IFACEMETHOD(get_DecodePixelHeight)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_DecodePixelHeight)(_In_ INT value) override;
+        IFACEMETHOD(put_DecodePixelHeight)(INT value) override;
         IFACEMETHOD(get_DecodePixelType)(_Out_ ABI::Microsoft::UI::Xaml::Media::Imaging::DecodePixelType* pValue) override;
-        IFACEMETHOD(put_DecodePixelType)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::DecodePixelType value) override;
+        IFACEMETHOD(put_DecodePixelType)(ABI::Microsoft::UI::Xaml::Media::Imaging::DecodePixelType value) override;
         IFACEMETHOD(get_DecodePixelWidth)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_DecodePixelWidth)(_In_ INT value) override;
+        IFACEMETHOD(put_DecodePixelWidth)(INT value) override;
         IFACEMETHOD(get_IsAnimatedBitmap)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_IsPlaying)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_UriSource)(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue) override;
@@ -69,13 +69,13 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetDownloadProgressEventSourceNoRef(_Outptr_ DownloadProgressEventSourceType** ppEventSource);
         IFACEMETHOD(add_DownloadProgress)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IDownloadProgressEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DownloadProgress)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DownloadProgress)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetImageFailedEventSourceNoRef(_Outptr_ ImageFailedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ImageFailed)(_In_ ABI::Microsoft::UI::Xaml::IExceptionRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ImageFailed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ImageFailed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetImageOpenedEventSourceNoRef(_Outptr_ ImageOpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ImageOpened)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ImageOpened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ImageOpened)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(Play)() override;

@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::FocusMovementResult::get_Succeeded(_Out_ BOOLEAN* pValu
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::FocusMovementResult::put_Succeeded(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::FocusMovementResult::put_Succeeded(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

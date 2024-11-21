@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::DragDeltaEventArgsGenerated::get_HorizontalChange(_Out_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragDeltaEventArgsGenerated::put_HorizontalChange(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::DragDeltaEventArgsGenerated::put_HorizontalChange(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -74,7 +74,7 @@ IFACEMETHODIMP DirectUI::DragDeltaEventArgsGenerated::get_VerticalChange(_Out_ D
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragDeltaEventArgsGenerated::put_VerticalChange(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::DragDeltaEventArgsGenerated::put_VerticalChange(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -103,7 +103,7 @@ HRESULT DirectUI::DragDeltaEventArgsFactory::QueryInterfaceImpl(_In_ REFIID iid,
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::DragDeltaEventArgsFactory::CreateInstanceWithHorizontalChangeAndVerticalChange(_In_ DOUBLE horizontalChange, _In_ DOUBLE verticalChange, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs** ppInstance)
+IFACEMETHODIMP DirectUI::DragDeltaEventArgsFactory::CreateInstanceWithHorizontalChangeAndVerticalChange(DOUBLE horizontalChange, DOUBLE verticalChange, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs** ppInstance)
 {
     HRESULT hr = S_OK;
     

@@ -80,7 +80,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_BackgroundSizing(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_BackgroundSizing, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_BackgroundSizing(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_BackgroundSizing(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_BackgroundSizing, value));
@@ -98,7 +98,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_BorderThickness(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_BorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_BorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_BorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_BorderThickness, value));
@@ -107,7 +107,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_CharacterSpacing(_Out_ INT* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_CharacterSpacing, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_CharacterSpacing(_In_ INT value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_CharacterSpacing(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_CharacterSpacing, value));
@@ -116,7 +116,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_CornerRadius(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_CornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_CornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_CornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_CornerRadius, value));
@@ -143,7 +143,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_ElementSoundMode(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_ElementSoundMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_ElementSoundMode(_In_ ABI::Microsoft::UI::Xaml::ElementSoundMode value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_ElementSoundMode(ABI::Microsoft::UI::Xaml::ElementSoundMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_ElementSoundMode, value));
@@ -169,7 +169,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_FontSize(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_FontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_FontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_FontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_FontSize, value));
@@ -178,7 +178,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_FontStretch(_Out_ ABI::Windows::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_FontStretch, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_FontStretch(_In_ ABI::Windows::UI::Text::FontStretch value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_FontStretch(ABI::Windows::UI::Text::FontStretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_FontStretch, value));
@@ -187,7 +187,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_FontStyle(_Out_ ABI::Windows::UI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_FontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_FontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_FontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_FontStyle, value));
@@ -196,7 +196,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_FontWeight(_Out_ ABI::Windows::UI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_FontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_FontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_FontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_FontWeight, value));
@@ -214,7 +214,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_HorizontalContentAlignment(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_HorizontalContentAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_HorizontalContentAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_HorizontalContentAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_HorizontalContentAlignment, value));
@@ -223,7 +223,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_IsEnabled(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_IsEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_IsEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_IsEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_IsEnabled, value));
@@ -232,7 +232,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_IsFocusEngaged(_Out_ BOOLEAN* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_IsFocusEngaged, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_IsFocusEngaged(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_IsFocusEngaged(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_IsFocusEngaged, value));
@@ -241,7 +241,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_IsFocusEngagementEnabled(_Out_ BO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_IsFocusEngagementEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_IsFocusEngagementEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_IsFocusEngagementEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_IsFocusEngagementEnabled, value));
@@ -250,7 +250,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_IsTextScaleFactorEnabled(_Out_ BO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_IsTextScaleFactorEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_IsTextScaleFactorEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_IsTextScaleFactorEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_IsTextScaleFactorEnabled, value));
@@ -259,7 +259,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_Padding(_Out_ ABI::Microsoft::UI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_Padding, value));
@@ -268,7 +268,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_RequiresPointer(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_RequiresPointer, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_RequiresPointer(_In_ ABI::Microsoft::UI::Xaml::Controls::RequiresPointer value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_RequiresPointer(ABI::Microsoft::UI::Xaml::Controls::RequiresPointer value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_RequiresPointer, value));
@@ -277,7 +277,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_TabNavigation(_Out_ ABI::Microsof
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_TabNavigation, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_TabNavigation(_In_ ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_TabNavigation(ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_TabNavigation, value));
@@ -303,7 +303,7 @@ IFACEMETHODIMP DirectUI::ControlGenerated::get_VerticalContentAlignment(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Control_VerticalContentAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlGenerated::put_VerticalContentAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::ControlGenerated::put_VerticalContentAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Control_VerticalContentAlignment, value));
@@ -346,7 +346,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ControlGenerated::remove_FocusDisengaged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ControlGenerated::remove_FocusDisengaged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     FocusDisengagedEventSourceType* pEventSource = nullptr;
@@ -401,7 +401,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ControlGenerated::remove_FocusEngaged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ControlGenerated::remove_FocusEngaged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     FocusEngagedEventSourceType* pEventSource = nullptr;
@@ -456,7 +456,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::ControlGenerated::remove_InheritedPropertyChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::ControlGenerated::remove_InheritedPropertyChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     InheritedPropertyChangedEventSourceType* pEventSource = nullptr;
@@ -1927,7 +1927,7 @@ _Check_return_ HRESULT DirectUI::ControlFactory::GetIsTemplateFocusTargetStatic(
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Control_IsTemplateFocusTarget, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::ControlFactory::SetIsTemplateFocusTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ControlFactory::SetIsTemplateFocusTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Control_IsTemplateFocusTarget, value));
 }
@@ -1944,7 +1944,7 @@ IFACEMETHODIMP DirectUI::ControlFactory::GetIsTemplateFocusTarget(_In_ ABI::Micr
     RRETURN(GetIsTemplateFocusTargetStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::ControlFactory::SetIsTemplateFocusTarget(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ControlFactory::SetIsTemplateFocusTarget(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, BOOLEAN value)
 {
     RRETURN(SetIsTemplateFocusTargetStatic(pElement, value));
 }
@@ -1953,7 +1953,7 @@ _Check_return_ HRESULT DirectUI::ControlFactory::GetIsTemplateKeyTipTargetStatic
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Control_IsTemplateKeyTipTarget, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::ControlFactory::SetIsTemplateKeyTipTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ControlFactory::SetIsTemplateKeyTipTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Control_IsTemplateKeyTipTarget, value));
 }
@@ -1970,7 +1970,7 @@ IFACEMETHODIMP DirectUI::ControlFactory::GetIsTemplateKeyTipTarget(_In_ ABI::Mic
     RRETURN(GetIsTemplateKeyTipTargetStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::ControlFactory::SetIsTemplateKeyTipTarget(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ControlFactory::SetIsTemplateKeyTipTarget(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetIsTemplateKeyTipTargetStatic(pElement, value));
 }

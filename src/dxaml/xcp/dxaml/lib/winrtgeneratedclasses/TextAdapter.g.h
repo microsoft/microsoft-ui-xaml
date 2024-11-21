@@ -58,7 +58,7 @@ namespace DirectUI
         IFACEMETHOD(GetSelection)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider*** ppReturnValue) override;
         IFACEMETHOD(GetVisibleRanges)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider*** ppReturnValue) override;
         IFACEMETHOD(RangeFromChild)(_In_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple* pChildElement, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue) override;
-        IFACEMETHOD(RangeFromPoint)(_In_ ABI::Windows::Foundation::Point screenLocation, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue) override;
+        IFACEMETHOD(RangeFromPoint)(ABI::Windows::Foundation::Point screenLocation, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue) override;
 
 
     protected:

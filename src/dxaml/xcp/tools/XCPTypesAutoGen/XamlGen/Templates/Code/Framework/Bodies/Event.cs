@@ -121,7 +121,7 @@ namespace XamlGen.Templates.Code.Framework.Bodies
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.DeclaringClass.GeneratedClassFullName)));
             this.Write("::");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.RemoveName));
-            this.Write("(_In_ EventRegistrationToken tToken)\r\n{\r\n    HRESULT hr = S_OK;\r\n    ");
+            this.Write("(EventRegistrationToken tToken)\r\n{\r\n    HRESULT hr = S_OK;\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.EventSourceTypeName));
             this.Write("* pEventSource = nullptr;\r\n    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(AsCppType(Model.EventHandlerType.AbiFullName)));

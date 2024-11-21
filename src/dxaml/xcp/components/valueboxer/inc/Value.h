@@ -328,7 +328,7 @@ namespace DirectUI
     {
     public:
 
-        static _Check_return_ HRESULT AreEqual(_In_ IInspectable* oldValue, _In_ IInspectable* newValue, _Out_ bool* areEqual) noexcept;
+        static _Check_return_ HRESULT AreEqual(_In_opt_ IInspectable* oldValue, _In_opt_ IInspectable* newValue, _Out_ bool* areEqual) noexcept;
 
         __inline static bool IsNumericPropertyType(_In_ wf::PropertyType valueType)
         {

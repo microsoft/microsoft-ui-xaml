@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::WindowActivatedEventArgs::get_Handled(_Out_ BOOLEAN* pV
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowActivatedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::WindowActivatedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::WindowActivatedEventArgs::get_WindowActivationState(_Ou
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::WindowActivatedEventArgs::put_WindowActivationState(_In_ ABI::Microsoft::UI::Xaml::WindowActivationState value)
+_Check_return_ HRESULT DirectUI::WindowActivatedEventArgs::put_WindowActivationState(ABI::Microsoft::UI::Xaml::WindowActivationState value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

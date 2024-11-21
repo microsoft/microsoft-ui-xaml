@@ -19,12 +19,26 @@ static const double c_epsilon = 0.0001;
 static const float c_ThresholdValue = 100.0;
 static const float c_MinimumCloseVelocity = 31.0;
 
-static thread_local winrt::weak_ref<SwipeControl> s_lastInteractedWithSwipeControl = nullptr;
+static thread_local winrt::weak_ref<winrt::SwipeControl> s_lastInteractedWithSwipeControl = nullptr;
+
+GlobalDependencyProperty SwipeControl::s_VisualInteractionSourceProperty{ nullptr };
 
 SwipeControl::SwipeControl()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_SwipeControl);
     SetDefaultStyleKey(this);
+
+    if (!s_VisualInteractionSourceProperty)
+    {
+        s_VisualInteractionSourceProperty =
+            InitializeDependencyProperty(
+                L"VisualInteractionSource",
+                winrt::name_of<winrt::VisualInteractionSource>(),
+                winrt::name_of<winrt::UIElement>(),
+                true /* isAttached */,
+                nullptr,
+                nullptr);
+    }
 }
 
 SwipeControl::~SwipeControl()
@@ -33,7 +47,7 @@ SwipeControl::~SwipeControl()
 
     if (auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get())
     {
-        if (lastInteractedWithSwipeControl.get() == this)
+        if (lastInteractedWithSwipeControl == static_cast<winrt::SwipeControl>(*this))
         {
             s_lastInteractedWithSwipeControl = nullptr;
             if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
@@ -323,13 +337,19 @@ void SwipeControl::ValuesChanged(
     SWIPECONTROL_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
     auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get();
-    if (m_isInteracting && (!lastInteractedWithSwipeControl || lastInteractedWithSwipeControl.get() != this))
+    if (m_isInteracting && (!lastInteractedWithSwipeControl || lastInteractedWithSwipeControl != static_cast<winrt::SwipeControl>(*this)))
     {
         if (lastInteractedWithSwipeControl)
         {
-            lastInteractedWithSwipeControl->CloseIfNotRemainOpenExecuteItem();
+            SwipeControl* rawLastInteractedWithSwipeControl = winrt::get_self<SwipeControl>(lastInteractedWithSwipeControl);
+            rawLastInteractedWithSwipeControl->CloseIfNotRemainOpenExecuteItem();
         }
-        s_lastInteractedWithSwipeControl = get_weak();
+
+        // Previously we used get_weak() here, but we found the potential to hit a 
+        // refcounting problem where in some scenarios the outer object gets
+        // an extra Release() in this process.
+        auto weakThis {winrt::make_weak(static_cast<winrt::SwipeControl>(*this))};
+        s_lastInteractedWithSwipeControl = weakThis;
 
         if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
         {
@@ -371,7 +391,7 @@ winrt::SwipeControl SwipeControl::GetLastInteractedWithSwipeControl()
 {
     if (auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get())
     {
-        return *lastInteractedWithSwipeControl;
+        return lastInteractedWithSwipeControl;
     }
     return nullptr;
 }
@@ -797,7 +817,19 @@ void SwipeControl::InitializeInteractionTracker()
         m_compositor.set(winrt::ElementCompositionPreview::GetElementVisual(m_rootGrid.get()).Compositor());
     }
 
-    m_visualInteractionSource.set(winrt::VisualInteractionSource::Create(FindVisualInteractionSourceVisual()));
+    const auto element = FindVisualInteractionSourceElement();
+
+    if (auto existingVisualInteractionSource = element.GetValue(s_VisualInteractionSourceProperty))
+    {
+        m_visualInteractionSource.set(existingVisualInteractionSource.as<winrt::VisualInteractionSource>());
+    }
+    else
+    {
+        auto visualInteractionSource = winrt::VisualInteractionSource::Create(winrt::ElementCompositionPreview::GetElementVisual(element));
+        m_visualInteractionSource.set(visualInteractionSource);
+        element.SetValue(s_VisualInteractionSourceProperty, visualInteractionSource);
+    }
+
     m_visualInteractionSource.get().IsPositionXRailsEnabled(m_isHorizontal);
     m_visualInteractionSource.get().IsPositionYRailsEnabled(!m_isHorizontal);
     m_visualInteractionSource.get().ManipulationRedirectionMode(winrt::VisualInteractionSourceRedirectionMode::CapableTouchpadOnly);
@@ -959,7 +991,7 @@ void SwipeControl::ConfigurePositionInertiaRestingValues()
     }
 }
 
-winrt::Visual SwipeControl::FindVisualInteractionSourceVisual()
+winrt::UIElement SwipeControl::FindVisualInteractionSourceElement()
 {
     winrt::Visual visualInteractionSource = nullptr;
 
@@ -975,20 +1007,14 @@ winrt::Visual SwipeControl::FindVisualInteractionSourceVisual()
     {
         if (auto lvip = current.try_as<winrt::ListViewItemPresenter>())
         {
-            visualInteractionSource = winrt::ElementCompositionPreview::GetElementVisual(lvip);
-            break;
+            return lvip;
         }
 
         current = winrt::VisualTreeHelper::GetParent(current);
         ++steps;
     }
 
-    if (!visualInteractionSource)
-    {
-        visualInteractionSource = winrt::ElementCompositionPreview::GetElementVisual(*this);
-    }
-
-    return visualInteractionSource;
+    return *this;
 }
 
 void SwipeControl::EnsureClip()

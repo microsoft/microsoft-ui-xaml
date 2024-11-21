@@ -39,15 +39,15 @@ namespace DirectUI
         IFACEMETHOD(get_Key)(_Out_ ABI::Windows::System::VirtualKey* pValue) override;
         IFACEMETHOD(get_KeyStatus)(_Out_ ABI::Windows::UI::Core::CorePhysicalKeyStatus* pValue) override;
         _Check_return_ HRESULT get_Shift(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_Shift(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_Shift(BOOLEAN value);
         _Check_return_ HRESULT get_Ctrl(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_Ctrl(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_Ctrl(BOOLEAN value);
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_OriginalKey)(_Out_ ABI::Windows::System::VirtualKey* pValue) override;
         IFACEMETHOD(get_DeviceId)(_Out_ HSTRING* pValue) override;
         _Check_return_ HRESULT get_HandledShouldNotImpedeTextInput(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_HandledShouldNotImpedeTextInput(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_HandledShouldNotImpedeTextInput(BOOLEAN value);
 
         // Methods.
 

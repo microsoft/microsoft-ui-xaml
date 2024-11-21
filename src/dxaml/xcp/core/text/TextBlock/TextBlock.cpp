@@ -495,7 +495,7 @@ _Check_return_ HRESULT CTextBlock::SetTextToInlineCollection()
     return S_OK;
 }
 
-_Check_return_ HRESULT CTextBlock::OnPropertySetImpl(_In_ const CDependencyProperty* pDP, _In_ const CValue&, _In_ const CValue&, _In_ bool)
+_Check_return_ HRESULT CTextBlock::OnPropertySetImpl(_In_ const CDependencyProperty* pDP, _In_ const CValue&, _In_ const CValue&, bool)
 {
     IFC_RETURN(UpdateFastPathOptOutConditions(pDP));
 

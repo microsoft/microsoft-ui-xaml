@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Exponent)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Exponent)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Exponent)(DOUBLE value) override;
 
         // Events.
 

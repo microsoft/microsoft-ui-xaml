@@ -1548,7 +1548,7 @@ void CAutomationPeer::RaiseTextEditTextChangedEvent(_In_ UIAXcp::AutomationTextE
 void CAutomationPeer::RaiseNotificationEvent(
     UIAXcp::AutomationNotificationKind notificationKind,
     UIAXcp::AutomationNotificationProcessing notificationProcessing,
-    _In_opt_ xstring_ptr displayString,
+    _In_ xstring_ptr displayString,
     _In_ xstring_ptr activityId)
 {
     if (ListenerExists(UIAXcp::AENotification))

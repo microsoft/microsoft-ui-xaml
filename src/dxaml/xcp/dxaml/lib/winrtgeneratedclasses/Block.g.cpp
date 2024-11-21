@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::Block::get_HorizontalTextAlignment(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Block_HorizontalTextAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::Block::put_HorizontalTextAlignment(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value)
+IFACEMETHODIMP DirectUI::Block::put_HorizontalTextAlignment(ABI::Microsoft::UI::Xaml::TextAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Block_HorizontalTextAlignment, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::Block::get_LineHeight(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Block_LineHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::Block::put_LineHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Block::put_LineHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Block_LineHeight, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::Block::get_LineStackingStrategy(_Out_ ABI::Microsoft::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Block_LineStackingStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::Block::put_LineStackingStrategy(_In_ ABI::Microsoft::UI::Xaml::LineStackingStrategy value)
+IFACEMETHODIMP DirectUI::Block::put_LineStackingStrategy(ABI::Microsoft::UI::Xaml::LineStackingStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Block_LineStackingStrategy, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::Block::get_Margin(_Out_ ABI::Microsoft::UI::Xaml::Thick
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Block_Margin, pValue));
 }
-IFACEMETHODIMP DirectUI::Block::put_Margin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::Block::put_Margin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Block_Margin, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::Block::get_TextAlignment(_Out_ ABI::Microsoft::UI::Xaml
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Block_TextAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::Block::put_TextAlignment(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value)
+IFACEMETHODIMP DirectUI::Block::put_TextAlignment(ABI::Microsoft::UI::Xaml::TextAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Block_TextAlignment, value));

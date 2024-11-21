@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::RotateTransform::get_Angle(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RotateTransform_Angle, pValue));
 }
-IFACEMETHODIMP DirectUI::RotateTransform::put_Angle(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RotateTransform::put_Angle(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RotateTransform_Angle, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::RotateTransform::get_CenterX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RotateTransform_CenterX, pValue));
 }
-IFACEMETHODIMP DirectUI::RotateTransform::put_CenterX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RotateTransform::put_CenterX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RotateTransform_CenterX, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::RotateTransform::get_CenterY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RotateTransform_CenterY, pValue));
 }
-IFACEMETHODIMP DirectUI::RotateTransform::put_CenterY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RotateTransform::put_CenterY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RotateTransform_CenterY, value));

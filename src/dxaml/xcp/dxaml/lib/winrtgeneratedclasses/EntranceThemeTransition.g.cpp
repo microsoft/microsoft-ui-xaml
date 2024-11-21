@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::get_FromHorizontalOff
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::EntranceThemeTransition_FromHorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::put_FromHorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::put_FromHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::EntranceThemeTransition_FromHorizontalOffset, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::get_FromVerticalOffse
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::EntranceThemeTransition_FromVerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::put_FromVerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::put_FromVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::EntranceThemeTransition_FromVerticalOffset, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::get_IsStaggeringEnabl
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::EntranceThemeTransition_IsStaggeringEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::put_IsStaggeringEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::EntranceThemeTransitionGenerated::put_IsStaggeringEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::EntranceThemeTransition_IsStaggeringEnabled, value));

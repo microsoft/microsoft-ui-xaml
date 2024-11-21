@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::AutomationAnnotation::get_Type(_Out_ ABI::Microsoft::UI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutomationAnnotation_Type, pValue));
 }
-IFACEMETHODIMP DirectUI::AutomationAnnotation::put_Type(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType value)
+IFACEMETHODIMP DirectUI::AutomationAnnotation::put_Type(ABI::Microsoft::UI::Xaml::Automation::AnnotationType value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutomationAnnotation_Type, value));
@@ -86,7 +86,7 @@ HRESULT DirectUI::AutomationAnnotationFactory::QueryInterfaceImpl(_In_ REFIID ii
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::AutomationAnnotationFactory::CreateInstance(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance)
+IFACEMETHODIMP DirectUI::AutomationAnnotationFactory::CreateInstance(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance)
 {
     HRESULT hr = S_OK;
     
@@ -95,7 +95,7 @@ IFACEMETHODIMP DirectUI::AutomationAnnotationFactory::CreateInstance(_In_ ABI::M
 Cleanup:
     return hr;
 }
-IFACEMETHODIMP DirectUI::AutomationAnnotationFactory::CreateWithElementParameter(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance)
+IFACEMETHODIMP DirectUI::AutomationAnnotationFactory::CreateWithElementParameter(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance)
 {
     HRESULT hr = S_OK;
     ARG_NOTNULL(pElement, "element");

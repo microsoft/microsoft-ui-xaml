@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::NavigationFailedEventArgs::get_Exception(_Out_ HRESULT*
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NavigationFailedEventArgs::put_Exception(_In_ HRESULT value)
+_Check_return_ HRESULT DirectUI::NavigationFailedEventArgs::put_Exception(HRESULT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::NavigationFailedEventArgs::get_Handled(_Out_ BOOLEAN* p
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::NavigationFailedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::NavigationFailedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::NavigationFailedEventArgs::get_SourcePageType(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NavigationFailedEventArgs::put_SourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value)
+_Check_return_ HRESULT DirectUI::NavigationFailedEventArgs::put_SourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

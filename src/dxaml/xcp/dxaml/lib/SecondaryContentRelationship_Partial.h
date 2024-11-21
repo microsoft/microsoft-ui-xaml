@@ -15,7 +15,7 @@ namespace DirectUI
         _In_ DirectUI::DirectManipulationProperty secondaryContentProperty,
         _In_ HSTRING strAssociatedDependencyProperty,
         _In_opt_ HSTRING strOrthogonalPrimaryContentProperty,
-        _In_opt_ DirectUI::DirectManipulationProperty orthogonalSecondaryContentProperty,
+        _In_ DirectUI::DirectManipulationProperty orthogonalSecondaryContentProperty,
         _In_opt_ HSTRING strOrthogonalAssociatedDependencyProperty,
         _In_ UINT numPoints,
         _In_reads_(numPoints) const DOUBLE *pPrimaryContentValues,

@@ -56,7 +56,7 @@ namespace MUXControlsTestApp.Samples
         }
     }
 
-    public class MyCollection : IList, INotifyCollectionChanged, IKeyIndexMapping
+    public partial class MyCollection : IList, INotifyCollectionChanged, IKeyIndexMapping
     {
         private List<object> inner = new List<object>();
 

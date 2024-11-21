@@ -97,6 +97,11 @@
         <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions)ENABLE_WINRT_EXPERIMENTAL_TYPES=1;</ProjectPreprocessorDefinitions>
     </PropertyGroup>
 
+    <!-- Avoid polluting the global namespace with Started, Completed, Canceled, Error (from Microsoft-Windows-XAML-ETWEvents.h) -->
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions)_HIDE_GLOBAL_ASYNC_STATUS;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
     <!-- In debug we crank the WIL diagnostics up to a high but not maximal level so that file/line/function information is available in the debug output.  These will also show up in ETL traces
          that are captured with debug binaries.  The caller return address is pruned from our debug output because it is verbose and redundant so we turn that off.  That saves ~1MB of Debug dll
          size.

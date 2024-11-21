@@ -51,7 +51,7 @@ IFACEMETHODIMP DirectUI::InputValidationCommand::get_InputValidationKind(_Out_ A
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InputValidationCommand_InputValidationKind, pValue));
 }
-IFACEMETHODIMP DirectUI::InputValidationCommand::put_InputValidationKind(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
+IFACEMETHODIMP DirectUI::InputValidationCommand::put_InputValidationKind(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InputValidationCommand_InputValidationKind, value));
@@ -60,7 +60,7 @@ IFACEMETHODIMP DirectUI::InputValidationCommand::get_InputValidationMode(_Out_ A
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InputValidationCommand_InputValidationMode, pValue));
 }
-IFACEMETHODIMP DirectUI::InputValidationCommand::put_InputValidationMode(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
+IFACEMETHODIMP DirectUI::InputValidationCommand::put_InputValidationMode(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InputValidationCommand_InputValidationMode, value));

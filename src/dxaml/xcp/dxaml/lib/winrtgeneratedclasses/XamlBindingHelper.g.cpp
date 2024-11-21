@@ -99,7 +99,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::ConvertValue(_In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _In_ IInspectable* pValue, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::ConvertValue(ABI::Windows::UI::Xaml::Interop::TypeName type, _In_ IInspectable* pValue, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -137,7 +137,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromBoolean(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromBoolean(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, BOOLEAN value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -155,7 +155,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromChar16(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ WCHAR value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromChar16(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, WCHAR value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -173,7 +173,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromDateTime(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromDateTime(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Windows::Foundation::DateTime value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -191,7 +191,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromDouble(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromDouble(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, DOUBLE value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -209,7 +209,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromInt32(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ INT value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromInt32(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, INT value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -227,7 +227,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromUInt32(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ UINT value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromUInt32(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, UINT value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -245,7 +245,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromInt64(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ INT64 value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromInt64(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, INT64 value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -263,7 +263,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromUInt64(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ UINT64 value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromUInt64(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, UINT64 value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -281,7 +281,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromSingle(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ FLOAT value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromSingle(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, FLOAT value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -299,7 +299,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromPoint(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromPoint(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Windows::Foundation::Point value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -317,7 +317,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromRect(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ ABI::Windows::Foundation::Rect value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromRect(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Windows::Foundation::Rect value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -335,7 +335,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromSize(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ ABI::Windows::Foundation::Size value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromSize(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Windows::Foundation::Size value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -353,7 +353,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromTimeSpan(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ ABI::Windows::Foundation::TimeSpan value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromTimeSpan(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Windows::Foundation::TimeSpan value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -371,7 +371,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromByte(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ BYTE value)
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromByte(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, BYTE value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

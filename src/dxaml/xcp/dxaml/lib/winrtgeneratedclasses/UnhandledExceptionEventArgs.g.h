@@ -35,11 +35,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Exception)(_Out_ HRESULT* pValue) override;
-        _Check_return_ HRESULT put_Exception(_In_ HRESULT value);
+        _Check_return_ HRESULT put_Exception(HRESULT value);
         IFACEMETHOD(get_Message)(_Out_ HSTRING* pValue) override;
         _Check_return_ HRESULT put_Message(_In_opt_ HSTRING value);
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
 
         // Methods.
 

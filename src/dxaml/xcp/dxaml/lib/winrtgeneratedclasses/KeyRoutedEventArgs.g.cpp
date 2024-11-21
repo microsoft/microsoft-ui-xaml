@@ -91,7 +91,7 @@ _Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::get_Shift(_Out_ BO
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::put_Shift(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::put_Shift(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -125,7 +125,7 @@ _Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::get_Ctrl(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::put_Ctrl(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::put_Ctrl(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -159,7 +159,7 @@ IFACEMETHODIMP DirectUI::KeyRoutedEventArgsGenerated::get_Handled(_Out_ BOOLEAN*
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::KeyRoutedEventArgsGenerated::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::KeyRoutedEventArgsGenerated::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -229,7 +229,7 @@ _Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::get_HandledShouldN
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::put_HandledShouldNotImpedeTextInput(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::KeyRoutedEventArgsGenerated::put_HandledShouldNotImpedeTextInput(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

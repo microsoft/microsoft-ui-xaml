@@ -128,7 +128,7 @@ public:
     CDependencyObject* FindNextFocus(_In_ const FindFocusOptions& findFocusOptions,
             _In_ Focus::XYFocusOptions& xyFocusOptions,
             _In_opt_ CDependencyObject* component = nullptr,
-            _In_opt_ bool updateManifolds = true);
+            _In_ bool updateManifolds = true);
 
     CDependencyObject* GetTabStopCandidateElement(_In_ bool isShiftPressed, _In_ bool queryOnly, _Out_ bool& didCycleFocusAtRootVisualScope);
 
@@ -218,7 +218,7 @@ private:
     // ------------------------------------------------------------------------
     // CFocusManager Private Methods
     // ------------------------------------------------------------------------
-    _Check_return_ HRESULT ProcessTabStopInternal(_In_ bool bPressedShift, _In_ bool queryOnly, _Outptr_ CDependencyObject** ppNewTabStopElement);
+    _Check_return_ HRESULT ProcessTabStopInternal(_In_ bool bPressedShift, _In_ bool queryOnly, _Outptr_result_maybenull_ CDependencyObject** ppNewTabStopElement);
 
     CDependencyObject* GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _In_opt_ CDependencyObject *pFirstFocus);
     CDependencyObject* GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _In_opt_ CDependencyObject *pLastFocus);

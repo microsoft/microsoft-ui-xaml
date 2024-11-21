@@ -22,7 +22,7 @@ namespace DirectUI
         _Check_return_ IFACEMETHOD(Close()) override;
 
         // ICompositionSurfaceFacade
-        _Check_return_ IFACEMETHOD(GetRealSurface(_Outptr_ WUComp::ICompositionSurface** value)) override;
+        IFACEMETHOD(GetRealSurface(WUComp::ICompositionSurface** value)) override;
 
     protected:
         BEGIN_INTERFACE_MAP(LoadedImageSurface, LoadedImageSurfaceGenerated)

@@ -845,7 +845,7 @@ public:
     _Check_return_ HRESULT CleanPointerElementObject(_In_ CDependencyObject *pObject);
     _Check_return_ HRESULT ProcessPointerExitedEventByPointerEnteredElementStateChange(
         _In_ CDependencyObject* pElementDO,
-        _In_opt_ std::shared_ptr<CPointerState> pointerState = nullptr);
+        _In_ std::shared_ptr<CPointerState> pointerState = nullptr);
 
     void DestroyInteractionEngine(_In_ CUIElement* pDestroyElement);
     _Check_return_ HRESULT RaiseRightTappedEvent(_In_ CDependencyObject* pElement, _In_ DirectUI::PointerDeviceType deviceType);

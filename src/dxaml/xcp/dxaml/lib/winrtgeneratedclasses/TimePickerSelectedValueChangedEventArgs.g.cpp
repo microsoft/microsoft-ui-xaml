@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::TimePickerSelectedValueChangedEventArgs::get_OldTime(_O
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::TimePickerSelectedValueChangedEventArgs::put_OldTime(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue)
+_Check_return_ HRESULT DirectUI::TimePickerSelectedValueChangedEventArgs::put_OldTime(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::TimePickerSelectedValueChangedEventArgs::get_NewTime(_O
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::TimePickerSelectedValueChangedEventArgs::put_NewTime(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue)
+_Check_return_ HRESULT DirectUI::TimePickerSelectedValueChangedEventArgs::put_NewTime(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

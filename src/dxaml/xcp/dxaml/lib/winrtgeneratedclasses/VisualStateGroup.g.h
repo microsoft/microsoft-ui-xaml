@@ -59,10 +59,10 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetCurrentStateChangedEventSourceNoRef(_Outptr_ CurrentStateChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_CurrentStateChanged)(_In_ ABI::Microsoft::UI::Xaml::IVisualStateChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_CurrentStateChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_CurrentStateChanged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetCurrentStateChangingEventSourceNoRef(_Outptr_ CurrentStateChangingEventSourceType** ppEventSource);
         IFACEMETHOD(add_CurrentStateChanging)(_In_ ABI::Microsoft::UI::Xaml::IVisualStateChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_CurrentStateChanging)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_CurrentStateChanging)(EventRegistrationToken token) override;
 
         // Methods.
 

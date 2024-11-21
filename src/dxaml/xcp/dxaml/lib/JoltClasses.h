@@ -268,6 +268,7 @@ namespace DirectUI
                     ctl::ComPtr<THANDLER> spHandler = (*itrDelegate).Get();
 
                     // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
+                    #pragma warning(suppress : 6387) // Windows SDK inaccurately sets this as not null
                     invokeHR = spHandler->Invoke(pSource, pArgs);
 
                     if (invokeHR == RPC_E_DISCONNECTED || invokeHR == HRESULT_FROM_WIN32(RPC_S_SERVER_UNAVAILABLE))
@@ -935,6 +936,7 @@ namespace DirectUI
                     }
 
                     // SYNC_CALL_TO_APP DIRECT - This next line may directly call out to app code.
+                    #pragma warning(suppress : 6387) // Windows SDK inaccurately sets this as not null
                     invokeHR = spHandler->Invoke(pSource, pArgs);
 
                     if (invokeHR == RPC_E_DISCONNECTED || invokeHR == HRESULT_FROM_WIN32(RPC_S_SERVER_UNAVAILABLE))

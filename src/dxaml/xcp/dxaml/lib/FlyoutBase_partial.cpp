@@ -15,7 +15,7 @@
 #include "FlyoutBase_partial.h"
 
 #include "FlyoutBaseClosingEventArgs.g.h"
-#include "Popup.g.h"
+#include "CComboBoxLightDismiss.g.h"
 #include "Control.g.h"
 #include "PickerFlyoutThemeTransition.g.h"
 #include "PopupThemeTransition.g.h"
@@ -2391,6 +2391,8 @@ _Check_return_ HRESULT FlyoutBase::OnPopupLostFocus(
 
             CPopup* popupAncestor = nullptr;
             bool popupRootExists = false;
+            bool popupAncestorIsLightDismiss = false;
+            bool popupAncestorHasComboBoxLightDismiss = false;
 
             while (currentElement)
             {
@@ -2404,6 +2406,16 @@ _Check_return_ HRESULT FlyoutBase::OnPopupLostFocus(
                 if (auto elementCast = do_pointer_cast<CPopup>(currentElement))
                 {
                     popupAncestor = elementCast;
+
+                    // Check if this ancestor popup is a light dismiss one.
+                    popupAncestorIsLightDismiss = popupAncestor->IsSelfOrAncestorLightDismiss();
+
+                    if (!popupAncestorIsLightDismiss)
+                    {
+                        // A ComboBox dropdown is not marked with m_fIsLightDismiss==True but has a grandchild of type CComboBoxLightDismiss.
+                        // Check if the ancestor popup is one of those.
+                        IFC_RETURN(HasComboBoxLightDismiss(elementCast, &popupAncestorHasComboBoxLightDismiss /*hasComboBoxLightDismiss*/));
+                    }
                     break;
                 }
 
@@ -2414,7 +2426,7 @@ _Check_return_ HRESULT FlyoutBase::OnPopupLostFocus(
             // In that case, we'll assume that it was in a popup if we found the popup root.
             // We can't tell if it was a light-dismiss popup in that case, but we'll err on the side
             // of not hiding in that circumstance.
-            if (!popupRootExists && (!popupAncestor || !popupAncestor->IsSelfOrAncestorLightDismiss()))
+            if (!popupRootExists && (!popupAncestor || (!popupAncestorIsLightDismiss && !popupAncestorHasComboBoxLightDismiss)))
             {
                 IFC_RETURN(Hide());
             }
@@ -3965,6 +3977,87 @@ _Check_return_ HRESULT FlyoutBase::GetEffectivePlacement(_Out_ xaml_primitives::
     else
     {
         IFC_RETURN(get_Placement(effectivePlacement));
+    }
+
+    return S_OK;
+}
+
+// Checks whether the provided popup is for a ComboBox dropdown which is identified by a grandchild of type CComboBoxLightDismiss.
+// The recognized ComboBox tree structure is:
+//     CPopup
+//       CPanel (a CCanvas in practice)
+//         CComboBoxLightDismiss
+//         second child (a CBorder in practice)
+_Check_return_ HRESULT FlyoutBase::HasComboBoxLightDismiss(_In_ CPopup* popup, _Out_ bool* hasComboBoxLightDismiss)
+{
+    *hasComboBoxLightDismiss = false;
+
+    ctl::ComPtr<DependencyObject> popupPeer;
+
+    IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(popup, &popupPeer));
+
+    if (!popupPeer)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IPopup> popupPeerAsI;
+
+    IFC_RETURN(popupPeer.As(&popupPeerAsI));
+
+    if (!popupPeerAsI)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IUIElement> popupChild;
+
+    IFC_RETURN(popupPeerAsI->get_Child(&popupChild));
+
+    if (!popupChild)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IPanel> panel = popupChild.AsOrNull<IPanel>();
+
+    if (!panel)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<wfc::IVector<xaml::UIElement*>> panelChildren;
+
+    IFC_RETURN(panel->get_Children(&panelChildren));
+
+    if (!panelChildren)
+    {
+        return S_OK;
+    }
+
+    UINT childrenCount = 0;
+
+    IFC_RETURN(panelChildren->get_Size(&childrenCount));
+
+    if (childrenCount < 2)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<IUIElement> child;
+
+    IFC_RETURN(panelChildren->GetAt(0, &child));
+
+    if (!child)
+    {
+        return S_OK;
+    }
+
+    CDependencyObject* childAsDO = static_cast<UIElement*>(child.Get())->GetHandle();
+
+    if (do_pointer_cast<CComboBoxLightDismiss>(childAsDO))
+    {
+        *hasComboBoxLightDismiss = true;
     }
 
     return S_OK;

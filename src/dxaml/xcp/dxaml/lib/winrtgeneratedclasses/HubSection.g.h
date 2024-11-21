@@ -56,7 +56,7 @@ namespace DirectUI
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) override;
         IFACEMETHOD(get_IsHeaderInteractive)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsHeaderInteractive)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsHeaderInteractive)(BOOLEAN value) override;
 
         // Events.
 

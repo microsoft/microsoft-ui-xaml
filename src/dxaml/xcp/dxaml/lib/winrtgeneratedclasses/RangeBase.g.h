@@ -52,28 +52,28 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_LargeChange)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_LargeChange)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_LargeChange)(DOUBLE value) override;
         IFACEMETHOD(get_Maximum)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Maximum)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Maximum)(DOUBLE value) override;
         IFACEMETHOD(get_Minimum)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Minimum)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Minimum)(DOUBLE value) override;
         IFACEMETHOD(get_SmallChange)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_SmallChange)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_SmallChange)(DOUBLE value) override;
         IFACEMETHOD(get_Value)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Value)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Value)(DOUBLE value) override;
 
         // Events.
         _Check_return_ HRESULT GetValueChangedEventSourceNoRef(_Outptr_ ValueChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ValueChanged)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBaseValueChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ValueChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ValueChanged)(EventRegistrationToken token) override;
 
         // Methods.
-        IFACEMETHOD(OnMaximumChanged)(_In_ DOUBLE oldMaximum, _In_ DOUBLE newMaximum) override;
-        _Check_return_ HRESULT OnMaximumChangedProtected(_In_ DOUBLE oldMaximum, _In_ DOUBLE newMaximum);
-        IFACEMETHOD(OnMinimumChanged)(_In_ DOUBLE oldMinimum, _In_ DOUBLE newMinimum) override;
-        _Check_return_ HRESULT OnMinimumChangedProtected(_In_ DOUBLE oldMinimum, _In_ DOUBLE newMinimum);
-        IFACEMETHOD(OnValueChanged)(_In_ DOUBLE oldValue, _In_ DOUBLE newValue) override;
-        _Check_return_ HRESULT OnValueChangedProtected(_In_ DOUBLE oldValue, _In_ DOUBLE newValue);
+        IFACEMETHOD(OnMaximumChanged)(DOUBLE oldMaximum, DOUBLE newMaximum) override;
+        _Check_return_ HRESULT OnMaximumChangedProtected(DOUBLE oldMaximum, DOUBLE newMaximum);
+        IFACEMETHOD(OnMinimumChanged)(DOUBLE oldMinimum, DOUBLE newMinimum) override;
+        _Check_return_ HRESULT OnMinimumChangedProtected(DOUBLE oldMinimum, DOUBLE newMinimum);
+        IFACEMETHOD(OnValueChanged)(DOUBLE oldValue, DOUBLE newValue) override;
+        _Check_return_ HRESULT OnValueChangedProtected(DOUBLE oldValue, DOUBLE newValue);
 
 
     protected:

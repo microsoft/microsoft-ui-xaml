@@ -55,23 +55,23 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_HorizontalChildrenAlignment)(_Out_ ABI::Microsoft::UI::Xaml::HorizontalAlignment* pValue) override;
-        IFACEMETHOD(put_HorizontalChildrenAlignment)(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value) override;
+        IFACEMETHOD(put_HorizontalChildrenAlignment)(ABI::Microsoft::UI::Xaml::HorizontalAlignment value) override;
         IFACEMETHOD(get_ItemHeight)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ItemHeight)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ItemHeight)(DOUBLE value) override;
         IFACEMETHOD(get_ItemWidth)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ItemWidth)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ItemWidth)(DOUBLE value) override;
         IFACEMETHOD(get_MaximumRowsOrColumns)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_MaximumRowsOrColumns)(_In_ INT value) override;
+        IFACEMETHOD(put_MaximumRowsOrColumns)(INT value) override;
         IFACEMETHOD(get_Orientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) override;
-        IFACEMETHOD(put_Orientation)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
+        IFACEMETHOD(put_Orientation)(ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
         IFACEMETHOD(get_VerticalChildrenAlignment)(_Out_ ABI::Microsoft::UI::Xaml::VerticalAlignment* pValue) override;
-        IFACEMETHOD(put_VerticalChildrenAlignment)(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value) override;
+        IFACEMETHOD(put_VerticalChildrenAlignment)(ABI::Microsoft::UI::Xaml::VerticalAlignment value) override;
 
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetTargetIndexFromNavigationAction)(_In_ UINT sourceIndex, _In_ ABI::Microsoft::UI::Xaml::Controls::ElementType sourceType, _In_ ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _In_ BOOLEAN allowWrap, _In_ UINT itemIndexHintForHeaderNavigation, _Out_ UINT* pComputedTargetIndex, _Out_ ABI::Microsoft::UI::Xaml::Controls::ElementType* pComputedTargetType, _Out_ BOOLEAN* pActionValidForSourceIndex) = 0;
-        IFACEMETHOD(SupportsKeyNavigationAction)(_In_ ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _Out_ BOOLEAN* pReturnValue) = 0;
+        IFACEMETHOD(GetTargetIndexFromNavigationAction)(UINT sourceIndex, ABI::Microsoft::UI::Xaml::Controls::ElementType sourceType, ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, BOOLEAN allowWrap, UINT itemIndexHintForHeaderNavigation, _Out_ UINT* pComputedTargetIndex, _Out_ ABI::Microsoft::UI::Xaml::Controls::ElementType* pComputedTargetType, _Out_ BOOLEAN* pActionValidForSourceIndex) = 0;
+        IFACEMETHOD(SupportsKeyNavigationAction)(ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _Out_ BOOLEAN* pReturnValue) = 0;
 
 
     protected:
@@ -116,15 +116,15 @@ namespace DirectUI
 
         // Attached properties.
         static _Check_return_ HRESULT GetRowSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ INT* pValue);
-        static _Check_return_ HRESULT SetRowSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT value);
+        static _Check_return_ HRESULT SetRowSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT value);
         IFACEMETHOD(get_RowSpanProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetRowSpan)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ INT* pValue);
-        IFACEMETHOD(SetRowSpan)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT value);
+        IFACEMETHOD(SetRowSpan)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT value);
         static _Check_return_ HRESULT GetColumnSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ INT* pValue);
-        static _Check_return_ HRESULT SetColumnSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT value);
+        static _Check_return_ HRESULT SetColumnSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT value);
         IFACEMETHOD(get_ColumnSpanProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetColumnSpan)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ INT* pValue);
-        IFACEMETHOD(SetColumnSpan)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT value);
+        IFACEMETHOD(SetColumnSpan)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT value);
 
         // Static methods.
 

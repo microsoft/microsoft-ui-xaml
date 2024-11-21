@@ -30,7 +30,7 @@ PointerPointTransform::~PointerPointTransform()
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
 PointerPointTransform::get_Inverse(
-    _Outptr_ mui::IPointerPointTransform **ppPointerPointTransform)
+    mui::IPointerPointTransform **ppPointerPointTransform)
 {
     HRESULT hr = S_OK;
     PointerPointTransform* pPointerPointTransform = NULL;
@@ -66,9 +66,9 @@ Cleanup:
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
 PointerPointTransform::TryTransform(
-    _In_ wf::Point inPoint,
-    _Out_ wf::Point *pOutPoint,
-    _Out_ BOOLEAN *pReturnValue)
+    wf::Point inPoint,
+    wf::Point *pOutPoint,
+    BOOLEAN *pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -107,9 +107,9 @@ Cleanup:
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
 PointerPointTransform::TryTransformBounds(
-    _In_ wf::Rect inRect,
-    _Out_ wf::Rect *pOutRect,
-    _Out_ BOOLEAN *pReturnValue)
+    wf::Rect inRect,
+    wf::Rect *pOutRect,
+    BOOLEAN *pReturnValue)
 {
     HRESULT hr = S_OK;
     *pReturnValue = FALSE;

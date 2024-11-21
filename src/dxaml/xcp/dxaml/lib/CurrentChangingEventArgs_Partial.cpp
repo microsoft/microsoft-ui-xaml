@@ -8,7 +8,7 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT CurrentChangingEventArgsFactory::CreateWithCancelableParameterImpl(
-    _In_ BOOLEAN isCancelable, 
+    BOOLEAN isCancelable, 
     _In_opt_ IInspectable* pOuter, 
     _Outptr_ IInspectable** ppInner, 
     _Outptr_ xaml_data::ICurrentChangingEventArgs** ppInstance)

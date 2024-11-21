@@ -155,7 +155,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::XamlRootGenerated::remove_Changed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::XamlRootGenerated::remove_Changed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ChangedEventSourceType* pEventSource = nullptr;
@@ -185,7 +185,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::XamlRootGenerated::remove_InputActivationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::XamlRootGenerated::remove_InputActivationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     InputActivationChangedEventSourceType* pEventSource = nullptr;

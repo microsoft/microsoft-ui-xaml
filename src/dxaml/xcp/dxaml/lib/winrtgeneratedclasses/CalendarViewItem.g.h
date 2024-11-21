@@ -44,7 +44,7 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_Date(_Out_ ABI::Windows::Foundation::DateTime* pValue);
-        virtual _Check_return_ HRESULT put_Date(_In_ ABI::Windows::Foundation::DateTime value);
+        virtual _Check_return_ HRESULT put_Date(ABI::Windows::Foundation::DateTime value);
 
         // Events.
 

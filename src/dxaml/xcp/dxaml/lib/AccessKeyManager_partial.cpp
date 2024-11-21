@@ -99,7 +99,7 @@ HRESULT AccessKeyManagerFactory::add_IsDisplayModeEnabledChanged(
 }
 
 HRESULT AccessKeyManagerFactory::remove_IsDisplayModeEnabledChanged(
-    _In_ EventRegistrationToken token)
+    EventRegistrationToken token)
 {
     IFC_RETURN(CheckActivationAllowed());
     IFC_RETURN(DXamlCore::GetCurrent()->AccessKeyEvents().remove_IsActiveChanged(token));
@@ -186,7 +186,7 @@ _Check_return_ HRESULT AccessKeyManagerFactory::get_AreKeyTipsEnabledImpl(_Out_ 
     return S_OK;
 }
 
-_Check_return_ HRESULT AccessKeyManagerFactory::put_AreKeyTipsEnabledImpl(_In_ BOOLEAN value)
+_Check_return_ HRESULT AccessKeyManagerFactory::put_AreKeyTipsEnabledImpl(BOOLEAN value)
 {
     auto inputServices = DXamlCore::GetCurrent()->GetHandle()->GetInputServices();
     IFCEXPECT_RETURN(inputServices);

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::LineSegment::get_Point(_Out_ ABI::Windows::Foundation::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LineSegment_Point, pValue));
 }
-IFACEMETHODIMP DirectUI::LineSegment::put_Point(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::LineSegment::put_Point(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LineSegment_Point, value));

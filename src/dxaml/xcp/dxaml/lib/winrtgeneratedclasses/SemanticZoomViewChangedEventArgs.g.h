@@ -36,7 +36,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsSourceZoomedInView)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsSourceZoomedInView)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsSourceZoomedInView)(BOOLEAN value) override;
         IFACEMETHOD(get_SourceItem)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocation** ppValue) override;
         IFACEMETHOD(put_SourceItem)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocation* pValue) override;
         IFACEMETHOD(get_DestinationItem)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomLocation** ppValue) override;

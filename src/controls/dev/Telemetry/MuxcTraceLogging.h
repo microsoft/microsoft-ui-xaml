@@ -57,6 +57,7 @@
 #define TRACE_MSG_METH_IND_STR L"%s[0x%p](%*s)\n"
 #define TRACE_MSG_METH_IND_STR_STR L"%s[0x%p](%*s, %s)\n"
 #define TRACE_MSG_METH_IND_STR_STR_INT L"%s[0x%p](%*s, %s, %d)\n"
+#define TRACE_MSG_METH_IND_STR_STR_INT_INT L"%s[0x%p](%*s, %s, %d, %d)\n"
 #define TRACE_MSG_METH_IND_STR_STR_FLT L"%s[0x%p](%*s, %s, %f)\n"
 #define TRACE_MSG_METH_IND_STR_STR_FLT_FLT L"%s[0x%p](%*s, %s, %f, %f)\n"
 #define TRACE_MSG_METH_IND_STR_STR_FLT_FLT_FLT_FLT L"%s[0x%p](%*s, %s, %f, %f, %f, %f)\n"

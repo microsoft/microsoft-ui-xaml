@@ -8,12 +8,27 @@ class IFlowLayoutAlgorithmDelegates
 public:
     virtual ~IFlowLayoutAlgorithmDelegates() = default;
 
-    virtual winrt::Size Algorithm_GetMeasureSize(int index, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context) = 0;
-    virtual winrt::Size Algorithm_GetProvisionalArrangeSize(int index, const winrt::Size& measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& context) = 0;
-    virtual bool Algorithm_ShouldBreakLine(int index, double remainingSpace) = 0;
-    virtual winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForRealizationRect(const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context) = 0;
-    virtual winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForTargetElement(int targetIndex, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context) = 0;
-    virtual winrt::Rect Algorithm_GetExtent(const winrt::Size& availableSize,
+    virtual winrt::Size Algorithm_GetMeasureSize(
+        int index,
+        const winrt::Size& availableSize,
+        const winrt::VirtualizingLayoutContext& context) = 0;
+    virtual winrt::Size Algorithm_GetProvisionalArrangeSize(
+        int index,
+        const winrt::Size& measureSize,
+        const winrt::Size& desiredSize,
+        const winrt::VirtualizingLayoutContext& context) = 0;
+    virtual bool Algorithm_ShouldBreakLine(
+        int index,
+        double remainingSpace) = 0;
+    virtual winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForRealizationRect(
+        const winrt::Size& availableSize,
+        const winrt::VirtualizingLayoutContext& context) = 0;
+    virtual winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForTargetElement(
+        int targetIndex,
+        const winrt::Size& availableSize,
+        const winrt::VirtualizingLayoutContext& context) = 0;
+    virtual winrt::Rect Algorithm_GetExtent(
+        const winrt::Size& availableSize,
         const winrt::VirtualizingLayoutContext& context,
         const winrt::UIElement& firstRealized,
         int firstRealizedItemIndex,
@@ -33,5 +48,7 @@ public:
         int startIndex,
         int countInLine,
         double lineSize,
+        const winrt::VirtualizingLayoutContext& context) = 0;
+    virtual void Algorithm_OnLayoutRoundFactorChanged(
         const winrt::VirtualizingLayoutContext& context) = 0;
 };

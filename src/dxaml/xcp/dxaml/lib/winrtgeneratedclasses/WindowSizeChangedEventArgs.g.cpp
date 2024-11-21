@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::WindowSizeChangedEventArgs::get_Handled(_Out_ BOOLEAN* 
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowSizeChangedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::WindowSizeChangedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::WindowSizeChangedEventArgs::get_Size(_Out_ ABI::Windows
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::WindowSizeChangedEventArgs::put_Size(_In_ ABI::Windows::Foundation::Size value)
+_Check_return_ HRESULT DirectUI::WindowSizeChangedEventArgs::put_Size(ABI::Windows::Foundation::Size value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

@@ -89,7 +89,7 @@ namespace DirectUI
         // Also note that the HeaderButton template part is not available at the end of HubSection::OnApplyTemplate()
         // yet, but it is available here in ArrangeOverride().
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size finalSize,
+            wf::Size finalSize,
             _Out_ wf::Size* returnValue)
             override;
 

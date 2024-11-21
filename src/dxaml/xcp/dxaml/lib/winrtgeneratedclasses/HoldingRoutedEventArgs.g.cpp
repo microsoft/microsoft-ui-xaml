@@ -103,7 +103,7 @@ IFACEMETHODIMP DirectUI::HoldingRoutedEventArgs::get_Handled(_Out_ BOOLEAN* pVal
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::HoldingRoutedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::HoldingRoutedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

@@ -8,7 +8,7 @@
 using namespace DirectUI;
 
 _Check_return_ HRESULT Panel::GetFirstFocusableElementOverride(
-    _Outptr_ DependencyObject** ppFirstFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppFirstFocusable)
 {
     HRESULT hr = S_OK;
     BOOLEAN isItemsHost = FALSE;
@@ -45,7 +45,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT Panel::GetLastFocusableElementOverride(
-    _Outptr_ DependencyObject** ppLastFocusFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppLastFocusFocusable)
 {
     HRESULT hr = S_OK;
     BOOLEAN isItemsHost = FALSE;

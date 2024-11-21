@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::Matrix3DProjection::get_ProjectionMatrix(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, pValue));
 }
-IFACEMETHODIMP DirectUI::Matrix3DProjection::put_ProjectionMatrix(_In_ ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D value)
+IFACEMETHODIMP DirectUI::Matrix3DProjection::put_ProjectionMatrix(ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Matrix3DProjection_ProjectionMatrix, value));

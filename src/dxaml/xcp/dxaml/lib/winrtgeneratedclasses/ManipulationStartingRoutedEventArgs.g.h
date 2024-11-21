@@ -38,13 +38,13 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Mode)(_Out_ ABI::Microsoft::UI::Xaml::Input::ManipulationModes* pValue) override;
-        IFACEMETHOD(put_Mode)(_In_ ABI::Microsoft::UI::Xaml::Input::ManipulationModes value) override;
+        IFACEMETHOD(put_Mode)(ABI::Microsoft::UI::Xaml::Input::ManipulationModes value) override;
         IFACEMETHOD(get_Container)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_Container)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_Pivot)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Input::IManipulationPivot** ppValue) override;
         IFACEMETHOD(put_Pivot)(_In_opt_ ABI::Microsoft::UI::Xaml::Input::IManipulationPivot* pValue) override;
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
 
         // Methods.
 

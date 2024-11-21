@@ -264,7 +264,8 @@ _Check_return_ HRESULT XamlIsland::put_ContentImpl(_In_opt_ xaml::IUIElement* pV
 
 _Check_return_ HRESULT XamlIsland::get_ContentIslandImpl(_Outptr_ ixp::IContentIsland **ppValue)
 {
-    *ppValue = m_pXamlIslandCore->GetContentIsland();
+    ctl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
+    *ppValue = contentIsland.Detach(); 
 
     return S_OK;
 }

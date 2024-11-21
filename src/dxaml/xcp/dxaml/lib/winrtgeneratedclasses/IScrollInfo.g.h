@@ -17,9 +17,9 @@ namespace DirectUI
     {
         // Properties.
         IFACEMETHOD(get_CanVerticallyScroll)(_Out_ BOOLEAN* pValue) = 0;
-        IFACEMETHOD(put_CanVerticallyScroll)(_In_ BOOLEAN value) = 0;
+        IFACEMETHOD(put_CanVerticallyScroll)(BOOLEAN value) = 0;
         IFACEMETHOD(get_CanHorizontallyScroll)(_Out_ BOOLEAN* pValue) = 0;
-        IFACEMETHOD(put_CanHorizontallyScroll)(_In_ BOOLEAN value) = 0;
+        IFACEMETHOD(put_CanHorizontallyScroll)(BOOLEAN value) = 0;
         IFACEMETHOD(get_ExtentWidth)(_Out_ DOUBLE* pValue) = 0;
         IFACEMETHOD(get_ExtentHeight)(_Out_ DOUBLE* pValue) = 0;
         IFACEMETHOD(get_ViewportWidth)(_Out_ DOUBLE* pValue) = 0;
@@ -42,12 +42,12 @@ namespace DirectUI
         IFACEMETHOD(PageDown)() = 0;
         IFACEMETHOD(PageLeft)() = 0;
         IFACEMETHOD(PageRight)() = 0;
-        IFACEMETHOD(MouseWheelUp)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelDown)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelLeft)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelRight)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(SetHorizontalOffset)(_In_ DOUBLE offset) = 0;
-        IFACEMETHOD(SetVerticalOffset)(_In_ DOUBLE offset) = 0;
-        IFACEMETHOD(MakeVisible)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _In_ BOOLEAN useAnimation, _In_ DOUBLE horizontalAlignmentRatio, _In_ DOUBLE verticalAlignmentRatio, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY) = 0;
+        IFACEMETHOD(MouseWheelUp)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelDown)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelLeft)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelRight)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(SetHorizontalOffset)(DOUBLE offset) = 0;
+        IFACEMETHOD(SetVerticalOffset)(DOUBLE offset) = 0;
+        IFACEMETHOD(MakeVisible)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, BOOLEAN useAnimation, DOUBLE horizontalAlignmentRatio, DOUBLE verticalAlignmentRatio, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY) = 0;
     };
 }

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::DragOverThemeAnimationGenerated::get_Direction(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DragOverThemeAnimation_Direction, pValue));
 }
-IFACEMETHODIMP DirectUI::DragOverThemeAnimationGenerated::put_Direction(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value)
+IFACEMETHODIMP DirectUI::DragOverThemeAnimationGenerated::put_Direction(ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DragOverThemeAnimation_Direction, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::DragOverThemeAnimationGenerated::get_ToOffset(_Out_ DOU
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DragOverThemeAnimation_ToOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::DragOverThemeAnimationGenerated::put_ToOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::DragOverThemeAnimationGenerated::put_ToOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DragOverThemeAnimation_ToOffset, value));

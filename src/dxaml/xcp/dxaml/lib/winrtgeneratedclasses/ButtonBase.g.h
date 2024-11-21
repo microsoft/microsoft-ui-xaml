@@ -50,20 +50,20 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ClickMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ClickMode* pValue) override;
-        IFACEMETHOD(put_ClickMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::ClickMode value) override;
+        IFACEMETHOD(put_ClickMode)(ABI::Microsoft::UI::Xaml::Controls::ClickMode value) override;
         IFACEMETHOD(get_Command)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Input::ICommand** ppValue) override;
         IFACEMETHOD(put_Command)(_In_opt_ ABI::Microsoft::UI::Xaml::Input::ICommand* pValue) override;
         IFACEMETHOD(get_CommandParameter)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_CommandParameter)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_IsPointerOver)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_IsPointerOver(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsPointerOver(BOOLEAN value);
         IFACEMETHOD(get_IsPressed)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_IsPressed(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsPressed(BOOLEAN value);
 
         // Events.
         _Check_return_ HRESULT GetClickEventSourceNoRef(_Outptr_ ClickEventSourceType** ppEventSource);
         IFACEMETHOD(add_Click)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Click)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Click)(EventRegistrationToken token) override;
 
         // Methods.
 

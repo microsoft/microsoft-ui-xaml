@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp.Samples
 {
-    public class NonVirtualStackLayout : NonVirtualizingLayout
+    public partial class NonVirtualStackLayout : NonVirtualizingLayout
     {
         protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
         {

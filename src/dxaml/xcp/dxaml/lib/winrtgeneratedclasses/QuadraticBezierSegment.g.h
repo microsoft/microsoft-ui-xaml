@@ -48,9 +48,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Point1)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_Point1)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_Point1)(ABI::Windows::Foundation::Point value) override;
         IFACEMETHOD(get_Point2)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_Point2)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_Point2)(ABI::Windows::Foundation::Point value) override;
 
         // Events.
 

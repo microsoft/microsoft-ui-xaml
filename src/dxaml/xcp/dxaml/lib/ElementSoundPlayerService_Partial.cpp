@@ -284,7 +284,7 @@ ElementSoundPlayerService::TearDownAudioGraph()
 
 // For testing purposes only. Invoked by IXamlTestHooks::SetPlayingSoundNodeCallback implementation.
 void
-ElementSoundPlayerService::SetPlayingSoundNodeCallback(_In_opt_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback)
+ElementSoundPlayerService::SetPlayingSoundNodeCallback(_In_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback)
 {
     ASSERT(S_OK == CheckThread());
 

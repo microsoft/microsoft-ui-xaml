@@ -11,11 +11,10 @@
 #include <RatingItemFontInfo.h>
 #include <RatingItemImageInfo.h>
 
-const float c_horizontalScaleAnimationCenterPoint = 0.5f;
-const float c_verticalScaleAnimationCenterPoint = 0.8f;
+const float c_scaleAnimationCenterPointXValue = 16.0f;
+const float c_scaleAnimationCenterPointYValue = 16.0f;
 
-const float c_captionTopMarginSlope = 0.3f;
-const float c_captionTopMarginIntercept = -20.4f;
+const int c_captionSpacing = 12;
 
 const float c_mouseOverScale = 0.8f;
 const float c_touchOverScale = 1.0f;
@@ -25,6 +24,8 @@ const int c_noValueSetSentinel = -1;
 
 const wchar_t c_fontSizeForRenderingKey[] = L"RatingControlFontSizeForRendering";
 const wchar_t c_itemSpacingKey[] = L"RatingControlItemSpacing";
+const wchar_t c_captionTopMarginKey[] = L"RatingControlCaptionTopMargin";
+
 
 RatingControl::RatingControl()
 {
@@ -41,10 +42,10 @@ RatingControl::~RatingControl()
 
 float RatingControl::RenderingRatingFontSize()
 {
-    EnsureResourcesLoaded();
+    MUX_ASSERT_MSG(m_scaledFontSizeForRendering >= 0, "RenderingRatingFontSize() should not be called prior to initializing m_scaledFontSizeForRendering.");
 
     // MSFT #10030063 Replacing with Rating size DPs
-    return (float)(m_fontSizeForRendering * GetUISettings().TextScaleFactor());
+    return static_cast<float>(m_scaledFontSizeForRendering);
 }
 
 float RatingControl::ActualRatingFontSize()
@@ -57,37 +58,7 @@ double RatingControl::ItemSpacing()
 {
     EnsureResourcesLoaded();
 
-    // Stars are rendered 2x size and we use expression animation to shrink them down to desired size,
-    // which will create those spacings (not system margin).
-    // Since text scale factor won't affect system margins,
-    // when stars get bigger, the spacing will become smaller.
-    // Therefore we should include TextScaleFactor when calculating item spacing
-    // in order to get correct total width and star center positions.
-    const double defaultFontSize = m_fontSizeForRendering / 2;
-    return m_itemSpacing - (GetUISettings().TextScaleFactor() - 1.0) * defaultFontSize / 2;
-}
-
-void RatingControl::UpdateCaptionMargins()
-{
-    // We manually set margins to caption text to make it center-aligned with the stars
-    // When text scale changes we need to update top margin to make the text follow start center.
-    if (auto captionTextBlock = m_captionTextBlock.safe_get())
-    {
-        double captionStackPanelTopMargin = 0;
-
-        if (auto captionStackPanel = m_captionStackPanel.safe_get())
-        {
-            captionStackPanelTopMargin = captionStackPanel.Margin().Top;
-        }
-
-        EnsureResourcesLoaded();
-
-        double textScaleFactor = GetUISettings().TextScaleFactor();
-        winrt::Thickness margin = captionTextBlock.Margin();
-        margin.Top = static_cast<double>(c_captionTopMarginSlope * RenderingRatingFontSize() + c_captionTopMarginIntercept - captionStackPanelTopMargin);
-
-        captionTextBlock.Margin(margin);
-    }
+    return m_itemSpacing;
 }
 
 void RatingControl::OnApplyTemplate()
@@ -106,7 +77,6 @@ void RatingControl::OnApplyTemplate()
     {
         m_captionTextBlock.set(captionTextBlock);
         m_captionSizeChangedToken = captionTextBlock.SizeChanged({ this, &RatingControl::OnCaptionSizeChanged });
-        UpdateCaptionMargins();
     }
 
     if (auto backgroundStackPanel = GetTemplateChildT<winrt::StackPanel>(L"RatingBackgroundStackPanel", thisAsControlProtected))
@@ -122,6 +92,9 @@ void RatingControl::OnApplyTemplate()
     }
 
     m_foregroundStackPanel.set(GetTemplateChildT<winrt::StackPanel>(L"RatingForegroundStackPanel", thisAsControlProtected));
+
+    m_backgroundStackPanelTranslateTransform.set(GetTemplateChildT<winrt::TranslateTransform>(L"RatingBackgroundStackPanelTranslateTransform", thisAsControlProtected));
+    m_foregroundStackPanelTranslateTransform.set(GetTemplateChildT<winrt::TranslateTransform>(L"RatingForegroundStackPanelTranslateTransform", thisAsControlProtected));
 
     // FUTURE: Ideally these would be in template overrides:
 
@@ -143,7 +116,6 @@ void RatingControl::OnApplyTemplate()
     m_sharedPointerPropertySet.InsertScalar(L"pointerScalar", c_mouseOverScale);
 
     StampOutRatingItems();
-    m_textScaleChangedRevoker = GetUISettings().TextScaleFactorChanged(winrt::auto_revoke, { this, &RatingControl::OnTextScaleFactorChanged });
 }
 
 
@@ -184,6 +156,30 @@ void RatingControl::StampOutRatingItems()
         return;
     }
 
+    // Before anything else, we need to retrieve the scaled font size.
+    // Note that this is NOT the font size multiplied by the font scale factor,
+    // as large font sizes are scaled less than small font sizes.
+    // There isn't an API to retrieve this, so in lieu of that, we'll create a TextBlock
+    // with the desired properties, measure it at infinity, and see what its desired width is.
+
+    if (IsItemInfoPresentAndFontInfo())
+    {
+        EnsureResourcesLoaded();
+
+        auto textBlock = winrt::TextBlock();
+        textBlock.FontFamily(FontFamily());
+        textBlock.Text(GetAppropriateGlyph(RatingControlStates::Set));
+        textBlock.FontSize(m_fontSizeForRendering);
+        textBlock.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
+        m_scaledFontSizeForRendering = textBlock.DesiredSize().Width;
+    }
+    else if (IsItemInfoPresentAndImageInfo())
+    {
+        // If we're using images rather than glyphs, then there's no text scaling
+        // that will be happening.
+        m_scaledFontSizeForRendering = m_fontSizeForRendering;
+    }
+
     // Background initialization:
 
     m_backgroundStackPanel.get().Children().Clear();
@@ -208,6 +204,49 @@ void RatingControl::StampOutRatingItems()
         PopulateStackPanelWithItems(L"ForegroundImageDefaultTemplate", m_foregroundStackPanel.get(), RatingControlStates::Set);
     }
 
+    // The scale transform and margin cause the stars to be positioned at the top of the RatingControl.
+    // We want them in the middle, so to achieve that, we'll additionally apply a y-transform that will
+    // put the center of the stars in the center of the RatingControl.
+    const auto yTranslation = (ActualHeight() - ActualRatingFontSize()) / 2;
+
+    if (auto backgroundStackPanelTranslateTransform = m_backgroundStackPanelTranslateTransform.get())
+    {
+        backgroundStackPanelTranslateTransform.Y(yTranslation);
+    }
+
+    if (auto foregroundStackPanelTranslateTransform = m_foregroundStackPanelTranslateTransform.get())
+    {
+        foregroundStackPanelTranslateTransform.Y(yTranslation);
+    }
+
+    // If we have at least one item, we'll use the first item of the foreground stack panel as a representative element to determine some values.
+    if (MaxRating() >= 1)
+    {
+        const auto firstItem = m_foregroundStackPanel.get().Children().GetAt(0).as<winrt::UIElement>();
+        firstItem.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
+        const auto defaultItemSpacing = firstItem.DesiredSize().Width - ActualRatingFontSize();
+        const auto netItemSpacing = ItemSpacing() - defaultItemSpacing;
+
+        // We want the caption to be a set distance away from the right-hand side of the last item,
+        // so we'll give it a left margin that accounts for the built-in item spacing.
+        if (auto captionTextBlock = m_captionTextBlock.get())
+        {
+            auto margin = captionTextBlock.Margin();
+            margin.Left = c_captionSpacing - defaultItemSpacing;
+            captionTextBlock.Margin(margin);
+        }
+
+        // If we have at least two items, we'll need to apply the item spacing.
+        // We'll calculate the default item spacing using the first item, and then
+        // subtract it from the desired item spacing to get the Spacing property
+        // to apply to the stack panels.
+        if (MaxRating() >= 2)
+        {
+            m_backgroundStackPanel.get().Spacing(netItemSpacing);
+            m_foregroundStackPanel.get().Spacing(netItemSpacing);
+        }
+    }
+
     UpdateRatingItemsAppearance();
 }
 
@@ -215,7 +254,7 @@ void RatingControl::ReRenderCaption()
 {
     if (auto captionTextBlock = m_captionTextBlock.get())
     {
-        ResetControlWidth();
+        ResetControlSize();
     }
 }
 
@@ -304,7 +343,7 @@ void RatingControl::UpdateRatingItemsAppearance()
             i++;
         }
 
-        ResetControlWidth();
+        ResetControlSize();
     }
 }
 
@@ -328,7 +367,7 @@ void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElem
 
     EnsureResourcesLoaded();
 
-    uiElementVisual.CenterPoint(winrt::float3(static_cast<float>(m_fontSizeForRendering * c_horizontalScaleAnimationCenterPoint), static_cast<float>(m_fontSizeForRendering * c_verticalScaleAnimationCenterPoint), 0.0f));
+    uiElementVisual.CenterPoint(winrt::float3(c_scaleAnimationCenterPointXValue, c_scaleAnimationCenterPointYValue, 0.0f));
 }
 
 void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, const winrt::StackPanel& stackPanel, RatingControlStates state)
@@ -345,32 +384,6 @@ void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, const
             CustomizeRatingItem(ui, state);
             stackPanel.Children().Append(ui);
             ApplyScaleExpressionAnimation(ui, i);
-        }
-    }
-
-    // If we have at least one item, we'll use the first item as a representative element to determine some values.
-    if (MaxRating() >= 1)
-    {
-        auto firstItem = stackPanel.Children().GetAt(0).as<winrt::UIElement>();
-        firstItem.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
-        auto defaultItemSpacing = firstItem.DesiredSize().Width - ActualRatingFontSize();
-
-        // We want the caption to be 12 pixels away from the right-hand side of the last item,
-        // so we'll give it a left margin that accounts for the built-in item spacing.
-        if (auto captionTextBlock = m_captionTextBlock.get())
-        {
-            auto margin = captionTextBlock.Margin();
-            margin.Left = 12 - defaultItemSpacing;
-            captionTextBlock.Margin(margin);
-        }
-
-        // If we have at least two items, we'll need to apply the item spacing.
-        // We'll calculate the default item spacing using the first item, and then
-        // subtract it from the desired item spacing to get the Spacing property
-        // to apply to the stack panel.
-        if (MaxRating() >= 2)
-        {
-            stackPanel.Spacing(ItemSpacing() - defaultItemSpacing);
         }
     }
 }
@@ -391,22 +404,13 @@ void RatingControl::CustomizeRatingItem(const winrt::UIElement& ui, RatingContro
         if (auto image = ui.as<winrt::Image>())
         {
             image.Source(GetAppropriateImageSource(type));
-            image.Width(RenderingRatingFontSize()); // 
-            image.Height(RenderingRatingFontSize()); // MSFT #10030063 Replacing with Rating size DPs
+            image.Width(m_fontSizeForRendering); // 
+            image.Height(m_fontSizeForRendering); // MSFT #10030063 Replacing with Rating size DPs
         }
     }
     else
     {
         MUX_FAIL_FAST_MSG("Runtime error, ItemInfo property is null");
-    }
-
-    if (auto fe = ui.try_as<winrt::FrameworkElement>())
-    {
-        // The default top margin is -8, but we want to increase or decrease that so that the center of the stars stays in a consistent place.
-        // To do that, we'll add on half of the difference between the actual font size and its default value.
-        auto margin = fe.Margin();
-        margin.Top = -8 + (16 - ActualRatingFontSize());
-        fe.Margin(margin);
     }
 }
 
@@ -514,11 +518,10 @@ winrt::ImageSource RatingControl::GetNextImageIfNull(winrt::ImageSource image, R
     return image;
 }
 
-void RatingControl::ResetControlWidth()
+void RatingControl::ResetControlSize()
 {
-    const double newWidth = CalculateTotalRatingControlWidth();
-    const winrt::Control thisAsControl = *this;
-    thisAsControl.Width(newWidth);
+    Width(CalculateTotalRatingControlWidth());
+    Height(m_fontSizeForRendering);
 }
 
 void RatingControl::ChangeRatingBy(double change, bool originatedFromMouse)
@@ -778,7 +781,12 @@ void RatingControl::OnIsEnabledChanged(const winrt::IInspectable& /*sender*/, co
 
 void RatingControl::OnCaptionSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& /*args*/)
 {
-    ResetControlWidth();
+    // The caption's size changing means that the text scale factor has been updated and applied.
+    // As such, we should re-run sizing and layout when this occurs.
+    m_scaledFontSizeForRendering = -1;
+
+    StampOutRatingItems();
+    ResetControlSize();
 }
 
 void RatingControl::OnPointerCancelledBackgroundStackPanel(const winrt::IInspectable& /*sender*/, const winrt::PointerRoutedEventArgs& args)
@@ -899,23 +907,20 @@ void RatingControl::OnPointerReleasedBackgroundStackPanel(const winrt::IInspecta
 
 double RatingControl::CalculateTotalRatingControlWidth()
 {
-    const double ratingStarsWidth = CalculateActualRatingWidth();
-    const auto captionAsWinRT = unbox_value<winrt::hstring>(GetValue(s_CaptionProperty));
-    double textSpacing = 0.0;
+    double totalWidth = CalculateActualRatingWidth();
 
-    if (captionAsWinRT.size() > 0)
+    // If we have a non-empty caption, we also need to account for both its width and the spacing that comes before it.
+    if (auto captionTextBlock = m_captionTextBlock.get())
     {
-        textSpacing = ItemSpacing();
+        const auto captionAsWinRT = unbox_value<winrt::hstring>(GetValue(s_CaptionProperty));
+
+        if (captionAsWinRT.size() > 0)
+        {
+            totalWidth += c_captionSpacing + captionTextBlock.ActualWidth();
+        }
     }
 
-    double captionWidth = 0.0;
-
-    if (m_captionTextBlock)
-    {
-        captionWidth = m_captionTextBlock.get().ActualWidth();
-    }
-
-    return ratingStarsWidth + textSpacing + captionWidth;
+    return totalWidth;
 }
 
 double RatingControl::CalculateStarCenter(int starIndex)
@@ -1191,30 +1196,13 @@ void RatingControl::RecycleEvents(bool useSafeGet)
     }
 }
 
-void RatingControl::OnTextScaleFactorChanged(const winrt::UISettings& setting, const winrt::IInspectable& args)
-{
-    // OnTextScaleFactorChanged happens in non-UI thread, use dispatcher to call StampOutRatingItems in UI thread.
-    auto strongThis = get_strong();
-    m_dispatcherHelper.RunAsync([strongThis]()
-        {
-            strongThis->StampOutRatingItems();
-            strongThis->UpdateCaptionMargins();
-        });
-
-}
-
-winrt::UISettings RatingControl::GetUISettings()
-{
-    static winrt::UISettings uiSettings = winrt::UISettings();
-    return uiSettings;
-}
-
 void RatingControl::EnsureResourcesLoaded()
 {
     if (!m_resourcesLoaded)
     {
         auto fontSizeForRenderingKey = box_value(c_fontSizeForRenderingKey);
         auto itemSpacingKey = box_value(c_itemSpacingKey);
+        auto captionTopMarginKey = box_value(c_captionTopMarginKey);
 
         if (Resources().HasKey(fontSizeForRenderingKey))
         {
@@ -1240,6 +1228,19 @@ void RatingControl::EnsureResourcesLoaded()
         else
         {
             m_itemSpacing = c_defaultItemSpacing;
+        }
+
+        if (Resources().HasKey(captionTopMarginKey))
+        {
+            m_captionTopMargin = unbox_value<double>(Resources().Lookup(captionTopMarginKey));
+        }
+        else if (winrt::Application::Current().Resources().HasKey(captionTopMarginKey))
+        {
+            m_captionTopMargin = unbox_value<double>(winrt::Application::Current().Resources().Lookup(captionTopMarginKey));
+        }
+        else
+        {
+            m_captionTopMargin = c_defaultCaptionTopMargin;
         }
 
         m_resourcesLoaded = true;

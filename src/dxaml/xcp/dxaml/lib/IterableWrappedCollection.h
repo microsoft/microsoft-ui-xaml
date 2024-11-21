@@ -311,7 +311,7 @@ namespace DirectUI
             return S_OK;
         }
 
-        IFACEMETHODIMP remove_VectorChanged(_In_ EventRegistrationToken token) override
+        IFACEMETHODIMP remove_VectorChanged(EventRegistrationToken token) override
         {
             RRETURN(m_evtVectorChangedHandlers.RemoveHandler(token));
         }

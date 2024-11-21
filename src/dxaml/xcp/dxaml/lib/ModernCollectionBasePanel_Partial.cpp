@@ -465,7 +465,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::put_PanningDirectionBaseImpl(_
 }
 
 IFACEMETHODIMP ModernCollectionBasePanel::MeasureOverride(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* pReturnValue)
 {
     m_layoutInProgress = true;
@@ -2006,7 +2006,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP ModernCollectionBasePanel::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     ctl::ComPtr<wfc::IVector<xaml::UIElement*>> spChildren;
@@ -2860,7 +2860,7 @@ Cleanup:
 
 // Get the closest element information to the point.
 _Check_return_ HRESULT ModernCollectionBasePanel::GetClosestElementInfo(
-    _In_ wf::Point position,
+    wf::Point position,
     _Out_ xaml_primitives::ElementInfo* returnValue)
 {
     HRESULT hr = S_OK;
@@ -3038,7 +3038,7 @@ Cleanup:
 // Get the index where an item should be inserted if it were dropped at
 // the given position. This will be used by live reordering.
 _Check_return_ HRESULT ModernCollectionBasePanel::GetInsertionIndex(
-    _In_ wf::Point position,
+    wf::Point position,
     _Out_ INT* pReturnValue)
 {
     HRESULT hr = S_OK;

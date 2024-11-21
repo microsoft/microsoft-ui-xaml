@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::PopupThemeTransitionGenerated::get_FromHorizontalOffset
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PopupThemeTransition_FromHorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::PopupThemeTransitionGenerated::put_FromHorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PopupThemeTransitionGenerated::put_FromHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PopupThemeTransition_FromHorizontalOffset, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::PopupThemeTransitionGenerated::get_FromVerticalOffset(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PopupThemeTransition_FromVerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::PopupThemeTransitionGenerated::put_FromVerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PopupThemeTransitionGenerated::put_FromVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PopupThemeTransition_FromVerticalOffset, value));

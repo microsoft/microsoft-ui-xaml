@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::NavigatingCancelEventArgs::get_Cancel(_Out_ BOOLEAN* pV
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::NavigatingCancelEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::NavigatingCancelEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::NavigatingCancelEventArgs::get_NavigationMode(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NavigatingCancelEventArgs::put_NavigationMode(_In_ ABI::Microsoft::UI::Xaml::Navigation::NavigationMode value)
+_Check_return_ HRESULT DirectUI::NavigatingCancelEventArgs::put_NavigationMode(ABI::Microsoft::UI::Xaml::Navigation::NavigationMode value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::NavigatingCancelEventArgs::get_SourcePageType(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NavigatingCancelEventArgs::put_SourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value)
+_Check_return_ HRESULT DirectUI::NavigatingCancelEventArgs::put_SourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

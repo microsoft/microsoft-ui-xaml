@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CaptionVisibility)(_Out_ ABI::Microsoft::UI::Xaml::Visibility* pValue) override;
-        _Check_return_ HRESULT put_CaptionVisibility(_In_ ABI::Microsoft::UI::Xaml::Visibility value);
+        _Check_return_ HRESULT put_CaptionVisibility(ABI::Microsoft::UI::Xaml::Visibility value);
 
         // Events.
 

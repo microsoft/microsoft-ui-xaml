@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
         IFACEMETHOD(get_Items)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<IInspectable*>** ppValue) override;
         _Check_return_ HRESULT put_Items(_In_opt_ ABI::Windows::Foundation::Collections::IVector<IInspectable*>* pValue);
         IFACEMETHOD(get_Data)(_Outptr_result_maybenull_ ABI::Windows::ApplicationModel::DataTransfer::IDataPackage** ppValue) override;

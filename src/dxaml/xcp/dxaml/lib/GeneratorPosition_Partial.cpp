@@ -17,8 +17,8 @@ using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
 GeneratorPositionFactory::FromIndexAndOffset(
-    _In_ INT index,
-    _In_ INT offset,
+    INT index,
+    INT offset,
     _Out_ xaml_primitives::GeneratorPosition* pReturnValue)
 {
     HRESULT hr = S_OK;

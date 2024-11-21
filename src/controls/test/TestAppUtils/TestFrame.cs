@@ -16,7 +16,7 @@ using Windows.UI.Core;
 
 namespace MUXControlsTestApp
 {
-    public sealed class TestFrame : Frame
+    public sealed partial class TestFrame : Frame
     {
         public UIElement CustomElement
         {

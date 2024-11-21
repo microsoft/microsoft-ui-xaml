@@ -56,7 +56,7 @@ IFACEMETHODIMP DirectUI::VisualTransition::get_GeneratedDuration(_Out_ ABI::Micr
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::VisualTransition_GeneratedDuration, pValue));
 }
-IFACEMETHODIMP DirectUI::VisualTransition::put_GeneratedDuration(_In_ ABI::Microsoft::UI::Xaml::Duration value)
+IFACEMETHODIMP DirectUI::VisualTransition::put_GeneratedDuration(ABI::Microsoft::UI::Xaml::Duration value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::VisualTransition_GeneratedDuration, value));

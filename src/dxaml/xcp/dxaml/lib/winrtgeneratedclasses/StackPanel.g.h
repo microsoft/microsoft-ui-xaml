@@ -66,41 +66,41 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_AreHorizontalSnapPointsRegular)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_AreScrollSnapPointsRegular)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AreScrollSnapPointsRegular)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AreScrollSnapPointsRegular)(BOOLEAN value) override;
         IFACEMETHOD(get_AreVerticalSnapPointsRegular)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_BackgroundSizing)(_Out_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing* pValue) override;
-        IFACEMETHOD(put_BackgroundSizing)(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value) override;
+        IFACEMETHOD(put_BackgroundSizing)(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value) override;
         IFACEMETHOD(get_BorderBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_BorderBrush)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_BorderThickness)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_BorderThickness)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_BorderThickness)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_CornerRadius)(_Out_ ABI::Microsoft::UI::Xaml::CornerRadius* pValue) override;
-        IFACEMETHOD(put_CornerRadius)(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value) override;
+        IFACEMETHOD(put_CornerRadius)(ABI::Microsoft::UI::Xaml::CornerRadius value) override;
         IFACEMETHOD(get_Orientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) override;
-        IFACEMETHOD(put_Orientation)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
+        IFACEMETHOD(put_Orientation)(ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
         IFACEMETHOD(get_Padding)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_Padding)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_Padding)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_Spacing)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Spacing)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Spacing)(DOUBLE value) override;
 
         // Events.
         _Check_return_ HRESULT GetHorizontalSnapPointsChangedEventSourceNoRef(_Outptr_ HorizontalSnapPointsChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_HorizontalSnapPointsChanged)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_HorizontalSnapPointsChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_HorizontalSnapPointsChanged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetVerticalSnapPointsChangedEventSourceNoRef(_Outptr_ VerticalSnapPointsChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_VerticalSnapPointsChanged)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_VerticalSnapPointsChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_VerticalSnapPointsChanged)(EventRegistrationToken token) override;
 
         // Methods.
-        IFACEMETHOD(GetClosestElementInfo)(_In_ ABI::Windows::Foundation::Point position, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ElementInfo* pReturnValue) = 0;
-        IFACEMETHOD(GetInsertionIndex)(_In_ ABI::Windows::Foundation::Point position, _Out_ INT* pReturnValue) = 0;
-        IFACEMETHOD(GetInsertionIndexes)(_In_ ABI::Windows::Foundation::Point position, _Out_ INT* pFirst, _Out_ INT* pSecond) override;
-        IFACEMETHOD(GetIrregularSnapPoints)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue) override;
+        IFACEMETHOD(GetClosestElementInfo)(ABI::Windows::Foundation::Point position, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ElementInfo* pReturnValue) = 0;
+        IFACEMETHOD(GetInsertionIndex)(ABI::Windows::Foundation::Point position, _Out_ INT* pReturnValue) = 0;
+        IFACEMETHOD(GetInsertionIndexes)(ABI::Windows::Foundation::Point position, _Out_ INT* pFirst, _Out_ INT* pSecond) override;
+        IFACEMETHOD(GetIrregularSnapPoints)(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue) override;
         IFACEMETHOD(GetItemsBounds)(_Out_ ABI::Windows::Foundation::Rect* pReturnValue) = 0;
         IFACEMETHOD(GetItemsPerPage)(_In_ DirectUI::IScrollInfo* pScrollInfo, _Out_ DOUBLE* pReturnValue) = 0;
         IFACEMETHOD(GetLastItemIndexInViewport)(_In_ DirectUI::IScrollInfo* pScrollInfo, _Out_ INT* pReturnValue) = 0;
-        IFACEMETHOD(GetRegularSnapPoints)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue) override;
-        IFACEMETHOD(IsLayoutBoundary)(_In_ INT index, _Out_ BOOLEAN* pIsLeftBoundary, _Out_ BOOLEAN* pIsTopBoundary, _Out_ BOOLEAN* pIsRightBoundary, _Out_ BOOLEAN* pIsBottomBoundary) = 0;
+        IFACEMETHOD(GetRegularSnapPoints)(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue) override;
+        IFACEMETHOD(IsLayoutBoundary)(INT index, _Out_ BOOLEAN* pIsLeftBoundary, _Out_ BOOLEAN* pIsTopBoundary, _Out_ BOOLEAN* pIsRightBoundary, _Out_ BOOLEAN* pIsBottomBoundary) = 0;
 
 
     protected:

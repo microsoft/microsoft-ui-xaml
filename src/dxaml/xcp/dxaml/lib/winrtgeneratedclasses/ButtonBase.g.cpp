@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ButtonBaseGenerated::get_ClickMode(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ButtonBase_ClickMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ButtonBaseGenerated::put_ClickMode(_In_ ABI::Microsoft::UI::Xaml::Controls::ClickMode value)
+IFACEMETHODIMP DirectUI::ButtonBaseGenerated::put_ClickMode(ABI::Microsoft::UI::Xaml::Controls::ClickMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ButtonBase_ClickMode, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::ButtonBaseGenerated::get_IsPointerOver(_Out_ BOOLEAN* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ButtonBase_IsPointerOver, pValue));
 }
-_Check_return_ HRESULT DirectUI::ButtonBaseGenerated::put_IsPointerOver(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ButtonBaseGenerated::put_IsPointerOver(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ButtonBase_IsPointerOver, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::ButtonBaseGenerated::get_IsPressed(_Out_ BOOLEAN* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ButtonBase_IsPressed, pValue));
 }
-_Check_return_ HRESULT DirectUI::ButtonBaseGenerated::put_IsPressed(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ButtonBaseGenerated::put_IsPressed(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ButtonBase_IsPressed, value));
@@ -124,7 +124,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ButtonBaseGenerated::remove_Click(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ButtonBaseGenerated::remove_Click(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClickEventSourceType* pEventSource = nullptr;

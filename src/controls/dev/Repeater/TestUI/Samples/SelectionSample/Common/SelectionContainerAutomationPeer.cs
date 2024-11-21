@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Automation.Provider;
 
 namespace MUXControlsTestApp.Samples.Selection
 {
-    public class SelectionContainerAutomationPeer : FrameworkElementAutomationPeer, ISelectionProvider
+    public partial class SelectionContainerAutomationPeer : FrameworkElementAutomationPeer, ISelectionProvider
     {
         private SelectionContainer _owner;
 

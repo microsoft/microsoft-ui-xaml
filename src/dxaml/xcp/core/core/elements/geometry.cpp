@@ -1977,7 +1977,7 @@ _Check_return_ HRESULT
 CPathGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;
@@ -2259,7 +2259,7 @@ _Check_return_ HRESULT
 CGeometryGroup::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;
@@ -2578,10 +2578,11 @@ _Check_return_ HRESULT
 CGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
-    RRETURN(S_OK);
+    ASSERT(FALSE);
+    RRETURN(E_NOTIMPL);
 }
 
 //------------------------------------------------------------------------

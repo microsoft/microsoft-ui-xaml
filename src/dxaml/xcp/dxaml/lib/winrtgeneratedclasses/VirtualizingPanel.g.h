@@ -61,14 +61,14 @@ namespace DirectUI
 
         // Methods.
         IFACEMETHOD(AddInternalChild)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pChild) override;
-        IFACEMETHOD(BringIndexIntoView)(_In_ INT index) override;
-        _Check_return_ HRESULT BringIndexIntoViewProtected(_In_ INT index);
-        IFACEMETHOD(InsertInternalChild)(_In_ INT index, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pChild) override;
+        IFACEMETHOD(BringIndexIntoView)(INT index) override;
+        _Check_return_ HRESULT BringIndexIntoViewProtected(INT index);
+        IFACEMETHOD(InsertInternalChild)(INT index, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pChild) override;
         IFACEMETHOD(OnClearChildren)() override;
         _Check_return_ HRESULT OnClearChildrenProtected();
         IFACEMETHOD(OnItemsChanged)(_In_ IInspectable* pSender, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IItemsChangedEventArgs* pArgs) override;
         _Check_return_ HRESULT OnItemsChangedProtected(_In_ IInspectable* pSender, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IItemsChangedEventArgs* pArgs);
-        IFACEMETHOD(RemoveInternalChildRange)(_In_ INT index, _In_ INT range) override;
+        IFACEMETHOD(RemoveInternalChildRange)(INT index, INT range) override;
 
 
     protected:

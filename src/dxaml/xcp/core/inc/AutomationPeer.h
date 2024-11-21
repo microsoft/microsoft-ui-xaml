@@ -137,7 +137,7 @@ public:
     void RaiseNotificationEvent(
         UIAXcp::AutomationNotificationKind notificationKind,
         UIAXcp::AutomationNotificationProcessing notificationProcessing,
-        _In_opt_ xstring_ptr displayString,
+        _In_ xstring_ptr displayString,
         _In_ xstring_ptr activityId);
 
     void SetFocus();

@@ -37,9 +37,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_HorizontalChange)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_HorizontalChange(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_HorizontalChange(DOUBLE value);
         IFACEMETHOD(get_VerticalChange)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_VerticalChange(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_VerticalChange(DOUBLE value);
 
         // Methods.
 
@@ -72,7 +72,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithHorizontalChangeAndVerticalChange)(_In_ DOUBLE horizontalChange, _In_ DOUBLE verticalChange, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs** ppInstance);
+        IFACEMETHOD(CreateInstanceWithHorizontalChangeAndVerticalChange)(DOUBLE horizontalChange, DOUBLE verticalChange, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs** ppInstance);
 
         // Static properties.
 
@@ -90,7 +90,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithHorizontalChangeAndVerticalChangeImpl(_In_ DOUBLE horizontalChange, _In_ DOUBLE verticalChange, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithHorizontalChangeAndVerticalChangeImpl(DOUBLE horizontalChange, DOUBLE verticalChange, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventArgs** ppInstance);
 
         // Customized static properties.
 

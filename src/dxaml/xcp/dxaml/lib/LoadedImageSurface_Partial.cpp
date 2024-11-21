@@ -28,7 +28,7 @@ _Check_return_ HRESULT LoadedImageSurface::Close()
     return S_OK;
 }
 
-_Check_return_ HRESULT LoadedImageSurface::GetRealSurface(_Outptr_ WUComp::ICompositionSurface** value)
+HRESULT LoadedImageSurface::GetRealSurface(WUComp::ICompositionSurface** value)
 {
     *value = nullptr;
 
@@ -148,7 +148,7 @@ _Check_return_ HRESULT LoadedImageSurface::OnStreamReadCompleted(_In_ wsts::IStr
 
 _Check_return_ HRESULT LoadedImageSurfaceFactory::StartLoadFromUriWithSizeImpl(
     _In_ wf::IUriRuntimeClass* pUri,
-    _In_ wf::Size desiredMaximumSize,
+    wf::Size desiredMaximumSize,
     _Outptr_ xaml_media::ILoadedImageSurface** ppReturnValue)
 {
     ctl::ComPtr<LoadedImageSurface> loadedImageSurface;
@@ -169,7 +169,7 @@ _Check_return_ HRESULT LoadedImageSurfaceFactory::StartLoadFromUriImpl(
 
 _Check_return_ HRESULT LoadedImageSurfaceFactory::StartLoadFromStreamWithSizeImpl(
     _In_ wsts::IRandomAccessStream* pStream,
-    _In_ wf::Size desiredMaximumSize,
+    wf::Size desiredMaximumSize,
     _Outptr_ xaml_media::ILoadedImageSurface** ppReturnValue)
 {
     ctl::ComPtr<LoadedImageSurface> loadedImageSurface;

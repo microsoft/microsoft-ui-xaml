@@ -16,10 +16,10 @@ using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
 CornerRadiusFactory::FromRadii(
-    _In_ DOUBLE topLeft,
-    _In_ DOUBLE topRight,
-    _In_ DOUBLE bottomRight,
-    _In_ DOUBLE bottomLeft,
+    DOUBLE topLeft,
+    DOUBLE topRight,
+    DOUBLE bottomRight,
+    DOUBLE bottomLeft,
     _Out_ xaml::CornerRadius* pReturnValue)
 {
 
@@ -53,7 +53,7 @@ Cleanup:
 
 IFACEMETHODIMP
 CornerRadiusFactory::FromUniformRadius(
-    _In_ DOUBLE uniformRadius,
+    DOUBLE uniformRadius,
     _Out_ xaml::CornerRadius* pReturnValue)
 {
     RRETURN(FromRadii(uniformRadius, uniformRadius, uniformRadius, uniformRadius, pReturnValue));

@@ -15,8 +15,8 @@ using namespace DirectUISynonyms;
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT ManipulationPivotFactory::CreateInstanceWithCenterAndRadiusImpl(
-    _In_ wf::Point center, 
-    _In_ DOUBLE radius,
+    wf::Point center, 
+    DOUBLE radius,
     _Outptr_ IManipulationPivot** ppInstance)
 {
     HRESULT hr = S_OK;

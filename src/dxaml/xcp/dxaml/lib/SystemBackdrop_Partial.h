@@ -24,7 +24,7 @@ namespace DirectUI
         _Check_return_ HRESULT OnTargetDisconnectedImpl(_In_ ixp::ICompositionSupportsSystemBackdrop* disconnectedTarget);
         _Check_return_ HRESULT OnDefaultSystemBackdropConfigurationChangedImpl(_In_ ixp::ICompositionSupportsSystemBackdrop* target, _In_opt_ xaml::IXamlRoot* xamlRoot);
 
-        _Check_return_ HRESULT GetDefaultSystemBackdropConfigurationImpl(_In_ ixp::ICompositionSupportsSystemBackdrop* pTarget, _In_ xaml::IXamlRoot* pXamlRoot, _Outptr_ ixp::SystemBackdrops::ISystemBackdropConfiguration** ppResult);
+        _Check_return_ HRESULT GetDefaultSystemBackdropConfigurationImpl(_In_ ixp::ICompositionSupportsSystemBackdrop* pTarget, _In_opt_ xaml::IXamlRoot* pXamlRoot, _Outptr_ ixp::SystemBackdrops::ISystemBackdropConfiguration** ppResult);
 
     private:
         //

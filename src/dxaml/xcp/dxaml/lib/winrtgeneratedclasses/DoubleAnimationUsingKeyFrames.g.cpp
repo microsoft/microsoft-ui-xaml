@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::DoubleAnimationUsingKeyFrames::get_EnableDependentAnima
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DoubleAnimationUsingKeyFrames_EnableDependentAnimation, pValue));
 }
-IFACEMETHODIMP DirectUI::DoubleAnimationUsingKeyFrames::put_EnableDependentAnimation(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DoubleAnimationUsingKeyFrames::put_EnableDependentAnimation(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DoubleAnimationUsingKeyFrames_EnableDependentAnimation, value));

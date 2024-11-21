@@ -53,19 +53,19 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_NineGrid)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_NineGrid)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_NineGrid)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_Source)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IImageSource** ppValue) override;
         IFACEMETHOD(put_Source)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IImageSource* pValue) override;
         IFACEMETHOD(get_Stretch)(_Out_ ABI::Microsoft::UI::Xaml::Media::Stretch* pValue) override;
-        IFACEMETHOD(put_Stretch)(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value) override;
+        IFACEMETHOD(put_Stretch)(ABI::Microsoft::UI::Xaml::Media::Stretch value) override;
 
         // Events.
         _Check_return_ HRESULT GetImageFailedEventSourceNoRef(_Outptr_ ImageFailedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ImageFailed)(_In_ ABI::Microsoft::UI::Xaml::IExceptionRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ImageFailed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ImageFailed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetImageOpenedEventSourceNoRef(_Outptr_ ImageOpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ImageOpened)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ImageOpened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ImageOpened)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(GetAlphaMask)(_Outptr_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppReturnValue) override;

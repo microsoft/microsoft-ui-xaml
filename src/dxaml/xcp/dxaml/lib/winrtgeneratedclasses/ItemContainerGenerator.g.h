@@ -54,22 +54,22 @@ namespace DirectUI
         // Events.
         virtual _Check_return_ HRESULT GetItemsChangedEventSourceNoRef(_Outptr_ ItemsChangedEventSourceType** ppEventSource) = 0;
         IFACEMETHOD(add_ItemsChanged)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IItemsChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ItemsChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ItemsChanged)(EventRegistrationToken token) override;
 
         // Methods.
-        IFACEMETHOD(ContainerFromIndex)(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
+        IFACEMETHOD(ContainerFromIndex)(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
         IFACEMETHOD(ContainerFromItem)(_In_opt_ IInspectable* pItem, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
         IFACEMETHOD(GenerateNext)(_Out_ BOOLEAN* pIsNewlyRealized, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
-        IFACEMETHOD(GeneratorPositionFromIndex)(_In_ INT itemIndex, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition* pReturnValue) override;
+        IFACEMETHOD(GeneratorPositionFromIndex)(INT itemIndex, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition* pReturnValue) override;
         IFACEMETHOD(GetItemContainerGeneratorForPanel)(_In_ ABI::Microsoft::UI::Xaml::Controls::IPanel* pPanel, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IItemContainerGenerator** ppReturnValue) override;
         IFACEMETHOD(IndexFromContainer)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _Out_ INT* pReturnValue) override;
-        IFACEMETHOD(IndexFromGeneratorPosition)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _Out_ INT* pReturnValue) override;
+        IFACEMETHOD(IndexFromGeneratorPosition)(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _Out_ INT* pReturnValue) override;
         IFACEMETHOD(ItemFromContainer)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _Outptr_ IInspectable** ppReturnValue) override;
         IFACEMETHOD(PrepareItemContainer)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer) override;
-        IFACEMETHOD(Recycle)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _In_ INT count) override;
-        IFACEMETHOD(Remove)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _In_ INT count) override;
+        IFACEMETHOD(Recycle)(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, INT count) override;
+        IFACEMETHOD(Remove)(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, INT count) override;
         IFACEMETHOD(RemoveAll)() override;
-        IFACEMETHOD(StartAt)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorDirection direction, _In_ BOOLEAN allowStartAtRealizedItem) override;
+        IFACEMETHOD(StartAt)(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorDirection direction, BOOLEAN allowStartAtRealizedItem) override;
         IFACEMETHOD(Stop)() override;
 
 
@@ -110,7 +110,7 @@ namespace DirectUI
         static _Check_return_ HRESULT GetDeferredUnlinkingPayloadStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_result_maybenull_ IInspectable** ppValue);
         static _Check_return_ HRESULT SetDeferredUnlinkingPayloadStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ IInspectable* pValue);
         static _Check_return_ HRESULT GetIsRecycledContainerStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetIsRecycledContainerStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetIsRecycledContainerStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
 
         // Static methods.
 

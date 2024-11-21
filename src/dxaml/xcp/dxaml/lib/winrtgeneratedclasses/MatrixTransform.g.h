@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Matrix)(_Out_ ABI::Microsoft::UI::Xaml::Media::Matrix* pValue) override;
-        IFACEMETHOD(put_Matrix)(_In_ ABI::Microsoft::UI::Xaml::Media::Matrix value) override;
+        IFACEMETHOD(put_Matrix)(ABI::Microsoft::UI::Xaml::Media::Matrix value) override;
 
         // Events.
 

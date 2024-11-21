@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::TextCompositionStartedEventArgs::get_StartIndex(_Out_ I
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::TextCompositionStartedEventArgs::put_StartIndex(_In_ INT value)
+_Check_return_ HRESULT DirectUI::TextCompositionStartedEventArgs::put_StartIndex(INT value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::TextCompositionStartedEventArgs::get_Length(_Out_ INT* 
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::TextCompositionStartedEventArgs::put_Length(_In_ INT value)
+_Check_return_ HRESULT DirectUI::TextCompositionStartedEventArgs::put_Length(INT value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

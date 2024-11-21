@@ -39,7 +39,7 @@ public:
     // CDeployment methods
     _Check_return_ HRESULT JupiterComplete(_In_ CApplication* pApplication);
     _Check_return_ HRESULT StartupEventComplete();
-    _Check_return_ HRESULT SetCurrentApplication(_In_ CApplication *pApplication);
+    _Check_return_ HRESULT SetCurrentApplication(_In_opt_ CApplication *pApplication);
 
     void Exit();
 

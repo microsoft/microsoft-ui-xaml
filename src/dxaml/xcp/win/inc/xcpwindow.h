@@ -9,6 +9,7 @@
 #include <coremessaging.h>
 
 class CompositorScheduler;
+class CCoreServices;
 
 extern HINSTANCE g_hInstance;
 
@@ -49,6 +50,8 @@ public:
 
     void DispatchQueuedMessage(_Out_ bool* dispatchedWork, _Out_ bool* hasMoreWork);
 
+    uint32_t GetWorkCount() const { return m_workCount; }
+
 private:
     struct DeferredInvoke
     {
@@ -76,6 +79,8 @@ private:
 class CXcpDispatcher final :
     public CXcpObjectBase<IXcpDispatcher>
 {
+    friend class PauseNewDispatch;
+
 public:
 
     static _Check_return_ HRESULT Create(
@@ -129,8 +134,6 @@ public:
 
     void ProcessMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
-    IMessageLoopExtensions* GetMessageLoopExtensionsNoRef() const { return m_messageLoopExtensions.get(); }
-
 private:
     _Check_return_ HRESULT ReloadSource();
 
@@ -155,6 +158,11 @@ private:
         CXcpDispatcher* XcpDispatcher;
     };
     std::shared_ptr<CXcpDispatcher::WeakPtr> GetWeakPtr();
+
+    // Used to pause/resume dispatching at the Xaml layer without affecting CoreMessaging. Meant to be called only on
+    // the UI thread.
+    void PauseDispatch();
+    void ResumeDispatch();
 
 private:
     CDeferredInvoke m_DeferredInvoke;
@@ -191,6 +199,9 @@ private:
     enum class State
     {
         Running,    // The normal state.
+        Suspended,  // We've paused dispatching at the Xaml level to guard against reentrancy crashes. The alternative
+                    // is to pause CoreMessaging dispatching altogether, but that affects CM in the entire process, and
+                    // other threads could be using CM for other tasks.
         Draining    // We're running down the last messages before shutdown.
                     // We skip some kinds of messages in this state.
     };
@@ -205,22 +216,9 @@ private:
 class PauseNewDispatch
 {
 public:
-    PauseNewDispatch(_In_opt_ IMessageLoopExtensions* messageLoopExtensions)
-        : m_messageLoopExtensions(messageLoopExtensions)
-    {
-        if (m_messageLoopExtensions)
-        {
-            IFCFAILFAST(m_messageLoopExtensions->PauseNewDispatch());
-        }
-    }
-
-    ~PauseNewDispatch()
-    {
-        if (m_messageLoopExtensions)
-        {
-            IFCFAILFAST(m_messageLoopExtensions->ResumeDispatch());
-        }
-    }
+    PauseNewDispatch(_In_ CCoreServices* coreServices);
+    PauseNewDispatch(_In_ CXcpDispatcher* dispatcher);
+    ~PauseNewDispatch();
 
     // Disallow copying
     PauseNewDispatch(const PauseNewDispatch&) = delete;
@@ -229,5 +227,6 @@ public:
     PauseNewDispatch& operator=(PauseNewDispatch&&) = delete;
 
 private:
-    xref_ptr<IMessageLoopExtensions> m_messageLoopExtensions;
+    // NoRef pointer. The dispatcher is expected to be on the call stack while this object is alive (also on the stack).
+    CXcpDispatcher* m_dispatcherNoRef { nullptr };
 };

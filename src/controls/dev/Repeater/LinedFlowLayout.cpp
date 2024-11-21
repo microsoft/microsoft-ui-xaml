@@ -5170,8 +5170,10 @@ void LinedFlowLayout::InvalidateLayout(
 // Invokes InvalidateLayout asynchronously with only invalidateMeasure == True to trigger a new measure pass.
 void LinedFlowLayout::InvalidateMeasureAsync()
 {
-    auto weakThis = get_weak();
-
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::LinedFlowLayout>(*this))};
     m_dispatcherQueue.TryEnqueue(winrt::DispatcherQueueHandler(
         [weakThis]()
     {
@@ -5181,9 +5183,10 @@ void LinedFlowLayout::InvalidateMeasureAsync()
             return;
         }
 
-        if (auto strongThis = weakThis.get())
+        if(auto strongThis = weakThis.get())
         {
-            strongThis->InvalidateLayout(false /*forceRelayout*/, false /*resetItemsInfo*/, true /*invalidateMeasure*/);
+            LinedFlowLayout* rawThis = winrt::get_self<LinedFlowLayout>(strongThis);
+            rawThis->InvalidateLayout(false /*forceRelayout*/, false /*resetItemsInfo*/, true /*invalidateMeasure*/);
         }
     }));
 }

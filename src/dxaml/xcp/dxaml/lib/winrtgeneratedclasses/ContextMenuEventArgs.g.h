@@ -37,11 +37,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_CursorLeft)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CursorLeft(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CursorLeft(DOUBLE value);
         IFACEMETHOD(get_CursorTop)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CursorTop(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CursorTop(DOUBLE value);
 
         // Methods.
 

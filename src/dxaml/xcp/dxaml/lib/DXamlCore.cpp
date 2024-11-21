@@ -4400,7 +4400,7 @@ void DXamlCore::SetTransparentBackground(bool isTransparent)
     pCoreServices->SetTransparentBackground(isTransparent);
 }
 
-void DXamlCore::SetPostTickCallback(_In_opt_ std::function<void()> callback)
+void DXamlCore::SetPostTickCallback(_In_ std::function<void()> callback)
 {
     CCoreServices* pCoreServices = GetHandle();
     if (pCoreServices != nullptr)

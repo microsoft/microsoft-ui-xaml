@@ -58,7 +58,7 @@ HRESULT DirectUI::NavigationTransitionInfoGenerated::QueryInterfaceImpl(_In_ REF
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::NavigationTransitionInfoGenerated::CreateStoryboards(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Microsoft::UI::Xaml::Media::Animation::NavigationTrigger trigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards)
+IFACEMETHODIMP DirectUI::NavigationTransitionInfoGenerated::CreateStoryboards(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Microsoft::UI::Xaml::Media::Animation::NavigationTrigger trigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -77,7 +77,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::NavigationTransitionInfoGenerated::CreateStoryboardsCore(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Microsoft::UI::Xaml::Media::Animation::NavigationTrigger trigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards)
+IFACEMETHODIMP DirectUI::NavigationTransitionInfoGenerated::CreateStoryboardsCore(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Microsoft::UI::Xaml::Media::Animation::NavigationTrigger trigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

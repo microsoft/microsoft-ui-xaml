@@ -45,7 +45,7 @@ const CDependencyProperty* DependencyPropertyHandle::GetDP()
 }
 
 IFACEMETHODIMP DependencyPropertyHandle::GetMetadata(
-    _In_ wxaml_interop::TypeName type,
+    wxaml_interop::TypeName type,
     _Outptr_ xaml::IPropertyMetadata** ppMetadata)
 {
     HRESULT hr = S_OK;

@@ -50,7 +50,7 @@ private:
     void StampOutRatingItems();
     void ReRenderCaption();
     void UpdateRatingItemsAppearance();
-    void ResetControlWidth();
+    void ResetControlSize();
 
     // Methods that handle data
     void ChangeRatingBy(double increase, bool originatedFromMouse);
@@ -79,7 +79,6 @@ private:
     void PointerExitedImpl(const winrt::PointerRoutedEventArgs& args, bool resetScaleAnimation = true);
     void OnPointerPressedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPointerReleasedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void OnTextScaleFactorChanged(const winrt::UISettings& setting, const winrt::IInspectable& args);
 
     // Layout calculation helpers, and animations
     double CalculateTotalRatingControlWidth();
@@ -125,7 +124,6 @@ private:
     float RenderingRatingFontSize();
     float ActualRatingFontSize();
     double ItemSpacing();
-    void UpdateCaptionMargins();
 
     void EnsureResourcesLoaded();
 
@@ -137,6 +135,9 @@ private:
 
     tracker_ref<winrt::StackPanel> m_backgroundStackPanel{ this };
     tracker_ref<winrt::StackPanel> m_foregroundStackPanel{ this };
+
+    tracker_ref<winrt::TranslateTransform> m_backgroundStackPanelTranslateTransform{ this };
+    tracker_ref<winrt::TranslateTransform> m_foregroundStackPanelTranslateTransform{ this };
 
     bool m_isPointerOver{ false };
     bool m_isPointerDown{ false };
@@ -162,15 +163,16 @@ private:
     winrt::event_token m_captionSizeChangedToken{};
     winrt::event_token m_fontFamilyChangedToken{};
 
-    winrt::UISettings::TextScaleFactorChanged_revoker m_textScaleChangedRevoker{};
-    static winrt::UISettings GetUISettings();
-
     DispatcherHelper m_dispatcherHelper{ *this };
 
     const double c_defaultFontSizeForRendering{ 32.0 };
     const double c_defaultItemSpacing{ 8.0 };
+    const double c_defaultCaptionTopMargin{ -6.0 };
 
     bool m_resourcesLoaded{ false };
     double m_fontSizeForRendering{ c_defaultFontSizeForRendering };
     double m_itemSpacing{ c_defaultItemSpacing };
+    double m_captionTopMargin{ c_defaultCaptionTopMargin };
+
+    double m_scaledFontSizeForRendering{ -1.0 };
 };

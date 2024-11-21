@@ -73,7 +73,7 @@ public:
     // IObservableVector
 
     _Check_return_ IFACEMETHOD(add_VectorChanged)(_In_ wfc::VectorChangedEventHandler<IInspectable*>* handler, _Out_ EventRegistrationToken* token) final;
-    _Check_return_ IFACEMETHOD(remove_VectorChanged)(_In_ EventRegistrationToken token) final;
+    _Check_return_ IFACEMETHOD(remove_VectorChanged)(EventRegistrationToken token) final;
 
 private:
 

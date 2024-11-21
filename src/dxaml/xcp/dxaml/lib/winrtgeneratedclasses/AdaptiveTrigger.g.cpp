@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::AdaptiveTrigger::get_MinWindowHeight(_Out_ DOUBLE* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AdaptiveTrigger_MinWindowHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::AdaptiveTrigger::put_MinWindowHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::AdaptiveTrigger::put_MinWindowHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AdaptiveTrigger_MinWindowHeight, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::AdaptiveTrigger::get_MinWindowWidth(_Out_ DOUBLE* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AdaptiveTrigger_MinWindowWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::AdaptiveTrigger::put_MinWindowWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::AdaptiveTrigger::put_MinWindowWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AdaptiveTrigger_MinWindowWidth, value));

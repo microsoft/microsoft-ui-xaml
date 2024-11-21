@@ -108,8 +108,8 @@ _Check_return_ IFACEMETHODIMP
 ListViewBase::SetupContainerContentChangingAfterPrepare(
     _In_ xaml::IDependencyObject* container,
     _In_ IInspectable* item,
-    _In_ INT itemIndex,
-    _In_ wf::Size measureSize)
+    INT itemIndex,
+    wf::Size measureSize)
 {
     TraceSetupCCCBegin(itemIndex);
     ctl::ComPtr<xaml::IDependencyObject> itemAsDO;

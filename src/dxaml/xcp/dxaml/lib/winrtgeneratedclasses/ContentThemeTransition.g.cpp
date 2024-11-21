@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ContentThemeTransitionGenerated::get_HorizontalOffset(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentThemeTransition_HorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentThemeTransitionGenerated::put_HorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ContentThemeTransitionGenerated::put_HorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentThemeTransition_HorizontalOffset, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ContentThemeTransitionGenerated::get_VerticalOffset(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentThemeTransition_VerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentThemeTransitionGenerated::put_VerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ContentThemeTransitionGenerated::put_VerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentThemeTransition_VerticalOffset, value));

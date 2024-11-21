@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Automation.Provider;
 
 namespace MUXControlsTestApp.Samples.Selection
 {
-    public class TreeViewItemAutomationPeer : FrameworkElementAutomationPeer, ISelectionItemProvider
+    public partial class TreeViewItemAutomationPeer : FrameworkElementAutomationPeer, ISelectionItemProvider
     {
         private TreeViewItem _owner;
         public TreeViewItemAutomationPeer(FrameworkElement owner) : base(owner)

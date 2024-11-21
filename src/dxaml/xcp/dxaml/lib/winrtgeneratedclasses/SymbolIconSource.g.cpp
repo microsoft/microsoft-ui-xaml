@@ -45,7 +45,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SymbolIconSourceGenerated::ge
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SymbolIconSource_Symbol, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SymbolIconSourceGenerated::put_Symbol(_In_ ABI::Microsoft::UI::Xaml::Controls::Symbol value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::SymbolIconSourceGenerated::put_Symbol(ABI::Microsoft::UI::Xaml::Controls::Symbol value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SymbolIconSource_Symbol, value));

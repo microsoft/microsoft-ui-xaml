@@ -48,9 +48,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Oscillations)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_Oscillations)(_In_ INT value) override;
+        IFACEMETHOD(put_Oscillations)(INT value) override;
         IFACEMETHOD(get_Springiness)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Springiness)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Springiness)(DOUBLE value) override;
 
         // Events.
 

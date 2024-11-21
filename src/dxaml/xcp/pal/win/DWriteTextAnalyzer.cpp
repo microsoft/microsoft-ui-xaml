@@ -42,7 +42,7 @@ public:
     HRESULT __stdcall SetNumberSubstitution(
         _In_ UINT32 textPosition,
         _In_ UINT32 textLength,
-        _Notnull_ IDWriteNumberSubstitution* pNumberSubstitution
+        _In_ IDWriteNumberSubstitution* pNumberSubstitution
         ) override;
 
     ULONG __stdcall AddRef() override;
@@ -179,7 +179,7 @@ public:
     HRESULT __stdcall GetNumberSubstitution(
         _In_ UINT32 textPosition,
         _Out_ UINT32* pTextLength,
-        _Outptr_ IDWriteNumberSubstitution** ppNumberSubstitution
+        _Outptr_result_maybenull_ IDWriteNumberSubstitution** ppNumberSubstitution
         ) override;
 
     BOOL STDMETHODCALLTYPE SupportsGetLocaleNameList() override
@@ -257,7 +257,7 @@ HRESULT TextAnalysisSourceProxy::GetLocaleName(
 HRESULT TextAnalysisSourceProxy::GetNumberSubstitution(
     _In_ UINT32 textPosition,
     _Out_ UINT32* pTextLength,
-    _Outptr_ IDWriteNumberSubstitution** ppNumberSubstitution
+    _Outptr_result_maybenull_ IDWriteNumberSubstitution** ppNumberSubstitution
     )
 {
     return m_pTextAnalysisSource->GetNumberSubstitution(textPosition,pTextLength, ppNumberSubstitution);

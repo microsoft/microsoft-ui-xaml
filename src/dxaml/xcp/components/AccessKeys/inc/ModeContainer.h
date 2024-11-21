@@ -53,7 +53,7 @@ namespace AccessKeys
             else
             {
                 IFC_RETURN(EvaluateAccessKeyMode(
-                    IsLeftAltKey(inputMessage),
+                    IsAltKey(inputMessage),
                     inputMessage->m_msgID, //Message type, like a Keydown/Up, character, etc
                     inputMessage->m_platformKeyCode, //The message Key.  Represents a Vkey unless message type is CHAR at which point it's an actual character.
                     IsMenuKeyDown(inputMessage),

@@ -38,6 +38,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         //Cache of contracts from Platform.xml
         private Dictionary<string, Version> _contractCache = new Dictionary<string, Version>();
 
+        // Dictionary containing unsupported property values for specific controls
+        private static readonly Dictionary<(string, string), List<string>> UnsupportedEnumValues = new Dictionary<(string, string), List<string>>
+        {
+            // For TextBox and RichEditBox, "WrapWholeWords" is not a valid value for the "TextWrapping" property.
+            { ("TextBox", "TextWrapping"), new List<string> { "WrapWholeWords", "3" } },
+            { ("RichEditBox", "TextWrapping"), new List<string> { "WrapWholeWords", "3" } }
+        };
+
         public bool IsPass1 { get; set; }
 
         public bool HasUnknownChildren { get; set; }
@@ -774,7 +782,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private bool CheckCanAssignTextToProperty(XamlDomNode locationForErrors, XamlMember property, String text)
         {
             XamlType propertyType = property.Type;
-
+            string elementName = property.UnderlyingMember?.DeclaringType?.Name;
+            string propertyName = property.Name;
 
             if (propertyType.IsCollection)
             {
@@ -830,10 +839,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 foreach (string value in valueParts)
                 {
                     string trimValue = value.Trim();
-                    if (!propertyType.GetEnumNames().Contains(trimValue, StringComparer.OrdinalIgnoreCase))
+                    UnsupportedEnumValues.TryGetValue((elementName, propertyName), out var unsupportedValues);
+
+                    if (!propertyType.GetEnumNames().Contains(trimValue, StringComparer.OrdinalIgnoreCase) ||
+                        (unsupportedValues != null && unsupportedValues.Contains(trimValue, StringComparer.OrdinalIgnoreCase))) //Check for unsupported enum values
                     {
                         int result;
-                        if (!Int32.TryParse(trimValue, out result))  // enum also except integer values (decimal)
+                        if (!Int32.TryParse(trimValue, out result) ||  // enum also accepts integer values (decimal)
+                            (unsupportedValues != null && unsupportedValues.Contains(result.ToString()))) //Check for unsupported integer values
                         {
                             Errors.Add(new XamlValidationErrorCannotAssignTextToProperty(locationForErrors, property, text));
                             return false;

@@ -641,7 +641,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
-ItemsPresenter::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+ItemsPresenter::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -701,7 +701,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
-ItemsPresenter::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+ItemsPresenter::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;

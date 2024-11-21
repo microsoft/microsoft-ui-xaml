@@ -102,7 +102,7 @@ void TryStartConnectedAnimationOperation::OnClose()
 }
 
 STDMETHODIMP TryStartConnectedAnimationOperation::GetResults(
-    _Inout_ boolean *result)
+    _Out_ boolean *result)
 {
     *result = m_result;
     return S_OK;

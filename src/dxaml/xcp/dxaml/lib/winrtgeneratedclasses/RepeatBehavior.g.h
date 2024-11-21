@@ -23,16 +23,16 @@ namespace DirectUI
 
     public:
         // Extension methods.
-        IFACEMETHOD(GetHasCount)(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(GetHasDuration)(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(Equals)(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior target, _In_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior value, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(GetHasCount)(ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(GetHasDuration)(ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(Equals)(ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior target, ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior value, _Out_ BOOLEAN* pReturnValue) override;
 
         // Static properties.
         IFACEMETHOD(get_Forever)(_Out_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior* pValue) override;
 
         // Static methods.
-        IFACEMETHOD(FromCount)(_In_ DOUBLE count, _Out_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior* pReturnValue) override;
-        IFACEMETHOD(FromDuration)(_In_ ABI::Windows::Foundation::TimeSpan duration, _Out_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior* pReturnValue) override;
+        IFACEMETHOD(FromCount)(DOUBLE count, _Out_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior* pReturnValue) override;
+        IFACEMETHOD(FromDuration)(ABI::Windows::Foundation::TimeSpan duration, _Out_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior* pReturnValue) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

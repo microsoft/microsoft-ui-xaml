@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::SplitViewPaneClosingEventArgs::get_Cancel(_Out_ BOOLEAN
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SplitViewPaneClosingEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SplitViewPaneClosingEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

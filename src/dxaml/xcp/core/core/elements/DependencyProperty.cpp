@@ -66,7 +66,7 @@ _Check_return_ HRESULT CDependencyProperty::ValidateType(
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CDependencyProperty::CreateDefaultValueObject(
     _In_ CCoreServices *pCore,
-    _Inout_ CValue *pDefaultValue) const
+    _Out_ CValue *pDefaultValue) const
 {
     CREATEPARAMETERS cp(pCore);
     const CREATEPFN pfnCreate = GetPropertyType()->GetCoreConstructor();
@@ -97,7 +97,7 @@ _Check_return_ HRESULT CDependencyProperty::CreateDefaultValueObject(
 
 _Check_return_ HRESULT CDependencyProperty::CreateDefaultVO(
     _In_ CCoreServices *pCore,
-    _Inout_ CValue *pDefaultValue) const
+    _Out_ CValue *pDefaultValue) const
 {
     switch (GetPropertyType()->GetIndex())
     {

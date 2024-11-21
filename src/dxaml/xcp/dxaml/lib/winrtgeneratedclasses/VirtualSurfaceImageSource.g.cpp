@@ -63,7 +63,7 @@ HRESULT DirectUI::VirtualSurfaceImageSourceFactory::QueryInterfaceImpl(_In_ REFI
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::VirtualSurfaceImageSourceFactory::CreateInstanceWithDimensions(_In_ INT pixelWidth, _In_ INT pixelHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSource** ppInstance)
+IFACEMETHODIMP DirectUI::VirtualSurfaceImageSourceFactory::CreateInstanceWithDimensions(INT pixelWidth, INT pixelHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSource** ppInstance)
 {
     HRESULT hr = S_OK;
     
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::VirtualSurfaceImageSourceFactory::CreateInstanceWithDim
 Cleanup:
     return hr;
 }
-IFACEMETHODIMP DirectUI::VirtualSurfaceImageSourceFactory::CreateInstanceWithDimensionsAndOpacity(_In_ INT pixelWidth, _In_ INT pixelHeight, _In_ BOOLEAN isOpaque, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSource** ppInstance)
+IFACEMETHODIMP DirectUI::VirtualSurfaceImageSourceFactory::CreateInstanceWithDimensionsAndOpacity(INT pixelWidth, INT pixelHeight, BOOLEAN isOpaque, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IVirtualSurfaceImageSource** ppInstance)
 {
     HRESULT hr = S_OK;
     

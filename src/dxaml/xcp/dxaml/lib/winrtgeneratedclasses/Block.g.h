@@ -49,15 +49,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_HorizontalTextAlignment)(_Out_ ABI::Microsoft::UI::Xaml::TextAlignment* pValue) override;
-        IFACEMETHOD(put_HorizontalTextAlignment)(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value) override;
+        IFACEMETHOD(put_HorizontalTextAlignment)(ABI::Microsoft::UI::Xaml::TextAlignment value) override;
         IFACEMETHOD(get_LineHeight)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_LineHeight)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_LineHeight)(DOUBLE value) override;
         IFACEMETHOD(get_LineStackingStrategy)(_Out_ ABI::Microsoft::UI::Xaml::LineStackingStrategy* pValue) override;
-        IFACEMETHOD(put_LineStackingStrategy)(_In_ ABI::Microsoft::UI::Xaml::LineStackingStrategy value) override;
+        IFACEMETHOD(put_LineStackingStrategy)(ABI::Microsoft::UI::Xaml::LineStackingStrategy value) override;
         IFACEMETHOD(get_Margin)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_Margin)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_Margin)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_TextAlignment)(_Out_ ABI::Microsoft::UI::Xaml::TextAlignment* pValue) override;
-        IFACEMETHOD(put_TextAlignment)(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value) override;
+        IFACEMETHOD(put_TextAlignment)(ABI::Microsoft::UI::Xaml::TextAlignment value) override;
 
         // Events.
 

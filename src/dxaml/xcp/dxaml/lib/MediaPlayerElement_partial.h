@@ -10,7 +10,7 @@ namespace DirectUI
 {
     #define EVENT_DECL(EventName) \
         _Check_return_ IFACEMETHOD(add_##EventName)(_In_ EventName##EventSourceType::HandlerType* pValue, _Out_ EventRegistrationToken* ptToken) override; \
-        _Check_return_ IFACEMETHOD(remove_##EventName)(_In_ EventRegistrationToken tToken) override;
+        _Check_return_ IFACEMETHOD(remove_##EventName)(EventRegistrationToken tToken) override;
 
     PARTIAL_CLASS(MediaPlayerElement)
     {

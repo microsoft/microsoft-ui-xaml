@@ -87,7 +87,7 @@ void HandleStore::AddPropertyToMap(
 
 _Use_decl_annotations_
 void HandleStore::AddToCreatedMap(
-    InstanceHandle object)
+    _In_ InstanceHandle object)
 {
     auto lock = m_handleMapLock.Lock();
     m_handleMap.AddToCreatedMap(object);

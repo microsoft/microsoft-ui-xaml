@@ -41,12 +41,12 @@ namespace DirectUI
 
     public:
         IFACEMETHOD(MeasureOverride)(
-            _In_ wf::Size availableSize,
+            wf::Size availableSize,
             _Out_ wf::Size* pReturnValue)
             override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size arrangeSize,
+            wf::Size arrangeSize,
             _Out_ wf::Size* pReturnValue)
             override;
 
@@ -1487,14 +1487,14 @@ namespace DirectUI
     public:
         // Get the closest element information to the point.
         _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
-            _In_ wf::Point position,
+            wf::Point position,
             _Out_ xaml_primitives::ElementInfo* returnValue)
             override;
 
         // Get the index where an item should be inserted if it were dropped at
         // the given position. This will be used by live reordering.
         _Check_return_ IFACEMETHOD(GetInsertionIndex)(
-            _In_ wf::Point position,
+            wf::Point position,
             _Out_ INT* returnValue)
             override;
 

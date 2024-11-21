@@ -598,7 +598,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetElementFromPoint(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetElementFromPoint(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerOverrides* pVirtuals = NULL;
@@ -620,7 +620,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1314,7 +1314,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPattern(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPattern(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerOverrides* pVirtuals = NULL;
@@ -1336,7 +1336,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1355,7 +1355,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPeerFromPoint(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPeerFromPoint(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1374,7 +1374,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1394,7 +1394,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::AutomationPeerGenerated::GetPeerFromPointCoreProtected(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT DirectUI::AutomationPeerGenerated::GetPeerFromPointCoreProtected(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerOverrides* pVirtuals = NULL;
@@ -1966,7 +1966,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::Navigate(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::Navigate(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerOverrides* pVirtuals = NULL;
@@ -1988,7 +1988,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -2047,7 +2047,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::RaiseAutomationEvent(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::RaiseAutomationEvent(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -2065,7 +2065,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::RaiseNotificationEvent(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNotificationKind notificationKind, _In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNotificationProcessing notificationProcessing, _In_opt_ HSTRING displayString, _In_ HSTRING activityId)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::RaiseNotificationEvent(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNotificationKind notificationKind, ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNotificationProcessing notificationProcessing, _In_opt_ HSTRING displayString, _In_ HSTRING activityId)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -2103,7 +2103,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::RaiseStructureChangedEvent(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationStructureChangeType structureChangeType, _In_opt_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pChild)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::RaiseStructureChangedEvent(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationStructureChangeType structureChangeType, _In_opt_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pChild)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -2121,7 +2121,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AutomationPeerGenerated::RaiseTextEditTextChangedEvent(_In_ ABI::Microsoft::UI::Xaml::Automation::AutomationTextEditChangeType automationTextEditChangeType, _In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pChangedData)
+IFACEMETHODIMP DirectUI::AutomationPeerGenerated::RaiseTextEditTextChangedEvent(ABI::Microsoft::UI::Xaml::Automation::AutomationTextEditChangeType automationTextEditChangeType, _In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pChangedData)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -2327,7 +2327,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerFactory::CreateInstance(_In_opt_ IInspect
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::AutomationPeerFactory::ListenerExists(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::AutomationPeerFactory::ListenerExists(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -43,19 +43,19 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
         IFACEMETHOD(get_Data)(_Outptr_result_maybenull_ ABI::Windows::ApplicationModel::DataTransfer::IDataPackage** ppValue) override;
         _Check_return_ HRESULT put_Data(_In_opt_ ABI::Windows::ApplicationModel::DataTransfer::IDataPackage* pValue);
         IFACEMETHOD(get_DragUI)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDragUI** ppValue) override;
         IFACEMETHOD(get_AllowedOperations)(_Out_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation* pValue) override;
-        IFACEMETHOD(put_AllowedOperations)(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value) override;
+        IFACEMETHOD(put_AllowedOperations)(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value) override;
 
         // Methods.
         IFACEMETHOD(GetDeferral)(_Outptr_ ABI::Microsoft::UI::Xaml::IDragOperationDeferral** ppReturnValue) override;
         IFACEMETHOD(GetPosition)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pRelativeTo, _Out_ ABI::Windows::Foundation::Point* pReturnValue) override;
         IFACEMETHOD(DeferralAdded)() override;
         IFACEMETHOD(DeferralCompleted)() override;
-        IFACEMETHOD(SetAcceptedOperation)(_In_ IInspectable* pSource, _In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation acceptedOperation) override;
+        IFACEMETHOD(SetAcceptedOperation)(_In_ IInspectable* pSource, ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation acceptedOperation) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

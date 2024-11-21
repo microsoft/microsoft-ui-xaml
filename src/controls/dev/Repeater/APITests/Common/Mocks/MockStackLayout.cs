@@ -9,7 +9,7 @@ using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutC
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks
 {
-    class MockStackLayout : StackLayout
+    partial class MockStackLayout : StackLayout
     {
         public Func<Size, VirtualizingLayoutContext, Size> MeasureLayoutFunc { get; set; }
         public Func<Size, VirtualizingLayoutContext, Size> ArrangeLayoutFunc { get; set; }

@@ -40,20 +40,20 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         _Check_return_ HRESULT get_FilePaths(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_FilePaths(_In_opt_ HSTRING value);
         _Check_return_ HRESULT get_AllowDataAccess(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_AllowDataAccess(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_AllowDataAccess(BOOLEAN value);
         IFACEMETHOD(get_Data)(_Outptr_result_maybenull_ ABI::Windows::ApplicationModel::DataTransfer::IDataPackage** ppValue) override;
         IFACEMETHOD(put_Data)(_In_opt_ ABI::Windows::ApplicationModel::DataTransfer::IDataPackage* pValue) override;
         IFACEMETHOD(get_DataView)(_Outptr_result_maybenull_ ABI::Windows::ApplicationModel::DataTransfer::IDataPackageView** ppValue) override;
         IFACEMETHOD(get_DragUIOverride)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDragUIOverride** ppValue) override;
         IFACEMETHOD(get_Modifiers)(_Out_ ABI::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers* pValue) override;
         IFACEMETHOD(get_AcceptedOperation)(_Out_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation* pValue) override;
-        IFACEMETHOD(put_AcceptedOperation)(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value) override;
+        IFACEMETHOD(put_AcceptedOperation)(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value) override;
         IFACEMETHOD(get_AllowedOperations)(_Out_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation* pValue) override;
-        _Check_return_ HRESULT put_AllowedOperations(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value);
+        _Check_return_ HRESULT put_AllowedOperations(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value);
 
         // Methods.
         IFACEMETHOD(GetDeferral)(_Outptr_ ABI::Microsoft::UI::Xaml::IDragOperationDeferral** ppReturnValue) override;

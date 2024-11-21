@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ContentDialogButtonClickEventArgsGenerated::get_Cancel(
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ContentDialogButtonClickEventArgsGenerated::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ContentDialogButtonClickEventArgsGenerated::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

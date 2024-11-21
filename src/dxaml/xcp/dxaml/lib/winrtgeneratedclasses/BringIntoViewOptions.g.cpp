@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_AnimationDesired(_Ou
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_AnimationDesired(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_AnimationDesired(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -68,7 +68,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_HorizontalAlignmentR
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_HorizontalAlignmentRatio(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_HorizontalAlignmentRatio(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -87,7 +87,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_HorizontalOffset(_Ou
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_HorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_HorizontalOffset(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -105,7 +105,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_TargetRect(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_TargetRect(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue)
+IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_TargetRect(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -123,7 +123,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_VerticalAlignmentRat
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_VerticalAlignmentRatio(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_VerticalAlignmentRatio(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -142,7 +142,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::get_VerticalOffset(_Out_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_VerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BringIntoViewOptionsGenerated::put_VerticalOffset(DOUBLE value)
 {
     HRESULT hr = S_OK;
     

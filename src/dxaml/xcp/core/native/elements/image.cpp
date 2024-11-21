@@ -190,7 +190,7 @@ CImage::OnDisconnected( )
     RRETURN(S_OK);
 }
 
-_Check_return_ HRESULT CImage::GetTitle(_Outptr_ HSTRING *output)
+_Check_return_ HRESULT CImage::GetTitle(_Outptr_result_maybenull_ HSTRING *output)
 {
     *output = nullptr;
     if (m_pImageSource)
@@ -200,7 +200,7 @@ _Check_return_ HRESULT CImage::GetTitle(_Outptr_ HSTRING *output)
     return S_OK;
 }
 
-_Check_return_ HRESULT CImage::GetDescription(_Outptr_ HSTRING *output)
+_Check_return_ HRESULT CImage::GetDescription(_Outptr_result_maybenull_ HSTRING *output)
 {
     *output = nullptr;
     if (m_pImageSource)

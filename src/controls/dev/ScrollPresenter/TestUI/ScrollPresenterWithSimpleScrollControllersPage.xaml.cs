@@ -556,7 +556,7 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class ScrollBarController : IScrollController
+    public partial class ScrollBarController : IScrollController
     {
         private ListBox lstLog = null;
         private ScrollBar scrollBar = null;

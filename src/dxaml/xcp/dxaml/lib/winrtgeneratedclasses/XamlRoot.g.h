@@ -94,10 +94,10 @@ namespace DirectUI
         // Events.
         virtual _Check_return_ HRESULT GetChangedEventSourceNoRef(_Outptr_ ChangedEventSourceType** ppEventSource) = 0;
         IFACEMETHOD(add_Changed)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::XamlRoot*, ABI::Microsoft::UI::Xaml::XamlRootChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Changed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Changed)(EventRegistrationToken token) override;
         virtual _Check_return_ HRESULT GetInputActivationChangedEventSourceNoRef(_Outptr_ InputActivationChangedEventSourceType** ppEventSource) = 0;
         _Check_return_ HRESULT add_InputActivationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::XamlRoot*, ABI::Microsoft::UI::Xaml::XamlRootChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_InputActivationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_InputActivationChanged(EventRegistrationToken token);
 
         // Methods.
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)

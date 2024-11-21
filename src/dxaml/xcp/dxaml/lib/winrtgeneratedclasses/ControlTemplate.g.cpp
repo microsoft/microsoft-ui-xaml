@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ControlTemplate::get_TargetType(_Out_ ABI::Windows::UI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ControlTemplate_TargetType, pValue));
 }
-IFACEMETHODIMP DirectUI::ControlTemplate::put_TargetType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value)
+IFACEMETHODIMP DirectUI::ControlTemplate::put_TargetType(ABI::Windows::UI::Xaml::Interop::TypeName value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ControlTemplate_TargetType, value));

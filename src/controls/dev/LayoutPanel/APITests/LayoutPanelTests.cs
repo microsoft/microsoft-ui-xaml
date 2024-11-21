@@ -192,7 +192,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    public class MyCustomNonVirtualizingStackLayout: NonVirtualizingLayout
+    public partial class MyCustomNonVirtualizingStackLayout : NonVirtualizingLayout
     {
         protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
         {

@@ -16,8 +16,8 @@ using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
 RepeatBehaviorFactory::Equals(
-    _In_ xaml_animation::RepeatBehavior target,
-    _In_ xaml_animation::RepeatBehavior value,
+    xaml_animation::RepeatBehavior target,
+    xaml_animation::RepeatBehavior value,
     _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -63,7 +63,7 @@ Cleanup:
 
 IFACEMETHODIMP
 RepeatBehaviorFactory::FromCount(
-    _In_ DOUBLE count,
+    DOUBLE count,
     _Out_ xaml_animation::RepeatBehavior* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -94,7 +94,7 @@ Cleanup:
 
 IFACEMETHODIMP
 RepeatBehaviorFactory::FromDuration(
-    _In_ wf::TimeSpan duration,
+    wf::TimeSpan duration,
     _Out_ xaml_animation::RepeatBehavior* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -124,7 +124,7 @@ Cleanup:
 
 IFACEMETHODIMP
 RepeatBehaviorFactory::GetHasCount(
-    _In_ xaml_animation::RepeatBehavior target,
+    xaml_animation::RepeatBehavior target,
     _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
@@ -145,7 +145,7 @@ Cleanup:
 
 IFACEMETHODIMP
 RepeatBehaviorFactory::GetHasDuration(
-    _In_ xaml_animation::RepeatBehavior target,
+    xaml_animation::RepeatBehavior target,
     _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
@@ -166,7 +166,7 @@ Cleanup:
 
 IFACEMETHODIMP
 RepeatBehaviorFactory::get_Forever(
-    _Out_opt_ xaml_animation::RepeatBehavior *pValue)
+    _Out_ xaml_animation::RepeatBehavior *pValue)
 {
     RRETURN(RepeatBehaviorHelper::GetForever(pValue));
 }

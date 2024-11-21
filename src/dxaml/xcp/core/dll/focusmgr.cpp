@@ -601,7 +601,7 @@ _Check_return_ HRESULT
 CFocusManager::ProcessTabStopInternal(
     _In_ bool bPressedShift,
     _In_ bool queryOnly,
-    _Outptr_ CDependencyObject** ppNewTabStopElement)
+    _Outptr_result_maybenull_ CDependencyObject** ppNewTabStopElement)
 {
     HRESULT hr = S_OK;
     bool isTabStopOverridden = false;
@@ -2581,7 +2581,7 @@ CDependencyObject* CFocusManager::FindNextFocus(
     _In_ const FindFocusOptions& findFocusOptions,
     _In_ Focus::XYFocusOptions& xyFocusOptions,
     _In_opt_ CDependencyObject* component,
-    _In_opt_ bool updateManifolds)
+    _In_ bool updateManifolds)
 {
     DirectUI::FocusNavigationDirection direction = findFocusOptions.GetDirection();
     ASSERT(direction == DirectUI::FocusNavigationDirection::Down || direction == DirectUI::FocusNavigationDirection::Left ||

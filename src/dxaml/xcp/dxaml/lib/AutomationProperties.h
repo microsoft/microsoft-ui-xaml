@@ -102,16 +102,16 @@ namespace DirectUI
         IFACEMETHOD(GetLevel)(_In_ xaml::IDependencyObject *element, _Out_ INT *value) override;
         static _Check_return_ HRESULT GetLevelStatic(_In_ xaml::IDependencyObject* element, _Out_ INT *value);
         IFACEMETHOD(SetLevel)(_In_ xaml::IDependencyObject *element, _In_ INT value) override;
-        static _Check_return_ HRESULT GetAnnotationsPropertyStatic(_Out_ const CDependencyProperty** ppValue);
+        static _Check_return_ HRESULT GetAnnotationsPropertyStatic(_Outptr_ const CDependencyProperty** ppValue);
         IFACEMETHOD(get_AnnotationsProperty)(_Out_ xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetAnnotations)(_In_ xaml::IDependencyObject* element, _Outptr_ wfc::IVector<xaml_automation::AutomationAnnotation*>** pValue) override;
         static _Check_return_ HRESULT GetAnnotationsStatic(_In_ xaml::IDependencyObject* element, _Outptr_ wfc::IVector<xaml_automation::AutomationAnnotation*>** pValue);
-        static _Check_return_ HRESULT GetLandmarkTypePropertyStatic(_Out_ const CDependencyProperty** ppValue);
+        static _Check_return_ HRESULT GetLandmarkTypePropertyStatic(_Outptr_ const CDependencyProperty** ppValue);
         IFACEMETHOD(get_LandmarkTypeProperty)(_Out_ xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetLandmarkType)(_In_ xaml::IDependencyObject* element, _Out_ xaml_automation_peers::AutomationLandmarkType *pValue) override;
         static _Check_return_ HRESULT GetLandmarkTypeStatic(_In_ xaml::IDependencyObject* element, _Out_ xaml_automation_peers::AutomationLandmarkType *pValue);
         IFACEMETHOD(SetLandmarkType)(_In_ xaml::IDependencyObject* element, _In_ xaml_automation_peers::AutomationLandmarkType value) override;
-        static _Check_return_ HRESULT GetLocalizedLandmarkTypePropertyStatic(_Out_ const CDependencyProperty** ppValue);
+        static _Check_return_ HRESULT GetLocalizedLandmarkTypePropertyStatic(_Outptr_ const CDependencyProperty** ppValue);
         IFACEMETHOD(get_LocalizedLandmarkTypeProperty)(_Out_ xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetLocalizedLandmarkType)(_In_ xaml::IDependencyObject* element, _Out_ HSTRING* pValue) override;
         static _Check_return_ HRESULT GetLocalizedLandmarkTypeStatic(_In_ xaml::IDependencyObject* element, _Out_ HSTRING* pValue);
@@ -153,7 +153,7 @@ namespace DirectUI
         IFACEMETHOD(GetCulture)(_In_ xaml::IDependencyObject *element, _Out_ INT *value) override;
         static _Check_return_ HRESULT GetCultureStatic(_In_ xaml::IDependencyObject* element, _Out_ INT *value);
         IFACEMETHOD(SetCulture)(_In_ xaml::IDependencyObject *element, _In_ INT value) override;
-        static _Check_return_ HRESULT GetHeadingLevelPropertyStatic(_Out_ const CDependencyProperty** ppValue);
+        static _Check_return_ HRESULT GetHeadingLevelPropertyStatic(_Outptr_ const CDependencyProperty** ppValue);
         IFACEMETHOD(get_HeadingLevelProperty)(_Out_ xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetHeadingLevel)(_In_ xaml::IDependencyObject* element, _Out_ xaml_automation_peers::AutomationHeadingLevel *pValue) override;
         static _Check_return_ HRESULT GetHeadingLevelStatic(_In_ xaml::IDependencyObject* element, _Out_ xaml_automation_peers::AutomationHeadingLevel *pValue);

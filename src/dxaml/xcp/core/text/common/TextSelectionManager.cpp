@@ -1222,7 +1222,7 @@ _Check_return_ HRESULT TextSelectionManager::NotifySelectionVisibilityChanged()
 _Check_return_ HRESULT TextSelectionManager::NotifySelectionChanged(
     _In_ uint32_t previousSelectionStartOffset,
     _In_ uint32_t previousSelectionEndOffset,
-    _In_ bool fHideGrippers
+    bool fHideGrippers
 )
 {
     CRichTextBlock *pRichTextBlock = nullptr;
@@ -1281,10 +1281,10 @@ _Check_return_ HRESULT TextSelectionManager::NotifySelectionChanged(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT TextSelectionManager::NotifySelectionChanged(
-    _In_ bool selectionPreviouslyEmpty,
+    bool selectionPreviouslyEmpty,
     _In_ uint32_t previousSelectionStartOffset,
     _In_ uint32_t previousSelectionEndOffset,
-    _In_ bool fHideGrippers
+    bool fHideGrippers
 )
 {
     bool selectionChanged = true;

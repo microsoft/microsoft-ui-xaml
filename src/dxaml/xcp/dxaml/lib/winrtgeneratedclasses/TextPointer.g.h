@@ -48,8 +48,8 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetCharacterRect)(_In_ ABI::Microsoft::UI::Xaml::Documents::LogicalDirection direction, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(GetPositionAtOffset)(_In_ INT offset, _In_ ABI::Microsoft::UI::Xaml::Documents::LogicalDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer** ppReturnValue) override;
+        IFACEMETHOD(GetCharacterRect)(ABI::Microsoft::UI::Xaml::Documents::LogicalDirection direction, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(GetPositionAtOffset)(INT offset, ABI::Microsoft::UI::Xaml::Documents::LogicalDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer** ppReturnValue) override;
 
 
     protected:

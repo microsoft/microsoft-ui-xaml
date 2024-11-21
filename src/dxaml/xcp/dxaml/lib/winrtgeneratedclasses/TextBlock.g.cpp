@@ -61,7 +61,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_CharacterSpacing(_Out_ INT* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_CharacterSpacing, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_CharacterSpacing(_In_ INT value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_CharacterSpacing(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_CharacterSpacing, value));
@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_FontSize(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_FontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_FontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_FontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_FontSize, value));
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_FontStretch(_Out_ ABI::Windows:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_FontStretch, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_FontStretch(_In_ ABI::Windows::UI::Text::FontStretch value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_FontStretch(ABI::Windows::UI::Text::FontStretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_FontStretch, value));
@@ -117,7 +117,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_FontStyle(_Out_ ABI::Windows::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_FontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_FontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_FontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_FontStyle, value));
@@ -126,7 +126,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_FontWeight(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_FontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_FontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_FontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_FontWeight, value));
@@ -144,7 +144,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_HorizontalTextAlignment(_Out_ A
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_HorizontalTextAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_HorizontalTextAlignment(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_HorizontalTextAlignment(ABI::Microsoft::UI::Xaml::TextAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_HorizontalTextAlignment, value));
@@ -162,7 +162,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_IsColorFontEnabled(_Out_ BOOLEA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_IsColorFontEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_IsColorFontEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_IsColorFontEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_IsColorFontEnabled, value));
@@ -171,7 +171,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_IsTextScaleFactorEnabled(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_IsTextScaleFactorEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_IsTextScaleFactorEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_IsTextScaleFactorEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_IsTextScaleFactorEnabled, value));
@@ -180,7 +180,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_IsTextSelectionEnabled(_Out_ BO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_IsTextSelectionEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_IsTextSelectionEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_IsTextSelectionEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_IsTextSelectionEnabled, value));
@@ -193,7 +193,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_LineHeight(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_LineHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_LineHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_LineHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_LineHeight, value));
@@ -202,7 +202,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_LineStackingStrategy(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_LineStackingStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_LineStackingStrategy(_In_ ABI::Microsoft::UI::Xaml::LineStackingStrategy value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_LineStackingStrategy(ABI::Microsoft::UI::Xaml::LineStackingStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_LineStackingStrategy, value));
@@ -211,7 +211,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_MaxLines(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_MaxLines, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_MaxLines(_In_ INT value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_MaxLines(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_MaxLines, value));
@@ -220,7 +220,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_OpticalMarginAlignment(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_OpticalMarginAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_OpticalMarginAlignment(_In_ ABI::Microsoft::UI::Xaml::OpticalMarginAlignment value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_OpticalMarginAlignment(ABI::Microsoft::UI::Xaml::OpticalMarginAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_OpticalMarginAlignment, value));
@@ -229,7 +229,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_Padding(_Out_ ABI::Microsoft::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_Padding, value));
@@ -289,7 +289,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_TextAlignment(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextAlignment(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextAlignment(ABI::Microsoft::UI::Xaml::TextAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextAlignment, value));
@@ -298,7 +298,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_TextDecorations(_Out_ ABI::Wind
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextDecorations, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextDecorations(_In_ ABI::Windows::UI::Text::TextDecorations value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextDecorations(ABI::Windows::UI::Text::TextDecorations value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextDecorations, value));
@@ -311,7 +311,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_TextLineBounds(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextLineBounds, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextLineBounds(_In_ ABI::Microsoft::UI::Xaml::TextLineBounds value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextLineBounds(ABI::Microsoft::UI::Xaml::TextLineBounds value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextLineBounds, value));
@@ -320,7 +320,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_TextReadingOrder(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextReadingOrder, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextReadingOrder(_In_ ABI::Microsoft::UI::Xaml::TextReadingOrder value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextReadingOrder(ABI::Microsoft::UI::Xaml::TextReadingOrder value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextReadingOrder, value));
@@ -329,7 +329,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_TextTrimming(_Out_ ABI::Microso
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextTrimming, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextTrimming(_In_ ABI::Microsoft::UI::Xaml::TextTrimming value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextTrimming(ABI::Microsoft::UI::Xaml::TextTrimming value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextTrimming, value));
@@ -338,7 +338,7 @@ IFACEMETHODIMP DirectUI::TextBlockGenerated::get_TextWrapping(_Out_ ABI::Microso
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextWrapping, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextWrapping(_In_ ABI::Microsoft::UI::Xaml::TextWrapping value)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::put_TextWrapping(ABI::Microsoft::UI::Xaml::TextWrapping value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBlock_TextWrapping, value));
@@ -381,7 +381,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBlockGenerated::remove_ContextMenuOpening(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::remove_ContextMenuOpening(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ContextMenuOpeningEventSourceType* pEventSource = nullptr;
@@ -436,7 +436,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBlockGenerated::remove_IsTextTrimmedChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::remove_IsTextTrimmedChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     IsTextTrimmedChangedEventSourceType* pEventSource = nullptr;
@@ -491,7 +491,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBlockGenerated::remove_SelectionChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBlockGenerated::remove_SelectionChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectionChangedEventSourceType* pEventSource = nullptr;

@@ -6,7 +6,7 @@
 #include <set>
 #include <ErrorHelper.h>
 
-long __stdcall DirectUI::ErrorHelper::OriginateErrorUsingResourceID(long hr,unsigned int resID) { return hr; }
+_Check_return_ long __stdcall DirectUI::ErrorHelper::OriginateErrorUsingResourceID(long hr,unsigned int resID) { return hr; }
 _Check_return_ long __stdcall DirectUI::ErrorHelper::OriginateErrorUsingFormattedResourceID(long hr,unsigned int resID, _In_ class xstring_ptr_view const &str, const WCHAR* param2) { return hr; }
 
 extern "C"

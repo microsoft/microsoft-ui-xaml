@@ -8,7 +8,7 @@ namespace AnimatedVisuals
 {
     // An IAnimatedVisualSource that always fails to create an animated visual.
     // Used for testing of the fallback path in AnimatedVisualPlayer.
-    sealed class Nullsource : IAnimatedVisualSource
+    sealed partial class Nullsource : IAnimatedVisualSource
     {
         public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
         {

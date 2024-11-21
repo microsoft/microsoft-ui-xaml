@@ -39,13 +39,13 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ExclusionRect)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>** ppValue) override;
-        IFACEMETHOD(put_ExclusionRect)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue) override;
+        IFACEMETHOD(put_ExclusionRect)(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue) override;
         IFACEMETHOD(get_Placement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode* pValue) override;
-        IFACEMETHOD(put_Placement)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode value) override;
+        IFACEMETHOD(put_Placement)(ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode value) override;
         IFACEMETHOD(get_Position)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>** ppValue) override;
-        IFACEMETHOD(put_Position)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue) override;
+        IFACEMETHOD(put_Position)(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue) override;
         IFACEMETHOD(get_ShowMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode* pValue) override;
-        IFACEMETHOD(put_ShowMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode value) override;
+        IFACEMETHOD(put_ShowMode)(ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode value) override;
 
         // Events.
 

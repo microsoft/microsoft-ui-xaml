@@ -51,9 +51,9 @@ namespace DirectUI
         IFACEMETHOD(get_Child)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_Child)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_Stretch)(_Out_ ABI::Microsoft::UI::Xaml::Media::Stretch* pValue) override;
-        IFACEMETHOD(put_Stretch)(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value) override;
+        IFACEMETHOD(put_Stretch)(ABI::Microsoft::UI::Xaml::Media::Stretch value) override;
         IFACEMETHOD(get_StretchDirection)(_Out_ ABI::Microsoft::UI::Xaml::Controls::StretchDirection* pValue) override;
-        IFACEMETHOD(put_StretchDirection)(_In_ ABI::Microsoft::UI::Xaml::Controls::StretchDirection value) override;
+        IFACEMETHOD(put_StretchDirection)(ABI::Microsoft::UI::Xaml::Controls::StretchDirection value) override;
 
         // Events.
 

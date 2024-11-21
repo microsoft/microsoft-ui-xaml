@@ -307,6 +307,8 @@ _Check_return_ HRESULT
 LoopingSelectorItemAutomationPeer::get_IsSelectedImpl(_Out_ BOOLEAN *value)
 {
     HRESULT hr = S_OK;
+    *value = FALSE;
+
     xaml_primitives::LoopingSelectorItem* pOwnerNoRef = nullptr;
     IFC(GetOwnerAsInternalPtrNoRef(&pOwnerNoRef));
     if (pOwnerNoRef)

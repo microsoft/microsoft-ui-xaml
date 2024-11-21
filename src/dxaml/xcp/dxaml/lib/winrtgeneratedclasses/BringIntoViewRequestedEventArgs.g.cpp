@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_AnimationDesired(_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_AnimationDesired(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_AnimationDesired(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -131,7 +131,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_TargetRect(_Out_ A
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_TargetRect(_In_ ABI::Windows::Foundation::Rect value)
+IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_TargetRect(ABI::Windows::Foundation::Rect value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -201,7 +201,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_HorizontalOffset(_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_HorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_HorizontalOffset(DOUBLE value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -235,7 +235,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_VerticalOffset(_Ou
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_VerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_VerticalOffset(DOUBLE value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -269,7 +269,7 @@ IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::get_Handled(_Out_ BOOL
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::BringIntoViewRequestedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

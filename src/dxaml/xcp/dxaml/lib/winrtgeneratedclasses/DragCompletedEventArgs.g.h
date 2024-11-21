@@ -37,11 +37,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_HorizontalChange)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_HorizontalChange(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_HorizontalChange(DOUBLE value);
         IFACEMETHOD(get_VerticalChange)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_VerticalChange(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_VerticalChange(DOUBLE value);
         IFACEMETHOD(get_Canceled)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_Canceled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_Canceled(BOOLEAN value);
 
         // Methods.
 
@@ -74,7 +74,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithHorizontalChangeVerticalChangeAndCanceled)(_In_ DOUBLE horizontalChange, _In_ DOUBLE verticalChange, _In_ BOOLEAN canceled, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs** ppInstance);
+        IFACEMETHOD(CreateInstanceWithHorizontalChangeVerticalChangeAndCanceled)(DOUBLE horizontalChange, DOUBLE verticalChange, BOOLEAN canceled, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs** ppInstance);
 
         // Static properties.
 
@@ -92,7 +92,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithHorizontalChangeVerticalChangeAndCanceledImpl(_In_ DOUBLE horizontalChange, _In_ DOUBLE verticalChange, _In_ BOOLEAN canceled, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithHorizontalChangeVerticalChangeAndCanceledImpl(DOUBLE horizontalChange, DOUBLE verticalChange, BOOLEAN canceled, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs** ppInstance);
 
         // Customized static properties.
 

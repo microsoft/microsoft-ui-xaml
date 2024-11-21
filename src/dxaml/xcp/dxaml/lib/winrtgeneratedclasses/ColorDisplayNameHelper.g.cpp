@@ -38,7 +38,7 @@ HRESULT DirectUI::ColorDisplayNameHelperFactory::QueryInterfaceImpl(_In_ REFIID 
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::ColorDisplayNameHelperFactory::ToDisplayName(_In_ ABI::Windows::UI::Color color, _Out_ HSTRING* pResult)
+IFACEMETHODIMP DirectUI::ColorDisplayNameHelperFactory::ToDisplayName(ABI::Windows::UI::Color color, _Out_ HSTRING* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

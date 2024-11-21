@@ -49,7 +49,7 @@ IFACEMETHODIMP DirectUI::RowDefinition::get_Height(_Out_ ABI::Microsoft::UI::Xam
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RowDefinition_Height, pValue));
 }
-IFACEMETHODIMP DirectUI::RowDefinition::put_Height(_In_ ABI::Microsoft::UI::Xaml::GridLength value)
+IFACEMETHODIMP DirectUI::RowDefinition::put_Height(ABI::Microsoft::UI::Xaml::GridLength value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RowDefinition_Height, value));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::RowDefinition::get_MaxHeight(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RowDefinition_MaxHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::RowDefinition::put_MaxHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RowDefinition::put_MaxHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RowDefinition_MaxHeight, value));
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::RowDefinition::get_MinHeight(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RowDefinition_MinHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::RowDefinition::put_MinHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RowDefinition::put_MinHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RowDefinition_MinHeight, value));

@@ -99,7 +99,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CollectionViewGroupGenerated::GetIndexedProperty(_In_ HSTRING name, _In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue)
+IFACEMETHODIMP DirectUI::CollectionViewGroupGenerated::GetIndexedProperty(_In_ HSTRING name, ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -74,7 +74,7 @@ namespace Diagnostics
 
     _Check_return_ HRESULT DiagnosticsInterop::ResolveResource(
         _In_ const std::shared_ptr<ResourceDependency>& resourceDependency,
-        const xref_ptr<CResourceDictionary>& dictionaryFoundIn,
+        _In_ const xref_ptr<CResourceDictionary>& dictionaryFoundIn,
         const xstring_ptr& resourceKey,
         _In_opt_ xaml::IUIElement* resolutionContext,
         _Out_ wrl::ComPtr<IInspectable>& unboxedValue)

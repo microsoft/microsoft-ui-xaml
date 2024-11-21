@@ -132,7 +132,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP HyperlinkButton::MeasureOverride(_In_ wf::Size availableSize, _Out_ wf::Size* returnValue)
+IFACEMETHODIMP HyperlinkButton::MeasureOverride(wf::Size availableSize, _Out_ wf::Size* returnValue)
 {
     IFC_RETURN(HyperlinkButtonGenerated::MeasureOverride(availableSize, returnValue));
 

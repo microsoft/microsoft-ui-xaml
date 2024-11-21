@@ -16,7 +16,7 @@ using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
 KeyTimeFactory::FromTimeSpan(
-    _In_ wf::TimeSpan timeSpan,
+    wf::TimeSpan timeSpan,
     _Out_ xaml_animation::KeyTime* pReturnValue)
 {
     HRESULT hr = S_OK;

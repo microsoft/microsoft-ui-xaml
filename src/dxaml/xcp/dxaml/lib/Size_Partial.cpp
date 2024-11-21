@@ -16,8 +16,8 @@ using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT
 SizeHelperFactory::FromDimensionsImpl(
-    _In_ FLOAT width,
-    _In_ FLOAT height,
+    FLOAT width,
+    FLOAT height,
     _Out_ wf::Size* pReturnValue)
 {
     if (width < 0.0F || height < 0.0F)
@@ -60,7 +60,7 @@ SizeHelperFactory::get_EmptyImpl(_Out_ wf::Size* pValue)
 
 _Check_return_ HRESULT 
 SizeHelperFactory::GetIsEmptyImpl(
-    _In_ wf::Size target,
+    wf::Size target,
     _Out_ BOOLEAN* pValue)
 {
     *pValue = (target.Width < 0.0F || target.Height < 0.0F);
@@ -76,8 +76,8 @@ SizeHelperFactory::GetIsEmptyImpl(
 
 _Check_return_ HRESULT 
 SizeHelperFactory::EqualsImpl(
-    _In_ wf::Size target,
-    _In_ wf::Size value,
+    wf::Size target,
+    wf::Size value,
     _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;

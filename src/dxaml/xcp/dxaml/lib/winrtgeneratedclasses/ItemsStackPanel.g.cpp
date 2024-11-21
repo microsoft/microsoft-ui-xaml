@@ -49,7 +49,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_AreStickyGroupHeadersEnab
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_AreStickyGroupHeadersEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_AreStickyGroupHeadersEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_AreStickyGroupHeadersEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_AreStickyGroupHeadersEnabled, value));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_CacheLength(_Out_ DOUBLE*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_CacheLength, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_CacheLength(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_CacheLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_CacheLength, value));
@@ -87,7 +87,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_GroupHeaderPlacement(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_GroupHeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_GroupHeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GroupHeaderPlacement value)
+IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_GroupHeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::Primitives::GroupHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_GroupHeaderPlacement, value));
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_GroupPadding(_Out_ ABI::M
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_GroupPadding, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_GroupPadding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_GroupPadding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_GroupPadding, value));
@@ -105,7 +105,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_ItemsUpdatingScrollMode(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_ItemsUpdatingScrollMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_ItemsUpdatingScrollMode(_In_ ABI::Microsoft::UI::Xaml::Controls::ItemsUpdatingScrollMode value)
+IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_ItemsUpdatingScrollMode(ABI::Microsoft::UI::Xaml::Controls::ItemsUpdatingScrollMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_ItemsUpdatingScrollMode, value));
@@ -134,7 +134,7 @@ IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::get_Orientation(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::ItemsStackPanelGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsStackPanel_Orientation, value));

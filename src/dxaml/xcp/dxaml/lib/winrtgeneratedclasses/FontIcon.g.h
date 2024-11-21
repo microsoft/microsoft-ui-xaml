@@ -51,17 +51,17 @@ namespace DirectUI
         IFACEMETHOD(get_FontFamily)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IFontFamily** ppValue) override;
         IFACEMETHOD(put_FontFamily)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IFontFamily* pValue) override;
         IFACEMETHOD(get_FontSize)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_FontSize)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_FontSize)(DOUBLE value) override;
         IFACEMETHOD(get_FontStyle)(_Out_ ABI::Windows::UI::Text::FontStyle* pValue) override;
-        IFACEMETHOD(put_FontStyle)(_In_ ABI::Windows::UI::Text::FontStyle value) override;
+        IFACEMETHOD(put_FontStyle)(ABI::Windows::UI::Text::FontStyle value) override;
         IFACEMETHOD(get_FontWeight)(_Out_ ABI::Windows::UI::Text::FontWeight* pValue) override;
-        IFACEMETHOD(put_FontWeight)(_In_ ABI::Windows::UI::Text::FontWeight value) override;
+        IFACEMETHOD(put_FontWeight)(ABI::Windows::UI::Text::FontWeight value) override;
         IFACEMETHOD(get_Glyph)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Glyph)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_IsTextScaleFactorEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsTextScaleFactorEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsTextScaleFactorEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_MirroredWhenRightToLeft)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_MirroredWhenRightToLeft)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_MirroredWhenRightToLeft)(BOOLEAN value) override;
 
         // Events.
 

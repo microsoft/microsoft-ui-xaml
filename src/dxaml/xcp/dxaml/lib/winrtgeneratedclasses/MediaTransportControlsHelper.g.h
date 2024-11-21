@@ -39,10 +39,10 @@ namespace DirectUI
 
         // Attached properties.
         static _Check_return_ HRESULT GetDropoutOrderStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ ABI::Windows::Foundation::IReference<INT>** ppValue);
-        static _Check_return_ HRESULT SetDropoutOrderStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Windows::Foundation::IReference<INT>* pValue);
+        static _Check_return_ HRESULT SetDropoutOrderStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Windows::Foundation::IReference<INT>* pValue);
         IFACEMETHOD(get_DropoutOrderProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetDropoutOrder)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ ABI::Windows::Foundation::IReference<INT>** ppValue);
-        IFACEMETHOD(SetDropoutOrder)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Windows::Foundation::IReference<INT>* pValue);
+        IFACEMETHOD(SetDropoutOrder)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Windows::Foundation::IReference<INT>* pValue);
 
         // Static methods.
 

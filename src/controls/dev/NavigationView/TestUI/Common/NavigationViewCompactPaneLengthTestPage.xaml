@@ -119,6 +119,7 @@
                         <CheckBox x:Name="BackButtonVisibilityCheckbox" AutomationProperties.Name="BackButtonVisibilityCheckbox"
                             Checked="BackButtonVisibilityCheckbox_Checked" Content="Back Visible"
                             Unchecked="BackButtonVisibilityCheckbox_Unchecked" IsChecked="True" Margin="5"/>
+
                         <CheckBox x:Name="BackButtonEnabledCheckbox" AutomationProperties.Name="BackButtonEnabledCheckbox"
                             Content="Back Enabled" Checked="BackButtonEnabledCheckbox_Checked"
                             Unchecked="BackButtonEnabledCheckbox_Unchecked" Margin="5"/>
@@ -137,6 +138,18 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Home item invoked count"/>
                             <TextBlock x:Name="HomeItemInvokedCount" AutomationProperties.Name="HomeItemInvokedCount" Text="0"/>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Remove Icons" AutomationProperties.Name="RemoveIconsButton"
+                                    Click="RemoveIcons_Click" Margin="0,0,8,0"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Get IconBox Width" AutomationProperties.Name="GetIconBoxWidthButton"
+                                    Click="GetIconBoxWidth_Click" Margin="0,0,8,0"/>
+                            <TextBlock Text="IconBox Width"/>
+                            <TextBlock x:Name="IconBoxWidth" AutomationProperties.Name="IconBoxWidthTextBlock" Text="0"/>
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>

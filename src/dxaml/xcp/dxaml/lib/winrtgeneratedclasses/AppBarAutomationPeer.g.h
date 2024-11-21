@@ -69,9 +69,9 @@ namespace DirectUI
         IFACEMETHOD(Close)() override;
         IFACEMETHOD(Collapse)() override;
         IFACEMETHOD(Expand)() override;
-        IFACEMETHOD(SetVisualState)(_In_ ABI::Microsoft::UI::Xaml::Automation::WindowVisualState state) override;
+        IFACEMETHOD(SetVisualState)(ABI::Microsoft::UI::Xaml::Automation::WindowVisualState state) override;
         IFACEMETHOD(Toggle)() override;
-        IFACEMETHOD(WaitForInputIdle)(_In_ INT milliseconds, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(WaitForInputIdle)(INT milliseconds, _Out_ BOOLEAN* pReturnValue) override;
 
 
     protected:

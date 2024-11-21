@@ -9,7 +9,7 @@ using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT
 StyleFactory::CreateInstanceImpl(
-    _In_ wxaml_interop::TypeName targetType,
+    wxaml_interop::TypeName targetType,
     _Outptr_ xaml::IStyle** ppInstance)
 {
     HRESULT hr = S_OK;

@@ -73,7 +73,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickedEventArgsGenerated::put_OldDate(_In_ ABI::Windows::Foundation::DateTime value)
+_Check_return_ HRESULT DatePickedEventArgsGenerated::put_OldDate(ABI::Windows::Foundation::DateTime value)
 {
     HRESULT hr = S_OK;
 
@@ -110,7 +110,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickedEventArgsGenerated::put_NewDate(_In_ ABI::Windows::Foundation::DateTime value)
+_Check_return_ HRESULT DatePickedEventArgsGenerated::put_NewDate(ABI::Windows::Foundation::DateTime value)
 {
     HRESULT hr = S_OK;
 
@@ -307,7 +307,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutGenerated::put_Date(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DatePickerFlyoutGenerated::put_Date(ABI::Windows::Foundation::DateTime value)
 {
     HRESULT hr = S_OK;
 
@@ -344,7 +344,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutGenerated::put_DayVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DatePickerFlyoutGenerated::put_DayVisible(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -381,7 +381,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutGenerated::put_MonthVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DatePickerFlyoutGenerated::put_MonthVisible(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -418,7 +418,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutGenerated::put_YearVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DatePickerFlyoutGenerated::put_YearVisible(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -455,7 +455,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutGenerated::put_MinYear(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DatePickerFlyoutGenerated::put_MinYear(ABI::Windows::Foundation::DateTime value)
 {
     HRESULT hr = S_OK;
 
@@ -492,7 +492,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutGenerated::put_MaxYear(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DatePickerFlyoutGenerated::put_MaxYear(ABI::Windows::Foundation::DateTime value)
 {
     HRESULT hr = S_OK;
 
@@ -1288,7 +1288,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutItemGenerated::GetIndexedProperty(_In_ HSTRING name, _In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue)
+IFACEMETHODIMP DatePickerFlyoutItemGenerated::GetIndexedProperty(_In_ HSTRING name, ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -1455,7 +1455,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::put_IsDefaultShadowEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::put_IsDefaultShadowEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -2150,7 +2150,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -2162,7 +2162,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -2174,7 +2174,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -2186,7 +2186,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -2220,7 +2220,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -2234,7 +2234,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -2292,7 +2292,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP DatePickerFlyoutPresenterGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -2304,7 +2304,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT DatePickerFlyoutPresenterGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -2871,7 +2871,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutGenerated::put_SelectionMode(_In_ ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutSelectionMode value)
+IFACEMETHODIMP ListPickerFlyoutGenerated::put_SelectionMode(ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutSelectionMode value)
 {
     HRESULT hr = S_OK;
 
@@ -2908,7 +2908,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutGenerated::put_SelectedIndex(_In_ INT value)
+IFACEMETHODIMP ListPickerFlyoutGenerated::put_SelectedIndex(INT value)
 {
     HRESULT hr = S_OK;
 
@@ -4296,7 +4296,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -4308,7 +4308,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -4320,7 +4320,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -4332,7 +4332,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -4366,7 +4366,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -4380,7 +4380,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -4438,7 +4438,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP ListPickerFlyoutPresenterGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -4450,7 +4450,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT ListPickerFlyoutPresenterGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -4747,7 +4747,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutGenerated::put_ConfirmationButtonsVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP PickerFlyoutGenerated::put_ConfirmationButtonsVisible(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -5771,7 +5771,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutPresenterGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PickerFlyoutPresenterGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -5783,7 +5783,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PickerFlyoutPresenterGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -5795,7 +5795,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutPresenterGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PickerFlyoutPresenterGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -5807,7 +5807,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PickerFlyoutPresenterGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -5841,7 +5841,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutPresenterGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP PickerFlyoutPresenterGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -5855,7 +5855,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT PickerFlyoutPresenterGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -5913,7 +5913,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutPresenterGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP PickerFlyoutPresenterGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -5925,7 +5925,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT PickerFlyoutPresenterGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -6382,7 +6382,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::put_SelectedIndex(_In_ INT value)
+IFACEMETHODIMP PivotGenerated::put_SelectedIndex(INT value)
 {
     HRESULT hr = S_OK;
 
@@ -6455,7 +6455,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::put_IsLocked(_In_ BOOLEAN value)
+IFACEMETHODIMP PivotGenerated::put_IsLocked(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -6492,7 +6492,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::put_HeaderFocusVisualPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::PivotHeaderFocusVisualPlacement value)
+IFACEMETHODIMP PivotGenerated::put_HeaderFocusVisualPlacement(ABI::Microsoft::UI::Xaml::Controls::PivotHeaderFocusVisualPlacement value)
 {
     HRESULT hr = S_OK;
 
@@ -6529,7 +6529,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::put_IsHeaderItemsCarouselEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP PivotGenerated::put_IsHeaderItemsCarouselEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -7544,7 +7544,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -7556,7 +7556,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -7568,7 +7568,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -7580,7 +7580,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -7614,7 +7614,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP PivotGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -7628,7 +7628,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT PivotGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -7686,7 +7686,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP PivotGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -7698,7 +7698,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT PivotGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -8359,7 +8359,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotFactory::SetSlideInAnimationGroup(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup value)
+IFACEMETHODIMP PivotFactory::SetSlideInAnimationGroup(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup value)
 {
     RRETURN(PivotFactory::SetSlideInAnimationGroupStatic(pElement, value));
 }
@@ -8370,7 +8370,7 @@ IFACEMETHODIMP PivotFactory::GetSlideInAnimationGroup(_In_ ABI::Microsoft::UI::X
 }
 
 _Check_return_ HRESULT
-PivotFactory::SetSlideInAnimationGroupStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup value)
+PivotFactory::SetSlideInAnimationGroupStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup value)
 {
     HRESULT hr = S_OK;
 
@@ -9278,7 +9278,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotItemGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -9290,7 +9290,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotItemGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -9302,7 +9302,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotItemGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -9314,7 +9314,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotItemGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -9348,7 +9348,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP PivotItemGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -9362,7 +9362,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT PivotItemGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -9420,7 +9420,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP PivotItemGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -9432,7 +9432,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT PivotItemGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -9688,7 +9688,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickedEventArgsGenerated::put_OldTime(_In_ ABI::Windows::Foundation::TimeSpan value)
+_Check_return_ HRESULT TimePickedEventArgsGenerated::put_OldTime(ABI::Windows::Foundation::TimeSpan value)
 {
     HRESULT hr = S_OK;
 
@@ -9725,7 +9725,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickedEventArgsGenerated::put_NewTime(_In_ ABI::Windows::Foundation::TimeSpan value)
+_Check_return_ HRESULT TimePickedEventArgsGenerated::put_NewTime(ABI::Windows::Foundation::TimeSpan value)
 {
     HRESULT hr = S_OK;
 
@@ -9922,7 +9922,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutGenerated::put_Time(_In_ ABI::Windows::Foundation::TimeSpan value)
+IFACEMETHODIMP TimePickerFlyoutGenerated::put_Time(ABI::Windows::Foundation::TimeSpan value)
 {
     HRESULT hr = S_OK;
 
@@ -9959,7 +9959,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutGenerated::put_MinuteIncrement(_In_ INT value)
+IFACEMETHODIMP TimePickerFlyoutGenerated::put_MinuteIncrement(INT value)
 {
     HRESULT hr = S_OK;
 
@@ -10308,7 +10308,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::put_IsDefaultShadowEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::put_IsDefaultShadowEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -11003,7 +11003,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -11015,7 +11015,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -11027,7 +11027,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -11039,7 +11039,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -11073,7 +11073,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -11087,7 +11087,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -11145,7 +11145,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP TimePickerFlyoutPresenterGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -11157,7 +11157,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT TimePickerFlyoutPresenterGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -11487,7 +11487,7 @@ Cleanup:
 // Events.
 
 // Methods
-IFACEMETHODIMP JumpListItemBackgroundConverterGenerated::Convert(_In_ IInspectable* pValue, _In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP JumpListItemBackgroundConverterGenerated::Convert(_In_ IInspectable* pValue, ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -11498,7 +11498,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP JumpListItemBackgroundConverterGenerated::ConvertBack(_In_ IInspectable* pValue, _In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP JumpListItemBackgroundConverterGenerated::ConvertBack(_In_ IInspectable* pValue, ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -11745,7 +11745,7 @@ Cleanup:
 // Events.
 
 // Methods
-IFACEMETHODIMP JumpListItemForegroundConverterGenerated::Convert(_In_ IInspectable* pValue, _In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP JumpListItemForegroundConverterGenerated::Convert(_In_ IInspectable* pValue, ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -11756,7 +11756,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP JumpListItemForegroundConverterGenerated::ConvertBack(_In_ IInspectable* pValue, _In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP JumpListItemForegroundConverterGenerated::ConvertBack(_In_ IInspectable* pValue, ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -11936,7 +11936,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::put_ShouldLoop(_In_ BOOLEAN value)
+IFACEMETHODIMP LoopingSelectorGenerated::put_ShouldLoop(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 
@@ -12015,7 +12015,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::put_SelectedIndex(_In_ INT value)
+IFACEMETHODIMP LoopingSelectorGenerated::put_SelectedIndex(INT value)
 {
     HRESULT hr = S_OK;
 
@@ -12088,7 +12088,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::put_ItemWidth(_In_ INT value)
+IFACEMETHODIMP LoopingSelectorGenerated::put_ItemWidth(INT value)
 {
     HRESULT hr = S_OK;
 
@@ -12125,7 +12125,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::put_ItemHeight(_In_ INT value)
+IFACEMETHODIMP LoopingSelectorGenerated::put_ItemHeight(INT value)
 {
     HRESULT hr = S_OK;
 
@@ -12880,7 +12880,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP LoopingSelectorGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -12892,7 +12892,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -12904,7 +12904,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP LoopingSelectorGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -12916,7 +12916,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -12950,7 +12950,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP LoopingSelectorGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -12964,7 +12964,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -13022,7 +13022,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -13034,7 +13034,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14221,7 +14221,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP LoopingSelectorItemGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -14233,7 +14233,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14245,7 +14245,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP LoopingSelectorItemGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -14257,7 +14257,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14291,7 +14291,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP LoopingSelectorItemGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -14305,7 +14305,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14363,7 +14363,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -14375,7 +14375,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14589,7 +14589,7 @@ IFACEMETHODIMP LoopingSelectorPanelGenerated::remove_VerticalSnapPointsChanged(_
 
 
 // Methods
-IFACEMETHODIMP LoopingSelectorPanelGenerated::GetIrregularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorPanelGenerated::GetIrregularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14599,7 +14599,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorPanelGenerated::GetRegularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
+IFACEMETHODIMP LoopingSelectorPanelGenerated::GetRegularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14611,7 +14611,7 @@ Cleanup:
 
 
 // Overrides
-IFACEMETHODIMP LoopingSelectorPanelGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP LoopingSelectorPanelGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -14623,7 +14623,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorPanelGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorPanelGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14635,7 +14635,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorPanelGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP LoopingSelectorPanelGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -14647,7 +14647,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorPanelGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorPanelGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14681,7 +14681,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorPanelGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP LoopingSelectorPanelGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -14695,7 +14695,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorPanelGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT LoopingSelectorPanelGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -14753,7 +14753,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorPanelGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorPanelGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -14765,7 +14765,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorPanelGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorPanelGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -15922,7 +15922,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderItemGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotHeaderItemGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -15934,7 +15934,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderItemGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotHeaderItemGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -15946,7 +15946,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderItemGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotHeaderItemGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -15958,7 +15958,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderItemGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotHeaderItemGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -15992,7 +15992,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderItemGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP PivotHeaderItemGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16006,7 +16006,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderItemGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT PivotHeaderItemGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16064,7 +16064,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderItemGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP PivotHeaderItemGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16076,7 +16076,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderItemGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT PivotHeaderItemGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16277,7 +16277,7 @@ PivotHeaderPanelGenerated::InitializeImpl()
 // Methods
 
 // Overrides
-IFACEMETHODIMP PivotHeaderPanelGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotHeaderPanelGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16289,7 +16289,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderPanelGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotHeaderPanelGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16301,7 +16301,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderPanelGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotHeaderPanelGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16313,7 +16313,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderPanelGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotHeaderPanelGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16347,7 +16347,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderPanelGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP PivotHeaderPanelGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16361,7 +16361,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderPanelGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT PivotHeaderPanelGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16419,7 +16419,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotHeaderPanelGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP PivotHeaderPanelGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16431,7 +16431,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotHeaderPanelGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT PivotHeaderPanelGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16645,7 +16645,7 @@ IFACEMETHODIMP PivotPanelGenerated::remove_VerticalSnapPointsChanged(_In_ EventR
 
 
 // Methods
-IFACEMETHODIMP PivotPanelGenerated::GetIrregularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
+IFACEMETHODIMP PivotPanelGenerated::GetIrregularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16655,7 +16655,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotPanelGenerated::GetRegularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
+IFACEMETHODIMP PivotPanelGenerated::GetRegularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16667,7 +16667,7 @@ Cleanup:
 
 
 // Overrides
-IFACEMETHODIMP PivotPanelGenerated::MeasureOverride(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotPanelGenerated::MeasureOverride(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16679,7 +16679,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotPanelGenerated::MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotPanelGenerated::MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16691,7 +16691,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotPanelGenerated::ArrangeOverride(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP PivotPanelGenerated::ArrangeOverride(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16703,7 +16703,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotPanelGenerated::ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+_Check_return_ HRESULT PivotPanelGenerated::ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16737,7 +16737,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotPanelGenerated::GoToElementStateCore(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP PivotPanelGenerated::GoToElementStateCore(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16751,7 +16751,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotPanelGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT PivotPanelGenerated::GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -16809,7 +16809,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotPanelGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP PivotPanelGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -16821,7 +16821,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotPanelGenerated::FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT PivotPanelGenerated::FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -17008,7 +17008,7 @@ DatePickerFlyoutPresenterAutomationPeerGenerated::InitializeImpl(_In_ ABI::Micro
 // Methods
 
 // Overrides
-IFACEMETHODIMP DatePickerFlyoutPresenterAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DatePickerFlyoutPresenterAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -17020,7 +17020,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT DatePickerFlyoutPresenterAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -17176,7 +17176,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DatePickerFlyoutPresenterAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -17188,7 +17188,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT DatePickerFlyoutPresenterAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -17630,7 +17630,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP DatePickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -17642,7 +17642,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT DatePickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -17654,7 +17654,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DatePickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DatePickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -17666,7 +17666,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DatePickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT DatePickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -18167,7 +18167,7 @@ ListPickerFlyoutPresenterAutomationPeerGenerated::InitializeImpl(_In_ ABI::Micro
 // Methods
 
 // Overrides
-IFACEMETHODIMP ListPickerFlyoutPresenterAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP ListPickerFlyoutPresenterAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -18179,7 +18179,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT ListPickerFlyoutPresenterAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -18335,7 +18335,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutPresenterAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP ListPickerFlyoutPresenterAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -18347,7 +18347,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT ListPickerFlyoutPresenterAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -18789,7 +18789,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP ListPickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -18801,7 +18801,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT ListPickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -18813,7 +18813,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP ListPickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP ListPickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -18825,7 +18825,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT ListPickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT ListPickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -19432,7 +19432,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::Scroll(_In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, _In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount)
+IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::Scroll(ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount)
 {
     HRESULT hr = S_OK;
 
@@ -19442,7 +19442,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::SetScrollPercent(_In_ DOUBLE horizontalPercent, _In_ DOUBLE verticalPercent)
+IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::SetScrollPercent(DOUBLE horizontalPercent, DOUBLE verticalPercent)
 {
     HRESULT hr = S_OK;
 
@@ -19454,7 +19454,7 @@ Cleanup:
 
 
 // Overrides
-IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -19466,7 +19466,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -19622,7 +19622,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -19634,7 +19634,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -20076,7 +20076,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -20088,7 +20088,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -20100,7 +20100,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -20112,7 +20112,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -20675,7 +20675,7 @@ Cleanup:
 
 
 // Overrides
-IFACEMETHODIMP LoopingSelectorItemAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -20687,7 +20687,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -20843,7 +20843,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -20855,7 +20855,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -21297,7 +21297,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -21309,7 +21309,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -21321,7 +21321,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -21333,7 +21333,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -21845,7 +21845,7 @@ Cleanup:
 
 
 // Overrides
-IFACEMETHODIMP LoopingSelectorItemDataAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemDataAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -21857,7 +21857,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemDataAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemDataAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -22013,7 +22013,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemDataAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemDataAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -22025,7 +22025,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemDataAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemDataAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -22467,7 +22467,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemDataAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemDataAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -22479,7 +22479,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemDataAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemDataAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -22491,7 +22491,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP LoopingSelectorItemDataAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP LoopingSelectorItemDataAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -22503,7 +22503,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT LoopingSelectorItemDataAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT LoopingSelectorItemDataAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -23004,7 +23004,7 @@ PickerFlyoutPresenterAutomationPeerGenerated::InitializeImpl(_In_ ABI::Microsoft
 // Methods
 
 // Overrides
-IFACEMETHODIMP PickerFlyoutPresenterAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PickerFlyoutPresenterAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -23016,7 +23016,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PickerFlyoutPresenterAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -23172,7 +23172,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutPresenterAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PickerFlyoutPresenterAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -23184,7 +23184,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PickerFlyoutPresenterAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -23626,7 +23626,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP PickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -23638,7 +23638,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT PickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -23650,7 +23650,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -23662,7 +23662,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -24264,7 +24264,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotAutomationPeerGenerated::Scroll(_In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, _In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount)
+IFACEMETHODIMP PivotAutomationPeerGenerated::Scroll(ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount)
 {
     HRESULT hr = S_OK;
 
@@ -24274,7 +24274,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotAutomationPeerGenerated::SetScrollPercent(_In_ DOUBLE horizontalPercent, _In_ DOUBLE verticalPercent)
+IFACEMETHODIMP PivotAutomationPeerGenerated::SetScrollPercent(DOUBLE horizontalPercent, DOUBLE verticalPercent)
 {
     HRESULT hr = S_OK;
 
@@ -24312,7 +24312,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -24324,7 +24324,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -24480,7 +24480,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -24492,7 +24492,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -24934,7 +24934,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP PivotAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -24946,7 +24946,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT PivotAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -24958,7 +24958,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -24970,7 +24970,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -25518,7 +25518,7 @@ PivotItemAutomationPeerGenerated::InitializeImpl(_In_ ABI::Microsoft::UI::Xaml::
 // Methods
 
 // Overrides
-IFACEMETHODIMP PivotItemAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotItemAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -25530,7 +25530,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotItemAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -25686,7 +25686,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotItemAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -25698,7 +25698,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotItemAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -26140,7 +26140,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP PivotItemAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -26152,7 +26152,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT PivotItemAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -26164,7 +26164,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotItemAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -26176,7 +26176,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotItemAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -26797,7 +26797,7 @@ Cleanup:
 
 
 // Overrides
-IFACEMETHODIMP PivotItemDataAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotItemDataAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -26809,7 +26809,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemDataAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotItemDataAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -26965,7 +26965,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemDataAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotItemDataAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -26977,7 +26977,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemDataAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotItemDataAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -27419,7 +27419,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemDataAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP PivotItemDataAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -27431,7 +27431,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemDataAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT PivotItemDataAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -27443,7 +27443,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP PivotItemDataAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP PivotItemDataAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -27455,7 +27455,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT PivotItemDataAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT PivotItemDataAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -27999,7 +27999,7 @@ TimePickerFlyoutPresenterAutomationPeerGenerated::InitializeImpl(_In_ ABI::Micro
 // Methods
 
 // Overrides
-IFACEMETHODIMP TimePickerFlyoutPresenterAutomationPeerGenerated::GetPatternCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP TimePickerFlyoutPresenterAutomationPeerGenerated::GetPatternCore(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -28011,7 +28011,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterAutomationPeerGenerated::GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT TimePickerFlyoutPresenterAutomationPeerGenerated::GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -28167,7 +28167,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterAutomationPeerGenerated::NavigateCore(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP TimePickerFlyoutPresenterAutomationPeerGenerated::NavigateCore(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -28179,7 +28179,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterAutomationPeerGenerated::NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT TimePickerFlyoutPresenterAutomationPeerGenerated::NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -28621,7 +28621,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCore(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+IFACEMETHODIMP TimePickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCore(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -28633,7 +28633,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
+_Check_return_ HRESULT TimePickerFlyoutPresenterAutomationPeerGenerated::GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -28645,7 +28645,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP TimePickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCore(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP TimePickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCore(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     
@@ -28657,7 +28657,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT TimePickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT TimePickerFlyoutPresenterAutomationPeerGenerated::GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
 

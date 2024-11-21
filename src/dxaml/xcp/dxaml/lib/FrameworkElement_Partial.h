@@ -71,7 +71,7 @@ namespace DirectUI
             _In_ wf::IEventHandler<IInspectable*>* pHandler,
             _Out_ EventRegistrationToken* ptToken) override;
         IFACEMETHOD(remove_LayoutUpdated)(
-            _In_ EventRegistrationToken tToken) override;
+            EventRegistrationToken tToken) override;
 
         _Check_return_ IFACEMETHOD(RaiseLayoutUpdated)(
             _In_ IInspectable* pSender,
@@ -83,7 +83,7 @@ namespace DirectUI
             _In_ xaml::ISizeChangedEventHandler* pHandler,
             _Out_ EventRegistrationToken* ptToken) override;
         IFACEMETHOD(remove_SizeChanged)(
-            _In_ EventRegistrationToken tToken) override;
+            EventRegistrationToken tToken) override;
 
         // Raise the SizeChanged event
         _Check_return_ HRESULT OnSizeChanged(
@@ -202,8 +202,8 @@ namespace DirectUI
         _Check_return_ HRESULT get_BaseUriImpl(_Outptr_ wf::IUriRuntimeClass** pValue);
 
         // Customized methods.
-        _Check_return_ HRESULT MeasureOverrideImpl(_In_ wf::Size availableSize, _Out_ wf::Size* returnValue);
-        _Check_return_ HRESULT ArrangeOverrideImpl(_In_ wf::Size finalSize, _Out_ wf::Size* returnValue);
+        _Check_return_ HRESULT MeasureOverrideImpl(wf::Size availableSize, _Out_ wf::Size* returnValue);
+        _Check_return_ HRESULT ArrangeOverrideImpl(wf::Size finalSize, _Out_ wf::Size* returnValue);
         _Check_return_ HRESULT IsViewportImpl(_Out_ BOOLEAN* returnValue);
         _Check_return_ HRESULT FindNameImpl(_In_ HSTRING name, _Outptr_ IInspectable** returnValue);
         _Check_return_ HRESULT SetBindingImpl(_In_ xaml::IDependencyProperty* dp, _In_ xaml_data::IBindingBase* binding);

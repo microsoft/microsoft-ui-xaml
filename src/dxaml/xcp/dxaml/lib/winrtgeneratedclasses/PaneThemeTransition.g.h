@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Edge)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::EdgeTransitionLocation* pValue) override;
-        IFACEMETHOD(put_Edge)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::EdgeTransitionLocation value) override;
+        IFACEMETHOD(put_Edge)(ABI::Microsoft::UI::Xaml::Controls::Primitives::EdgeTransitionLocation value) override;
 
         // Events.
 

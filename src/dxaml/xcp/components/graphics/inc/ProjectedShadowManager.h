@@ -144,9 +144,9 @@ public:
 
     void AddNewCaster(
         SourceType sourceType,
-        _In_opt_ WUComp::IVisual* visual,
-        _In_opt_ CUIElement* element,
-        _In_opt_ CPopup* containingPopup,
+        _In_ WUComp::IVisual* visual,
+        _In_ CUIElement* element,
+        _In_ CPopup* containingPopup,
         _In_opt_ WUComp::ICompositionBrush* maskBrush);
 
     // Remove caster entry from casters map if present

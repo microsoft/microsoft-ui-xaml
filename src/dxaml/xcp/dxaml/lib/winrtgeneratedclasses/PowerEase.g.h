@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Power)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Power)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Power)(DOUBLE value) override;
 
         // Events.
 

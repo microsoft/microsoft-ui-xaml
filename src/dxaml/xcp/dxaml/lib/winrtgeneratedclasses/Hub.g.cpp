@@ -53,7 +53,7 @@ IFACEMETHODIMP DirectUI::HubGenerated::get_DefaultSectionIndex(_Out_ INT* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hub_DefaultSectionIndex, pValue));
 }
-IFACEMETHODIMP DirectUI::HubGenerated::put_DefaultSectionIndex(_In_ INT value)
+IFACEMETHODIMP DirectUI::HubGenerated::put_DefaultSectionIndex(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hub_DefaultSectionIndex, value));
@@ -80,7 +80,7 @@ IFACEMETHODIMP DirectUI::HubGenerated::get_IsActiveView(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hub_IsActiveView, pValue));
 }
-IFACEMETHODIMP DirectUI::HubGenerated::put_IsActiveView(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::HubGenerated::put_IsActiveView(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hub_IsActiveView, value));
@@ -89,7 +89,7 @@ IFACEMETHODIMP DirectUI::HubGenerated::get_IsZoomedInView(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hub_IsZoomedInView, pValue));
 }
-IFACEMETHODIMP DirectUI::HubGenerated::put_IsZoomedInView(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::HubGenerated::put_IsZoomedInView(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hub_IsZoomedInView, value));
@@ -98,7 +98,7 @@ IFACEMETHODIMP DirectUI::HubGenerated::get_Orientation(_Out_ ABI::Microsoft::UI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hub_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::HubGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::HubGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hub_Orientation, value));
@@ -179,7 +179,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::HubGenerated::remove_SectionHeaderClick(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::HubGenerated::remove_SectionHeaderClick(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SectionHeaderClickEventSourceType* pEventSource = nullptr;
@@ -234,7 +234,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::HubGenerated::remove_SectionsInViewChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::HubGenerated::remove_SectionsInViewChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SectionsInViewChangedEventSourceType* pEventSource = nullptr;

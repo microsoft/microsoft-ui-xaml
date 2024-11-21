@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::SymbolIconGenerated::get_Symbol(_Out_ ABI::Microsoft::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SymbolIcon_Symbol, pValue));
 }
-IFACEMETHODIMP DirectUI::SymbolIconGenerated::put_Symbol(_In_ ABI::Microsoft::UI::Xaml::Controls::Symbol value)
+IFACEMETHODIMP DirectUI::SymbolIconGenerated::put_Symbol(ABI::Microsoft::UI::Xaml::Controls::Symbol value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SymbolIcon_Symbol, value));
@@ -76,7 +76,7 @@ HRESULT DirectUI::SymbolIconFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::SymbolIconFactory::CreateInstanceWithSymbol(_In_ ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance)
+IFACEMETHODIMP DirectUI::SymbolIconFactory::CreateInstanceWithSymbol(ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance)
 {
     HRESULT hr = S_OK;
     

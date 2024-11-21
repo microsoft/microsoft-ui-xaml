@@ -56,7 +56,7 @@
   </ItemGroup>
   <PropertyGroup>
     <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots@KitsRoot10)</UniversalCRTSdkDir>
-    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\</UniversalCRTSdkDir>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(WindowsSdkDir)</UniversalCRTSdkDir>
     <WindowsMetadataPath>$(UniversalCRTSdkDir)UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
     <AssemblyName>MUXControls.Test</AssemblyName>
     <DependenciesPath>$(USERPROFILE)\.nuget\packages</DependenciesPath>

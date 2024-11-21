@@ -180,7 +180,7 @@ namespace
 HRESULT
 InternalDebugInterop::CreateInstance(
     _In_ const CClassInfo* pType,
-    _In_opt_ LPCWSTR value,
+    _In_ LPCWSTR value,
     _Outptr_ IInspectable** ppInstance)
 {
     *ppInstance = nullptr;

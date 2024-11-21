@@ -49,7 +49,7 @@ IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::get_AreStickyGroupHeadersEnable
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_AreStickyGroupHeadersEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_AreStickyGroupHeadersEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_AreStickyGroupHeadersEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_AreStickyGroupHeadersEnabled, value));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::get_CacheLength(_Out_ DOUBLE* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_CacheLength, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_CacheLength(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_CacheLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_CacheLength, value));
@@ -87,7 +87,7 @@ IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::get_GroupHeaderPlacement(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_GroupHeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_GroupHeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GroupHeaderPlacement value)
+IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_GroupHeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::Primitives::GroupHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_GroupHeaderPlacement, value));
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::get_GroupPadding(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_GroupPadding, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_GroupPadding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_GroupPadding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_GroupPadding, value));
@@ -105,7 +105,7 @@ IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::get_ItemHeight(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_ItemHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_ItemHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_ItemHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_ItemHeight, value));
@@ -114,7 +114,7 @@ IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::get_ItemWidth(_Out_ DOUBLE* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_ItemWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_ItemWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_ItemWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_ItemWidth, value));
@@ -143,7 +143,7 @@ IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::get_MaximumRowsOrColumns(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_MaximumRowsOrColumns, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_MaximumRowsOrColumns(_In_ INT value)
+IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_MaximumRowsOrColumns(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_MaximumRowsOrColumns, value));
@@ -152,7 +152,7 @@ IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::get_Orientation(_Out_ ABI::Micr
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::ItemsWrapGridGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsWrapGrid_Orientation, value));

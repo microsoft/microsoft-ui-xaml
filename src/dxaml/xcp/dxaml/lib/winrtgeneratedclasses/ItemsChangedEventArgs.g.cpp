@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::ItemsChangedEventArgs::get_Action(_Out_ INT* pValue)
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_Action(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_Action(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::ItemsChangedEventArgs::get_ItemCount(_Out_ INT* pValue)
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_ItemCount(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_ItemCount(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -84,7 +84,7 @@ IFACEMETHODIMP DirectUI::ItemsChangedEventArgs::get_ItemUICount(_Out_ INT* pValu
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_ItemUICount(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_ItemUICount(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -101,7 +101,7 @@ IFACEMETHODIMP DirectUI::ItemsChangedEventArgs::get_OldPosition(_Out_ ABI::Micro
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_OldPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition value)
+_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_OldPosition(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -118,7 +118,7 @@ IFACEMETHODIMP DirectUI::ItemsChangedEventArgs::get_Position(_Out_ ABI::Microsof
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_Position(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition value)
+_Check_return_ HRESULT DirectUI::ItemsChangedEventArgs::put_Position(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

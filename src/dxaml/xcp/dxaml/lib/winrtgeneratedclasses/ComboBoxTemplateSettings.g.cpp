@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ComboBoxTemplateSettings::get_DropDownClosedHeight(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_DropDownClosedHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_DropDownClosedHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_DropDownClosedHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_DropDownClosedHeight, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ComboBoxTemplateSettings::get_DropDownContentMinWidth(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_DropDownContentMinWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_DropDownContentMinWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_DropDownContentMinWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_DropDownContentMinWidth, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::ComboBoxTemplateSettings::get_DropDownOffset(_Out_ DOUB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_DropDownOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_DropDownOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_DropDownOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_DropDownOffset, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::ComboBoxTemplateSettings::get_DropDownOpenedHeight(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_DropDownOpenedHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_DropDownOpenedHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_DropDownOpenedHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_DropDownOpenedHeight, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::ComboBoxTemplateSettings::get_SelectedItemDirection(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_SelectedItemDirection, pValue));
 }
-_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_SelectedItemDirection(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value)
+_Check_return_ HRESULT DirectUI::ComboBoxTemplateSettings::put_SelectedItemDirection(ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBoxTemplateSettings_SelectedItemDirection, value));

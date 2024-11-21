@@ -5788,7 +5788,7 @@ namespace CoreImports
     _Check_return_
     HRESULT
     UIElement_DeleteList(
-        _In_ void *pvUIElement,
+        _In_reads_(nResults) void *pvUIElement,
         _In_ XINT32 nResults )
     {
         CDependencyObject **ppResults = static_cast<CDependencyObject **>(pvUIElement);
@@ -6281,7 +6281,7 @@ Cleanup:
 //  Synopsis:
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CUIElement::Focus(DirectUI::FocusState focusState, bool animateIfBringIntoView, _Out_ bool* focusChanged, DirectUI::FocusNavigationDirection focusNavigationDirection, InputActivationBehavior inputActivationBehavior)
+_Check_return_ HRESULT CUIElement::Focus(_In_ DirectUI::FocusState focusState, _In_ bool animateIfBringIntoView, _Out_ bool* focusChanged, _In_ DirectUI::FocusNavigationDirection focusNavigationDirection, InputActivationBehavior inputActivationBehavior)
 {
     CFocusManager *pFocusManager = NULL;
 

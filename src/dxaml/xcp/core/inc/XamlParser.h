@@ -49,7 +49,7 @@ private:
     _Check_return_ HRESULT
     CreateNamescope(
        _In_ CCoreServices *pCore,
-       _In_ CDependencyObject *pFrameworkRoot, 
+       _In_opt_ CDependencyObject *pFrameworkRoot, 
        _In_ const CParserSettings& parserSettings,
        _Out_ xref_ptr<INameScope>& spNameScope );
    
@@ -63,7 +63,7 @@ private:
         _In_ const xref_ptr<IPALUri>& spBaseUri,
         _In_ const xref_ptr<INameScope> spNameScope,
         _Out_ std::shared_ptr<ObjectWriter>& spObjectWriter,
-        _Out_ std::shared_ptr<BinaryFormatObjectWriter>& spBinaryFormatObjectWriter
+        _When_(fEnableEncoding, _Out_) std::shared_ptr<BinaryFormatObjectWriter>& spBinaryFormatObjectWriter
         );
 
     static

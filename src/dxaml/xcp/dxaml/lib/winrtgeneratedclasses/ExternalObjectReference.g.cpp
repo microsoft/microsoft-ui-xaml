@@ -41,7 +41,7 @@ _Check_return_ HRESULT DirectUI::ExternalObjectReferenceGenerated::get_MarkupExt
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ExternalObjectReference_MarkupExtensionType, pValue));
 }
-_Check_return_ HRESULT DirectUI::ExternalObjectReferenceGenerated::put_MarkupExtensionType(_In_ DirectUI::MarkupExtensionType value)
+_Check_return_ HRESULT DirectUI::ExternalObjectReferenceGenerated::put_MarkupExtensionType(DirectUI::MarkupExtensionType value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ExternalObjectReference_MarkupExtensionType, value));
 }

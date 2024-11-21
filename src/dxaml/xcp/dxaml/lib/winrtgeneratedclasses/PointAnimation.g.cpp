@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::PointAnimation::get_By(_Out_ ABI::Windows::Foundation::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointAnimation_By, ppValue));
 }
-IFACEMETHODIMP DirectUI::PointAnimation::put_By(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue)
+IFACEMETHODIMP DirectUI::PointAnimation::put_By(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointAnimation_By, pValue));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::PointAnimation::get_EnableDependentAnimation(_Out_ BOOL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointAnimation_EnableDependentAnimation, pValue));
 }
-IFACEMETHODIMP DirectUI::PointAnimation::put_EnableDependentAnimation(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PointAnimation::put_EnableDependentAnimation(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointAnimation_EnableDependentAnimation, value));
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::PointAnimation::get_From(_Out_ ABI::Windows::Foundation
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointAnimation_From, ppValue));
 }
-IFACEMETHODIMP DirectUI::PointAnimation::put_From(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue)
+IFACEMETHODIMP DirectUI::PointAnimation::put_From(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointAnimation_From, pValue));
@@ -82,7 +82,7 @@ IFACEMETHODIMP DirectUI::PointAnimation::get_To(_Out_ ABI::Windows::Foundation::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointAnimation_To, ppValue));
 }
-IFACEMETHODIMP DirectUI::PointAnimation::put_To(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue)
+IFACEMETHODIMP DirectUI::PointAnimation::put_To(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Point>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointAnimation_To, pValue));

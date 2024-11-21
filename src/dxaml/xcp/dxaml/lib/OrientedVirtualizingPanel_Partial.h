@@ -300,9 +300,9 @@ namespace DirectUI
 
             // Events.
             IFACEMETHOD(add_HorizontalSnapPointsChanged)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-            IFACEMETHOD(remove_HorizontalSnapPointsChanged)(_In_ EventRegistrationToken tToken) override;
+            IFACEMETHOD(remove_HorizontalSnapPointsChanged)(EventRegistrationToken tToken) override;
             IFACEMETHOD(add_VerticalSnapPointsChanged)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-            IFACEMETHOD(remove_VerticalSnapPointsChanged)(_In_ EventRegistrationToken tToken) override;
+            IFACEMETHOD(remove_VerticalSnapPointsChanged)(EventRegistrationToken tToken) override;
             // End of IScrollSnapPointsInfo interface implementation
 
             // Logical Orientation override
@@ -317,14 +317,14 @@ namespace DirectUI
 
             // Get the closest element information to the point.
             _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
-                _In_ wf::Point position,
+                wf::Point position,
                 _Out_ xaml_primitives::ElementInfo* returnValue)
                 override;
 
             // Get the index where an item should be inserted if it were dropped at
             // the given position. This will be used by live reordering.
             _Check_return_ IFACEMETHOD(GetInsertionIndex)(
-                _In_ wf::Point position,
+                wf::Point position,
                 _Out_ INT* returnValue)
                 override;
 
@@ -490,7 +490,7 @@ namespace DirectUI
                 _In_opt_ xaml_controls::IItemsControl* pItemsControlHint,
                 _In_ INT childIndex,
                 _In_ wf::Size layoutSlotSize,
-                _Outptr_ xaml::IUIElement** ppChild);
+                _Outptr_result_maybenull_ xaml::IUIElement** ppChild);
 
             void AdjustCacheWindow();
 

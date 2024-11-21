@@ -47,7 +47,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_FlyoutContentMinWidth)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_FlyoutContentMinWidth(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_FlyoutContentMinWidth(DOUBLE value);
 
         // Events.
 

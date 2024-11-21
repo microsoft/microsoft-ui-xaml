@@ -23,7 +23,7 @@ Cleanup:
 }
 
 
-_Check_return_ HRESULT PropertyPathFactory::CreateInstanceImpl(_In_ HSTRING path, _Outptr_ xaml::IPropertyPath** ppInstance)
+_Check_return_ HRESULT PropertyPathFactory::CreateInstanceImpl(_In_opt_ HSTRING path, _Outptr_ xaml::IPropertyPath** ppInstance)
 {
     HRESULT hr = S_OK;
     DirectUI::PropertyPath *pNewInstance = NULL;

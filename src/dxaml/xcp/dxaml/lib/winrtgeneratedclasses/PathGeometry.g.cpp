@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::PathGeometry::get_FillRule(_Out_ ABI::Microsoft::UI::Xa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PathGeometry_FillRule, pValue));
 }
-IFACEMETHODIMP DirectUI::PathGeometry::put_FillRule(_In_ ABI::Microsoft::UI::Xaml::Media::FillRule value)
+IFACEMETHODIMP DirectUI::PathGeometry::put_FillRule(ABI::Microsoft::UI::Xaml::Media::FillRule value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PathGeometry_FillRule, value));

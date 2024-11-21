@@ -12,9 +12,9 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT DragCompletedEventArgsFactory::CreateInstanceWithHorizontalChangeVerticalChangeAndCanceledImpl(
-    _In_ DOUBLE dHorizontalChange,
-    _In_ DOUBLE dVerticalChange,
-    _In_ BOOLEAN bCanceled,
+    DOUBLE dHorizontalChange,
+    DOUBLE dVerticalChange,
+    BOOLEAN bCanceled,
     _In_opt_ IInspectable* pOuter,
     _Outptr_ IInspectable** ppInner,
     _Outptr_ IDragCompletedEventArgs** ppInstance)

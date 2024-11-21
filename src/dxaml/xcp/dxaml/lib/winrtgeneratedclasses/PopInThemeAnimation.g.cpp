@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::PopInThemeAnimationGenerated::get_FromHorizontalOffset(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PopInThemeAnimation_FromHorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::PopInThemeAnimationGenerated::put_FromHorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PopInThemeAnimationGenerated::put_FromHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PopInThemeAnimation_FromHorizontalOffset, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::PopInThemeAnimationGenerated::get_FromVerticalOffset(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PopInThemeAnimation_FromVerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::PopInThemeAnimationGenerated::put_FromVerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PopInThemeAnimationGenerated::put_FromVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PopInThemeAnimation_FromVerticalOffset, value));

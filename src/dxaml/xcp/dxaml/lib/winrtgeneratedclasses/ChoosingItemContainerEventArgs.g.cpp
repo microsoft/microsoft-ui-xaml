@@ -51,7 +51,7 @@ IFACEMETHODIMP DirectUI::ChoosingItemContainerEventArgs::get_IsContainerPrepared
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ChoosingItemContainerEventArgs::put_IsContainerPrepared(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ChoosingItemContainerEventArgs::put_IsContainerPrepared(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -102,7 +102,7 @@ IFACEMETHODIMP DirectUI::ChoosingItemContainerEventArgs::get_ItemIndex(_Out_ INT
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ChoosingItemContainerEventArgs::put_ItemIndex(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ChoosingItemContainerEventArgs::put_ItemIndex(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

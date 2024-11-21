@@ -66,7 +66,7 @@ StartDragAsyncOperation::SetVisual(_In_ bool hasAnchorPoint, _In_ wf::Point anch
 }
 
 _Check_return_ HRESULT
-StartDragAsyncOperation::StartIfNeededImpl(_In_ CDependencyObject* anchorElement, _In_ ixp::IPointerPoint* pointerPoint)
+StartDragAsyncOperation::StartIfNeededImpl(_In_opt_ CDependencyObject* anchorElement, _In_ ixp::IPointerPoint* pointerPoint)
 {
     if (!m_started)
     {

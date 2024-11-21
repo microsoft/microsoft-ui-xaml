@@ -460,7 +460,7 @@ DCompTreeHost::ReclaimResources(_Out_ bool *pDiscarded)
 //    Get the main and secondary SFs of the current thread, put them into the
 //    vector, which will consumed by Offer and Reclaim
 //-------------------------------------------------------------------------------
-void DCompTreeHost::GetSurfaceFactoriesForCurrentThread(_Out_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector)
+void DCompTreeHost::GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector)
 {
     //First, we put the main SurfaceFactory into the vector
     if (m_spMainSurfaceFactoryPartner3 != NULL) {
@@ -1422,18 +1422,8 @@ DCompTreeHost::GetSystemBackdropBrush(_Outptr_result_maybenull_ ABI::Windows::UI
 
     *systemBackdropBrush = nullptr;
 
-    if (m_contentBridge)
-    {
-        Microsoft::WRL::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
-
-        IFC_RETURN(m_contentBridge.As(&compositionSupportsSystemBackdrop));
-        IFC_RETURN(compositionSupportsSystemBackdrop->get_SystemBackdrop(systemBackdropBrush));
-    }
-    else
-    {
-        // Return potentially cached m_systemBackdropBrush.
-        m_systemBackdropBrush.CopyTo(systemBackdropBrush);
-    }
+    // Return potentially cached m_systemBackdropBrush.
+    m_systemBackdropBrush.CopyTo(systemBackdropBrush);
 
     return S_OK;
 }
@@ -1441,26 +1431,8 @@ DCompTreeHost::GetSystemBackdropBrush(_Outptr_result_maybenull_ ABI::Windows::UI
 _Check_return_ HRESULT
 DCompTreeHost::SetSystemBackdropBrush(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush* systemBackdropBrush)
 {
-    if (m_contentBridge)
-    {
-        Microsoft::WRL::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
-
-        IFC_RETURN(m_contentBridge.As(&compositionSupportsSystemBackdrop));
-
-#ifdef DBG
-        Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionBrush> systemBackdropBrushDbg;
-
-        IGNOREHR(compositionSupportsSystemBackdrop->get_SystemBackdrop(&systemBackdropBrushDbg));
-        IGNOREHR(gps->DebugOutputSzNoEndl(L"DCompTreeHost::SetSystemBackdropBrush - old systemBackdroBrushp=%p, new systemBackdropBrush=%p\r\n", systemBackdropBrushDbg.Get(), systemBackdropBrush));
-#endif
-
-        IFC_RETURN(compositionSupportsSystemBackdrop->put_SystemBackdrop(systemBackdropBrush));
-    }
-    else
-    {
-        // Cache systemBackdropBrush for subsequent call to SetBackgroundBrush when m_contentBridge is set.
-        m_systemBackdropBrush = systemBackdropBrush;
-    }
+    // Cache systemBackdropBrush for subsequent call to SetBackgroundBrush when m_contentBridge is set.
+    m_systemBackdropBrush = systemBackdropBrush;
 
     return S_OK;
 }

@@ -52,7 +52,7 @@ IFACEMETHODIMP DirectUI::SplitViewGenerated::get_CompactPaneLength(_Out_ DOUBLE*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitView_CompactPaneLength, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitViewGenerated::put_CompactPaneLength(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::put_CompactPaneLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitView_CompactPaneLength, value));
@@ -70,7 +70,7 @@ IFACEMETHODIMP DirectUI::SplitViewGenerated::get_DisplayMode(_Out_ ABI::Microsof
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitView_DisplayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitViewGenerated::put_DisplayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::SplitViewDisplayMode value)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::put_DisplayMode(ABI::Microsoft::UI::Xaml::Controls::SplitViewDisplayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitView_DisplayMode, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::SplitViewGenerated::get_IsPaneOpen(_Out_ BOOLEAN* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitView_IsPaneOpen, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitViewGenerated::put_IsPaneOpen(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::put_IsPaneOpen(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitView_IsPaneOpen, value));
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::SplitViewGenerated::get_LightDismissOverlayMode(_Out_ A
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitView_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitViewGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitView_LightDismissOverlayMode, value));
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::SplitViewGenerated::get_OpenPaneLength(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitView_OpenPaneLength, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitViewGenerated::put_OpenPaneLength(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::put_OpenPaneLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitView_OpenPaneLength, value));
@@ -124,7 +124,7 @@ IFACEMETHODIMP DirectUI::SplitViewGenerated::get_PanePlacement(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitView_PanePlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitViewGenerated::put_PanePlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::SplitViewPanePlacement value)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::put_PanePlacement(ABI::Microsoft::UI::Xaml::Controls::SplitViewPanePlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitView_PanePlacement, value));
@@ -171,7 +171,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SplitViewGenerated::remove_PaneClosed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::remove_PaneClosed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PaneClosedEventSourceType* pEventSource = nullptr;
@@ -226,7 +226,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SplitViewGenerated::remove_PaneClosing(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::remove_PaneClosing(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PaneClosingEventSourceType* pEventSource = nullptr;
@@ -281,7 +281,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SplitViewGenerated::remove_PaneOpened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::remove_PaneOpened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PaneOpenedEventSourceType* pEventSource = nullptr;
@@ -336,7 +336,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SplitViewGenerated::remove_PaneOpening(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SplitViewGenerated::remove_PaneOpening(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PaneOpeningEventSourceType* pEventSource = nullptr;

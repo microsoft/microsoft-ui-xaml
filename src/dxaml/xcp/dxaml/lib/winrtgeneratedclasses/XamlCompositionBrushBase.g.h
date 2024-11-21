@@ -57,7 +57,7 @@ namespace DirectUI
         IFACEMETHOD(get_CompositionBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Composition::ICompositionBrush** ppValue) override;
         IFACEMETHOD(put_CompositionBrush)(_In_opt_ ABI::Microsoft::UI::Composition::ICompositionBrush* pValue) override;
         IFACEMETHOD(get_FallbackColor)(_Out_ ABI::Windows::UI::Color* pValue) override;
-        IFACEMETHOD(put_FallbackColor)(_In_ ABI::Windows::UI::Color value) override;
+        IFACEMETHOD(put_FallbackColor)(ABI::Windows::UI::Color value) override;
 
         // Events.
 

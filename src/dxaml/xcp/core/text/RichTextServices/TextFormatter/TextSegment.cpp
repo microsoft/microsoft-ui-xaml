@@ -490,7 +490,7 @@ HRESULT TextSegment::GetLocaleNameList(
 HRESULT TextSegment::GetNumberSubstitution(
     _In_ XUINT32 textPosition,
     _Out_ XUINT32* pTextLength,
-    _Outptr_ IDWriteNumberSubstitution** ppNumberSubstitution
+    _Outptr_result_maybenull_ IDWriteNumberSubstitution** ppNumberSubstitution
     )
 {
     ASSERT(m_pFirstRunData != NULL);

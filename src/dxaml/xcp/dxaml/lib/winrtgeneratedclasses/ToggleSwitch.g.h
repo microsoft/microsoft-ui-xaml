@@ -67,11 +67,11 @@ namespace DirectUI
         IFACEMETHOD(get_Header)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Header)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_HeaderPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement* pValue) FEATURE_HEADERPLACEMENT_OVERRIDE;
-        IFACEMETHOD(put_HeaderPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
+        IFACEMETHOD(put_HeaderPlacement)(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) override;
         IFACEMETHOD(get_IsOn)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsOn)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsOn)(BOOLEAN value) override;
         IFACEMETHOD(get_OffContent)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_OffContent)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_OffContentTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
@@ -86,7 +86,7 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetToggledEventSourceNoRef(_Outptr_ ToggledEventSourceType** ppEventSource);
         IFACEMETHOD(add_Toggled)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Toggled)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Toggled)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(OnHeaderChanged)(_In_opt_ IInspectable* pOldContent, _In_opt_ IInspectable* pNewContent) override;

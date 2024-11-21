@@ -13,7 +13,7 @@ namespace DirectUI
     public:
         DirectConnectedAnimationConfiguration() {};
 
-        _Check_return_ HRESULT GetDefaultEasingFunction(_Outptr_ WUComp::ICompositionEasingFunction** value) override;
+        _Check_return_ HRESULT GetDefaultEasingFunction(_Outptr_result_maybenull_ WUComp::ICompositionEasingFunction** value) override;
         const wf::TimeSpan GetDefaultDuration() override;
     private:
     };

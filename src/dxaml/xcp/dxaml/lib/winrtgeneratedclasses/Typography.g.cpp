@@ -39,7 +39,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetAnnotationAlternatesStati
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_AnnotationAlternates, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetAnnotationAlternatesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetAnnotationAlternatesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_AnnotationAlternates, value));
 }
@@ -56,7 +56,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetAnnotationAlternates(_In_ ABI::Mi
     RRETURN(GetAnnotationAlternatesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetAnnotationAlternates(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetAnnotationAlternates(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, INT value)
 {
     RRETURN(SetAnnotationAlternatesStatic(pElement, value));
 }
@@ -65,7 +65,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetEastAsianExpertFormsStati
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_EastAsianExpertForms, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetEastAsianExpertFormsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetEastAsianExpertFormsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_EastAsianExpertForms, value));
 }
@@ -82,7 +82,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetEastAsianExpertForms(_In_ ABI::Mi
     RRETURN(GetEastAsianExpertFormsStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetEastAsianExpertForms(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetEastAsianExpertForms(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetEastAsianExpertFormsStatic(pElement, value));
 }
@@ -91,7 +91,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetEastAsianLanguageStatic(_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_EastAsianLanguage, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetEastAsianLanguageStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontEastAsianLanguage value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetEastAsianLanguageStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontEastAsianLanguage value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_EastAsianLanguage, value));
 }
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetEastAsianLanguage(_In_ ABI::Micro
     RRETURN(GetEastAsianLanguageStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetEastAsianLanguage(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontEastAsianLanguage value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetEastAsianLanguage(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontEastAsianLanguage value)
 {
     RRETURN(SetEastAsianLanguageStatic(pElement, value));
 }
@@ -117,7 +117,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetEastAsianWidthsStatic(_In
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_EastAsianWidths, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetEastAsianWidthsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontEastAsianWidths value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetEastAsianWidthsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontEastAsianWidths value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_EastAsianWidths, value));
 }
@@ -134,7 +134,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetEastAsianWidths(_In_ ABI::Microso
     RRETURN(GetEastAsianWidthsStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetEastAsianWidths(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontEastAsianWidths value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetEastAsianWidths(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontEastAsianWidths value)
 {
     RRETURN(SetEastAsianWidthsStatic(pElement, value));
 }
@@ -143,7 +143,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStandardLigaturesStatic(_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StandardLigatures, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStandardLigaturesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStandardLigaturesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StandardLigatures, value));
 }
@@ -160,7 +160,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStandardLigatures(_In_ ABI::Micro
     RRETURN(GetStandardLigaturesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStandardLigatures(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStandardLigatures(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStandardLigaturesStatic(pElement, value));
 }
@@ -169,7 +169,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetContextualLigaturesStatic
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_ContextualLigatures, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetContextualLigaturesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetContextualLigaturesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_ContextualLigatures, value));
 }
@@ -186,7 +186,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetContextualLigatures(_In_ ABI::Mic
     RRETURN(GetContextualLigaturesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetContextualLigatures(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetContextualLigatures(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetContextualLigaturesStatic(pElement, value));
 }
@@ -195,7 +195,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetDiscretionaryLigaturesSta
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_DiscretionaryLigatures, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetDiscretionaryLigaturesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetDiscretionaryLigaturesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_DiscretionaryLigatures, value));
 }
@@ -212,7 +212,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetDiscretionaryLigatures(_In_ ABI::
     RRETURN(GetDiscretionaryLigaturesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetDiscretionaryLigatures(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetDiscretionaryLigatures(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetDiscretionaryLigaturesStatic(pElement, value));
 }
@@ -221,7 +221,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetHistoricalLigaturesStatic
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_HistoricalLigatures, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetHistoricalLigaturesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetHistoricalLigaturesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_HistoricalLigatures, value));
 }
@@ -238,7 +238,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetHistoricalLigatures(_In_ ABI::Mic
     RRETURN(GetHistoricalLigaturesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetHistoricalLigatures(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetHistoricalLigatures(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetHistoricalLigaturesStatic(pElement, value));
 }
@@ -247,7 +247,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStandardSwashesStatic(_In
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StandardSwashes, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStandardSwashesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStandardSwashesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StandardSwashes, value));
 }
@@ -264,7 +264,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStandardSwashes(_In_ ABI::Microso
     RRETURN(GetStandardSwashesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStandardSwashes(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStandardSwashes(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, INT value)
 {
     RRETURN(SetStandardSwashesStatic(pElement, value));
 }
@@ -273,7 +273,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetContextualSwashesStatic(_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_ContextualSwashes, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetContextualSwashesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetContextualSwashesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_ContextualSwashes, value));
 }
@@ -290,7 +290,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetContextualSwashes(_In_ ABI::Micro
     RRETURN(GetContextualSwashesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetContextualSwashes(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetContextualSwashes(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, INT value)
 {
     RRETURN(SetContextualSwashesStatic(pElement, value));
 }
@@ -299,7 +299,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetContextualAlternatesStati
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_ContextualAlternates, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetContextualAlternatesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetContextualAlternatesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_ContextualAlternates, value));
 }
@@ -316,7 +316,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetContextualAlternates(_In_ ABI::Mi
     RRETURN(GetContextualAlternatesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetContextualAlternates(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetContextualAlternates(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetContextualAlternatesStatic(pElement, value));
 }
@@ -325,7 +325,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticAlternatesStatic
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticAlternates, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticAlternatesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticAlternatesStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticAlternates, value));
 }
@@ -342,7 +342,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticAlternates(_In_ ABI::Mic
     RRETURN(GetStylisticAlternatesStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticAlternates(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticAlternates(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, INT value)
 {
     RRETURN(SetStylisticAlternatesStatic(pElement, value));
 }
@@ -351,7 +351,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet1Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet1, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet1Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet1Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet1, value));
 }
@@ -368,7 +368,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet1(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet1Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet1(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet1(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet1Static(pElement, value));
 }
@@ -377,7 +377,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet2Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet2, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet2Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet2Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet2, value));
 }
@@ -394,7 +394,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet2(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet2Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet2(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet2(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet2Static(pElement, value));
 }
@@ -403,7 +403,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet3Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet3, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet3Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet3Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet3, value));
 }
@@ -420,7 +420,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet3(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet3Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet3(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet3(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet3Static(pElement, value));
 }
@@ -429,7 +429,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet4Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet4, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet4Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet4Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet4, value));
 }
@@ -446,7 +446,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet4(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet4Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet4(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet4(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet4Static(pElement, value));
 }
@@ -455,7 +455,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet5Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet5, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet5Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet5Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet5, value));
 }
@@ -472,7 +472,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet5(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet5Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet5(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet5(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet5Static(pElement, value));
 }
@@ -481,7 +481,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet6Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet6, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet6Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet6Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet6, value));
 }
@@ -498,7 +498,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet6(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet6Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet6(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet6(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet6Static(pElement, value));
 }
@@ -507,7 +507,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet7Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet7, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet7Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet7Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet7, value));
 }
@@ -524,7 +524,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet7(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet7Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet7(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet7(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet7Static(pElement, value));
 }
@@ -533,7 +533,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet8Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet8, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet8Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet8Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet8, value));
 }
@@ -550,7 +550,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet8(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet8Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet8(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet8(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet8Static(pElement, value));
 }
@@ -559,7 +559,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet9Static(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet9, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet9Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet9Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet9, value));
 }
@@ -576,7 +576,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet9(_In_ ABI::Microsoft
     RRETURN(GetStylisticSet9Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet9(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet9(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet9Static(pElement, value));
 }
@@ -585,7 +585,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet10Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet10, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet10Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet10Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet10, value));
 }
@@ -602,7 +602,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet10(_In_ ABI::Microsof
     RRETURN(GetStylisticSet10Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet10(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet10(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet10Static(pElement, value));
 }
@@ -611,7 +611,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet11Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet11, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet11Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet11Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet11, value));
 }
@@ -628,7 +628,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet11(_In_ ABI::Microsof
     RRETURN(GetStylisticSet11Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet11(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet11(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet11Static(pElement, value));
 }
@@ -637,7 +637,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet12Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet12, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet12Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet12Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet12, value));
 }
@@ -654,7 +654,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet12(_In_ ABI::Microsof
     RRETURN(GetStylisticSet12Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet12(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet12(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet12Static(pElement, value));
 }
@@ -663,7 +663,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet13Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet13, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet13Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet13Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet13, value));
 }
@@ -680,7 +680,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet13(_In_ ABI::Microsof
     RRETURN(GetStylisticSet13Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet13(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet13(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet13Static(pElement, value));
 }
@@ -689,7 +689,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet14Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet14, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet14Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet14Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet14, value));
 }
@@ -706,7 +706,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet14(_In_ ABI::Microsof
     RRETURN(GetStylisticSet14Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet14(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet14(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet14Static(pElement, value));
 }
@@ -715,7 +715,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet15Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet15, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet15Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet15Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet15, value));
 }
@@ -732,7 +732,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet15(_In_ ABI::Microsof
     RRETURN(GetStylisticSet15Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet15(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet15(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet15Static(pElement, value));
 }
@@ -741,7 +741,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet16Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet16, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet16Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet16Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet16, value));
 }
@@ -758,7 +758,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet16(_In_ ABI::Microsof
     RRETURN(GetStylisticSet16Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet16(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet16(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet16Static(pElement, value));
 }
@@ -767,7 +767,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet17Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet17, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet17Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet17Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet17, value));
 }
@@ -784,7 +784,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet17(_In_ ABI::Microsof
     RRETURN(GetStylisticSet17Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet17(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet17(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet17Static(pElement, value));
 }
@@ -793,7 +793,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet18Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet18, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet18Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet18Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet18, value));
 }
@@ -810,7 +810,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet18(_In_ ABI::Microsof
     RRETURN(GetStylisticSet18Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet18(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet18(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet18Static(pElement, value));
 }
@@ -819,7 +819,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet19Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet19, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet19Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet19Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet19, value));
 }
@@ -836,7 +836,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet19(_In_ ABI::Microsof
     RRETURN(GetStylisticSet19Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet19(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet19(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet19Static(pElement, value));
 }
@@ -845,7 +845,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetStylisticSet20Static(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet20, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet20Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetStylisticSet20Static(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_StylisticSet20, value));
 }
@@ -862,7 +862,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetStylisticSet20(_In_ ABI::Microsof
     RRETURN(GetStylisticSet20Static(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet20(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetStylisticSet20(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetStylisticSet20Static(pElement, value));
 }
@@ -871,7 +871,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetCapitalsStatic(_In_ ABI::
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_Capitals, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetCapitalsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontCapitals value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetCapitalsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontCapitals value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_Capitals, value));
 }
@@ -888,7 +888,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetCapitals(_In_ ABI::Microsoft::UI:
     RRETURN(GetCapitalsStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetCapitals(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontCapitals value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetCapitals(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontCapitals value)
 {
     RRETURN(SetCapitalsStatic(pElement, value));
 }
@@ -897,7 +897,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetCapitalSpacingStatic(_In_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_CapitalSpacing, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetCapitalSpacingStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetCapitalSpacingStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_CapitalSpacing, value));
 }
@@ -914,7 +914,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetCapitalSpacing(_In_ ABI::Microsof
     RRETURN(GetCapitalSpacingStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetCapitalSpacing(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetCapitalSpacing(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetCapitalSpacingStatic(pElement, value));
 }
@@ -923,7 +923,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetKerningStatic(_In_ ABI::M
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_Kerning, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetKerningStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetKerningStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_Kerning, value));
 }
@@ -940,7 +940,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetKerning(_In_ ABI::Microsoft::UI::
     RRETURN(GetKerningStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetKerning(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetKerning(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetKerningStatic(pElement, value));
 }
@@ -949,7 +949,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetCaseSensitiveFormsStatic(
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_CaseSensitiveForms, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetCaseSensitiveFormsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetCaseSensitiveFormsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_CaseSensitiveForms, value));
 }
@@ -966,7 +966,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetCaseSensitiveForms(_In_ ABI::Micr
     RRETURN(GetCaseSensitiveFormsStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetCaseSensitiveForms(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetCaseSensitiveForms(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetCaseSensitiveFormsStatic(pElement, value));
 }
@@ -975,7 +975,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetHistoricalFormsStatic(_In
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_HistoricalForms, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetHistoricalFormsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetHistoricalFormsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_HistoricalForms, value));
 }
@@ -992,7 +992,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetHistoricalForms(_In_ ABI::Microso
     RRETURN(GetHistoricalFormsStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetHistoricalForms(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetHistoricalForms(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetHistoricalFormsStatic(pElement, value));
 }
@@ -1001,7 +1001,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetFractionStatic(_In_ ABI::
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_Fraction, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetFractionStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontFraction value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetFractionStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontFraction value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_Fraction, value));
 }
@@ -1018,7 +1018,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetFraction(_In_ ABI::Microsoft::UI:
     RRETURN(GetFractionStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetFraction(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontFraction value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetFraction(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontFraction value)
 {
     RRETURN(SetFractionStatic(pElement, value));
 }
@@ -1027,7 +1027,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetNumeralStyleStatic(_In_ A
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_NumeralStyle, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetNumeralStyleStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontNumeralStyle value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetNumeralStyleStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontNumeralStyle value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_NumeralStyle, value));
 }
@@ -1044,7 +1044,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetNumeralStyle(_In_ ABI::Microsoft:
     RRETURN(GetNumeralStyleStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetNumeralStyle(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontNumeralStyle value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetNumeralStyle(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontNumeralStyle value)
 {
     RRETURN(SetNumeralStyleStatic(pElement, value));
 }
@@ -1053,7 +1053,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetNumeralAlignmentStatic(_I
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_NumeralAlignment, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetNumeralAlignmentStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontNumeralAlignment value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetNumeralAlignmentStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontNumeralAlignment value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_NumeralAlignment, value));
 }
@@ -1070,7 +1070,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetNumeralAlignment(_In_ ABI::Micros
     RRETURN(GetNumeralAlignmentStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetNumeralAlignment(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontNumeralAlignment value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetNumeralAlignment(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontNumeralAlignment value)
 {
     RRETURN(SetNumeralAlignmentStatic(pElement, value));
 }
@@ -1079,7 +1079,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetSlashedZeroStatic(_In_ AB
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_SlashedZero, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetSlashedZeroStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetSlashedZeroStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_SlashedZero, value));
 }
@@ -1096,7 +1096,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetSlashedZero(_In_ ABI::Microsoft::
     RRETURN(GetSlashedZeroStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetSlashedZero(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetSlashedZero(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetSlashedZeroStatic(pElement, value));
 }
@@ -1105,7 +1105,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetMathematicalGreekStatic(_
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_MathematicalGreek, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetMathematicalGreekStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetMathematicalGreekStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_MathematicalGreek, value));
 }
@@ -1122,7 +1122,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetMathematicalGreek(_In_ ABI::Micro
     RRETURN(GetMathematicalGreekStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetMathematicalGreek(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetMathematicalGreek(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value)
 {
     RRETURN(SetMathematicalGreekStatic(pElement, value));
 }
@@ -1131,7 +1131,7 @@ _Check_return_ HRESULT DirectUI::TypographyFactory::GetVariantsStatic(_In_ ABI::
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_Variants, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::TypographyFactory::SetVariantsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontVariants value)
+_Check_return_ HRESULT DirectUI::TypographyFactory::SetVariantsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontVariants value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::Typography_Variants, value));
 }
@@ -1148,7 +1148,7 @@ IFACEMETHODIMP DirectUI::TypographyFactory::GetVariants(_In_ ABI::Microsoft::UI:
     RRETURN(GetVariantsStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::TypographyFactory::SetVariants(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FontVariants value)
+IFACEMETHODIMP DirectUI::TypographyFactory::SetVariants(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FontVariants value)
 {
     RRETURN(SetVariantsStatic(pElement, value));
 }

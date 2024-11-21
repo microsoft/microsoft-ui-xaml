@@ -706,19 +706,19 @@ namespace FxCallbacks
     _Check_return_ HRESULT UIElement_IsScrollViewerContentScrollable(_In_ CUIElement* nativeTarget, _Out_ bool* isContentHorizontallyScrollable, _Out_ bool* isContentVerticallyScrollable)
         { return DirectUI::UIElement::IsScrollViewerContentScrollable(nativeTarget, isContentHorizontallyScrollable, isContentVerticallyScrollable); }
 
-    _Check_return_ HRESULT UIElement_ProcessTabStop(_In_ CContentRoot* contentRoot, _In_opt_ CDependencyObject* pFocusedElement, _In_opt_ CDependencyObject* pCandidateTabStopElement, const bool isShiftPressed, const bool didCycleFocusAtRootVisualScope, _Outptr_ CDependencyObject** ppNewTabStop, _Out_ bool* pIsTabStopOverridden)
+    _Check_return_ HRESULT UIElement_ProcessTabStop(_In_ CContentRoot* contentRoot, _In_opt_ CDependencyObject* pFocusedElement, _In_opt_ CDependencyObject* pCandidateTabStopElement, const bool isShiftPressed, const bool didCycleFocusAtRootVisualScope, _Outptr_result_maybenull_ CDependencyObject** ppNewTabStop, _Out_ bool* pIsTabStopOverridden)
         { return DirectUI::UIElement::ProcessTabStop(contentRoot, pFocusedElement, pCandidateTabStopElement, isShiftPressed, didCycleFocusAtRootVisualScope, ppNewTabStop, pIsTabStopOverridden); }
 
-    _Check_return_ HRESULT UIElement_GetNextTabStop(_In_ CDependencyObject* pFocusedElement, _Outptr_ CDependencyObject** ppNextTabStop)
+    _Check_return_ HRESULT UIElement_GetNextTabStop(_In_ CDependencyObject* pFocusedElement, _Outptr_result_maybenull_ CDependencyObject** ppNextTabStop)
         { return DirectUI::UIElement::GetNextTabStop(pFocusedElement, ppNextTabStop); }
 
-    _Check_return_ HRESULT UIElement_GetPreviousTabStop(_In_ CDependencyObject* pFocusedElement, _Outptr_ CDependencyObject** ppPreviousTabStop)
+    _Check_return_ HRESULT UIElement_GetPreviousTabStop(_In_ CDependencyObject* pFocusedElement, _Outptr_result_maybenull_ CDependencyObject** ppPreviousTabStop)
         { return DirectUI::UIElement::GetPreviousTabStop(pFocusedElement, ppPreviousTabStop); }
 
-    _Check_return_ HRESULT UIElement_GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _Outptr_ CDependencyObject** ppFirstFocusable)
+    _Check_return_ HRESULT UIElement_GetFirstFocusableElement(_In_ CDependencyObject* pSearchStart, _Outptr_result_maybenull_ CDependencyObject** ppFirstFocusable)
         { return DirectUI::UIElement::GetFirstFocusableElement(pSearchStart, ppFirstFocusable); }
 
-    _Check_return_ HRESULT UIElement_GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _Outptr_ CDependencyObject** ppLastFocusable)
+    _Check_return_ HRESULT UIElement_GetLastFocusableElement(_In_ CDependencyObject* pSearchStart, _Outptr_result_maybenull_ CDependencyObject** ppLastFocusable)
         { return DirectUI::UIElement::GetLastFocusableElement(pSearchStart, ppLastFocusable); }
 
     _Check_return_ HRESULT UIElement_GetDManipElementAndProperty(_In_ CUIElement* nativeTarget, _In_ KnownPropertyIndex targetProperty, _Outptr_ CDependencyObject** ppDManipElement, _Out_ XUINT32* pDManipProperty)

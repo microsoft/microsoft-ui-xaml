@@ -26,7 +26,7 @@ namespace DirectUI
         // behavior.
         IFACEMETHOD(ArrangeOverride)(
             // The computed size that is used to arrange the content.
-            _In_ wf::Size finalSize,
+            wf::Size finalSize,
             // The size of the control.
             _Out_ wf::Size* pReturnValue);
 
@@ -65,7 +65,7 @@ namespace DirectUI
         // internal APIs in the control itself. It basically returns the Container for the DataItem in case it exist.
         // When container doesn't exist and Item is selected Item faceplate ContentPresenter is returned.
         _Check_return_ HRESULT UIA_GetContainerForDataItemOverride(
-            _In_opt_ IInspectable* pItem,
+            _In_ IInspectable* pItem,
             _In_ INT itemIndex,
             _Outptr_ xaml::IUIElement** ppContainer) override;
 
@@ -179,7 +179,7 @@ namespace DirectUI
             _In_opt_ DependencyObject* pCandidateTabStopElement,
             const bool isBackward,
             const bool didCycleFocusAtRootVisualScope,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsTabStopOverridden) override;
 
         bool EditableTextHasFocus();
@@ -356,7 +356,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT SetContentPresenter(
             _In_ INT index,
-            _In_opt_ bool forceSelectionBoxToNull = false) noexcept;
+            _In_ bool forceSelectionBoxToNull = false) noexcept;
 
         _Check_return_ HRESULT UpdateSelectionBoxItemProperties(_In_ INT32 index);
 

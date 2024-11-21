@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSourceLoadCompletedEventArgs::get_Status(_Ou
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::LoadedImageSourceLoadCompletedEventArgs::put_Status(_In_ ABI::Microsoft::UI::Xaml::Media::LoadedImageSourceLoadStatus value)
+_Check_return_ HRESULT DirectUI::LoadedImageSourceLoadCompletedEventArgs::put_Status(ABI::Microsoft::UI::Xaml::Media::LoadedImageSourceLoadStatus value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

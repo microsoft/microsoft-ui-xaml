@@ -35,11 +35,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_SelectionStart)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_SelectionStart(_In_ INT value);
+        _Check_return_ HRESULT put_SelectionStart(INT value);
         IFACEMETHOD(get_SelectionLength)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_SelectionLength(_In_ INT value);
+        _Check_return_ HRESULT put_SelectionLength(INT value);
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
 
         // Methods.
 

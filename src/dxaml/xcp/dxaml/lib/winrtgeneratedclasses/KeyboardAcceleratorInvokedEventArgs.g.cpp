@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::KeyboardAcceleratorInvokedEventArgs::get_Handled(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::KeyboardAcceleratorInvokedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::KeyboardAcceleratorInvokedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

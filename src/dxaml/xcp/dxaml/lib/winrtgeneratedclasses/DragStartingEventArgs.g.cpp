@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::get_Cancel(_Out_ BOOLEA
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -102,7 +102,7 @@ IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::get_AllowedOperations(_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::put_AllowedOperations(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value)
+IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::put_AllowedOperations(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -182,7 +182,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::SetAcceptedOperation(_In_ IInspectable* pSource, _In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation acceptedOperation)
+IFACEMETHODIMP DirectUI::DragStartingEventArgsGenerated::SetAcceptedOperation(_In_ IInspectable* pSource, ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation acceptedOperation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

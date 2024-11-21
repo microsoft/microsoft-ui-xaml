@@ -550,7 +550,7 @@ Page::OnUnloaded(
 
 IFACEMETHODIMP
 Page::MeasureOverride(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -583,7 +583,7 @@ Cleanup:
 
 IFACEMETHODIMP
 Page::ArrangeOverride(
-    _In_ wf::Size arrangeSize,
+    wf::Size arrangeSize,
     _Out_ wf::Size* pReturnValue)
 {
     HRESULT hr = S_OK;

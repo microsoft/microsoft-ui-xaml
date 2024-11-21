@@ -1909,7 +1909,7 @@ _Check_return_ HRESULT ScrollViewer::PageEnd()
 IFACEMETHODIMP ScrollViewer::MeasureOverride(
     // Measurement constraints, a control cannot return a size
     // larger than the constraint.
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     // The desired size of the control.
     _Out_ wf::Size* pDesired) noexcept
 {
@@ -2110,7 +2110,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP ScrollViewer::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue) noexcept
 {
     ANCHORING_DEBUG_TRACE(L"SV[0x%p]: ArrangeOverride finalSize (%f %f)", this, finalSize.Width, finalSize.Height);

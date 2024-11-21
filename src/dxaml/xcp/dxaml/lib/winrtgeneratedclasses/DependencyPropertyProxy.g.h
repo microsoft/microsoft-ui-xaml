@@ -43,7 +43,7 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_PropertyId(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_PropertyId(_In_ INT value);
+        _Check_return_ HRESULT put_PropertyId(INT value);
 
         // Events.
 

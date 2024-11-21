@@ -63,27 +63,27 @@ namespace DirectUI
         IFACEMETHOD(get_Header)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Header)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_HeaderPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement* pValue) FEATURE_HEADERPLACEMENT_OVERRIDE;
-        IFACEMETHOD(put_HeaderPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
+        IFACEMETHOD(put_HeaderPlacement)(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) override;
         IFACEMETHOD(get_IntermediateValue)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_IntermediateValue)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_IntermediateValue)(DOUBLE value) override;
         IFACEMETHOD(get_IsDirectionReversed)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsDirectionReversed)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsDirectionReversed)(BOOLEAN value) override;
         IFACEMETHOD(get_IsThumbToolTipEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsThumbToolTipEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsThumbToolTipEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_Orientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) override;
-        IFACEMETHOD(put_Orientation)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
+        IFACEMETHOD(put_Orientation)(ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
         IFACEMETHOD(get_SnapsTo)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SliderSnapsTo* pValue) override;
-        IFACEMETHOD(put_SnapsTo)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SliderSnapsTo value) override;
+        IFACEMETHOD(put_SnapsTo)(ABI::Microsoft::UI::Xaml::Controls::Primitives::SliderSnapsTo value) override;
         IFACEMETHOD(get_StepFrequency)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_StepFrequency)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_StepFrequency)(DOUBLE value) override;
         IFACEMETHOD(get_ThumbToolTipValueConverter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IValueConverter** ppValue) override;
         IFACEMETHOD(put_ThumbToolTipValueConverter)(_In_opt_ ABI::Microsoft::UI::Xaml::Data::IValueConverter* pValue) override;
         IFACEMETHOD(get_TickFrequency)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_TickFrequency)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_TickFrequency)(DOUBLE value) override;
         IFACEMETHOD(get_TickPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::TickPlacement* pValue) override;
-        IFACEMETHOD(put_TickPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::TickPlacement value) override;
+        IFACEMETHOD(put_TickPlacement)(ABI::Microsoft::UI::Xaml::Controls::Primitives::TickPlacement value) override;
 
         // Events.
 

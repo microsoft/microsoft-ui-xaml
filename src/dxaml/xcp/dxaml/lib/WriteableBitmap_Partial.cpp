@@ -141,8 +141,8 @@ Cleanup:
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT WriteableBitmapFactory::CreateInstanceWithDimensionsImpl(
-    _In_ INT pixelWidth,
-    _In_ INT pixelHeight,
+    INT pixelWidth,
+    INT pixelHeight,
     _Outptr_ xaml_imaging::IWriteableBitmap** ppInstance)
 {
     HRESULT hr = S_OK;

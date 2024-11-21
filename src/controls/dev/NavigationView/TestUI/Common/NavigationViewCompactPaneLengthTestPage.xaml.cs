@@ -121,6 +121,34 @@ namespace MUXControlsTestApp
 
         }
 
+        private void RemoveIcons_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in NavView.MenuItems)
+            {
+                if (item as NavigationViewItem == null)
+                {
+                    continue;
+                }
+
+                (item as NavigationViewItem).Icon = null;
+            }
+        }
+        private void GetIconBoxWidth_Click(object sender, RoutedEventArgs e)
+        {
+            var navigationViewItem = NavView.MenuItems[0] as NavigationViewItem;
+            if (navigationViewItem != null)
+            {
+                var NVIRootGrid = VisualTreeHelper.GetChild(navigationViewItem, 0);
+                var navigationViewItemPresenter = VisualTreeHelper.GetChild(NVIRootGrid, 0);
+                var layoutRoot = VisualTreeHelper.GetChild(navigationViewItemPresenter, 0);
+                var presenterContentRootGrid = VisualTreeHelper.GetChild(layoutRoot, 0);
+                var contentGrid = VisualTreeHelper.GetChild(presenterContentRootGrid, 1);
+                var iconColumn = VisualTreeHelper.GetChild(contentGrid, 0);
+
+                IconBoxWidth.Text = (iconColumn as Border).ActualWidth.ToString();
+            }
+        }
+
         private void NavView_ItemInvoked(object sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs e)
         {
             if(e.InvokedItem as string == "Home")

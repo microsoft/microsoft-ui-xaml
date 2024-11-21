@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp.Samples
 {
-    public class PinterestLayout : VirtualizingLayout
+    public partial class PinterestLayout : VirtualizingLayout
     {
         public PinterestLayout()
         {

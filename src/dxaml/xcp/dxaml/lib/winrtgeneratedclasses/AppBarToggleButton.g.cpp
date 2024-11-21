@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::get_DynamicOverflowOrder(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarToggleButton_DynamicOverflowOrder, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::put_DynamicOverflowOrder(_In_ INT value)
+IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::put_DynamicOverflowOrder(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarToggleButton_DynamicOverflowOrder, value));
@@ -77,7 +77,7 @@ IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::get_IsCompact(_Out_ BOOLEA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarToggleButton_IsCompact, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::put_IsCompact(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::put_IsCompact(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarToggleButton_IsCompact, value));
@@ -125,7 +125,7 @@ IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::get_LabelPosition(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarToggleButton_LabelPosition, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::put_LabelPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarLabelPosition value)
+IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::put_LabelPosition(ABI::Microsoft::UI::Xaml::Controls::CommandBarLabelPosition value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarToggleButton_LabelPosition, value));
@@ -143,7 +143,7 @@ IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::get_UseOverflowStyle(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarToggleButton_UseOverflowStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::put_UseOverflowStyle(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::put_UseOverflowStyle(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarToggleButton_UseOverflowStyle, value));
@@ -190,7 +190,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::SetDefaultLabelPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition defaultLabelPosition)
+IFACEMETHODIMP DirectUI::AppBarToggleButtonGenerated::SetDefaultLabelPosition(ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition defaultLabelPosition)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

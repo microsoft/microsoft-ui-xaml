@@ -299,7 +299,10 @@ void AnnotatedScrollBar::QueueLayoutLabels(unsigned int millisecondWait)
     
     if (!m_labelsDebounce.test_and_set())
     {
-        auto weakThis = get_weak();
+        // Previously we used get_weak() here, but we found the potential to hit a 
+        // refcounting problem where in some scenarios the outer object gets
+        // an extra Release() in this process.
+        auto weakThis {winrt::make_weak(static_cast<winrt::AnnotatedScrollBar>(*this))};
         auto runLayoutLabelsAction = [weakThis]()
         {
             if (winrt::WindowsXamlManager::GetForCurrentThread() == nullptr)
@@ -310,8 +313,9 @@ void AnnotatedScrollBar::QueueLayoutLabels(unsigned int millisecondWait)
 
             if (auto strongThis = weakThis.get())
             {
-                strongThis->m_labelsDebounce.clear();
-                strongThis->LayoutLabels();
+                AnnotatedScrollBar* rawThis = winrt::get_self<AnnotatedScrollBar>(strongThis);
+                rawThis->m_labelsDebounce.clear();
+                rawThis->LayoutLabels();
             }
         };
 

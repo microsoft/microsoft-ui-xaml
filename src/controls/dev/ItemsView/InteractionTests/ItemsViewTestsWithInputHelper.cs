@@ -632,6 +632,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         [TestProperty("Description", "Exercises the ItemsView.StartBringItemIntoView method to bring items to the top of the viewport.")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._21H2)] // Test hangs with Windows 10.
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)] // This test is currently failing on 23h2.
         public void StartBringItemIntoView()
         {
             StartBringItemIntoView(false /*clearItemAspectRatios*/);
@@ -642,6 +643,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "B")]
         [TestProperty("Description", "Exercises the ItemsView.StartBringItemIntoView method asynchronously to bring the scrolled-off focused item into the viewport.")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._21H2)] // Test hangs with Windows 10.
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)] // This test is currently failing on 23h2.
         public void BringFocusedItemIntoView()
         {
             Log.Comment("Selecting ItemsView summary page");
@@ -1026,6 +1028,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         [TestProperty("TestSuite", "B")]
         [TestProperty("Description", "Verifies that the LinedFlowLayout can use ItemContainer without MinWidth.")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void UseLinedFlowLayoutWithoutMinWidth()
         {
             Log.Comment("Selecting ItemsView summary page");

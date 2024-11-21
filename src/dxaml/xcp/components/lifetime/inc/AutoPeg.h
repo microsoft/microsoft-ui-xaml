@@ -25,7 +25,7 @@ namespace ctl
             Init(ptr);
         }
 
-        AutoPeg(_In_opt_ T* ptr, _In_opt_ bool fPeggedIfNull ) noexcept
+        AutoPeg(_In_opt_ T* ptr, _In_ bool fPeggedIfNull ) noexcept
             : m_fPeggedIfNull(fPeggedIfNull)
         {
             Init(ptr);

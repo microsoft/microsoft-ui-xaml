@@ -49,23 +49,23 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ColorFontPaletteIndex)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_ColorFontPaletteIndex)(_In_ INT value) override;
+        IFACEMETHOD(put_ColorFontPaletteIndex)(INT value) override;
         IFACEMETHOD(get_Fill)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_Fill)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_FontRenderingEmSize)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_FontRenderingEmSize)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_FontRenderingEmSize)(DOUBLE value) override;
         IFACEMETHOD(get_FontUri)(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue) override;
         IFACEMETHOD(put_FontUri)(_In_opt_ ABI::Windows::Foundation::IUriRuntimeClass* pValue) override;
         IFACEMETHOD(get_Indices)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Indices)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_IsColorFontEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsColorFontEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsColorFontEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_OriginX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_OriginX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_OriginX)(DOUBLE value) override;
         IFACEMETHOD(get_OriginY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_OriginY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_OriginY)(DOUBLE value) override;
         IFACEMETHOD(get_StyleSimulations)(_Out_ ABI::Microsoft::UI::Xaml::Media::StyleSimulations* pValue) override;
-        IFACEMETHOD(put_StyleSimulations)(_In_ ABI::Microsoft::UI::Xaml::Media::StyleSimulations value) override;
+        IFACEMETHOD(put_StyleSimulations)(ABI::Microsoft::UI::Xaml::Media::StyleSimulations value) override;
         IFACEMETHOD(get_UnicodeString)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_UnicodeString)(_In_opt_ HSTRING value) override;
 

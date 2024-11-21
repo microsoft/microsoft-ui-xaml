@@ -72,14 +72,14 @@ namespace DirectUI
         IFACEMETHOD(get_BorderBrushProtected)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) FEATURE_WUXCPREVIEWTYPES_OVERRIDE;
         IFACEMETHOD(put_BorderBrushProtected)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) FEATURE_WUXCPREVIEWTYPES_OVERRIDE;
         IFACEMETHOD(get_BorderThicknessProtected)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) FEATURE_WUXCPREVIEWTYPES_OVERRIDE;
-        IFACEMETHOD(put_BorderThicknessProtected)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) FEATURE_WUXCPREVIEWTYPES_OVERRIDE;
+        IFACEMETHOD(put_BorderThicknessProtected)(ABI::Microsoft::UI::Xaml::Thickness value) FEATURE_WUXCPREVIEWTYPES_OVERRIDE;
         IFACEMETHOD(get_Children)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::UIElement*>** ppValue) override;
         IFACEMETHOD(get_ChildrenTransitions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>** ppValue) override;
         IFACEMETHOD(put_ChildrenTransitions)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>* pValue) override;
         IFACEMETHOD(get_CornerRadiusProtected)(_Out_ ABI::Microsoft::UI::Xaml::CornerRadius* pValue) FEATURE_WUXCPREVIEWTYPES_OVERRIDE;
-        IFACEMETHOD(put_CornerRadiusProtected)(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value) FEATURE_WUXCPREVIEWTYPES_OVERRIDE;
+        IFACEMETHOD(put_CornerRadiusProtected)(ABI::Microsoft::UI::Xaml::CornerRadius value) FEATURE_WUXCPREVIEWTYPES_OVERRIDE;
         _Check_return_ HRESULT get_IsIgnoringTransitions(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsIgnoringTransitions(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsIgnoringTransitions(BOOLEAN value);
         IFACEMETHOD(get_IsItemsHost)(_Out_ BOOLEAN* pValue) override;
 
         // Events.

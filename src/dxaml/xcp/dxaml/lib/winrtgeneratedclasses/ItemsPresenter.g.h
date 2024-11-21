@@ -63,9 +63,9 @@ namespace DirectUI
         IFACEMETHOD(get_AreHorizontalSnapPointsRegular)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_AreVerticalSnapPointsRegular)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_CanHorizontallyScroll)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_CanHorizontallyScroll)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_CanHorizontallyScroll)(BOOLEAN value) override;
         IFACEMETHOD(get_CanVerticallyScroll)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_CanVerticallyScroll)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_CanVerticallyScroll)(BOOLEAN value) override;
         IFACEMETHOD(get_ExtentHeight)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_ExtentWidth)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_Footer)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
@@ -86,7 +86,7 @@ namespace DirectUI
         IFACEMETHOD(get_MinHorizontalOffset)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_MinVerticalOffset)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_Padding)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_Padding)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_Padding)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_ScrollOwner)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_ScrollOwner)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_VerticalOffset)(_Out_ DOUBLE* pValue) override;
@@ -96,29 +96,29 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetHorizontalSnapPointsChangedEventSourceNoRef(_Outptr_ HorizontalSnapPointsChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_HorizontalSnapPointsChanged)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_HorizontalSnapPointsChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_HorizontalSnapPointsChanged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetVerticalSnapPointsChangedEventSourceNoRef(_Outptr_ VerticalSnapPointsChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_VerticalSnapPointsChanged)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_VerticalSnapPointsChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_VerticalSnapPointsChanged)(EventRegistrationToken token) override;
 
         // Methods.
-        IFACEMETHOD(GetIrregularSnapPoints)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue) override;
-        IFACEMETHOD(GetRegularSnapPoints)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue) override;
+        IFACEMETHOD(GetIrregularSnapPoints)(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue) override;
+        IFACEMETHOD(GetRegularSnapPoints)(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue) override;
         IFACEMETHOD(LineDown)() override;
         IFACEMETHOD(LineLeft)() override;
         IFACEMETHOD(LineRight)() override;
         IFACEMETHOD(LineUp)() override;
-        IFACEMETHOD(MakeVisible)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _In_ BOOLEAN useAnimation, _In_ DOUBLE horizontalAlignmentRatio, _In_ DOUBLE verticalAlignmentRatio, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY) override;
-        IFACEMETHOD(MouseWheelDown)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelLeft)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelRight)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelUp)(_In_ UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MakeVisible)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, BOOLEAN useAnimation, DOUBLE horizontalAlignmentRatio, DOUBLE verticalAlignmentRatio, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY) override;
+        IFACEMETHOD(MouseWheelDown)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelLeft)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelRight)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelUp)(UINT mouseWheelDelta) = 0;
         IFACEMETHOD(PageDown)() override;
         IFACEMETHOD(PageLeft)() override;
         IFACEMETHOD(PageRight)() override;
         IFACEMETHOD(PageUp)() override;
-        IFACEMETHOD(SetHorizontalOffset)(_In_ DOUBLE offset) override;
-        IFACEMETHOD(SetVerticalOffset)(_In_ DOUBLE offset) override;
+        IFACEMETHOD(SetHorizontalOffset)(DOUBLE offset) override;
+        IFACEMETHOD(SetVerticalOffset)(DOUBLE offset) override;
 
 
     protected:

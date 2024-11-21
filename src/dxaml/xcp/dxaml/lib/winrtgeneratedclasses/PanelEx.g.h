@@ -64,23 +64,23 @@ namespace DirectUI
         IFACEMETHOD(get_ActualWidth)(_Out_ DOUBLE* pValue) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_Children)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::UIElement*>** ppValue) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_Height)(_Out_ DOUBLE* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_Height)(_In_ DOUBLE value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_Height)(DOUBLE value) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_HorizontalAlignment)(_Out_ ABI::Microsoft::UI::Xaml::HorizontalAlignment* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_HorizontalAlignment)(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_HorizontalAlignment)(ABI::Microsoft::UI::Xaml::HorizontalAlignment value) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_Margin)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_Margin)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_Margin)(ABI::Microsoft::UI::Xaml::Thickness value) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_MaxHeight)(_Out_ DOUBLE* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_MaxHeight)(_In_ DOUBLE value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_MaxHeight)(DOUBLE value) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_MaxWidth)(_Out_ DOUBLE* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_MaxWidth)(_In_ DOUBLE value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_MaxWidth)(DOUBLE value) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_MinHeight)(_Out_ DOUBLE* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_MinHeight)(_In_ DOUBLE value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_MinHeight)(DOUBLE value) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_MinWidth)(_Out_ DOUBLE* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_MinWidth)(_In_ DOUBLE value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_MinWidth)(DOUBLE value) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_VerticalAlignment)(_Out_ ABI::Microsoft::UI::Xaml::VerticalAlignment* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_VerticalAlignment)(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_VerticalAlignment)(ABI::Microsoft::UI::Xaml::VerticalAlignment value) FEATURE_XAML2018_OVERRIDE;
         IFACEMETHOD(get_Width)(_Out_ DOUBLE* pValue) FEATURE_XAML2018_OVERRIDE;
-        IFACEMETHOD(put_Width)(_In_ DOUBLE value) FEATURE_XAML2018_OVERRIDE;
+        IFACEMETHOD(put_Width)(DOUBLE value) FEATURE_XAML2018_OVERRIDE;
 
         // Events.
 

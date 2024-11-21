@@ -598,7 +598,7 @@ _Check_return_ HRESULT ErrorHelper::OriginateError(
 _Check_return_ HRESULT ErrorHelper::OriginateError(
     _In_ HRESULT hrEncountered,
     _In_ XUINT32 nErrorMessageLength,
-    _In_reads_opt_(nErrorMessageLength) const WCHAR* pszErrorMessage)
+    _In_reads_(nErrorMessageLength) const WCHAR* pszErrorMessage)
 {
     // Not using IFC here is important. The pattern is that OriginateError will return the reported
     // error as its own return code. This allows callers to call OriginateError() and propagate
@@ -668,8 +668,8 @@ Cleanup:
 }
 
 _Check_return_ HRESULT ErrorHelper::OriginateErrorUsingResourceID(
-    _In_ HRESULT hrEncountered,
-    _In_ XUINT32 resourceStringID)
+    HRESULT hrEncountered,
+    XUINT32 resourceStringID)
 {
     HRESULT hr = S_OK;
     wrl_wrappers::HString strResourceString;

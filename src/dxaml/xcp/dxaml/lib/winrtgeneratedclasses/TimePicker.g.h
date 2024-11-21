@@ -67,25 +67,25 @@ namespace DirectUI
         IFACEMETHOD(get_Header)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Header)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_HeaderPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement* pValue) FEATURE_HEADERPLACEMENT_OVERRIDE;
-        IFACEMETHOD(put_HeaderPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
+        IFACEMETHOD(put_HeaderPlacement)(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) override;
         IFACEMETHOD(get_LightDismissOverlayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode* pValue) override;
-        IFACEMETHOD(put_LightDismissOverlayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
+        IFACEMETHOD(put_LightDismissOverlayMode)(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
         IFACEMETHOD(get_MinuteIncrement)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_MinuteIncrement)(_In_ INT value) override;
+        IFACEMETHOD(put_MinuteIncrement)(INT value) override;
         IFACEMETHOD(get_SelectedTime)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>** ppValue) override;
-        IFACEMETHOD(put_SelectedTime)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue) override;
+        IFACEMETHOD(put_SelectedTime)(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue) override;
         IFACEMETHOD(get_Time)(_Out_ ABI::Windows::Foundation::TimeSpan* pValue) override;
-        IFACEMETHOD(put_Time)(_In_ ABI::Windows::Foundation::TimeSpan value) override;
+        IFACEMETHOD(put_Time)(ABI::Windows::Foundation::TimeSpan value) override;
 
         // Events.
         _Check_return_ HRESULT GetSelectedTimeChangedEventSourceNoRef(_Outptr_ SelectedTimeChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_SelectedTimeChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::TimePicker*, ABI::Microsoft::UI::Xaml::Controls::TimePickerSelectedValueChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_SelectedTimeChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_SelectedTimeChanged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetTimeChangedEventSourceNoRef(_Outptr_ TimeChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_TimeChanged)(_In_ ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::TimePickerValueChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_TimeChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_TimeChanged)(EventRegistrationToken token) override;
 
         // Methods.
 

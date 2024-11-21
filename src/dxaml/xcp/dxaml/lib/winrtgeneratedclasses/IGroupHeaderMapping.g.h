@@ -22,8 +22,8 @@ namespace DirectUI
         // Methods.
         IFACEMETHOD(GroupFromHeader)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeader, _Outptr_ IInspectable** ppReturnValue) = 0;
         IFACEMETHOD(HeaderFromGroup)(_In_ IInspectable* pGroup, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) = 0;
-        IFACEMETHOD(IndexFromHeader)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeader, _In_ BOOLEAN excludeHiddenEmptyGroups, _Out_ INT* pReturnValue) = 0;
-        IFACEMETHOD(HeaderFromIndex)(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) = 0;
+        IFACEMETHOD(IndexFromHeader)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeader, BOOLEAN excludeHiddenEmptyGroups, _Out_ INT* pReturnValue) = 0;
+        IFACEMETHOD(HeaderFromIndex)(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) = 0;
         IFACEMETHOD(GroupHeaderContainerFromItemContainer)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pItemContainer, _Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) = 0;
     };
 }

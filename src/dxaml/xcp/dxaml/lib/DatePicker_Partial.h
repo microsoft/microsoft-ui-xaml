@@ -52,7 +52,7 @@ namespace DirectUI
             _Check_return_ HRESULT CreateNewFormatter(
                 _In_ HSTRING strPattern,
                 _In_ HSTRING strCalendarIdentifier,
-                _Out_ wg::DateTimeFormatting::IDateTimeFormatter** ppDateTimeFormatter);
+                _Outptr_ wg::DateTimeFormatting::IDateTimeFormatter** ppDateTimeFormatter);
 
             // Returns the cached DateTimeFormatter for the given Calendar - Format pair for generating the strings
             // representing the years in our date range. If there isn't a cached DateTimeFormatter instance,

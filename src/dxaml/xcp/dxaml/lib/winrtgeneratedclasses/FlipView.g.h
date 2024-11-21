@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_UseTouchAnimationsForAllNavigation)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_UseTouchAnimationsForAllNavigation)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_UseTouchAnimationsForAllNavigation)(BOOLEAN value) override;
 
         // Events.
 

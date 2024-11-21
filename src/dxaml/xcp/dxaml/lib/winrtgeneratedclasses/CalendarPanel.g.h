@@ -52,24 +52,24 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_CacheLength(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_CacheLength(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CacheLength(DOUBLE value);
         _Check_return_ HRESULT get_Cols(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_Cols(_In_ INT value);
+        _Check_return_ HRESULT put_Cols(INT value);
         _Check_return_ HRESULT get_FirstCacheIndex(_Out_ INT* pValue);
         _Check_return_ HRESULT get_FirstVisibleIndex(_Out_ INT* pValue);
         _Check_return_ HRESULT get_ItemMinHeight(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_ItemMinHeight(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_ItemMinHeight(DOUBLE value);
         _Check_return_ HRESULT get_ItemMinWidth(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_ItemMinWidth(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_ItemMinWidth(DOUBLE value);
         _Check_return_ HRESULT get_LastCacheIndex(_Out_ INT* pValue);
         _Check_return_ HRESULT get_LastVisibleIndex(_Out_ INT* pValue);
         _Check_return_ HRESULT get_Orientation(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue);
-        _Check_return_ HRESULT put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value);
+        _Check_return_ HRESULT put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value);
         _Check_return_ HRESULT get_Rows(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_Rows(_In_ INT value);
+        _Check_return_ HRESULT put_Rows(INT value);
         _Check_return_ HRESULT get_ScrollingDirection(_Out_ ABI::Microsoft::UI::Xaml::Controls::PanelScrollingDirection* pValue);
         _Check_return_ HRESULT get_StartIndex(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_StartIndex(_In_ INT value);
+        _Check_return_ HRESULT put_StartIndex(INT value);
 
         // Events.
 

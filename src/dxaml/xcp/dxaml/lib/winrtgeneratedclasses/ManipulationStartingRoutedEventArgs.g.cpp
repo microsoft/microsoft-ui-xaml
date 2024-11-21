@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::get_Mode(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::put_Mode(_In_ ABI::Microsoft::UI::Xaml::Input::ManipulationModes value)
+IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::put_Mode(ABI::Microsoft::UI::Xaml::Input::ManipulationModes value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -169,7 +169,7 @@ IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::get_Handled(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ManipulationStartingRoutedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

@@ -41,21 +41,21 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(add_CenterPointChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_CenterPointChanged(pValue, pToken); }
-        IFACEMETHOD(remove_CenterPointChanged)(_In_ EventRegistrationToken token) override { return This()->remove_CenterPointChanged(token); }
+        IFACEMETHOD(remove_CenterPointChanged)(EventRegistrationToken token) override { return This()->remove_CenterPointChanged(token); }
         IFACEMETHOD(add_Hidden)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_Hidden(pValue, pToken); }
-        IFACEMETHOD(remove_Hidden)(_In_ EventRegistrationToken token) override { return This()->remove_Hidden(token); }
+        IFACEMETHOD(remove_Hidden)(EventRegistrationToken token) override { return This()->remove_Hidden(token); }
         IFACEMETHOD(add_RotationAxisChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_RotationAxisChanged(pValue, pToken); }
-        IFACEMETHOD(remove_RotationAxisChanged)(_In_ EventRegistrationToken token) override { return This()->remove_RotationAxisChanged(token); }
+        IFACEMETHOD(remove_RotationAxisChanged)(EventRegistrationToken token) override { return This()->remove_RotationAxisChanged(token); }
         IFACEMETHOD(add_RotationChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_RotationChanged(pValue, pToken); }
-        IFACEMETHOD(remove_RotationChanged)(_In_ EventRegistrationToken token) override { return This()->remove_RotationChanged(token); }
+        IFACEMETHOD(remove_RotationChanged)(EventRegistrationToken token) override { return This()->remove_RotationChanged(token); }
         IFACEMETHOD(add_ScaleChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_ScaleChanged(pValue, pToken); }
-        IFACEMETHOD(remove_ScaleChanged)(_In_ EventRegistrationToken token) override { return This()->remove_ScaleChanged(token); }
+        IFACEMETHOD(remove_ScaleChanged)(EventRegistrationToken token) override { return This()->remove_ScaleChanged(token); }
         IFACEMETHOD(add_Shown)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_Shown(pValue, pToken); }
-        IFACEMETHOD(remove_Shown)(_In_ EventRegistrationToken token) override { return This()->remove_Shown(token); }
+        IFACEMETHOD(remove_Shown)(EventRegistrationToken token) override { return This()->remove_Shown(token); }
         IFACEMETHOD(add_TransformMatrixChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_TransformMatrixChanged(pValue, pToken); }
-        IFACEMETHOD(remove_TransformMatrixChanged)(_In_ EventRegistrationToken token) override { return This()->remove_TransformMatrixChanged(token); }
+        IFACEMETHOD(remove_TransformMatrixChanged)(EventRegistrationToken token) override { return This()->remove_TransformMatrixChanged(token); }
         IFACEMETHOD(add_TranslationChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_TranslationChanged(pValue, pToken); }
-        IFACEMETHOD(remove_TranslationChanged)(_In_ EventRegistrationToken token) override { return This()->remove_TranslationChanged(token); }
+        IFACEMETHOD(remove_TranslationChanged)(EventRegistrationToken token) override { return This()->remove_TranslationChanged(token); }
     };
 }
 #pragma endregion
@@ -215,94 +215,94 @@ namespace DirectUI
         IFACEMETHOD(get_ActualOffset)(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue) override;
         IFACEMETHOD(get_ActualSize)(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue) override;
         IFACEMETHOD(get_AllowDrop)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AllowDrop)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AllowDrop)(BOOLEAN value) override;
         _Check_return_ HRESULT get_AnimatedCenterPoint(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue);
-        _Check_return_ HRESULT put_AnimatedCenterPoint(_In_ ABI::Windows::Foundation::Numerics::Vector3 value);
+        _Check_return_ HRESULT put_AnimatedCenterPoint(ABI::Windows::Foundation::Numerics::Vector3 value);
         _Check_return_ HRESULT get_AnimatedRotation(_Out_ FLOAT* pValue);
-        _Check_return_ HRESULT put_AnimatedRotation(_In_ FLOAT value);
+        _Check_return_ HRESULT put_AnimatedRotation(FLOAT value);
         _Check_return_ HRESULT get_AnimatedRotationAxis(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue);
-        _Check_return_ HRESULT put_AnimatedRotationAxis(_In_ ABI::Windows::Foundation::Numerics::Vector3 value);
+        _Check_return_ HRESULT put_AnimatedRotationAxis(ABI::Windows::Foundation::Numerics::Vector3 value);
         _Check_return_ HRESULT get_AnimatedScale(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue);
-        _Check_return_ HRESULT put_AnimatedScale(_In_ ABI::Windows::Foundation::Numerics::Vector3 value);
+        _Check_return_ HRESULT put_AnimatedScale(ABI::Windows::Foundation::Numerics::Vector3 value);
         _Check_return_ HRESULT get_AnimatedTransformMatrix(_Out_ ABI::Windows::Foundation::Numerics::Matrix4x4* pValue);
-        _Check_return_ HRESULT put_AnimatedTransformMatrix(_In_ ABI::Windows::Foundation::Numerics::Matrix4x4 value);
+        _Check_return_ HRESULT put_AnimatedTransformMatrix(ABI::Windows::Foundation::Numerics::Matrix4x4 value);
         _Check_return_ HRESULT get_AnimatedTranslation(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue);
-        _Check_return_ HRESULT put_AnimatedTranslation(_In_ ABI::Windows::Foundation::Numerics::Vector3 value);
+        _Check_return_ HRESULT put_AnimatedTranslation(ABI::Windows::Foundation::Numerics::Vector3 value);
         IFACEMETHOD(get_CacheMode)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ICacheMode** ppValue) override;
         IFACEMETHOD(put_CacheMode)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ICacheMode* pValue) override;
         IFACEMETHOD(get_CanBeScrollAnchor)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_CanBeScrollAnchor)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_CanBeScrollAnchor)(BOOLEAN value) override;
         IFACEMETHOD(get_CanDrag)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_CanDrag)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_CanDrag)(BOOLEAN value) override;
         _Check_return_ HRESULT get_CanvasOffset(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_CanvasOffset(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_CenterPoint)(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue) override;
-        IFACEMETHOD(put_CenterPoint)(_In_ ABI::Windows::Foundation::Numerics::Vector3 value) override;
+        IFACEMETHOD(put_CenterPoint)(ABI::Windows::Foundation::Numerics::Vector3 value) override;
         _Check_return_ HRESULT get_ChildrenInternal(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::UIElement*>** ppValue);
         _Check_return_ HRESULT put_ChildrenInternal(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::UIElement*>* pValue);
         IFACEMETHOD(get_Clip)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IRectangleGeometry** ppValue) override;
         IFACEMETHOD(put_Clip)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IRectangleGeometry* pValue) override;
         IFACEMETHOD(get_CompositeMode)(_Out_ ABI::Microsoft::UI::Xaml::Media::ElementCompositeMode* pValue) override;
-        IFACEMETHOD(put_CompositeMode)(_In_ ABI::Microsoft::UI::Xaml::Media::ElementCompositeMode value) override;
+        IFACEMETHOD(put_CompositeMode)(ABI::Microsoft::UI::Xaml::Media::ElementCompositeMode value) override;
         IFACEMETHOD(get_ContextFlyout)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutBase** ppValue) override;
         IFACEMETHOD(put_ContextFlyout)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutBase* pValue) override;
         IFACEMETHOD(get_DesiredSize)(_Out_ ABI::Windows::Foundation::Size* pValue) override;
         _Check_return_ HRESULT get_DirectManipulationContainer(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_DirectManipulationContainer(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_ExitDisplayModeOnAccessKeyInvoked)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_ExitDisplayModeOnAccessKeyInvoked)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_ExitDisplayModeOnAccessKeyInvoked)(BOOLEAN value) override;
         IFACEMETHOD(get_FocusState)(_Out_ ABI::Microsoft::UI::Xaml::FocusState* pValue) override;
         _Check_return_ HRESULT get_GlobalScaleFactor(_Out_ FLOAT* pValue);
-        _Check_return_ HRESULT put_GlobalScaleFactor(_In_ FLOAT value);
+        _Check_return_ HRESULT put_GlobalScaleFactor(FLOAT value);
         _Check_return_ HRESULT get_HandOffVisualClip(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IRectangleGeometry** ppValue);
         _Check_return_ HRESULT put_HandOffVisualClip(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IRectangleGeometry* pValue);
         _Check_return_ HRESULT get_HandOffVisualTransform(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ITransform** ppValue);
         _Check_return_ HRESULT put_HandOffVisualTransform(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ITransform* pValue);
         _Check_return_ HRESULT get_HandOffVisualTransformMatrix3D(_Out_ ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D* pValue);
-        _Check_return_ HRESULT put_HandOffVisualTransformMatrix3D(_In_ ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D value);
+        _Check_return_ HRESULT put_HandOffVisualTransformMatrix3D(ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D value);
         IFACEMETHOD(get_HighContrastAdjustment)(_Out_ ABI::Microsoft::UI::Xaml::ElementHighContrastAdjustment* pValue) override;
-        IFACEMETHOD(put_HighContrastAdjustment)(_In_ ABI::Microsoft::UI::Xaml::ElementHighContrastAdjustment value) override;
+        IFACEMETHOD(put_HighContrastAdjustment)(ABI::Microsoft::UI::Xaml::ElementHighContrastAdjustment value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Interactions(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::InteractionBase*>** ppValue);
         IFACEMETHOD(get_IsAccessKeyScope)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsAccessKeyScope)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsAccessKeyScope)(BOOLEAN value) override;
         IFACEMETHOD(get_IsDoubleTapEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsDoubleTapEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsDoubleTapEnabled)(BOOLEAN value) override;
         _Check_return_ HRESULT get_IsGamepadFocusCandidate(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsGamepadFocusCandidate(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsGamepadFocusCandidate(BOOLEAN value);
         IFACEMETHOD(get_IsHitTestVisible)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsHitTestVisible)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsHitTestVisible)(BOOLEAN value) override;
         IFACEMETHOD(get_IsHoldingEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsHoldingEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsHoldingEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_IsRightTapEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsRightTapEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsRightTapEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_IsTabStop)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsTabStop)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsTabStop)(BOOLEAN value) override;
         IFACEMETHOD(get_IsTapEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsTapEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsTapEnabled)(BOOLEAN value) override;
         _Check_return_ HRESULT get_KeepAliveCount(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_KeepAliveCount(_In_ INT value);
+        _Check_return_ HRESULT put_KeepAliveCount(INT value);
         IFACEMETHOD(get_KeyboardAcceleratorPlacementMode)(_Out_ ABI::Microsoft::UI::Xaml::Input::KeyboardAcceleratorPlacementMode* pValue) override;
-        IFACEMETHOD(put_KeyboardAcceleratorPlacementMode)(_In_ ABI::Microsoft::UI::Xaml::Input::KeyboardAcceleratorPlacementMode value) override;
+        IFACEMETHOD(put_KeyboardAcceleratorPlacementMode)(ABI::Microsoft::UI::Xaml::Input::KeyboardAcceleratorPlacementMode value) override;
         IFACEMETHOD(get_KeyboardAcceleratorPlacementTarget)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_KeyboardAcceleratorPlacementTarget)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_KeyboardAccelerators)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Input::KeyboardAccelerator*>** ppValue) override;
         IFACEMETHOD(get_KeyTipHorizontalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_KeyTipHorizontalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_KeyTipHorizontalOffset)(DOUBLE value) override;
         IFACEMETHOD(get_KeyTipPlacementMode)(_Out_ ABI::Microsoft::UI::Xaml::Input::KeyTipPlacementMode* pValue) override;
-        IFACEMETHOD(put_KeyTipPlacementMode)(_In_ ABI::Microsoft::UI::Xaml::Input::KeyTipPlacementMode value) override;
+        IFACEMETHOD(put_KeyTipPlacementMode)(ABI::Microsoft::UI::Xaml::Input::KeyTipPlacementMode value) override;
         IFACEMETHOD(get_KeyTipTarget)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_KeyTipTarget)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_KeyTipVerticalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_KeyTipVerticalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_KeyTipVerticalOffset)(DOUBLE value) override;
         IFACEMETHOD(get_Lights)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::XamlLight*>** ppValue) override;
         IFACEMETHOD(get_ManipulationMode)(_Out_ ABI::Microsoft::UI::Xaml::Input::ManipulationModes* pValue) override;
-        IFACEMETHOD(put_ManipulationMode)(_In_ ABI::Microsoft::UI::Xaml::Input::ManipulationModes value) override;
+        IFACEMETHOD(put_ManipulationMode)(ABI::Microsoft::UI::Xaml::Input::ManipulationModes value) override;
         _Check_return_ HRESULT get_OffsetXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_OffsetXAnimation(_In_opt_ IInspectable* pValue);
         _Check_return_ HRESULT get_OffsetYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_OffsetYAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_Opacity)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Opacity)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Opacity)(DOUBLE value) override;
         _Check_return_ HRESULT get_OpacityAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_OpacityAnimation(_In_opt_ IInspectable* pValue);
         _Check_return_ HRESULT get_OpacityExpression(_Outptr_result_maybenull_ IInspectable** ppValue);
@@ -316,265 +316,265 @@ namespace DirectUI
         IFACEMETHOD(get_ProtectedCursor)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Input::IInputCursor** ppValue) override;
         IFACEMETHOD(put_ProtectedCursor)(_In_opt_ ABI::Microsoft::UI::Input::IInputCursor* pValue) override;
         IFACEMETHOD(get_RasterizationScale)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_RasterizationScale)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_RasterizationScale)(DOUBLE value) override;
         IFACEMETHOD(get_RenderSize)(_Out_ ABI::Windows::Foundation::Size* pValue) override;
         IFACEMETHOD(get_RenderTransform)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ITransform** ppValue) override;
         IFACEMETHOD(put_RenderTransform)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ITransform* pValue) override;
         IFACEMETHOD(get_RenderTransformOrigin)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_RenderTransformOrigin)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_RenderTransformOrigin)(ABI::Windows::Foundation::Point value) override;
         IFACEMETHOD(get_Rotation)(_Out_ FLOAT* pValue) override;
-        IFACEMETHOD(put_Rotation)(_In_ FLOAT value) override;
+        IFACEMETHOD(put_Rotation)(FLOAT value) override;
         IFACEMETHOD(get_RotationAxis)(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue) override;
-        IFACEMETHOD(put_RotationAxis)(_In_ ABI::Windows::Foundation::Numerics::Vector3 value) override;
+        IFACEMETHOD(put_RotationAxis)(ABI::Windows::Foundation::Numerics::Vector3 value) override;
         IFACEMETHOD(get_RotationTransition)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IScalarTransition** ppValue) override;
         IFACEMETHOD(put_RotationTransition)(_In_opt_ ABI::Microsoft::UI::Xaml::IScalarTransition* pValue) override;
         IFACEMETHOD(get_Scale)(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue) override;
-        IFACEMETHOD(put_Scale)(_In_ ABI::Windows::Foundation::Numerics::Vector3 value) override;
+        IFACEMETHOD(put_Scale)(ABI::Windows::Foundation::Numerics::Vector3 value) override;
         IFACEMETHOD(get_ScaleTransition)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IVector3Transition** ppValue) override;
         IFACEMETHOD(put_ScaleTransition)(_In_opt_ ABI::Microsoft::UI::Xaml::IVector3Transition* pValue) override;
         IFACEMETHOD(get_Shadow)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IShadow** ppValue) override;
         IFACEMETHOD(put_Shadow)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IShadow* pValue) override;
         IFACEMETHOD(get_TabFocusNavigation)(_Out_ ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode* pValue) override;
-        IFACEMETHOD(put_TabFocusNavigation)(_In_ ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode value) override;
+        IFACEMETHOD(put_TabFocusNavigation)(ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode value) override;
         IFACEMETHOD(get_TabIndex)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_TabIndex)(_In_ INT value) override;
+        IFACEMETHOD(put_TabIndex)(INT value) override;
         _Check_return_ HRESULT get_ThemeShadowReceiverCount(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_ThemeShadowReceiverCount(_In_ INT value);
+        _Check_return_ HRESULT put_ThemeShadowReceiverCount(INT value);
         IFACEMETHOD(get_Transform3D)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3D** ppValue) override;
         IFACEMETHOD(put_Transform3D)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::Media3D::ITransform3D* pValue) override;
         IFACEMETHOD(get_TransformMatrix)(_Out_ ABI::Windows::Foundation::Numerics::Matrix4x4* pValue) override;
-        IFACEMETHOD(put_TransformMatrix)(_In_ ABI::Windows::Foundation::Numerics::Matrix4x4 value) override;
+        IFACEMETHOD(put_TransformMatrix)(ABI::Windows::Foundation::Numerics::Matrix4x4 value) override;
         IFACEMETHOD(get_Transitions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>** ppValue) override;
         IFACEMETHOD(put_Transitions)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>* pValue) override;
         _Check_return_ HRESULT get_TransitionTarget(_Outptr_result_maybenull_ DirectUI::TransitionTarget** ppValue);
         _Check_return_ HRESULT put_TransitionTarget(_In_opt_ DirectUI::TransitionTarget* pValue);
         IFACEMETHOD(get_Translation)(_Out_ ABI::Windows::Foundation::Numerics::Vector3* pValue) override;
-        IFACEMETHOD(put_Translation)(_In_ ABI::Windows::Foundation::Numerics::Vector3 value) override;
+        IFACEMETHOD(put_Translation)(ABI::Windows::Foundation::Numerics::Vector3 value) override;
         IFACEMETHOD(get_TranslationTransition)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IVector3Transition** ppValue) override;
         IFACEMETHOD(put_TranslationTransition)(_In_opt_ ABI::Microsoft::UI::Xaml::IVector3Transition* pValue) override;
         IFACEMETHOD(get_UseLayoutRounding)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_UseLayoutRounding)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_UseLayoutRounding)(BOOLEAN value) override;
         IFACEMETHOD(get_UseSystemFocusVisuals)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_UseSystemFocusVisuals)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_UseSystemFocusVisuals)(BOOLEAN value) override;
         IFACEMETHOD(get_Visibility)(_Out_ ABI::Microsoft::UI::Xaml::Visibility* pValue) override;
-        IFACEMETHOD(put_Visibility)(_In_ ABI::Microsoft::UI::Xaml::Visibility value) override;
+        IFACEMETHOD(put_Visibility)(ABI::Microsoft::UI::Xaml::Visibility value) override;
         IFACEMETHOD(get_XamlRoot)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IXamlRoot** ppValue) override;
         IFACEMETHOD(put_XamlRoot)(_In_opt_ ABI::Microsoft::UI::Xaml::IXamlRoot* pValue) override;
         IFACEMETHOD(get_XYFocusDown)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_XYFocusDown)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusDownNavigationStrategy)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy* pValue) override;
-        IFACEMETHOD(put_XYFocusDownNavigationStrategy)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
+        IFACEMETHOD(put_XYFocusDownNavigationStrategy)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
         IFACEMETHOD(get_XYFocusKeyboardNavigation)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusKeyboardNavigationMode* pValue) override;
-        IFACEMETHOD(put_XYFocusKeyboardNavigation)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusKeyboardNavigationMode value) override;
+        IFACEMETHOD(put_XYFocusKeyboardNavigation)(ABI::Microsoft::UI::Xaml::Input::XYFocusKeyboardNavigationMode value) override;
         IFACEMETHOD(get_XYFocusLeft)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_XYFocusLeft)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusLeftNavigationStrategy)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy* pValue) override;
-        IFACEMETHOD(put_XYFocusLeftNavigationStrategy)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
+        IFACEMETHOD(put_XYFocusLeftNavigationStrategy)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
         IFACEMETHOD(get_XYFocusRight)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_XYFocusRight)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusRightNavigationStrategy)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy* pValue) override;
-        IFACEMETHOD(put_XYFocusRightNavigationStrategy)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
+        IFACEMETHOD(put_XYFocusRightNavigationStrategy)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
         IFACEMETHOD(get_XYFocusUp)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_XYFocusUp)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusUpNavigationStrategy)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy* pValue) override;
-        IFACEMETHOD(put_XYFocusUpNavigationStrategy)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
+        IFACEMETHOD(put_XYFocusUpNavigationStrategy)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
 
         // Events.
         _Check_return_ HRESULT GetAccessKeyDisplayDismissedEventSourceNoRef(_Outptr_ AccessKeyDisplayDismissedEventSourceType** ppEventSource);
         IFACEMETHOD(add_AccessKeyDisplayDismissed)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::AccessKeyDisplayDismissedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_AccessKeyDisplayDismissed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_AccessKeyDisplayDismissed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetAccessKeyDisplayRequestedEventSourceNoRef(_Outptr_ AccessKeyDisplayRequestedEventSourceType** ppEventSource);
         IFACEMETHOD(add_AccessKeyDisplayRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::AccessKeyDisplayRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_AccessKeyDisplayRequested)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_AccessKeyDisplayRequested)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetAccessKeyInvokedEventSourceNoRef(_Outptr_ AccessKeyInvokedEventSourceType** ppEventSource);
         IFACEMETHOD(add_AccessKeyInvoked)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::AccessKeyInvokedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_AccessKeyInvoked)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_AccessKeyInvoked)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetAnimatedCenterPointChangedEventSourceNoRef(_Outptr_ AnimatedCenterPointChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedCenterPointChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedCenterPointChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedCenterPointChanged(EventRegistrationToken token);
         _Check_return_ HRESULT GetAnimatedRotationAxisChangedEventSourceNoRef(_Outptr_ AnimatedRotationAxisChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedRotationAxisChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedRotationAxisChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedRotationAxisChanged(EventRegistrationToken token);
         _Check_return_ HRESULT GetAnimatedRotationChangedEventSourceNoRef(_Outptr_ AnimatedRotationChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedRotationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedRotationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedRotationChanged(EventRegistrationToken token);
         _Check_return_ HRESULT GetAnimatedScaleChangedEventSourceNoRef(_Outptr_ AnimatedScaleChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedScaleChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedScaleChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedScaleChanged(EventRegistrationToken token);
         _Check_return_ HRESULT GetAnimatedTransformMatrixChangedEventSourceNoRef(_Outptr_ AnimatedTransformMatrixChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedTransformMatrixChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedTransformMatrixChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedTransformMatrixChanged(EventRegistrationToken token);
         _Check_return_ HRESULT GetAnimatedTranslationChangedEventSourceNoRef(_Outptr_ AnimatedTranslationChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedTranslationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedTranslationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedTranslationChanged(EventRegistrationToken token);
         _Check_return_ HRESULT GetBringIntoViewRequestedEventSourceNoRef(_Outptr_ BringIntoViewRequestedEventSourceType** ppEventSource);
         IFACEMETHOD(add_BringIntoViewRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::BringIntoViewRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_BringIntoViewRequested)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_BringIntoViewRequested)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetCenterPointChangedEventSourceNoRef(_Outptr_ CenterPointChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_CenterPointChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_CenterPointChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_CenterPointChanged(EventRegistrationToken token);
 #endif
         _Check_return_ HRESULT GetCharacterReceivedEventSourceNoRef(_Outptr_ CharacterReceivedEventSourceType** ppEventSource);
         IFACEMETHOD(add_CharacterReceived)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::CharacterReceivedRoutedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_CharacterReceived)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_CharacterReceived)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetContextCanceledEventSourceNoRef(_Outptr_ ContextCanceledEventSourceType** ppEventSource);
         IFACEMETHOD(add_ContextCanceled)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::RoutedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ContextCanceled)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ContextCanceled)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetContextRequestedEventSourceNoRef(_Outptr_ ContextRequestedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ContextRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::ContextRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ContextRequested)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ContextRequested)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDoubleTappedEventSourceNoRef(_Outptr_ DoubleTappedEventSourceType** ppEventSource);
         IFACEMETHOD(add_DoubleTapped)(_In_ ABI::Microsoft::UI::Xaml::Input::IDoubleTappedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DoubleTapped)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DoubleTapped)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDragEnterEventSourceNoRef(_Outptr_ DragEnterEventSourceType** ppEventSource);
         IFACEMETHOD(add_DragEnter)(_In_ ABI::Microsoft::UI::Xaml::IDragEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DragEnter)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DragEnter)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDragLeaveEventSourceNoRef(_Outptr_ DragLeaveEventSourceType** ppEventSource);
         IFACEMETHOD(add_DragLeave)(_In_ ABI::Microsoft::UI::Xaml::IDragEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DragLeave)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DragLeave)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDragOverEventSourceNoRef(_Outptr_ DragOverEventSourceType** ppEventSource);
         IFACEMETHOD(add_DragOver)(_In_ ABI::Microsoft::UI::Xaml::IDragEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DragOver)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DragOver)(EventRegistrationToken token) override;
         virtual _Check_return_ HRESULT GetDragStartingEventSourceNoRef(_Outptr_ DragStartingEventSourceType** ppEventSource) = 0;
         IFACEMETHOD(add_DragStarting)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::DragStartingEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DragStarting)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DragStarting)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDropEventSourceNoRef(_Outptr_ DropEventSourceType** ppEventSource);
         IFACEMETHOD(add_Drop)(_In_ ABI::Microsoft::UI::Xaml::IDragEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Drop)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Drop)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDropCompletedEventSourceNoRef(_Outptr_ DropCompletedEventSourceType** ppEventSource);
         IFACEMETHOD(add_DropCompleted)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::DropCompletedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DropCompleted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DropCompleted)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetGettingFocusEventSourceNoRef(_Outptr_ GettingFocusEventSourceType** ppEventSource);
         IFACEMETHOD(add_GettingFocus)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::GettingFocusEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_GettingFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_GettingFocus)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetGotFocusEventSourceNoRef(_Outptr_ GotFocusEventSourceType** ppEventSource);
         IFACEMETHOD(add_GotFocus)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_GotFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_GotFocus)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetHiddenEventSourceNoRef(_Outptr_ HiddenEventSourceType** ppEventSource);
         virtual _Check_return_ HRESULT STDMETHODCALLTYPE add_Hidden(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        virtual _Check_return_ HRESULT STDMETHODCALLTYPE remove_Hidden(_In_ EventRegistrationToken token);
+        virtual _Check_return_ HRESULT STDMETHODCALLTYPE remove_Hidden(EventRegistrationToken token);
 #endif
         _Check_return_ HRESULT GetHoldingEventSourceNoRef(_Outptr_ HoldingEventSourceType** ppEventSource);
         IFACEMETHOD(add_Holding)(_In_ ABI::Microsoft::UI::Xaml::Input::IHoldingEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Holding)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Holding)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetKeyDownEventSourceNoRef(_Outptr_ KeyDownEventSourceType** ppEventSource);
         IFACEMETHOD(add_KeyDown)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_KeyDown)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_KeyDown)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetKeyUpEventSourceNoRef(_Outptr_ KeyUpEventSourceType** ppEventSource);
         IFACEMETHOD(add_KeyUp)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_KeyUp)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_KeyUp)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetLosingFocusEventSourceNoRef(_Outptr_ LosingFocusEventSourceType** ppEventSource);
         IFACEMETHOD(add_LosingFocus)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::LosingFocusEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_LosingFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_LosingFocus)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetLostFocusEventSourceNoRef(_Outptr_ LostFocusEventSourceType** ppEventSource);
         IFACEMETHOD(add_LostFocus)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_LostFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_LostFocus)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetManipulationCompletedEventSourceNoRef(_Outptr_ ManipulationCompletedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ManipulationCompleted)(_In_ ABI::Microsoft::UI::Xaml::Input::IManipulationCompletedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ManipulationCompleted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ManipulationCompleted)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetManipulationDeltaEventSourceNoRef(_Outptr_ ManipulationDeltaEventSourceType** ppEventSource);
         IFACEMETHOD(add_ManipulationDelta)(_In_ ABI::Microsoft::UI::Xaml::Input::IManipulationDeltaEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ManipulationDelta)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ManipulationDelta)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetManipulationInertiaStartingEventSourceNoRef(_Outptr_ ManipulationInertiaStartingEventSourceType** ppEventSource);
         IFACEMETHOD(add_ManipulationInertiaStarting)(_In_ ABI::Microsoft::UI::Xaml::Input::IManipulationInertiaStartingEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ManipulationInertiaStarting)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ManipulationInertiaStarting)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetManipulationStartedEventSourceNoRef(_Outptr_ ManipulationStartedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ManipulationStarted)(_In_ ABI::Microsoft::UI::Xaml::Input::IManipulationStartedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ManipulationStarted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ManipulationStarted)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetManipulationStartingEventSourceNoRef(_Outptr_ ManipulationStartingEventSourceType** ppEventSource);
         IFACEMETHOD(add_ManipulationStarting)(_In_ ABI::Microsoft::UI::Xaml::Input::IManipulationStartingEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ManipulationStarting)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ManipulationStarting)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetNoFocusCandidateFoundEventSourceNoRef(_Outptr_ NoFocusCandidateFoundEventSourceType** ppEventSource);
         IFACEMETHOD(add_NoFocusCandidateFound)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::NoFocusCandidateFoundEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_NoFocusCandidateFound)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_NoFocusCandidateFound)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPointerCanceledEventSourceNoRef(_Outptr_ PointerCanceledEventSourceType** ppEventSource);
         IFACEMETHOD(add_PointerCanceled)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PointerCanceled)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PointerCanceled)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPointerCaptureLostEventSourceNoRef(_Outptr_ PointerCaptureLostEventSourceType** ppEventSource);
         IFACEMETHOD(add_PointerCaptureLost)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PointerCaptureLost)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PointerCaptureLost)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPointerEnteredEventSourceNoRef(_Outptr_ PointerEnteredEventSourceType** ppEventSource);
         IFACEMETHOD(add_PointerEntered)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PointerEntered)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PointerEntered)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPointerExitedEventSourceNoRef(_Outptr_ PointerExitedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PointerExited)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PointerExited)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PointerExited)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPointerMovedEventSourceNoRef(_Outptr_ PointerMovedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PointerMoved)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PointerMoved)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PointerMoved)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPointerPressedEventSourceNoRef(_Outptr_ PointerPressedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PointerPressed)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PointerPressed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PointerPressed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPointerReleasedEventSourceNoRef(_Outptr_ PointerReleasedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PointerReleased)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PointerReleased)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PointerReleased)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPointerWheelChangedEventSourceNoRef(_Outptr_ PointerWheelChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PointerWheelChanged)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointerEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PointerWheelChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PointerWheelChanged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPreviewKeyDownEventSourceNoRef(_Outptr_ PreviewKeyDownEventSourceType** ppEventSource);
         IFACEMETHOD(add_PreviewKeyDown)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PreviewKeyDown)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PreviewKeyDown)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPreviewKeyUpEventSourceNoRef(_Outptr_ PreviewKeyUpEventSourceType** ppEventSource);
         IFACEMETHOD(add_PreviewKeyUp)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PreviewKeyUp)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PreviewKeyUp)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetProcessKeyboardAcceleratorsEventSourceNoRef(_Outptr_ ProcessKeyboardAcceleratorsEventSourceType** ppEventSource);
         IFACEMETHOD(add_ProcessKeyboardAccelerators)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, ABI::Microsoft::UI::Xaml::Input::ProcessKeyboardAcceleratorEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ProcessKeyboardAccelerators)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ProcessKeyboardAccelerators)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetRightTappedEventSourceNoRef(_Outptr_ RightTappedEventSourceType** ppEventSource);
         IFACEMETHOD(add_RightTapped)(_In_ ABI::Microsoft::UI::Xaml::Input::IRightTappedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_RightTapped)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_RightTapped)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetRotationAxisChangedEventSourceNoRef(_Outptr_ RotationAxisChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_RotationAxisChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_RotationAxisChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_RotationAxisChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetRotationChangedEventSourceNoRef(_Outptr_ RotationChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_RotationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_RotationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_RotationChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetScaleChangedEventSourceNoRef(_Outptr_ ScaleChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_ScaleChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_ScaleChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_ScaleChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetShownEventSourceNoRef(_Outptr_ ShownEventSourceType** ppEventSource);
         virtual _Check_return_ HRESULT STDMETHODCALLTYPE add_Shown(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        virtual _Check_return_ HRESULT STDMETHODCALLTYPE remove_Shown(_In_ EventRegistrationToken token);
+        virtual _Check_return_ HRESULT STDMETHODCALLTYPE remove_Shown(EventRegistrationToken token);
 #endif
         _Check_return_ HRESULT GetTappedEventSourceNoRef(_Outptr_ TappedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Tapped)(_In_ ABI::Microsoft::UI::Xaml::Input::ITappedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Tapped)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Tapped)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetTransformMatrixChangedEventSourceNoRef(_Outptr_ TransformMatrixChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_TransformMatrixChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TransformMatrixChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TransformMatrixChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetTranslationChangedEventSourceNoRef(_Outptr_ TranslationChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_TranslationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::UIElement*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TranslationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TranslationChanged(EventRegistrationToken token);
 #endif
 
         // Methods.
-        IFACEMETHOD(AddHandler)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEvent* pRoutedEvent, _In_ IInspectable* pHandler, _In_ BOOLEAN handledEventsToo) override;
-        IFACEMETHOD(Arrange)(_In_ ABI::Windows::Foundation::Rect finalRect) override;
+        IFACEMETHOD(AddHandler)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEvent* pRoutedEvent, _In_ IInspectable* pHandler, BOOLEAN handledEventsToo) override;
+        IFACEMETHOD(Arrange)(ABI::Windows::Foundation::Rect finalRect) override;
         IFACEMETHOD(CancelDirectManipulations)(_Out_ BOOLEAN* pReturnValue) override;
         _Check_return_ HRESULT CaptureMouse(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(CapturePointer)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointer* pValue, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue) override;
-        _Check_return_ HRESULT FindSubElementsForTouchTargetingProtected(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        IFACEMETHOD(Focus)(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(FocusNoActivate)(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pResult) override;
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue) override;
+        _Check_return_ HRESULT FindSubElementsForTouchTargetingProtected(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(Focus)(ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(FocusNoActivate)(ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue) override;
         _Check_return_ HRESULT GetChildrenInTabFocusOrderProtected(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(InvalidateArrange)() override;
         IFACEMETHOD(InvalidateMeasure)() override;
-        _Check_return_ HRESULT LayoutRound(_In_ FLOAT value, _Out_ FLOAT* pReturnValue);
-        IFACEMETHOD(Measure)(_In_ ABI::Windows::Foundation::Size availableSize) override;
+        _Check_return_ HRESULT LayoutRound(FLOAT value, _Out_ FLOAT* pReturnValue);
+        IFACEMETHOD(Measure)(ABI::Windows::Foundation::Size availableSize) override;
         IFACEMETHOD(OnBringIntoViewRequested)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE) override;
         _Check_return_ HRESULT OnBringIntoViewRequestedProtected(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewRequestedEventArgs* pE);
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue) override;
@@ -764,7 +764,7 @@ namespace DirectUI
         IFACEMETHOD(TryStartDirectManipulation)(_In_ ABI::Microsoft::UI::Xaml::Input::IPointer* pValue, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(RegisterAsScrollPort)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement) override;
         IFACEMETHOD(InternalGetIsEnabled)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pResult) override;
-        IFACEMETHOD(InternalPutIsEnabled)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value) override;
+        IFACEMETHOD(InternalPutIsEnabled)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value) override;
 
         // Static events.
 
@@ -817,6 +817,6 @@ namespace DirectUI
          _Check_return_ HRESULT TryStartDirectManipulationImpl(_In_ ABI::Microsoft::UI::Xaml::Input::IPointer* pValue, _Out_ BOOLEAN* pReturnValue); 
          _Check_return_ HRESULT RegisterAsScrollPortImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement); 
          _Check_return_ HRESULT InternalGetIsEnabledImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pResult); 
-         _Check_return_ HRESULT InternalPutIsEnabledImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value); 
+         _Check_return_ HRESULT InternalPutIsEnabledImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value); 
     };
 }

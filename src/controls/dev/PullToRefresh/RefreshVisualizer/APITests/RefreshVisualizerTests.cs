@@ -200,7 +200,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
     }
 
-    class RefreshInfoProviderImpl : IRefreshInfoProvider
+    partial class RefreshInfoProviderImpl : IRefreshInfoProvider
     {
         private double executionRatio;
         private CompositionPropertySet compositionProperties;

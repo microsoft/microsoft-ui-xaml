@@ -70,11 +70,11 @@ namespace DirectUI
         IFACEMETHOD(CloseSubMenu)() override;
         IFACEMETHOD(CloseSubMenuTree)() override;
         IFACEMETHOD(DelayCloseSubMenu)() override;
-        IFACEMETHOD(OpenSubMenu)(_In_ ABI::Windows::Foundation::Point position) override;
-        IFACEMETHOD(PositionSubMenu)(_In_ ABI::Windows::Foundation::Point position) override;
+        IFACEMETHOD(OpenSubMenu)(ABI::Windows::Foundation::Point position) override;
+        IFACEMETHOD(PositionSubMenu)(ABI::Windows::Foundation::Point position) override;
         IFACEMETHOD(PrepareSubMenu)() override;
-        IFACEMETHOD(RaiseAutomationPeerExpandCollapse)(_In_ BOOLEAN isOpen) override;
-        IFACEMETHOD(SetSubMenuDirection)(_In_ BOOLEAN isSubMenuDirectionUp) override;
+        IFACEMETHOD(RaiseAutomationPeerExpandCollapse)(BOOLEAN isOpen) override;
+        IFACEMETHOD(SetSubMenuDirection)(BOOLEAN isSubMenuDirectionUp) override;
 
 
     protected:

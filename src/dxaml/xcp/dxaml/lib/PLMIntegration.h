@@ -163,7 +163,7 @@ namespace PLM
 
         HRESULT STDMETHODCALLTYPE QueryInterface( 
             /* [in] */ REFIID riid,
-            /* [iid_is][out] */ _COM_Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject) override
+            /* [iid_is][out] */ _Outptr_ void __RPC_FAR *__RPC_FAR *ppvObject) override
         {
             HRESULT hr = S_OK;
             
@@ -205,7 +205,7 @@ namespace PLM
         }
         
         HRESULT STDMETHODCALLTYPE GetRuntimeClassName( 
-            /* [out] */ __RPC__deref_out_opt HSTRING *className) override
+            /* [out] */ __RPC__out HSTRING *className) override
         {
             return m_pWrapped->GetRuntimeClassName(className);
         }

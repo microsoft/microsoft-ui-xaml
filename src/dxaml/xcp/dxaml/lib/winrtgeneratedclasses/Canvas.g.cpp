@@ -99,7 +99,7 @@ _Check_return_ HRESULT DirectUI::CanvasFactory::GetLeftStatic(_In_ ABI::Microsof
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::Canvas_Left, pLength));
 }
 
-_Check_return_ HRESULT DirectUI::CanvasFactory::SetLeftStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ DOUBLE length)
+_Check_return_ HRESULT DirectUI::CanvasFactory::SetLeftStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, DOUBLE length)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::Canvas_Left, length));
 }
@@ -116,7 +116,7 @@ IFACEMETHODIMP DirectUI::CanvasFactory::GetLeft(_In_ ABI::Microsoft::UI::Xaml::I
     RRETURN(GetLeftStatic(pElement, pLength));
 }
 
-IFACEMETHODIMP DirectUI::CanvasFactory::SetLeft(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ DOUBLE length)
+IFACEMETHODIMP DirectUI::CanvasFactory::SetLeft(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, DOUBLE length)
 {
     RRETURN(SetLeftStatic(pElement, length));
 }
@@ -125,7 +125,7 @@ _Check_return_ HRESULT DirectUI::CanvasFactory::GetTopStatic(_In_ ABI::Microsoft
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::Canvas_Top, pLength));
 }
 
-_Check_return_ HRESULT DirectUI::CanvasFactory::SetTopStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ DOUBLE length)
+_Check_return_ HRESULT DirectUI::CanvasFactory::SetTopStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, DOUBLE length)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::Canvas_Top, length));
 }
@@ -142,7 +142,7 @@ IFACEMETHODIMP DirectUI::CanvasFactory::GetTop(_In_ ABI::Microsoft::UI::Xaml::IU
     RRETURN(GetTopStatic(pElement, pLength));
 }
 
-IFACEMETHODIMP DirectUI::CanvasFactory::SetTop(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ DOUBLE length)
+IFACEMETHODIMP DirectUI::CanvasFactory::SetTop(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, DOUBLE length)
 {
     RRETURN(SetTopStatic(pElement, length));
 }
@@ -151,7 +151,7 @@ _Check_return_ HRESULT DirectUI::CanvasFactory::GetZIndexStatic(_In_ ABI::Micros
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::Canvas_ZIndex, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::CanvasFactory::SetZIndexStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::CanvasFactory::SetZIndexStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::Canvas_ZIndex, value));
 }
@@ -168,7 +168,7 @@ IFACEMETHODIMP DirectUI::CanvasFactory::GetZIndex(_In_ ABI::Microsoft::UI::Xaml:
     RRETURN(GetZIndexStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::CanvasFactory::SetZIndex(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::CanvasFactory::SetZIndex(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT value)
 {
     RRETURN(SetZIndexStatic(pElement, value));
 }

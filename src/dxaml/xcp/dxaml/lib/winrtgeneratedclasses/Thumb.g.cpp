@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ThumbGenerated::get_IsDragging(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Thumb_IsDragging, pValue));
 }
-_Check_return_ HRESULT DirectUI::ThumbGenerated::put_IsDragging(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ThumbGenerated::put_IsDragging(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Thumb_IsDragging, value));
@@ -59,7 +59,7 @@ _Check_return_ HRESULT DirectUI::ThumbGenerated::get_IsPointerOver(_Out_ BOOLEAN
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ThumbGenerated::put_IsPointerOver(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ThumbGenerated::put_IsPointerOver(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -105,7 +105,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ThumbGenerated::remove_DragCompleted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ThumbGenerated::remove_DragCompleted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragCompletedEventSourceType* pEventSource = nullptr;
@@ -160,7 +160,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ThumbGenerated::remove_DragDelta(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ThumbGenerated::remove_DragDelta(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragDeltaEventSourceType* pEventSource = nullptr;
@@ -215,7 +215,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ThumbGenerated::remove_DragStarted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ThumbGenerated::remove_DragStarted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragStartedEventSourceType* pEventSource = nullptr;

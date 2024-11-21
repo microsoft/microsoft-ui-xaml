@@ -85,7 +85,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithDimensions)(_In_ INT pixelWidth, _In_ INT pixelHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap** ppInstance);
+        IFACEMETHOD(CreateInstanceWithDimensions)(INT pixelWidth, INT pixelHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap** ppInstance);
 
         // Static properties.
 
@@ -107,7 +107,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithDimensionsImpl(_In_ INT pixelWidth, _In_ INT pixelHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithDimensionsImpl(INT pixelWidth, INT pixelHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::IWriteableBitmap** ppInstance);
 
         // Customized static properties.
 

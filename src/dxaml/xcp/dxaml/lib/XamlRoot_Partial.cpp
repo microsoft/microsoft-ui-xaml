@@ -253,7 +253,7 @@ _Check_return_ HRESULT XamlRoot::SetForElementStatic(
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlRoot::get_HostWindow(_Out_ HWND* pValue)
+_Check_return_ HRESULT XamlRoot::get_HostWindow(HWND* pValue)
 {
     *pValue = nullptr;
 

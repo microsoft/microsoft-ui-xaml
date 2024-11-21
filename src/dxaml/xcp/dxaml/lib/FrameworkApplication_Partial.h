@@ -88,22 +88,22 @@ namespace DirectUI
         virtual _Check_return_ HRESULT OnWindowCreatedImpl(_In_ xaml::IWindowCreatedEventArgs* args);
 
         IFACEMETHOD(add_Suspending)(_In_ xaml::ISuspendingEventHandler* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_Suspending)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_Suspending)(EventRegistrationToken tToken) override;
 
         IFACEMETHOD(add_Resuming)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Resuming)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Resuming)(EventRegistrationToken token) override;
 
         IFACEMETHOD(add_LeavingBackground)(_In_ xaml::ILeavingBackgroundEventHandler* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_LeavingBackground)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_LeavingBackground)(EventRegistrationToken tToken) override;
 
         IFACEMETHOD(add_EnteredBackground)(_In_ xaml::IEnteredBackgroundEventHandler* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_EnteredBackground)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_EnteredBackground)(EventRegistrationToken tToken) override;
 
         IFACEMETHOD(add_UnhandledException)(_In_ xaml::IUnhandledExceptionEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_UnhandledException)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_UnhandledException)(EventRegistrationToken token) override;
 
         _Check_return_ HRESULT STDMETHODCALLTYPE add_ResourceManagerRequested(_In_ wf::ITypedEventHandler<IInspectable*, xaml::ResourceManagerRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_ResourceManagerRequested(_In_ EventRegistrationToken token) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_ResourceManagerRequested(EventRegistrationToken token) override;
 
         _Check_return_ HRESULT InvokeOnWindowCreated();
         _Check_return_ HRESULT InvokeOnLaunchActivated(_In_ waa::ILaunchActivatedEventArgs* uwpLaunchActivatedEventArgs);

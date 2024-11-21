@@ -418,6 +418,78 @@ ixp::IInputFocusControllerStatics* ActivationFactoryCache::GetInputFocusControll
     return m_inputFocusControllerStatics.Get();
 }
 
+ixp::IInputKeyboardSourceStatics2* ActivationFactoryCache::GetInputKeyboardSourceStatics2()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputKeyboardSourceStatics2)
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
+            &m_inputKeyboardSourceStatics2));
+    }
+
+    return m_inputKeyboardSourceStatics2.Get();
+}
+
+ixp::IInputPreTranslateKeyboardSourceStatics* ActivationFactoryCache::GetInputPreTranslateKeyboardSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputPreTranslateKeyboardSourceStatics)
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPreTranslateKeyboardSource).Get(),
+            &m_inputPreTranslateKeyboardSourceStatics));
+    }
+
+    return m_inputPreTranslateKeyboardSourceStatics.Get();
+}
+
+ixp::IInputPointerSourceStatics* ActivationFactoryCache::GetInputPointerSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputPointerSourceStatics)
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPointerSource).Get(),
+            &m_inputPointerSourceStatics));
+    }
+
+    return m_inputPointerSourceStatics.Get();
+}
+
+ixp::IInputActivationListenerStatics2* ActivationFactoryCache::GetInputActivationListenerStatics2()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputActivationListenerStatics2)
+    {
+        wrl::ComPtr<ixp::IInputActivationListenerStatics> inputActivationListenerStatics;
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputActivationListener).Get(),
+            &inputActivationListenerStatics));
+        IFCFAILFAST(inputActivationListenerStatics.As(&m_inputActivationListenerStatics2));
+    }
+
+    return m_inputActivationListenerStatics2.Get();
+}
+
+ixp::IInputNonClientPointerSourceStatics* ActivationFactoryCache::GetInputNonClientPointerSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputNonClientPointerSourceStatics)
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputNonClientPointerSource).Get(),
+            &m_inputNonClientPointerSourceStatics));
+    }
+
+    return m_inputNonClientPointerSourceStatics.Get();
+}
+
 //------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -746,115 +818,115 @@ CCoreServices::~CCoreServices() noexcept
 
     if (m_pHasAnimationsEvent)
     {
-        m_pHasAnimationsEvent->Close();
+        IGNOREHR(m_pHasAnimationsEvent->Close());
         m_pHasAnimationsEvent = nullptr;
     }
 
     if (m_pAnimationsCompleteEvent)
     {
-        m_pAnimationsCompleteEvent->Close();
+        IGNOREHR(m_pAnimationsCompleteEvent->Close());
         m_pAnimationsCompleteEvent = nullptr;
     }
 
     if (m_pHasDeferredAnimationOperationsEvent)
     {
-        m_pHasDeferredAnimationOperationsEvent->Close();
+        IGNOREHR(m_pHasDeferredAnimationOperationsEvent->Close());
         m_pHasDeferredAnimationOperationsEvent = nullptr;
     }
 
     if (m_pDeferredAnimationOperationsCompleteEvent)
     {
-        m_pDeferredAnimationOperationsCompleteEvent->Close();
+        IGNOREHR(m_pDeferredAnimationOperationsCompleteEvent->Close());
         m_pDeferredAnimationOperationsCompleteEvent = nullptr;
     }
 
     if (m_pRootVisualResetEvent)
     {
-        m_pRootVisualResetEvent->Close();
+        IGNOREHR(m_pRootVisualResetEvent->Close());
         m_pRootVisualResetEvent = nullptr;
     }
 
     if (m_layoutCleanEvent)
     {
-        m_layoutCleanEvent->Close();
+        IGNOREHR(m_layoutCleanEvent->Close());
         m_layoutCleanEvent = nullptr;
     }
 
     if (m_pImageDecodingIdleEvent)
     {
-        m_pImageDecodingIdleEvent->Close();
+        IGNOREHR(m_pImageDecodingIdleEvent->Close());
         m_pImageDecodingIdleEvent = nullptr;
     }
 
     if (m_pFontDownloadsIdleEvent)
     {
-        m_pFontDownloadsIdleEvent->Close();
+        IGNOREHR(m_pFontDownloadsIdleEvent->Close());
         m_pFontDownloadsIdleEvent = nullptr;
     }
 
     if (m_pPopupMenuCommandInvokedEvent != nullptr)
     {
-        m_pPopupMenuCommandInvokedEvent->Close();
+        IGNOREHR(m_pPopupMenuCommandInvokedEvent->Close());
         m_pPopupMenuCommandInvokedEvent = nullptr;
     }
 
     if (m_pHasBuildTreeWorksEvent)
     {
-        m_pHasBuildTreeWorksEvent->Close();
+        IGNOREHR(m_pHasBuildTreeWorksEvent->Close());
         m_pHasBuildTreeWorksEvent = nullptr;
     }
 
     if (m_pBuildTreeServiceDrainedEvent)
     {
-        m_pBuildTreeServiceDrainedEvent->Close();
+        IGNOREHR(m_pBuildTreeServiceDrainedEvent->Close());
         m_pBuildTreeServiceDrainedEvent = nullptr;
     }
 
     if (m_pKeyboardInputEvent)
     {
-        m_pKeyboardInputEvent->Close();
+        IGNOREHR(m_pKeyboardInputEvent->Close());
         m_pKeyboardInputEvent = nullptr;
     }
 
     if (m_pPointerInputEvent)
     {
-        m_pPointerInputEvent->Close();
+        IGNOREHR(m_pPointerInputEvent->Close());
         m_pPointerInputEvent = nullptr;
     }
 
     if (m_pImplicitShowHideCompleteEvent)
     {
-        m_pImplicitShowHideCompleteEvent->Close();
+        IGNOREHR(m_pImplicitShowHideCompleteEvent->Close());
         m_pImplicitShowHideCompleteEvent = nullptr;
     }
 
     if (m_hasFacadeAnimationsEvent != nullptr)
     {
-        m_hasFacadeAnimationsEvent->Close();
+        IGNOREHR(m_hasFacadeAnimationsEvent->Close());
         m_hasFacadeAnimationsEvent = nullptr;
     }
 
     if (m_facadeAnimationsCompleteEvent != nullptr)
     {
-        m_facadeAnimationsCompleteEvent->Close();
+        IGNOREHR(m_facadeAnimationsCompleteEvent->Close());
         m_facadeAnimationsCompleteEvent = nullptr;
     }
 
     if (m_hasBrushTransitionsEvent != nullptr)
     {
-        m_hasBrushTransitionsEvent->Close();
+        IGNOREHR(m_hasBrushTransitionsEvent->Close());
         m_hasBrushTransitionsEvent = nullptr;
     }
 
     if (m_brushTransitionsCompleteEvent != nullptr)
     {
-        m_brushTransitionsCompleteEvent->Close();
+        IGNOREHR(m_brushTransitionsCompleteEvent->Close());
         m_brushTransitionsCompleteEvent = nullptr;
     }
 
     if (m_animatedFacadePropertyChangesCompleteEvent != nullptr)
     {
-        m_animatedFacadePropertyChangesCompleteEvent->Close();
+        IGNOREHR(m_animatedFacadePropertyChangesCompleteEvent->Close());
         m_animatedFacadePropertyChangesCompleteEvent = nullptr;
     }
 
@@ -3284,7 +3356,7 @@ CCoreServices::ApplicationStartupEventComplete(
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT
-CCoreServices::SetCurrentApplication(_In_ CApplication *pApplication)
+CCoreServices::SetCurrentApplication(_In_opt_ CApplication *pApplication)
 {
     CREATEPARAMETERS cp(this);
 
@@ -3520,7 +3592,7 @@ CCoreServices::ParseXamlWithEventRoot(
     _In_ bool bForceUtf16,
     _In_ bool bCreatePermanentNamescope,
     _In_ bool bRequireDefaultNamespace,
-    _Outptr_ CDependencyObject **ppDependencyObject,
+    _Outptr_result_maybenull_ CDependencyObject **ppDependencyObject,
     _In_opt_ IPALUri *pXamlResourceUri,
     _In_ const xstring_ptr_view& strSourceAssemblyName,
     _In_ bool bExpandTemplatesDuringParse)

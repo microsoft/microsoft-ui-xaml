@@ -28,8 +28,8 @@ public:
 
     _Check_return_ HRESULT RequestRender(
         _In_ CUIElement* element,
-        int32_t scaledWidth,
-        int32_t scaledHeight,
+        _In_ int32_t scaledWidth,
+        _In_ int32_t scaledHeight,
         _In_ ICoreAsyncAction* asyncAction
         ) override;
 

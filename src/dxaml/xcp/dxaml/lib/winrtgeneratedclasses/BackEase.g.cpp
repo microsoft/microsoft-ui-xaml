@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::BackEase::get_Amplitude(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BackEase_Amplitude, pValue));
 }
-IFACEMETHODIMP DirectUI::BackEase::put_Amplitude(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BackEase::put_Amplitude(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BackEase_Amplitude, value));

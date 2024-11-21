@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
 
         // Methods.
 

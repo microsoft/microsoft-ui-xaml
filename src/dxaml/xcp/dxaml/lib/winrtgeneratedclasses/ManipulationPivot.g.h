@@ -48,9 +48,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Center)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_Center)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_Center)(ABI::Windows::Foundation::Point value) override;
         IFACEMETHOD(get_Radius)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Radius)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Radius)(DOUBLE value) override;
 
         // Events.
 
@@ -86,7 +86,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithCenterAndRadius)(_In_ ABI::Windows::Foundation::Point center, _In_ DOUBLE radius, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IManipulationPivot** ppInstance);
+        IFACEMETHOD(CreateInstanceWithCenterAndRadius)(ABI::Windows::Foundation::Point center, DOUBLE radius, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IManipulationPivot** ppInstance);
 
         // Static properties.
 
@@ -110,7 +110,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithCenterAndRadiusImpl(_In_ ABI::Windows::Foundation::Point center, _In_ DOUBLE radius, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IManipulationPivot** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithCenterAndRadiusImpl(ABI::Windows::Foundation::Point center, DOUBLE radius, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IManipulationPivot** ppInstance);
 
         // Customized static properties.
 

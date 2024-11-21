@@ -30,7 +30,7 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_ErrorCode(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_ErrorCode(_In_ INT value);
+        _Check_return_ HRESULT put_ErrorCode(INT value);
 
         // Methods.
 

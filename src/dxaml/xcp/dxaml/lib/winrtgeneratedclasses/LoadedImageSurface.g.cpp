@@ -53,7 +53,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSurfaceGenerated::get_DecodedPhysicalSize(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LoadedImageSurface_DecodedPhysicalSize, pValue));
 }
-_Check_return_ HRESULT DirectUI::LoadedImageSurfaceGenerated::put_DecodedPhysicalSize(_In_ ABI::Windows::Foundation::Size value)
+_Check_return_ HRESULT DirectUI::LoadedImageSurfaceGenerated::put_DecodedPhysicalSize(ABI::Windows::Foundation::Size value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LoadedImageSurface_DecodedPhysicalSize, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSurfaceGenerated::get_DecodedSize(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LoadedImageSurface_DecodedSize, pValue));
 }
-_Check_return_ HRESULT DirectUI::LoadedImageSurfaceGenerated::put_DecodedSize(_In_ ABI::Windows::Foundation::Size value)
+_Check_return_ HRESULT DirectUI::LoadedImageSurfaceGenerated::put_DecodedSize(ABI::Windows::Foundation::Size value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LoadedImageSurface_DecodedSize, value));
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::LoadedImageSurfaceGenerated::get_NaturalSize(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LoadedImageSurface_NaturalSize, pValue));
 }
-_Check_return_ HRESULT DirectUI::LoadedImageSurfaceGenerated::put_NaturalSize(_In_ ABI::Windows::Foundation::Size value)
+_Check_return_ HRESULT DirectUI::LoadedImageSurfaceGenerated::put_NaturalSize(ABI::Windows::Foundation::Size value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LoadedImageSurface_NaturalSize, value));
@@ -114,7 +114,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::LoadedImageSurfaceGenerated::remove_LoadCompleted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::LoadedImageSurfaceGenerated::remove_LoadCompleted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     LoadCompletedEventSourceType* pEventSource = nullptr;
@@ -164,7 +164,7 @@ HRESULT DirectUI::LoadedImageSurfaceFactory::QueryInterfaceImpl(_In_ REFIID iid,
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::LoadedImageSurfaceFactory::StartLoadFromUriWithSize(_In_ ABI::Windows::Foundation::IUriRuntimeClass* pUri, _In_ ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue)
+IFACEMETHODIMP DirectUI::LoadedImageSurfaceFactory::StartLoadFromUriWithSize(_In_ ABI::Windows::Foundation::IUriRuntimeClass* pUri, ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -202,7 +202,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::LoadedImageSurfaceFactory::StartLoadFromStreamWithSize(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStream, _In_ ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue)
+IFACEMETHODIMP DirectUI::LoadedImageSurfaceFactory::StartLoadFromStreamWithSize(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStream, ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

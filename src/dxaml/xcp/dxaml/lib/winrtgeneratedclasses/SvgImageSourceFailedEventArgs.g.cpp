@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::SvgImageSourceFailedEventArgs::get_Status(_Out_ ABI::Mi
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::SvgImageSourceFailedEventArgs::put_Status(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::SvgImageSourceLoadStatus value)
+_Check_return_ HRESULT DirectUI::SvgImageSourceFailedEventArgs::put_Status(ABI::Microsoft::UI::Xaml::Media::Imaging::SvgImageSourceLoadStatus value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

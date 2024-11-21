@@ -36,7 +36,7 @@ SelectionModel::~SelectionModel()
 
 #pragma region ISelectionModel
 
-winrt::IInspectable SelectionModel::Source()
+winrt::IInspectable SelectionModel::Source() const
 {
     return m_rootNode->Source();
 }
@@ -49,7 +49,7 @@ void SelectionModel::Source(winrt::IInspectable const& value)
     RaisePropertyChanged(L"Source");
 }
 
-bool SelectionModel::SingleSelect()
+bool SelectionModel::SingleSelect() const
 {
     return m_singleSelect;
 }
@@ -68,7 +68,7 @@ void SelectionModel::SingleSelect(bool value)
         {
             // We want to be single select, so make sure there is only 
             // one selected item.
-            auto firstSelectionIndexPath = selectedIndices.GetAt(0);
+            const auto firstSelectionIndexPath = selectedIndices.GetAt(0);
             ClearSelection(true /* resetAnchor */, false /*raiseSelectionChanged */);
             SelectWithPathImpl(firstSelectionIndexPath, true /* select */, true /* raiseSelectionChanged */);
         }
@@ -77,7 +77,7 @@ void SelectionModel::SingleSelect(bool value)
     }
 }
 
-winrt::IndexPath SelectionModel::AnchorIndex()
+winrt::IndexPath SelectionModel::AnchorIndex() const
 {
     winrt::IndexPath anchor = nullptr;
     if (m_rootNode->AnchorIndex() >= 0)
@@ -132,7 +132,7 @@ winrt::IndexPath SelectionModel::SelectedIndex()
 
 void SelectionModel::SelectedIndex(winrt::IndexPath const& value)
 {
-    auto isSelected = IsSelectedAt(value);
+    const auto isSelected = IsSelectedAt(value);
     if (!isSelected || !isSelected.Value())
     {
         ClearSelection(true /* resetAnchor */, false /*raiseSelectionChanged */);
@@ -173,8 +173,8 @@ winrt::IVectorView<winrt::IInspectable> SelectionModel::SelectedItems()
         }
 
         // Instead of creating a dumb vector that takes up the space for all the selected items,
-        // we create a custom VectorView implimentation that calls back using a delegate to find 
-        // the selected item at a particular index. This avoid having to create the storage and copying
+        // we create a custom VectorView implementation that calls back using a delegate to find 
+        // the selected item at a particular index. This avoids having to create the storage and copying
         // needed in a dumb vector. This also allows us to expose a tree of selected nodes into an 
         // easier to consume flat vector view of objects.
         auto selectedItems = winrt::make<::SelectedItems<winrt::IInspectable>>(
@@ -190,7 +190,10 @@ winrt::IVectorView<winrt::IInspectable> SelectionModel::SelectedItems()
                     const unsigned int currentCount = node->SelectedCount();
                     if (index >= currentIndex && index < currentIndex + currentCount)
                     {
-                        int targetIndex = node->SelectedIndices().at(index - currentIndex);
+                        const int targetIndex = node->SelectedIndices().at(index - currentIndex);
+
+                        MUX_ASSERT(targetIndex >= 0);
+
                         item = node->ItemsSourceView().GetAt(targetIndex);
                         break;
                     }
@@ -245,7 +248,7 @@ winrt::IVectorView<winrt::IndexPath> SelectionModel::SelectedIndices()
                     const unsigned int currentCount = node->SelectedCount();
                     if (index >= currentIndex && index < currentIndex + currentCount)
                     {
-                        int targetIndex = node->SelectedIndices().at(index - currentIndex);
+                        const int targetIndex = node->SelectedIndices().at(index - currentIndex);
                         path = winrt::get_self<IndexPath>(info.Path)->CloneWithChildIndex(targetIndex);
                         break;
                     }
@@ -306,14 +309,14 @@ void SelectionModel::DeselectAt(winrt::IndexPath const& index)
     SelectWithPathImpl(index, false /* select */, true /* raiseSelectionChanged */);
 }
 
-winrt::IReference<bool> SelectionModel::IsSelected(int index)
+winrt::IReference<bool> SelectionModel::IsSelected(int index) const
 {
     MUX_ASSERT(index >= 0);
     auto isSelected = m_rootNode->IsSelectedWithPartial(index);
     return isSelected;
 }
 
-winrt::IReference<bool> SelectionModel::IsSelected(int groupIndex, int itemIndex)
+winrt::IReference<bool> SelectionModel::IsSelected(int groupIndex, int itemIndex) const
 {
     MUX_ASSERT(groupIndex >= 0 && itemIndex >= 0);
     winrt::IReference<bool> isSelected = false;
@@ -326,7 +329,7 @@ winrt::IReference<bool> SelectionModel::IsSelected(int groupIndex, int itemIndex
     return isSelected;
 }
 
-winrt::IReference<bool> SelectionModel::IsSelectedAt(winrt::IndexPath const& index)
+winrt::IReference<bool> SelectionModel::IsSelectedAt(winrt::IndexPath const& index) const
 {
     const auto path = index;
     MUX_ASSERT(winrt::get_self<IndexPath>(path)->IsValid());

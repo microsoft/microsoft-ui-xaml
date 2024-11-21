@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::FocusEngagedEventArgs::get_Handled(_Out_ BOOLEAN* pValu
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusEngagedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FocusEngagedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

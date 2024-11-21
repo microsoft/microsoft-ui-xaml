@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::Run::get_FlowDirection(_Out_ ABI::Microsoft::UI::Xaml::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Run_FlowDirection, pValue));
 }
-IFACEMETHODIMP DirectUI::Run::put_FlowDirection(_In_ ABI::Microsoft::UI::Xaml::FlowDirection value)
+IFACEMETHODIMP DirectUI::Run::put_FlowDirection(ABI::Microsoft::UI::Xaml::FlowDirection value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Run_FlowDirection, value));

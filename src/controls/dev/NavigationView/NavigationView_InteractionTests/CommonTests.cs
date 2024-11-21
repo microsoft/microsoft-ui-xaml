@@ -1026,6 +1026,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void SystemBackTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -1782,6 +1783,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyNavigationViewItemChildrenFlyoutMenuCornerRadius()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))

@@ -36,9 +36,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_OldValue)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OldValue(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OldValue(DOUBLE value);
         IFACEMETHOD(get_NewValue)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_NewValue(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_NewValue(DOUBLE value);
 
         // Methods.
 

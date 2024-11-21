@@ -16,7 +16,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mock
 {
     using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 
-    public class MockElementFactory : ElementFactory
+    public partial class MockElementFactory : ElementFactory
     {
         private List<GetElementCallInfo> _recordedGetElementCalls = new List<GetElementCallInfo>();
         private List<RecycleElementCallInfo> _recordedRecycleElementCalls = new List<RecycleElementCallInfo>();

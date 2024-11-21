@@ -17,7 +17,8 @@ void FlowLayoutAlgorithm::InitializeForContext(
     m_elementManager.SetContext(context);
 }
 
-void FlowLayoutAlgorithm::UninitializeForContext(const winrt::VirtualizingLayoutContext& context)
+void FlowLayoutAlgorithm::UninitializeForContext(
+    const winrt::VirtualizingLayoutContext& context)
 {
     if (IsVirtualizingContext())
     {
@@ -89,7 +90,11 @@ winrt::Size FlowLayoutAlgorithm::Measure(
 
     RaiseLineArranged();
     m_collectionChangePending = false;
-    m_lastExtent = EstimateExtent(availableSize, layoutId);
+    const winrt::Rect lastExtent = EstimateExtent(availableSize, layoutId);
+
+    // When m_layoutRoundFactor was set, the layout origin and extent are rounded based on
+    // that factor to avoid accumulations of double-to-float rounding imprecisions.
+    m_lastExtent = m_layoutRoundFactor > 0.0 ? LayoutRound(lastExtent) : lastExtent;
     SetLayoutOrigin();
 
     return winrt::Size{ m_lastExtent.Width, m_lastExtent.Height };
@@ -150,10 +155,16 @@ winrt::Size FlowLayoutAlgorithm::MeasureElement(
     const winrt::Size& availableSize,
     const winrt::VirtualizingLayoutContext& context)
 {
+    // Using the handy 'element' to determine the global scale factor because accessing the ItemsRepeater panel at this FlowLayoutAlgorithm level
+    // would require significant additions. This scale factor is used to round the layout's origin and extent.
+    EvaluateLayoutRoundFactor(context, element);
+
     const auto measureSize = m_algorithmCallbacks->Algorithm_GetMeasureSize(index, availableSize, context);
     element.Measure(measureSize);
-    const auto provisionalArrangeSize = m_algorithmCallbacks->Algorithm_GetProvisionalArrangeSize(index, measureSize, element.DesiredSize(), context);
-    m_algorithmCallbacks->Algorithm_OnElementMeasured(element, index, availableSize, measureSize, element.DesiredSize(), provisionalArrangeSize, context);
+    const auto desiredSize = element.DesiredSize();
+    const auto provisionalArrangeSize = m_algorithmCallbacks->Algorithm_GetProvisionalArrangeSize(index, measureSize, desiredSize, context);
+
+    m_algorithmCallbacks->Algorithm_OnElementMeasured(element, index, availableSize, measureSize, desiredSize, provisionalArrangeSize, context);
 
     return provisionalArrangeSize;
 }
@@ -312,7 +323,6 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
 
     return anchorIndex;
 }
-
 
 void FlowLayoutAlgorithm::Generate(
     GenerateDirection direction,
@@ -544,7 +554,9 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
     return shouldContinue;
 }
 
-winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize, const wstring_view& layoutId)
+winrt::Rect FlowLayoutAlgorithm::EstimateExtent(
+    const winrt::Size& availableSize,
+    const wstring_view& layoutId)
 {
     winrt::UIElement firstRealizedElement = nullptr;
     winrt::Rect firstBounds{};
@@ -580,6 +592,50 @@ winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize
         L"Extent:", extent.X, extent.Y, extent.Width, extent.Height);
 
     return extent;
+}
+
+winrt::Rect FlowLayoutAlgorithm::LayoutRound(
+    const winrt::Rect& value) const
+{
+    MUX_ASSERT(m_layoutRoundFactor != 0.0);
+
+    return winrt::Rect
+    {
+        static_cast<float>(round(value.X * m_layoutRoundFactor) / m_layoutRoundFactor),
+        static_cast<float>(round(value.Y * m_layoutRoundFactor) / m_layoutRoundFactor),
+        static_cast<float>(round(value.Width * m_layoutRoundFactor) / m_layoutRoundFactor),
+        static_cast<float>(round(value.Height * m_layoutRoundFactor) / m_layoutRoundFactor)
+    };
+}
+
+void FlowLayoutAlgorithm::EvaluateLayoutRoundFactor(
+    const winrt::VirtualizingLayoutContext& context,
+    const winrt::UIElement& element)
+{
+    if (element.UseLayoutRounding())
+    {
+        if (const auto xamlRoot = element.XamlRoot())
+        {
+            const double layoutRoundFactor = xamlRoot.RasterizationScale();
+
+            if (layoutRoundFactor != m_layoutRoundFactor)
+            {
+                m_layoutRoundFactor = layoutRoundFactor;
+
+                // This triggers a call to StackLayoutState::OnElementSizesReset()
+                // for example, in the StackLayout case.
+                m_algorithmCallbacks->Algorithm_OnLayoutRoundFactorChanged(context);
+            }
+        }
+        else
+        {
+            m_layoutRoundFactor = 0.0;
+        }
+    }
+    else
+    {
+        m_layoutRoundFactor = 0.0;
+    }
 }
 
 void FlowLayoutAlgorithm::RaiseLineArranged()
@@ -631,6 +687,7 @@ void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
     // Walk through the realized elements one line at a time and
     // align them. Then call element.Arrange with the arranged bounds.
     const int realizedElementCount = m_elementManager.GetRealizedElementCount();
+
     if (realizedElementCount > 0)
     {
         int countInLine = 1;

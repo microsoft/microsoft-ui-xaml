@@ -144,7 +144,7 @@ CBorder::Child(
     }
     else if (cArgs == 1 && ppArgs->GetType() == valueNull)
     {
-        IFC(pBorder->SetChild(NULL));
+        IFC(pBorder->SetChild(nullptr));
     }
     else
     {
@@ -160,11 +160,11 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT
-CBorder::SetChild(_In_ CUIElement* pChild)
+CBorder::SetChild(_In_opt_ CUIElement* pChild)
 {
     HRESULT hr = S_OK;
 
-    CUIElement* pExistingChild = NULL;
+    CUIElement* pExistingChild = nullptr;
     IFC(GetChild(&pExistingChild));
 
     if (pExistingChild)

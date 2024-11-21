@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_PageNumber)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_PageNumber(_In_ INT value);
+        _Check_return_ HRESULT put_PageNumber(INT value);
 
         // Methods.
 

@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsContentChanging)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_IsContentChanging(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsContentChanging(BOOLEAN value);
 
         // Methods.
 

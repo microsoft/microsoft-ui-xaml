@@ -57,7 +57,7 @@ HRESULT DirectUI::VisualStateManagerGenerated::QueryInterfaceImpl(_In_ REFIID ii
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::VisualStateManagerGenerated::GoToStateCore(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pTemplateRoot, _In_opt_ HSTRING stateName, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pGroup, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualState* pState, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::VisualStateManagerGenerated::GoToStateCore(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pTemplateRoot, _In_opt_ HSTRING stateName, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pGroup, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualState* pState, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -78,7 +78,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::VisualStateManagerGenerated::GoToStateCoreProtected(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pTemplateRoot, _In_opt_ HSTRING stateName, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pGroup, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualState* pState, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+_Check_return_ HRESULT DirectUI::VisualStateManagerGenerated::GoToStateCoreProtected(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pTemplateRoot, _In_opt_ HSTRING stateName, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pGroup, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualState* pState, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::IVisualStateManagerOverrides* pVirtuals = NULL;
@@ -241,7 +241,7 @@ IFACEMETHODIMP DirectUI::VisualStateManagerFactory::SetCustomVisualStateManager(
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::VisualStateManagerFactory::GoToState(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_opt_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::VisualStateManagerFactory::GoToState(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_opt_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

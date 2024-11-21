@@ -20,9 +20,9 @@ _Check_return_ HRESULT Brush::StopAnimationImpl(_In_ WUComp::ICompositionAnimati
     return brush->StopAnimation(animation);
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE Brush::PopulatePropertyInfo(
-    _In_ HSTRING propertyName,
-    _In_ WUComp::IAnimationPropertyInfo* animationPropertyInfo
+HRESULT STDMETHODCALLTYPE Brush::PopulatePropertyInfo(
+    HSTRING propertyName,
+    WUComp::IAnimationPropertyInfo* animationPropertyInfo
     )
 {
     return PopulatePropertyInfoOverrideProtected(propertyName, animationPropertyInfo);

@@ -218,18 +218,18 @@ HRESULT
 CViewbox::SetChild(_In_opt_ CUIElement* pChild)
 {
     HRESULT hr = S_OK;
-    CUIElement* pExistingLogicalChild = NULL;
+    CUIElement* pExistingLogicalChild = nullptr;
 
     IFC(GetChild(&pExistingLogicalChild));
 
-    if (NULL != pExistingLogicalChild)
+    if (nullptr != pExistingLogicalChild)
     {
         RemoveLogicalChild(pExistingLogicalChild);
     }
 
     IFC(m_pContainerVisual->SetChild(pChild));
 
-    if (NULL != pChild)
+    if (nullptr != pChild)
     {
         IFC(AddLogicalChild(pChild));
     }

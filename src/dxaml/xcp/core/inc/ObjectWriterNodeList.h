@@ -90,7 +90,7 @@ private:
     bool TryPopRequiredElements(
         _In_ const std::array<ObjectWriterNodeType, EXPECTEDCOUNT>& expectedStackTopNodeType,
         _In_ std::vector<ObjectWriterNode>& nodeList,
-        _Out_ std::vector<ObjectWriterNode>& poppedList);
+        _Inout_ std::vector<ObjectWriterNode>& poppedList);
 
     template<std::size_t EXPECTEDCOUNT>
     bool FoundRequiredElements(

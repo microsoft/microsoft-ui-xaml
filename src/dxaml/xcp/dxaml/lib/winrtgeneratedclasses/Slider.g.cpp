@@ -61,7 +61,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_HeaderPlacement(_Out_ ABI::Microso
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_HeaderPlacement, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_IntermediateValue(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_IntermediateValue, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_IntermediateValue(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_IntermediateValue(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_IntermediateValue, value));
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_IsDirectionReversed(_Out_ BOOLEAN*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_IsDirectionReversed, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_IsDirectionReversed(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_IsDirectionReversed(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_IsDirectionReversed, value));
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_IsThumbToolTipEnabled(_Out_ BOOLEA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_IsThumbToolTipEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_IsThumbToolTipEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_IsThumbToolTipEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_IsThumbToolTipEnabled, value));
@@ -106,7 +106,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_Orientation(_Out_ ABI::Microsoft::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_Orientation, value));
@@ -115,7 +115,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_SnapsTo(_Out_ ABI::Microsoft::UI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_SnapsTo, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_SnapsTo(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SliderSnapsTo value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_SnapsTo(ABI::Microsoft::UI::Xaml::Controls::Primitives::SliderSnapsTo value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_SnapsTo, value));
@@ -124,7 +124,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_StepFrequency(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_StepFrequency, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_StepFrequency(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_StepFrequency(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_StepFrequency, value));
@@ -142,7 +142,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_TickFrequency(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_TickFrequency, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_TickFrequency(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_TickFrequency(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_TickFrequency, value));
@@ -151,7 +151,7 @@ IFACEMETHODIMP DirectUI::SliderGenerated::get_TickPlacement(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Slider_TickPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::SliderGenerated::put_TickPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::TickPlacement value)
+IFACEMETHODIMP DirectUI::SliderGenerated::put_TickPlacement(ABI::Microsoft::UI::Xaml::Controls::Primitives::TickPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Slider_TickPlacement, value));

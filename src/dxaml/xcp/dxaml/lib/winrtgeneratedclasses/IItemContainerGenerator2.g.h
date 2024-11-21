@@ -20,8 +20,8 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GenerateContainerAtIndex)(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppReturnValue) = 0;
-        IFACEMETHOD(GenerateHeaderAtGroupIndex)(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppReturnValue) = 0;
+        IFACEMETHOD(GenerateContainerAtIndex)(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppReturnValue) = 0;
+        IFACEMETHOD(GenerateHeaderAtGroupIndex)(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppReturnValue) = 0;
         IFACEMETHOD(GetContainerRecycleQueueEmpty)(_Out_ BOOLEAN* pReturnValue) = 0;
         IFACEMETHOD(RecycleContainer)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pContainer) = 0;
         IFACEMETHOD(TryRecycleContainer)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pContainer, _Out_ BOOLEAN* pReturnValue) = 0;
@@ -29,7 +29,7 @@ namespace DirectUI
         IFACEMETHOD(GetHeaderRecycleQueueEmpty)(_Out_ BOOLEAN* pReturnValue) = 0;
         IFACEMETHOD(RecycleHeader)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pHeader) = 0;
         IFACEMETHOD(RecycleAllHeaders)() = 0;
-        IFACEMETHOD(FindRecyclingCandidate)(_In_ INT index, _Out_ BOOLEAN* pHasMatchingCandidate) = 0;
+        IFACEMETHOD(FindRecyclingCandidate)(INT index, _Out_ BOOLEAN* pHasMatchingCandidate) = 0;
         IFACEMETHOD(GetQueueLength)(_Out_ UINT* pReturnValue) = 0;
     };
 }

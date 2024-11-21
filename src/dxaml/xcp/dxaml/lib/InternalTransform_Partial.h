@@ -14,7 +14,7 @@ namespace DirectUI
     {
     public:
         IFACEMETHOD(get_InverseCore)(_Outptr_ xaml_media::IGeneralTransform** ppValue) override;
-        IFACEMETHOD(TransformBoundsCore)(_In_ wf::Rect rect, _Out_ wf::Rect* pReturnValue) override;
-        IFACEMETHOD(TryTransformCore)(_In_ wf::Point inPoint, _Out_ wf::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(TransformBoundsCore)(wf::Rect rect, _Out_ wf::Rect* pReturnValue) override;
+        IFACEMETHOD(TryTransformCore)(wf::Point inPoint, _Out_ wf::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue) override;
     };
 }

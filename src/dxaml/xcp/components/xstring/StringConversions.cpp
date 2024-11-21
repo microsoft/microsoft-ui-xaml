@@ -863,7 +863,7 @@ ArrayFromString(
     _Outptr_result_buffer_(*pcSuffix) const WCHAR** ppSuffix,
     _In_ UINT32 cElements,
     _Out_writes_(cElements) FLOAT *peValue,
-    _In_opt_ UINT32 bConsumeString
+    _In_ UINT32 bConsumeString
 )
 {
     INT32   bComma = FALSE;

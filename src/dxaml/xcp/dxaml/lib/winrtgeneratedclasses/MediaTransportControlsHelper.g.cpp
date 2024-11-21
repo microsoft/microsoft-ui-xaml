@@ -39,7 +39,7 @@ _Check_return_ HRESULT DirectUI::MediaTransportControlsHelperFactory::GetDropout
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::MediaTransportControlsHelper_DropoutOrder, ppValue));
 }
 
-_Check_return_ HRESULT DirectUI::MediaTransportControlsHelperFactory::SetDropoutOrderStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Windows::Foundation::IReference<INT>* pValue)
+_Check_return_ HRESULT DirectUI::MediaTransportControlsHelperFactory::SetDropoutOrderStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Windows::Foundation::IReference<INT>* pValue)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::MediaTransportControlsHelper_DropoutOrder, pValue));
 }
@@ -56,7 +56,7 @@ IFACEMETHODIMP DirectUI::MediaTransportControlsHelperFactory::GetDropoutOrder(_I
     RRETURN(GetDropoutOrderStatic(pElement, ppValue));
 }
 
-IFACEMETHODIMP DirectUI::MediaTransportControlsHelperFactory::SetDropoutOrder(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Windows::Foundation::IReference<INT>* pValue)
+IFACEMETHODIMP DirectUI::MediaTransportControlsHelperFactory::SetDropoutOrder(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Windows::Foundation::IReference<INT>* pValue)
 {
     RRETURN(SetDropoutOrderStatic(pElement, pValue));
 }

@@ -48,7 +48,7 @@ IFACEMETHODIMP DirectUI::Grid::get_BackgroundSizing(_Out_ ABI::Microsoft::UI::Xa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Grid_BackgroundSizing, pValue));
 }
-IFACEMETHODIMP DirectUI::Grid::put_BackgroundSizing(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
+IFACEMETHODIMP DirectUI::Grid::put_BackgroundSizing(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Grid_BackgroundSizing, value));
@@ -66,7 +66,7 @@ IFACEMETHODIMP DirectUI::Grid::get_BorderThickness(_Out_ ABI::Microsoft::UI::Xam
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Grid_BorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::Grid::put_BorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::Grid::put_BorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Grid_BorderThickness, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::Grid::get_ColumnSpacing(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Grid_ColumnSpacing, pValue));
 }
-IFACEMETHODIMP DirectUI::Grid::put_ColumnSpacing(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Grid::put_ColumnSpacing(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Grid_ColumnSpacing, value));
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::Grid::get_CornerRadius(_Out_ ABI::Microsoft::UI::Xaml::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Grid_CornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::Grid::put_CornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::Grid::put_CornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Grid_CornerRadius, value));
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::Grid::get_Padding(_Out_ ABI::Microsoft::UI::Xaml::Thick
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Grid_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::Grid::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::Grid::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Grid_Padding, value));
@@ -110,7 +110,7 @@ IFACEMETHODIMP DirectUI::Grid::get_RowSpacing(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Grid_RowSpacing, pValue));
 }
-IFACEMETHODIMP DirectUI::Grid::put_RowSpacing(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Grid::put_RowSpacing(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Grid_RowSpacing, value));
@@ -203,7 +203,7 @@ _Check_return_ HRESULT DirectUI::GridFactory::GetRowStatic(_In_ ABI::Microsoft::
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Grid_Row, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::GridFactory::SetRowStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::GridFactory::SetRowStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Grid_Row, value));
 }
@@ -220,7 +220,7 @@ IFACEMETHODIMP DirectUI::GridFactory::GetRow(_In_ ABI::Microsoft::UI::Xaml::IFra
     RRETURN(GetRowStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::GridFactory::SetRow(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::GridFactory::SetRow(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, INT value)
 {
     RRETURN(SetRowStatic(pElement, value));
 }
@@ -229,7 +229,7 @@ _Check_return_ HRESULT DirectUI::GridFactory::GetColumnStatic(_In_ ABI::Microsof
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Grid_Column, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::GridFactory::SetColumnStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::GridFactory::SetColumnStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Grid_Column, value));
 }
@@ -246,7 +246,7 @@ IFACEMETHODIMP DirectUI::GridFactory::GetColumn(_In_ ABI::Microsoft::UI::Xaml::I
     RRETURN(GetColumnStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::GridFactory::SetColumn(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::GridFactory::SetColumn(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, INT value)
 {
     RRETURN(SetColumnStatic(pElement, value));
 }
@@ -255,7 +255,7 @@ _Check_return_ HRESULT DirectUI::GridFactory::GetRowSpanStatic(_In_ ABI::Microso
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Grid_RowSpan, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::GridFactory::SetRowSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::GridFactory::SetRowSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Grid_RowSpan, value));
 }
@@ -272,7 +272,7 @@ IFACEMETHODIMP DirectUI::GridFactory::GetRowSpan(_In_ ABI::Microsoft::UI::Xaml::
     RRETURN(GetRowSpanStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::GridFactory::SetRowSpan(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::GridFactory::SetRowSpan(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, INT value)
 {
     RRETURN(SetRowSpanStatic(pElement, value));
 }
@@ -281,7 +281,7 @@ _Check_return_ HRESULT DirectUI::GridFactory::GetColumnSpanStatic(_In_ ABI::Micr
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Grid_ColumnSpan, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::GridFactory::SetColumnSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ INT value)
+_Check_return_ HRESULT DirectUI::GridFactory::SetColumnSpanStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, INT value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::FrameworkElement*>(pElement), KnownPropertyIndex::Grid_ColumnSpan, value));
 }
@@ -298,7 +298,7 @@ IFACEMETHODIMP DirectUI::GridFactory::GetColumnSpan(_In_ ABI::Microsoft::UI::Xam
     RRETURN(GetColumnSpanStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::GridFactory::SetColumnSpan(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ INT value)
+IFACEMETHODIMP DirectUI::GridFactory::SetColumnSpan(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, INT value)
 {
     RRETURN(SetColumnSpanStatic(pElement, value));
 }

@@ -46,7 +46,7 @@ namespace DirectUI
         _Check_return_ HRESULT get_Element(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue);
         _Check_return_ HRESULT put_Element(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         _Check_return_ HRESULT get_Index(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_Index(_In_ INT value);
+        _Check_return_ HRESULT put_Index(INT value);
 
         // Events.
 

@@ -664,7 +664,13 @@ Cleanup:
     {
         IGNOREHR(RaiseNavigationFailed(strDescriptor.Get(), hr, &isHandled));
 
-        if (!isHandled)
+        if (isHandled)
+        {
+            // NavigationFailedEventArgs.Handled was set to True. Do not let the error propagate & raise an
+            // exception, or raise an unhandled exception below, allowing the app to continue its execution.
+            hr = S_OK;
+        }
+        else
         {
             IGNOREHR(RaiseUnhandledException(E_UNEXPECTED, TEXT_FRAME_NAVIGATION_FAILED_UNHANDLED));
         }

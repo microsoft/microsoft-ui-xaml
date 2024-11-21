@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
-    public class NonVirtualStackLayout : NonVirtualizingLayout
+    public partial class NonVirtualStackLayout : NonVirtualizingLayout
     {
         protected override Size MeasureOverride(NonVirtualizingLayoutContext context, Size availableSize)
         {

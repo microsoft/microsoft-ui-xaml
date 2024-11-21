@@ -34,8 +34,8 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         _Check_return_ HRESULT InitializeImpl(
             _In_ xaml_primitives::ILoopingSelectorItem* pOwner) override;
 
-        _Check_return_ HRESULT GetOwnerAsInternalPtrNoRef(_Outptr_ xaml_primitives::LoopingSelectorItem** ppOwnerNoRef);
-        _Check_return_ HRESULT GetDataAutomationPeer(_Outptr_ xaml_automation_peers::ILoopingSelectorItemDataAutomationPeer** ppLSIDAP);
+        _Check_return_ HRESULT GetOwnerAsInternalPtrNoRef(_Outptr_result_maybenull_ xaml_primitives::LoopingSelectorItem** ppOwnerNoRef);
+        _Check_return_ HRESULT GetDataAutomationPeer(_Outptr_result_maybenull_ xaml_automation_peers::ILoopingSelectorItemDataAutomationPeer** ppLSIDAP);
 
     public:
          // IScrollItemProvider Impl

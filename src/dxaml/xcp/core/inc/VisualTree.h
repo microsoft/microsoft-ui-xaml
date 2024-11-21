@@ -81,8 +81,8 @@ public:
     static VisualTree* GetForElementNoRef(_In_opt_ CDependencyObject* element, LookupOptions options = LookupOptions::NoFallback);
     static CUIElement* GetRootOrIslandForElement(_In_ CDependencyObject* element);
     static CRootVisual* GetRootForElement(_In_ const CDependencyObject* pObject);
-    static CFocusManager* GetFocusManagerForElement(_In_ CDependencyObject *pObject, LookupOptions options = LookupOptions::NoFallback);
-    static CInputManager* GetInputManagerForElement(_In_ CDependencyObject *pObject);
+    static _Check_return_ CFocusManager* GetFocusManagerForElement(_In_ CDependencyObject *pObject, LookupOptions options = LookupOptions::NoFallback);
+    static _Check_return_ CInputManager* GetInputManagerForElement(_In_ CDependencyObject *pObject);
     static _Ret_maybenull_ CLayoutManager* GetLayoutManagerForElement(_In_ CDependencyObject *pObject);
     static _Check_return_ HRESULT GetPopupRootForElementNoRef(_In_ CDependencyObject *pObject, _Outptr_result_maybenull_ CPopupRoot **pPopupRoot);
     static CTransitionRoot* GetTransitionRootForElement(_In_ CDependencyObject *pObject);

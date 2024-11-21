@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::DragItemsStartingEventArgs::get_Cancel(_Out_ BOOLEAN* p
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragItemsStartingEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DragItemsStartingEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

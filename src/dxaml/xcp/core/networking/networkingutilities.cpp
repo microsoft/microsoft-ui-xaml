@@ -43,7 +43,7 @@ _Check_return_ HRESULT FindHeaderValueInPackedString(
     _In_ const xstring_ptr_view& strHeaderName,
     XUINT32 ichStart,
     _Out_ XUINT32* pichEnd,
-    _Outptr_result_buffer_(*pcchHeaderValue + 1) const WCHAR** pwszHeaderValue,
+    _Outptr_result_buffer_maybenull_(*pcchHeaderValue + 1) const WCHAR** pwszHeaderValue,
     _Out_ XUINT32* pcchHeaderValue)
 {
     XUINT32 cchHeaderName;

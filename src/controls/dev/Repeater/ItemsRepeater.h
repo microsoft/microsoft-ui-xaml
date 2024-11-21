@@ -81,7 +81,6 @@ public:
     int GetElementIndexImpl(const winrt::UIElement& element);
     winrt::UIElement GetElementFromIndexImpl(int index);
 
-
     winrt::UIElement GetOrCreateElementImpl(int index);
 
     static winrt::com_ptr<VirtualizationInfo> TryGetVirtualizationInfo(const winrt::UIElement& element);
@@ -140,6 +139,7 @@ private:
     void OnItemsSourceViewChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void InvalidateMeasureForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
+    void InvalidateChildrenMeasure();
     void EnsureDefaultLayoutState();
 
     winrt::VirtualizingLayoutContext GetLayoutContext();
@@ -163,9 +163,8 @@ private:
     // Value is different from null only while we are on the OnItemsSourceChanged call stack.
     tracker_ref<winrt::NotifyCollectionChangedEventArgs> m_processingItemsSourceChange{ this };
 
-    winrt::Size m_lastAvailableSize{};
     bool m_isLayoutInProgress{ false };
-    // The value of _layoutOrigin is expected to be set by the layout
+    // The value of m_layoutOrigin is expected to be set by the layout
     // when it gets measured. It should not be used outside of measure.
     winrt::Point m_layoutOrigin{};
 
@@ -182,8 +181,8 @@ private:
     // Loaded events fire on the first tick after an element is put into the tree 
     // while unloaded is posted on the UI tree and may be processed out of sync with subsequent loaded
     // events. We keep these counters to detect out-of-sync unloaded events and take action to rectify.
-    int _loadedCounter{};
-    int _unloadedCounter{};
+    int m_loadedCounter{};
+    int m_unloadedCounter{};
 
     // Used to avoid layout cycles with StackLayout layouts where variable sized children prevent
     // the ItemsRepeater's layout to settle.
@@ -202,6 +201,10 @@ private:
     // Tracks whether OnLayoutChanged has already been called or not so that
     // EnsureDefaultLayoutState does not trigger a second call after the control's creation.
     bool m_wasLayoutChangedCalled{ false };
+
+    // Tracks the global scale factor so that children can be re-measured when
+    // it changes, for example when moving the app to another screen.
+    double m_layoutRoundFactor{};
 
 #pragma region RepeaterTestHooks-related fields
 #ifdef DBG

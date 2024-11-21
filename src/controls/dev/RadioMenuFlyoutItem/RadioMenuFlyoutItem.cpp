@@ -7,7 +7,7 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
-thread_local std::unique_ptr<std::map<winrt::hstring, winrt::weak_ref<RadioMenuFlyoutItem>>> RadioMenuFlyoutItem::s_selectionMap;
+thread_local std::unique_ptr<std::map<winrt::hstring, winrt::weak_ref<winrt::RadioMenuFlyoutItem>>> RadioMenuFlyoutItem::s_selectionMap;
 
 RadioMenuFlyoutItem::RadioMenuFlyoutItem()
 {
@@ -18,7 +18,7 @@ RadioMenuFlyoutItem::RadioMenuFlyoutItem()
     if (!s_selectionMap)
     {
         // Ensure that this object exists
-        s_selectionMap = std::make_unique<std::map<winrt::hstring, winrt::weak_ref<RadioMenuFlyoutItem>>>();
+        s_selectionMap = std::make_unique<std::map<winrt::hstring, winrt::weak_ref<winrt::RadioMenuFlyoutItem>>>();
     }
 
     Loaded({ this, &RadioMenuFlyoutItem::OnLoaded });
@@ -94,14 +94,19 @@ void RadioMenuFlyoutItem::UpdateCheckedItemInGroup()
         {
             if (auto previousCheckedItem = previousCheckedItemWeak.get())
             {
-                if (previousCheckedItem.get() != this)
+                if (previousCheckedItem != static_cast<winrt::RadioMenuFlyoutItem>(*this))
                 {
                     // Uncheck the previously checked item.
-                    previousCheckedItem->IsChecked(false);
+                    RadioMenuFlyoutItem* rawPreviousCheckedItem = winrt::get_self<RadioMenuFlyoutItem>(previousCheckedItem);
+                    rawPreviousCheckedItem->IsChecked(false);
                 }
             }
         }
-        (*s_selectionMap)[groupName] = this->get_weak();
+        // Previously we used get_weak() here, but we found the potential to hit a 
+        // refcounting problem where in some scenarios the outer object gets
+        // an extra Release() in this process.
+        auto weakThis {winrt::make_weak(static_cast<winrt::RadioMenuFlyoutItem>(*this))};
+        (*s_selectionMap)[groupName] = weakThis;
     }
 }
 

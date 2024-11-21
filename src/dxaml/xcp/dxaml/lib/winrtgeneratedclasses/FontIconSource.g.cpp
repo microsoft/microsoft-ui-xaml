@@ -55,7 +55,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::get_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIconSource_FontSize, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_FontSize(_In_ DOUBLE value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_FontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIconSource_FontSize, value));
@@ -64,7 +64,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::get_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIconSource_FontStyle, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_FontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_FontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIconSource_FontStyle, value));
@@ -73,7 +73,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::get_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIconSource_FontWeight, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_FontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_FontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIconSource_FontWeight, value));
@@ -91,7 +91,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::get_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIconSource_IsTextScaleFactorEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_IsTextScaleFactorEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_IsTextScaleFactorEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIconSource_IsTextScaleFactorEnabled, value));
@@ -100,7 +100,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::get_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIconSource_MirroredWhenRightToLeft, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_MirroredWhenRightToLeft(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FontIconSourceGenerated::put_MirroredWhenRightToLeft(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIconSource_MirroredWhenRightToLeft, value));

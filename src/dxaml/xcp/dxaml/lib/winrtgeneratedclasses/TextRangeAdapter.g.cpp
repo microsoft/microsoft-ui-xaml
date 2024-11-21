@@ -108,7 +108,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::CompareEndpoints(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, _In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint targetEndpoint, _Out_ INT* pReturnValue)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::CompareEndpoints(ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint targetEndpoint, _Out_ INT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -128,7 +128,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::ExpandToEnclosingUnit(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::ExpandToEnclosingUnit(ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -146,7 +146,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::FindAttribute(_In_ INT attributeId, _In_ IInspectable* pValue, _In_ BOOLEAN backward, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::FindAttribute(INT attributeId, _In_ IInspectable* pValue, BOOLEAN backward, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -166,7 +166,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::FindText(_In_ HSTRING text, _In_ BOOLEAN backward, _In_ BOOLEAN ignoreCase, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::FindText(_In_ HSTRING text, BOOLEAN backward, BOOLEAN ignoreCase, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -186,7 +186,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetAttributeValue(_In_ INT attributeId, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetAttributeValue(INT attributeId, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -262,7 +262,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetText(_In_ INT maxLength, _Out_ HSTRING* pReturnValue)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::GetText(INT maxLength, _Out_ HSTRING* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -281,7 +281,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::Move(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit, _In_ INT count, _Out_ INT* pReturnValue)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::Move(ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit, INT count, _Out_ INT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -300,7 +300,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::MoveEndpointByRange(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, _In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint targetEndpoint)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::MoveEndpointByRange(ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider* pTextRangeProvider, ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint targetEndpoint)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -318,7 +318,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::MoveEndpointByUnit(_In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, _In_ ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit, _In_ INT count, _Out_ INT* pReturnValue)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::MoveEndpointByUnit(ABI::Microsoft::UI::Xaml::Automation::Text::TextPatternRangeEndpoint endpoint, ABI::Microsoft::UI::Xaml::Automation::Text::TextUnit unit, INT count, _Out_ INT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -355,7 +355,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::ScrollIntoView(_In_ BOOLEAN alignToTop)
+IFACEMETHODIMP DirectUI::TextRangeAdapterGenerated::ScrollIntoView(BOOLEAN alignToTop)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

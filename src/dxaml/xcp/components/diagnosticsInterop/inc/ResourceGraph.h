@@ -85,7 +85,7 @@ namespace Diagnostics
         // Registers an existing ResourceDependency with the dictionary and key. Will remove
         // the current dependency if found.
         void RegisterResourceDependency(
-            const std::shared_ptr<ResourceDependency>& dependency,
+            _In_ const std::shared_ptr<ResourceDependency>& dependency,
             _In_ CResourceDictionary* pResourceDictionary,
             const xstring_ptr& resourceKey);
 
@@ -124,7 +124,7 @@ namespace Diagnostics
         void ClearCachedContext();
 
         void CacheRuntimeContext(_In_ CStyle* style, _In_ std::unique_ptr<CustomWriterRuntimeContext> context);
-        CustomWriterRuntimeContext* GetCachedRuntimeContext(_In_ CStyle* style);
+        _Ret_maybenull_ CustomWriterRuntimeContext* GetCachedRuntimeContext(_In_ CStyle* style);
 
         void CacheMarkupExtensionToTarget(_In_ CMarkupExtensionBase* ext, _In_ KnownPropertyIndex targetProp, _In_ CDependencyObject* targetObj);
         void RemoveMarkupExtensionToTarget(_In_ CDependencyObject* targetObj, _In_ KnownPropertyIndex targetProp);

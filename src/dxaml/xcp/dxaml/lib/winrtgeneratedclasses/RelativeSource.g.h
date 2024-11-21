@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Mode)(_Out_ ABI::Microsoft::UI::Xaml::Data::RelativeSourceMode* pValue) override;
-        IFACEMETHOD(put_Mode)(_In_ ABI::Microsoft::UI::Xaml::Data::RelativeSourceMode value) override;
+        IFACEMETHOD(put_Mode)(ABI::Microsoft::UI::Xaml::Data::RelativeSourceMode value) override;
 
         // Events.
 

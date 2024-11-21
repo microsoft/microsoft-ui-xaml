@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchTemplateSettings::get_CurtainCurrentToOffOf
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_CurtainCurrentToOffOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_CurtainCurrentToOffOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_CurtainCurrentToOffOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_CurtainCurrentToOffOffset, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchTemplateSettings::get_CurtainCurrentToOnOff
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_CurtainCurrentToOnOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_CurtainCurrentToOnOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_CurtainCurrentToOnOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_CurtainCurrentToOnOffset, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchTemplateSettings::get_CurtainOffToOnOffset(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_CurtainOffToOnOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_CurtainOffToOnOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_CurtainOffToOnOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_CurtainOffToOnOffset, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchTemplateSettings::get_CurtainOnToOffOffset(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_CurtainOnToOffOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_CurtainOnToOffOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_CurtainOnToOffOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_CurtainOnToOffOffset, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchTemplateSettings::get_KnobCurrentToOffOffse
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_KnobCurrentToOffOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_KnobCurrentToOffOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_KnobCurrentToOffOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_KnobCurrentToOffOffset, value));
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchTemplateSettings::get_KnobCurrentToOnOffset
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_KnobCurrentToOnOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_KnobCurrentToOnOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_KnobCurrentToOnOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_KnobCurrentToOnOffset, value));
@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchTemplateSettings::get_KnobOffToOnOffset(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_KnobOffToOnOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_KnobOffToOnOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_KnobOffToOnOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_KnobOffToOnOffset, value));
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchTemplateSettings::get_KnobOnToOffOffset(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_KnobOnToOffOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_KnobOnToOffOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToggleSwitchTemplateSettings::put_KnobOnToOffOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitchTemplateSettings_KnobOnToOffOffset, value));

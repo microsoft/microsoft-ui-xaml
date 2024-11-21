@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::AppBarGenerated::get_ClosedDisplayMode(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBar_ClosedDisplayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarGenerated::put_ClosedDisplayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::AppBarClosedDisplayMode value)
+IFACEMETHODIMP DirectUI::AppBarGenerated::put_ClosedDisplayMode(ABI::Microsoft::UI::Xaml::Controls::AppBarClosedDisplayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBar_ClosedDisplayMode, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::AppBarGenerated::get_IsOpen(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBar_IsOpen, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarGenerated::put_IsOpen(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AppBarGenerated::put_IsOpen(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBar_IsOpen, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::AppBarGenerated::get_IsSticky(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBar_IsSticky, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarGenerated::put_IsSticky(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AppBarGenerated::put_IsSticky(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBar_IsSticky, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::AppBarGenerated::get_LightDismissOverlayMode(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBar_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::AppBarGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBar_LightDismissOverlayMode, value));
@@ -133,7 +133,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AppBarGenerated::remove_Closed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AppBarGenerated::remove_Closed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosedEventSourceType* pEventSource = nullptr;
@@ -188,7 +188,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AppBarGenerated::remove_Closing(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AppBarGenerated::remove_Closing(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosingEventSourceType* pEventSource = nullptr;
@@ -243,7 +243,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AppBarGenerated::remove_Opened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AppBarGenerated::remove_Opened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpenedEventSourceType* pEventSource = nullptr;
@@ -298,7 +298,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AppBarGenerated::remove_Opening(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AppBarGenerated::remove_Opening(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpeningEventSourceType* pEventSource = nullptr;

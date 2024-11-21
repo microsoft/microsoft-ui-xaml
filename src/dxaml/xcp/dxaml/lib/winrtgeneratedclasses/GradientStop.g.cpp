@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::GradientStop::get_Color(_Out_ ABI::Windows::UI::Color* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GradientStop_Color, pValue));
 }
-IFACEMETHODIMP DirectUI::GradientStop::put_Color(_In_ ABI::Windows::UI::Color value)
+IFACEMETHODIMP DirectUI::GradientStop::put_Color(ABI::Windows::UI::Color value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GradientStop_Color, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::GradientStop::get_Offset(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GradientStop_Offset, pValue));
 }
-IFACEMETHODIMP DirectUI::GradientStop::put_Offset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::GradientStop::put_Offset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GradientStop_Offset, value));

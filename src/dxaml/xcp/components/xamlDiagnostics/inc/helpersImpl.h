@@ -9,7 +9,7 @@ template <class T>
 HRESULT
 XamlDiagnosticsHelpers::do_query_interface(
     _In_opt_ IUnknown *pIn,
-    _Outptr_ T** pOut)
+    _COM_Outptr_result_maybenull_ T** pOut)
 {
     *pOut = nullptr;
 
@@ -25,7 +25,7 @@ template <>
 HRESULT
 XamlDiagnosticsHelpers::do_query_interface(
     _In_opt_ IUnknown *pIn,
-    _Outptr_ HSTRING* pOut)
+    _COM_Outptr_result_maybenull_ HSTRING* pOut)
 {
     *pOut = nullptr;
 
@@ -83,14 +83,16 @@ template <class T>
 HRESULT
 XamlDiagnosticsHelpers::WinRTCreateInstance(
     _In_ PCWSTR szType,
-    _Outptr_ T** pOut)
+    _COM_Outptr_ T** pOut)
 {
     wrl::ComPtr<IActivationFactory> spActivationFactory;
     wrl_wrappers::HString strType;
 
+    *pOut = nullptr;
     IFC_RETURN(strType.Set(szType));
     IFC_RETURN(wf::GetActivationFactory(strType.Get(), &spActivationFactory));
     IFC_RETURN(do_query_interface(spActivationFactory.Get(), pOut));
+    IFCPTR_RETURN(*pOut);
 
     return S_OK;
 }

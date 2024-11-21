@@ -52,7 +52,7 @@ Cleanup:
 }
 
 // Static methods.
-IFACEMETHODIMP DirectUI::RectHelperFactory::FromCoordinatesAndDimensions(_In_ FLOAT x, _In_ FLOAT y, _In_ FLOAT width, _In_ FLOAT height, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::FromCoordinatesAndDimensions(FLOAT x, FLOAT y, FLOAT width, FLOAT height, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -70,7 +70,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::FromPoints(_In_ ABI::Windows::Foundation::Point point1, _In_ ABI::Windows::Foundation::Point point2, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::FromPoints(ABI::Windows::Foundation::Point point1, ABI::Windows::Foundation::Point point2, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -88,7 +88,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::FromLocationAndSize(_In_ ABI::Windows::Foundation::Point location, _In_ ABI::Windows::Foundation::Size size, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::FromLocationAndSize(ABI::Windows::Foundation::Point location, ABI::Windows::Foundation::Size size, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -106,7 +106,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::GetIsEmpty(_In_ ABI::Windows::Foundation::Rect target, _Out_ BOOLEAN* pValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::GetIsEmpty(ABI::Windows::Foundation::Rect target, _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -124,7 +124,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::GetBottom(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::GetBottom(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -142,7 +142,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::GetLeft(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::GetLeft(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -160,7 +160,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::GetRight(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::GetRight(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -178,7 +178,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::GetTop(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::GetTop(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -196,7 +196,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::Contains(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Point point, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::Contains(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Point point, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -214,7 +214,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::Equals(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect value, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::Equals(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect value, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -232,7 +232,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::Intersect(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::Intersect(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -250,7 +250,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::UnionWithPoint(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::UnionWithPoint(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -268,7 +268,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::UnionWithRect(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::RectHelperFactory::UnionWithRect(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -286,7 +286,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RectHelperFactory::DipsRectToPhysicalRect(_In_ ABI::Windows::Foundation::Rect dipsRect, _Out_ ABI::Windows::Foundation::Rect* pResult)
+IFACEMETHODIMP DirectUI::RectHelperFactory::DipsRectToPhysicalRect(ABI::Windows::Foundation::Rect dipsRect, _Out_ ABI::Windows::Foundation::Rect* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

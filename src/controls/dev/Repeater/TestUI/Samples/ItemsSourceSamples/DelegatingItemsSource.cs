@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp.Samples
 {
-    class DelegatingItemsSource : CustomItemsSourceViewWithUniqueIdMapping
+    partial class DelegatingItemsSource : CustomItemsSourceViewWithUniqueIdMapping
     {
         private IList _data;
 

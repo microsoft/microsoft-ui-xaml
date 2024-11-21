@@ -480,7 +480,7 @@ _Check_return_ HRESULT
 CAggregateTransformer::Transform(
     _In_reads_(count) const XPOINTF *srcPoints,
     _Out_writes_(count) XPOINTF *destPoints,
-    _In_ XUINT32 count)
+    XUINT32 count)
 {
     CXcpList< ITransformer > m_oReverseList;
 
@@ -513,7 +513,7 @@ _Check_return_ HRESULT
 CAggregateTransformer::ReverseTransform(
     _In_reads_(count) const XPOINTF *srcPoints,
     _Out_writes_(count) XPOINTF *destPoints,
-    _In_ XUINT32 count)
+    XUINT32 count)
 {
     memcpy( destPoints, srcPoints, count * sizeof(XPOINTF) );
 

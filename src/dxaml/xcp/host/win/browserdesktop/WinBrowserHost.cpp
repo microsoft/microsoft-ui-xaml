@@ -622,9 +622,9 @@ _Check_return_ HRESULT CXcpBrowserHost::AbortAsyncCallback(_In_ IObject *data)
 //------------------------------------------------------------------------
 HRESULT CALLBACK CXcpBrowserHost::PostAsyncScriptCallbackRequest(
     _In_ void *pVoidBH,
-    _In_ CDependencyObject *pListener,
+    _In_opt_ CDependencyObject *pListener,
     _In_ EventHandle hEvent,
-    _In_ CDependencyObject *pSender,
+    _In_opt_ CDependencyObject *pSender,
     _In_opt_ CEventArgs *pArgs,
     _In_ XINT32 flags,
     _In_opt_ IScriptObject *pScriptObject,
@@ -671,9 +671,9 @@ HRESULT CALLBACK CXcpBrowserHost::PostAsyncScriptCallbackRequest(
 
 HRESULT CALLBACK CXcpBrowserHost::SyncScriptCallbackRequest(
     _In_ void *pVoidBH,
-    _In_ CDependencyObject *pListener,
+    _In_opt_ CDependencyObject *pListener,
     _In_ EventHandle hEvent,
-    _In_ CDependencyObject *pSender,
+    _In_opt_ CDependencyObject *pSender,
     _In_opt_ CEventArgs *pArgs,
     _In_ XINT32 flags,
     _In_opt_ IScriptObject *pScriptObject,
@@ -1316,7 +1316,7 @@ _Check_return_ HRESULT CXcpBrowserHost::UIARaiseNotificationEvent(
     _In_ CAutomationPeer* ap,
     UIAXcp::AutomationNotificationKind notificationKind,
     UIAXcp::AutomationNotificationProcessing notificationProcessing,
-    _In_opt_ xstring_ptr displayString,
+    _In_ xstring_ptr displayString,
     _In_ xstring_ptr activityId)
 {
     IFCPTR_RETURN(m_pSite);

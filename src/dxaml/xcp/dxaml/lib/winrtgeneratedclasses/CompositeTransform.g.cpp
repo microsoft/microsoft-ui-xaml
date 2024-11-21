@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_CenterX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_CenterX, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_CenterX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_CenterX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_CenterX, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_CenterY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_CenterY, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_CenterY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_CenterY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_CenterY, value));
@@ -87,7 +87,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_Rotation(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_Rotation, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_Rotation(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_Rotation(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_Rotation, value));
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_ScaleX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_ScaleX, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_ScaleX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_ScaleX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_ScaleX, value));
@@ -113,7 +113,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_ScaleY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_ScaleY, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_ScaleY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_ScaleY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_ScaleY, value));
@@ -130,7 +130,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_SkewX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_SkewX, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_SkewX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_SkewX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_SkewX, value));
@@ -147,7 +147,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_SkewY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_SkewY, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_SkewY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_SkewY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_SkewY, value));
@@ -164,7 +164,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_TranslateX(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_TranslateX, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_TranslateX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_TranslateX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_TranslateX, value));
@@ -181,7 +181,7 @@ IFACEMETHODIMP DirectUI::CompositeTransform::get_TranslateY(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_TranslateY, pValue));
 }
-IFACEMETHODIMP DirectUI::CompositeTransform::put_TranslateY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CompositeTransform::put_TranslateY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CompositeTransform_TranslateY, value));

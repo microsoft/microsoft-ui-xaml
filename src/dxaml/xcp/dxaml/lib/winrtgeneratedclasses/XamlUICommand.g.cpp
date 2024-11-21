@@ -133,7 +133,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::XamlUICommandGenerated::remove_CanExecuteChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::XamlUICommandGenerated::remove_CanExecuteChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CanExecuteChangedEventSourceType* pEventSource = nullptr;
@@ -188,7 +188,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::XamlUICommandGenerated::remove_CanExecuteRequested(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::XamlUICommandGenerated::remove_CanExecuteRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CanExecuteRequestedEventSourceType* pEventSource = nullptr;
@@ -243,7 +243,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::XamlUICommandGenerated::remove_ExecuteRequested(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::XamlUICommandGenerated::remove_ExecuteRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ExecuteRequestedEventSourceType* pEventSource = nullptr;

@@ -48,17 +48,17 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CompactPaneGridLength)(_Out_ ABI::Microsoft::UI::Xaml::GridLength* pValue) override;
-        _Check_return_ HRESULT put_CompactPaneGridLength(_In_ ABI::Microsoft::UI::Xaml::GridLength value);
+        _Check_return_ HRESULT put_CompactPaneGridLength(ABI::Microsoft::UI::Xaml::GridLength value);
         IFACEMETHOD(get_NegativeOpenPaneLength)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_NegativeOpenPaneLength(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_NegativeOpenPaneLength(DOUBLE value);
         IFACEMETHOD(get_NegativeOpenPaneLengthMinusCompactLength)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_NegativeOpenPaneLengthMinusCompactLength(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_NegativeOpenPaneLengthMinusCompactLength(DOUBLE value);
         IFACEMETHOD(get_OpenPaneGridLength)(_Out_ ABI::Microsoft::UI::Xaml::GridLength* pValue) override;
-        _Check_return_ HRESULT put_OpenPaneGridLength(_In_ ABI::Microsoft::UI::Xaml::GridLength value);
+        _Check_return_ HRESULT put_OpenPaneGridLength(ABI::Microsoft::UI::Xaml::GridLength value);
         IFACEMETHOD(get_OpenPaneLength)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OpenPaneLength(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OpenPaneLength(DOUBLE value);
         IFACEMETHOD(get_OpenPaneLengthMinusCompactLength)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OpenPaneLengthMinusCompactLength(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OpenPaneLengthMinusCompactLength(DOUBLE value);
 
         // Events.
 

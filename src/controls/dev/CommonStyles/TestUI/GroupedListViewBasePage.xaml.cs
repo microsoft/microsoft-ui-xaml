@@ -746,6 +746,54 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void ChkListViewBaseAllowDrop_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null)
+                {
+                    _listViewBase.AllowDrop = (bool)chkListViewBaseAllowDrop.IsChecked;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private void ChkListViewBaseCanDragItems_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null)
+                {
+                    _listViewBase.CanDragItems = (bool)chkListViewBaseCanDragItems.IsChecked;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
+        private void ChkListViewBaseCanReorderItems_IsCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_listViewBase != null)
+                {
+                    _listViewBase.CanReorderItems = (bool)chkListViewBaseCanReorderItems.IsChecked;
+                }
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                AppendEventMessage(ex.ToString());
+            }
+        }
+
         private void CmbListViewBaseHeader_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try

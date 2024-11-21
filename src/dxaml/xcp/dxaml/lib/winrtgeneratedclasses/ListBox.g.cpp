@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::ListBoxGenerated::get_SelectionMode(_Out_ ABI::Microsof
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListBox_SelectionMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ListBoxGenerated::put_SelectionMode(_In_ ABI::Microsoft::UI::Xaml::Controls::SelectionMode value)
+IFACEMETHODIMP DirectUI::ListBoxGenerated::put_SelectionMode(ABI::Microsoft::UI::Xaml::Controls::SelectionMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListBox_SelectionMode, value));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::ListBoxGenerated::get_SingleSelectionFollowsFocus(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListBox_SingleSelectionFollowsFocus, pValue));
 }
-IFACEMETHODIMP DirectUI::ListBoxGenerated::put_SingleSelectionFollowsFocus(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListBoxGenerated::put_SingleSelectionFollowsFocus(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListBox_SingleSelectionFollowsFocus, value));

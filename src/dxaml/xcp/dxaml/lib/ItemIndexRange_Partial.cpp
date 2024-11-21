@@ -28,8 +28,8 @@ Cleanup:
 }
 
 _Check_return_ HRESULT ItemIndexRangeFactory::CreateInstanceImpl(
-    _In_ int firstIndex,
-    _In_ unsigned int length,
+    int firstIndex,
+    unsigned int length,
     _In_opt_ IInspectable* pOuter,
     _Outptr_ IInspectable** ppInner,
     _Outptr_ xaml_data::IItemIndexRange** ppInstance)

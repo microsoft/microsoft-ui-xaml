@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::KeySpline::get_ControlPoint1(_Out_ ABI::Windows::Founda
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::KeySpline_ControlPoint1, pValue));
 }
-IFACEMETHODIMP DirectUI::KeySpline::put_ControlPoint1(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::KeySpline::put_ControlPoint1(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::KeySpline_ControlPoint1, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::KeySpline::get_ControlPoint2(_Out_ ABI::Windows::Founda
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::KeySpline_ControlPoint2, pValue));
 }
-IFACEMETHODIMP DirectUI::KeySpline::put_ControlPoint2(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::KeySpline::put_ControlPoint2(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::KeySpline_ControlPoint2, value));

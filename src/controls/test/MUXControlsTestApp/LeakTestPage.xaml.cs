@@ -30,7 +30,7 @@ namespace MUXControlsTestApp
         public RatingControl _ratingControl2;
     }
 
-    public class EventCycleTest : Grid
+    public partial class EventCycleTest : Grid
     {
         RatingControl _rating;
         ColorPicker _colorPicker;

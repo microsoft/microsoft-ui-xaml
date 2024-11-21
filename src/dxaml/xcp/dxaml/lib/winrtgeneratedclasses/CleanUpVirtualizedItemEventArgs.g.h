@@ -41,7 +41,7 @@ namespace DirectUI
         IFACEMETHOD(get_UIElement)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         _Check_return_ HRESULT put_UIElement(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
 
         // Methods.
 

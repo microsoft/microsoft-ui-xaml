@@ -882,10 +882,10 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <!-- If there is a Link use that, otherwise use the Given path from the Project file Item -->
         <ItemGroup>
             <GeneratedXamlSrc0 Condition="'%(AllProjectXamlPages.Link)'!=''" Include="@(AllProjectXamlPages->'$(XamlGeneratedOutputPath)%(Link)')" />
-            <GeneratedXamlSrc0 Condition="'%(AllProjectXamlPages.Link)'==''" Include="@(AllProjectXamlPages->'$(XamlGeneratedOutputPath)%(Identity)')" />
+            <GeneratedXamlSrc0 Condition="'%(AllProjectXamlPages.Link)'==''" Include="@(AllProjectXamlPages->'$(XamlGeneratedOutputPath)$([MSBuild]::MakeRelative('$(ProjectDir)','%(Identity)'))')" />
 
-            <GeneratedXamlDest0 Condition="'%(AllProjectXamlPages.Link)'!=''" Include="@(AllProjectXamlPages->'$(OutputPath)\%(Link)')" />
-            <GeneratedXamlDest0 Condition="'%(AllProjectXamlPages.Link)'==''" Include="@(AllProjectXamlPages->'$(OutputPath)\%(Identity)')" />
+            <GeneratedXamlDest0 Condition="'%(AllProjectXamlPages.Link)'!=''" Include="@(AllProjectXamlPages->'$(OutputPath)%(Link)')" />
+            <GeneratedXamlDest0 Condition="'%(AllProjectXamlPages.Link)'==''" Include="@(AllProjectXamlPages->'$(OutputPath)$([MSBuild]::MakeRelative('$(ProjectDir)','%(Identity)'))')" />
         </ItemGroup>
 
         <!-- Swap in the XBF suffix if appropriate. -->

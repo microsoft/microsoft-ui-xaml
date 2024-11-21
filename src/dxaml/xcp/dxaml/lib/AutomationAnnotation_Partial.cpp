@@ -9,7 +9,7 @@ using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT
 AutomationAnnotationFactory::CreateInstanceImpl(
-    _In_ xaml_automation::AnnotationType type,
+    xaml_automation::AnnotationType type,
     _Outptr_ xaml_automation::IAutomationAnnotation** ppInstance)
 {
     ctl::ComPtr<AutomationAnnotation> spAnnotation;
@@ -25,7 +25,7 @@ AutomationAnnotationFactory::CreateInstanceImpl(
 
 _Check_return_ HRESULT
 AutomationAnnotationFactory::CreateWithElementParameterImpl(
-    _In_ xaml_automation::AnnotationType type,
+    xaml_automation::AnnotationType type,
     _In_ xaml::IUIElement* pElement,
     _Outptr_ xaml_automation::IAutomationAnnotation** ppInstance)
 {

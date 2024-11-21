@@ -60,34 +60,34 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_BackStack)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Navigation::PageStackEntry*>** ppValue) override;
         IFACEMETHOD(get_BackStackDepth)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_BackStackDepth(_In_ INT value);
+        _Check_return_ HRESULT put_BackStackDepth(INT value);
         IFACEMETHOD(get_CacheSize)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_CacheSize)(_In_ INT value) override;
+        IFACEMETHOD(put_CacheSize)(INT value) override;
         IFACEMETHOD(get_CanGoBack)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_CanGoBack(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_CanGoBack(BOOLEAN value);
         IFACEMETHOD(get_CanGoForward)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_CanGoForward(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_CanGoForward(BOOLEAN value);
         IFACEMETHOD(get_CurrentSourcePageType)(_Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pValue) override;
-        _Check_return_ HRESULT put_CurrentSourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value);
+        _Check_return_ HRESULT put_CurrentSourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value);
         IFACEMETHOD(get_ForwardStack)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Navigation::PageStackEntry*>** ppValue) override;
         IFACEMETHOD(get_IsNavigationStackEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsNavigationStackEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsNavigationStackEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_SourcePageType)(_Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pValue) override;
-        IFACEMETHOD(put_SourcePageType)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value) override;
+        IFACEMETHOD(put_SourcePageType)(ABI::Windows::UI::Xaml::Interop::TypeName value) override;
 
         // Events.
         _Check_return_ HRESULT GetNavigatedEventSourceNoRef(_Outptr_ NavigatedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Navigated)(_In_ ABI::Microsoft::UI::Xaml::Navigation::INavigatedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Navigated)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Navigated)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetNavigatingEventSourceNoRef(_Outptr_ NavigatingEventSourceType** ppEventSource);
         IFACEMETHOD(add_Navigating)(_In_ ABI::Microsoft::UI::Xaml::Navigation::INavigatingCancelEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Navigating)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Navigating)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetNavigationFailedEventSourceNoRef(_Outptr_ NavigationFailedEventSourceType** ppEventSource);
         IFACEMETHOD(add_NavigationFailed)(_In_ ABI::Microsoft::UI::Xaml::Navigation::INavigationFailedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_NavigationFailed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_NavigationFailed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetNavigationStoppedEventSourceNoRef(_Outptr_ NavigationStoppedEventSourceType** ppEventSource);
         IFACEMETHOD(add_NavigationStopped)(_In_ ABI::Microsoft::UI::Xaml::Navigation::INavigationStoppedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_NavigationStopped)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_NavigationStopped)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(GetNavigationState)(_Out_ HSTRING* pReturnValue) override;
@@ -95,12 +95,12 @@ namespace DirectUI
         IFACEMETHOD(GoBack)() override;
         IFACEMETHOD(GoBackWithTransitionInfo)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pTransitionInfoOverride) override;
         IFACEMETHOD(GoForward)() override;
-        IFACEMETHOD(Navigate)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(Navigate)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(NavigateToType)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Navigation::IFrameNavigationOptions* pNavigationOptions, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(NavigateWithTransitionInfo)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pInfoOverride, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(Navigate)(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(Navigate)(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(NavigateToType)(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Navigation::IFrameNavigationOptions* pNavigationOptions, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(NavigateWithTransitionInfo)(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pInfoOverride, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(SetNavigationState)(_In_ HSTRING navigationState) override;
-        IFACEMETHOD(SetNavigationStateWithNavigationControl)(_In_ HSTRING navigationState, _In_ BOOLEAN suppressNavigate) override;
+        IFACEMETHOD(SetNavigationStateWithNavigationControl)(_In_ HSTRING navigationState, BOOLEAN suppressNavigate) override;
         IFACEMETHOD(SetNavigationTransitionInfoOverride)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pInfoOverride) override;
 
 

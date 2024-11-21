@@ -78,70 +78,70 @@ namespace DirectUI
         IFACEMETHOD(get_Background)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_Background)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_BackgroundSizing)(_Out_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing* pValue) override;
-        IFACEMETHOD(put_BackgroundSizing)(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value) override;
+        IFACEMETHOD(put_BackgroundSizing)(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value) override;
         IFACEMETHOD(get_BorderBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_BorderBrush)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_BorderThickness)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_BorderThickness)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_BorderThickness)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_CharacterSpacing)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_CharacterSpacing)(_In_ INT value) override;
+        IFACEMETHOD(put_CharacterSpacing)(INT value) override;
         IFACEMETHOD(get_CornerRadius)(_Out_ ABI::Microsoft::UI::Xaml::CornerRadius* pValue) override;
-        IFACEMETHOD(put_CornerRadius)(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value) override;
+        IFACEMETHOD(put_CornerRadius)(ABI::Microsoft::UI::Xaml::CornerRadius value) override;
         IFACEMETHOD(get_DefaultStyleKey)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_DefaultStyleKey)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_DefaultStyleResourceUri)(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue) override;
         IFACEMETHOD(put_DefaultStyleResourceUri)(_In_opt_ ABI::Windows::Foundation::IUriRuntimeClass* pValue) override;
         IFACEMETHOD(get_ElementSoundMode)(_Out_ ABI::Microsoft::UI::Xaml::ElementSoundMode* pValue) override;
-        IFACEMETHOD(put_ElementSoundMode)(_In_ ABI::Microsoft::UI::Xaml::ElementSoundMode value) override;
+        IFACEMETHOD(put_ElementSoundMode)(ABI::Microsoft::UI::Xaml::ElementSoundMode value) override;
         _Check_return_ HRESULT get_FocusTargetDescendant(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue);
         _Check_return_ HRESULT put_FocusTargetDescendant(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         IFACEMETHOD(get_FontFamily)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IFontFamily** ppValue) override;
         IFACEMETHOD(put_FontFamily)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IFontFamily* pValue) override;
         IFACEMETHOD(get_FontSize)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_FontSize)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_FontSize)(DOUBLE value) override;
         IFACEMETHOD(get_FontStretch)(_Out_ ABI::Windows::UI::Text::FontStretch* pValue) override;
-        IFACEMETHOD(put_FontStretch)(_In_ ABI::Windows::UI::Text::FontStretch value) override;
+        IFACEMETHOD(put_FontStretch)(ABI::Windows::UI::Text::FontStretch value) override;
         IFACEMETHOD(get_FontStyle)(_Out_ ABI::Windows::UI::Text::FontStyle* pValue) override;
-        IFACEMETHOD(put_FontStyle)(_In_ ABI::Windows::UI::Text::FontStyle value) override;
+        IFACEMETHOD(put_FontStyle)(ABI::Windows::UI::Text::FontStyle value) override;
         IFACEMETHOD(get_FontWeight)(_Out_ ABI::Windows::UI::Text::FontWeight* pValue) override;
-        IFACEMETHOD(put_FontWeight)(_In_ ABI::Windows::UI::Text::FontWeight value) override;
+        IFACEMETHOD(put_FontWeight)(ABI::Windows::UI::Text::FontWeight value) override;
         IFACEMETHOD(get_Foreground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_Foreground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_HorizontalContentAlignment)(_Out_ ABI::Microsoft::UI::Xaml::HorizontalAlignment* pValue) override;
-        IFACEMETHOD(put_HorizontalContentAlignment)(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value) override;
+        IFACEMETHOD(put_HorizontalContentAlignment)(ABI::Microsoft::UI::Xaml::HorizontalAlignment value) override;
         IFACEMETHOD(get_IsEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_IsFocusEngaged)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsFocusEngaged)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsFocusEngaged)(BOOLEAN value) override;
         IFACEMETHOD(get_IsFocusEngagementEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsFocusEngagementEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsFocusEngagementEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_IsTextScaleFactorEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsTextScaleFactorEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsTextScaleFactorEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_Padding)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_Padding)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_Padding)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_RequiresPointer)(_Out_ ABI::Microsoft::UI::Xaml::Controls::RequiresPointer* pValue) override;
-        IFACEMETHOD(put_RequiresPointer)(_In_ ABI::Microsoft::UI::Xaml::Controls::RequiresPointer value) override;
+        IFACEMETHOD(put_RequiresPointer)(ABI::Microsoft::UI::Xaml::Controls::RequiresPointer value) override;
         IFACEMETHOD(get_TabNavigation)(_Out_ ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode* pValue) override;
-        IFACEMETHOD(put_TabNavigation)(_In_ ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode value) override;
+        IFACEMETHOD(put_TabNavigation)(ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode value) override;
         IFACEMETHOD(get_Template)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IControlTemplate** ppValue) override;
         IFACEMETHOD(put_Template)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControlTemplate* pValue) override;
         _Check_return_ HRESULT get_TemplateKeyTipTarget(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue);
         _Check_return_ HRESULT put_TemplateKeyTipTarget(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         IFACEMETHOD(get_VerticalContentAlignment)(_Out_ ABI::Microsoft::UI::Xaml::VerticalAlignment* pValue) override;
-        IFACEMETHOD(put_VerticalContentAlignment)(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value) override;
+        IFACEMETHOD(put_VerticalContentAlignment)(ABI::Microsoft::UI::Xaml::VerticalAlignment value) override;
 
         // Events.
         _Check_return_ HRESULT GetFocusDisengagedEventSourceNoRef(_Outptr_ FocusDisengagedEventSourceType** ppEventSource);
         IFACEMETHOD(add_FocusDisengaged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::Control*, ABI::Microsoft::UI::Xaml::Controls::FocusDisengagedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_FocusDisengaged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_FocusDisengaged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetFocusEngagedEventSourceNoRef(_Outptr_ FocusEngagedEventSourceType** ppEventSource);
         IFACEMETHOD(add_FocusEngaged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::Control*, ABI::Microsoft::UI::Xaml::Controls::FocusEngagedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_FocusEngaged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_FocusEngaged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetInheritedPropertyChangedEventSourceNoRef(_Outptr_ InheritedPropertyChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_InheritedPropertyChanged(_In_ ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_InheritedPropertyChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_InheritedPropertyChanged(EventRegistrationToken token);
         IFACEMETHOD(add_IsEnabledChanged)(_In_ ABI::Microsoft::UI::Xaml::IDependencyPropertyChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_IsEnabledChanged)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_IsEnabledChanged)(EventRegistrationToken token) = 0;
 
         // Methods.
         IFACEMETHOD(ApplyTemplate)(_Out_ BOOLEAN* pReturnValue) override;
@@ -275,15 +275,15 @@ namespace DirectUI
 
         // Attached properties.
         static _Check_return_ HRESULT GetIsTemplateFocusTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetIsTemplateFocusTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetIsTemplateFocusTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, BOOLEAN value);
         IFACEMETHOD(get_IsTemplateFocusTargetProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetIsTemplateFocusTarget)(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetIsTemplateFocusTarget)(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ BOOLEAN value);
+        IFACEMETHOD(SetIsTemplateFocusTarget)(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, BOOLEAN value);
         static _Check_return_ HRESULT GetIsTemplateKeyTipTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetIsTemplateKeyTipTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetIsTemplateKeyTipTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value);
         IFACEMETHOD(get_IsTemplateKeyTipTargetProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetIsTemplateKeyTipTarget)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetIsTemplateKeyTipTarget)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN value);
+        IFACEMETHOD(SetIsTemplateKeyTipTarget)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN value);
 
         // Static methods.
 

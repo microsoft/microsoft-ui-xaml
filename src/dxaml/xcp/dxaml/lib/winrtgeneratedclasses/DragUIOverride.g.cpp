@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::get_IsCaptionVisible(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::put_IsCaptionVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::put_IsCaptionVisible(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::get_IsContentVisible(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::put_IsContentVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::put_IsContentVisible(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -109,7 +109,7 @@ IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::get_IsGlyphVisible(_Out_ BOOLE
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::put_IsGlyphVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::put_IsGlyphVisible(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -156,7 +156,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::SetContentFromBitmapImageWithAnchorPoint(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage, _In_ ABI::Windows::Foundation::Point anchorPoint)
+IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::SetContentFromBitmapImageWithAnchorPoint(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage, ABI::Windows::Foundation::Point anchorPoint)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -190,7 +190,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::SetContentFromSoftwareBitmapWithAnchorPoint(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap, _In_ ABI::Windows::Foundation::Point anchorPoint)
+IFACEMETHODIMP DirectUI::DragUIOverrideGenerated::SetContentFromSoftwareBitmapWithAnchorPoint(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap, ABI::Windows::Foundation::Point anchorPoint)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

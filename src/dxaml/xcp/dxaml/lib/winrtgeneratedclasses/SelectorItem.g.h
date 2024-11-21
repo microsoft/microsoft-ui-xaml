@@ -49,9 +49,9 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_IsPointerOver(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsPointerOver(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsPointerOver(BOOLEAN value);
         IFACEMETHOD(get_IsSelected)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsSelected)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsSelected)(BOOLEAN value) override;
 
         // Events.
 

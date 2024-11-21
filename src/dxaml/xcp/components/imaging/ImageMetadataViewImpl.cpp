@@ -7,7 +7,7 @@
 #include <DoubleUtil.h>
 #include "d3d11device.h"
 
-void ImageMetadataViewImpl::SetEncodedImageData(_In_opt_ std::shared_ptr<EncodedImageData> encodedImageData, HRESULT downloadStatus)
+void ImageMetadataViewImpl::SetEncodedImageData(_In_ std::shared_ptr<EncodedImageData> encodedImageData, HRESULT downloadStatus)
 {
     m_encodedImageData = std::move(encodedImageData);
     m_downloadParseResult = downloadStatus;

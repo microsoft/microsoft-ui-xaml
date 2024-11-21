@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_Height(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_Height, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_Height(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_Height(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_Height, value));
 }
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_HorizontalAlignment(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_HorizontalAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_HorizontalAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_HorizontalAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_HorizontalAlignment, value));
 }
@@ -80,7 +80,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_Margin(_Out_ ABI::Microsoft::UI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_Margin, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_Margin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_Margin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_Margin, value));
 }
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_MaxHeight(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_MaxHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_MaxHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_MaxHeight(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_MaxHeight, value));
 }
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_MaxWidth(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_MaxWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_MaxWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_MaxWidth(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_MaxWidth, value));
 }
@@ -104,7 +104,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_MinHeight(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_MinHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_MinHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_MinHeight(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_MinHeight, value));
 }
@@ -112,7 +112,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_MinWidth(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_MinWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_MinWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_MinWidth(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_MinWidth, value));
 }
@@ -120,7 +120,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_VerticalAlignment(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_VerticalAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_VerticalAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_VerticalAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_VerticalAlignment, value));
 }
@@ -128,7 +128,7 @@ IFACEMETHODIMP DirectUI::FrameworkElementEx::get_Width(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_Width, pValue));
 }
-IFACEMETHODIMP DirectUI::FrameworkElementEx::put_Width(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::FrameworkElementEx::put_Width(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FrameworkElementEx_Width, value));
 }

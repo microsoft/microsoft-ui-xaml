@@ -30,7 +30,7 @@ private:
 public:
     static _Check_return_ HRESULT Create(_Outptr_ WindowsGraphicsDeviceManager **ppGraphicsDeviceManager);
 
-    _Check_return_ HRESULT GetGraphicsDeviceForVideo(_Outptr_ CD3D11Device **ppVideoGraphicsDevice);
+    _Check_return_ HRESULT GetGraphicsDeviceForVideo(_Outptr_result_maybenull_ CD3D11Device **ppVideoGraphicsDevice);
 
     void CleanupCachedDeviceResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost);
 

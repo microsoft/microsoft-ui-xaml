@@ -150,9 +150,9 @@ void DCompPropertyChangedListener::DetachFromWUCClip()
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifySinglePropertyChanged(
-    _In_ ixp::ICompositionObject* target,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId,
-    _In_ float value)
+    ixp::ICompositionObject* target,
+    ixp::ExpExpressionNotificationProperty propertyId,
+    float value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
     if (uiElement != nullptr)
@@ -199,9 +199,9 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifySinglePropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector2PropertyChanged(
-    _In_ ixp::ICompositionObject* pTarget,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId,
-    _In_ wfn::Vector2 value)
+    ixp::ICompositionObject* pTarget,
+    ixp::ExpExpressionNotificationProperty propertyId,
+    wfn::Vector2 value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
     if (uiElement != nullptr)
@@ -229,9 +229,9 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector2PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector3PropertyChanged(
-    _In_ ixp::ICompositionObject* pTarget,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId,
-    _In_ wfn::Vector3 value)
+    ixp::ICompositionObject* pTarget,
+    ixp::ExpExpressionNotificationProperty propertyId,
+    wfn::Vector3 value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
     if (uiElement != nullptr)
@@ -277,25 +277,25 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector3PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector4PropertyChanged(
-    _In_ ixp::ICompositionObject* pTarget,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId,
-    _In_ wfn::Vector4 value)
+    ixp::ICompositionObject* pTarget,
+    ixp::ExpExpressionNotificationProperty propertyId,
+    wfn::Vector4 value)
 {
     return S_OK;
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyColorPropertyChanged(
-    _In_ ixp::ICompositionObject* pTarget,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId,
-    _In_ wu::Color value)
+    ixp::ICompositionObject* pTarget,
+    ixp::ExpExpressionNotificationProperty propertyId,
+    wu::Color value)
 {
     return S_OK;
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix3x2PropertyChanged(
-    _In_ ixp::ICompositionObject* target,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId,
-    _In_ wfn::Matrix3x2 value)
+    ixp::ICompositionObject* target,
+    ixp::ExpExpressionNotificationProperty propertyId,
+    wfn::Matrix3x2 value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
     if (uiElement != nullptr)
@@ -316,9 +316,9 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix3x2PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix4x4PropertyChanged(
-    _In_ ixp::ICompositionObject *pTarget,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId,
-    _In_ wfn::Matrix4x4 value)
+    ixp::ICompositionObject *pTarget,
+    ixp::ExpExpressionNotificationProperty propertyId,
+    wfn::Matrix4x4 value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
     if (uiElement != nullptr)
@@ -335,16 +335,16 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix4x4PropertyChanged(
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyBooleanPropertyChanged(
-    _In_ ixp::ICompositionObject *pTarget,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId,
-    _In_ boolean value)
+    ixp::ICompositionObject *pTarget,
+    ixp::ExpExpressionNotificationProperty propertyId,
+    boolean value)
 {
     return S_OK;
 }
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyReferencePropertyChanged(
-    _In_ ixp::ICompositionObject* pTarget,
-    _In_ ixp::ExpExpressionNotificationProperty propertyId)
+    ixp::ICompositionObject* pTarget,
+    ixp::ExpExpressionNotificationProperty propertyId)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
     if (uiElement != nullptr)

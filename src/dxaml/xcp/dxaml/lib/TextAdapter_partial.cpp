@@ -213,7 +213,7 @@ Cleanup:
 
 _Check_return_ HRESULT TextAdapter::RangeFromChildImpl(
     _In_ xaml_automation::Provider::IIRawElementProviderSimple* childElement,
-    _COM_Outptr_ xaml_automation::Provider::ITextRangeProvider** ppReturnValue)
+    _Outptr_ xaml_automation::Provider::ITextRangeProvider** ppReturnValue)
 {
     CValue resultValue;
     CValue argVal;

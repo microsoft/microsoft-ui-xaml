@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::SemanticZoomViewChangedEventArgs::get_IsSourceZoomedInV
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SemanticZoomViewChangedEventArgs::put_IsSourceZoomedInView(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SemanticZoomViewChangedEventArgs::put_IsSourceZoomedInView(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

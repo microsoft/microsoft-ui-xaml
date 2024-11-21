@@ -1562,7 +1562,7 @@ OrientedVirtualizingPanel::GeneratePreviousChild(
     _In_opt_ xaml_controls::IItemsControl* pItemsControlHint,
     _In_ INT childIndex,
     _In_ wf::Size layoutSlotSize,
-    _Outptr_ xaml::IUIElement** ppChild)
+    _Outptr_result_maybenull_ xaml::IUIElement** ppChild)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<xaml_controls::IItemContainerGenerator> spGenerator;
@@ -3514,7 +3514,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
-OrientedVirtualizingPanel::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+OrientedVirtualizingPanel::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -3571,7 +3571,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
-OrientedVirtualizingPanel::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+OrientedVirtualizingPanel::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -4298,7 +4298,7 @@ Cleanup:
 
 // Get the closest element information to the point.
 _Check_return_ HRESULT OrientedVirtualizingPanel::GetClosestElementInfo(
-    _In_ wf::Point position,
+    wf::Point position,
     _Out_ xaml_primitives::ElementInfo* returnValue)
 {
     HRESULT hr = S_OK;
@@ -4312,7 +4312,7 @@ _Check_return_ HRESULT OrientedVirtualizingPanel::GetClosestElementInfo(
 // Get the index where an item should be inserted if it were dropped at
 // the given position.  This will be used by live reordering.
 _Check_return_ HRESULT OrientedVirtualizingPanel::GetInsertionIndex(
-    _In_ wf::Point position,
+    wf::Point position,
     _Out_ INT* returnValue)
 {
     HRESULT hr = S_OK;

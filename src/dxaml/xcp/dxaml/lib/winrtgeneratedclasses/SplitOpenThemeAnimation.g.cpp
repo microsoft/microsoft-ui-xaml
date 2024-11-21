@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::get_ClosedLength(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_ClosedLength, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_ClosedLength(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_ClosedLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_ClosedLength, value));
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::get_ContentTranslatio
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_ContentTranslationDirection, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_ContentTranslationDirection(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value)
+IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_ContentTranslationDirection(ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_ContentTranslationDirection, value));
@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::get_ContentTranslatio
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_ContentTranslationOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_ContentTranslationOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_ContentTranslationOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_ContentTranslationOffset, value));
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::get_OffsetFromCenter(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_OffsetFromCenter, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_OffsetFromCenter(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_OffsetFromCenter(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_OffsetFromCenter, value));
@@ -117,7 +117,7 @@ IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::get_OpenedLength(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_OpenedLength, pValue));
 }
-IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_OpenedLength(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SplitOpenThemeAnimationGenerated::put_OpenedLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SplitOpenThemeAnimation_OpenedLength, value));

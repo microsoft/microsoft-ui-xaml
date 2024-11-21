@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::get_RasterizePixelHeight(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SvgImageSource_RasterizePixelHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::put_RasterizePixelHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::put_RasterizePixelHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SvgImageSource_RasterizePixelHeight, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::get_RasterizePixelWidth(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SvgImageSource_RasterizePixelWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::put_RasterizePixelWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::put_RasterizePixelWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SvgImageSource_RasterizePixelWidth, value));
@@ -106,7 +106,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::remove_Opened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::remove_Opened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpenedEventSourceType* pEventSource = nullptr;
@@ -161,7 +161,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::remove_OpenFailed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SvgImageSourceGenerated::remove_OpenFailed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpenFailedEventSourceType* pEventSource = nullptr;

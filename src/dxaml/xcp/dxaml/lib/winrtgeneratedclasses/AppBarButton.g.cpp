@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_DynamicOverflowOrder(_Out_ I
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarButton_DynamicOverflowOrder, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::put_DynamicOverflowOrder(_In_ INT value)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::put_DynamicOverflowOrder(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarButton_DynamicOverflowOrder, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_IsCompact(_Out_ BOOLEAN* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarButton_IsCompact, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::put_IsCompact(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::put_IsCompact(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarButton_IsCompact, value));
@@ -149,7 +149,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_LabelPosition(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarButton_LabelPosition, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::put_LabelPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarLabelPosition value)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::put_LabelPosition(ABI::Microsoft::UI::Xaml::Controls::CommandBarLabelPosition value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarButton_LabelPosition, value));
@@ -187,7 +187,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonGenerated::get_UseOverflowStyle(_Out_ BOOLE
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarButton_UseOverflowStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::put_UseOverflowStyle(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::put_UseOverflowStyle(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarButton_UseOverflowStyle, value));
@@ -324,7 +324,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::OpenSubMenu(_In_ ABI::Windows::Foundation::Point position)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::OpenSubMenu(ABI::Windows::Foundation::Point position)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -342,7 +342,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::PositionSubMenu(_In_ ABI::Windows::Foundation::Point position)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::PositionSubMenu(ABI::Windows::Foundation::Point position)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -378,7 +378,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::RaiseAutomationPeerExpandCollapse(_In_ BOOLEAN isOpen)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::RaiseAutomationPeerExpandCollapse(BOOLEAN isOpen)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -396,7 +396,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::SetDefaultLabelPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition defaultLabelPosition)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::SetDefaultLabelPosition(ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition defaultLabelPosition)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -414,7 +414,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AppBarButtonGenerated::SetSubMenuDirection(_In_ BOOLEAN isSubMenuDirectionUp)
+IFACEMETHODIMP DirectUI::AppBarButtonGenerated::SetSubMenuDirection(BOOLEAN isSubMenuDirectionUp)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

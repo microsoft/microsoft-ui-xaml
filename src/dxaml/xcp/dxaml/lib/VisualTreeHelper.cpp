@@ -35,9 +35,9 @@ HRESULT VisualTreeHelper::QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** p
 }
 
 IFACEMETHODIMP VisualTreeHelper::FindElementsInHostCoordinatesPoint(
-    _In_ wf::Point intersectingPoint,
-    _In_opt_ xaml::IUIElement* pSubTree,
-    _Out_ wfc::IIterable<xaml::UIElement*>** ppElements)
+    wf::Point intersectingPoint,
+    xaml::IUIElement* pSubTree,
+    wfc::IIterable<xaml::UIElement*>** ppElements)
 {
     HRESULT hr = S_OK;
 
@@ -51,9 +51,9 @@ Cleanup:
 }
 
 IFACEMETHODIMP VisualTreeHelper::FindElementsInHostCoordinatesRect(
-    _In_ wf::Rect intersectingRect,
-    _In_opt_ xaml::IUIElement* pSubTree,
-    _Out_ wfc::IIterable<xaml::UIElement*>** ppElements)
+    wf::Rect intersectingRect,
+    xaml::IUIElement* pSubTree,
+    wfc::IIterable<xaml::UIElement*>** ppElements)
 {
     HRESULT hr = S_OK;
 
@@ -67,10 +67,10 @@ Cleanup:
 }
 
 IFACEMETHODIMP VisualTreeHelper::FindAllElementsInHostCoordinatesPoint(
-    _In_ wf::Point intersectingPoint,
-    _In_opt_ xaml::IUIElement* pSubTree,
-    _In_ BOOLEAN includeAllElements,
-    _Out_ wfc::IIterable<xaml::UIElement*>** ppElements)
+    wf::Point intersectingPoint,
+    xaml::IUIElement* pSubTree,
+    BOOLEAN includeAllElements,
+    wfc::IIterable<xaml::UIElement*>** ppElements)
 {
     HRESULT hr = S_OK;
 
@@ -84,10 +84,10 @@ Cleanup:
 }
 
 IFACEMETHODIMP VisualTreeHelper::FindAllElementsInHostCoordinatesRect(
-    _In_ wf::Rect intersectingRect,
-    _In_opt_ xaml::IUIElement* pSubTree,
-    _In_ BOOLEAN includeAllElements,
-    _Out_ wfc::IIterable<xaml::UIElement*>** ppElements)
+    wf::Rect intersectingRect,
+    xaml::IUIElement* pSubTree,
+    BOOLEAN includeAllElements,
+    wfc::IIterable<xaml::UIElement*>** ppElements)
 {
     HRESULT hr = S_OK;
 

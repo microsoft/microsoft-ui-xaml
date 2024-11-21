@@ -87,8 +87,8 @@ namespace DirectUI
         IFACEMETHOD(GetCultureCore)(_Out_ INT* pReturnValue) override;
         IFACEMETHOD(GetDescribedByCore)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue) override;
         _Check_return_ HRESULT GetDescribedByCoreProtected(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(GetElementFromPoint)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue) override;
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(GetElementFromPoint)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue) override;
         IFACEMETHOD(GetFlowsFromCore)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue) override;
         _Check_return_ HRESULT GetFlowsFromCoreProtected(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         IFACEMETHOD(GetFlowsToCore)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue) override;
@@ -122,11 +122,11 @@ namespace DirectUI
         IFACEMETHOD(GetOrientation)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationOrientation* pReturnValue) override;
         IFACEMETHOD(GetOrientationCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationOrientation* pReturnValue) override;
         IFACEMETHOD(GetParent)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue) override;
-        IFACEMETHOD(GetPattern)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue) override;
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue) override;
-        IFACEMETHOD(GetPeerFromPoint)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue) override;
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue) override;
-        _Check_return_ HRESULT GetPeerFromPointCoreProtected(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetPattern)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(GetPeerFromPoint)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue) override;
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue) override;
+        _Check_return_ HRESULT GetPeerFromPointCoreProtected(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(GetPositionInSet)(_Out_ INT* pReturnValue) override;
         IFACEMETHOD(GetPositionInSetCore)(_Out_ INT* pReturnValue) override;
         IFACEMETHOD(GetSizeOfSet)(_Out_ INT* pReturnValue) override;
@@ -154,15 +154,15 @@ namespace DirectUI
         IFACEMETHOD(IsPeripheralCore)(_Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(IsRequiredForForm)(_Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(IsRequiredForFormCore)(_Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(Navigate)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue) override;
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(Navigate)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue) override;
         IFACEMETHOD(PeerFromProvider)(_In_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple* pProvider, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue) override;
         IFACEMETHOD(ProviderFromPeer)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pPeer, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple** ppReturnValue) override;
-        IFACEMETHOD(RaiseAutomationEvent)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId) override;
-        IFACEMETHOD(RaiseNotificationEvent)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNotificationKind notificationKind, _In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNotificationProcessing notificationProcessing, _In_opt_ HSTRING displayString, _In_ HSTRING activityId) override;
+        IFACEMETHOD(RaiseAutomationEvent)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId) override;
+        IFACEMETHOD(RaiseNotificationEvent)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNotificationKind notificationKind, ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNotificationProcessing notificationProcessing, _In_opt_ HSTRING displayString, _In_ HSTRING activityId) override;
         IFACEMETHOD(RaisePropertyChangedEvent)(_In_ ABI::Microsoft::UI::Xaml::Automation::IAutomationProperty* pAutomationProperty, _In_ IInspectable* pOldValue, _In_ IInspectable* pNewValue) override;
-        IFACEMETHOD(RaiseStructureChangedEvent)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationStructureChangeType structureChangeType, _In_opt_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pChild) override;
-        IFACEMETHOD(RaiseTextEditTextChangedEvent)(_In_ ABI::Microsoft::UI::Xaml::Automation::AutomationTextEditChangeType automationTextEditChangeType, _In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pChangedData) override;
+        IFACEMETHOD(RaiseStructureChangedEvent)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationStructureChangeType structureChangeType, _In_opt_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pChild) override;
+        IFACEMETHOD(RaiseTextEditTextChangedEvent)(ABI::Microsoft::UI::Xaml::Automation::AutomationTextEditChangeType automationTextEditChangeType, _In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pChangedData) override;
         IFACEMETHOD(SetAutomationFocus)() override;
         IFACEMETHOD(SetFocus)() override;
         IFACEMETHOD(SetFocusCore)() override;
@@ -213,7 +213,7 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(ListenerExists)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(ListenerExists)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(GenerateRawElementProviderRuntimeId)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::RawElementProviderRuntimeId* pReturnValue) override;
 
         // Static events.
@@ -232,7 +232,7 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT ListenerExistsImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId, _Out_ BOOLEAN* pReturnValue); 
+         _Check_return_ HRESULT ListenerExistsImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationEvents eventId, _Out_ BOOLEAN* pReturnValue); 
          _Check_return_ HRESULT GenerateRawElementProviderRuntimeIdImpl(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::RawElementProviderRuntimeId* pReturnValue); 
     };
 }

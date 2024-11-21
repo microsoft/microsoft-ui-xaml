@@ -51,7 +51,7 @@ IFACEMETHODIMP DirectUI::FrameNavigationOptions::get_IsNavigationStackEnabled(_O
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameNavigationOptions::put_IsNavigationStackEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FrameNavigationOptions::put_IsNavigationStackEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

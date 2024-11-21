@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ShowAsMonochrome)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_ShowAsMonochrome)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_ShowAsMonochrome)(BOOLEAN value) override;
         IFACEMETHOD(get_UriSource)(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue) override;
         IFACEMETHOD(put_UriSource)(_In_opt_ ABI::Windows::Foundation::IUriRuntimeClass* pValue) override;
 

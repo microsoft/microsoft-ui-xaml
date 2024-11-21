@@ -17,7 +17,7 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_ItemContainerGeneratorImpl(
-            _Outptr_ xaml_controls::IItemContainerGenerator** pValue);
+            _Outptr_result_maybenull_ xaml_controls::IItemContainerGenerator** pValue);
 
         // Virtual methods.
         _Check_return_ HRESULT OnItemsChangedImpl(
@@ -70,8 +70,8 @@ namespace DirectUI
         // Framework version of this method that allows for passing in an itemscontrol
         // if we already know about it (the look was a huge perf hit).
         _Check_return_ HRESULT GetItemContainerGenerator(
-            _Outptr_ xaml_controls::IItemContainerGenerator** pValue,
-            _In_ xaml_controls::IItemsControl* pItemsControlHint);
+            _Outptr_result_maybenull_ xaml_controls::IItemContainerGenerator** pValue,
+            _In_opt_ xaml_controls::IItemsControl* pItemsControlHint);
 
         INT32 GetItemsHostValidatedTick() { return m_itemsHostValidatedTick; }
         void SetItemsHostValidatedTick(_In_ INT32 tick) { m_itemsHostValidatedTick = tick; }

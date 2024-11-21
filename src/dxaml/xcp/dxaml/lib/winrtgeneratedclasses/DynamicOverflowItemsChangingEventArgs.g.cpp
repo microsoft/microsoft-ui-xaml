@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::DynamicOverflowItemsChangingEventArgs::get_Action(_Out_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DynamicOverflowItemsChangingEventArgs::put_Action(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDynamicOverflowAction value)
+_Check_return_ HRESULT DirectUI::DynamicOverflowItemsChangingEventArgs::put_Action(ABI::Microsoft::UI::Xaml::Controls::CommandBarDynamicOverflowAction value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

@@ -48,11 +48,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_X)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_X)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_X)(DOUBLE value) override;
         _Check_return_ HRESULT get_XAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_XAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_Y)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Y)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Y)(DOUBLE value) override;
         _Check_return_ HRESULT get_YAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_YAnimation(_In_opt_ IInspectable* pValue);
 

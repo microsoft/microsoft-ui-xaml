@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::DoubleKeyFrame::get_KeyTime(_Out_ ABI::Microsoft::UI::X
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DoubleKeyFrame_KeyTime, pValue));
 }
-IFACEMETHODIMP DirectUI::DoubleKeyFrame::put_KeyTime(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value)
+IFACEMETHODIMP DirectUI::DoubleKeyFrame::put_KeyTime(ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DoubleKeyFrame_KeyTime, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::DoubleKeyFrame::get_Value(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DoubleKeyFrame_Value, pValue));
 }
-IFACEMETHODIMP DirectUI::DoubleKeyFrame::put_Value(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::DoubleKeyFrame::put_Value(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DoubleKeyFrame_Value, value));

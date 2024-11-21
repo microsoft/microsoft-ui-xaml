@@ -30,8 +30,8 @@ public:
 
     virtual _Check_return_ HRESULT RequestRender(
         _In_ CUIElement* pElement,
-        int32_t scaledWidth,
-        int32_t scaledHeight,
+        _In_ int32_t scaledWidth,
+        _In_ int32_t scaledHeight,
         _In_ ICoreAsyncAction *pAsyncAction);
 
     virtual _Check_return_ HRESULT PreCommit(

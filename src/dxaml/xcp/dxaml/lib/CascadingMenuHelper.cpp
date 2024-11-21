@@ -336,7 +336,7 @@ _Check_return_ HRESULT CascadingMenuHelper::OnPointerReleased(_In_ xaml_input::I
     // Show the sub menu in the case of touch and pen input.
     // In case of the mouse device, the sub menu will be shown whenever the pointer is over the sub menu owner.
     // Note that sub menu is also shown OnPointerOver with pen device.
-    if (mui::PointerDeviceType_Touch == pointerDeviceType || mui::PointerDeviceType_Pen == pointerDeviceType)
+    if (mui::PointerDeviceType_Touch == pointerDeviceType || mui::PointerDeviceType_Pen == pointerDeviceType || mui::PointerDeviceType_Mouse == pointerDeviceType)
     {
         IFC_RETURN(OpenSubMenu());
     }

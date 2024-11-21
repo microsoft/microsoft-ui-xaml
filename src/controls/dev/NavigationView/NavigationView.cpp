@@ -206,13 +206,17 @@ NavigationView::NavigationView()
     auto footerItems = winrt::make<Vector<winrt::IInspectable>>();
     SetValue(s_FooterMenuItemsProperty, footerItems);
 
-    auto weakThis = get_weak();
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::NavigationView>(*this))};
     m_topDataProvider.OnRawDataChanged(
         [weakThis](const winrt::NotifyCollectionChangedEventArgs& args)
         {
-            if (auto target = weakThis.get())
+            if(auto strongThis = weakThis.get())
             {
-                target->OnTopNavDataSourceChanged(args);
+                NavigationView* rawThis = winrt::get_self<NavigationView>(strongThis);
+                rawThis->OnTopNavDataSourceChanged(args);
             }
         });
 

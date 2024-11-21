@@ -48,20 +48,20 @@ namespace DirectUI
 
             // Events.
             IFACEMETHOD(add_HorizontalSnapPointsChanged)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-            IFACEMETHOD(remove_HorizontalSnapPointsChanged)(_In_ EventRegistrationToken tToken) override;
+            IFACEMETHOD(remove_HorizontalSnapPointsChanged)(EventRegistrationToken tToken) override;
             IFACEMETHOD(add_VerticalSnapPointsChanged)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-            IFACEMETHOD(remove_VerticalSnapPointsChanged)(_In_ EventRegistrationToken tToken) override;
+            IFACEMETHOD(remove_VerticalSnapPointsChanged)(EventRegistrationToken tToken) override;
 
             // Get the closest element information to the point.
             _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
-                _In_ wf::Point position,
+                wf::Point position,
                 _Out_ xaml_primitives::ElementInfo* returnValue)
                 override;
 
             // Get the index where an item should be inserted if it were dropped at
             // the given position.  This will be used by live reordering.
             _Check_return_ IFACEMETHOD(GetInsertionIndex)(
-                _In_ wf::Point position,
+                wf::Point position,
                 _Out_ INT* returnValue)
                 override;
 

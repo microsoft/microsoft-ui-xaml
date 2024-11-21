@@ -52,48 +52,48 @@ public:
 
     // IExpCompositionPropertyChangedListener
     IFACEMETHOD(NotifyColorPropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId,
-        _In_ wu::Color value);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId,
+        wu::Color value);
 
     IFACEMETHOD(NotifyMatrix3x2PropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId,
-        _In_ wfn::Matrix3x2 value);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId,
+        wfn::Matrix3x2 value);
 
     IFACEMETHOD(NotifyMatrix4x4PropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId,
-        _In_ wfn::Matrix4x4 value);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId,
+        wfn::Matrix4x4 value);
 
     IFACEMETHOD(NotifyReferencePropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId);
 
     IFACEMETHOD(NotifySinglePropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId,
-        _In_ float value);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId,
+        float value);
 
     IFACEMETHOD(NotifyVector2PropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId,
-        _In_ wfn::Vector2 value);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId,
+        wfn::Vector2 value);
 
     IFACEMETHOD(NotifyVector3PropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId,
-        _In_ wfn::Vector3 value);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId,
+        wfn::Vector3 value);
 
     IFACEMETHOD(NotifyVector4PropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId,
-        _In_ wfn::Vector4 value);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId,
+        wfn::Vector4 value);
 
     IFACEMETHOD(NotifyBooleanPropertyChanged)(
-        _In_ ixp::ICompositionObject* pTarget,
-        _In_ ixp::ExpExpressionNotificationProperty propertyId,
-        _In_ boolean value);
+        ixp::ICompositionObject* pTarget,
+        ixp::ExpExpressionNotificationProperty propertyId,
+        boolean value);
 
 private:
     CUIElement* m_pUIElementNoRef = nullptr;

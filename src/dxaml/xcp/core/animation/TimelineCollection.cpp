@@ -28,7 +28,7 @@ CDependencyObject* CTimelineCollection::GetStandardNameScopeParent()
 // CTimelineCollection by the new XAML parser.  The old XAML parser would
 // call CTimelineGroup::SetValue(null, child) which in turn invoked the
 // AddChild that correctly associated child CTimelines with their owners.
-_Check_return_ HRESULT CTimelineCollection::Append(_In_ CDependencyObject *pObject, _Out_ XUINT32 *pnIndex)
+_Check_return_ HRESULT CTimelineCollection::Append(_In_ CDependencyObject *pObject, _Out_opt_ XUINT32 *pnIndex)
 {
     CTimeline* pTimeline = NULL;
 

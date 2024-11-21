@@ -38,7 +38,7 @@
   <!-- 32 = 2 * [default fontsize] - because of double size rendering, remove when MSFT #10030063 is done -->
   <x:Double x:Key="RatingControlFontSizeForRendering">32</x:Double>
   <x:Double x:Key="RatingControlItemSpacing">8</x:Double>
-  <x:Double x:Key="RatingControlCaptionTopMargin">2</x:Double>
+  <x:Double x:Key="RatingControlCaptionTopMargin">-12.5</x:Double>
   <DataTemplate x:Key="BackgroundGlyphDefaultTemplate">
     <!-- -8, -8 are to compensate for the default scale down, plus factoring in margins -->
     <TextBlock Foreground="{ThemeResource RatingControlUnselectedForeground}" Margin="-8,-8,0,0" FontSize="{StaticResource RatingControlFontSizeForRendering}" Text="&#xE734;" AutomationProperties.AccessibilityView="Raw" FontFamily="{ThemeResource SymbolThemeFontFamily}" />

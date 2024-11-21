@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::ColorAnimationUsingKeyFrames::get_EnableDependentAnimat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorAnimationUsingKeyFrames_EnableDependentAnimation, pValue));
 }
-IFACEMETHODIMP DirectUI::ColorAnimationUsingKeyFrames::put_EnableDependentAnimation(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ColorAnimationUsingKeyFrames::put_EnableDependentAnimation(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorAnimationUsingKeyFrames_EnableDependentAnimation, value));

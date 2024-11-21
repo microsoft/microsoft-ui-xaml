@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
-    public class ItemCollectionTransitionProviderDerived : ItemCollectionTransitionProvider
+    public partial class ItemCollectionTransitionProviderDerived : ItemCollectionTransitionProvider
     {
         public Func<ItemCollectionTransition, bool> ShouldAnimateFunc { get; set; }
 

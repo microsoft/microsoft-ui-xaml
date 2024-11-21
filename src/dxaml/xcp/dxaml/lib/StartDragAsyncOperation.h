@@ -34,7 +34,7 @@ namespace DirectUI
             _Inout_ wadt::DataPackageOperation *results) override;
 
         STDMETHOD(RuntimeClassInitialize)(
-            _In_opt_ ctl::WeakRefPtr wrUIElement,
+            _In_ ctl::WeakRefPtr wrUIElement,
             _In_ mui::DragDrop::IDragOperation* dragOperation)
         {
             auto id = z_ulUniqueAsyncActionId;

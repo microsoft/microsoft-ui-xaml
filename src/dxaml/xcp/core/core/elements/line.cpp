@@ -109,10 +109,11 @@ _Check_return_ HRESULT
 CLineGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;
+    *ppGeometry = nullptr;
     IPALAcceleratedPathGeometry *pPALGeometry = nullptr;
     IPALGeometrySink *pPALGeometrySink = nullptr;
 

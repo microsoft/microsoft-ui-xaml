@@ -23,6 +23,6 @@ namespace DirectUI
 
             // IDropTargetProvider
             _Check_return_ HRESULT get_DropEffectImpl(_Out_ HSTRING* pValue);
-            _Check_return_ HRESULT get_DropEffectsImpl(_Out_ UINT* pCount, _Outptr_ HSTRING** pValue);
+            _Check_return_ HRESULT get_DropEffectsImpl(_Out_ UINT* pCount, _Out_ HSTRING** pValue);
     };
 }

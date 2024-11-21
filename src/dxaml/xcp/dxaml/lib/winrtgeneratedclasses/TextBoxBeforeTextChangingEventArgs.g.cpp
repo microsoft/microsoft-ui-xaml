@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::TextBoxBeforeTextChangingEventArgs::get_Cancel(_Out_ BO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxBeforeTextChangingEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxBeforeTextChangingEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

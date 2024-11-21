@@ -98,9 +98,9 @@ HRESULT DropOperationTarget::Initialize(_In_ CXamlIslandRoot* hitTestRootIsland)
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
 DropOperationTarget::EnterAsync(
-    _In_ mui::DragDrop::IDragInfo* pDragInfo,
-    _In_ mui::DragDrop::IDragUIOverride* pDragUIOverride,
-    _Deref_out_ wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue)
+    mui::DragDrop::IDragInfo* pDragInfo,
+    mui::DragDrop::IDragUIOverride* pDragUIOverride,
+    wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue)
 {
     IFCPTR_RETURN(pDragInfo);
     IFCPTR_RETURN(pDragUIOverride);
@@ -124,9 +124,9 @@ DropOperationTarget::EnterAsync(
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
 DropOperationTarget::OverAsync(
-    _In_ mui::DragDrop::IDragInfo* pDragInfo,
-    _In_ mui::DragDrop::IDragUIOverride* pDragUIOverride,
-    _Deref_out_ wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue)
+    mui::DragDrop::IDragInfo* pDragInfo,
+    mui::DragDrop::IDragUIOverride* pDragUIOverride,
+    wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -148,8 +148,8 @@ Cleanup:
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
 DropOperationTarget::LeaveAsync(
-    _In_ mui::DragDrop::IDragInfo* pDragInfo,
-    _Outptr_ wf::IAsyncAction** ppReturnValue)
+    mui::DragDrop::IDragInfo* pDragInfo,
+    wf::IAsyncAction** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -171,8 +171,8 @@ Cleanup:
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
 DropOperationTarget::DropAsync(
-    _In_ mui::DragDrop::IDragInfo* pDragInfo,
-    _Outptr_ wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue)
+    mui::DragDrop::IDragInfo* pDragInfo,
+    wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue)
 {
     HRESULT hr = S_OK;
 
@@ -253,7 +253,7 @@ HRESULT DropOperationTarget::RaiseDragDropEventActionAsync(
     return S_OK;
 }
 
-HRESULT DropOperationTarget::ProcessDragDropEventAction(
+_Check_return_ HRESULT DropOperationTarget::ProcessDragDropEventAction(
     _In_ DragDropMessageType type,
     _In_ mui::DragDrop::IDragInfo* pDragInfo,
     _In_opt_ RaiseDragDropEventAsyncOperation* pRaiseDragDropEventAsyncOperation

@@ -1666,7 +1666,7 @@ Cleanup:
         return S_OK;
     }
 
-    _Check_return_ HRESULT SlideNavigationTransitionInfo::get_Effect(_Out_ SlideNavigationTransitionEffect* value)
+    IFACEMETHODIMP SlideNavigationTransitionInfo::get_Effect(_Out_ SlideNavigationTransitionEffect* value)
     {
         wrl::ComPtr<xaml::IDependencyProperty> dependencyProperty;
         wrl::ComPtr<xaml_animation::ISlideNavigationTransitionInfoStatics> statics;
@@ -1684,7 +1684,7 @@ Cleanup:
         return S_OK;
     }
 
-    _Check_return_ HRESULT SlideNavigationTransitionInfo::put_Effect(_In_ SlideNavigationTransitionEffect value)
+    IFACEMETHODIMP SlideNavigationTransitionInfo::put_Effect(_In_ SlideNavigationTransitionEffect value)
     {
         wrl::ComPtr<xaml::IDependencyProperty> dependencyProperty;
         wrl::ComPtr<xaml_animation::ISlideNavigationTransitionInfoStatics> statics;
@@ -2708,7 +2708,7 @@ Cleanup:
     _Check_return_
     HRESULT
     ContinuumNavigationTransitionInfoFactory::GetEntranceElements(
-        _Outptr_ std::vector<wrl::WeakRef>* elements)
+        _Out_ std::vector<wrl::WeakRef>* elements)
     {
         ARG_VALIDRETURNPOINTER(elements);
 
@@ -3450,7 +3450,7 @@ Cleanup:
 
     _Check_return_ HRESULT
     EntranceNavigationTransitionInfoFactory::GetTargetElements(
-        _Outptr_ std::vector<wrl::WeakRef>* elements)
+        _Out_ std::vector<wrl::WeakRef>* elements)
     {
         ARG_VALIDRETURNPOINTER(elements);
         *elements = s_spTargetElements;

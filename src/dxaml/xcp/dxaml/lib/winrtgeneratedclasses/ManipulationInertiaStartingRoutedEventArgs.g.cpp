@@ -142,7 +142,7 @@ IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::get_Handled
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ManipulationInertiaStartingRoutedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::CleanUpVirtualizedItemEventArgs::get_Cancel(_Out_ BOOLE
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CleanUpVirtualizedItemEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CleanUpVirtualizedItemEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_Accent(_Out_ ABI::Windows::F
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_Accent, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_Accent(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_Accent(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_Accent, pValue));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_AltHigh(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltHigh, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltHigh(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltHigh(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltHigh, pValue));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_AltLow(_Out_ ABI::Windows::F
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltLow, pValue));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_AltMedium(_Out_ ABI::Windows
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltMedium, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltMedium(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltMedium(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltMedium, pValue));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_AltMediumHigh(_Out_ ABI::Win
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltMediumHigh, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltMediumHigh(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltMediumHigh(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltMediumHigh, pValue));
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_AltMediumLow(_Out_ ABI::Wind
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltMediumLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltMediumLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_AltMediumLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_AltMediumLow, pValue));
@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_BaseHigh(_Out_ ABI::Windows:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseHigh, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseHigh(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseHigh(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseHigh, pValue));
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_BaseLow(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseLow, pValue));
@@ -117,7 +117,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_BaseMedium(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseMedium, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseMedium(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseMedium(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseMedium, pValue));
@@ -126,7 +126,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_BaseMediumHigh(_Out_ ABI::Wi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseMediumHigh, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseMediumHigh(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseMediumHigh(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseMediumHigh, pValue));
@@ -135,7 +135,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_BaseMediumLow(_Out_ ABI::Win
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseMediumLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseMediumLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_BaseMediumLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_BaseMediumLow, pValue));
@@ -144,7 +144,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeAltLow(_Out_ ABI::Wind
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeAltLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeAltLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeAltLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeAltLow, pValue));
@@ -153,7 +153,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeBlackHigh(_Out_ ABI::W
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeBlackHigh, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeBlackHigh(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeBlackHigh(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeBlackHigh, pValue));
@@ -162,7 +162,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeBlackLow(_Out_ ABI::Wi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeBlackLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeBlackLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeBlackLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeBlackLow, pValue));
@@ -171,7 +171,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeBlackMedium(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeBlackMedium, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeBlackMedium(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeBlackMedium(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeBlackMedium, pValue));
@@ -180,7 +180,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeBlackMediumLow(_Out_ A
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeBlackMediumLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeBlackMediumLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeBlackMediumLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeBlackMediumLow, pValue));
@@ -189,7 +189,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeDisabledHigh(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeDisabledHigh, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeDisabledHigh(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeDisabledHigh(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeDisabledHigh, pValue));
@@ -198,7 +198,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeDisabledLow(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeDisabledLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeDisabledLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeDisabledLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeDisabledLow, pValue));
@@ -207,7 +207,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeGray(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeGray, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeGray(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeGray(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeGray, pValue));
@@ -216,7 +216,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeHigh(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeHigh, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeHigh(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeHigh(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeHigh, pValue));
@@ -225,7 +225,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeLow(_Out_ ABI::Windows
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeLow, pValue));
@@ -234,7 +234,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeMedium(_Out_ ABI::Wind
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeMedium, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeMedium(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeMedium(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeMedium, pValue));
@@ -243,7 +243,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeMediumLow(_Out_ ABI::W
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeMediumLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeMediumLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeMediumLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeMediumLow, pValue));
@@ -252,7 +252,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ChromeWhite(_Out_ ABI::Windo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeWhite, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeWhite(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ChromeWhite(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ChromeWhite, pValue));
@@ -261,7 +261,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ErrorText(_Out_ ABI::Windows
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ErrorText, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ErrorText(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ErrorText(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ErrorText, pValue));
@@ -270,7 +270,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ListLow(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ListLow, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ListLow(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ListLow(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ListLow, pValue));
@@ -279,7 +279,7 @@ IFACEMETHODIMP DirectUI::ColorPaletteResources::get_ListMedium(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ListMedium, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ListMedium(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorPaletteResources::put_ListMedium(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorPaletteResources_ListMedium, pValue));

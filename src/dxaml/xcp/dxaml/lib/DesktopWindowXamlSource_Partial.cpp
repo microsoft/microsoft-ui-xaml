@@ -691,7 +691,7 @@ _Check_return_ HRESULT DesktopWindowXamlSource::get_ShouldConstrainPopupsToWorkA
     return S_OK;
 }
 
-_Check_return_ HRESULT DesktopWindowXamlSource::put_ShouldConstrainPopupsToWorkAreaImpl(_In_opt_ boolean value)
+_Check_return_ HRESULT DesktopWindowXamlSource::put_ShouldConstrainPopupsToWorkAreaImpl(_In_ boolean value)
 {
     // Note: XamlIslandRoot won't have a ContentRoot (and VisualTree) if it's closing. No-op this case.
     auto coreXamlIsland = static_cast<CXamlIslandRoot*>(m_spXamlIsland.Cast<XamlIslandRoot>()->GetHandle());

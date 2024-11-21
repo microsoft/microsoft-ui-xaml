@@ -82,7 +82,7 @@ protected:
 class DManipDataWinRT : public DManipDataBase
 {
 public:
-    bool HasSharedManipulationTransform(_In_ bool targetsClip) override;
+    bool HasSharedManipulationTransform(bool targetsClip) override;
     _Check_return_ HRESULT SetContentOffsets(_In_ float contentOffsetX, _In_ float contentOffsetY) override;
     _Check_return_ HRESULT SetSharedContentTransforms(
         _In_opt_ IUnknown* sharedPrimaryContentTransform,

@@ -15,7 +15,7 @@
 #include "FlyoutBase.g.h"
 #include <FlyoutBase.h>
 #include "ComPtr.h"
-
+#include "Popup.g.h"
 #include "TransitionCollection.g.h"
 #include "FlyoutMetadata.h"
 
@@ -304,6 +304,8 @@ namespace DirectUI
         _Check_return_ HRESULT UpdateStateToShowMode(xaml_primitives::FlyoutShowMode showMode);
 
         _Check_return_ HRESULT GetEffectivePlacement(_Out_ xaml_primitives::FlyoutPlacementMode* effectivePlacement);
+
+        _Check_return_ HRESULT HasComboBoxLightDismiss(_In_ CPopup* popup, _Out_ bool* hasComboBoxLightDismiss);
 
     private:
         static const xaml_primitives::FlyoutPlacementMode g_defaultPlacementMode;

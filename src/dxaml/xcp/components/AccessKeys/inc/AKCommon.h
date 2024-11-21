@@ -43,9 +43,9 @@ namespace AccessKeys
         return std::move(accessKey);
     }
 
-    inline bool IsLeftAltKey(_In_ const InputMessage* const inputMessage)
+    inline bool IsAltKey(_In_ const InputMessage* const inputMessage)
     {
-        return inputMessage->m_platformKeyCode == wsy::VirtualKey::VirtualKey_Menu /*e.g. Alt key*/ && !inputMessage->m_physicalKeyStatus.m_bIsExtendedKey;
+        return inputMessage->m_platformKeyCode == wsy::VirtualKey::VirtualKey_Menu /*e.g. Alt key*/;
     }
 
     inline bool IsMenuKeyDown(_In_ const InputMessage* const inputMessage)

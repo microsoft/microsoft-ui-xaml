@@ -6770,7 +6770,7 @@ MediaTransportControls::add_ThumbnailRequested(
 }
 
 IFACEMETHODIMP
-MediaTransportControls::remove_ThumbnailRequested(_In_ EventRegistrationToken tToken)
+MediaTransportControls::remove_ThumbnailRequested(EventRegistrationToken tToken)
 {
     ThumbnailRequestedEventSourceType* pEventSource = nullptr;
 

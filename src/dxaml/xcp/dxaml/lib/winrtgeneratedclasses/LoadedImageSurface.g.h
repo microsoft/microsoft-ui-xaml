@@ -53,16 +53,16 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DecodedPhysicalSize)(_Out_ ABI::Windows::Foundation::Size* pValue) override;
-        _Check_return_ HRESULT put_DecodedPhysicalSize(_In_ ABI::Windows::Foundation::Size value);
+        _Check_return_ HRESULT put_DecodedPhysicalSize(ABI::Windows::Foundation::Size value);
         IFACEMETHOD(get_DecodedSize)(_Out_ ABI::Windows::Foundation::Size* pValue) override;
-        _Check_return_ HRESULT put_DecodedSize(_In_ ABI::Windows::Foundation::Size value);
+        _Check_return_ HRESULT put_DecodedSize(ABI::Windows::Foundation::Size value);
         IFACEMETHOD(get_NaturalSize)(_Out_ ABI::Windows::Foundation::Size* pValue) override;
-        _Check_return_ HRESULT put_NaturalSize(_In_ ABI::Windows::Foundation::Size value);
+        _Check_return_ HRESULT put_NaturalSize(ABI::Windows::Foundation::Size value);
 
         // Events.
         _Check_return_ HRESULT GetLoadCompletedEventSourceNoRef(_Outptr_ LoadCompletedEventSourceType** ppEventSource);
         IFACEMETHOD(add_LoadCompleted)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LoadedImageSurface*, ABI::Microsoft::UI::Xaml::Media::LoadedImageSourceLoadCompletedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_LoadCompleted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_LoadCompleted)(EventRegistrationToken token) override;
 
         // Methods.
 
@@ -107,9 +107,9 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(StartLoadFromUriWithSize)(_In_ ABI::Windows::Foundation::IUriRuntimeClass* pUri, _In_ ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue) override;
+        IFACEMETHOD(StartLoadFromUriWithSize)(_In_ ABI::Windows::Foundation::IUriRuntimeClass* pUri, ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue) override;
         IFACEMETHOD(StartLoadFromUri)(_In_ ABI::Windows::Foundation::IUriRuntimeClass* pUri, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue) override;
-        IFACEMETHOD(StartLoadFromStreamWithSize)(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStream, _In_ ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue) override;
+        IFACEMETHOD(StartLoadFromStreamWithSize)(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStream, ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue) override;
         IFACEMETHOD(StartLoadFromStream)(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStream, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue) override;
 
         // Static events.
@@ -128,9 +128,9 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT StartLoadFromUriWithSizeImpl(_In_ ABI::Windows::Foundation::IUriRuntimeClass* pUri, _In_ ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue); 
+         _Check_return_ HRESULT StartLoadFromUriWithSizeImpl(_In_ ABI::Windows::Foundation::IUriRuntimeClass* pUri, ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue); 
          _Check_return_ HRESULT StartLoadFromUriImpl(_In_ ABI::Windows::Foundation::IUriRuntimeClass* pUri, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue); 
-         _Check_return_ HRESULT StartLoadFromStreamWithSizeImpl(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStream, _In_ ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue); 
+         _Check_return_ HRESULT StartLoadFromStreamWithSizeImpl(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStream, ABI::Windows::Foundation::Size desiredMaxSize, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue); 
          _Check_return_ HRESULT StartLoadFromStreamImpl(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStream, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILoadedImageSurface** ppReturnValue); 
     };
 }

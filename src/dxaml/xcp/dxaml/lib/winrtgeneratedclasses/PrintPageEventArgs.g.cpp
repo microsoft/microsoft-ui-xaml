@@ -67,7 +67,7 @@ _Check_return_ HRESULT DirectUI::PrintPageEventArgs::get_HasMorePages(_Out_ BOOL
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::PrintPageEventArgs::put_HasMorePages(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::PrintPageEventArgs::put_HasMorePages(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

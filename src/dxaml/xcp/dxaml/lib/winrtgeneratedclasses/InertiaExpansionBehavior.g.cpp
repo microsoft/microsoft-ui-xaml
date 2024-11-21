@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::InertiaExpansionBehavior::get_DesiredDeceleration(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InertiaExpansionBehavior_DesiredDeceleration, pValue));
 }
-IFACEMETHODIMP DirectUI::InertiaExpansionBehavior::put_DesiredDeceleration(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::InertiaExpansionBehavior::put_DesiredDeceleration(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InertiaExpansionBehavior_DesiredDeceleration, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::InertiaExpansionBehavior::get_DesiredExpansion(_Out_ DO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InertiaExpansionBehavior_DesiredExpansion, pValue));
 }
-IFACEMETHODIMP DirectUI::InertiaExpansionBehavior::put_DesiredExpansion(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::InertiaExpansionBehavior::put_DesiredExpansion(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InertiaExpansionBehavior_DesiredExpansion, value));
