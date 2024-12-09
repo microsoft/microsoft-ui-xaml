@@ -310,7 +310,7 @@ Represents the Footer property of the `TitleBar` control which can be populated 
 This is typically used to populate controls such as `PersonPicture` and the "More" `AppBarButton`. The default is `null`.
 
 ### Remarks
-The content property of `Content` can only be set once. Elements are right aligned by default.
+The content property of `Footer` can only be set once. Elements are right aligned by default.
 
 
 ## TitleBar.IsBackButtonVisible property
