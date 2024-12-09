@@ -21,11 +21,11 @@ to encapsulate the most common design scenarios and streamline this process.
 
 # Design considerations
 
-## AppWindow TitleBar (IXP) vs. WinUI TitleBar
+## AppWindow TitleBar versus WinUI TitleBar
 
 ![Basic TitleBar](images/titlebar-basic.png)
 
-### AppWindow.TitleBar (IXP)
+### AppWindow.TitleBar
 The AppWindow TitleBar is the default title bar, and downlevels to Win32.
 
 AppWindow drawn title bar covers the basic functionalities:
@@ -148,7 +148,7 @@ _The Default LayoutUpdated event fires for every little (non-relevant) events._
 
 # Functional spec link
 
-[Functional Spec](images/titleBar-functional-spec.md)
+[Functional Spec](titleBar-functional-spec.md)
 
 # Architectural overview
 

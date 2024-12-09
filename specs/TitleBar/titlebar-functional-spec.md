@@ -44,16 +44,16 @@ A title bar is a core component of a Windows app, and the shell version of the t
 
 Use the WinUI TitleBar when you want further customizations such as subtitles, Mica theming, and integrations with WinUI Controls.
 
-_Note: WinUI TitleBar does not handle Caption Buttons - it simply allocates space on the right side. 
+_Note: WinUI TitleBar does not handle Caption Buttons - it simply allocates space where the caption buttons appear, depending on RTL or LTR settings. 
 Caption Buttons and its customizations are handled by the AppWindow TitleBar._
 
 # Sample scenarios
 
-## **Scenario: Default TitleBar**
+## Scenario: Default TitleBar
 ![alt text](images/default-titlebar.png)
 
-XAML
-```xaml
+**XAML**
+```xml
 <Window
     x:Class="App1.MainWindow"
     xmlns:local="using:App1"
@@ -94,12 +94,12 @@ _Note: TitleBar currently needs to be set explicitly in the grid.row and referen
 _by Window in codebehind as shown above._
 _Improvements to Window are being considered to avoid this extra grid layout and codebehind._
 
-## **Scenario: TitleBar with WinUI Controls Integration**
+## Scenario: TitleBar with WinUI Controls Integration
 TitleBar with common WinUI Controls: `AutoSuggestBox`, `PersonPicture`, `AppBarButton`.
 
 ![alt text](images/controls-titlebar.png)
 
-XAML
+**XAML**
 ```xml
 <TitleBar 
     x:Name="ControlsTitleBar" 
@@ -123,7 +123,7 @@ XAML
 </TitleBar>
 ```
 
-## **Scenario: TitleBar with NavigationView L-Pattern Integration**
+## Scenario: TitleBar with NavigationView L-Pattern Integration
 
 <!-- TODO: Update image to have NavPane Button inline with TitleBar -->
 Titlebar and NavigationView in an L-Pattern.
@@ -133,7 +133,7 @@ TitleBar and NavigationView is in Minimal DisplayMode.
 Note that TitleBar IconSource is collapsed in minimal mode.  
 ![alt text](images/titlebar-navview-minimal.png)
 
-XAML
+**XAML**
 ```xml
 <Grid>
     <Grid.RowDefinitions>
@@ -172,7 +172,6 @@ XAML
         </NavigationView.Menuitems>
     </NavigationView>
 </Grid>
-
 ```
 
 _Note: Should the NavView resources be the default to avoid needing the extra code?_
@@ -465,7 +464,6 @@ unsealed runtimeclass TitleBarAutomationPeer : Microsoft.UI.Xaml.Automation.Peer
 {
     TitleBarAutomationPeer(MEU_XC_NAMESPACE.TitleBar owner);
 }
-
 ```
 
 # Figma link
