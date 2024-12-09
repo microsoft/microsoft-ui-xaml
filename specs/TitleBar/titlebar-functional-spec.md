@@ -251,7 +251,7 @@ Represents the title string to be displayed on the `TitleBar`. The default is `n
 If TitleBar is in minimal display mode, Title textbox will automatically be collapsed.
 If Title string is empty, Title textbox will be collapsed. 
 
-## TitleBar.Subtitle event
+## TitleBar.Subtitle property
 
 Gets or sets the Subtitle text to be displayed on the TitleBar. This is generally used for versioning, such as "Preview", "Beta", etc.
 
