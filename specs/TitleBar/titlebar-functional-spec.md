@@ -11,7 +11,7 @@ For more info on the public api review process: https://aka.ms/winappsdk/api-spe
 
 TitleBar Functional Spec
 ===
-*Control category: Basic Input*
+_Control category: Basic Input_
 
 # Background
 Motivations for the TitleBar control include:
