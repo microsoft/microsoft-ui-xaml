@@ -16,7 +16,7 @@ The WinUI TitleBar is a title bar control that allows easy additions of WinUI co
 It is to be used in lieu of the Shell title bar for when developers want more than the basic shell title bar functionalities. 
 
 Current implementations of a custom titlebar involves the developer to fully create a user component from scratch. A notable painpoint in this process is 
-to manually calculate drag regions for when there are elements in the title bar (ie. AutoSuggestBox - refer to WinUI-Gallery sample). WinUI titleBar is meant 
+to manually calculate drag regions for when there are interactive elements in the title bar (ie. AutoSuggestBox - refer to WinUI-Gallery sample). WinUI titleBar is meant 
 to encapsulate the most common design scenarios and streamline this process. 
 
 # Design considerations
