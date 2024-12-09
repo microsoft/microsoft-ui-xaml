@@ -135,7 +135,7 @@ Eg. Header, body, and footer content areas.
 `m_interactableElementsList`
 - A list of interactable elements is tracked in the lifetime of the TitleBar.
 - The list is updated every time the specified elements' visibility changes.
-     - eg. `BackButton`, `PaleToggleButton`, `Header`, `Content`, `Footer`.
+     - eg. `BackButton`, `PaneToggleButton`, `Header`, `Content`, `Footer`.
 
 `UpdateDragRegion()`
 - Called everytime `SizeChanged` and `LayoutUpdated` events are fired.
