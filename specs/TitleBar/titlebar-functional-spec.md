@@ -53,7 +53,7 @@ Caption Buttons and its customizations are handled by the AppWindow TitleBar._
 ![alt text](images/default-titlebar.png)
 
 XAML
-```xml
+```xaml
 <Window
     x:Class="App1.MainWindow"
     xmlns:local="using:App1"
