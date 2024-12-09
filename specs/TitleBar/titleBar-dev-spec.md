@@ -67,7 +67,7 @@ Developers will 'opt-in' to the WinUI TitleBar for updated styling and extended 
 - Punch hole through Header / Content / Footer for drag regions. Calculations needs to be updated on SizeChanged.
      - Regions with hole punched through are non-draggable.
 
-- Currently TitleBar treats all custom content as interactable and punches a whole through the drag region. 
+- Currently TitleBar treats all custom content as interactable and punches a hole through the drag region. 
 How can we allow such customizations? 
      - If we add an `IsInteractive` attached property, that means TitleBar will have to walk through the 
      entire visual tree to calculate the rects every time. 
