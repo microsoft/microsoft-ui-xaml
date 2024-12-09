@@ -138,7 +138,7 @@ Eg. Header, body, and footer content areas.
      - eg. `BackButton`, `PaneToggleButton`, `Header`, `Content`, `Footer`.
 
 `UpdateDragRegion()`
-- Called everytime `SizeChanged` and `LayoutUpdated` events are fired.
+- Called every time `SizeChanged` and `LayoutUpdated` events are fired.
 - Checks if `m_interactableElementsList` has children, and if so gets the rects of each element.
 - Accesses the `InputNonClientPointerSource` at the IXP layer and set rects as pass through regions.
 
