@@ -75,7 +75,7 @@ How can we allow such customizations?
      - Reference Teams forward / backward button. It is draggable when disabled.
 
 - Interactive content in TitleBar must also be capable of keyboard navigation. 
-They should be treated as a normal elements in the app's visual tree.
+They should be treated as normal elements in the app's visual tree.
 
 - CoreApplicationViewTitleBar.LayoutMetricsChanged and IsVisibleChanged events from the UWP world is 
 missing in WinUI3:
