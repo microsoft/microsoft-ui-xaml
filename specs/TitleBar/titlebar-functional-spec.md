@@ -115,12 +115,12 @@ TitleBar with common WinUI Controls: `AutoSuggestBox`, `PersonPicture`, `AppBarB
     <TitleBar.Content>
         <AutoSuggestBox PlaceholderText="Search" QueryIcon="Find" />
     <TitleBar.Content>
-    <TitleBar.Footer>
+    <TitleBar.ContentAfter>
         <StackPanel Orientation="Horizontal">
             <AppBarButton Icon="More" Label="MoreSymbolIcon" />
             <PersonPicture DisplayName="Jane Doe" />
         </StackPanel>
-    </TitleBar.Footer>
+    </TitleBar.ContentAfter>
 </TitleBar>
 ```
 
@@ -218,22 +218,22 @@ Namespace: Microsoft.UI.Xaml.Controls
 public class TitleBar : Control
 ```
 
-## TitleBar.Header property
+## TitleBar.ContentBefore property
 
-Gets and sets elements within the TitleBar's Header column.
+Gets and sets elements within the TitleBar's ContentBefore column.
 
 ```cs
-public UIElement Header { get; set; }
+public UIElement ContentBefore { get; set; }
 ```
 
 ### Property Value
-Represents the Header content property of the `TitleBar` control which can be populated in both XAML markup and code. The default is `null`.
+Represents the ContentBefore content property of the `TitleBar` control which can be populated in both XAML markup and code. The default is `null`.
 
 ### Remarks
-The content property of `Header` can only be set once. Elements are left aligned by default.
+The content property of `ContentBefore` can only be set once. Elements are left aligned by default.
 
-If `IsBackButtonVisible` or `IsPaneToggleButtonVisisble` is true, custom content set in the `Header` property 
-will automatically be appended to the Header column in TitleBar layout.
+If `IsBackButtonVisible` or `IsPaneToggleButtonVisisble` is true, custom content set in the `ContentBefore` property 
+will automatically be appended to the ContentBefore column in TitleBar layout.
 
 If the property is not `null`, TitleBar automatically configures its height to `TitleBarExpandedHeight` in codebehind. See ThemeResources section for further details.
 
@@ -299,21 +299,21 @@ The content property of `Content` can only be set once. Elements are center alig
 
 If the property is not `null`, TitleBar automatically configures its height to `TitleBarExpandedHeight` in codebehind. See ThemeResources section for further details.
 
-## TitleBar.Footer property
+## TitleBar.ContentAfter property
 
-Gets and sets elements within the TitleBar's Footer column.
+Gets and sets elements within the TitleBar's ContentAfter column.
 
 ```cs
-public UIElement Footer { get; set; }
+public UIElement ContentAfter { get; set; }
 ```
 
 ### Property Value
-Represents the Footer property of the `TitleBar` control which can be populated in both XAML markup and code. 
+Represents the ContentAfter property of the `TitleBar` control which can be populated in both XAML markup and code. 
 
 This is typically used to populate controls such as `PersonPicture` and the "More" `AppBarButton`. The default is `null`.
 
 ### Remarks
-The content property of `Footer` can only be set once. Elements are right aligned by default.
+The content property of `ContentAfter` can only be set once. Elements are right aligned by default.
 
 If the property is not `null`, TitleBar automatically configures its height to `TitleBarExpandedHeight` in codebehind. See ThemeResources section for further details.
 
@@ -411,7 +411,7 @@ unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
     TitleBar();
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    UIElement Header{ get; set; };
+    UIElement ContentBefore{ get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Title{ get; set; };
@@ -426,7 +426,7 @@ unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
     UIElement Content{ get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    UIElement Footer{ get; set; };
+    UIElement ContentAfter{ get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsBackButtonVisible{ get; set; };
@@ -441,12 +441,12 @@ unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<TitleBar, Object> BackRequested;
     event Windows.Foundation.TypedEventHandler<TitleBar, Object> PaneToggleRequested;
 
-    static Microsoft.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ContentBeforeProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty TitleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty SubtitleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty ContentProperty{ get; };
-    static Microsoft.UI.Xaml.DependencyProperty FooterProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ContentAfterProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IsBackButtonVisibleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IsBackButtonEnabledProperty{ get; };
 
@@ -487,7 +487,7 @@ TitleBar currently overwrites the resources on theme changes in codebehind. This
 | `TitleBarExpandedHeight` | Double | 48px | Defines the expanded height for TitleBar. |
 
 There is no TitleBar.Height property. The height for TitleBar is configured in codebehind depending on whether there 
-is content present in the `Header`, `Content`, and `Footer` content areas. TitleBar's height is set to `TitleBarCompactHeight` if no elements are present in the mentioned content areas, and `TitleBarExpandedHeight` if 
+is content present in the `ContentBefore`, `Content`, and `ContentAfter` content areas. TitleBar's height is set to `TitleBarCompactHeight` if no elements are present in the mentioned content areas, and `TitleBarExpandedHeight` if 
 elements are present. As the content areas are empty by default, the default height for TitleBar is 
 `TitleBarCompactHeight`.
 
@@ -500,10 +500,3 @@ elements are present. As the content areas are empty by default, the default hei
 Reference:
 - Tammy's TitleBar [WIP](https://dev.azure.com/microsoft/WinUI/_git/microsoft-ui-xaml-lift/?path=%2Fcontrols%2Fdev%2FTitleBar%2FTitleBar.idl&version=GBmain&_a=contents)
 - Niels Laute's TitleBar in CommunityToolkit: [PR](https://github.com/CommunityToolkit/Labs-Windows/pull/459/files), [Spec](https://github.com/CommunityToolkit/Labs-Windows/discussions/454)
-
-## Header, Content, Footer API Naming
-Alternate naming considerations for `Header`, `Content`, `Footer`:
-- Header and Footer aligns with TabView.TabStripHeader and TabView.TabStripFooter
-- Start and End (e.g. [Windows.UI.Xaml.TextAlignment](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml?view=winrt-26100))
-- Before and After (e.g. CSS, [Fluent Web UI](https://react.fluentui.dev/?path=/docs/components-input--docs#content-before-after))
-- Leading and Trailing (e.g. [Apple SwiftUI Toolbar](https://developer.apple.com/documentation/swiftui/toolbaritemplacement/topbarleading))

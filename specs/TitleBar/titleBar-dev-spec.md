@@ -173,6 +173,13 @@ TitleBar must handle mouse, touch, and keyboard scenarios.
 
 # Appendix
 
+## Header, Content, Footer API Naming
+Alternate naming considerations for `Header`, `Content`, `Footer`:
+- Header and Footer aligns with TabView.TabStripHeader and TabView.TabStripFooter
+- Start and End (e.g. [Windows.UI.Xaml.TextAlignment](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml?view=winrt-26100))
+- Before and After (e.g. CSS, [Fluent Web UI](https://react.fluentui.dev/?path=/docs/components-input--docs#content-before-after))
+- Leading and Trailing (e.g. [Apple SwiftUI Toolbar](https://developer.apple.com/documentation/swiftui/toolbaritemplacement/topbarleading))
+
 ## Out of Scope
 
 ### Tabbed TitleBar Scenarios
