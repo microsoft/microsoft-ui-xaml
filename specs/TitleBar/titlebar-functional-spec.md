@@ -93,6 +93,7 @@ public MainWindow()
 _Note: TitleBar currently needs to be set explicitly in the grid.row and referenced_
 _by Window in codebehind as shown above._
 _Improvements to Window are being considered to avoid this extra grid layout and codebehind._
+_Please see Appendix of [Functional Spec](titleBar-functional-spec.md)._
 
 ## Scenario: TitleBar with WinUI Controls Integration
 TitleBar with common WinUI Controls: `AutoSuggestBox`, `PersonPicture`, `AppBarButton`.
@@ -489,8 +490,6 @@ There is no TitleBar.Height property. The height for TitleBar is configured in c
 is content present in the `Header`, `Content`, and `Footer` content areas. TitleBar's height is set to `TitleBarCompactHeight` if no elements are present in the mentioned content areas, and `TitleBarExpandedHeight` if 
 elements are present. As the content areas are empty by default, the default height for TitleBar is 
 `TitleBarCompactHeight`.
-
-
 
 # Figma link
 

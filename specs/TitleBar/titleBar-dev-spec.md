@@ -77,6 +77,10 @@ How can we allow such customizations?
 - Interactive content in TitleBar must also be capable of keyboard navigation. 
 They should be treated as normal elements in the app's visual tree.
 
+- TitleBar should meet [Windows app design guidelines](https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design#icon):
+     - A single-click/tap on the icon should show system window menu.
+     - A double-click/tap should close the window.
+
 - CoreApplicationViewTitleBar.LayoutMetricsChanged and IsVisibleChanged events from the UWP world is 
 missing in WinUI3:
      - LayoutMetricsChanged: Update Left and Right Inset for on DPI changes. 
@@ -169,13 +173,13 @@ TitleBar must handle mouse, touch, and keyboard scenarios.
 
 # Appendix
 
-## Non-considerations
+## Out of Scope
 
+### Tabbed TitleBar Scenarios
 TitleBar is not needed for TabView scenarios - it may be considered as a separate `TabbedTitleBar` control. 
 
 Below scenarios demonstrate that when Tabview occupies the entire width when extending into title bar. 
 Header icons, buttons, and drag regions can be handled with TabView Header, and FooterArea.
-
 
 ![Terminal TitleBar](images/1p-terminal-titlebar.png)
 ![NotePad TitleBar with TabView](images/1p-notepad-titlebar.png)
@@ -185,3 +189,21 @@ Header icons, buttons, and drag regions can be handled with TabView Header, and 
 - TabView needs a property to make space for icon or other elements 
 - TabView also needs to make space for drag region on right.
      - FileExplorer currently has their own implement by setting a drag region and CaptionControl placeholder in TabView.FooterArea
+
+### AppWindow.TitleBar
+Improvements to Window class to allow below syntax. This will greatly cut down the amount of code needed to 
+configure WinUI TitleBar.
+
+```xml
+<Window>
+    <Window.TitleBar>
+         <TitleBar />
+    </Window.TitleBar>
+</Window>
+```
+Ideally, this should also expose TitleBar to below properties and methods:
+- Window.Title and AppWindow.Title
+- AppWindow.SetIcon()
+
+This is out of scope for WinUI TitleBar hence will not be included in this spec.
+
