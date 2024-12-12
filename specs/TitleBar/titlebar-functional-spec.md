@@ -234,6 +234,8 @@ The content property of `Header` can only be set once. Elements are left aligned
 If `IsBackButtonVisible` or `IsPaneToggleButtonVisisble` is true, custom content set in the `Header` property 
 will automatically be appended to the Header column in TitleBar layout.
 
+If the property is not `null`, TitleBar automatically configures its height to `TitleBarExpandedHeight` in codebehind. See ThemeResources section for further details.
+
 
 ## TitleBar.Title property
 
@@ -294,6 +296,7 @@ This is typically used to populate controls such as `AutoSuggestBox`. The defaul
 ### Remarks
 The content property of `Content` can only be set once. Elements are center aligned by default.
 
+If the property is not `null`, TitleBar automatically configures its height to `TitleBarExpandedHeight` in codebehind. See ThemeResources section for further details.
 
 ## TitleBar.Footer property
 
@@ -311,6 +314,7 @@ This is typically used to populate controls such as `PersonPicture` and the "Mor
 ### Remarks
 The content property of `Footer` can only be set once. Elements are right aligned by default.
 
+If the property is not `null`, TitleBar automatically configures its height to `TitleBarExpandedHeight` in codebehind. See ThemeResources section for further details.
 
 ## TitleBar.IsBackButtonVisible property
 
@@ -384,13 +388,14 @@ This event is raised when internal PaneToggleButton raises a Click event.
 <!-- TODO -->
 
 ## TitleBarAutomationPeer Class
+<!-- TODO -->
 
 Exposes `TitleBar` types to Microsoft UI Automation.
 
 Namespace: Microsoft.UI.Xaml.Automation.Peers
 
 ```cs
-public class TitleBarAutomationPeer :  Microsoft.UI.Xaml.Automation.Peers.ItemContainerAutomationPeer
+public class TitleBarAutomationPeer :  Microsoft.UI.Xaml.Automation.Peers...
 ```
 
 TitleBarAutomationPeer implements ...
@@ -465,6 +470,27 @@ unsealed runtimeclass TitleBarAutomationPeer : Microsoft.UI.Xaml.Automation.Peer
     TitleBarAutomationPeer(MEU_XC_NAMESPACE.TitleBar owner);
 }
 ```
+
+# ThemeResources
+This section does not list all of the ThemeResources associated with TitleBar. Only ThemeResources of note that require highlight or further explanation.
+
+| Resource | Type  | Value |  Description |
+|--|--|--|--|
+| `TitleBarCaptionButton`* | Color | - | Defines color resources for the AppWindow caption buttons. |
+
+TitleBar currently overwrites the resources on theme changes in codebehind. This can be removed once the theme change feature is shipped for AppWindow.
+
+| Resource | Type  | Value |  Description |
+|--|--|--|--|
+| `TitleBarCompactHeight` | Double | 32px | Defines the compact / default height for TitleBar. |
+| `TitleBarExpandedHeight` | Double | 48px | Defines the expanded height for TitleBar. |
+
+There is no TitleBar.Height property. The height for TitleBar is configured in codebehind depending on whether there 
+is content present in the `Header`, `Content`, and `Footer` content areas. TitleBar's height is set to `TitleBarCompactHeight` if no elements are present in the mentioned content areas, and `TitleBarExpandedHeight` if 
+elements are present. As the content areas are empty by default, the default height for TitleBar is 
+`TitleBarCompactHeight`.
+
+
 
 # Figma link
 
