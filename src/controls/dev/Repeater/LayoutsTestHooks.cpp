@@ -14,7 +14,7 @@ winrt::IndexBasedLayoutOrientation LayoutsTestHooks::GetLayoutForcedIndexBasedLa
 {
     if (auto instance = layout.as<Layout>())
     {
-        return instance->GetForcedIndexBasedLayoutOrientation();
+        return instance->GetForcedIndexBasedLayoutOrientationDbg();
     }
 
     return winrt::IndexBasedLayoutOrientation::None;
@@ -27,7 +27,7 @@ void LayoutsTestHooks::SetLayoutForcedIndexBasedLayoutOrientation(
 {
     if (auto instance = layout.as<Layout>())
     {
-        instance->SetForcedIndexBasedLayoutOrientation(forcedIndexBasedLayoutOrientation);
+        instance->SetForcedIndexBasedLayoutOrientationDbg(forcedIndexBasedLayoutOrientation);
     }
 }
 
@@ -37,7 +37,7 @@ void LayoutsTestHooks::ResetLayoutForcedIndexBasedLayoutOrientation(
 {
     if (auto instance = layout.as<Layout>())
     {
-        instance->ResetForcedIndexBasedLayoutOrientation();
+        instance->ResetForcedIndexBasedLayoutOrientationDbg();
     }
 }
 
@@ -59,6 +59,53 @@ void LayoutsTestHooks::LayoutInvalidateMeasure(
     {
         instance->InvalidateMeasure();
     }
+}
+
+/* static */
+int LayoutsTestHooks::GetLayoutLogItemIndex(
+    winrt::IInspectable const& layout)
+{
+    if (auto instance = layout.as<Layout>())
+    {
+        return instance->LogItemIndexDbg();
+    }
+
+    return -1;
+}
+
+/* static */
+void LayoutsTestHooks::SetLayoutLogItemIndex(
+    winrt::IInspectable const& layout,
+    int logItemIndex)
+{
+    if (auto instance = layout.as<Layout>())
+    {
+        instance->LogItemIndexDbg(logItemIndex);
+    }
+}
+
+/* static */
+int LayoutsTestHooks::GetLayoutAnchorIndex(
+    winrt::IInspectable const& layout)
+{
+    if (auto instance = layout.as<Layout>())
+    {
+        return instance->LayoutAnchorIndexDbg();
+    }
+
+    return -1;
+}
+
+/* static */
+double LayoutsTestHooks::GetLayoutAnchorOffset(
+    winrt::IInspectable const& layout)
+{
+    if (auto instance = layout.as<Layout>())
+    {
+        return instance->LayoutAnchorOffsetDbg();
+    }
+
+    return -1.0;
 }
 
 /* static */
@@ -238,29 +285,6 @@ void LayoutsTestHooks::SetLinedFlowLayoutIsFastPathSupported(
 }
 
 /* static */
-int LayoutsTestHooks::GetLinedFlowLayoutLogItemIndex(
-    winrt::IInspectable const& linedFlowLayout)
-{
-    if (auto instance = linedFlowLayout.as<LinedFlowLayout>())
-    {
-        return instance->LogItemIndexDbg();
-    }
-
-    return -1;
-}
-
-/* static */
-void LayoutsTestHooks::SetLinedFlowLayoutLogItemIndex(
-    winrt::IInspectable const& linedFlowLayout,
-    int logItemIndex)
-{
-    if (auto instance = linedFlowLayout.as<LinedFlowLayout>())
-    {
-        instance->LogItemIndexDbg(logItemIndex);
-    }
-}
-
-/* static */
 int LayoutsTestHooks::GetLinedFlowLayoutLineIndex(
     winrt::IInspectable const& linedFlowLayout,
     int itemIndex)
@@ -290,6 +314,62 @@ void LayoutsTestHooks::UnlockLinedFlowLayoutItems(
     if (auto instance = linedFlowLayout.as<LinedFlowLayout>())
     {
         instance->UnlockItems();
+    }
+}
+
+/* static */
+winrt::event_token LayoutsTestHooks::LayoutAnchorIndexChanged(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value)
+{
+    EnsureHooks();
+
+    return s_testHooks->m_layoutAnchorIndexChangedEventSource.add(value);
+}
+
+/* static */
+void LayoutsTestHooks::LayoutAnchorIndexChanged(winrt::event_token const& token)
+{
+    EnsureHooks();
+
+    s_testHooks->m_layoutAnchorIndexChangedEventSource.remove(token);
+}
+
+/* static */
+void LayoutsTestHooks::NotifyLayoutAnchorIndexChanged(
+    winrt::IInspectable const& layout)
+{
+    EnsureHooks();
+
+    if (s_testHooks->m_layoutAnchorIndexChangedEventSource)
+    {
+        s_testHooks->m_layoutAnchorIndexChangedEventSource(layout, nullptr);
+    }
+}
+
+/* static */
+winrt::event_token LayoutsTestHooks::LayoutAnchorOffsetChanged(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value)
+{
+    EnsureHooks();
+
+    return s_testHooks->m_layoutAnchorOffsetChangedEventSource.add(value);
+}
+
+/* static */
+void LayoutsTestHooks::LayoutAnchorOffsetChanged(winrt::event_token const& token)
+{
+    EnsureHooks();
+
+    s_testHooks->m_layoutAnchorOffsetChangedEventSource.remove(token);
+}
+
+/* static */
+void LayoutsTestHooks::NotifyLayoutAnchorOffsetChanged(
+    winrt::IInspectable const& layout)
+{
+    EnsureHooks();
+
+    if (s_testHooks->m_layoutAnchorOffsetChangedEventSource)
+    {
+        s_testHooks->m_layoutAnchorOffsetChangedEventSource(layout, nullptr);
     }
 }
 

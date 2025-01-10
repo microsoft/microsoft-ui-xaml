@@ -3355,7 +3355,7 @@ CInputServices::InitializeDirectManipulationContainer(
     IPALDirectManipulationService* pNewDirectManipulationService = NULL;
     IPALDirectManipulationService* pDirectManipulationService = NULL;
 
-    ASSERT(CanDMContainerInitialize(pDMContainer));
+    ASSERT(CInputServices::CanDMContainerInitialize(pDMContainer));
 
     IFCPTR(pDMContainer);
 
@@ -3678,7 +3678,7 @@ CInputServices::InitializeDirectManipulationContainers()
         {
             // Only keep containers that are inactive or do not have a valid IslandInputSite.
             auto pDMContainer = elem.lock();
-            return pDMContainer && (!pDMContainer->IsActive() || !pDMContainer->CanDMContainerInitialize());
+            return pDMContainer && (!pDMContainer->IsActive() || !CInputServices::CanDMContainerInitialize(pDMContainer));
         });
 
         // Process all the remaining active containers

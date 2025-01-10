@@ -1023,7 +1023,7 @@ bool CPopup::HasPointerCapture() const
     return false;
 }
 
-// Create windowed popup's window, if it doesn't exit
+// Create windowed popup's window, if it doesn't exist
 _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCreated)
 {
     *windowCreated = false;
@@ -1055,6 +1055,14 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCr
         m_popupWindowBridge.Reset();
         m_desktopBridge.Reset();
         m_windowedPopupWindow = NULL;
+
+        // The UIA provider is also bound to the previous XamlIsland/ContentIsland, so we need to destroy it.
+        if (m_spUIAWindow)
+        {
+            m_spUIAWindow->UIADisconnectAllProviders();
+            m_spUIAWindow->Deinit();
+            m_spUIAWindow.reset();
+        }
 
         m_previousXamlIslandId = currentXamlIslandId;
     }
@@ -1304,9 +1312,9 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
 
     if (m_contentIsland)
     {
-        wrl::ComPtr<ixp::IContentIsland2> contentIsland2;
-        IFCFAILFAST(m_contentIsland.As(&contentIsland2));
-        contentIsland2->put_Root(nullptr);
+        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+        IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
+        contentIslandExperimental->put_Root(nullptr);
     }
 
     m_contentIslandRootVisual.Reset();
@@ -2195,9 +2203,9 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             visualChildren->InsertAtBottom(m_windowedPopupDebugVisual.Get());
         }
 
-        wrl::ComPtr<ixp::IContentIsland2> contentIsland2;
-        IFCFAILFAST(m_contentIsland.As(&contentIsland2));
-        contentIsland2->put_Root(m_contentIslandRootVisual.Get());
+        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+        IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
+        contentIslandExperimental->put_Root(m_contentIslandRootVisual.Get());
     }
 }
 

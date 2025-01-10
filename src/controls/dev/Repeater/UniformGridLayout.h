@@ -79,6 +79,13 @@ public:
         const winrt::VirtualizingLayoutContext& /*context*/) override {}
     void Algorithm_OnLayoutRoundFactorChanged(
         const winrt::VirtualizingLayoutContext& /*context*/) override {}
+
+#ifdef DBG
+    int Algorithm_GetFlowLayoutLogItemIndexDbg() override;
+    void Algorithm_SetFlowLayoutAnchorInfoDbg(
+        int index,
+        double offset) override;
+#endif // DBG
 #pragma endregion
 
     void OnPropertyChanged(

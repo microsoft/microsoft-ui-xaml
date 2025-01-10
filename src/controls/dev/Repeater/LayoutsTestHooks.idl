@@ -30,6 +30,9 @@ runtimeclass LayoutsTestHooksLinedFlowLayoutItemLockedEventArgs
 [default_interface]
 runtimeclass LayoutsTestHooks
 {
+    static event Windows.Foundation.TypedEventHandler<Object, Object> LayoutAnchorIndexChanged;
+    static event Windows.Foundation.TypedEventHandler<Object, Object> LayoutAnchorOffsetChanged;
+
     static event Windows.Foundation.TypedEventHandler<Object, Object> LinedFlowLayoutSnappedAverageItemsPerLineChanged;
     static event Windows.Foundation.TypedEventHandler<Object, LayoutsTestHooksLinedFlowLayoutInvalidatedEventArgs> LinedFlowLayoutInvalidated;
     static event Windows.Foundation.TypedEventHandler<Object, LayoutsTestHooksLinedFlowLayoutItemLockedEventArgs> LinedFlowLayoutItemLocked;
@@ -39,6 +42,12 @@ runtimeclass LayoutsTestHooks
     static void ResetLayoutForcedIndexBasedLayoutOrientation(Object layout);
 
     static void LayoutInvalidateMeasure(Object layout, Boolean relayout);
+
+    static Int32 GetLayoutLogItemIndex(Object layout);
+    static void SetLayoutLogItemIndex(Object layout, Int32 itemIndex);
+
+    static Int32 GetLayoutAnchorIndex(Object layout);
+    static Double GetLayoutAnchorOffset(Object layout);
 
     static Int32 GetLayoutFirstRealizedItemIndex(Object layout);
     static Int32 GetLayoutLastRealizedItemIndex(Object layout);
@@ -61,9 +70,6 @@ runtimeclass LayoutsTestHooks
 
     static Boolean GetLinedFlowLayoutIsFastPathSupported(Object linedFlowLayout);
     static void SetLinedFlowLayoutIsFastPathSupported(Object linedFlowLayout, Boolean isFastPathSupported);
-
-    static Int32 GetLinedFlowLayoutLogItemIndex(Object linedFlowLayout);
-    static void SetLinedFlowLayoutLogItemIndex(Object linedFlowLayout, Int32 itemIndex);
 
     static Int32 GetLinedFlowLayoutLineIndex(Object linedFlowLayout, Int32 itemIndex);
 

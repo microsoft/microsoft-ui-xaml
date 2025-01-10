@@ -8,10 +8,12 @@
 
     <Style x:Key="DefaultTitleBarStyle" TargetType="controls:TitleBar">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="Foreground" Value="{ThemeResource TitleBarForegroundBrush}" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TitleBar">
-                    <Grid x:Name="PART_LayoutRoot" Height="{ThemeResource TitleBarCompactHeight}" Background="Transparent">
+                    <Grid x:Name="PART_LayoutRoot" Height="{ThemeResource TitleBarCompactHeight}" Background="{TemplateBinding Background}">
                         <VisualStateManager.VisualStateGroups>                     
                             <VisualStateGroup x:Name="BackButtonGroup">
                                 <VisualState x:Name="BackButtonCollapsed" />
@@ -232,7 +234,7 @@
                             Grid.Column="6"
                             Text="{TemplateBinding Title}"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Foreground="{ThemeResource TitleBarForegroundBrush}"
+                            Foreground="{TemplateBinding Foreground}"
                             Margin="0,0,8,0"
                             TextTrimming="CharacterEllipsis"
                             TextWrapping="NoWrap"

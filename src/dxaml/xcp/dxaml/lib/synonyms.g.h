@@ -119,6 +119,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IWindowSizeChangedEventArgs IWindowSizeChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IWindowVisibilityChangedEventArgs IWindowVisibilityChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IXamlIsland IXamlIsland;
+    typedef ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi IXamlIslandFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IXamlResourceReferenceFailedEventArgs IXamlResourceReferenceFailedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot IXamlRoot;
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot2 IXamlRoot2;

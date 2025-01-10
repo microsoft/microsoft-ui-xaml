@@ -115,11 +115,11 @@ private:
     static constexpr std::wstring_view s_footerCollapsedVisualStateName{ L"FooterCollapsed"sv };
     static constexpr std::wstring_view s_footerDeactivatedVisualStateName{ L"FooterDeactivated"sv };
 
-    static constexpr std::wstring_view s_titleBarButtonForegroundColorName{ L"TitleBarButtonForegroundColor"sv };
-    static constexpr std::wstring_view s_titleBarButtonBackgroundColorName{ L"TitleBarButtonBackgroundColor"sv };
-    static constexpr std::wstring_view s_titleBarButtonHoverForegroundColorName{ L"TitleBarButtonHoverForegroundColor"sv };
-    static constexpr std::wstring_view s_titleBarButtonHoverBackgroundColorName{ L"TitleBarButtonHoverBackgroundColor"sv };
-    static constexpr std::wstring_view s_titleBarButtonPressedForegroundColorName{ L"TitleBarButtonPressedForegroundColor"sv };
-    static constexpr std::wstring_view s_titleBarButtonPressedBackgroundColorName{ L"TitleBarButtonPressedBackgroundColor"sv };
-    static constexpr std::wstring_view s_titleBarButtonInactiveForegroundColorName{ L"TitleBarButtonInactiveForegroundColor"sv };
+    static constexpr std::wstring_view s_titleBarCaptionButtonForegroundColorName{ L"TitleBarCaptionButtonForegroundColor"sv };
+    static constexpr std::wstring_view s_titleBarCaptionButtonBackgroundColorName{ L"TitleBarCaptionButtonBackgroundColor"sv };
+    static constexpr std::wstring_view s_titleBarCaptionButtonHoverForegroundColorName{ L"TitleBarCaptionButtonHoverForegroundColor"sv };
+    static constexpr std::wstring_view s_titleBarCaptionButtonHoverBackgroundColorName{ L"TitleBarCaptionButtonHoverBackgroundColor"sv };
+    static constexpr std::wstring_view s_titleBarCaptionButtonPressedForegroundColorName{ L"TitleBarCaptionButtonPressedForegroundColor"sv };
+    static constexpr std::wstring_view s_titleBarCaptionButtonPressedBackgroundColorName{ L"TitleBarCaptionButtonPressedBackgroundColor"sv };
+    static constexpr std::wstring_view s_titleBarCaptionButtonInactiveForegroundColorName{ L"TitleBarCaptionButtonInactiveForegroundColor"sv };
 };

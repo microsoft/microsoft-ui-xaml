@@ -5928,8 +5928,8 @@ namespace Microsoft.UI.Xaml
         Windows.Foundation.Object GetService(Windows.UI.Xaml.Interop.TypeName type);
     }
 
-    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
-    [VelocityFeature("Feature_ExperimentalApi")]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 8)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
@@ -5962,6 +5962,16 @@ namespace Microsoft.UI.Xaml
         [TypeTable(IsExcludedFromDXaml = true)]
         [RequiresMultipleAssociationCheck]
         public Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [TypeTable(IsExcludedFromDXaml = true)]
+        public bool ShouldConstrainPopupsToWorkArea
         {
             get;
             set;

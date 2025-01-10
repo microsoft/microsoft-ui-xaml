@@ -216,7 +216,7 @@ private:
 class PauseNewDispatch
 {
 public:
-    PauseNewDispatch(_In_ CCoreServices* coreServices);
+    PauseNewDispatch(_In_opt_ CCoreServices* coreServices);
     PauseNewDispatch(_In_ CXcpDispatcher* dispatcher);
     ~PauseNewDispatch();
 

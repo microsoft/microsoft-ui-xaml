@@ -454,10 +454,67 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.UpdateLayout();
                 Verify.AreEqual(1, clearedIndices.Count);
                 Verify.AreEqual(0, clearedIndices[0]);
-                Verify.AreEqual(0, preparedIndices.Count);
+                Verify.AreEqual(1, preparedIndices.Count);
+                Verify.AreEqual(2, preparedIndices[0]);
                 Verify.AreEqual(2, changedIndices.Count);
                 Verify.IsTrue(changedIndices.Contains(new KeyValuePair<int, int>(1, 0)));
                 Verify.IsTrue(changedIndices.Contains(new KeyValuePair<int, int>(2, 1)));
+            });
+        }
+
+        // Validate new items get generated when existing ones are removed from the top.
+        [TestMethod]
+        public void ValidateElementCreationUponRemovals()
+        {
+            CustomItemsSource dataSource = null;
+            List<int> preparedIndices = null;
+
+            RunOnUIThread.Execute(() => dataSource = new CustomItemsSource(Enumerable.Range(0, 20).ToList()));
+
+            var itemsRepeater = SetupRepeater(dataSource, @"<TextBlock Text='{Binding}' Height='24'/>");
+
+            RunOnUIThread.Execute(() =>
+            {
+                itemsRepeater.VerticalCacheLength = 2.0;
+            });
+
+            // The viewport size being 200px and realization window increase being 40px per measure pass,
+            // make sure there are 2.5 x cacheLengths passes to land on the final realized items.
+            // cacheLengths: number of viewports constituting the pre-fetch buffer, once completely built. 
+            //               Half of it is before the current viewport, and half after.
+            // viewport: 200px
+            // cacheIncrement: 40px (buffer increment per measure pass on each side)
+            // Measure passes needed to fill the pre-fetch buffer: viewport / cacheIncrement / 2 x cacheLengths = 2.5 x cacheLengths
+            Log.Comment("Letting the item cache grow to the VerticalCacheLength value.");
+            CompositionPropertySpy.SynchronouslyTickUIThread(6);
+
+            RunOnUIThread.Execute(() =>
+            {
+                preparedIndices = new List<int>();
+
+                itemsRepeater.ElementPrepared += (sender, args) =>
+                {
+                    Log.Comment("ElementPrepared - Index={0}.", args.Index);
+                    preparedIndices.Add(args.Index);
+                };
+            });
+
+            for (int iteration = 1; iteration <= 16; iteration++)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Removing top item at index 0.");
+                    dataSource.Remove(index: 0, count: 1, reset: false);
+                });
+
+                IdleSynchronizer.Wait();
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Removal of top items is expected to cause new item generation.
+                Log.Comment("Final preparedIndices.Count={0}.", preparedIndices.Count);
+                Verify.IsGreaterThan(preparedIndices.Count, 0);
             });
         }
 

@@ -46,6 +46,7 @@
                 <PrecompiledHeaderFile />
                 <PrecompiledHeaderOutputFile />
                 <DisableAnalyzeExternal />
+                <AdditionalOptions Condition="'$(Platform)'=='arm64ec'">/arm64EC %(ClCompile.AdditionalOptions)</AdditionalOptions>
             </ClCompile>
         </ItemGroup>
     </Target>

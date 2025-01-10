@@ -9,7 +9,7 @@
 
 class ItemsRepeater;
 
-// Manages the virtualization windows (visible/realization). This class essentially 
+// Manages the virtualization windows (visible/realization). This class essentially
 // does the equivalent behavior of ViewportManager class except that here we use 
 // EffectiveViewport and ScrollAnchoring features added to the framework in RS5. 
 // We also do not use the IRepeaterScrollingSurface internal API used by ViewManager.
@@ -30,6 +30,7 @@ public:
     winrt::Rect GetLayoutRealizationWindow() const override;
 
     void SetLayoutExtent(const winrt::Rect& layoutExtent) override;
+
     winrt::Rect GetLayoutExtent() const override { return m_layoutExtent; }
     winrt::Point GetOrigin() const override { return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
@@ -50,22 +51,29 @@ private:
     struct ScrollerInfo;
 
     void SetVisibleWindow(const winrt::Rect& visibleWindow);
+    void SetLastLayoutRealizationWindow(const winrt::Rect& layoutRealizationWindow);
     void SetPendingViewportShift(const winrt::Point& pendingViewportShift);
     void SetExpectedViewportShift(float expectedViewportShiftX, float expectedViewportShiftY);
     void SetUnshiftableShift(float unshiftableShiftX, float unshiftableShiftY);
+    void SetLastScrollPresenterViewChangeCorrelationId(int correlationId);
 
     void ResetLayoutExtent();
     void ResetVisibleWindow();
+    void ResetLastLayoutRealizationWindow();
     void ResetExpectedViewportShift();
     void ResetPendingViewportShift();
     void ResetUnshiftableShift();
+    void ResetLastScrollPresenterViewChangeCorrelationId();
 
     void OnCacheBuildActionCompleted();
     void OnEffectiveViewportChanged(winrt::FrameworkElement const& sender, winrt::EffectiveViewportChangedEventArgs const& args);
     void OnLayoutUpdated(winrt::IInspectable const& sender, winrt::IInspectable const& args);
     void OnScrollPresenterScrollStarting(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingScrollStartingEventArgs const& args);
+    void OnScrollPresenterScrollCompleted(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingScrollCompletedEventArgs const& args);
     void OnScrollPresenterZoomStarting(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingZoomStartingEventArgs const& args);
-    void OnScrollPresenterViewChangeStarting(winrt::ScrollPresenter const& scrollPresenter, double horizontalOffset, double verticalOffset, float zoomFactor);
+    void OnScrollPresenterZoomCompleted(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingZoomCompletedEventArgs const& args);
+    void OnScrollPresenterViewChangeStarting(winrt::ScrollPresenter const& scrollPresenter, int correlationId, double horizontalOffset, double verticalOffset, float zoomFactor);
+    void OnScrollPresenterViewChangeCompleted(int correlationId);
 
     void EnsureScroller();
     bool HasScroller() const { return m_scroller != nullptr; }
@@ -84,6 +92,9 @@ private:
     winrt::UIElement GetImmediateChildOfRepeater(winrt::UIElement const& descendant);
 
 #ifdef DBG
+    void OnScrollViewerViewChangingDbg(winrt::IInspectable const& sender, winrt::ScrollViewerViewChangingEventArgs const& args);
+    void OnScrollViewerViewChangedDbg(winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const& args);
+
     void TraceFieldsDbg();
     void TraceScrollerDbg();
 #endif // DBG
@@ -107,17 +118,22 @@ private:
     winrt::Rect m_lastLayoutRealizationWindow{};
     winrt::Rect m_visibleWindow{};
     winrt::Rect m_layoutExtent{};
+
     // This is the expected shift by the layout.
     winrt::Point m_expectedViewportShift{};
+
     // This is what is pending and not been accounted for. 
     // Sometimes the scrolling surface cannot service a shift (for example
     // it is already at the top and cannot shift anymore.)
     winrt::Point m_pendingViewportShift{};
+
     // Unshiftable shift amount that this view manager can
     // handle on its own to fake it to the layout as if the shift
     // actually happened. This can happen in cases where no scroller
     // in the parent chain can scroll in the shift direction.
     winrt::Point m_unshiftableShift{};
+
+    int m_lastScrollPresenterViewChangeCorrelationId{ -1 };
 
     // Realization window cache fields
     double m_maximumHorizontalCacheLength{ 2.0 };
@@ -125,15 +141,21 @@ private:
     double m_horizontalCacheBufferPerSide{};
     double m_verticalCacheBufferPerSide{};
 
-    bool m_isBringIntoViewInProgress{false};
+    bool m_isBringIntoViewInProgress{ false };
     // For non-virtualizing layouts, we do not need to keep
     // updating viewports and invalidating measure often. So when
     // a non virtualizing layout is used, we stop doing all that work.
     bool m_managingViewportDisabled{ false };
 
     // Event tokens
+#ifdef DBG
+    winrt::FxScrollViewer::ViewChanging_revoker m_scrollViewerViewChangingRevokerDbg{};
+    winrt::FxScrollViewer::ViewChanged_revoker m_scrollViewerViewChangedRevokerDbg{};
+#endif // DBG
     winrt::ScrollPresenter::ScrollStarting_revoker m_scrollPresenterScrollStartingRevoker{};
+    winrt::ScrollPresenter::ScrollCompleted_revoker m_scrollPresenterScrollCompletedRevoker{};
     winrt::ScrollPresenter::ZoomStarting_revoker m_scrollPresenterZoomStartingRevoker{};
+    winrt::ScrollPresenter::ZoomCompleted_revoker m_scrollPresenterZoomCompletedRevoker{};
     winrt::FrameworkElement::EffectiveViewportChanged_revoker m_effectiveViewportChangedRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker{};
     winrt::Microsoft::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};

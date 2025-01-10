@@ -16,7 +16,7 @@ CommandBarElementCollection::Init(_In_ bool notifyCollectionChanging)
 }
 
 IFACEMETHODIMP
-CommandBarElementCollection::SetAt(_In_ UINT index, _In_opt_ ICommandBarElement* item)
+CommandBarElementCollection::SetAt(_In_ UINT index, _In_ ICommandBarElement* item)
 {
     HRESULT hr = S_OK;
 

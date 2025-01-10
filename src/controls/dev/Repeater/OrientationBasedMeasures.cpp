@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -12,6 +12,16 @@ float& OrientationBasedMeasures::Major(const winrt::Size &size)
 float& OrientationBasedMeasures::Minor(const winrt::Size& size)
 {
     return m_orientation == ScrollOrientation::Vertical ? ((winrt::Size&)size).Width : ((winrt::Size&)size).Height;
+}
+
+float& OrientationBasedMeasures::Major(const winrt::Point& point)
+{
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Point&)point).Y : ((winrt::Point&)point).X;
+}
+
+float& OrientationBasedMeasures::Minor(const winrt::Point& point)
+{
+    return m_orientation == ScrollOrientation::Vertical ? ((winrt::Point&)point).X : ((winrt::Point&)point).Y;
 }
 
 float& OrientationBasedMeasures::MajorSize(const winrt::Rect& rect)

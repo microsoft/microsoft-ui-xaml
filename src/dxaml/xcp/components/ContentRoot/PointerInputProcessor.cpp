@@ -1845,6 +1845,7 @@ _Check_return_ HRESULT PointerInputProcessor::ReleaseAllPointerCaptures(
 {
     std::shared_ptr<CPointerState> pointerState;
     CDependencyObject* pPointerCaptureDO = NULL;
+    CPointer* pPointerCapture = NULL;
 
     auto& mapPointerState = m_inputManager.m_coreServices.GetInputServices()->GetMapPointerState();
 
@@ -1856,11 +1857,12 @@ _Check_return_ HRESULT PointerInputProcessor::ReleaseAllPointerCaptures(
         if (pointerState)
         {
             pPointerCaptureDO = pointerState->GetCaptureDO();
-            if (pPointerCaptureDO)
+            pPointerCapture = pointerState->GetCapturePointer();
+            if (pPointerCaptureDO && pPointerCapture)
             {
                 if (pObject == nullptr || pPointerCaptureDO == pObject)
                 {
-                    IFC_RETURN(ReleasePointerCapture(pPointerCaptureDO, pointerState->GetCapturePointer()));
+                    IFC_RETURN(ReleasePointerCapture(pPointerCaptureDO, pPointerCapture));
                 }
             }
         }

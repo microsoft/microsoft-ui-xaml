@@ -10,7 +10,7 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
-MenuFlyoutItemBaseCollection::SetAt(_In_ UINT index, _In_opt_ IMenuFlyoutItemBase* item)
+MenuFlyoutItemBaseCollection::SetAt(_In_ UINT index, _In_ IMenuFlyoutItemBase* item)
 {
     IFC_RETURN(MenuFlyoutItemBaseCollectionGenerated::SetAt(index, item));
     IFC_RETURN(NotifyMenuFlyoutOfCollectionChange());

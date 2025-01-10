@@ -1425,14 +1425,17 @@ Cleanup:
     RRETURN(hr);
 }
 
-PauseNewDispatch::PauseNewDispatch(_In_ CCoreServices* coreServices)
+PauseNewDispatch::PauseNewDispatch(_In_opt_ CCoreServices* coreServices)
 {
     // If called during teardown we might not have a CXcpDispatcher anymore. No-op in that case.
-    auto hostSite = coreServices->GetHostSite();
-    if (hostSite)
+    if (coreServices)
     {
-        m_dispatcherNoRef = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
-        m_dispatcherNoRef->PauseDispatch();
+        auto hostSite = coreServices->GetHostSite();
+        if (hostSite)
+        {
+            m_dispatcherNoRef = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+            m_dispatcherNoRef->PauseDispatch();
+        }
     }
 }
 

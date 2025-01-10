@@ -327,9 +327,9 @@ namespace MUXControlsTestApp.Samples
             UpdateLinedFlowLayoutLineSpacing();
         }
 
-        private void BtnGetLinedFlowLayoutLogItemIndexDbg_Click(object sender, RoutedEventArgs e)
+        private void BtnGetLayoutLogItemIndexDbg_Click(object sender, RoutedEventArgs e)
         {
-            UpdateLinedFlowLayoutLogItemIndexDbg();
+            UpdateLayoutLogItemIndexDbg();
         }
 
         private void BtnGetLinedFlowLayoutMinItemSpacing_Click(object sender, RoutedEventArgs e)
@@ -1021,13 +1021,13 @@ namespace MUXControlsTestApp.Samples
             }
         }
 
-        private void BtnSetLinedFlowLayoutLogItemIndexDbg_Click(object sender, RoutedEventArgs e)
+        private void BtnSetLayoutLogItemIndexDbg_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (linedFlowLayout != null)
                 {
-                    LayoutsTestHooks.SetLinedFlowLayoutLogItemIndex(linedFlowLayout, Convert.ToInt32(txtLinedFlowLayoutLogItemIndexDbg.Text));
+                    LayoutsTestHooks.SetLayoutLogItemIndex(linedFlowLayout, Convert.ToInt32(txtLayoutLogItemIndexDbg.Text));
                 }
             }
             catch (Exception ex)
@@ -2702,11 +2702,11 @@ namespace MUXControlsTestApp.Samples
             }
         }
 
-        private void UpdateLinedFlowLayoutLogItemIndexDbg()
+        private void UpdateLayoutLogItemIndexDbg()
         {
             if (linedFlowLayout != null)
             {
-                txtLinedFlowLayoutLogItemIndexDbg.Text = LayoutsTestHooks.GetLinedFlowLayoutLogItemIndex(linedFlowLayout).ToString();
+                txtLayoutLogItemIndexDbg.Text = LayoutsTestHooks.GetLayoutLogItemIndex(linedFlowLayout).ToString();
             }
         }
 

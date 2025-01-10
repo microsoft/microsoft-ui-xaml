@@ -16429,7 +16429,8 @@ void ScrollViewer::ResetAnchorElement()
 {
     if (m_anchorElement.Get())
     {
-        ANCHORING_DEBUG_TRACE(L"SV[0x%p]: ResetAnchorElement", this);
+        ANCHORING_DEBUG_TRACE(L"SV[0x%p]: ResetAnchorElement. m_anchorElement=0x%p reset", this, m_anchorElement.Get());
+        ANCHORING_DEBUG_TRACE(L"SV[0x%p]: ResetAnchorElement. m_anchorElementBounds=(%lf, %lf, %lf, %lf) reset", this, m_anchorElementBounds.X, m_anchorElementBounds.Y, m_anchorElementBounds.Width, m_anchorElementBounds.Height);
 
         m_anchorElement.Clear();
         m_anchorElementBounds = wf::Rect{};
@@ -16444,9 +16445,20 @@ _Check_return_ HRESULT ScrollViewer::EnsureAnchorElementSelection(const XRECTF& 
 {
     if (m_isAnchorElementDirty)
     {
-        m_anchorElement.Clear();
-        m_anchorElementBounds = wf::Rect{};
+        ResetAnchorElement();
+
+        ASSERT(m_anchorElementBounds.Width == 0);
+        ASSERT(m_anchorElementBounds.Height == 0);
+
         m_isAnchorElementDirty = false;
+
+        ctl::ComPtr<xaml::IUIElement> child;
+        IFC_RETURN(GetContentUIElement(&child));
+
+        if (!child)
+        {
+            return S_OK;
+        }
 
         DOUBLE viewportWidth = 0.0;
         DOUBLE viewportHeight = 0.0;
@@ -16472,13 +16484,13 @@ _Check_return_ HRESULT ScrollViewer::EnsureAnchorElementSelection(const XRECTF& 
             IFC_RETURN(anchorRequestedEventArgs->get_Anchor(&requestedAnchorElement));
         }
 
-        ctl::ComPtr<xaml::IUIElement> child;
-        IFC_RETURN(GetContentUIElement(&child));
-
         if (requestedAnchorElement)
         {
             SetPtrValue(m_anchorElement, requestedAnchorElement);
             IFC_RETURN(GetDescendantBounds(child.Get(), requestedAnchorElement.Get(), &m_anchorElementBounds));
+
+            ANCHORING_DEBUG_TRACE(L"SV[0x%p]: EnsureAnchorElementSelection. m_anchorElement=0x%p from AnchorRequested handler", this, m_anchorElement.Get());
+            ANCHORING_DEBUG_TRACE(L"SV[0x%p]: EnsureAnchorElementSelection. m_anchorElementBounds=(%lf, %lf, %lf, %lf)", this, m_anchorElementBounds.X, m_anchorElementBounds.Y, m_anchorElementBounds.Width, m_anchorElementBounds.Height);
         }
         else
         {
@@ -16530,6 +16542,9 @@ _Check_return_ HRESULT ScrollViewer::EnsureAnchorElementSelection(const XRECTF& 
             {
                 SetPtrValue(m_anchorElement, bestAnchorCandidateNoRef);
                 m_anchorElementBounds = bestAnchorCandidateBounds;
+
+                ANCHORING_DEBUG_TRACE(L"SV[0x%p]: EnsureAnchorElementSelection. m_anchorElement=0x%p from anchor candidates", this, m_anchorElement.Get());
+                ANCHORING_DEBUG_TRACE(L"SV[0x%p]: EnsureAnchorElementSelection. m_anchorElementBounds=(%lf, %lf, %lf, %lf)", this, m_anchorElementBounds.X, m_anchorElementBounds.Y, m_anchorElementBounds.Width, m_anchorElementBounds.Height);
             }
         }
     }

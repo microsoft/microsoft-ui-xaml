@@ -15,8 +15,9 @@
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(environment.props))" />
   <PropertyGroup>
+    <SdkPlatform>$(Platform)</SdkPlatform>
     <SdkPlatform Condition="'$(Platform)' == 'Win32'">x86</SdkPlatform>
-    <SdkPlatform Condition="'$(Platform)' != 'Win32'">$(Platform)</SdkPlatform>
+    <SdkPlatform Condition="'$(Platform)' == 'ARM64EC'">x64</SdkPlatform>
   </PropertyGroup>
   <Import Project="$(MUXCProjectRoot)FeatureAreas.props" />
   <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />

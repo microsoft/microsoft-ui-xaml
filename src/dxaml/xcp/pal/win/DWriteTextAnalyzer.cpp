@@ -985,8 +985,8 @@ HRESULT FontFallbackWrapper::MapCharacters(
 {
     TextAnalysisSourceProxy textAnalysisSourceProxy(pAnalysisSource);
 
-    IDWriteTextAnalysisSource* proxy;
-    IFC_RETURN(TextAnalysis_CreateDWritePrivateTextAnalysisSourceProxy(&textAnalysisSourceProxy, &proxy));
+    wrl::ComPtr<IDWriteTextAnalysisSource> proxy;
+    IFC_RETURN(TextAnalysis_CreateDWritePrivateTextAnalysisSourceProxy(&textAnalysisSourceProxy, proxy.ReleaseAndGetAddressOf()));
 
     *ppMappedFont = NULL;
 
@@ -1024,7 +1024,7 @@ HRESULT FontFallbackWrapper::MapCharacters(
     {
         Microsoft::WRL::ComPtr<IDWriteFont> mappedFont;
         IFC_RETURN(m_fontFallback->MapCharacters(
-            proxy, //&textAnalysisSourceProxy,
+            proxy.Get(),
             textPosition,
             textLength,
             pBaseFontCollection ? DWriteFontCollection::GetInternalCollection(pBaseFontCollection) : NULL,

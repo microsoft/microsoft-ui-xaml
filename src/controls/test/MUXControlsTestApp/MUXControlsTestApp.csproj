@@ -15,12 +15,19 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32'">win-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64EC'">win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
     <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
     <PublishAot>false</PublishAot>
     <EnableMsixTooling>true</EnableMsixTooling>
     <CsWinRTIncludes>AppTestAutomationHelpers</CsWinRTIncludes>
     <CsWinRTWindowsMetadata>$(WindowsTargetPlatformVersion)</CsWinRTWindowsMetadata>
     <BinplaceOutputAssemblies>true</BinplaceOutputAssemblies>
+    <WindowsAppSDKSelfContained Condition="'$(Platform)' == 'ARM64EC'">true</WindowsAppSDKSelfContained>
+    <WindowsPackageType Condition="'$(Platform)' == 'ARM64EC'">None</WindowsPackageType>
     <NoWarn>
       0105;
       0108; <!-- 'x' hides inherited member 'y'. Use the new keyword if hiding was intended. -->
@@ -333,6 +340,7 @@
     <PropertyGroup>
       <AppxPlatform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">$(arch)</AppxPlatform>
       <AppxPlatform Condition="'$(Platform)' == 'Win32'">x86</AppxPlatform>
+      <AppxPlatform Condition="'$(Platform)' == 'ARM64EC'">arm64</AppxPlatform>
       <AppxPlatform Condition="'$(AppxPlatform)' == ''">$(Platform)</AppxPlatform>
       <UnzipDirectory>$(TempDir)\Microsoft.VCLibs_unzipped</UnzipDirectory>
     </PropertyGroup>

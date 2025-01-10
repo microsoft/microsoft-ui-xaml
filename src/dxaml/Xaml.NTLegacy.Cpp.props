@@ -6,6 +6,10 @@
             <Configuration>Debug</Configuration>
             <Platform>ARM64</Platform>
         </ProjectConfiguration>
+        <ProjectConfiguration Include="Debug|ARM64EC">
+            <Configuration>Debug</Configuration>
+            <Platform>ARM64EC</Platform>
+        </ProjectConfiguration>
         <ProjectConfiguration Include="Debug|Win32">
             <Configuration>Debug</Configuration>
             <Platform>Win32</Platform>
@@ -17,6 +21,10 @@
         <ProjectConfiguration Include="Release|ARM64">
             <Configuration>Release</Configuration>
             <Platform>ARM64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|ARM64EC">
+            <Configuration>Release</Configuration>
+            <Platform>ARM64EC</Platform>
         </ProjectConfiguration>
         <ProjectConfiguration Include="Release|Win32">
             <Configuration>Release</Configuration>
@@ -31,9 +39,11 @@
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|Win32' " />
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' " />
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ARM64' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ARM64EC' " />
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|Win32' " />
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' " />
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|ARM64' " />
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|ARM64EC' " />
     
     <!--
         There are already some MSBuild projects in the build tree.  NT Build handles these by passing in a series of

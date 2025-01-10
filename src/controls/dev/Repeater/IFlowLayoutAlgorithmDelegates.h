@@ -51,4 +51,11 @@ public:
         const winrt::VirtualizingLayoutContext& context) = 0;
     virtual void Algorithm_OnLayoutRoundFactorChanged(
         const winrt::VirtualizingLayoutContext& context) = 0;
+
+#ifdef DBG
+    virtual int Algorithm_GetFlowLayoutLogItemIndexDbg() = 0;
+    virtual void Algorithm_SetFlowLayoutAnchorInfoDbg(
+        int index,
+        double offset) = 0;
+#endif // DBG
 };

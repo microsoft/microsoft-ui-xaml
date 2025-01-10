@@ -14,23 +14,25 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace MUXControlsTestApp.Samples
 {
-    public sealed partial class VariableSizedItemsPage : Page
+    public sealed partial class VariableSizedItemsPage : TestPage
     {
+        private bool m_logEvents = false;
         private double m_extentHeight = 0;
         private int m_changeViewToVerticalOffsetWithAnimationCorrelationId = -1;
         private int m_changeViewToVerticalScrollPercentageWithAnimationCorrelationId = -1;
+        private int m_scrollerChangeViewByVerticalScrollCount = 0;
+        private StackLayout m_stackLayout = null;
+        private UniformGridLayout m_uniformGridLayout = null;
 
         public VariableSizedItemsPage()
         {
             this.InitializeComponent();
             goBackButton.Click += delegate { Frame.GoBack(); };
 
-            itemsRepeater.ItemsSource = Enumerable.Range(0, 10000).Select(x => new VariableSizeItem(x)
-            {
-                Text = "Item " + x
-            });
-
             Loaded += VariableSizedItemsPage_Loaded;
+
+            LayoutsTestHooks.LayoutAnchorIndexChanged += LayoutsTestHooks_LayoutAnchorIndexChanged;
+            LayoutsTestHooks.LayoutAnchorOffsetChanged += LayoutsTestHooks_LayoutAnchorOffsetChanged;
         }
 
         ~VariableSizedItemsPage()
@@ -39,6 +41,9 @@ namespace MUXControlsTestApp.Samples
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            LayoutsTestHooks.LayoutAnchorIndexChanged -= LayoutsTestHooks_LayoutAnchorIndexChanged;
+            LayoutsTestHooks.LayoutAnchorOffsetChanged -= LayoutsTestHooks_LayoutAnchorOffsetChanged;
+
             UnhookScrollersEvents();
 
             base.OnNavigatedFrom(e);
@@ -46,7 +51,7 @@ namespace MUXControlsTestApp.Samples
 
         private void AppendEventMessage(string message)
         {
-            if (lstEvents != null)
+            if (lstEvents != null && m_logEvents)
             {
                 lstEvents.Items.Add(message);
             }
@@ -62,6 +67,8 @@ namespace MUXControlsTestApp.Samples
             if (scrollView != null)
             {
                 scrollView.ViewChanged += ScrollView_ViewChanged;
+                scrollView.ScrollStarting += ScrollView_ScrollStarting;
+                scrollView.ZoomStarting += ScrollView_ZoomStarting;
                 scrollView.ScrollAnimationStarting += ScrollView_ScrollAnimationStarting;
             }
         }
@@ -76,6 +83,8 @@ namespace MUXControlsTestApp.Samples
             if (scrollView != null)
             {
                 scrollView.ViewChanged -= ScrollView_ViewChanged;
+                scrollView.ScrollStarting -= ScrollView_ScrollStarting;
+                scrollView.ZoomStarting -= ScrollView_ZoomStarting;
                 scrollView.ScrollAnimationStarting -= ScrollView_ScrollAnimationStarting;
             }
         }
@@ -92,6 +101,102 @@ namespace MUXControlsTestApp.Samples
             catch (Exception ex)
             {
                 string message = "UpdateItemsRepeaterVerticalCacheLength. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
+            }
+        }
+
+        private void UpdateLayoutSpacing()
+        {
+            if (itemsRepeater != null)
+            {
+                StackLayout stackLayout = itemsRepeater.Layout as StackLayout;
+
+                if (stackLayout == null)
+                {
+                    UniformGridLayout uniformGridLayout = itemsRepeater.Layout as UniformGridLayout;
+                    txtLayoutSpacing.Text = uniformGridLayout.MinColumnSpacing.ToString();
+                }
+                else
+                {
+                    txtLayoutSpacing.Text = stackLayout.Spacing.ToString();
+                }
+            }
+        }
+
+        private void UpdateLayoutLogItemIndexDbg()
+        {
+            if (itemsRepeater != null && txtLayoutLogItemIndexDbg != null)
+            {
+                Layout layout = itemsRepeater.Layout;
+
+                if (layout != null)
+                {
+                    txtLayoutLogItemIndexDbg.Text = LayoutsTestHooks.GetLayoutLogItemIndex(layout).ToString();
+                }
+            }
+        }
+
+        private void UpdateItemsSource()
+        {
+            try
+            {
+                if (itemsRepeater == null || txtItemsSourceItemsCount == null || btnSwitchVariability == null)
+                {
+                    return;
+                }
+
+                int itemsCount = int.Parse(txtItemsSourceItemsCount.Text);
+
+                if (btnSwitchVariability.Content as string == "Use variable heights")
+                {
+                    itemsRepeater.ItemsSource = Enumerable.Range(0, itemsCount).Select(x => new FixedSizeItem()
+                    {
+                        Text = "Item " + x
+                    });
+                }
+                else
+                {
+                    itemsRepeater.ItemsSource = Enumerable.Range(0, itemsCount).Select(x => new VariableSizeItem(x)
+                    {
+                        Text = "Item " + x
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = "UpdateItemsSource. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
+            }
+        }
+
+        private void UpdateItemsSourceItemsCount()
+        {
+            if (itemsRepeater != null && itemsRepeater.ItemsSourceView != null && txtItemsSourceItemsCount != null)
+            {
+                txtItemsSourceItemsCount.Text = itemsRepeater.ItemsSourceView.Count.ToString();
+            }
+        }
+
+        private void UpdateScrollerHorizontalAnchorRatio()
+        {
+            try
+            {
+                if (scrollViewer != null && scrollViewer.Content != null)
+                {
+                    txtScrollerHorizontalAnchorRatio.Text = scrollViewer.HorizontalAnchorRatio.ToString();
+                }
+                else if (scrollView != null)
+                {
+                    txtScrollerHorizontalAnchorRatio.Text = scrollView.HorizontalAnchorRatio.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = "UpdateScrollerHorizontalAnchorRatio. Exception:" + ex.ToString();
 
                 Debug.WriteLine(message);
                 AppendEventMessage(message);
@@ -126,11 +231,11 @@ namespace MUXControlsTestApp.Samples
             {
                 if (scrollViewer != null && scrollViewer.Content != null)
                 {
-                    txtScrollerVerticalOffset.Text = scrollViewer.VerticalOffset.ToString();
+                    txtScrollerVerticalOffset.Text = scrollViewer.VerticalOffset.ToString("F");
                 }
                 else if (scrollView != null)
                 {
-                    txtScrollerVerticalOffset.Text = scrollView.VerticalOffset.ToString();
+                    txtScrollerVerticalOffset.Text = scrollView.VerticalOffset.ToString("F");
                 }
             }
             catch (Exception ex)
@@ -148,11 +253,11 @@ namespace MUXControlsTestApp.Samples
             {
                 if (scrollViewer != null && scrollViewer.Content != null)
                 {
-                    txtScrollerZoomFactor.Text = scrollViewer.ZoomFactor.ToString();
+                    txtScrollerZoomFactor.Text = scrollViewer.ZoomFactor.ToString("F");
                 }
                 else if (scrollView != null)
                 {
-                    txtScrollerZoomFactor.Text = scrollView.ZoomFactor.ToString();
+                    txtScrollerZoomFactor.Text = scrollView.ZoomFactor.ToString("F");
                 }
             }
             catch (Exception ex)
@@ -176,7 +281,7 @@ namespace MUXControlsTestApp.Samples
                     }
                     else
                     {
-                        txtScrollerVerticalScrollPercentage.Text = (scrollViewer.VerticalOffset / scrollViewer.ScrollableHeight * 100.0).ToString();
+                        txtScrollerVerticalScrollPercentage.Text = (scrollViewer.VerticalOffset / scrollViewer.ScrollableHeight * 100.0).ToString("F");
                     }
                 }
                 else if (scrollView != null)
@@ -187,7 +292,7 @@ namespace MUXControlsTestApp.Samples
                     }
                     else
                     {
-                        txtScrollerVerticalScrollPercentage.Text = (scrollView.VerticalOffset / scrollView.ScrollableHeight * 100.0).ToString();
+                        txtScrollerVerticalScrollPercentage.Text = (scrollView.VerticalOffset / scrollView.ScrollableHeight * 100.0).ToString("F");
                     }
                 }
             }
@@ -206,11 +311,11 @@ namespace MUXControlsTestApp.Samples
             {
                 if (scrollViewer != null && scrollViewer.Content != null)
                 {
-                    txtScrollerScrollableHeight.Text = scrollViewer.ScrollableHeight.ToString();
+                    txtScrollerScrollableHeight.Text = scrollViewer.ScrollableHeight.ToString("F");
                 }
                 else if (scrollView != null)
                 {
-                    txtScrollerScrollableHeight.Text = scrollView.ScrollableHeight.ToString();
+                    txtScrollerScrollableHeight.Text = scrollView.ScrollableHeight.ToString("F");
                 }
             }
             catch (Exception ex)
@@ -228,11 +333,11 @@ namespace MUXControlsTestApp.Samples
             {
                 if (scrollViewer != null && scrollViewer.Content != null)
                 {
-                    txtScrollerExtentHeight.Text = scrollViewer.ExtentHeight.ToString();
+                    txtScrollerExtentHeight.Text = scrollViewer.ExtentHeight.ToString("F");
                 }
                 else if (scrollView != null)
                 {
-                    txtScrollerExtentHeight.Text = scrollView.ExtentHeight.ToString();
+                    txtScrollerExtentHeight.Text = scrollView.ExtentHeight.ToString("F");
                 }
 
                 UpdateExtentHeight();
@@ -261,7 +366,7 @@ namespace MUXControlsTestApp.Samples
 
             if (m_extentHeight != extentHeight)
             {
-                AppendEventMessage("ExtentHeight changed. Old=" + m_extentHeight + ", New=" + extentHeight);
+                AppendEventMessage("ExtentHeight changed. Old=" + m_extentHeight.ToString("F") + ", New=" + extentHeight.ToString("F"));
 
                 m_extentHeight = extentHeight;
             }
@@ -281,7 +386,7 @@ namespace MUXControlsTestApp.Samples
                     }
                     else
                     {
-                        txtScrollerChangeViewVerticalScrollPercentage.Text = (verticalOffset / scrollViewer.ScrollableHeight * 100.0).ToString();
+                        txtScrollerChangeViewVerticalScrollPercentage.Text = (verticalOffset / scrollViewer.ScrollableHeight * 100.0).ToString("F");
                     }
                 }
                 else if (scrollView != null)
@@ -292,7 +397,7 @@ namespace MUXControlsTestApp.Samples
                     }
                     else
                     {
-                        txtScrollerChangeViewVerticalScrollPercentage.Text = (verticalOffset / scrollView.ScrollableHeight * 100.0).ToString();
+                        txtScrollerChangeViewVerticalScrollPercentage.Text = (verticalOffset / scrollView.ScrollableHeight * 100.0).ToString("F");
                     }
                 }
             }
@@ -308,9 +413,13 @@ namespace MUXControlsTestApp.Samples
         private void VariableSizedItemsPage_Loaded(object sender, RoutedEventArgs e)
         {
             HookScrollersEvents();
+            UpdateItemsSource();
             UpdateItemsRepeaterVerticalCacheLength();
             UpdateCmbItemsRepeaterHorizontalAlignment();
             UpdateCmbItemsRepeaterVerticalAlignment();
+            UpdateLayoutSpacing();
+            UpdateItemsSourceItemsCount();
+            UpdateScrollerHorizontalAnchorRatio();
             UpdateScrollerVerticalAnchorRatio();
             UpdateScrollerVerticalOffset();
             UpdateScrollerZoomFactor();
@@ -320,9 +429,19 @@ namespace MUXControlsTestApp.Samples
             UpdateScrollerChangeViewVerticalScrollPercentage();
         }
 
+        private void LayoutsTestHooks_LayoutAnchorIndexChanged(object sender, object args)
+        {
+            AppendEventMessage("LayoutAnchorIndexChanged LayoutAnchorIndex=" + LayoutsTestHooks.GetLayoutAnchorIndex(sender));
+        }
+
+        private void LayoutsTestHooks_LayoutAnchorOffsetChanged(object sender, object args)
+        {
+            AppendEventMessage("LayoutAnchorOffsetChanged LayoutAnchorOffset=" + LayoutsTestHooks.GetLayoutAnchorOffset(sender).ToString("F"));
+        }
+
         private string ScrollViewerViewToString(ScrollViewerView scrollViewerView)
         {
-            return "H=" + scrollViewerView.HorizontalOffset.ToString() + ", V=" + scrollViewerView.VerticalOffset + ", ZF=" + scrollViewerView.ZoomFactor;
+            return "H=" + scrollViewerView.HorizontalOffset.ToString("F") + ", V=" + scrollViewerView.VerticalOffset.ToString("F") + ", ZF=" + scrollViewerView.ZoomFactor.ToString("F");
         }
 
         private void ScrollViewer_ViewChanging(object sender, ScrollViewerViewChangingEventArgs args)
@@ -332,21 +451,36 @@ namespace MUXControlsTestApp.Samples
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs args)
         {
-            AppendEventMessage("ViewChanged IsIntermediate=" + args.IsIntermediate + ", H=" + scrollViewer.HorizontalOffset.ToString() + ", V=" + scrollViewer.VerticalOffset + ", ZF=" + scrollViewer.ZoomFactor);
+            AppendEventMessage("ViewChanged IsIntermediate=" + args.IsIntermediate + ", H=" + scrollViewer.HorizontalOffset.ToString("F") + ", V=" + scrollViewer.VerticalOffset.ToString("F") + ", ZF=" + scrollViewer.ZoomFactor.ToString("F"));
 
             UpdateExtentHeight();
         }
 
         private void ScrollView_ViewChanged(ScrollView sender, object args)
         {
-            AppendEventMessage("ViewChanged H=" + scrollView.HorizontalOffset.ToString() + ", V=" + scrollView.VerticalOffset + ", ZF=" + scrollView.ZoomFactor);
+            AppendEventMessage("ViewChanged H=" + scrollView.HorizontalOffset.ToString("F") + ", V=" + scrollView.VerticalOffset.ToString("F") + ", ZF=" + scrollView.ZoomFactor.ToString("F"));
+
+            UpdateExtentHeight();
+        }
+
+        private void ScrollView_ScrollStarting(ScrollView sender, ScrollingScrollStartingEventArgs args)
+        {
+            AppendEventMessage($"ScrollView.ScrollStarting OffsetsChangeCorrelationId={args.CorrelationId}, H={args.HorizontalOffset.ToString("F")}, V={args.VerticalOffset.ToString("F")}, ZF={args.ZoomFactor.ToString("F")}");
+
+            UpdateExtentHeight();
+            ScrollerChangeViewByVerticalScrollDecrement();
+        }
+
+        private void ScrollView_ZoomStarting(ScrollView sender, ScrollingZoomStartingEventArgs args)
+        {
+            AppendEventMessage($"ScrollView.ZoomStarting ZoomFactorChangeCorrelationId={args.CorrelationId}, H={args.HorizontalOffset.ToString("F")}, V={args.VerticalOffset.ToString("F")}, ZF={args.ZoomFactor.ToString("F")}");
 
             UpdateExtentHeight();
         }
 
         private void ScrollView_ScrollAnimationStarting(ScrollView sender, ScrollingScrollAnimationStartingEventArgs args)
         {
-            AppendEventMessage($"ScrollAnimationStarting CorrelationId={args.CorrelationId}, SP=({args.StartPosition.X}, {args.StartPosition.Y}), EP=({args.EndPosition.X}, {args.EndPosition.Y})");
+            AppendEventMessage($"ScrollAnimationStarting CorrelationId={args.CorrelationId}, SP=({args.StartPosition.X.ToString("F")}, {args.StartPosition.Y.ToString("F")}), EP=({args.EndPosition.X.ToString("F")}, {args.EndPosition.Y.ToString("F")})");
 
             try
             {
@@ -394,6 +528,7 @@ namespace MUXControlsTestApp.Samples
                 txtScrollerChangeViewToVerticalOffsetWithAnimationDuration.IsEnabled = true;
                 txtScrollerChangeViewToVerticalScrollPercentageWithAnimationDuration.IsEnabled = true;
                 txtScrollerChangeViewZoomCenterPoint.IsEnabled = true;
+                btnScrollerChangeViewByVerticalScroll.IsEnabled = true;
                 scrollViewer.Visibility = Visibility.Collapsed;
                 scrollView.Visibility = Visibility.Visible;
                 scrollViewer.Content = null;
@@ -407,6 +542,7 @@ namespace MUXControlsTestApp.Samples
                 txtScrollerChangeViewToVerticalOffsetWithAnimationDuration.IsEnabled = false;
                 txtScrollerChangeViewToVerticalScrollPercentageWithAnimationDuration.IsEnabled = false;
                 txtScrollerChangeViewZoomCenterPoint.IsEnabled = false;
+                btnScrollerChangeViewByVerticalScroll.IsEnabled = false;
                 scrollView.Visibility = Visibility.Collapsed;
                 scrollViewer.Visibility = Visibility.Visible;
                 scrollView.Content = null;
@@ -416,22 +552,36 @@ namespace MUXControlsTestApp.Samples
 
         private void BtnSwitchVariability_Click(object sender, RoutedEventArgs e)
         {
-            if (btnSwitchVariability.Content as string == "Use fixed heights")
+            try
             {
-                btnSwitchVariability.Content = "Use variable heights";
-                itemsRepeater.ItemsSource = Enumerable.Range(0, 10000).Select(x => new FixedSizeItem()
+                if (btnSwitchVariability == null)
                 {
-                    Text = "Item " + x
-                });
+                    return;
+                }
+
+                if (btnSwitchVariability.Content as string == "Use fixed heights")
+                {
+                    btnSwitchVariability.Content = "Use variable heights";
+                }
+                else
+                {
+                    btnSwitchVariability.Content = "Use fixed heights";
+                }
+
+                UpdateItemsSource();
             }
-            else
+            catch (Exception ex)
             {
-                btnSwitchVariability.Content = "Use fixed heights";
-                itemsRepeater.ItemsSource = Enumerable.Range(0, 10000).Select(x => new VariableSizeItem(x)
-                {
-                    Text = "Item " + x
-                });
+                string message = "BtnSwitchVariability_Click. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
             }
+        }
+
+        private void BtnGetScrollerHorizontalAnchorRatio_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateScrollerHorizontalAnchorRatio();
         }
 
         private void BtnGetScrollerVerticalAnchorRatio_Click(object sender, RoutedEventArgs e)
@@ -462,6 +612,30 @@ namespace MUXControlsTestApp.Samples
         private void BtnGetScrollerExtentHeight_Click(object sender, RoutedEventArgs e)
         {
             UpdateScrollerExtentHeight();
+        }
+
+        private void BtnSetScrollerHorizontalAnchorRatio_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                double horizontalAnchorRatio = Convert.ToDouble(txtScrollerHorizontalAnchorRatio.Text);
+
+                if (scrollViewer != null)
+                {
+                    scrollViewer.HorizontalAnchorRatio = horizontalAnchorRatio;
+                }
+                if (scrollView != null)
+                {
+                    scrollView.HorizontalAnchorRatio = horizontalAnchorRatio;
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = "BtnSetScrollerHorizontalAnchorRatio_Click. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
+            }
         }
 
         private void BtnSetScrollerVerticalAnchorRatio_Click(object sender, RoutedEventArgs e)
@@ -592,6 +766,48 @@ namespace MUXControlsTestApp.Samples
             }
         }
 
+        private void BtnScrollerChangeViewByVerticalScroll_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (scrollView != null && txtScrollerChangeViewByVerticalScrollCount != null)
+                {
+                    m_scrollerChangeViewByVerticalScrollCount = Convert.ToInt32(txtScrollerChangeViewByVerticalScrollCount.Text);
+
+                    ScrollerChangeViewByVerticalScrollDecrement();
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = "BtnScrollerChangeViewByVerticalScroll_Click. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
+            }
+        }
+
+        private void ScrollerChangeViewByVerticalScrollDecrement()
+        {
+            try
+            {
+                if (scrollView != null && m_scrollerChangeViewByVerticalScrollCount > 0)
+                {
+                    double verticalOffsetDelta = Convert.ToDouble(txtScrollerChangeViewVerticalOffset.Text);
+
+                    scrollView.ScrollBy(0, verticalOffsetDelta, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+
+                    m_scrollerChangeViewByVerticalScrollCount--;
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = "ScrollerChangeViewByVerticalScrollDecrement. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
+            }
+        }
+
         private void BtnScrollerChangeViewToZoomFactor_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -669,11 +885,11 @@ namespace MUXControlsTestApp.Samples
 
                 if (scrollViewer != null && scrollViewer.Content != null)
                 {
-                    txtScrollerChangeViewVerticalOffset.Text = (scrollViewer.ScrollableHeight * verticalScrollPercentage / 100.0).ToString();
+                    txtScrollerChangeViewVerticalOffset.Text = (scrollViewer.ScrollableHeight * verticalScrollPercentage / 100.0).ToString("F");
                 }
                 else if (scrollView != null)
                 {
-                    txtScrollerChangeViewVerticalOffset.Text = (scrollView.ScrollableHeight * verticalScrollPercentage / 100.0).ToString();
+                    txtScrollerChangeViewVerticalOffset.Text = (scrollView.ScrollableHeight * verticalScrollPercentage / 100.0).ToString("F");
                 }
             }
             catch (Exception ex)
@@ -713,6 +929,34 @@ namespace MUXControlsTestApp.Samples
             }
         }
 
+        private void CmbItemsRepeaterLayout_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (itemsRepeater != null)
+            {
+                if (cmbItemsRepeaterLayout.SelectedIndex == 0 && itemsRepeater.Layout is UniformGridLayout)
+                {
+                    itemsRepeater.Layout = m_stackLayout;
+                }
+                else if (cmbItemsRepeaterLayout.SelectedIndex == 1 && itemsRepeater.Layout is StackLayout)
+                {
+                    if (m_stackLayout == null)
+                    {
+                        m_stackLayout = itemsRepeater.Layout as StackLayout;
+                    }
+                    if (m_uniformGridLayout == null)
+                    {
+                        m_uniformGridLayout = new UniformGridLayout()
+                        {
+                            MaximumRowsOrColumns = 2,
+                            MinItemWidth = 100,
+                            MinItemHeight = 100
+                        };
+                    }
+                    itemsRepeater.Layout = m_uniformGridLayout;
+                }
+            }
+        }
+
         private void CmbItemsRepeaterHorizontalAlignment_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (itemsRepeater != null)
@@ -743,6 +987,100 @@ namespace MUXControlsTestApp.Samples
             {
                 cmbItemsRepeaterVerticalAlignment.SelectedIndex = (int)itemsRepeater.VerticalAlignment;
             }
+        }
+
+        private void BtnGetLayoutSpacing_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateLayoutSpacing();
+        }
+
+        private void BtnGetLayoutLogItemIndexDbg_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateLayoutLogItemIndexDbg();
+        }
+
+        private void BtnGetItemsSourceItemsCount_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateItemsSourceItemsCount();
+        }
+
+        private void BtnSetLayoutSpacing_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (itemsRepeater != null)
+                {
+                    double spacing = Convert.ToDouble(txtLayoutSpacing.Text);
+                    StackLayout stackLayout = itemsRepeater.Layout as StackLayout;
+
+                    if (stackLayout == null)
+                    {
+                        UniformGridLayout uniformGridLayout = itemsRepeater.Layout as UniformGridLayout;
+                        uniformGridLayout.MinColumnSpacing = spacing;
+                        uniformGridLayout.MinRowSpacing = spacing;
+                    }
+                    else
+                    {
+                        stackLayout.Spacing = spacing;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = "BtnSetLayoutSpacing_Click. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
+            }
+        }
+
+        private void BtnSetLayoutLogItemIndexDbg_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (itemsRepeater != null)
+                {
+                    Layout layout = itemsRepeater.Layout;
+
+                    if (layout != null)
+                    {
+                        LayoutsTestHooks.SetLayoutLogItemIndex(layout, Convert.ToInt32(txtLayoutLogItemIndexDbg.Text));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = "BtnSetLayoutLogItemIndexDbg_Click. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
+            }
+        }
+
+        private void BtnSetItemsSourceItemsCount_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (itemsRepeater != null && itemsRepeater.ItemsSourceView != null && txtItemsSourceItemsCount != null)
+                {
+                    if (int.Parse(txtItemsSourceItemsCount.Text) != itemsRepeater.ItemsSourceView.Count)
+                    {
+                        UpdateItemsSource();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string message = "BtnSetItemsSourceItemsCount_Click. Exception:" + ex.ToString();
+
+                Debug.WriteLine(message);
+                AppendEventMessage(message);
+            }
+        }
+
+        private void ChkLogEvents_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            m_logEvents = (bool)chkLogEvents.IsChecked;
         }
 
         private void BtnClearEvents_Click(object sender, RoutedEventArgs e)

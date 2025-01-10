@@ -1,0 +1,26 @@
+<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="WebView2Arm64EcWorkaround">
+
+    <!-- TEMPORARY: Work around WebView2 not supporting arm64ec, when WinAppSDK targets is imported before WebView2 targets -->
+    <ItemDefinitionGroup Condition="'$(EffectivePlatform)'=='arm64ec'">
+        <Link>
+            <AdditionalLibraryDirectories>$(WV2WinRTPath)..\..\build\native\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+        </Link>
+    </ItemDefinitionGroup>
+    <Target Name="WebView2Arm64EcWorkaround" Condition="'$(EffectivePlatform)'=='arm64ec'">
+        <PropertyGroup>
+            <WebView2BuildRoot>$([MSBuild]::NormalizePath($(WV2WinRTPath), "..\..\build\"))</WebView2BuildRoot>
+        </PropertyGroup>
+        <ItemGroup>
+            <ReferenceCopyLocalPaths Remove="$(WebView2BuildRoot)..\runtimes\win-arm64ec\native_uap\Microsoft.Web.WebView2.Core.dll"/>
+            <ReferenceCopyLocalPaths Include="$(WebView2BuildRoot)..\runtimes\win-x64\native_uap\Microsoft.Web.WebView2.Core.dll"/>
+        </ItemGroup>
+    </Target>
+    <!-- TEMPORARY: Work around WebView2 not supporting arm64ec, when WinAppSDK targets is imported after WebView2 targets -->
+    <PropertyGroup Condition="'$(Platform)'=='arm64ec'">
+        <EffectivePlatform>x64</EffectivePlatform>
+    </PropertyGroup>
+
+</Project>

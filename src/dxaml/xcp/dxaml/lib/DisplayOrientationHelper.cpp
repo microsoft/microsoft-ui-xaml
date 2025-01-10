@@ -89,10 +89,10 @@ _Check_return_ HRESULT
             
             if (islandEnvironment)
             {
-                wrl::ComPtr<ixp::IContentIslandEnvironment2> islandEnvironment2;
-                IFCFAILFAST(islandEnvironment.As(&islandEnvironment2));
+                wrl::ComPtr<ixp::IContentIslandEnvironmentExperimental> islandEnvironmentExperimental;
+                IFCFAILFAST(islandEnvironment.As(&islandEnvironmentExperimental));
 
-                IFC_RETURN(islandEnvironment2->get_CurrentOrientation(&rotationValue));
+                IFC_RETURN(islandEnvironmentExperimental->get_CurrentOrientation(&rotationValue));
             }
         }
 

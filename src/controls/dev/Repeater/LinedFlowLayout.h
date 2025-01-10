@@ -187,17 +187,6 @@ public:
         bool resetItemsInfo = false,
         bool invalidateMeasure = true);
 
-    int LogItemIndexDbg() const
-    {
-        return m_logItemIndexDbg;
-    };
-
-    void LogItemIndexDbg(
-        int logItemIndex)
-    {
-        m_logItemIndexDbg = logItemIndex;
-    };
-
     double RawAverageItemsPerLineDbg() const
     {
         return m_averageItemsPerLine.first;
@@ -834,7 +823,6 @@ private:
     winrt::DispatcherTimer m_invalidateMeasureTimer{ nullptr };
 
     // Fields used to support the LayoutsTestHooks
-    int m_logItemIndexDbg{ -1 };
     double m_averageItemAspectRatioDbg{ 0.0 };
     double m_forcedAverageItemAspectRatioDbg{ 0.0 };
     double m_forcedAverageItemsPerLineDividerDbg{ 0.0 };

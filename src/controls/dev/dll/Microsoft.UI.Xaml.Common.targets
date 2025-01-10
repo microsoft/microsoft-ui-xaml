@@ -42,6 +42,7 @@
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x64_Desktop)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x86_Desktop)</AdditionalLibraryDirectories>
       <AdditionalLibraryDirectories Condition="'$(Platform)'=='ARM64'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_arm64_Desktop)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='ARM64EC'">%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_x64_Desktop)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
       <DisableSpecificWarnings>4100;4189;4467;4702;6326;6285;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -272,6 +273,7 @@
     <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.SDK.cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\build\native\Microsoft.Windows.SDK.cpp.targets')" />
     <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="$(ProjectRoot)\eng\WebView2Arm64EcWorkaround.targets" />
     <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.targets" />
     <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets')" />
   </ImportGroup>

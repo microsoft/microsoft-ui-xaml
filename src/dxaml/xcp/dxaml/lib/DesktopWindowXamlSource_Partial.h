@@ -6,6 +6,7 @@
 #include "DesktopWindowXamlSource.g.h"
 #include <fwd/Microsoft.UI.Xaml.hosting.h>
 #include <Microsoft.UI.Content.h>
+#include "XamlIsland_Partial.h"
 
 namespace DirectUI
 {
@@ -31,7 +32,7 @@ namespace DirectUI
         _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* iSystemBackdrop);
 
         _Check_return_ xaml_hosting::IXamlIslandRoot* GetXamlIslandRootNoRef();
-        void PrepareToClose();
+        void PrepareToClose() { m_xamlIsland->PrepareToClose(); }
 
     private:
         _Check_return_ HRESULT InitializeImpl(_In_ mu::WindowId parentWnd);
@@ -85,15 +86,14 @@ namespace DirectUI
         bool m_bClosed = false;
         bool m_initializedCalled = false;
         bool m_bridgeClosed {false};
-        ctl::ComPtr<WindowsXamlManager> m_spXamlCore;
-        ctl::ComPtr<xaml_hosting::IXamlIslandRoot> m_spXamlIsland;
+        ctl::ComPtr<xaml_hosting::IXamlIslandRoot> m_spXamlIslandRoot;
         ctl::ComPtr<ixp::IContentSiteBridge> m_contentBridge;
         ctl::ComPtr<ixp::IDesktopChildSiteBridge> m_contentBridgeDW;
         ctl::ComPtr<ixp::IDesktopSiteBridge> m_desktopBridge;
 
         HWND m_childHwnd = {};
 
-        ctl::ComPtr<xaml::Media::ISystemBackdrop> m_systemBackdrop;
+        ctl::ComPtr<DirectUI::XamlIsland> m_xamlIsland;
 
         ctl::ComPtr<xaml_hosting::IFocusController> m_spFocusController;
         ctl::ComPtr<TakeFocusRequestedEventSourceType> m_spLosingFocusEventSource;

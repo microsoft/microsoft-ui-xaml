@@ -34,7 +34,7 @@ using namespace DirectUI;
 
 namespace DirectUI
 {
-    _Check_return_ IActivationFactory* CreateActivationFactory_WindowsXamlManager();
+    _Check_return_ IActivationFactory *CreateActivationFactory_XamlIsland();
 }
 
 _Check_return_ HRESULT DesktopWindowXamlSource::InitializeImpl(_In_ mu::WindowId parentWnd)
@@ -228,14 +228,11 @@ _Check_return_ HRESULT DesktopWindowXamlSource::Initialize()
 {
     IFC_RETURN(WeakReferenceSourceNoThreadId::Initialize());
 
-    ctl::ComPtr<IActivationFactory> activationFactory(CreateActivationFactory_WindowsXamlManager());
-    ctl::ComPtr<xaml_hosting::IWindowsXamlManagerStatics> coreFactory;
-    IFC_RETURN(activationFactory.As(&coreFactory));
-    ctl::ComPtr<xaml_hosting::IWindowsXamlManager> core;
-    IFC_RETURN(coreFactory->InitializeForCurrentThread(&core));
-    IFC_RETURN(core.As(&m_spXamlCore));
-
     IFC_RETURN(CheckThread());
+
+    IFC_RETURN(ctl::make<DirectUI::XamlIsland>(&m_xamlIsland));
+    m_spXamlIslandRoot = GetXamlIslandRootNoRef();
+    m_spXamlIslandRoot.Cast<DirectUI::XamlIslandRoot>()->SetOwner(ctl::iinspectable_cast(this));
 
     // In a C# desktop app, the DesktopXamlIslandSource isn't exposed to the app. Peg this peer so it doesn't get released
     // when the GC does garbage collection. There's a m_owner WeakRef pointer on DirectUI::XamlIslandRoot that points to this
@@ -246,12 +243,9 @@ _Check_return_ HRESULT DesktopWindowXamlSource::Initialize()
     // as it has thread-local variables and needs to be disposed off by the same thread
     AddToReferenceTrackingList();
 
-    ctl::ComPtr<FrameworkApplication> frameworkApplication = FrameworkApplication::GetCurrentNoRef();
-    IFC_RETURN(frameworkApplication->CreateIslandRootWithContentBridge(ctl::iinspectable_cast(this), nullptr, m_spXamlIsland.ReleaseAndGetAddressOf()));
-
     // Create and configure focus navigation controller
     ctl::ComPtr<IInspectable> spInsp;
-    IFC_RETURN(m_spXamlIsland->get_FocusController(&spInsp));
+    IFC_RETURN(m_spXamlIslandRoot->get_FocusController(&spInsp));
     IFC_RETURN(spInsp.As(&m_spFocusController));
     IFC_RETURN(m_spFocusController->add_GotFocus(
         Microsoft::WRL::Callback<xaml_hosting::FocusNavigatedEventHandler>(
@@ -262,12 +256,9 @@ _Check_return_ HRESULT DesktopWindowXamlSource::Initialize()
             this, &DesktopWindowXamlSource::OnFocusControllerLosingFocus).Get(),
         &m_losingFocusEventCookie));
 
-    ctl::ComPtr<XamlIslandRoot> xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
-    CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(xamlIsland->GetHandle());
+    ctl::ComPtr<XamlIslandRoot> xamlIslandRoot = m_spXamlIslandRoot.Cast<XamlIslandRoot>();
+    CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(xamlIslandRoot->GetHandle());
     focusManager->SetCanTabOutOfPlugin(true);
-
-    auto coreXamlIsland = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
-    coreXamlIsland->SetHasTransparentBackground(true);
 
     InstrumentUsage(false); // false -> adding
     m_initializedCalled = true;
@@ -305,16 +296,7 @@ IFACEMETHODIMP DesktopWindowXamlSource::get_SystemBackdrop(_Outptr_result_mayben
 
     IFC_RETURN(CheckThread());
 
-    ctl::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
-
-    DirectUI::XamlIslandRoot* xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
-    CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
-
-    ctl::ComPtr<ixp::IContentIsland> contentIsland = pXamlIslandCore->GetContentIsland();
-
-    IFC_RETURN(contentIsland.As(&compositionSupportsSystemBackdrop));
-
-    IFC_RETURN(compositionSupportsSystemBackdrop->get_SystemBackdrop(systemBackdropBrush));
+    IFC_RETURN(m_xamlIsland->get_SystemBackdrop(systemBackdropBrush));
 
     return S_OK;
 }
@@ -323,51 +305,21 @@ IFACEMETHODIMP DesktopWindowXamlSource::put_SystemBackdrop(_In_opt_ ABI::Windows
 {
     IFC_RETURN(CheckThread());
 
-    ctl::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
-
-    DirectUI::XamlIslandRoot* xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
-    CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
-
-    ctl::ComPtr<ixp::IContentIsland> contentIsland = pXamlIslandCore->GetContentIsland();
-
-    IFC_RETURN(contentIsland.As(&compositionSupportsSystemBackdrop));
-
-    IFC_RETURN(compositionSupportsSystemBackdrop->put_SystemBackdrop(systemBackdropBrush));
+    IFC_RETURN(m_xamlIsland->put_SystemBackdrop(systemBackdropBrush));
 
     return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowXamlSource::get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** iSystemBackdrop)
 {
-    return m_systemBackdrop.CopyTo(iSystemBackdrop);
+    IFC_RETURN(m_xamlIsland->get_SystemBackdropImpl(iSystemBackdrop))
+    
+    return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowXamlSource::put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* iSystemBackdrop)
 {
-    // If nothing changed then do nothing. Otherwise we'd call OnTargetDisconnected and OnTargetConnected
-    // back-to-back on the same SystemBackdrop.
-    if (m_systemBackdrop.Get() != iSystemBackdrop)
-    {
-        if (m_systemBackdrop.Get() != nullptr)
-        {
-            ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
-            IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
-            IFC_RETURN(systemBackdrop->InvokeOnTargetDisconnected(this));
-        }
-
-        m_systemBackdrop = iSystemBackdrop;
-        if (iSystemBackdrop != nullptr)
-        {
-            ctl::ComPtr<xaml::IUIElement> content;
-            IFC_RETURN(get_ContentImpl(&content));
-            ctl::ComPtr<xaml::IXamlRoot> xamlRoot;
-            IFC_RETURN(content->get_XamlRoot(&xamlRoot));
-
-            ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
-            IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
-            IFC_RETURN(systemBackdrop->InvokeOnTargetConnected(this, xamlRoot.Get()));
-        }
-    }
+    IFC_RETURN(m_xamlIsland->put_SystemBackdropImpl(iSystemBackdrop));
 
     return S_OK;
 }
@@ -375,7 +327,8 @@ _Check_return_ HRESULT DesktopWindowXamlSource::put_SystemBackdropImpl(_In_opt_ 
 _Check_return_ HRESULT DesktopWindowXamlSource::get_ContentImpl(_Outptr_ xaml::IUIElement** ppValue)
 {
     *ppValue = nullptr;
-    IFC_RETURN(m_spXamlIsland->get_Content(ppValue));
+
+    IFC_RETURN(m_xamlIsland->get_ContentImpl(ppValue));
 
     return S_OK;
 }
@@ -390,6 +343,11 @@ _Check_return_ HRESULT DesktopWindowXamlSource::put_ContentImpl(_In_opt_ xaml::I
 
         auto contentCoreDO = contentAsFE.Cast<FrameworkElement>()->GetHandle();
 
+        // https://task.ms/43100993: In a Xaml island, we have no access to a bridge or HWND to
+        // enforce the LTR layout that Xaml needs to perform layout correctly.
+        // Until Xaml correctly handles the RTL coordinate space, this will lead to issues with input and
+        // output, as the underlying HWND will be in RTL, so we use a custom path here since we have
+        // the bridge. Once RTL is properly handled, we can switch to using the XamlIsland method.
         if (contentCoreDO->IsPropertyDefault(contentCoreDO->GetPropertyByIndexInline(KnownPropertyIndex::FrameworkElement_FlowDirection)) &&
             (GetWindowLong(m_childHwnd, GWL_EXSTYLE) & WS_EX_LAYOUTRTL))
         {
@@ -397,13 +355,13 @@ _Check_return_ HRESULT DesktopWindowXamlSource::put_ContentImpl(_In_opt_ xaml::I
         }
     }
 
-    IFC_RETURN(m_spXamlIsland->put_Content(pValue));
+    IFC_RETURN(m_spXamlIslandRoot->put_Content(pValue));
     return S_OK;
 }
 
 _Check_return_ xaml_hosting::IXamlIslandRoot* DesktopWindowXamlSource::GetXamlIslandRootNoRef()
 {
-    return m_spXamlIsland.Get();
+    return m_xamlIsland->GetXamlIslandRootNoRef();
 }
 
 IFACEMETHODIMP DesktopWindowXamlSource::Close()
@@ -422,44 +380,19 @@ IFACEMETHODIMP DesktopWindowXamlSource::Close()
         InstrumentUsage(true); // true -> removing
     }
 
-    if (m_systemBackdrop.Get() != nullptr)
-    {
-        ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
-        IFC_RETURN(m_systemBackdrop.As(&systemBackdrop));
-        IFC_RETURN(systemBackdrop->InvokeOnTargetDisconnected(this));
-        systemBackdrop = nullptr;
-        m_systemBackdrop = nullptr;
-    }
-
-    auto island = m_spXamlIsland;
-
     IFC_RETURN(ReleaseFocusController());
-
-    if (m_spXamlIsland.Get() != nullptr)
-    {
-        // Remove the Xaml content before calling Dispose on the content bridge. Disposing the content bridge also
-        // closes the entire visual tree under it. If we then go to unparent visuals we'll hit RO_E_CLOSED errors
-        // everywhere.
-        auto frameworkApplication = FrameworkApplication::GetCurrentNoRef();
-        IFCFAILFAST(frameworkApplication->RemoveIsland(m_spXamlIsland.Get()));
-
-        // Turn off any frame counters (if they are on) for the same reason we remove the content.  Also inform
-        // the core that we have done this in case it needs to re-evaluate whether to display on a future frame
-        // (and a different island).
-        DirectUI::XamlIslandRoot* xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
-        CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
-        if (pXamlIslandCore->GetDCompTreeHost())
-        {
-            IFC_RETURN(pXamlIslandCore->GetDCompTreeHost()->UpdateDebugSettings(false /* isFrameRateCounterEnabled */));
-        }
-        IFC_RETURN(pXamlIslandCore->GetContext()->OnDebugSettingsChanged());
-    }
 
     if (m_contentBridgeDW)
     {
         ctl::ComPtr<mu::IClosableNotifier> closableNotifier;
         IFCFAILFAST(m_contentBridgeDW.As(&closableNotifier));
         IGNOREHR(closableNotifier->remove_FrameworkClosed(m_bridgeClosedToken));
+    }
+
+    if (m_xamlIsland)
+    {
+        IFCFAILFAST(m_xamlIsland->Close());
+        m_xamlIsland = nullptr;
     }
 
     // Dispose of the content bridge
@@ -473,33 +406,6 @@ IFACEMETHODIMP DesktopWindowXamlSource::Close()
     }
     m_desktopBridge = nullptr;
     m_contentBridgeDW = nullptr;
-
-    // Signal to the interop tool of the closure after the XamlIslandRoot has been removed. This way
-    // the RuntimeObjectCache stays connected.
-    if (auto interop = Diagnostics::GetDiagnosticsInterop(false))
-    {
-        interop->SignalRootMutation(ctl::iinspectable_cast(this), VisualMutationType::Remove);
-    }
-
-    if (m_spXamlIsland.Get() != nullptr)
-    {
-        ctl::ComPtr<XamlIslandRoot> xamlIsland;
-        IFC_RETURN(m_spXamlIsland.As(&xamlIsland));
-        CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
-        pXamlIslandCore->Dispose();
-        m_spXamlIsland = nullptr;
-    }
-
-    if (m_spXamlCore.Get()!=nullptr)
-    {
-        ctl::ComPtr<DesktopWindowXamlSource> spThis(this); // Avoid deleting this
-        ctl::ComPtr<wf::IClosable> spClosable;
-
-        IFC_RETURN(m_spXamlCore.As(&spClosable));
-        IFC_RETURN(spClosable->Close());
-        spClosable = nullptr;
-        m_spXamlCore = nullptr;
-    }
 
     return S_OK;
 }
@@ -529,10 +435,10 @@ REFERENCE_ELEMENT_NAME_IMPL(ixp::ContentLayoutDirection, L"Microsoft.UI.Content.
 _Check_return_ HRESULT DesktopWindowXamlSource::ConnectToHwndIslandSite(_In_ HWND parentHwnd)
 {
     // Create / access composition island
-    DirectUI::XamlIslandRoot* xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
+    DirectUI::XamlIslandRoot* xamlIslandRoot = m_spXamlIslandRoot.Cast<XamlIslandRoot>();
 
     // Get the XamlIslandRoot
-    CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
+    CXamlIslandRoot* pXamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle());
 
     ctl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> bridgeStatics;
     IFC_RETURN(ActivationFactoryCache::GetActivationFactoryCache()->GetDesktopChildSiteBridgeStatics(&bridgeStatics));
@@ -556,11 +462,6 @@ _Check_return_ HRESULT DesktopWindowXamlSource::ConnectToHwndIslandSite(_In_ HWN
 
     IFC_RETURN(m_desktopBridge->Connect(contentIsland.Get()));
 
-    // Note: This is marking CXamlIslandRoot::SetContentRequested, which is required for the island
-    // to get a present target and to start rendering. See xamlIslandRoot->GetContentRequested() check inside
-    // DCompTreeHost::EnsureXamlIslandTargetRoots.
-    pXamlIslandCore->SetContentRequested(true);
-
     ABI::Microsoft::UI::WindowId windowId;
     IFC_RETURN(m_desktopBridge->get_WindowId(&windowId));
     IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &m_childHwnd));
@@ -576,16 +477,6 @@ _Check_return_ HRESULT DesktopWindowXamlSource::ConnectToHwndIslandSite(_In_ HWN
     {
         IFCFAILFAST(HRESULT_FROM_WIN32(GetLastError()));
     }
-
-    // Note: This is needed for ScrollViewer initialization.
-    // CUIElement::CanDMContainerInitialize looks for a valid input window, and CanDMContainerInitialize
-    // is needed before CInputServices::InitializeDirectManipulationContainers can activate DM for a
-    // ScrollViewer.
-    wrl::ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
-    IFCFAILFAST(contentIsland.As(&contentIslandPartner));
-    wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSitePartner;
-    IFCFAILFAST(contentIslandPartner->get_IslandInputSite(&islandInputSitePartner));
-    pXamlIslandCore->SetIslandInputSite(islandInputSitePartner.Get());
 
     // Now that we've initialized the DesktopWindowXamlBridge, it's safe to tell the XamlIslandRoot to
     // do the initialization it needs which depends on it being property setup (eg setting up WindowInformation).
@@ -621,11 +512,8 @@ _Check_return_ HRESULT DesktopWindowXamlSource::ConnectToHwndIslandSite(_In_ HWN
         // It's safe to capture "this" because we remove the event subscription from the dtor.
         auto frameworkClosedCallback = [this]() mutable -> HRESULT
         {
-            // http://task.ms/45244384 Simplify the shutdown process of DesktopWindowXamlSource and Popups...
-            // TODO: Ideally we would do a full Close here, release all our content and input objects, etc.
-            // But we made this change late in the 1.4 release cycle and wanted to avoid much code churn.
             this->m_bridgeClosed = true;
-            IFCFAILFAST(this->ReleaseFocusController());
+            IFCFAILFAST(this->Close());
             return S_OK;
         };
 
@@ -645,7 +533,7 @@ HRESULT DesktopWindowXamlSource::NavigateFocusImpl(
     IFC_RETURN(CheckThread());
     if (m_spFocusController)
     {
-        ctl::ComPtr<XamlIslandRoot> xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
+        ctl::ComPtr<XamlIslandRoot> xamlIsland = m_spXamlIslandRoot.Cast<XamlIslandRoot>();
         CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(xamlIsland->GetHandle());
 
         IFC_RETURN(m_spFocusController->NavigateFocus(request, focusManager->GetFocusObserverNoRef(), ppResult));
@@ -681,25 +569,15 @@ _Check_return_ HRESULT DesktopWindowXamlSource::get_ShouldConstrainPopupsToWorkA
 {
     *pValue = true;
 
-    // Note: XamlIslandRoot won't have a ContentRoot (and VisualTree) if it's closing. No-op this case.
-    auto coreXamlIsland = static_cast<CXamlIslandRoot*>(m_spXamlIsland.Cast<XamlIslandRoot>()->GetHandle());
-    auto visualTreeNoRef = coreXamlIsland->GetVisualTreeNoRef();
-    if (visualTreeNoRef)
-    {
-        *pValue = visualTreeNoRef->ShouldConstrainPopupsToWorkArea();
-    }
+    IFC_RETURN(m_xamlIsland->get_ShouldConstrainPopupsToWorkAreaImpl(pValue));
+
     return S_OK;
 }
 
 _Check_return_ HRESULT DesktopWindowXamlSource::put_ShouldConstrainPopupsToWorkAreaImpl(_In_ boolean value)
 {
-    // Note: XamlIslandRoot won't have a ContentRoot (and VisualTree) if it's closing. No-op this case.
-    auto coreXamlIsland = static_cast<CXamlIslandRoot*>(m_spXamlIsland.Cast<XamlIslandRoot>()->GetHandle());
-    auto visualTreeNoRef = coreXamlIsland->GetVisualTreeNoRef();
-    if (visualTreeNoRef)
-    {
-        visualTreeNoRef->SetShouldConstrainPopupsToWorkArea(!!value);
-    }
+    IFC_RETURN(m_xamlIsland->put_ShouldConstrainPopupsToWorkAreaImpl(value));
+
     return S_OK;
 }
 
@@ -755,12 +633,4 @@ HRESULT DesktopWindowXamlSource::OnFocusControllerLosingFocus(_In_ IInspectable*
         IFC_RETURN(m_spLosingFocusEventSource->Raise(spThat.Get(), spArgs.Get()));
     }
     return S_OK;
-}
-
-void DesktopWindowXamlSource::PrepareToClose()
-{
-    DirectUI::XamlIslandRoot* xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
-    CXamlIslandRoot* xamlIslandCore = static_cast<CXamlIslandRoot*>(xamlIsland->GetHandle());
-    CContentRoot* contentRoot = xamlIslandCore->GetContentRootNoRef();
-    contentRoot->PrepareToClose();
 }

@@ -57,7 +57,7 @@ namespace DirectUI
         // write methods
         IFACEMETHOD(SetAt)(
             UINT index,
-            _In_opt_ IInspectable* item) override;
+            _In_ IInspectable* item) override;
 
         IFACEMETHOD(InsertAt)(
             UINT index,

@@ -256,6 +256,18 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
     return extent;
 }
 
+#ifdef DBG
+int UniformGridLayout::Algorithm_GetFlowLayoutLogItemIndexDbg()
+{
+    return LogItemIndexDbg();
+}
+
+void UniformGridLayout::Algorithm_SetFlowLayoutAnchorInfoDbg(int index, double offset)
+{
+    SetLayoutAnchorInfoDbg(index, offset);
+}
+#endif // DBG
+
 #pragma endregion
 
 void UniformGridLayout::OnPropertyChanged(

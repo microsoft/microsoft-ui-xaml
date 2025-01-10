@@ -1081,14 +1081,45 @@ private:
         return status == XcpDMViewportRunning || status == XcpDMViewportInertia || status == XcpDMViewportSuspended || status == XcpDMViewportAutoRunning;
     }
 
+    // Checks if a window handle is valid the same way DirectManipulation's IDirectManipulationManager::Activate does.
+    static _Check_return_ HRESULT IsWindowHandleValid(_In_ HWND hWnd)
+    {
+        if (!IsWindow(hWnd))
+        {
+            return E_INVALIDARG;
+        }
+
+        DWORD hWndThreadId = ::GetWindowThreadProcessId(hWnd, NULL);
+        if (::GetCurrentThreadId() != hWndThreadId)
+        {
+            return HRESULT_FROM_WIN32(ERROR_WINDOW_OF_OTHER_THREAD);
+        }
+
+        return S_OK;
+    }
+
     bool CanDMContainerInitialize() const
     {
         return !m_islandInputSiteRegistrations.empty();
     }
 
-    bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer) const
+    // The DirectManipulationManager for a DMContainer can only occur after GetElementIslandInputSite returns a valid
+    // IslandInputSite since it is being used for DManip's initialization.
+    static bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer)
     {
-        return dmContainer->CanDMContainerInitialize();
+        wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSite = dmContainer->GetElementIslandInputSite();
+
+        if (nullptr != islandInputSite)
+        {
+            HWND inputHwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(islandInputSite.Get());
+
+            // Make sure the window handle is valid. The same code as DManip's IDirectManipulationManager::Activate
+            // is used. This ensures that Xaml will not attempt to activate a DManip manager with a handle that has
+            // already been destroyed with a WM_DESTROY message.
+            return SUCCEEDED(CInputServices::IsWindowHandleValid(inputHwnd));
+        }
+
+        return false;
     }
 
     // Creates a CUIDMContainer and CUIDMContainerHandler instance for the provided element and sets them up for future usage.

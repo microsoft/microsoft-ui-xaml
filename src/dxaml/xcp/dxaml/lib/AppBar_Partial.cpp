@@ -1437,8 +1437,8 @@ _Check_return_ HRESULT AppBar::HasSpaceForAppBarToOpenDown(_Out_ bool* hasSpace)
 
     // Pixel rounding can sometimes cause the bounds and AppBar size to be off by a pixel when we expect them to be equal.
     // To account for that possibility, we'll allow the AppBar to open down if its height is at most one pixel greater
-    // than the layout bounds height.
-    *hasSpace = (bottomOfExpandedAppBar.Y <= layoutBounds.Y + layoutBounds.Height + 1);
+    // than the layout bounds height, after rounding the values to the nearest integer.
+    *hasSpace = (XcpRound(bottomOfExpandedAppBar.Y) <= XcpRound(layoutBounds.Y + layoutBounds.Height + 1));
     return S_OK;
 }
 

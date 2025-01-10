@@ -118,6 +118,7 @@ namespace Private
                 // references will be truly disconnected. It's only the timeframe between running
                 // our destructor and calling release on the base class instance that's problematic.
                 *ppInterface = nullptr;
+                return E_NOINTERFACE;
             }
 
             return S_OK;

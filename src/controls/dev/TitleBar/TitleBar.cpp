@@ -7,7 +7,6 @@
 #include "TitleBarTemplateSettings.h"
 #include "TitleBarAutomationPeer.h"
 #include "ResourceAccessor.h"
-#include <winrt/Microsoft.UI.Windowing.h>
 
 TitleBar::TitleBar()
 {
@@ -309,36 +308,36 @@ void TitleBar::UpdateTheme()
         if (const auto contentIslandEnvironment = xamlRoot.ContentIslandEnvironment())
         {
             const auto appWindowId = contentIslandEnvironment.AppWindowId();
-            const winrt::Microsoft::UI::Windowing::AppWindow appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(appWindowId);
+            const winrt::AppWindow appWindow = winrt::AppWindow::GetFromWindowId(appWindowId);
 
             // AppWindow TitleBar's caption buttons does not update colors with theme change.
             // We need to set them here.
             if (const auto appTitleBar = appWindow.TitleBar())
             {
                 // Rest colors.
-                const auto buttonForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarButtonForegroundColorName)).as<winrt::Color>();
+                const auto buttonForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonForegroundColorName)).as<winrt::Color>();
                 appTitleBar.ButtonForegroundColor(buttonForegroundColor);
 
-                const auto buttonBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarButtonBackgroundColorName)).as<winrt::Color>();
+                const auto buttonBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonBackgroundColorName)).as<winrt::Color>();
                 appTitleBar.ButtonBackgroundColor(buttonBackgroundColor);
                 appTitleBar.ButtonInactiveBackgroundColor(buttonBackgroundColor);
 
                 // Hover colors.
-                const auto buttonHoverForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarButtonHoverForegroundColorName)).as<winrt::Color>();
+                const auto buttonHoverForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonHoverForegroundColorName)).as<winrt::Color>();
                 appTitleBar.ButtonHoverForegroundColor(buttonHoverForegroundColor);
 
-                const auto buttonHoverBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarButtonHoverBackgroundColorName)).as<winrt::Color>();
+                const auto buttonHoverBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonHoverBackgroundColorName)).as<winrt::Color>();
                 appTitleBar.ButtonHoverBackgroundColor(buttonHoverBackgroundColor);
 
                 // Pressed colors.
-                const auto buttonPressedForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarButtonPressedForegroundColorName)).as<winrt::Color>();
+                const auto buttonPressedForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonPressedForegroundColorName)).as<winrt::Color>();
                 appTitleBar.ButtonPressedForegroundColor(buttonPressedForegroundColor);
 
-                const auto buttonPressedBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarButtonPressedBackgroundColorName)).as<winrt::Color>();
+                const auto buttonPressedBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonPressedBackgroundColorName)).as<winrt::Color>();
                 appTitleBar.ButtonPressedBackgroundColor(buttonPressedBackgroundColor);
 
                 // Inactive foreground.
-                const auto buttonInactiveForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarButtonInactiveForegroundColorName)).as<winrt::Color>();
+                const auto buttonInactiveForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonInactiveForegroundColorName)).as<winrt::Color>();
                 appTitleBar.ButtonInactiveForegroundColor(buttonInactiveForegroundColor);
             }
         }

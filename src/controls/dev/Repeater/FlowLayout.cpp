@@ -393,6 +393,18 @@ void FlowLayout::Algorithm_OnLineArranged(
         context);
 }
 
+#ifdef DBG
+int FlowLayout::Algorithm_GetFlowLayoutLogItemIndexDbg()
+{
+    return LogItemIndexDbg();
+}
+
+void FlowLayout::Algorithm_SetFlowLayoutAnchorInfoDbg(int index, double offset)
+{
+    SetLayoutAnchorInfoDbg(index, offset);
+}
+#endif // DBG
+
 #pragma endregion
 
 void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

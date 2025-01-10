@@ -410,6 +410,18 @@ void StackLayout::Algorithm_OnLayoutRoundFactorChanged(
     }
 }
 
+#ifdef DBG
+int StackLayout::Algorithm_GetFlowLayoutLogItemIndexDbg()
+{
+    return LogItemIndexDbg();
+}
+
+void StackLayout::Algorithm_SetFlowLayoutAnchorInfoDbg(int index, double offset)
+{
+    SetLayoutAnchorInfoDbg(index, offset);
+}
+#endif // DBG
+
 #pragma endregion
 
 void StackLayout::OnPropertyChanged(

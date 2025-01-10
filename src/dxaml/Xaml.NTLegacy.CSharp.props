@@ -50,8 +50,6 @@
     <NoWarn>$(NoWarn);2008</NoWarn>
     <DebugType Condition="'$(Configuration)' == 'Debug'">full</DebugType>
     <DebugType Condition="'$(Configuration)' == 'Release'">pdbonly</DebugType>
-    <PlatformTarget Condition="'$(Platform)' == 'Win32'">x86</PlatformTarget>
-    <PlatformTarget Condition="'$(Platform)' != 'Win32'">$(Platform)</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit Condition="'$(Configuration)' == 'Release'">true</Prefer32Bit>
