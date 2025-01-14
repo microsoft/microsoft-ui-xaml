@@ -12,8 +12,6 @@
 <h3 align="center">
   <a href="https://aka.ms/windev">About WinUI</a>
   <span> · </span>
-  <a href="https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable">Source code</a>
-  <span> · </span>
   <a href="https://learn.microsoft.com/windows/apps/desktop/">Documentation</a>
   <span> · </span>
   <a href="https://aka.ms/winui-releasenotes">Release notes</a>
@@ -40,7 +38,6 @@ The full documentation of WinUI can be found on [Microsoft Learn](https://learn.
 - [Get started with WinUI](https://learn.microsoft.com/windows/apps/get-started/start-here)
 - [Build your first WinUI app](https://learn.microsoft.com/windows/apps/how-tos/hello-world-winui3)
 - [WinUI & Windows App SDK samples](https://github.com/microsoft/WindowsAppSDK-Samples)
-- [WinUI source code](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/release/1.5-stable)
 
 </br>
 
@@ -73,7 +70,7 @@ For information on how to contribute, please see [Contributing to WinUI](CONTRIB
 
 ## 🛣️ Roadmap
 
-For info on the WinUI release schedule and high level plans please see the [WinUI Roadmap](https://aka.ms/winappsdk/plans).
+For info on the WinUI release schedule and high level plans please see the [WinUI roadmap](https://aka.ms/winappsdk/plans).
 
 </br>
 
