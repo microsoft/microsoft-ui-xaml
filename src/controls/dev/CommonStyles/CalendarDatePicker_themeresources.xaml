@@ -9,11 +9,12 @@
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="CalendarDatePickerTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CalendarDatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="ControlFillColorDefaultBrush" />
       <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
@@ -38,6 +39,7 @@
       <StaticResource x:Key="CalendarDatePickerTextForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="SystemColorHighlightColorBrush" />
+      <StaticResource x:Key="CalendarDatePickerHeaderForeground" ResourceKey="SystemColorButtonTextColorBrush" />
       <StaticResource x:Key="CalendarDatePickerHeaderForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
       <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
       <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
@@ -59,11 +61,12 @@
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="CalendarDatePickerTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CalendarDatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="ControlFillColorDefaultBrush" />
       <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
