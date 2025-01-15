@@ -6,11 +6,11 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
       <Sha>f51f55b53b094d28a8fb117fe79fa354a3287c3b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.4-CI-26105.1011.241025-1113.31">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.5.4-CI-26105.1013.241220-0822.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>26df64c7fa2693f44c179a7ba4c9df3257b76865</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.4-CI-26105.1011.241025-1113.31">
+    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.5.4-CI-26105.1013.241220-0822.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>26df64c7fa2693f44c179a7ba4c9df3257b76865</Sha>
     </Dependency>
