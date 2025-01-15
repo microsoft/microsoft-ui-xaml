@@ -10,9 +10,14 @@
 #include "ScaleTransform.g.h"
 #include "RootScale.h"
 #include "Popup.h"
+#include <FrameworkUdk/Containment.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
+
+// Bug 54910644: [Photos Preview] After entering Slideshow mode, pressing F11 to
+// exit Fullscreen causes to crash - tracked by https://task.ms/54910644
+#define WINAPPSDK_CHANGEID_54910644 54910644
 
 _Check_return_ HRESULT DirectUI::PointerRoutedEventArgs::GetCurrentPointImpl(
     _In_opt_ xaml::IUIElement* pRelativeTo,
@@ -56,7 +61,20 @@ _Check_return_ HRESULT DirectUI::PointerRoutedEventArgs::GetIntermediatePointsIm
 
     // Get PointerPoint from the specified transform point
     spArgs.attach(static_cast<CPointerEventArgs*>(GetCorePeer()));
-    IFC(spArgs->m_pPointerEventArgs->GetIntermediateTransformedPoints(pPointerPointTransform, &pPointerPoints));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54910644>())
+    {
+        if (spArgs)
+        {
+            if (spArgs->m_pPointerEventArgs)
+            {
+                IFC(spArgs->m_pPointerEventArgs->GetIntermediateTransformedPoints(pPointerPointTransform, &pPointerPoints));
+            }
+        }
+    }
+    else
+    {
+        IFC(spArgs->m_pPointerEventArgs->GetIntermediateTransformedPoints(pPointerPointTransform, &pPointerPoints));
+    }
 
     BOOLEAN isGenerated;
     IFC(get_IsGenerated(&isGenerated));

@@ -29,6 +29,11 @@
 #include <PixelFormat.h>
 #include <platformsdk-uplevel/dwrite_colr_paint_tree.h>
 
+#include <FrameworkUdk/Containment.h>
+
+// Bug 55117451: [1.6 Servicing] WinAppSDK 1.6 TextBox abnormal behavior with multi - line text
+#define WINAPPSDK_CHANGEID_55117451 55117451
+
 #define DBG_TEXT_REALIZATIONS 0
 
 #define SWAP(Type, a, b) {Type temp = a; a = b; b = temp;}
@@ -2611,9 +2616,15 @@ void D2DTextDrawingContext::InvalidateRegion(
     origin.x = origin.y = 0;
     for (XUINT32 i = 0, collectionSize = m_lines.GetCount(); i < collectionSize; i++)
     {
-        LineData * pLineData = &m_lines[i];
+        LineData* pLineData = &m_lines[i];
         pLineData->Transform.Transform(&origin, &transformedOrigin, 1);
+
         XRECTF_RB lineRect = { transformedOrigin.x, transformedOrigin.y, pLineData->Width, pLineData->Thickness };
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55117451>())
+        {
+            lineRect.right += transformedOrigin.x;
+            lineRect.bottom += transformedOrigin.y;
+        }
         if (DoRectsIntersect(*pRegion, lineRect))
         {
             newSize--;
