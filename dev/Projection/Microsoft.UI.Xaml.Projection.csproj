@@ -6,7 +6,7 @@
       <IsAotCompatible>true</IsAotCompatible>
       <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
       <EmbedUntrackedSources>true</EmbedUntrackedSources>
-      <WindowsSdkPackageVersion>10.0.22621.54</WindowsSdkPackageVersion>
+      <WindowsSdkPackageVersion>10.0.22621.57</WindowsSdkPackageVersion>
       <UseRidGraph>true</UseRidGraph>
       <UseUwpTools>false</UseUwpTools>
    </PropertyGroup>
@@ -41,7 +41,7 @@
    </PropertyGroup>
 
    <ItemGroup>
-      <PackageReference Include="Microsoft.Windows.CSWinRT" Version="2.1.6" />
+      <PackageReference Include="Microsoft.Windows.CSWinRT" Version="2.2.0" />
       <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2849.39" IncludeAssets="none" />
    </ItemGroup>
 
