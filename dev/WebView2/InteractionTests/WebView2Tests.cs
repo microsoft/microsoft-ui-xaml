@@ -2525,6 +2525,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
+        [TestProperty("Ignore", "True")] // Bug 43584062: WebView2Tests.ConcurrentCreationRequestsTest is unreliable
         public void ConcurrentCreationRequestsTest()
         {
             // Use two sources to test that concurrent creations/navigations end up in the expected state
@@ -2703,7 +2704,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Create_CoreProcessFailed_Button.Invoke();
                     Bad_Source_Browser_Button.Invoke();
-                    coreProcessFailedWaiter.Wait();
+                    coreProcessFailedWaiter.Wait(TimeSpan.FromSeconds(60));
                 }
 
                 if (loadedCount.Value != "1")
@@ -2748,7 +2749,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 using (var coreProcessFailedWaiter2 = new ValueChangedEventWaiter(coreProcessFailedCount, "2"))
                 {
                     Bad_Source_Render_Button.Invoke();
-                    coreProcessFailedWaiter2.Wait();
+                    coreProcessFailedWaiter2.Wait(TimeSpan.FromSeconds(60));
                 }
 
                 ValidateEventCounts(
