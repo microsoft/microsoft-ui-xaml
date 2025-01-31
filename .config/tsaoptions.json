@@ -1,7 +1,7 @@
 {
     "instanceUrl": "https://microsoft.visualstudio.com",
     "projectName": "os",
-    "areaPath": "OS\\Windows Client and Services\\WinPD\\UXIP-UX Intelligence Platform\\WinUIX",
+    "areaPath": "OS\\Windows Client and Services\\WinPD\\SPICE\\WinUI\\Controls, Rendering and Input\\WinUIX",
     "iterationPath": "OS",
     "notificationAliases": [ "uxpct@microsoft.com" ],
     "ignoreBranchName": true,
