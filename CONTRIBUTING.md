@@ -69,7 +69,7 @@ https://docs.microsoft.com/uwp/toolkits/winui
 You can find usage examples of the controls available in WinUI in the Xaml Controls Gallery app:  
  https://github.com/Microsoft/Xaml-Controls-Gallery/  
 
- Which can also be installed from the Windows Store:  
+ Which can also be installed from the Microsoft Store:  
  https://www.microsoft.com/p/xaml-controls-gallery/9msvh128x2zt
  
  ## API spec discussions
