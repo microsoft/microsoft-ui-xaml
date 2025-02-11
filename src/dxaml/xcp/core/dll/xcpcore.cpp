@@ -77,6 +77,16 @@
 #include "RefreshRateInfo.h"
 #include "GraphicsTelemetry.h"
 
+#include <FrameworkUdk/Containment.h>
+
+// Bug 54433864: [Coca-Cola] Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
+// Bug 55948921: [WASDK 1.6] Multiple std::unordered_sets, unordered_maps, vectors grow unbounded
+#define WINAPPSDK_CHANGEID_55948921 55948921
+
+// Bug 54433864: [Coca-Cola] Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
+// Bug 55949429: [WASDK 1.6] Cached LsTextFormatter allocates memory blocks and is never released
+#define WINAPPSDK_CHANGEID_55949429 55949429
+
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
 #endif
@@ -8244,6 +8254,17 @@ _Check_return_ HRESULT CCoreServices::CheckMemoryUsage(bool simulateLowMemory)
     return S_OK;
 }
 
+void CCoreServices::ReleaseCachedTextFormatters() noexcept
+{
+    // Line services' LsTextFormatter allocates memory blocks when it formats lines, and those blocks are kept around
+    // even after the lines themselves are released. We have cached LsTextFormatter objects. Release them to free those
+    // blocks.
+    if (m_pTextCore != NULL)
+    {
+        m_pTextCore->ReleaseUnusedTextFormatters();
+    }
+}
+
 // Dispatcher mechanism used to enqueue request to query D3D device for lost state.
 // Used from device lost listener (see EnsureDeviceLostListener()).
 class DeviceLostDispatcher : public CXcpObjectBase<IPALExecuteOnUIThread>
@@ -10442,6 +10463,18 @@ void CCoreServices::UnpegNoRefCoreObjectWithoutPeer(_In_ CDependencyObject *pObj
     {
         AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
         m_PegNoRefCoreObjectsWithoutPeers.erase(pObject);
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55948921>())
+        {
+            // Shrink down the parent array if it's too empty. We have scenarios where lots of tabs are opened and closed,
+            // and after garbage collection this vector has space for over 12k buckets yet only ~25 items, which
+            // unnecessarily takes up memory. As a heuristic, shrink when the array is 80% empty. Also only shrink if the
+            // array is larger than 25 elements so we don't thrash when there are only a few elements.
+            if (m_PegNoRefCoreObjectsWithoutPeers.capacity() > 25 && m_PegNoRefCoreObjectsWithoutPeers.capacity() > 5 * m_PegNoRefCoreObjectsWithoutPeers.size())
+            {
+                m_PegNoRefCoreObjectsWithoutPeers.shrink_to_fit();
+            }
+        }
     }
 }
 

@@ -17,6 +17,11 @@
 #include <DesktopUtility.h>
 #include <XamlOneCoreTransforms.h>
 #include "XamlRoot.g.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 54433864: [Coca-Cola] Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
+// Bug 55949429: [WASDK 1.6] Cached LsTextFormatter allocates memory blocks and is never released
+#define WINAPPSDK_CHANGEID_55949429 55949429
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -42,6 +47,18 @@ Page::~Page()
     if (const auto xamlRoot = XamlRoot::GetImplementationForElementStatic(this))
     {
         xamlRoot->GetLayoutBoundsHelperNoRef()->RemoveLayoutBoundsChangedCallback(&m_tokLayoutBoundsChanged);
+    }
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55949429>())
+    {
+        // Line service's LsTextFormatter may have created lots of memory blocks to format text, and will not release those
+        // blocks until we release the cached text formatter. Here an entire Page is being deleted, so presumably all the
+        // text on that Page is gone too and we don't need the formatter anymore.
+        auto core = DXamlCore::GetCurrent()->GetHandle();
+        if (core)
+        {
+            static_cast<CCoreServices*>(core)->ReleaseCachedTextFormatters();
+        }
     }
 }
 
@@ -111,7 +128,7 @@ _Check_return_ HRESULT Page::OnPropertyChanged2(_In_ const PropertyChangedParams
                 {
                     IFC(CValueBoxer::UnboxObjectValue(args.m_pNewValue, args.m_pDP->GetPropertyType(), &inspectable));
                     IFC(inspectable.As(&newAppBar));
-                    
+
                     if (newAppBar)
                     {
                         IFC(GetAppBarClosedHeight(newAppBar.Get(), &newClosedHeight));
@@ -856,7 +873,7 @@ Page::UpdateWindowLayoutBoundsChangedEvent(
                 if (const auto xamlRoot = XamlRoot::GetImplementationForElementStatic(this))
                 {
                     auto layoutBoundsHelper = xamlRoot->GetLayoutBoundsHelperNoRef();
-                    
+
                     ctl::WeakRefPtr weakInstance;
                     IFC_RETURN(ctl::AsWeak(this, &weakInstance));
 

@@ -108,6 +108,13 @@
 #include "ResourceGraph.h"
 #include "AutomaticDragHelper.h"
 #include "TextControlFlyoutHelper.h"
+#include "XamlTelemetry.h"
+
+#include <FrameworkUdk/Containment.h>
+
+// Bug 54433864: [Coca-Cola] Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
+// Bug 55948921: [WASDK 1.6] Multiple std::unordered_sets, unordered_maps, vectors grow unbounded
+#define WINAPPSDK_CHANGEID_55948921 55948921
 
 #include "DXamlCoreTipTests.h"
 
@@ -1752,6 +1759,27 @@ DXamlCore::RemovePeer(_In_ DependencyObject* pDO)
         // Ordinarily, just remove the entry from the map
         m_Peers.erase(pDO);
 
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55948921>())
+        {
+            // Shrink down the backing vector if there are too many empty buckets. We have scenarios where lots of tabs are
+            // opened and closed, and after garbage collection this set has over 260k buckets yet only ~300 items, which
+            // unnecessarily takes up memory. As a heuristic, shrink when there are 100x more buckets than items. Also only
+            // shrink if there are more than 500 buckets so we don't thrash when there are only a few elements.
+            if (m_Peers.bucket_count() > 500 && m_Peers.load_factor() < 0.01)
+            {
+                // Note: rehash in <xhash> only increases the number of buckets. We have to build a new unordered_set.
+                PeerTable shrunk(std::make_move_iterator(m_Peers.begin()), std::make_move_iterator(m_Peers.end()));
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "Memory_ResizePeersUnorderedSet",
+                    TraceLoggingUInt64(m_Peers.bucket_count(), "OriginalBucketCount"),
+                    TraceLoggingUInt64(shrunk.bucket_count(), "NewBucketCount"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                m_Peers = std::move(shrunk);
+            }
+        }
+
         if (pCoreDO)
         {
             pCoreDO->SetDXamlPeer(nullptr);
@@ -1797,6 +1825,29 @@ DXamlCore::RemoveFromReferenceTrackingList(_In_ xaml_hosting::IReferenceTrackerI
 
                 // Ordinarily, just remove the entry from the map
                 m_ReferenceTrackers.erase(pItem);
+
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55948921>())
+                {
+                    // Shrink down the backing vector if there are too many empty buckets. We have scenarios where lots of
+                    // tabs are opened and closed, and after garbage collection this set has over 260k buckets yet only ~250
+                    // items, which unnecessarily takes up memory. As a heuristic, shrink when there are 100x more buckets
+                    // than items. Also only shrink if there are more than 500 buckets so we don't thrash when there are
+                    // only a few elements.
+                    if (m_ReferenceTrackers.bucket_count() > 500 && m_ReferenceTrackers.load_factor() < 0.01)
+                    {
+                        // Note: rehash in <xhash> only increases the number of buckets. We have to build a new unordered_set.
+                        ReferenceTrackerTable shrunk(std::make_move_iterator(m_ReferenceTrackers.begin()), std::make_move_iterator(m_ReferenceTrackers.end()));
+
+                        TraceLoggingProviderWrite(
+                            XamlTelemetry, "Memory_ResizeReferenceTrackerUnorderedSet",
+                            TraceLoggingUInt64(m_ReferenceTrackers.bucket_count(), "OriginalBucketCount"),
+                            TraceLoggingUInt64(shrunk.bucket_count(), "NewBucketCount"),
+                            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                        m_ReferenceTrackers = std::move(shrunk);
+                    }
+                }
+
 #if DBG
                 // ASSERT visible to Prefast fre build but references DBG-only method
                 ASSERT(!IsInReferenceTrackingList(pItem));
@@ -4698,6 +4749,18 @@ void DXamlCore::UnregisterFromDynamicScrollbarsSettingChanged(_In_ Control* cont
     if (it != m_registeredControlsForSettingsChanged.end())
     {
         m_registeredControlsForSettingsChanged.erase(it);
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55948921>())
+        {
+            // Shrink down the vector if it's too empty. We have scenarios where lots of tabs are opened and closed, and after
+            // garbage collection this vector has space for over 12k buckets yet only 4 items, which unnecessarily takes up
+            // memory. As a heuristic, shrink when the vector is 80% empty. Also only shrink if the vector is larger than 25
+            // elements so we don't thrash when there are only a few elements.
+            if (m_registeredControlsForSettingsChanged.capacity() > 25 && m_registeredControlsForSettingsChanged.capacity() > 5 * m_registeredControlsForSettingsChanged.size())
+            {
+                m_registeredControlsForSettingsChanged.shrink_to_fit();
+            }
+        }
     }
 }
 

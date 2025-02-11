@@ -1477,6 +1477,7 @@ public:
     void CheckForLeaks();
 
     _Check_return_ HRESULT CheckMemoryUsage(bool simulateLowMemory);
+    void ReleaseCachedTextFormatters() noexcept;
     DCompTreeHost* GetDCompTreeHost();
 
     void SetThreadingAssertOverride(bool enable);

@@ -8,6 +8,11 @@
 #include "MUX-ETWEvents.h"
 #include "BuildTreeService.g.h"
 #include "BudgetManager.g.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 54433864: [Coca-Cola] Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
+// Bug 55948921: [WASDK 1.6] Multiple std::unordered_sets, unordered_maps, vectors grow unbounded
+#define WINAPPSDK_CHANGEID_55948921 55948921
 
 using namespace DirectUI;
 using namespace Instrumentation;
@@ -167,6 +172,13 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
                 }
             }
             m_queuedObjectsForUnreachableCleanup.clear();
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55948921>())
+            {
+                // Shrink down the array. We have scenarios where lots of tabs are opened and closed, and after garbage
+                // collection this array has capacity for over 90k elements yet has 0, which unnecessarily takes up memory.
+                m_queuedObjectsForUnreachableCleanup.shrink_to_fit();
+            }
         }
     }
 
@@ -225,7 +237,19 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     }
 
     // If we iterated all the way to the end, this will actually call clear()
-     m_queuedObjectsForFinalRelease.erase( firstRelease, iter );
+    m_queuedObjectsForFinalRelease.erase( firstRelease, iter );
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55948921>())
+    {
+        // Shrink down the array if it's too empty. We have scenarios where lots of tabs are opened and closed, and after
+        // garbage collection this array has capacity for over 90k elements yet has 0, which unnecessarily takes up memory.
+        // As a heuristic, shrink when the array is 80% empty. Also only shrink if the array can hold more than 50 elements
+        // so we don't thrash when there are only a few elements.
+        if (m_queuedObjectsForFinalRelease.capacity() > 50 && m_queuedObjectsForFinalRelease.capacity() > 5 * m_queuedObjectsForFinalRelease.size())
+        {
+            m_queuedObjectsForFinalRelease.shrink_to_fit();
+        }
+    }
 
     TraceReferenceTrackingCleanupInfo (m_cleanupCount, m_cDoCleanupAttempts, *completed);
 

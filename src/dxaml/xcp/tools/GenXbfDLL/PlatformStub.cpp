@@ -35,3 +35,8 @@ _Check_return_ std::size_t CTemplateContent::TryGetNameIndex(_In_ const xstring_
     ASSERT(FALSE);
     return static_cast<size_t>(-1);
 }
+
+STDAPI_(BOOL) Containment_GetChangeEnabled(UINT32 changeId)
+{
+    return TRUE;
+}

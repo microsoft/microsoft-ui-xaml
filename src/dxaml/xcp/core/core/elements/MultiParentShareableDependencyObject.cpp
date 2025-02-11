@@ -2,6 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 54433864: [Coca-Cola] Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
+// Bug 55723446: [WASDK 1.6] CMultiParentShareableDependencyObject's parent array grows unbounded
+#define WINAPPSDK_CHANGEID_55723446 55723446
 
 //------------------------------------------------------------------------
 //
@@ -91,6 +96,19 @@ CMultiParentShareableDependencyObject::RemoveParent(
         if (m_rgParentAssociation.empty())
         {
             SetIsValueOfInheritedProperty(FALSE);
+        }
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55723446>())
+        {
+            // Shrink down the parent array if it's too empty. We have scenarios where shared theme brushes can get tens of
+            // thousands of parents if referenced in many controls in many tabs. As those tabs get closed, we want to shrink
+            // the parent array so we don't always hold on to a vector of tens of thousands of elements.
+            // As a heuristic, shrink when the array is 80% empty. Also only shrink if the array is larger than 25 elements
+            // so we don't thrash when there are only a few elements.
+            if (m_rgParentAssociation.capacity() > 25 && m_rgParentAssociation.capacity() > 5 * m_rgParentAssociation.size())
+            {
+                m_rgParentAssociation.shrink_to_fit();
+            }
         }
     }
     else

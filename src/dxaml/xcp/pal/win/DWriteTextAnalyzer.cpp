@@ -7,6 +7,11 @@
 #include "DWriteFontFace.h"
 #include "DWriteFontCollection.h"
 #include <TextAnalysis.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 54433864: [Coca-Cola] Using WinUI ListView and/or ItemsRepeater causes a substantial increase in unmanaged memory usage
+// Bug 55723439: [WASDK 1.6] IDWriteTextAnalysisSource leak in FontFallbackWrapper::MapCharacters
+#define WINAPPSDK_CHANGEID_55723439 55723439
 
 //---------------------------------------------------------------------------
 //
@@ -985,8 +990,16 @@ HRESULT FontFallbackWrapper::MapCharacters(
 {
     TextAnalysisSourceProxy textAnalysisSourceProxy(pAnalysisSource);
 
-    IDWriteTextAnalysisSource* proxy;
-    IFC_RETURN(TextAnalysis_CreateDWritePrivateTextAnalysisSourceProxy(&textAnalysisSourceProxy, &proxy));
+    IDWriteTextAnalysisSource* proxy = nullptr;
+    wrl::ComPtr<IDWriteTextAnalysisSource> spProxy;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55723439>())
+    {
+        IFC_RETURN(TextAnalysis_CreateDWritePrivateTextAnalysisSourceProxy(&textAnalysisSourceProxy, spProxy.ReleaseAndGetAddressOf()));
+    }
+    else
+    {
+        IFC_RETURN(TextAnalysis_CreateDWritePrivateTextAnalysisSourceProxy(&textAnalysisSourceProxy, &proxy));
+    }
 
     *ppMappedFont = NULL;
 
@@ -1023,18 +1036,36 @@ HRESULT FontFallbackWrapper::MapCharacters(
     else
     {
         Microsoft::WRL::ComPtr<IDWriteFont> mappedFont;
-        IFC_RETURN(m_fontFallback->MapCharacters(
-            proxy, //&textAnalysisSourceProxy,
-            textPosition,
-            textLength,
-            pBaseFontCollection ? DWriteFontCollection::GetInternalCollection(pBaseFontCollection) : NULL,
-            pBaseFamilyName,
-            static_cast<DWRITE_FONT_WEIGHT>(baseWeight),
-            static_cast<DWRITE_FONT_STYLE>(baseStyle),
-            static_cast<DWRITE_FONT_STRETCH>(baseStretch),
-            pMappedLength,
-            mappedFont.ReleaseAndGetAddressOf(),
-            pScale));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_55723439>())
+        {
+            IFC_RETURN(m_fontFallback->MapCharacters(
+                spProxy.Get(),
+                textPosition,
+                textLength,
+                pBaseFontCollection ? DWriteFontCollection::GetInternalCollection(pBaseFontCollection) : NULL,
+                pBaseFamilyName,
+                static_cast<DWRITE_FONT_WEIGHT>(baseWeight),
+                static_cast<DWRITE_FONT_STYLE>(baseStyle),
+                static_cast<DWRITE_FONT_STRETCH>(baseStretch),
+                pMappedLength,
+                mappedFont.ReleaseAndGetAddressOf(),
+                pScale));
+        }
+        else
+        {
+            IFC_RETURN(m_fontFallback->MapCharacters(
+                proxy, //&textAnalysisSourceProxy,
+                textPosition,
+                textLength,
+                pBaseFontCollection ? DWriteFontCollection::GetInternalCollection(pBaseFontCollection) : NULL,
+                pBaseFamilyName,
+                static_cast<DWRITE_FONT_WEIGHT>(baseWeight),
+                static_cast<DWRITE_FONT_STYLE>(baseStyle),
+                static_cast<DWRITE_FONT_STRETCH>(baseStretch),
+                pMappedLength,
+                mappedFont.ReleaseAndGetAddressOf(),
+                pScale));
+        }
 
         if (mappedFont)
         {
