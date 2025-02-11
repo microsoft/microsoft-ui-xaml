@@ -22,7 +22,8 @@ namespace CustomRuntimeDataSerializationHelpers
 
     template<>
     StyleSetterEssence Deserialize<StyleSetterEssence>(
-        _In_  XamlBinaryFormatSubReader2* reader);
+        _In_  XamlBinaryFormatSubReader2* reader,
+        _In_ CustomWriterRuntimeDataTypeIndex typeIndex);
 
     template<>
      _Check_return_ HRESULT Serialize<StyleCustomRuntimeData>(

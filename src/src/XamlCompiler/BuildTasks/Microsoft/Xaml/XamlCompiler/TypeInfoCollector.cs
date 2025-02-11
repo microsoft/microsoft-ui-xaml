@@ -21,12 +21,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private XamlSchemaCodeInfo _schemaInfo;
         private RootLogBuilder _rootLogBuilder;
         private Platform _targPlat;
+        private bool _enableBindingDiagnostics;
         internal ClassName AppXamlInfo { get; set; }
 
-        public TypeInfoCollector(DirectUISchemaContext schemaContext, Platform targPlat)
+        public TypeInfoCollector(DirectUISchemaContext schemaContext, Platform targPlat, bool enableBindingDiagnostics)
         {
             _schemaContext = schemaContext;
             _targPlat = targPlat;
+            _enableBindingDiagnostics = enableBindingDiagnostics;
             _schemaInfo = new XamlSchemaCodeInfo();
             _rootLogBuilder = new RootLogBuilder();
         }
@@ -128,9 +130,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
                         // Examine all properties of type PropertyPath
                         //
-                        if (_schemaContext.DirectUISystem.PropertyPath.IsAssignableFrom(domMember.Member.Type.UnderlyingType)
-                            || this.ShouldTreatAsPropertyPath(domMember))
+                        if (_schemaContext.DirectUISystem.PropertyPath.IsAssignableFrom(domMember.Member.Type.UnderlyingType))
                         {
+                            CollectPropertyPath(domMember);
+                            continue;
+                        }
+
+                        if (this.ShouldTreatAsPropertyPath(domMember))
+                        {
+                            CheckForPropertyPathAotWarnings(domObject);
                             CollectPropertyPath(domMember);
                             continue;
                         }
@@ -389,8 +397,67 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 String pathString = pathValue.Value as String;
                 if (pathString != null)
                 {
+                    // When property path is empty, don't need AOT warnings
+                    // as data context is just used without additional reflection
+                    // on properties.
+                    CheckForPropertyPathAotWarnings(domBinding);
+
                     CollectPropertyPath(pathString, domBinding);
                 }
+            }
+        }
+
+        private void CheckForPropertyPathAotWarnings(XamlDomObject domBinding)
+        {
+            if (!_enableBindingDiagnostics)
+            {
+                return;
+            }
+
+            bool warningSuppressed = false;
+            XamlDomMember suppressTrimWarningMember = domBinding.GetMemberNode(XamlLanguage.SuppressXamlTrimWarnings);
+            if (suppressTrimWarningMember != null)
+            {
+                XamlDomValue suppressValue = suppressTrimWarningMember.Item as XamlDomValue;
+                if (suppressValue?.Value is string suppressValueStr &&
+                    bool.TryParse(suppressValueStr, out var suppressValueBool) &&
+                    suppressValueBool)
+                {
+                    warningSuppressed = true;
+                }
+            }
+
+            if (!warningSuppressed)
+            {
+                XamlDomMember dataTypeMember = null;
+                XamlDomObject objectToCheck = domBinding;
+                while (dataTypeMember == null && objectToCheck != null)
+                {
+                    dataTypeMember = DomHelper.GetDataTypeMember(objectToCheck, true);
+                    objectToCheck = objectToCheck.Parent?.Parent;
+                }
+
+                // Check if data type is attributed for either the ICustomPropertyProvider support
+                // or the IXamlMetadataProvider support.
+                if (dataTypeMember != null)
+                {
+                    string targetTypeName = DomHelper.GetStringValueOfProperty(dataTypeMember);
+                    if (!string.IsNullOrEmpty(targetTypeName))
+                    {
+                        XamlType dataRootType = domBinding.ResolveXmlName(targetTypeName);
+                        if (dataRootType != null &&
+                            (HasBindableAttribute(dataRootType.UnderlyingType) ||
+                                HasGeneratedBindableCustomPropertyAttribute(dataRootType.UnderlyingType)))
+                        {
+                            warningSuppressed = true;
+                        }
+                    }
+                }
+            }
+
+            if (!warningSuppressed)
+            {
+                _schemaContext.SchemaWarnings.Add(new XamlBindingAotCompatibilityWarning(domBinding));
             }
         }
 
@@ -523,6 +590,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 return true;
             }
             foreach (CustomAttributeData attr in Microsoft.UI.Xaml.Markup.Compiler.DirectUI.ReflectionHelper.GetCustomAttributeData(type, false, KnownTypes.BindableAttribute))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static bool HasGeneratedBindableCustomPropertyAttribute(Type type)
+        {
+            foreach (CustomAttributeData attr in 
+                Microsoft.UI.Xaml.Markup.Compiler.DirectUI.ReflectionHelper.GetCustomAttributeData(type, false, KnownTypes.GeneratedBindableCustomPropertyAttribute))
             {
                 return true;
             }

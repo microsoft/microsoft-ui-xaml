@@ -226,6 +226,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Reader
 
                 case CustomWriterRuntimeDataTypeIndex.Style_v1:
                 case CustomWriterRuntimeDataTypeIndex.Style_v2:
+                case CustomWriterRuntimeDataTypeIndex.Style_v3:
                     {
                         data = StyleCustomRuntimeData.CreateAndDeserializeRuntimeData(this, typeIndex);
                     }

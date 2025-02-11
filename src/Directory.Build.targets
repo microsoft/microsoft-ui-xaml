@@ -23,4 +23,5 @@
     <Import Project="eng\graph.targets" Condition="'$(IsGraphBuild)' == 'true'" />
     <Import Project="eng\projectcaching.targets" />
     <Import Project="eng\lightup.targets" />
+	<Import Project="$(ProjectRoot)\eng\WebView2ProjectionWorkaround.targets" />
 </Project>

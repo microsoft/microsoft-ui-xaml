@@ -40,12 +40,10 @@ HRESULT DirectUI::XamlRootGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot3>(this);
     }
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot4)))
     {
-        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi>(this);
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot4>(this);
     }
-#endif
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
@@ -63,6 +61,16 @@ IFACEMETHODIMP DirectUI::XamlRootGenerated::get_Content(_Outptr_result_maybenull
     *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlRoot*>(this)->get_ContentImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlRootGenerated::get_ContentIsland(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIsland** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<XamlRoot*>(this)->get_ContentIslandImpl(ppValue));
 Cleanup:
     RRETURN(hr);
 }
@@ -201,26 +209,6 @@ Cleanup:
 }
 
 // Methods.
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlRootGenerated::TryGetContentIsland(_Outptr_ ABI::Microsoft::UI::Content::IContentIsland** ppReturnValue)
-{
-    HRESULT hr = S_OK;
-    if (EventEnabledApiFunctionCallStart())
-    {
-        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "XamlRoot_TryGetContentIsland", 0);
-    }
-    ARG_VALIDRETURNPOINTER(ppReturnValue);
-    *ppReturnValue={};
-    IFC(CheckThread());
-    IFC(static_cast<XamlRoot*>(this)->TryGetContentIslandImpl(ppReturnValue));
-Cleanup:
-    if (EventEnabledApiFunctionCallStop())
-    {
-        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "XamlRoot_TryGetContentIsland", hr);
-    }
-    RRETURN(hr);
-}
-#endif
 
 
 namespace DirectUI

@@ -159,7 +159,7 @@
     <!-- When updating to the winui3 compatible win2d, remove the FixWUXReferences target -->
     <PackageReference Include="Win2d.WinUI" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Web.WebView2" />
-
+    
     <Manifest Include="$(ApplicationManifest)" />
 
     <!--
@@ -190,6 +190,7 @@
       <Page Remove="@(PageToTest)" />
     </ItemGroup>
   </Target>
+
   <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage">
     <RunPowershellScript Path="$(MUXCProjectRoot)tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt">
       <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill"/>

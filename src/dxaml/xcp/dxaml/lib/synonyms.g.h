@@ -124,7 +124,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot IXamlRoot;
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot2 IXamlRoot2;
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot3 IXamlRoot3;
-    typedef ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi IXamlRootFeature_ExperimentalApi;
+    typedef ABI::Microsoft::UI::Xaml::IXamlRoot4 IXamlRoot4;
     typedef ABI::Microsoft::UI::Xaml::IXamlRootChangedEventArgs IXamlRootChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Automation::IAnnotationPatternIdentifiers IAnnotationPatternIdentifiers;
     typedef ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation IAutomationAnnotation;

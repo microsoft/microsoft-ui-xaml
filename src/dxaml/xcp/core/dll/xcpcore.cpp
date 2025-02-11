@@ -319,6 +319,21 @@ HRESULT ActivationFactoryCache::GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::I
     return S_OK;
 }
 
+HRESULT ActivationFactoryCache::GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics)
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_desktopPopupSiteBridgeStatics)
+    {
+        IFC_RETURN(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopPopupSiteBridge).Get(),
+            &m_desktopPopupSiteBridgeStatics));
+    }
+
+    m_desktopPopupSiteBridgeStatics.CopyTo(statics);
+    return S_OK;
+}
+
 HRESULT ActivationFactoryCache::GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics)
 {
     wil::cs_leave_scope_exit guard = m_lock.lock();
@@ -8305,15 +8320,23 @@ _Check_return_ HRESULT CCoreServices::CheckMemoryUsage(bool simulateLowMemory)
         IFC_RETURN(ReleaseDeviceResources(false /* releaseDCompDevice */, true /* isDeviceLost */));
 
         // release the unused textFormatters to reduce memory usage
-        if (m_pTextCore != NULL)
-        {
-            m_pTextCore->ReleaseUnusedTextFormatters();
-        }
+        ReleaseCachedTextFormatters();
 
         OnLowMemory();
     }
 
     return S_OK;
+}
+
+void CCoreServices::ReleaseCachedTextFormatters() noexcept
+{
+    // Line services' LsTextFormatter allocates memory blocks when it formats lines, and those blocks are kept around
+    // even after the lines themselves are released. We have cached LsTextFormatter objects. Release them to free those
+    // blocks.
+    if (m_pTextCore != NULL)
+    {
+        m_pTextCore->ReleaseUnusedTextFormatters();
+    }
 }
 
 // Dispatcher mechanism used to enqueue request to query D3D device for lost state.
@@ -10514,6 +10537,15 @@ void CCoreServices::UnpegNoRefCoreObjectWithoutPeer(_In_ CDependencyObject *pObj
     {
         AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
         m_PegNoRefCoreObjectsWithoutPeers.erase(pObject);
+
+        // Shrink down the parent array if it's too empty. We have scenarios where lots of tabs are opened and closed,
+        // and after garbage collection this vector has space for over 12k buckets yet only ~25 items, which
+        // unnecessarily takes up memory. As a heuristic, shrink when the array is 80% empty. Also only shrink if the
+        // array is larger than 25 elements so we don't thrash when there are only a few elements.
+        if (m_PegNoRefCoreObjectsWithoutPeers.capacity() > 25 && m_PegNoRefCoreObjectsWithoutPeers.capacity() > 5 * m_PegNoRefCoreObjectsWithoutPeers.size())
+        {
+            m_PegNoRefCoreObjectsWithoutPeers.shrink_to_fit();
+        }
     }
 }
 

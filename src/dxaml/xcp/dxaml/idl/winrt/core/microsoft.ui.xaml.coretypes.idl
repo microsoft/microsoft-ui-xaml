@@ -1936,10 +1936,8 @@ namespace Microsoft.UI.Xaml
         }
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 8)]
-        [feature(Feature_ExperimentalApi)]
-        [interface_name("Microsoft.UI.Xaml.IXamlRootFeature_ExperimentalApi")]
         {
-            Microsoft.UI.Content.ContentIsland TryGetContentIsland();
+            Microsoft.UI.Content.ContentIsland ContentIsland{ get; };
         }
     };
 

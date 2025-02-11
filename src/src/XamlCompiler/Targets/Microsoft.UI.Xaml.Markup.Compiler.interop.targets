@@ -91,15 +91,19 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
         <!-- For CppWinRT projects, ensure the metadata provider is generated in the MUX namespace -->
         <XamlNamespace>Microsoft.UI.Xaml</XamlNamespace>
-    </PropertyGroup>
 
-    <!-- Construct the FeatureControlFlags property based off of the values of EnableTypeInfoReflection, EnableXBindDiagnostics, EnableDefaultValidationContextGeneration, EnableWin32Codegen, and UsingCSWinRT -->
+        <!-- If marked as AOT compatible, warn for any bindings that are not code generated / compiled. -->
+        <EnableBindingDiagnostics Condition="'$(EnableBindingDiagnostics)' == '' and ('$(IsAotCompatible)' == 'true' or '$(PublishAot)' == 'true')">true</EnableBindingDiagnostics>
+	</PropertyGroup>
+
+    <!-- Construct the FeatureControlFlags property based off of the values of EnableTypeInfoReflection, EnableXBindDiagnostics, EnableDefaultValidationContextGeneration, EnableWin32Codegen, EnableBindingDiagnostics, and UsingCSWinRT -->
     <ItemGroup>
       <XamlFeatureControlFlags Include="EnableTypeInfoReflection" Condition="'$(EnableTypeInfoReflection)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableXBindDiagnostics" Condition="'$(EnableXBindDiagnostics)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableDefaultValidationContextGeneration" Condition="'$(EnableDefaultValidationContextGeneration)' == 'true'" />
       <XamlFeatureControlFlags Include="EnableWin32Codegen" Condition="'$(EnableWin32Codegen)' == 'true'" />
       <XamlFeatureControlFlags Include="UsingCSWinRT" Condition="'$(_UsingCSWinRT)' == 'true'" />
+      <XamlFeatureControlFlags Include="EnableBindingDiagnostics" Condition="'$(EnableBindingDiagnostics)' == 'true'" />
     </ItemGroup>
 
     <!-- When using reflection for our metadata provider, we need to include the reflection helper DLL which is in the same folder as this targets file -->

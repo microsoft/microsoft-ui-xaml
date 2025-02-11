@@ -11,7 +11,7 @@
       <PackageReference Include="Microsoft.Build" Version="15.8.166" />
       <PackageReference Include="Microsoft.Build.Framework" Version="15.8.166" />
       <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.8.166" />
-      <PackageReference Include="System.Text.Json" Version="6.0.1" />
+      <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
   </ItemGroup>
 
   <ItemGroup>

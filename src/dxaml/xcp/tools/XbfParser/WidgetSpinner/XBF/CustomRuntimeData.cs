@@ -2,7 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Xaml.WidgetSpinner.Metadata;
+using Microsoft.Xaml.WidgetSpinner.Model;
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Xaml.WidgetSpinner.XBF
 {
@@ -19,6 +21,7 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
         Style_v2 = 8,
         DeferredElement_v3 = 9,
         ResourceDictionary_v3 = 10,
+        Style_v3 = 11,
 
         // Legacy values derived from StableXbfTypeIndex
         DeferredElement_v1 = StableXbfTypeIndex.DeferredElement,                        // 745
@@ -68,9 +71,14 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
     {
         public CustomWriterRuntimeDataTypeIndex Version { get; }
 
-        protected CustomRuntimeData(CustomWriterRuntimeDataTypeIndex version)
+        public Dictionary<StreamOffsetToken, List<XamlPredicateAndArgs>> ConditionallyDeclaredObjects { get; }
+
+        protected CustomRuntimeData(
+            CustomWriterRuntimeDataTypeIndex version, 
+            Dictionary<StreamOffsetToken, List<XamlPredicateAndArgs>> conditionallyDeclaredObjects)
         {
             Version = version;
+            ConditionallyDeclaredObjects = conditionallyDeclaredObjects;
         }
 
         public override string ToString()

@@ -45,17 +45,17 @@
                                 </VisualState>
                             </VisualStateGroup>
                            
-                            <VisualStateGroup x:Name="HeaderGroup">
-                                <VisualState x:Name="HeaderCollapsed" />
-                                <VisualState x:Name="HeaderVisible">
+                            <VisualStateGroup x:Name="LeftContentGroup">
+                                <VisualState x:Name="LeftContentCollapsed" />
+                                <VisualState x:Name="LeftContentVisible">
                                     <VisualState.Setters> 
-                                        <Setter Target="PART_HeaderContentPresenter.Visibility" Value="Visible" />
+                                        <Setter Target="PART_LeftContentPresenter.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="HeaderDeactivated">
+                                <VisualState x:Name="LeftContentDeactivated">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_HeaderContentPresenter.Visibility" Value="Visible" />
-                                        <Setter Target="PART_HeaderContentPresenter.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                        <Setter Target="PART_LeftContentPresenter.Visibility" Value="Visible" />
+                                        <Setter Target="PART_LeftContentPresenter.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -105,32 +105,32 @@
                                 </VisualState>
                             </VisualStateGroup>
                             
-                            <VisualStateGroup x:Name="ContentGroup">
-                                <VisualState x:Name="ContentCollapsed" />
-                                <VisualState x:Name="ContentVisible">
+                            <VisualStateGroup x:Name="CenterContentGroup">
+                                <VisualState x:Name="CenterContentCollapsed" />
+                                <VisualState x:Name="CenterContentVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ContentPresenterGrid.Visibility" Value="Visible" />
+                                        <Setter Target="PART_CenterContentPresenterGrid.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="ContentDeactivated">
+                                <VisualState x:Name="CenterContentDeactivated">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_ContentPresenterGrid.Visibility" Value="Visible" />
-                                        <Setter Target="PART_ContentPresenterGrid.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                        <Setter Target="PART_CenterContentPresenterGrid.Visibility" Value="Visible" />
+                                        <Setter Target="PART_CenterContentPresenterGrid.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                             
-                            <VisualStateGroup x:Name="FooterGroup">
-                                <VisualState x:Name="FooterCollapsed" />
-                                <VisualState x:Name="FooterVisible">
+                            <VisualStateGroup x:Name="RightContentGroup">
+                                <VisualState x:Name="RightContentCollapsed" />
+                                <VisualState x:Name="RightContentVisible">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_FooterContentPresenter.Visibility" Value="Visible" />
+                                        <Setter Target="PART_RightContentPresenter.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="FooterDeactivated">
+                                <VisualState x:Name="RightContentDeactivated">
                                     <VisualState.Setters>
-                                        <Setter Target="PART_FooterContentPresenter.Visibility" Value="Visible" />
-                                        <Setter Target="PART_FooterContentPresenter.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
+                                        <Setter Target="PART_RightContentPresenter.Visibility" Value="Visible" />
+                                        <Setter Target="PART_RightContentPresenter.Opacity" Value="{ThemeResource TitleBarDeactivatedOpacity}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -150,46 +150,46 @@
                                     <VisualState.Setters>
                                         <Setter Target="PART_TitleText.Visibility" Value="Collapsed" />
                                         <Setter Target="PART_SubtitleText.Visibility" Value="Collapsed" />
-                                        <Setter Target="PART_ContentPresenter.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="PART_ContentPresenter.Margin" Value="16,0" />
+                                        <Setter Target="PART_CenterContentPresenter.HorizontalAlignment" Value="Left" />
+                                        <Setter Target="PART_CenterContentPresenter.Margin" Value="16,0" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="HeaderSpacingGroup">
+                            <VisualStateGroup x:Name="LeftContentSpacingGroup">
                                 <VisualState x:Name="DefaultSpacing" />
                                 <VisualState x:Name="NegativeInsetSpacing">
                                     <VisualState.Setters>
-                                        <Setter Target="HeaderPaddingColumn.Width" Value="2" />
+                                        <Setter Target="LeftContentPaddingColumn.Width" Value="{ThemeResource TitleBarHeaderNegativeInsetPaddingWidth}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Grid.ColumnDefinitions>
                             <!-- 0: Left Padding Column-->
-                            <ColumnDefinition x:Name="LeftPaddingColumn" Width="2" />
+                            <ColumnDefinition x:Name="LeftPaddingColumn" Width="{ThemeResource TitleBarLeftPaddingWidth}" />
                             <!-- 1: Back Button -->
                             <ColumnDefinition Width="Auto" />
                             <!-- 2: Pane Toggle Button -->
                             <ColumnDefinition Width="Auto" />
-                            <!-- 3: Header Content Presenter -->
+                            <!-- 3: Left Content Presenter -->
                             <ColumnDefinition Width="Auto" />
-                            <!-- 4: Header Padding Column -->
-                            <ColumnDefinition x:Name="HeaderPaddingColumn" Width="14" />
+                            <!-- 4: Left Content Padding Column -->
+                            <ColumnDefinition x:Name="LeftContentPaddingColumn" Width="{ThemeResource TitleBarLeftContentPaddingWidth}" />
                             <!-- 5: Icon -->
                             <ColumnDefinition Width="Auto" />
                             <!-- 6: Title -->
                             <ColumnDefinition Width="Auto" />
                             <!-- 7: Subtitle -->
                             <ColumnDefinition Width="Auto" />
-                            <!-- 8: Content Presenter -->
+                            <!-- 8: Center Content Presenter -->
                             <ColumnDefinition Width="*" />
-                            <!-- 9: Footer Content Presenter -->
+                            <!-- 9: Right Content Presenter -->
                             <ColumnDefinition Width="Auto" />
                             <!-- 10: Min Drag Region -->
-                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="{ThemeResource TitleBarMinDragRegionWidth}" />
                             <!-- 11: Right Padding Column -->
-                            <ColumnDefinition x:Name="RightPaddingColumn" Width="0" />
+                            <ColumnDefinition x:Name="RightPaddingColumn" Width="{ThemeResource TitleBarRightPaddingWidth}" />
                         </Grid.ColumnDefinitions>
                         
                         <Button
@@ -198,7 +198,7 @@
                             Visibility="Collapsed"
                             Grid.Column="1"
                             Style="{ThemeResource TitleBarBackButtonStyle}"
-                            IsEnabled="{TemplateBinding IsBackEnabled}"
+                            IsEnabled="{TemplateBinding IsBackButtonEnabled}"
                             ToolTipService.ToolTip="Back" />
 
                         <Button
@@ -210,11 +210,11 @@
                             ToolTipService.ToolTip="Navigation" />
 
                         <ContentPresenter
-                            x:Name="PART_HeaderContentPresenter"
+                            x:Name="PART_LeftContentPresenter"
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
                             Grid.Column="3"
-                            Content="{TemplateBinding Header}" />
+                            Content="{TemplateBinding LeftContent}" />
                             
                         <Viewbox
                             x:Name="PART_Icon"
@@ -258,22 +258,22 @@
                             MinWidth="48" />
                             
                         <Grid
-                            x:Name="PART_ContentPresenterGrid"
+                            x:Name="PART_CenterContentPresenterGrid"
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
                             Grid.Column="8">
                             <ContentPresenter
-                                x:Name="PART_ContentPresenter"
-                                Content="{TemplateBinding Content}"
+                                x:Name="PART_CenterContentPresenter"
+                                Content="{TemplateBinding CenterContent}"
                                 HorizontalAlignment="Center"/>
                         </Grid>
                            
                         <ContentPresenter
-                            x:Name="PART_FooterContentPresenter"
+                            x:Name="PART_RightContentPresenter"
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
                             Grid.Column="9"
-                            Content="{TemplateBinding Footer}" />
+                            Content="{TemplateBinding RightContent}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

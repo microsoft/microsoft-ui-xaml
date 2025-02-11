@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "DeferredMapping.h"
+#include "XamlTelemetry.h"
 
 // #define ENABLE_LOGGING
 
@@ -341,6 +342,24 @@ _Check_return_ HRESULT CDeferredMapping::NotifyDestroyed(
 
     element->SetHasDeferred(false);
     mapping.erase(iter); // iter is not valid after this!
+
+    // Shrink down the backing vector if there are too many empty buckets. We have scenarios where lots of tabs are
+    // opened and closed, and after garbage collection this map has over 16k buckets yet only 2 items, which
+    // unnecessarily takes up memory. As a heuristic, shrink when there are 100x more buckets than items. Also only
+    // shrink if there are more than 500 buckets so we don't thrash when there are only a few elements.
+    if (mapping.bucket_count() > 500 && mapping.load_factor() < 0.01)
+    {
+        // Note: rehash in xhash only increases the number of buckets. We have to build a new unordered_map.
+        CDeferredMapping::ElementToInfoMap shrunk(std::make_move_iterator(mapping.begin()), std::make_move_iterator(mapping.end()));
+
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Memory_ResizeDeferredMappingUnorderedMap",
+            TraceLoggingUInt64(mapping.bucket_count(), "OriginalBucketCount"),
+            TraceLoggingUInt64(shrunk.bucket_count(), "NewBucketCount"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+        mapping = std::move(shrunk);
+    }
 
     if (declaringScope)
     {

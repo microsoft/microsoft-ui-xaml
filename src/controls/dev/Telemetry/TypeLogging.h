@@ -10,6 +10,7 @@ namespace TypeLogging
     winrt::hstring PointerDeviceTypeToString(const winrt::PointerDeviceType& pointerDeviceKind);
     winrt::hstring PointerUpdateKindToString(const winrt::PointerUpdateKind& pointerUpdateKind);
     winrt::hstring RectToString(const winrt::Rect& rect);
+    winrt::hstring RectInt32ToString(const winrt::RectInt32& rect);
     winrt::hstring SizeToString(const winrt::Size& size);
     winrt::hstring Float2ToString(const winrt::float2& v2);
     winrt::hstring NullableFloatToString(const winrt::IReference<float>& nf);

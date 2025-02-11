@@ -11,7 +11,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <Grid x:Name="TitleBarPageWindowGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -33,16 +33,44 @@
                     BorderThickness="1"
                     Spacing="8"
                     Padding="46,20">
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="TitleBar OutputDebugString Levels:"
+                           VerticalAlignment="Center"
+                           Margin="2" />
+                <ComboBox x:Name="cmbTitleBarOutputDebugStringLevel"
+                          Margin="2"
+                          Width="120"
+                          HorizontalAlignment="Left"
+                          SelectedIndex="0"
+                          Grid.Column="1"
+                          SelectionChanged="CmbTitleBarOutputDebugStringLevel_SelectionChanged">
+                    <ComboBoxItem>None</ComboBoxItem>
+                    <ComboBoxItem>Info</ComboBoxItem>
+                    <ComboBoxItem>Verbose</ComboBoxItem>
+                </ComboBox>
+            </Grid>
+
+            <ToggleButton x:Name="EnableRTLToggleButton"
+                          IsChecked="False"
+                          Checked="EnableRTLToggleButton_Checked"
+                          Unchecked="EnableRTLToggleButton_Unchecked"
+                          Content="Enable RTL" />
+
             <CheckBox x:Name="IsBackButtonVisibleCheckBox"
                     Content="Back Button Visible"
                     Checked="IsBackButtonVisibleCheckBox_CheckedChanged"
                     Unchecked="IsBackButtonVisibleCheckBox_CheckedChanged" />
 
-            <CheckBox x:Name="IsBackEnabledCheckBox"
+            <CheckBox x:Name="IsBackButtonEnabledCheckBox"
                     IsChecked="True"
                     Content="Back Button Enabled"
-                    Checked="IsBackEnabledCheckBox_CheckedChanged"
-                    Unchecked="IsBackEnabledCheckBox_CheckedChanged" />
+                    Checked="IsBackButtonEnabledCheckBox_CheckedChanged"
+                    Unchecked="IsBackButtonEnabledCheckBox_CheckedChanged" />
 
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Back Requested:" />
@@ -91,20 +119,20 @@
                         Click="SetSubtitleButton_Click" />
             </StackPanel>
 
-            <CheckBox x:Name="HeaderContentCheckBox"
-                    Content="HeaderContent"
-                    Checked="HeaderContentCheckBox_CheckedChanged"
-                    Unchecked="HeaderContentCheckBox_CheckedChanged" />
+            <CheckBox x:Name="LeftContentCheckBox"
+                    Content="LeftContent"
+                    Checked="LeftContentCheckBox_CheckedChanged"
+                    Unchecked="LeftContentCheckBox_CheckedChanged" />
 
-            <CheckBox x:Name="CustomContentCheckBox"
-                    Content="CustomContent"
-                    Checked="CustomContentCheckBox_CheckedChanged"
-                    Unchecked="CustomContentCheckBox_CheckedChanged" />
+            <CheckBox x:Name="CustomCenterContentCheckBox"
+                    Content="CustomCenterContent"
+                    Checked="CustomCenterContentCheckBox_CheckedChanged"
+                    Unchecked="CustomCenterContentCheckBox_CheckedChanged" />
 
-            <CheckBox x:Name="FooterContentCheckBox"
-                    Content="FooterContent"
-                    Checked="FooterContentCheckBox_CheckedChanged"
-                    Unchecked="FooterContentCheckBox_CheckedChanged" />
+            <CheckBox x:Name="RightContentCheckBox"
+                    Content="RightContent"
+                    Checked="RightContentCheckBox_CheckedChanged"
+                    Unchecked="RightContentCheckBox_CheckedChanged" />
 
         </StackPanel>
     </Grid>

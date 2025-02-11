@@ -77,6 +77,10 @@ public:
     }
     bool IsInConditionalScope() const { return !m_conditionalScopes.empty(); }
 
+    // Does the input StreamOffsetToken correspond to a conditionally declared object that should be ignored,
+    // i.e. does it have an associated XamlPredicateAndArgs that evaluates to false.
+    bool IsTokenForIgnoredConditionalObject(StreamOffsetToken token) const;
+
     void RecordConditionallyDeclaredObject(StreamOffsetToken token);
 
 protected:
@@ -84,10 +88,6 @@ protected:
     virtual HRESULT SerializeImpl(_In_ XamlBinaryFormatSubWriter2* writer, _In_ const std::vector<unsigned int>& streamOffsetTable) = 0;
 
     virtual CustomWriterRuntimeDataTypeIndex GetTypeIndexForSerialization(_In_ const TargetOSVersion& targetOS) const = 0;
-
-    // Does the input StreamOffsetToken correspond to a conditionally declared object that should be ignored,
-    // i.e. does it have an associated XamlPredicateAndArgs that evaluates to false.
-    bool IsTokenForIgnoredConditionalObject(StreamOffsetToken token) const;
 
     // This is a map of StreamOffsetTokens (representing objects that were conditionally declared) to 
     // XamlPredicateAndArgs. The value is a vector of XamlPredicateAndArgs since the object may be part

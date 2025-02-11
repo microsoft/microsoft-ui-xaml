@@ -68,7 +68,7 @@
     <SamplesTargetFrameworkMoniker>$(WindowsAppSdkTargetFrameworkMoniker)</SamplesTargetFrameworkMoniker>
     <MicrosoftCsWinRTPackageVersion>2.1.1</MicrosoftCsWinRTPackageVersion>
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>38</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
-    <WebView2PackageVersion>1.0.2792.45</WebView2PackageVersion>
+    <WebView2PackageVersion>1.0.2903.40</WebView2PackageVersion>
     <dotNetSdkChannel>8.0.1xx</dotNetSdkChannel>
     <dotNetSdkVNextChannel>9.0.xx</dotNetSdkVNextChannel>
     <CppWinRTVersion>2.0.230706.1</CppWinRTVersion>
@@ -78,6 +78,7 @@
     <CommunityToolkitWinUIVersion>8.0.230907</CommunityToolkitWinUIVersion>
     <GraphicsWin2DVersion>1.1.1-1.1.1-local6</GraphicsWin2DVersion>
     <NewtonsoftJsonVersion>13.0.2</NewtonsoftJsonVersion>
+    <SystemTextJsonVersion>6.0.10</SystemTextJsonVersion>
     <MicrosoftTestNetSdkVersion>17.4.0</MicrosoftTestNetSdkVersion>
     <AbiWinRtVersion>2.0.210330.2</AbiWinRtVersion>
   </PropertyGroup>

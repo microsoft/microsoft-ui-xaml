@@ -903,7 +903,7 @@ HRESULT STDMETHODCALLTYPE CUIAWrapper::get_FragmentRoot(_Out_ IRawElementProvide
 
     *pRetVal = nullptr;
 
-    if (m_pWindow->IsAutomationTreeFragmentBased())
+    if (m_pWindow->IsAutomationOptionFragmentBased())
     {
         wrl::ComPtr<ixp::IContentIslandAutomation> contentIslandAutomation;
         IFCFAILFAST(m_pWindow->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandAutomation)));

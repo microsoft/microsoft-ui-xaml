@@ -14,16 +14,18 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
         public List<Tuple<string, StreamOffsetToken>> ExplicitKeyResources { get; }
         public List<Tuple<string, StreamOffsetToken>> ImplicitKeyResources { get; }
         public List<string> ResourcesWithXNames { get; }
-        public Dictionary<StreamOffsetToken, List<XamlPredicateAndArgs>> ConditionallyDeclaredObjects { get; }
 
-        internal ResourceDictionaryCustomRuntimeData(CustomWriterRuntimeDataTypeIndex version, List<Tuple<string, StreamOffsetToken>> explicitKeyResources,
-            List<Tuple<string, StreamOffsetToken>> implicitKeyResources, List<string> resourcesWithXNames, Dictionary<StreamOffsetToken, List<XamlPredicateAndArgs>> conditionallyDeclaredObjects)
-            : base(version)
+        internal ResourceDictionaryCustomRuntimeData(
+            CustomWriterRuntimeDataTypeIndex version, 
+            List<Tuple<string, StreamOffsetToken>> explicitKeyResources,
+            List<Tuple<string, StreamOffsetToken>> implicitKeyResources, 
+            List<string> resourcesWithXNames,
+            Dictionary<StreamOffsetToken, List<XamlPredicateAndArgs>> conditionallyDeclaredObjects)
+            : base(version, conditionallyDeclaredObjects)
         {
             ImplicitKeyResources = implicitKeyResources;
             ExplicitKeyResources = explicitKeyResources;
             ResourcesWithXNames = resourcesWithXNames;
-            ConditionallyDeclaredObjects = conditionallyDeclaredObjects;
         }
 
         internal static ResourceDictionaryCustomRuntimeData CreateAndDeserializeRuntimeData(XbfReader reader,

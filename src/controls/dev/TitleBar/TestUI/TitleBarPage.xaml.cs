@@ -1,19 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Markup;
-using Windows.UI;
-using System.Windows.Input;
-
-using Windows.UI.ViewManagement;
-using Windows.Foundation;
-using MUXControlsTestApp.Utilities;
-using Microsoft.UI.Windowing;
+using Microsoft.UI.Private.Controls;
+using WEX.Logging.Interop;
 
 namespace MUXControlsTestApp
 {
@@ -22,7 +13,16 @@ namespace MUXControlsTestApp
     {
         public TitleBarPage()
         {
+            LogController.InitializeLogging();
             this.InitializeComponent();
+        }
+
+        private void CmbTitleBarOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            MUXControlsTestHooks.SetOutputDebugStringLevelForType(
+                "TitleBar",
+                cmbTitleBarOutputDebugStringLevel.SelectedIndex == 1 || cmbTitleBarOutputDebugStringLevel.SelectedIndex == 2,
+                cmbTitleBarOutputDebugStringLevel.SelectedIndex == 2);
         }
 
         private void TitleBarWindowingButton_Click(object sender, RoutedEventArgs e)
@@ -30,6 +30,5 @@ namespace MUXControlsTestApp
             var newWindow = new TitleBarPageWindow();
             newWindow.Activate();
         }
-
     }
 }

@@ -708,4 +708,10 @@
     <value>Please #include the implementation header for '{0}'.</value>
     <comment>{0} is a type name</comment>
   </data>
+  <data name="XamlCompiler_BindingAotCompatibility" xml:space="preserve">
+    <value>Ensure the property path is trimming and AOT compatible by making use of 'Compiled Bindings (x:bind)' if possible or by specifying the 'x:DataType' directive with the respective binding data context and marking the type declaration with the 'WinRT.GeneratedBindableCustomProperty' attribute or the 'Microsoft.UI.Xaml.Data.Bindable' attribute. If you are unable to do either but can ensure the data type is attributed correctly, then you can also suppress the warning by specifying `x:SuppressXamlTrimWarnings=True` within the closest element. If not, the property path might be trimmed and will not be AOT compatible.</value>
+  </data>
+  <data name="XamlCompiler_InvalidValueForSuppressXamlTrimWarnings" xml:space="preserve">
+    <value>Value for 'x:SuppressXamlTrimWarnings' must be True or False.</value>
+  </data>
 </root>

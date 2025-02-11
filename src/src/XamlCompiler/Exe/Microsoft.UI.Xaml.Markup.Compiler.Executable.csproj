@@ -442,9 +442,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Text.Json">
-      <Version>6.0.1</Version>
-    </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
     <PackageReference Include="System.Reflection.Metadata" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
@@ -463,7 +461,7 @@
     <PackageContent Include="$(TargetDir)System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net472" />
     <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.IO.dll" PackageLocation="$(ToolsPackageLocation)\net6.0" />
     <PackageContent Include="$(TargetDir)Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll" PackageLocation="$(ToolsPackageLocation)\net6.0" />
-    <PackageContent Include="$(NuGetPackageRoot)\system.text.json\6.0.1\lib\netstandard2.0\System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net6.0" />
+    <PackageContent Include="$(NuGetPackageRoot)\system.text.json\$(SystemTextJsonVersion)\lib\netstandard2.0\System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net6.0" />
     <PackageContent Include="$(OutDir)$(TargetName).exe" PackageLocation="$(ToolsPackageLocation)\net472" />
     <PackageContent Include="$(OutDir)$(TargetName).exe.config" PackageLocation="$(ToolsPackageLocation)\net472" />
     <PackageContent Include="$(TargetDir)System.Text.Json.dll" PackageLocation="$(ToolsPackageLocation)\net472" />

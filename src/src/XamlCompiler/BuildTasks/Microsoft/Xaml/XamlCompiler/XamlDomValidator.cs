@@ -1380,12 +1380,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 {
                     // Validate x:DataType property.
 
-                    // DataType is only allowed on DataTemplate
-                    if (!DomHelper.IsDerivedFromDataTemplate(domObject))
-                    {
-                        Errors.Add(new XamlValidationError_DataTypeOnlyAllowedOnDataTemplate(domObject));
-                    }
-
                     // We must be able to resolve the type specified in pass2
                     if (!IsPass1)
                     {
@@ -1394,7 +1388,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                         {
                             if (domObject.ResolveXmlName(dataTypeName) == null)
                             {
-                                // Need a class for the rrror;Can't resolve type
+                                // Need a class for the error - Can't resolve type
                                 Errors.Add(new XamlValidationError_CantResolveDataType(domObject, dataTypeName));
                             }
                         }
@@ -1428,6 +1422,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                         Errors.Add(new XamlValidationError_PhaseOnlyAllowedInDataTemplate(domObject));
                     }
 
+                    return;
+                }
+                else if (DomHelper.IsSuppressXamlTrimWarningsMember(domMember))
+                {
+                    string value = DomHelper.GetStringValueOfProperty(domMember);
+                    if (!bool.TryParse(value, out _))
+                    {
+                        Errors.Add(new XamlValidationError_InvalidValueForSuppressXamlTrimWarnings(domObject));
+                    }
                     return;
                 }
             }

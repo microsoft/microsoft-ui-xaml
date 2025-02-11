@@ -6037,13 +6037,13 @@ Entry c_typeEntries[] =
                 {
                     winrt::ITitleBarStatics statics = GetFactory<winrt::ITitleBarStatics>(L"Microsoft.UI.Xaml.Controls.TitleBar");
                     {
-                        xamlType.AddDPMember(L"Content", L"Object", statics.ContentProperty(), true /* isContent */);
-                        xamlType.AddDPMember(L"Footer", L"Object", statics.FooterProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CenterContent", L"Microsoft.UI.Xaml.UIElement", statics.CenterContentProperty(), true /* isContent */);
                         xamlType.AddDPMember(L"IconSource", L"Microsoft.UI.Xaml.Controls.IconSource", statics.IconSourceProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsBackButtonEnabled", L"Boolean", statics.IsBackButtonEnabledProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsBackButtonVisible", L"Boolean", statics.IsBackButtonVisibleProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"IsBackEnabled", L"Boolean", statics.IsBackEnabledProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsPaneToggleButtonVisible", L"Boolean", statics.IsPaneToggleButtonVisibleProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"LeftContent", L"Microsoft.UI.Xaml.UIElement", statics.LeftContentProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"RightContent", L"Microsoft.UI.Xaml.UIElement", statics.RightContentProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Subtitle", L"String", statics.SubtitleProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"TemplateSettings", L"Microsoft.UI.Xaml.Controls.TitleBarTemplateSettings", statics.TemplateSettingsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Title", L"String", statics.TitleProperty(), false /* isContent */);

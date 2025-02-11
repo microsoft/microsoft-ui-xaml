@@ -11,12 +11,7 @@
 
 #pragma once
 
-#include <FeatureFlags.h>
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
-#else
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE
-#endif
+
 #define __XamlRoot_GUID "eaad7a20-751b-4a85-b6c9-50231742b28f"
 
 #pragma region forwarders
@@ -37,11 +32,11 @@ namespace ctl
         IFACEMETHOD(get_CoordinateConverter)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentCoordinateConverter** ppValue) override { return This()->get_CoordinateConverter(ppValue); }
     };
     template<typename impl_type>
-    class interface_forwarder< ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi, impl_type> final
-        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi, impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IXamlRoot4, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IXamlRoot4, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
-        IFACEMETHOD(TryGetContentIsland)(_Outptr_ ABI::Microsoft::UI::Content::IContentIsland** ppReturnValue) override { return This()->TryGetContentIsland(ppReturnValue); }
+        IFACEMETHOD(get_ContentIsland)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIsland** ppValue) override { return This()->get_ContentIsland(ppValue); }
     };
 }
 #pragma endregion
@@ -56,9 +51,7 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Xaml::IXamlRoot
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot2, XamlRootGenerated >
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot3, XamlRootGenerated >
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi, XamlRootGenerated >
-#endif
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot4, XamlRootGenerated >
     {
         friend class DirectUI::XamlRoot;
 
@@ -68,9 +61,7 @@ namespace DirectUI
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot)
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot2)
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot3)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-            INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRootFeature_ExperimentalApi)
-#endif
+            INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot4)
         END_INTERFACE_MAP(XamlRootGenerated, ctl::WeakReferenceSource)
 
     public:
@@ -84,6 +75,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Content)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_ContentIsland(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIsland** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ContentIslandEnvironment(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIslandEnvironment** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_CoordinateConverter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentCoordinateConverter** ppValue);
         IFACEMETHOD(get_IsHostVisible)(_Out_ BOOLEAN* pValue) override;
@@ -100,9 +92,6 @@ namespace DirectUI
         _Check_return_ HRESULT remove_InputActivationChanged(EventRegistrationToken token);
 
         // Methods.
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-        _Check_return_ HRESULT STDMETHODCALLTYPE TryGetContentIsland(_Outptr_ ABI::Microsoft::UI::Content::IContentIsland** ppReturnValue);
-#endif
 
 
     protected:

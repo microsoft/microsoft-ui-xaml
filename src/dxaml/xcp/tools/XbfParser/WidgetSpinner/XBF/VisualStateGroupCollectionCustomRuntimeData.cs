@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.Xaml.WidgetSpinner.Model;
 using Microsoft.Xaml.WidgetSpinner.Reader;
 using System;
 using System.Collections.Generic;
@@ -166,8 +167,10 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
         public StreamOffsetToken EntireCollectionToken { get; private set; }
         public List<string> SeenNameDirectives { get; private set; }
 
-        internal VisualStateGroupCollectionCustomRuntimeData(CustomWriterRuntimeDataTypeIndex version)
-            : base(version)
+        internal VisualStateGroupCollectionCustomRuntimeData(
+            CustomWriterRuntimeDataTypeIndex version, 
+            Dictionary<StreamOffsetToken, List<Model.XamlPredicateAndArgs>> conditionallyDeclaredObjects)
+            : base(version, conditionallyDeclaredObjects)
         {
 
         }
@@ -191,7 +194,7 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
                 seenNameDirectives = reader.ReadVector((r) => r.ReadSharedString(), true);
             }
 
-            return new VisualStateGroupCollectionCustomRuntimeData(typeIndex)
+            return new VisualStateGroupCollectionCustomRuntimeData(typeIndex, new Dictionary<StreamOffsetToken, List<XamlPredicateAndArgs>>())
             {
                 VisualStateToGroupMap = visualStateToGroupMap,
                 VisualStates = visualStates,

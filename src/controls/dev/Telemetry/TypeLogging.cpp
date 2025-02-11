@@ -30,6 +30,12 @@ winrt::hstring RectToString(const winrt::Rect& rect)
         static_cast<int32_t>(rect.X), static_cast<int32_t>(rect.Y), static_cast<uint32_t>(rect.Width), static_cast<uint32_t>(rect.Height));
 }
 
+winrt::hstring RectInt32ToString(const winrt::RectInt32& rect)
+{
+    return StringUtil::FormatString(L"Rect: X: %1!i!, Y: %2!i!, W: %3!u!, H: %4!u!",
+        static_cast<int32_t>(rect.X), static_cast<int32_t>(rect.Y), static_cast<uint32_t>(rect.Width), static_cast<uint32_t>(rect.Height));
+}
+
 winrt::hstring SizeToString(const winrt::Size& size)
 {
     return StringUtil::FormatString(L"Size: W: %1!u!, H: %2!u!",

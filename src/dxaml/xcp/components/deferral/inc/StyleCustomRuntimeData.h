@@ -23,7 +23,8 @@ class StyleSetterEssence
         XamlBinaryFormatSubWriter2*,
         const std::vector<unsigned int>&);
     friend StyleSetterEssence CustomRuntimeDataSerializationHelpers::Deserialize<StyleSetterEssence>(
-        XamlBinaryFormatSubReader2*);
+        XamlBinaryFormatSubReader2*,
+        CustomWriterRuntimeDataTypeIndex typeIndex);
 
 public:
     StyleSetterEssence()

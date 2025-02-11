@@ -242,16 +242,17 @@ CDeferredInvoke::DeferredInvoke * CDeferredInvoke::Dequeue(_Out_ bool* hasMoreWo
             // Completely detach this item
             pInvoke->Next = NULL;
             pInvoke->Prev = NULL;
+
+            m_workCount--;
+
+            TraceLoggingProviderWrite(
+                GraphicsTelemetry, "Dispatch_DequeueDeferredInvoke",
+                TraceLoggingUInt32(pInvoke->Msg, "Message"),
+                TraceLoggingUInt32(m_workCount, "WorkCount"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
         }
 
         *hasMoreWork = (m_pHead != nullptr);
-        m_workCount--;
-
-        TraceLoggingProviderWrite(
-            GraphicsTelemetry, "Dispatch_DequeueDeferredInvoke",
-            TraceLoggingUInt32(pInvoke->Msg, "Message"),
-            TraceLoggingUInt32(m_workCount, "WorkCount"),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     }
 
     return pInvoke;
