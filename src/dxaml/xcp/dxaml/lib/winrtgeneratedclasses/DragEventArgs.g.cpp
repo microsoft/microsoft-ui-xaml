@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_Handled(_Out_ BOOLEAN* pVal
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragEventArgsGenerated::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DragEventArgsGenerated::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -114,7 +114,7 @@ _Check_return_ HRESULT DirectUI::DragEventArgsGenerated::get_AllowDataAccess(_Ou
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragEventArgsGenerated::put_AllowDataAccess(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::DragEventArgsGenerated::put_AllowDataAccess(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -197,7 +197,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_AcceptedOperation(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragEventArgsGenerated::put_AcceptedOperation(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value)
+IFACEMETHODIMP DirectUI::DragEventArgsGenerated::put_AcceptedOperation(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -231,7 +231,7 @@ IFACEMETHODIMP DirectUI::DragEventArgsGenerated::get_AllowedOperations(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragEventArgsGenerated::put_AllowedOperations(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value)
+_Check_return_ HRESULT DirectUI::DragEventArgsGenerated::put_AllowedOperations(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_Date(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_Date, ppValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_Date(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_Date(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_Date, pValue));
@@ -107,7 +107,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_DisplayMode(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_DisplayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_DisplayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::CalendarViewDisplayMode value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_DisplayMode(ABI::Microsoft::UI::Xaml::Controls::CalendarViewDisplayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_DisplayMode, value));
@@ -116,7 +116,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_FirstDayOfWeek(_Out_ A
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_FirstDayOfWeek, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_FirstDayOfWeek(_In_ ABI::Windows::Globalization::DayOfWeek value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_FirstDayOfWeek(ABI::Windows::Globalization::DayOfWeek value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_FirstDayOfWeek, value));
@@ -134,7 +134,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_HeaderPlacement(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_HeaderPlacement, value));
@@ -152,7 +152,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_IsCalendarOpen(_Out_ B
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_IsCalendarOpen, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_IsCalendarOpen(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_IsCalendarOpen(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_IsCalendarOpen, value));
@@ -161,7 +161,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_IsGroupLabelVisible(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_IsGroupLabelVisible, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_IsGroupLabelVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_IsGroupLabelVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_IsGroupLabelVisible, value));
@@ -170,7 +170,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_IsOutOfScopeEnabled(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_IsOutOfScopeEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_IsOutOfScopeEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_IsOutOfScopeEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_IsOutOfScopeEnabled, value));
@@ -179,7 +179,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_IsTodayHighlighted(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_IsTodayHighlighted, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_IsTodayHighlighted(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_IsTodayHighlighted(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_IsTodayHighlighted, value));
@@ -188,7 +188,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_LightDismissOverlayMod
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_LightDismissOverlayMode, value));
@@ -197,7 +197,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_MaxDate(_Out_ ABI::Win
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_MaxDate, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_MaxDate(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_MaxDate(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_MaxDate, value));
@@ -206,7 +206,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::get_MinDate(_Out_ ABI::Win
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_MinDate, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_MinDate(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::put_MinDate(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarDatePicker_MinDate, value));
@@ -258,7 +258,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::remove_CalendarViewDayItemChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::remove_CalendarViewDayItemChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CalendarViewDayItemChangingEventSourceType* pEventSource = nullptr;
@@ -313,7 +313,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::remove_Closed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::remove_Closed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosedEventSourceType* pEventSource = nullptr;
@@ -368,7 +368,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::remove_DateChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::remove_DateChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DateChangedEventSourceType* pEventSource = nullptr;
@@ -423,7 +423,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::remove_Opened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::remove_Opened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpenedEventSourceType* pEventSource = nullptr;
@@ -444,7 +444,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::SetDisplayDate(_In_ ABI::Windows::Foundation::DateTime date)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::SetDisplayDate(ABI::Windows::Foundation::DateTime date)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -462,7 +462,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::SetYearDecadeDisplayDimensions(_In_ INT columns, _In_ INT rows)
+IFACEMETHODIMP DirectUI::CalendarDatePickerGenerated::SetYearDecadeDisplayDimensions(INT columns, INT rows)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

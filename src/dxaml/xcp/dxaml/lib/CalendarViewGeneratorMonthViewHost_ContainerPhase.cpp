@@ -26,8 +26,8 @@ using namespace DirectUISynonyms;
 _Check_return_ HRESULT CalendarViewGeneratorMonthViewHost::SetupContainerContentChangingAfterPrepare(
     _In_ xaml::IDependencyObject* pContainer,
     _In_ IInspectable* pItem,
-    _In_ INT itemIndex,
-    _In_ wf::Size measureSize)
+    INT itemIndex,
+    wf::Size measureSize)
 {
     HRESULT hr = S_OK;
 

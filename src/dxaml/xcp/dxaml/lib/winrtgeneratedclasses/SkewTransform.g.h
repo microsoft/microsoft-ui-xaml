@@ -48,19 +48,19 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_AngleX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_AngleX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_AngleX)(DOUBLE value) override;
         _Check_return_ HRESULT get_AngleXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_AngleXAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_AngleY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_AngleY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_AngleY)(DOUBLE value) override;
         _Check_return_ HRESULT get_AngleYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_AngleYAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_CenterX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_CenterX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_CenterX)(DOUBLE value) override;
         _Check_return_ HRESULT get_CenterXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_CenterXAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_CenterY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_CenterY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_CenterY)(DOUBLE value) override;
         _Check_return_ HRESULT get_CenterYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_CenterYAnimation(_In_opt_ IInspectable* pValue);
 

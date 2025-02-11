@@ -20,7 +20,7 @@ ImageProvider::CopyImage(
     _In_ xref_ptr<ImageCopyParams>& spCopyParams,
     _In_ const xref_ptr<IImageAvailableCallback>& spCallback,
     _In_ CCoreServices* pCore,
-    _Outptr_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
+    _Out_ xref_ptr<IAbortableImageOperation>& spAbortableImageOperation
     )
 {
     auto spDecodeRequest = make_xref<ImageDecodeRequest>(pCore);

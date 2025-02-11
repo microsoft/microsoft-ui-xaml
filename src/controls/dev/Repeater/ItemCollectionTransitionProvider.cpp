@@ -49,7 +49,10 @@ void ItemCollectionTransitionProvider::QueueTransition(winrt::ItemCollectionTran
 
         const auto transitionsWithAnimations = m_transitionsWithAnimationsMap[m_transitionsBatch];
 
-        transitionsWithAnimations.Append(transition);
+        if (transitionsWithAnimations)
+        {
+            transitionsWithAnimations.Append(transition);
+        }
     }
 
     // To ensure proper VirtualizationInfo ordering, we still need to raise TransitionCompleted in a

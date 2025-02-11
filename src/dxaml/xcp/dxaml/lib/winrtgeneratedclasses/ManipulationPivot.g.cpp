@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ManipulationPivotGenerated::get_Center(_Out_ ABI::Windo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ManipulationPivot_Center, pValue));
 }
-IFACEMETHODIMP DirectUI::ManipulationPivotGenerated::put_Center(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::ManipulationPivotGenerated::put_Center(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ManipulationPivot_Center, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ManipulationPivotGenerated::get_Radius(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ManipulationPivot_Radius, pValue));
 }
-IFACEMETHODIMP DirectUI::ManipulationPivotGenerated::put_Radius(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ManipulationPivotGenerated::put_Radius(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ManipulationPivot_Radius, value));
@@ -81,7 +81,7 @@ HRESULT DirectUI::ManipulationPivotFactory::QueryInterfaceImpl(_In_ REFIID iid, 
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::ManipulationPivotFactory::CreateInstanceWithCenterAndRadius(_In_ ABI::Windows::Foundation::Point center, _In_ DOUBLE radius, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IManipulationPivot** ppInstance)
+IFACEMETHODIMP DirectUI::ManipulationPivotFactory::CreateInstanceWithCenterAndRadius(ABI::Windows::Foundation::Point center, DOUBLE radius, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IManipulationPivot** ppInstance)
 {
     HRESULT hr = S_OK;
     

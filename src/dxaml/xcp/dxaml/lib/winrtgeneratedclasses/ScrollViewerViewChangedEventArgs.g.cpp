@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerViewChangedEventArgs::get_IsIntermediate(_O
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerViewChangedEventArgs::put_IsIntermediate(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ScrollViewerViewChangedEventArgs::put_IsIntermediate(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

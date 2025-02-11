@@ -24,7 +24,7 @@ ElementSoundPlayerFactory::get_VolumeImpl(
 
 _Check_return_ HRESULT
 ElementSoundPlayerFactory::put_VolumeImpl(
-    _In_ DOUBLE value)
+    DOUBLE value)
 {
     IFCEXPECT_RETURN(DXamlServices::IsDXamlCoreInitialized());
 
@@ -57,7 +57,7 @@ ElementSoundPlayerFactory::get_StateImpl(
 
 _Check_return_ HRESULT
 ElementSoundPlayerFactory::put_StateImpl(
-    _In_ xaml::ElementSoundPlayerState value)
+    xaml::ElementSoundPlayerState value)
 {
     IFCEXPECT_RETURN(DXamlServices::IsDXamlCoreInitialized());
     ElementSoundPlayerService* service = DXamlCore::GetCurrent()->GetElementSoundPlayerServiceNoRef();
@@ -68,7 +68,7 @@ ElementSoundPlayerFactory::put_StateImpl(
 
 _Check_return_ HRESULT
 ElementSoundPlayerFactory::PlayImpl(
-    _In_ xaml::ElementSoundKind sound)
+    xaml::ElementSoundKind sound)
 {
     IFCEXPECT_RETURN(DXamlServices::IsDXamlCoreInitialized());
     ElementSoundPlayerService* service = DXamlCore::GetCurrent()->GetElementSoundPlayerServiceNoRef();
@@ -79,7 +79,7 @@ ElementSoundPlayerFactory::PlayImpl(
 
 _Check_return_ HRESULT
 ElementSoundPlayerFactory::RequestInteractionSoundForElementImpl(
-    _In_ xaml::ElementSoundKind sound,
+    xaml::ElementSoundKind sound,
     _In_ xaml::IDependencyObject* pElement)
 {
     IFCEXPECT_RETURN(DXamlServices::IsDXamlCoreInitialized());
@@ -116,7 +116,7 @@ ElementSoundPlayerFactory::get_SpatialAudioModeImpl(
 
 _Check_return_ HRESULT
 ElementSoundPlayerFactory::put_SpatialAudioModeImpl(
-    _In_ xaml::ElementSpatialAudioMode value)
+    xaml::ElementSpatialAudioMode value)
 {
     IFCEXPECT_RETURN(DXamlServices::IsDXamlCoreInitialized());
 

@@ -78,7 +78,7 @@ public:
         _In_ CAutomationPeer* ap,
         UIAXcp::AutomationNotificationKind notificationKind,
         UIAXcp::AutomationNotificationProcessing notificationProcessing,
-        _In_opt_ xstring_ptr displayString,
+        _In_ xstring_ptr displayString,
         _In_ xstring_ptr activityId) = 0;
     virtual HRESULT GetUIAWindow(
         _In_ CDependencyObject *pElement,
@@ -106,7 +106,7 @@ struct CEventInfo
 {
     CEventInfo(
         _In_opt_ CDependencyObject *pListener,
-        _In_opt_ EventHandle hEvent,
+        _In_ EventHandle hEvent,
         _In_opt_ CDependencyObject *pSender,
         _In_opt_ CEventArgs *pArgs,
         _In_ XINT32 flags,
@@ -268,7 +268,7 @@ public:
         _In_ CAutomationPeer* ap,
         UIAXcp::AutomationNotificationKind notificationKind,
         UIAXcp::AutomationNotificationProcessing notificationProcessing,
-        _In_opt_ xstring_ptr displayString,
+        _In_ xstring_ptr displayString,
         _In_ xstring_ptr activityId) = 0;
 
     virtual _Check_return_ HRESULT IsReentrancyAllowed(

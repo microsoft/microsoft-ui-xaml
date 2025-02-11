@@ -723,7 +723,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP ListViewBase::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     HRESULT hr = S_OK;
@@ -746,7 +746,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP ListViewBase::MeasureOverride(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* pDesired)
 {
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
@@ -1016,7 +1016,7 @@ _Check_return_
 // this method needs to be called from Panel::GetFirstFocusableElementOverride in order to retain the same call order as in Win8.
 _Check_return_ HRESULT ListViewBase::GetFocusableElement(
     const bool isBackward,
-    _Outptr_ DependencyObject** ppFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppFocusable)
 {
 #ifdef LVB_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusableElement. isBackward=%d",
@@ -1152,7 +1152,7 @@ Cleanup:
 // Shared implementation for GetFirstFocusableElementOverride and GetLastFocusableElementOverride.
 _Check_return_ HRESULT ListViewBase::GetFocusableElementForModernPanel(
     _In_ BOOLEAN isBackward,
-    _Outptr_ DependencyObject** ppFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppFocusable)
 {
 #ifdef LVB_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusableElementForModernPanel. isBackward=%d",
@@ -1202,7 +1202,7 @@ _Check_return_ HRESULT ListViewBase::GetFocusableElementForModernPanel(
 
 // Gets first element that should take focus after Tab.
 _Check_return_ HRESULT ListViewBase::GetFirstFocusableElementOverride(
-    _Outptr_ DependencyObject** ppFirstFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppFirstFocusable)
 {
 #ifdef LVB_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFirstFocusableElementOverride.", ctl::is<xaml_controls::IGridView>(this) ? L"GV" : L"LV", this));
@@ -1215,7 +1215,7 @@ _Check_return_ HRESULT ListViewBase::GetFirstFocusableElementOverride(
 
 // Gets last element that should take focus after Shift+Tab.
 _Check_return_ HRESULT ListViewBase::GetLastFocusableElementOverride(
-    _Outptr_ DependencyObject** ppLastFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppLastFocusable)
 {
 #ifdef LVB_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetLastFocusableElementOverride.", ctl::is<xaml_controls::IGridView>(this) ? L"GV" : L"LV", this));
@@ -1313,7 +1313,7 @@ _Check_return_ HRESULT ListViewBase::ProcessTabStopOverride(
     _In_opt_ DependencyObject* pCandidateTabStopElement,
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsTabStopOverridden
     )
 {
@@ -1342,7 +1342,7 @@ _Check_return_ HRESULT ListViewBase::ProcessCandidateTabStopOverride(
     _In_ DependencyObject* pCandidateTabStopElement,
     _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
     const bool isBackward,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsCandidateTabStopOverridden)
 {
 #ifdef LVB_DEBUG
@@ -1794,7 +1794,7 @@ Cleanup:
 _Check_return_ HRESULT ListViewBase::GetNextTabStopForElementType(
     _In_ ElementType elementType,
     const bool isBackward,
-    _Outptr_ xaml::IDependencyObject** ppNextElement)
+    _Outptr_result_maybenull_ xaml::IDependencyObject** ppNextElement)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<IDependencyObject> spNextElement;
@@ -1840,7 +1840,7 @@ Cleanup:
 _Check_return_ HRESULT ListViewBase::GetNextTabStop(
     _In_ ElementType elementType,
     const bool isBackward,
-    _Outptr_ IDependencyObject** ppNextElement)
+    _Outptr_result_maybenull_ IDependencyObject** ppNextElement)
 {
 #ifdef LVB_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetNextTabStop. elementType=%d, isBackward=%d", 
@@ -1909,7 +1909,7 @@ _Check_return_ HRESULT ListViewBase::TryNextElementType(
     _In_ ElementType candidateElementType,
     const bool isBackward,
     _Out_ ElementType* pNewElementType,
-    _Outptr_ IDependencyObject** ppNextElement)
+    _Outptr_result_maybenull_ IDependencyObject** ppNextElement)
 {
     xaml_input::KeyboardNavigationMode navigationMode;
     ctl::ComPtr<IDependencyObject> spNextElement;
@@ -2346,7 +2346,7 @@ ListViewBase::FindNextTabStopCandidateFromItem(
 // Helper for getting next focusable control outside of LVB.
 _Check_return_ HRESULT ListViewBase::GetNextFocusablePeer(
     const bool isBackward,
-    _Outptr_ IDependencyObject** ppOutsidePeer)
+    _Outptr_result_maybenull_ IDependencyObject** ppOutsidePeer)
 {
 #ifdef LVB_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetNextFocusablePeer. isBackward=%d", 
@@ -2406,7 +2406,7 @@ _Check_return_ HRESULT ListViewBase::GetNextFocusablePeer(
 // If there is a pending scroll into view in the panel, get the target element
 // of that scroll into view
 _Check_return_ HRESULT ListViewBase::GetFocusCandidateFromPanel(
-    _Outptr_ xaml::IDependencyObject** ppFocusCandidate)
+    _Outptr_result_maybenull_ xaml::IDependencyObject** ppFocusCandidate)
 {
 #ifdef LVB_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: GetFocusCandidateFromPanel.",
@@ -2472,7 +2472,7 @@ _Check_return_ HRESULT ListViewBase::ProcessTabStopInternal(
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
     _Out_ BOOLEAN* pHandled,
-    _Outptr_ DependencyObject** ppTabStop)
+    _Outptr_result_maybenull_ DependencyObject** ppTabStop)
 {
 #ifdef LVB_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"LVB(%s)[0x%p]: ProcessTabStopInternal. isBackward=%d",

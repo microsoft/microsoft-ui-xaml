@@ -57,14 +57,14 @@ public:
         const bool includeElementLocalProperties,
         const bool renderFill,
         const bool renderStroke,
-        const XPOINTF* shapeMaskOffset,
+        _In_opt_ const XPOINTF* shapeMaskOffset,
         _In_ DCompSurface* surface,
         const bool renderCollapsedMask,
         _In_opt_ WUComp::ICompositionSurfaceBrush* compositionBrush);
 
 private:
     _Check_return_ HRESULT EnsureBackingSurface(
-        DCompTreeHost* pDCompTreeHostNoRef,
+        _In_ DCompTreeHost* pDCompTreeHostNoRef,
         uint32_t width,
         uint32_t height,
         _Out_ float* adjustedScaleFactor);

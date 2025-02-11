@@ -7,6 +7,7 @@
 #include "Layout.h"
 #include "VirtualizingLayoutContext.h"
 #include "LayoutContextAdapter.h"
+#include "LayoutsTestHooks.h"
 
 #pragma region ILayout
 
@@ -21,24 +22,72 @@ void Layout::LayoutId(winrt::hstring const& value)
 }
 
 // Invoked by LayoutsTestHooks only for testing purposes
-winrt::IndexBasedLayoutOrientation Layout::GetForcedIndexBasedLayoutOrientation()
+int Layout::LogItemIndexDbg() const
+{
+    return m_logItemIndexDbg;
+};
+
+void Layout::LogItemIndexDbg(
+    int logItemIndex)
+{
+    m_logItemIndexDbg = logItemIndex;
+};
+
+int Layout::LayoutAnchorIndexDbg() const
+{
+    return m_layoutAnchorInfoDbg.Index;
+}
+
+double Layout::LayoutAnchorOffsetDbg() const
+{
+    return m_layoutAnchorInfoDbg.Offset;
+}
+
+winrt::IndexBasedLayoutOrientation Layout::GetForcedIndexBasedLayoutOrientationDbg() const
 {
     return m_forcedIndexBasedLayoutOrientationDbg;
 }
 
-void Layout::SetForcedIndexBasedLayoutOrientation(winrt::IndexBasedLayoutOrientation forcedIndexBasedLayoutOrientation)
+void Layout::SetForcedIndexBasedLayoutOrientationDbg(winrt::IndexBasedLayoutOrientation forcedIndexBasedLayoutOrientation)
 {
     m_forcedIndexBasedLayoutOrientationDbg = forcedIndexBasedLayoutOrientation;
     m_isForcedIndexBasedLayoutOrientationSetDbg = true;
 }
 
-void Layout::ResetForcedIndexBasedLayoutOrientation()
+void Layout::ResetForcedIndexBasedLayoutOrientationDbg()
 {
     m_forcedIndexBasedLayoutOrientationDbg = winrt::IndexBasedLayoutOrientation::None;
     m_isForcedIndexBasedLayoutOrientationSetDbg = false;
 }
 
-winrt::IndexBasedLayoutOrientation Layout::IndexBasedLayoutOrientation()
+#ifdef DBG
+void Layout::SetLayoutAnchorInfoDbg(int index, double offset)
+{
+    const bool layoutAnchorIndexChanged = m_layoutAnchorInfoDbg.Index != index;
+    const bool layoutAnchorOffsetChanged = m_layoutAnchorInfoDbg.Offset != offset;
+
+    m_layoutAnchorInfoDbg = { index, offset };
+
+    if (layoutAnchorIndexChanged || layoutAnchorOffsetChanged)
+    {
+        com_ptr<LayoutsTestHooks> globalTestHooks = LayoutsTestHooks::GetGlobalTestHooks();
+
+        if (globalTestHooks)
+        {
+            if (layoutAnchorIndexChanged)
+            {
+                globalTestHooks->NotifyLayoutAnchorIndexChanged(*this);
+            }
+            if (layoutAnchorOffsetChanged)
+            {
+                globalTestHooks->NotifyLayoutAnchorOffsetChanged(*this);
+            }
+        }
+    }
+}
+#endif // DBG
+
+winrt::IndexBasedLayoutOrientation Layout::IndexBasedLayoutOrientation() const
 {
     return m_isForcedIndexBasedLayoutOrientationSetDbg ? m_forcedIndexBasedLayoutOrientationDbg : m_indexBasedLayoutOrientation;
 }
@@ -79,7 +128,6 @@ namespace
         }
     }
 }
-
 
 void Layout::InitializeForContext(winrt::LayoutContext const& context)
 {

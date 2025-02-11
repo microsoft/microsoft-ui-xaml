@@ -89,7 +89,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DxamlCoreTestHooksFactory::PerformProcessWideLeakDetection(_In_ INT threshold)
+IFACEMETHODIMP DirectUI::DxamlCoreTestHooksFactory::PerformProcessWideLeakDetection(INT threshold)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -48,19 +48,19 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CenterX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_CenterX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_CenterX)(DOUBLE value) override;
         _Check_return_ HRESULT get_CenterXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_CenterXAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_CenterY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_CenterY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_CenterY)(DOUBLE value) override;
         _Check_return_ HRESULT get_CenterYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_CenterYAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_ScaleX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ScaleX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ScaleX)(DOUBLE value) override;
         _Check_return_ HRESULT get_ScaleXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_ScaleXAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_ScaleY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ScaleY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ScaleY)(DOUBLE value) override;
         _Check_return_ HRESULT get_ScaleYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_ScaleYAnimation(_In_opt_ IInspectable* pValue);
 

@@ -78,7 +78,7 @@ IFACEMETHODIMP DirectUI::PaginateEventArgsGenerated::get_CurrentPreviewPageNumbe
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::PaginateEventArgsGenerated::put_CurrentPreviewPageNumber(_In_ INT value)
+_Check_return_ HRESULT DirectUI::PaginateEventArgsGenerated::put_CurrentPreviewPageNumber(INT value)
 {
     HRESULT hr = S_OK;
     

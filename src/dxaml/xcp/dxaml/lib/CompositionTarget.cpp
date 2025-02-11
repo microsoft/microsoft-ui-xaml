@@ -59,7 +59,7 @@ namespace DirectUI
     }
 
     _Check_return_ HRESULT CompositionTarget::remove_Rendering(
-        _In_ EventRegistrationToken tToken)
+        EventRegistrationToken tToken)
     {
         HRESULT hr = S_OK;
         CEventSource<wf::IEventHandler<IInspectable*>, IInspectable, IInspectable>* pEventSource = NULL;
@@ -136,7 +136,7 @@ namespace DirectUI
     }
 
     _Check_return_ HRESULT CompositionTarget::remove_Rendered(
-        _In_ EventRegistrationToken tToken)
+        EventRegistrationToken tToken)
     {
         HRESULT hr = S_OK;
         CEventSource<wf::IEventHandler<xaml_media::RenderedEventArgs*>, IInspectable, xaml_media::IRenderedEventArgs>* pEventSource = NULL;
@@ -170,7 +170,7 @@ namespace DirectUI
     }
 
     _Check_return_ HRESULT CompositionTarget::remove_SurfaceContentsLost(
-        _In_ EventRegistrationToken tToken)
+        EventRegistrationToken tToken)
     {
         HRESULT hr = S_OK;
         CEventSource<wf::IEventHandler<IInspectable*>, IInspectable, IInspectable>* pEventSource = NULL;

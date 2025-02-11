@@ -46,12 +46,12 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_IsDraggable(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsDraggable(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsDraggable(BOOLEAN value);
 
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetCurrentTransitionContext)(_In_ INT LayoutTickId, _Out_ DirectUI::ThemeTransitionContext* pReturnValue) = 0;
+        IFACEMETHOD(GetCurrentTransitionContext)(INT LayoutTickId, _Out_ DirectUI::ThemeTransitionContext* pReturnValue) = 0;
         IFACEMETHOD(GetDropOffsetToRoot)(_Out_ ABI::Windows::Foundation::Point* pReturnValue) = 0;
         IFACEMETHOD(IsCollectionMutatingFast)(_Out_ BOOLEAN* pReturnValue) = 0;
 

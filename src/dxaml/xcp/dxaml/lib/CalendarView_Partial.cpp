@@ -836,7 +836,7 @@ _Check_return_ HRESULT CalendarView::OnPrimaryPanelDesiredSizeChanged(_In_ Calen
 }
 
 IFACEMETHODIMP CalendarView::MeasureOverride(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* pDesired)
 {
     HRESULT hr = S_OK;
@@ -868,7 +868,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP CalendarView::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     IFC_RETURN(CalendarViewGenerated::ArrangeOverride(finalSize, returnValue));

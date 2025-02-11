@@ -374,7 +374,7 @@ namespace DirectUI
             RRETURN(m_vector.SetAt(index, item));
         }
 
-        IFACEMETHODIMP InsertAt(_In_ unsigned index, _In_ T_abi item) override
+        IFACEMETHODIMP InsertAt(_In_ unsigned index, _In_opt_ T_abi item) override
         {
             RRETURN(m_vector.InsertAt(index, item));
         }
@@ -413,8 +413,10 @@ namespace DirectUI
         {
             wrl::ComPtr<typename std::remove_pointer<T_abi>::type> spTypedItem;
 
+            *ppItem = nullptr;
             IFC_RETURN(GetAt(index, &spTypedItem));
             IFC_RETURN(spTypedItem.CopyTo(ppItem));
+            _Analysis_assume_(*ppItem != nullptr);
             return S_OK;
         }
 
@@ -536,7 +538,7 @@ namespace DirectUI
     {
     public:
 
-        void AddHandler(_In_ THandler *pHandler, _In_ EventRegistrationToken *token)
+        void AddHandler(_In_ THandler *pHandler, _Out_ EventRegistrationToken *token)
         {
             m_handlers.Append(pHandler);
             token->value = reinterpret_cast<INT64>(pHandler);
@@ -651,7 +653,7 @@ namespace DirectUI
             return S_OK;
         }
 
-        IFACEMETHODIMP remove_VectorChanged(_In_ EventRegistrationToken token) override
+        IFACEMETHODIMP remove_VectorChanged(EventRegistrationToken token) override
         {
             RRETURN(m_handlers.RemoveHandler(token));
         }
@@ -674,7 +676,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP InsertAt(_In_ unsigned index, _In_ T_abi item) override
+        IFACEMETHODIMP InsertAt(_In_ unsigned index, _In_opt_ T_abi item) override
         {
             HRESULT hr = S_OK;
 
@@ -797,7 +799,7 @@ namespace DirectUI
         IFACEMETHODIMP SetAt(_In_ unsigned index, _In_opt_ T_abi item) override
         { return E_NOTIMPL; }
 
-        IFACEMETHODIMP InsertAt(_In_ unsigned index, _In_ T_abi item) override
+        IFACEMETHODIMP InsertAt(_In_ unsigned index, _In_opt_ T_abi item) override
         { return E_NOTIMPL; }
 
         IFACEMETHODIMP RemoveAt(_In_ unsigned index) override

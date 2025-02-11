@@ -100,6 +100,7 @@ private:
     xstring_ptr ReadPersistedString();
     PersistedXamlNode2 ReadPersistedXamlNode();
 
+    _Success_(return != false)
      bool TryRead7BitEncodedInt(
         _In_ XUINT8 *pBuffer,
         _In_ XUINT32 cbBufferTotalSize,

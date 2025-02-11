@@ -29,13 +29,13 @@ namespace DirectUI
         _Check_return_ HRESULT get_TitleImpl(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value);
         IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_Activated)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_Closed)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_SizeChanged)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowSizeChangedEventArgs*> * pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_SizeChanged)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_SizeChanged)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_VisibilityChanged)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowVisibilityChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_VisibilityChanged)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_VisibilityChanged)(EventRegistrationToken tToken) override;
         _Check_return_ HRESULT ActivateImpl();
         _Check_return_ HRESULT CloseImpl();
 
@@ -63,7 +63,7 @@ namespace DirectUI
         _Check_return_ HRESULT GetWindowContentBoundsForElementImpl(_In_ xaml::IDependencyObject* element, _Out_ wf::Rect* rect);
 
         // pubic Window API: IWindowNative
-        _Check_return_ IFACEMETHOD(get_WindowHandle)(_Out_ HWND* pValue) override;
+        _Check_return_ IFACEMETHOD(get_WindowHandle)(HWND* pValue) override;
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
 
         // Windows::UI::Composition::ICompositionSupportsSystemBackdrop implementation

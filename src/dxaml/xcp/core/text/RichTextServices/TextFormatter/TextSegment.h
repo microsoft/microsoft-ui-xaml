@@ -90,7 +90,7 @@ namespace RichTextServices
             HRESULT STDMETHODCALLTYPE GetNumberSubstitution(
                 uint32_t textPosition,
                 _Out_ uint32_t* textLength,
-                _COM_Outptr_ IDWriteNumberSubstitution** numberSubstitution
+                _Outptr_result_maybenull_ IDWriteNumberSubstitution** numberSubstitution
                 ) noexcept override
             {
                 if (numberSubstitution_ != nullptr)
@@ -225,7 +225,7 @@ namespace RichTextServices
             HRESULT GetNumberSubstitution(
                 _In_ XUINT32 textPosition,
                 _Out_ XUINT32* pTextLength,
-                _Outptr_ IDWriteNumberSubstitution** ppNumberSubstitution
+                _Outptr_result_maybenull_ IDWriteNumberSubstitution** ppNumberSubstitution
                 ) override;
 
             HRESULT GetLocaleNameList(

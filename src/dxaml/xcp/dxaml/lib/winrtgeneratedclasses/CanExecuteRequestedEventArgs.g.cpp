@@ -111,7 +111,7 @@ IFACEMETHODIMP DirectUI::CanExecuteRequestedEventArgs::get_CanExecute(_Out_ BOOL
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CanExecuteRequestedEventArgs::put_CanExecute(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CanExecuteRequestedEventArgs::put_CanExecute(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

@@ -32,9 +32,9 @@ namespace DirectUI
         _Check_return_ HRESULT get_ErrorMessage(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT put_ErrorMessage(_In_opt_ HSTRING value);
         _Check_return_ HRESULT get_ErrorCode(_Out_ INT* pValue);
-        _Check_return_ HRESULT put_ErrorCode(_In_ INT value);
+        _Check_return_ HRESULT put_ErrorCode(INT value);
         _Check_return_ HRESULT get_ErrorType(_Out_ DirectUI::ErrorType* pValue);
-        _Check_return_ HRESULT put_ErrorType(_In_ DirectUI::ErrorType value);
+        _Check_return_ HRESULT put_ErrorType(DirectUI::ErrorType value);
 
         // Methods.
 

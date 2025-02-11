@@ -101,7 +101,7 @@ Cleanup:
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::ParserServiceProviderGenerated::GetService(_In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ IInspectable** ppReturnValue)
+IFACEMETHODIMP DirectUI::ParserServiceProviderGenerated::GetService(ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ IInspectable** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

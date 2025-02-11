@@ -48,9 +48,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_MinWindowHeight)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_MinWindowHeight)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_MinWindowHeight)(DOUBLE value) override;
         IFACEMETHOD(get_MinWindowWidth)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_MinWindowWidth)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_MinWindowWidth)(DOUBLE value) override;
 
         // Events.
 

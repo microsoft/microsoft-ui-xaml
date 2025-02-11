@@ -1,6 +1,6 @@
 Param(
-    [string]$propertyName
-    [string]$controlName;
+    [string]$propertyName,
+    [string]$controlName
 )
 
 $typeFormat1 = "<TYPEGOESHERE-1>"; # future proofing? :P

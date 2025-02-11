@@ -48,7 +48,7 @@
 //  just delegate to them.
 #if DBG
 #if defined(_PREFAST_)
-#define NT_ASSERT(cond) (!(cond) ? (_Analysis_assume_(!!(cond)), __annotation(L"Debug", L"AssertFail", (cond)), DbgRaiseAssertionFailure() : (void) 0))
+#define NT_ASSERT(cond) (_Analysis_assume_(!!(cond)))
 #else   // defined(_PREFAST_)
 #define NT_ASSERT(cond) (!(cond) ? DbgRaiseAssertionFailure() : (void) 0)
 #endif //  defined(_PREFAST_)

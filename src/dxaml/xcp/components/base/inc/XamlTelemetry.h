@@ -54,6 +54,19 @@ public:
         PCSTR, EventName,
         bool, IsInteresting,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // Creating a DesktopWindowImpl. This is separate from PerfXamlEvent because perf_xaml uses it to define Xaml
+    // desktop apps (as opposed to island apps). Desktop apps should measure startup from process start, whereas island
+    // apps should measure startup from when the app initialized Xaml. An island app has non-Xaml content and might run
+    // for a long time before it needs Xaml, whereas a Xaml desktop app has only Xaml content.
+    //
+    // Note that the CreateWindow event isn't good enough. It's hooked up to DXamlCore::ConfigureJupiterWindow, which
+    // exists for both island and desktop apps.
+    DEFINE_TRACELOGGING_EVENT_PARAM2(CreateDesktopWindow,
+        bool, IsStart,
+        uint64_t, ObjectPointer,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
 };
 
 struct PerfXamlEvent_RAII

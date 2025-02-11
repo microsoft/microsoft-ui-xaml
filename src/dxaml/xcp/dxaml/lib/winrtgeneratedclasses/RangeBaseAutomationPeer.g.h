@@ -60,7 +60,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(SetValue)(_In_ DOUBLE value) override;
+        IFACEMETHOD(SetValue)(DOUBLE value) override;
 
 
     protected:

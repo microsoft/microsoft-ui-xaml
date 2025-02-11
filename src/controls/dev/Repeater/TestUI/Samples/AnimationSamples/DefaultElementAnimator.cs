@@ -15,7 +15,7 @@ using System.Linq;
 namespace MUXControlsTestApp.Utils
 {
     // TODO: port to native.
-    public class DefaultItemCollectionTransitionProvider : ItemCollectionTransitionProvider
+    public partial class DefaultItemCollectionTransitionProvider : ItemCollectionTransitionProvider
     {
         private const double DefaultAnimationDurationInMs = 300.0;
         public static double AnimationSlowdownFactor { get; set; }

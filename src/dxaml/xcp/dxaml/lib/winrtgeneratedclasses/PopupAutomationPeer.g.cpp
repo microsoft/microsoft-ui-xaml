@@ -123,7 +123,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::PopupAutomationPeerGenerated::SetVisualState(_In_ ABI::Microsoft::UI::Xaml::Automation::WindowVisualState state)
+IFACEMETHODIMP DirectUI::PopupAutomationPeerGenerated::SetVisualState(ABI::Microsoft::UI::Xaml::Automation::WindowVisualState state)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -141,7 +141,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::PopupAutomationPeerGenerated::WaitForInputIdle(_In_ INT milliseconds, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::PopupAutomationPeerGenerated::WaitForInputIdle(INT milliseconds, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

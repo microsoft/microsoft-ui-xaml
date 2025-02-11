@@ -17,7 +17,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 namespace MUXControlsTestApp
 {
     // We are going to test setting the events source of an expander to the customcontrol's
-    public sealed class TestControl : ContentControl
+    public sealed partial class TestControl : ContentControl
     {
         protected override AutomationPeer OnCreateAutomationPeer()
         {
@@ -26,7 +26,7 @@ namespace MUXControlsTestApp
 
     }
 
-    public sealed class TestControlAutomationPeer : FrameworkElementAutomationPeer
+    public sealed partial class TestControlAutomationPeer : FrameworkElementAutomationPeer
     {
         public TestControlAutomationPeer(TestControl owner) : base(owner){}
         protected override AutomationControlType GetAutomationControlTypeCore()

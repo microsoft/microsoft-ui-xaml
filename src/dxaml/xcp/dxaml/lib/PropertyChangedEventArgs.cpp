@@ -9,9 +9,9 @@ using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT
 PropertyChangedEventArgsFactory::CreateInstanceImpl(
-    _In_ HSTRING name, 
+    _In_opt_ HSTRING name, 
     _In_opt_ IInspectable* pOuter, 
-    _Outptr_result_maybenull_ IInspectable** ppInner, 
+    _Outptr_ IInspectable** ppInner, 
     _Outptr_ xaml_data::IPropertyChangedEventArgs** ppInstance)
 {
     HRESULT hr = S_OK;

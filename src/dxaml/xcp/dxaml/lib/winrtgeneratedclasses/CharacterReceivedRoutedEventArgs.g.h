@@ -38,7 +38,7 @@ namespace DirectUI
         IFACEMETHOD(get_Character)(_Out_ WCHAR* pValue) override;
         IFACEMETHOD(get_KeyStatus)(_Out_ ABI::Windows::UI::Core::CorePhysicalKeyStatus* pValue) override;
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
 
         // Methods.
 

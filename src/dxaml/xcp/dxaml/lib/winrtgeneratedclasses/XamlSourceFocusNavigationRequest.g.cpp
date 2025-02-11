@@ -97,7 +97,7 @@ _Check_return_ HRESULT DirectUI::XamlSourceFocusNavigationRequestFactory::CheckA
 }
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::XamlSourceFocusNavigationRequestFactory::CreateInstance(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance)
+IFACEMETHODIMP DirectUI::XamlSourceFocusNavigationRequestFactory::CreateInstance(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance)
 {
     HRESULT hr = S_OK;
     
@@ -106,7 +106,7 @@ IFACEMETHODIMP DirectUI::XamlSourceFocusNavigationRequestFactory::CreateInstance
 Cleanup:
     return hr;
 }
-IFACEMETHODIMP DirectUI::XamlSourceFocusNavigationRequestFactory::CreateInstanceWithHintRect(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _In_ ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance)
+IFACEMETHODIMP DirectUI::XamlSourceFocusNavigationRequestFactory::CreateInstanceWithHintRect(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance)
 {
     HRESULT hr = S_OK;
     
@@ -115,7 +115,7 @@ IFACEMETHODIMP DirectUI::XamlSourceFocusNavigationRequestFactory::CreateInstance
 Cleanup:
     return hr;
 }
-IFACEMETHODIMP DirectUI::XamlSourceFocusNavigationRequestFactory::CreateInstanceWithHintRectAndCorrelationId(_In_ ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, _In_ ABI::Windows::Foundation::Rect hintRect, _In_ GUID correlationId, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance)
+IFACEMETHODIMP DirectUI::XamlSourceFocusNavigationRequestFactory::CreateInstanceWithHintRectAndCorrelationId(ABI::Microsoft::UI::Xaml::Hosting::XamlSourceFocusNavigationReason reason, ABI::Windows::Foundation::Rect hintRect, GUID correlationId, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest** ppInstance)
 {
     HRESULT hr = S_OK;
     

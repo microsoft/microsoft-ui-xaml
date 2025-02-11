@@ -423,7 +423,7 @@ CommandBar::OnApplyTemplate()
 }
 
 IFACEMETHODIMP
-CommandBar::MeasureOverride(_In_ wf::Size availableSize, _Out_ wf::Size* returnValue)
+CommandBar::MeasureOverride(wf::Size availableSize, _Out_ wf::Size* returnValue)
 {
     // These should have been created during initialization.
     IFCEXPECT_RETURN(m_tpDynamicPrimaryCommands.Get());
@@ -443,7 +443,7 @@ CommandBar::MeasureOverride(_In_ wf::Size availableSize, _Out_ wf::Size* returnV
 
 IFACEMETHODIMP
 CommandBar::ArrangeOverride(
-    _In_ wf::Size arrangeSize,
+    wf::Size arrangeSize,
     _Out_ wf::Size* returnValue)
 {
     IFC_RETURN(__super::ArrangeOverride(arrangeSize, returnValue));
@@ -1031,7 +1031,7 @@ CommandBar::ProcessTabStopOverride(
     _In_opt_ DependencyObject* pCandidateTabStopElement,
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsTabStopOverridden
     )
 {
@@ -1097,7 +1097,7 @@ CommandBar::ProcessCandidateTabStopOverride(
     _In_ DependencyObject* pCandidateTabStopElement,
     _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
     const bool isBackward,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsCandidateTabStopOverridden)
 {
     // This method is only interested in the backward navigation case, so bail out early if otherwise.

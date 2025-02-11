@@ -133,11 +133,11 @@ namespace AccessKeys
 
     bool AKModeContainer::IsNakedAltKeyDown(const InputMessage* const message)
     {
-        return message->m_msgID == XCP_KEYDOWN && IsLeftAltKey(message) && message->m_modifierKeys == KEY_MODIFIER_ALT;
+        return message->m_msgID == XCP_KEYDOWN && IsAltKey(message) && message->m_modifierKeys == KEY_MODIFIER_ALT;
     }
 
     bool AKModeContainer::IsNakedAltKeyUp(const InputMessage* const message)
     {
-        return message->m_msgID == XCP_KEYUP && IsLeftAltKey(message) && message->m_modifierKeys == 0;
+        return message->m_msgID == XCP_KEYUP && IsAltKey(message) && message->m_modifierKeys == 0;
     }
 }

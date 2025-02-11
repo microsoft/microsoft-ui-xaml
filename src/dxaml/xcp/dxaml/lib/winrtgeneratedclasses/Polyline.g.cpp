@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::Polyline::get_FillRule(_Out_ ABI::Microsoft::UI::Xaml::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Polyline_FillRule, pValue));
 }
-IFACEMETHODIMP DirectUI::Polyline::put_FillRule(_In_ ABI::Microsoft::UI::Xaml::Media::FillRule value)
+IFACEMETHODIMP DirectUI::Polyline::put_FillRule(ABI::Microsoft::UI::Xaml::Media::FillRule value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Polyline_FillRule, value));

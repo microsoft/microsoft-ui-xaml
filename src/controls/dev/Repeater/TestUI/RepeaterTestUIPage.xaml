@@ -36,7 +36,8 @@
             <Button x:Name="virtualStackLayoutDemo" AutomationProperties.Name="Virtual Variable Stack Layout Demo (Estimated)">Virtual Variable Stack Layout Demo (Estimated)</Button>
             <Button x:Name="pinterestLayoutDemo" AutomationProperties.Name="Pinterest Layout Demo">Pinterest Layout Demo</Button>
             <Button x:Name="flowLayoutDemo" AutomationProperties.Name="Flow Layout Demo">Flow Layout Demo</Button>
-            <Button x:Name="storeDemo" AutomationProperties.Name="Store demo">Nested Scrolling in both directions demo</Button>
+            <Button x:Name="stackLayoutDemo" AutomationProperties.Name="Stack Layout Demo">Stack Layout Demo</Button>
+            <Button x:Name="storeDemo" AutomationProperties.Name="Store demo">Nested Scrolling in both directions Demo</Button>
         </StackPanel>
 
         <StackPanel>

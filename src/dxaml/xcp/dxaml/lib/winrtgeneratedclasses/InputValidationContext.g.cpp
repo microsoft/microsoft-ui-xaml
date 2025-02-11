@@ -52,7 +52,7 @@ IFACEMETHODIMP DirectUI::InputValidationContext::get_IsInputRequired(_Out_ BOOLE
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::InputValidationContext::put_IsInputRequired(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::InputValidationContext::put_IsInputRequired(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -103,7 +103,7 @@ HRESULT DirectUI::InputValidationContextFactory::QueryInterfaceImpl(_In_ REFIID 
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::InputValidationContextFactory::CreateInstance(_In_ HSTRING memberName, _In_ BOOLEAN isRequired, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext** ppInstance)
+IFACEMETHODIMP DirectUI::InputValidationContextFactory::CreateInstance(_In_ HSTRING memberName, BOOLEAN isRequired, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext** ppInstance)
 {
     HRESULT hr = S_OK;
     ARG_NOTNULL(memberName, "memberName");

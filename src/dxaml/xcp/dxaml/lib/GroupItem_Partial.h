@@ -25,7 +25,7 @@ namespace DirectUI
         // behavior.    
         IFACEMETHOD(ArrangeOverride)(
             // The computed size that is used to arrange the content.
-            _In_ wf::Size arrangeSize,
+            wf::Size arrangeSize,
             // The size of the control.
             _Out_ wf::Size* returnValue) override;
 
@@ -77,7 +77,7 @@ namespace DirectUI
         GroupItem();
         ~GroupItem() override;
 
-        _Check_return_ HRESULT PrepareItemContainer(_In_ IInspectable* pItem, ItemsControl* pItemsControl);
+        _Check_return_ HRESULT PrepareItemContainer(_In_ IInspectable* pItem, _In_ ItemsControl* pItemsControl);
         _Check_return_ HRESULT ClearContainerForItem(_In_ IInspectable* pItem);
  
         // Override OnCreateAutomationPeer()

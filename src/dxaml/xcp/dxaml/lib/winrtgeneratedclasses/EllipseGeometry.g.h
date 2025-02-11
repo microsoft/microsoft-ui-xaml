@@ -48,11 +48,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Center)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_Center)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_Center)(ABI::Windows::Foundation::Point value) override;
         IFACEMETHOD(get_RadiusX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_RadiusX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_RadiusX)(DOUBLE value) override;
         IFACEMETHOD(get_RadiusY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_RadiusY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_RadiusY)(DOUBLE value) override;
 
         // Events.
 

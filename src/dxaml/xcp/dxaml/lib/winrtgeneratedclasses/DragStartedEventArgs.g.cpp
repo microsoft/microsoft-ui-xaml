@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::DragStartedEventArgsGenerated::get_HorizontalOffset(_Ou
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragStartedEventArgsGenerated::put_HorizontalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::DragStartedEventArgsGenerated::put_HorizontalOffset(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -74,7 +74,7 @@ IFACEMETHODIMP DirectUI::DragStartedEventArgsGenerated::get_VerticalOffset(_Out_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragStartedEventArgsGenerated::put_VerticalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::DragStartedEventArgsGenerated::put_VerticalOffset(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -103,7 +103,7 @@ HRESULT DirectUI::DragStartedEventArgsFactory::QueryInterfaceImpl(_In_ REFIID ii
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::DragStartedEventArgsFactory::CreateInstanceWithHorizontalOffsetAndVerticalOffset(_In_ DOUBLE horizontalOffset, _In_ DOUBLE verticalOffset, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs** ppInstance)
+IFACEMETHODIMP DirectUI::DragStartedEventArgsFactory::CreateInstanceWithHorizontalOffsetAndVerticalOffset(DOUBLE horizontalOffset, DOUBLE verticalOffset, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs** ppInstance)
 {
     HRESULT hr = S_OK;
     

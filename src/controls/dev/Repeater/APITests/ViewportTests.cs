@@ -30,7 +30,7 @@ using WEX.Logging.Interop;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class ViewportTests : ApiTestBase
+    public partial class ViewportTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateNoScrollingSurfaceScenario()
@@ -1015,7 +1015,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             };
         }
 
-        private class TestScrollingSurface : ContentControl, IRepeaterScrollingSurface
+        private partial class TestScrollingSurface : ContentControl, IRepeaterScrollingSurface
         {
             private bool _isHorizontallyScrollable;
             private bool _isVerticallyScrollable;
@@ -1135,7 +1135,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
-        private class TestStackLayout : StackLayout
+        private partial class TestStackLayout : StackLayout
         {
             public UIElement SuggestedAnchor { get; private set; }
 
@@ -1147,7 +1147,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
-        private class TestGridLayout : UniformGridLayout
+        private partial class TestGridLayout : UniformGridLayout
         {
             public UIElement SuggestedAnchor { get; private set; }
 

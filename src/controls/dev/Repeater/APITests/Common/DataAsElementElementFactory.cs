@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
-    class DataAsElementElementFactory : ElementFactory
+    partial class DataAsElementElementFactory : ElementFactory
     {
         protected override UIElement GetElementCore(Microsoft.UI.Xaml.ElementFactoryGetArgs args)
         {

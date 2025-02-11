@@ -824,6 +824,10 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::SetTemplateBindingOnCurrentInst
         XAML_FAIL_FAST();
     }
 
+    // Inform the static analyzer that these pointers are non-null, because if they are null, FAIL_FAST will be executed
+    _Analysis_assume_(sourceProperty != nullptr);
+    _Analysis_assume_(targetProperty != nullptr);
+
     CDependencyObject* target = m_spContext->Current().get_Instance()->GetDependencyObject();
     ASSERT(target);
 

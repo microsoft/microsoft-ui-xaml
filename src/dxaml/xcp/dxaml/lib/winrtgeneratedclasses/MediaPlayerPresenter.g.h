@@ -24,11 +24,11 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_IsFullWindow)(_Out_ BOOLEAN* pValue) override { return This()->get_IsFullWindow(pValue); }
-        IFACEMETHOD(put_IsFullWindow)(_In_ BOOLEAN value) override { return This()->put_IsFullWindow(value); }
+        IFACEMETHOD(put_IsFullWindow)(BOOLEAN value) override { return This()->put_IsFullWindow(value); }
         IFACEMETHOD(get_MediaPlayer)(_Outptr_result_maybenull_ ABI::Windows::Media::Playback::IMediaPlayer** ppValue) override { return This()->get_MediaPlayer(ppValue); }
         IFACEMETHOD(put_MediaPlayer)(_In_opt_ ABI::Windows::Media::Playback::IMediaPlayer* pValue) override { return This()->put_MediaPlayer(pValue); }
         IFACEMETHOD(get_Stretch)(_Out_ ABI::Microsoft::UI::Xaml::Media::Stretch* pValue) override { return This()->get_Stretch(pValue); }
-        IFACEMETHOD(put_Stretch)(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value) override { return This()->put_Stretch(value); }
+        IFACEMETHOD(put_Stretch)(ABI::Microsoft::UI::Xaml::Media::Stretch value) override { return This()->put_Stretch(value); }
     };
 }
 #pragma endregion
@@ -67,11 +67,11 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsFullWindow(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFullWindow(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFullWindow(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_MediaPlayer(_Outptr_result_maybenull_ ABI::Windows::Media::Playback::IMediaPlayer** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_MediaPlayer(_In_opt_ ABI::Windows::Media::Playback::IMediaPlayer* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Stretch(_Out_ ABI::Microsoft::UI::Xaml::Media::Stretch* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_Stretch(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Stretch(ABI::Microsoft::UI::Xaml::Media::Stretch value);
 
         // Events.
 

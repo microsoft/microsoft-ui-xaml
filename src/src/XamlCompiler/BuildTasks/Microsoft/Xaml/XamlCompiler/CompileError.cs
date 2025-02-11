@@ -112,6 +112,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         WMC0917 = 0917,
         WMC0918 = 0918,
         WMC0919 = 0919,
+        WMC0920 = 0920,
 
         // CompileXaml top level errors 1000 - 1100
         WMC1002 = 1002,
@@ -162,6 +163,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         WMC1507 = 1507,
         WMC1508 = 1508,
         WMC1509 = 1509,
+        WMC1510 = 1510,
 
         // Xaml Compiler Internal error and other missplaced errors
         WMC9997 = 9997,
@@ -1103,6 +1105,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         }
     }
 
+    internal class XamlValidationError_InvalidValueForSuppressXamlTrimWarnings : XamlCompileError
+    {
+        public XamlValidationError_InvalidValueForSuppressXamlTrimWarnings(XamlDomObject domObject)
+            : base(ErrorCode.WMC0920, domObject)
+        {
+            Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_InvalidValueForSuppressXamlTrimWarnings);
+        }
+    }
+
     /// <summary>
     /// Error moved from top level driver into XBF generator.
     /// </summary>
@@ -1365,4 +1376,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_XPropertyUsageNotSupportedForLanguage, language.Name);
         }
     }
+
+    internal class XamlBindingAotCompatibilityWarning : XamlCompileWarning
+    {
+        public XamlBindingAotCompatibilityWarning(IXamlDomNode node)
+            : base(ErrorCode.WMC1510, node)
+        {
+            Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_BindingAotCompatibility);
+        }
+    }
+
 }

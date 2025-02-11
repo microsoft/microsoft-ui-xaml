@@ -49,7 +49,7 @@ IFACEMETHODIMP DirectUI::SemanticZoomGenerated::get_CanChangeViews(_Out_ BOOLEAN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SemanticZoom_CanChangeViews, pValue));
 }
-IFACEMETHODIMP DirectUI::SemanticZoomGenerated::put_CanChangeViews(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SemanticZoomGenerated::put_CanChangeViews(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SemanticZoom_CanChangeViews, value));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::SemanticZoomGenerated::get_IsZoomedInViewActive(_Out_ B
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SemanticZoom_IsZoomedInViewActive, pValue));
 }
-IFACEMETHODIMP DirectUI::SemanticZoomGenerated::put_IsZoomedInViewActive(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SemanticZoomGenerated::put_IsZoomedInViewActive(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SemanticZoom_IsZoomedInViewActive, value));
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::SemanticZoomGenerated::get_IsZoomOutButtonEnabled(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SemanticZoom_IsZoomOutButtonEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::SemanticZoomGenerated::put_IsZoomOutButtonEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SemanticZoomGenerated::put_IsZoomOutButtonEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SemanticZoom_IsZoomOutButtonEnabled, value));
@@ -128,7 +128,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SemanticZoomGenerated::remove_ViewChangeCompleted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SemanticZoomGenerated::remove_ViewChangeCompleted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ViewChangeCompletedEventSourceType* pEventSource = nullptr;
@@ -183,7 +183,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SemanticZoomGenerated::remove_ViewChangeStarted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SemanticZoomGenerated::remove_ViewChangeStarted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ViewChangeStartedEventSourceType* pEventSource = nullptr;

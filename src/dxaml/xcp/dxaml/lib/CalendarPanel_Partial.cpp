@@ -33,7 +33,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP CalendarPanel::MeasureOverride(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* pDesired)
 {
     if (m_type != CalendarPanelType::CalendarPanelType_Invalid)
@@ -77,7 +77,7 @@ IFACEMETHODIMP CalendarPanel::MeasureOverride(
 }
 
 IFACEMETHODIMP CalendarPanel::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     bool needsRemeasure = false;

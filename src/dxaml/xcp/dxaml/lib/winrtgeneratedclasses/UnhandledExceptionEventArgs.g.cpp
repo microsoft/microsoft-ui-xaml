@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::UnhandledExceptionEventArgs::get_Exception(_Out_ HRESUL
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UnhandledExceptionEventArgs::put_Exception(_In_ HRESULT value)
+_Check_return_ HRESULT DirectUI::UnhandledExceptionEventArgs::put_Exception(HRESULT value)
 {
     HRESULT hr = S_OK;
     
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::UnhandledExceptionEventArgs::get_Handled(_Out_ BOOLEAN*
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UnhandledExceptionEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UnhandledExceptionEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     

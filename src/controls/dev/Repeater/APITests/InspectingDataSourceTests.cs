@@ -22,7 +22,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     
     [TestClass]
-    public class InspectingDataSourceTests : ApiTestBase
+    public partial class InspectingDataSourceTests : ApiTestBase
     {
         [TestMethod]
         public void CanCreateFromIBindableIterable()
@@ -329,7 +329,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
-        class WinRTObservableVector : IObservableVector<object>
+        partial class WinRTObservableVector : IObservableVector<object>
         {
             private IList<object> _items;
 
@@ -414,7 +414,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 return _items.GetEnumerator();
             }
 
-            private class WinRTVectorChangedEventArgs : IVectorChangedEventArgs
+            private partial class WinRTVectorChangedEventArgs : IVectorChangedEventArgs
             {
                 public CollectionChange CollectionChange { get; private set; }
 
@@ -447,7 +447,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
-        class ObservableVectorWithUniqueIds : ObservableCollection<int>, IKeyIndexMapping
+        partial class ObservableVectorWithUniqueIds : ObservableCollection<int>, IKeyIndexMapping
         {
             public ObservableVectorWithUniqueIds(IEnumerable<int> data) : base(data) { }
 

@@ -41,7 +41,7 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(ToDisplayName)(_In_ ABI::Windows::UI::Color color, _Out_ HSTRING* pResult) override;
+        IFACEMETHOD(ToDisplayName)(ABI::Windows::UI::Color color, _Out_ HSTRING* pResult) override;
 
         // Static events.
 
@@ -55,6 +55,6 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT ToDisplayNameImpl(_In_ ABI::Windows::UI::Color color, _Out_ HSTRING* pResult); 
+         _Check_return_ HRESULT ToDisplayNameImpl(ABI::Windows::UI::Color color, _Out_ HSTRING* pResult); 
     };
 }

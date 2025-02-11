@@ -16,10 +16,10 @@ using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT
 RectHelperFactory::FromCoordinatesAndDimensionsImpl(
-    _In_ FLOAT x,
-    _In_ FLOAT y,
-    _In_ FLOAT width,
-    _In_ FLOAT height,
+    FLOAT x,
+    FLOAT y,
+    FLOAT width,
+    FLOAT height,
     _Out_ wf::Rect* pReturnValue)
 {
     if (width < 0.0F || height < 0.0F)
@@ -44,8 +44,8 @@ RectHelperFactory::FromCoordinatesAndDimensionsImpl(
 
 _Check_return_ HRESULT
 RectHelperFactory::FromLocationAndSizeImpl(
-    _In_ wf::Point location,
-    _In_ wf::Size size,
+    wf::Point location,
+    wf::Size size,
     _Out_ wf::Rect* pReturnValue)
 {
     if (size.Width < 0.0F || size.Height < 0.0F)
@@ -72,8 +72,8 @@ RectHelperFactory::FromLocationAndSizeImpl(
 
 _Check_return_ HRESULT
 RectHelperFactory::FromPointsImpl(
-    _In_ wf::Point point1,
-    _In_ wf::Point point2,
+    wf::Point point1,
+    wf::Point point2,
     _Out_ wf::Rect* pReturnValue)
 {
 
@@ -110,7 +110,7 @@ RectHelperFactory::get_EmptyImpl(_Out_ wf::Rect* pValue)
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT
-RectHelperFactory::GetIsEmptyImpl(_In_ wf::Rect target, _Out_ BOOLEAN* pValue)
+RectHelperFactory::GetIsEmptyImpl(wf::Rect target, _Out_ BOOLEAN* pValue)
 {
     RRETURN(RectUtil::GetIsEmpty(target, pValue));
 }
@@ -124,7 +124,7 @@ RectHelperFactory::GetIsEmptyImpl(_In_ wf::Rect target, _Out_ BOOLEAN* pValue)
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT
-RectHelperFactory::GetBottomImpl(_In_ wf::Rect target, _Out_ FLOAT* pValue)
+RectHelperFactory::GetBottomImpl(wf::Rect target, _Out_ FLOAT* pValue)
 {
     RRETURN(RectUtil::GetBottom(target, pValue));
 }
@@ -138,7 +138,7 @@ RectHelperFactory::GetBottomImpl(_In_ wf::Rect target, _Out_ FLOAT* pValue)
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT
-RectHelperFactory::GetLeftImpl(_In_ wf::Rect target, _Out_ FLOAT* pValue)
+RectHelperFactory::GetLeftImpl(wf::Rect target, _Out_ FLOAT* pValue)
 {
     RRETURN(RectUtil::GetLeft(target, pValue));
 }
@@ -152,7 +152,7 @@ RectHelperFactory::GetLeftImpl(_In_ wf::Rect target, _Out_ FLOAT* pValue)
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT
-RectHelperFactory::GetRightImpl(_In_ wf::Rect target, _Out_ FLOAT* pValue)
+RectHelperFactory::GetRightImpl(wf::Rect target, _Out_ FLOAT* pValue)
 {
     RRETURN(RectUtil::GetRight(target, pValue));
 }
@@ -166,7 +166,7 @@ RectHelperFactory::GetRightImpl(_In_ wf::Rect target, _Out_ FLOAT* pValue)
 //------------------------------------------------------------------------
 
 _Check_return_ HRESULT
-RectHelperFactory::GetTopImpl(_In_ wf::Rect target, _Out_ FLOAT* pValue)
+RectHelperFactory::GetTopImpl(wf::Rect target, _Out_ FLOAT* pValue)
 {
     RRETURN(RectUtil::GetTop(target, pValue));
 }
@@ -181,8 +181,8 @@ RectHelperFactory::GetTopImpl(_In_ wf::Rect target, _Out_ FLOAT* pValue)
 
 _Check_return_ HRESULT
 RectHelperFactory::ContainsImpl(
-    _In_ wf::Rect target,
-    _In_ wf::Point point,
+    wf::Rect target,
+    wf::Point point,
     _Out_ BOOLEAN* pReturnValue)
 {
     *pReturnValue = !!RectUtil::Contains(target, point);
@@ -198,8 +198,8 @@ RectHelperFactory::ContainsImpl(
 
 _Check_return_ HRESULT
 RectHelperFactory::EqualsImpl(
-    _In_ wf::Rect target,
-    _In_ wf::Rect value,
+    wf::Rect target,
+    wf::Rect value,
     _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -233,8 +233,8 @@ Cleanup:
 
 _Check_return_ HRESULT
 RectHelperFactory::IntersectImpl(
-    _In_ wf::Rect target,
-    _In_ wf::Rect rect,
+    wf::Rect target,
+    wf::Rect rect,
     _Out_ wf::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -259,8 +259,8 @@ Cleanup:
 
 _Check_return_ HRESULT
 RectHelperFactory::UnionWithPointImpl(
-    _In_ wf::Rect target,
-    _In_ wf::Point point,
+    wf::Rect target,
+    wf::Point point,
     _Out_ wf::Rect* pReturnValue)
 {
     wf::Rect rect = {};
@@ -282,8 +282,8 @@ RectHelperFactory::UnionWithPointImpl(
 
 _Check_return_ HRESULT
 RectHelperFactory::UnionWithRectImpl(
-    _In_ wf::Rect target,
-    _In_ wf::Rect rect,
+    wf::Rect target,
+    wf::Rect rect,
     _Out_ wf::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -301,7 +301,7 @@ Cleanup:
 
 _Check_return_ HRESULT
 RectHelperFactory::DipsRectToPhysicalRectImpl(
-    _In_ wf::Rect dipsRect,
+    wf::Rect dipsRect,
     _Out_ wf::Rect* pReturnValue)
 {
     //BUG: API IRectHelperStaticsPrivate.DipsRectToPhysicalRect is not compatible with AppWindows

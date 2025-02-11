@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::TextControlCopyingToClipboardEventArgs::get_Handled(_Ou
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextControlCopyingToClipboardEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextControlCopyingToClipboardEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

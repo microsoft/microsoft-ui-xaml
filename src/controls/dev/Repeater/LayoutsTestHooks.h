@@ -21,6 +21,12 @@ public:
 
     static void LayoutInvalidateMeasure(winrt::IInspectable const& layout, bool relayout);
 
+    static int GetLayoutLogItemIndex(winrt::IInspectable const& layout);
+    static void SetLayoutLogItemIndex(winrt::IInspectable const& layout, int logItemIndex);
+
+    static int GetLayoutAnchorIndex(winrt::IInspectable const& layout);
+    static double GetLayoutAnchorOffset(winrt::IInspectable const& layout);
+
     static int GetLayoutFirstRealizedItemIndex(winrt::IInspectable const& layout);
     static int GetLayoutLastRealizedItemIndex(winrt::IInspectable const& layout);
 
@@ -43,8 +49,13 @@ public:
     static bool GetLinedFlowLayoutIsFastPathSupported(winrt::IInspectable const& linedFlowLayout);
     static void SetLinedFlowLayoutIsFastPathSupported(winrt::IInspectable const& linedFlowLayout, bool isFastPathSupported);
 
-    static int GetLinedFlowLayoutLogItemIndex(winrt::IInspectable const& linedFlowLayout);
-    static void SetLinedFlowLayoutLogItemIndex(winrt::IInspectable const& linedFlowLayout, int logItemIndex);
+    static winrt::event_token LayoutAnchorIndexChanged(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value);
+    static void LayoutAnchorIndexChanged(winrt::event_token const& token);
+    static void NotifyLayoutAnchorIndexChanged(winrt::IInspectable const& layout);
+
+    static winrt::event_token LayoutAnchorOffsetChanged(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value);
+    static void LayoutAnchorOffsetChanged(winrt::event_token const& token);
+    static void NotifyLayoutAnchorOffsetChanged(winrt::IInspectable const& layout);
 
     static winrt::event_token LinedFlowLayoutSnappedAverageItemsPerLineChanged(winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable> const& value);
     static void LinedFlowLayoutSnappedAverageItemsPerLineChanged(winrt::event_token const& token);
@@ -66,6 +77,8 @@ public:
 private:
     static LayoutsTestHooks* s_testHooks;
 
+    winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable>> m_layoutAnchorIndexChangedEventSource;
+    winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable>> m_layoutAnchorOffsetChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable>> m_linedFlowLayoutSnappedAverageItemsPerLineChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::LayoutsTestHooksLinedFlowLayoutInvalidatedEventArgs>> m_linedFlowLayoutInvalidatedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::LayoutsTestHooksLinedFlowLayoutItemLockedEventArgs>> m_linedFlowLayoutItemLockedEventSource;

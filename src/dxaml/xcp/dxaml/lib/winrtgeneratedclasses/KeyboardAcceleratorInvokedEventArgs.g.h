@@ -36,7 +36,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_Element)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         _Check_return_ HRESULT put_Element(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue);
         IFACEMETHOD(get_KeyboardAccelerator)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAccelerator** ppValue) override;

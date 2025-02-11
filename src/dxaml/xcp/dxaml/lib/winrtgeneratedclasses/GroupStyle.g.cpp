@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::GroupStyleGenerated::get_HidesIfEmpty(_Out_ BOOLEAN* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GroupStyle_HidesIfEmpty, pValue));
 }
-IFACEMETHODIMP DirectUI::GroupStyleGenerated::put_HidesIfEmpty(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::GroupStyleGenerated::put_HidesIfEmpty(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GroupStyle_HidesIfEmpty, value));
@@ -151,7 +151,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::GroupStyleGenerated::remove_PropertyChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::GroupStyleGenerated::remove_PropertyChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PropertyChangedEventSourceType* pEventSource = nullptr;

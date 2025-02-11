@@ -84,7 +84,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::VirtualizingPanelGenerated::BringIndexIntoView(_In_ INT index)
+IFACEMETHODIMP DirectUI::VirtualizingPanelGenerated::BringIndexIntoView(INT index)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -103,7 +103,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::VirtualizingPanelGenerated::BringIndexIntoViewProtected(_In_ INT index)
+_Check_return_ HRESULT DirectUI::VirtualizingPanelGenerated::BringIndexIntoViewProtected(INT index)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Controls::IVirtualizingPanelOverrides* pVirtuals = NULL;
@@ -124,7 +124,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::VirtualizingPanelGenerated::InsertInternalChild(_In_ INT index, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pChild)
+IFACEMETHODIMP DirectUI::VirtualizingPanelGenerated::InsertInternalChild(INT index, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pChild)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -223,7 +223,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::VirtualizingPanelGenerated::RemoveInternalChildRange(_In_ INT index, _In_ INT range)
+IFACEMETHODIMP DirectUI::VirtualizingPanelGenerated::RemoveInternalChildRange(INT index, INT range)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

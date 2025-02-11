@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp.Samples.Selection
 {
-    public class SelectionContainer : ContentControl
+    public partial class SelectionContainer : ContentControl
     {
         public SelectionContainer()
         {

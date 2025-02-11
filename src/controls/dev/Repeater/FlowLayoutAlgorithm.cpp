@@ -17,7 +17,8 @@ void FlowLayoutAlgorithm::InitializeForContext(
     m_elementManager.SetContext(context);
 }
 
-void FlowLayoutAlgorithm::UninitializeForContext(const winrt::VirtualizingLayoutContext& context)
+void FlowLayoutAlgorithm::UninitializeForContext(
+    const winrt::VirtualizingLayoutContext& context)
 {
     if (IsVirtualizingContext())
     {
@@ -89,8 +90,19 @@ winrt::Size FlowLayoutAlgorithm::Measure(
 
     RaiseLineArranged();
     m_collectionChangePending = false;
-    m_lastExtent = EstimateExtent(availableSize, layoutId);
+    const winrt::Rect lastExtent = EstimateExtent(availableSize, layoutId);
+
+    // When m_layoutRoundFactor was set, the layout origin and extent are rounded based on
+    // that factor to avoid accumulations of double-to-float rounding imprecisions.
+    m_lastExtent = m_layoutRoundFactor > 0.0 ? LayoutRound(lastExtent) : lastExtent;
     SetLayoutOrigin();
+
+#ifdef DBG
+    ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR, METH_NAME, this,
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(), L"ElementManager:");
+
+    m_elementManager.LogElementManagerDbg(winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data());
+#endif // DBG
 
     return winrt::Size{ m_lastExtent.Width, m_lastExtent.Height };
 }
@@ -102,8 +114,20 @@ winrt::Size FlowLayoutAlgorithm::Arrange(
     FlowLayoutAlgorithm::LineAlignment lineAlignment,
     const wstring_view& layoutId)
 {
-    ITEMSREPEATER_TRACE_INFO_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR, METH_NAME, this,
-        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(), L"ArrangeLayout");
+#ifdef DBG
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_IND_STR_STR_FLT_FLT, METH_NAME, this,
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(),
+        L"ArrangeLayout LayoutOrigin:", context.LayoutOrigin().X, context.LayoutOrigin().Y);
+
+    MUX_ASSERT(m_lastExtent.X == context.LayoutOrigin().X);
+    MUX_ASSERT(m_lastExtent.Y == context.LayoutOrigin().Y);
+
+    const auto realizationRectDbg = RealizationRect();
+
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_IND_STR_STR_FLT_FLT_FLT_FLT, METH_NAME, this,
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(),
+        L"ArrangeLayout Realization:", realizationRectDbg.X, realizationRectDbg.Y, realizationRectDbg.Width, realizationRectDbg.Height);
+#endif
 
     ArrangeVirtualizingLayout(finalSize, lineAlignment, isWrapping, layoutId);
 
@@ -150,10 +174,16 @@ winrt::Size FlowLayoutAlgorithm::MeasureElement(
     const winrt::Size& availableSize,
     const winrt::VirtualizingLayoutContext& context)
 {
+    // Using the handy 'element' to determine the global scale factor because accessing the ItemsRepeater panel at this FlowLayoutAlgorithm level
+    // would require significant additions. This scale factor is used to round the layout's origin and extent.
+    EvaluateLayoutRoundFactor(context, element);
+
     const auto measureSize = m_algorithmCallbacks->Algorithm_GetMeasureSize(index, availableSize, context);
     element.Measure(measureSize);
-    const auto provisionalArrangeSize = m_algorithmCallbacks->Algorithm_GetProvisionalArrangeSize(index, measureSize, element.DesiredSize(), context);
-    m_algorithmCallbacks->Algorithm_OnElementMeasured(element, index, availableSize, measureSize, element.DesiredSize(), provisionalArrangeSize, context);
+    const auto desiredSize = element.DesiredSize();
+    const auto provisionalArrangeSize = m_algorithmCallbacks->Algorithm_GetProvisionalArrangeSize(index, measureSize, desiredSize, context);
+
+    m_algorithmCallbacks->Algorithm_OnElementMeasured(element, index, availableSize, measureSize, desiredSize, provisionalArrangeSize, context);
 
     return provisionalArrangeSize;
 }
@@ -174,11 +204,22 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     if (!IsVirtualizingContext() || !isVirtualizationEnabled)
     {
         // Non virtualizing host, start generating from the element 0
-        anchorIndex = context.ItemCountCore() > 0 ? 0 : -1;
+        if (context.ItemCountCore() > 0)
+        {
+            anchorIndex = 0;
+        }
+        else
+        {
+            anchorPosition = { -1.0, -1.0 };
+        }
     }
     else
     {
         const bool isRealizationWindowConnected = m_elementManager.IsWindowConnected(RealizationRect(), GetScrollOrientation(), m_scrollOrientationSameAsFlow);
+
+        ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR, METH_NAME, this,
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(), isRealizationWindowConnected ? L"Connected RealizationWindow." : L"Disconnected RealizationWindow.");
+
         // Item spacing and size in non-virtualizing direction change can cause elements to reflow
         // and get a new column position. In that case we need the anchor to be positioned in the
         // correct column.
@@ -243,12 +284,6 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
                     winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(), L"NeedAnchorColumnReevaluation.");
             }
 
-            if (!isRealizationWindowConnected)
-            {
-                ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR, METH_NAME, this,
-                    winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(), L"Disconnected Window.");
-            }
-
             // The anchor is based on the realization window because a connected ItemsRepeater might intersect the realization window
             // but not the visible window. In that situation, we still need to produce a valid anchor.
             const auto anchorInfo = m_algorithmCallbacks->Algorithm_GetAnchorForRealizationRect(availableSize, context);
@@ -263,7 +298,13 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
 
             // No suggestion - just pick first in realized range
             anchorIndex = m_elementManager.GetDataIndexFromRealizedRangeIndex(0);
-            anchorPosition = MinorMajorPoint(0, MajorStart(m_elementManager.GetLayoutBoundsForRealizedIndex(0)));
+
+            if (m_elementManager.IsLayoutBoundsForRealizedIndexSet(0))
+            {
+                const auto firstRealizedElementBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
+
+                anchorPosition = MinorMajorPoint(MinorStart(firstRealizedElementBounds), MajorStart(firstRealizedElementBounds));
+            }
         }
     }
 
@@ -310,9 +351,12 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
     m_lastAvailableSize = availableSize;
     m_lastItemSpacing = minItemSpacing;
 
+#ifdef DBG
+    m_algorithmCallbacks->Algorithm_SetFlowLayoutAnchorInfoDbg(anchorIndex, Major(anchorPosition));
+#endif // DBG
+
     return anchorIndex;
 }
-
 
 void FlowLayoutAlgorithm::Generate(
     GenerateDirection direction,
@@ -348,6 +392,14 @@ void FlowLayoutAlgorithm::Generate(
         float lineMajorSize = MajorSize(anchorBounds);
         unsigned int countInLine = 1;
         bool lineNeedsReposition = false;
+
+        if (maxItemsPerLine > 0 && maxItemsPerLine != std::numeric_limits<unsigned int>::max())
+        {
+            // Initialize countInLine based on anchorIndex & maxItemsPerLine for a UniformGridLayout for example.
+            const int anchorLineIndex = static_cast<int>(anchorIndex / maxItemsPerLine);
+            const int anchorIndexInLine = anchorIndex - (anchorLineIndex * maxItemsPerLine);
+            countInLine = direction == GenerateDirection::Forward ? anchorIndexInLine + 1 : maxItemsPerLine - anchorIndexInLine;
+        }
 
         while (m_elementManager.IsIndexValidInData(currentIndex) &&
               (!isVirtualizationEnabled || ShouldContinueFillingUpSpace(previousIndex, direction)))
@@ -534,6 +586,19 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
         const auto rectMinorStart = MinorStart(realizationRect);
         const auto rectMinorEnd = MinorEnd(realizationRect);
 
+#ifdef DBG
+        if (direction == GenerateDirection::Forward)
+        {
+            ITEMSREPEATER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this,
+                L"elementMajorStart < rectMajorEnd ?", elementMajorStart, rectMajorEnd);
+        }
+        else
+        {
+            ITEMSREPEATER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this,
+                L"elementMajorEnd > rectMajorStart ?", elementMajorEnd, rectMajorStart);
+        }
+#endif // DBG
+
         // Ensure that both minor and major directions are taken into consideration so that if the scrolling direction
         // is the same as the flow direction we still stop at the end of the viewport rectangle.
         shouldContinue = direction == GenerateDirection::Forward
@@ -544,42 +609,88 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
     return shouldContinue;
 }
 
-winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize, const wstring_view& layoutId)
+winrt::Rect FlowLayoutAlgorithm::EstimateExtent(
+    const winrt::Size& availableSize,
+    const wstring_view& layoutId)
 {
     winrt::UIElement firstRealizedElement = nullptr;
-    winrt::Rect firstBounds{};
+    winrt::Rect firstRealizedBounds{};
     winrt::UIElement lastRealizedElement = nullptr;
-    winrt::Rect lastBounds{};
-    int firstDataIndex = -1;
-    int lastDataIndex = -1;
+    winrt::Rect lastRealizedBounds{};
+    int firstRealizedDataIndex = -1;
+    int lastRealizedDataIndex = -1;
 
     if (m_elementManager.GetRealizedElementCount() > 0)
     {
         firstRealizedElement = m_elementManager.GetAt(0);
-        firstBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
-        firstDataIndex = m_elementManager.GetDataIndexFromRealizedRangeIndex(0);
+        firstRealizedBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
+        firstRealizedDataIndex = m_elementManager.GetDataIndexFromRealizedRangeIndex(0);
 
         const int last = m_elementManager.GetRealizedElementCount() - 1;
         lastRealizedElement = m_elementManager.GetAt(last);
-        lastDataIndex = m_elementManager.GetDataIndexFromRealizedRangeIndex(last);
-        lastBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(last);
+        lastRealizedDataIndex = m_elementManager.GetDataIndexFromRealizedRangeIndex(last);
+        lastRealizedBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(last);
     }
 
     const winrt::Rect extent = m_algorithmCallbacks->Algorithm_GetExtent(
         availableSize,
         m_context.get(),
         firstRealizedElement,
-        firstDataIndex,
-        firstBounds,
+        firstRealizedDataIndex,
+        firstRealizedBounds,
         lastRealizedElement,
-        lastDataIndex,
-        lastBounds);
+        lastRealizedDataIndex,
+        lastRealizedBounds);
 
     ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR_FLT_FLT_FLT_FLT, METH_NAME, this,
         winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(), layoutId.data(),
         L"Extent:", extent.X, extent.Y, extent.Width, extent.Height);
 
     return extent;
+}
+
+winrt::Rect FlowLayoutAlgorithm::LayoutRound(
+    const winrt::Rect& value) const
+{
+    MUX_ASSERT(m_layoutRoundFactor != 0.0);
+
+    return winrt::Rect
+    {
+        static_cast<float>(round(value.X * m_layoutRoundFactor) / m_layoutRoundFactor),
+        static_cast<float>(round(value.Y * m_layoutRoundFactor) / m_layoutRoundFactor),
+        static_cast<float>(round(value.Width * m_layoutRoundFactor) / m_layoutRoundFactor),
+        static_cast<float>(round(value.Height * m_layoutRoundFactor) / m_layoutRoundFactor)
+    };
+}
+
+void FlowLayoutAlgorithm::EvaluateLayoutRoundFactor(
+    const winrt::VirtualizingLayoutContext& context,
+    const winrt::UIElement& element)
+{
+    if (element.UseLayoutRounding())
+    {
+        if (const auto xamlRoot = element.XamlRoot())
+        {
+            const double layoutRoundFactor = xamlRoot.RasterizationScale();
+
+            if (layoutRoundFactor != m_layoutRoundFactor)
+            {
+                m_layoutRoundFactor = layoutRoundFactor;
+
+                // This triggers a call to StackLayoutState::OnElementSizesReset()
+                // for example, in the StackLayout case.
+                m_algorithmCallbacks->Algorithm_OnLayoutRoundFactorChanged(context);
+            }
+        }
+        else
+        {
+            m_layoutRoundFactor = 0.0;
+        }
+    }
+    else
+    {
+        m_layoutRoundFactor = 0.0;
+    }
 }
 
 void FlowLayoutAlgorithm::RaiseLineArranged()
@@ -631,6 +742,7 @@ void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
     // Walk through the realized elements one line at a time and
     // align them. Then call element.Arrange with the arranged bounds.
     const int realizedElementCount = m_elementManager.GetRealizedElementCount();
+
     if (realizedElementCount > 0)
     {
         int countInLine = 1;
@@ -752,11 +864,43 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
 
         auto element = m_elementManager.GetAt(rangeIndex);
 
-        ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR_INT_FLT_FLT_FLT_FLT, METH_NAME, this,
+#ifdef DBG
+        const int itemIndexDbg = m_elementManager.GetDataIndexFromRealizedRangeIndex(rangeIndex);
+
+        ITEMSREPEATER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_IND_STR_STR_INT_FLT_FLT_FLT_FLT, METH_NAME, this,
             winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(), layoutId.data(),
             L"Element dataIndex & arrange bounds:",
-            m_elementManager.GetDataIndexFromRealizedRangeIndex(rangeIndex),
+            itemIndexDbg,
             bounds.X, bounds.Y, bounds.Width, bounds.Height);
+
+        if (itemIndexDbg == m_algorithmCallbacks->Algorithm_GetFlowLayoutLogItemIndexDbg())
+        {
+            ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", itemIndexDbg);
+
+            ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_IND_STR_STR_FLT_FLT_FLT_FLT, METH_NAME, this,
+                winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(), layoutId.data(),
+                L"Element arrange bounds:",
+                bounds.X, bounds.Y, bounds.Width, bounds.Height);
+
+            const winrt::ItemsRepeater itemsRepeaterDbg = SharedHelpers::GetAncestorOfType<winrt::ItemsRepeater>(winrt::VisualTreeHelper::GetParent(element));
+
+            if (itemsRepeaterDbg)
+            {
+                const winrt::UIElement itemsRepeaterParentDbg = winrt::VisualTreeHelper::GetParent(itemsRepeaterDbg).try_as<winrt::UIElement>();
+
+                if (itemsRepeaterParentDbg)
+                {
+                    const winrt::GeneralTransform transformDbg = element.TransformToVisual(itemsRepeaterParentDbg);
+                    const winrt::Point elementOffsetDbg = transformDbg.TransformPoint(winrt::Point{});
+
+                    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_IND_STR_STR_FLT_FLT, METH_NAME, this,
+                        winrt::get_self<VirtualizingLayoutContext>(m_context.get())->Indent(), layoutId.data(),
+                        L"Element arrange offsets within ItemsRepeater parent:",
+                        elementOffsetDbg.X, elementOffsetDbg.Y);
+                }
+            }
+        }
+#endif // DBG
 
         element.Arrange(bounds);
     }

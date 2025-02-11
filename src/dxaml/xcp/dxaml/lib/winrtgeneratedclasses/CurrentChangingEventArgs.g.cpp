@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::CurrentChangingEventArgsGenerated::get_Cancel(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CurrentChangingEventArgsGenerated::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CurrentChangingEventArgsGenerated::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -105,7 +105,7 @@ IFACEMETHODIMP DirectUI::CurrentChangingEventArgsFactory::CreateInstance(_In_opt
     IFC_RETURN(hr);
     return S_OK;
 }
-IFACEMETHODIMP DirectUI::CurrentChangingEventArgsFactory::CreateWithCancelableParameter(_In_ BOOLEAN isCancelable, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs** ppInstance)
+IFACEMETHODIMP DirectUI::CurrentChangingEventArgsFactory::CreateWithCancelableParameter(BOOLEAN isCancelable, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventArgs** ppInstance)
 {
     HRESULT hr = S_OK;
     

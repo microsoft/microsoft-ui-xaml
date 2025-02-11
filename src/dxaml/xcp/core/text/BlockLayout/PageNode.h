@@ -21,7 +21,7 @@ class PageNode final : public ContainerNode
 public:
     PageNode(
         _In_ BlockLayoutEngine *pBlockLayoutEngine,
-        _In_ CBlockCollection *pBlocks,
+        _In_opt_ CBlockCollection *pBlocks,
         _In_ CFrameworkElement *pPageOwner
         );
     ~PageNode() override;

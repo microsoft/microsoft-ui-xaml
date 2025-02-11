@@ -46,7 +46,7 @@ _Check_return_ HRESULT DirectUI::PointerAnimationUsingKeyFrames::get_PointerSour
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointerAnimationUsingKeyFrames_PointerSource, pValue));
 }
-_Check_return_ HRESULT DirectUI::PointerAnimationUsingKeyFrames::put_PointerSource(_In_ DirectUI::PointerDirection value)
+_Check_return_ HRESULT DirectUI::PointerAnimationUsingKeyFrames::put_PointerSource(DirectUI::PointerDirection value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointerAnimationUsingKeyFrames_PointerSource, value));

@@ -25,7 +25,7 @@ namespace DirectUI
         return S_OK;
     }
 
-    _Check_return_ HRESULT DataErrorsChangedEventArgsFactory::CreateInstanceImpl(_In_opt_ HSTRING name, _Outptr_ xaml_data::IDataErrorsChangedEventArgs** instance)
+    _Check_return_ HRESULT DataErrorsChangedEventArgsFactory::CreateInstanceImpl(_In_ HSTRING name, _Outptr_ xaml_data::IDataErrorsChangedEventArgs** instance)
     {
 
         ctl::ComPtr<DataErrorsChangedEventArgs> errorArgs;
@@ -35,7 +35,7 @@ namespace DirectUI
         return S_OK;
     }
 
-    _Check_return_ HRESULT InputValidationErrorEventArgsFactory::CreateInstanceImpl(_In_ xaml_controls::InputValidationErrorEventAction action, _In_ xaml_controls::IInputValidationError* error, _Outptr_ xaml_controls::IInputValidationErrorEventArgs** instance)
+    _Check_return_ HRESULT InputValidationErrorEventArgsFactory::CreateInstanceImpl(xaml_controls::InputValidationErrorEventAction action, _In_ xaml_controls::IInputValidationError* error, _Outptr_ xaml_controls::IInputValidationErrorEventArgs** instance)
     {
         ctl::ComPtr<InputValidationErrorEventArgs> errorArgs;
         IFCFAILFAST(ctl::make<InputValidationErrorEventArgs>(&errorArgs));
@@ -45,7 +45,7 @@ namespace DirectUI
         return S_OK;
     }
 
-    _Check_return_ HRESULT HasValidationErrorsChangedEventArgsFactory::CreateInstanceImpl(_In_ BOOLEAN newValue, _Outptr_ xaml_controls::IHasValidationErrorsChangedEventArgs** instance)
+    _Check_return_ HRESULT HasValidationErrorsChangedEventArgsFactory::CreateInstanceImpl(BOOLEAN newValue, _Outptr_ xaml_controls::IHasValidationErrorsChangedEventArgs** instance)
     {
         ctl::ComPtr<HasValidationErrorsChangedEventArgs> eventArgs;
         IFCFAILFAST(ctl::make<HasValidationErrorsChangedEventArgs>(&eventArgs));
@@ -83,7 +83,7 @@ namespace DirectUI
         return S_OK;
     }
 
-    _Check_return_ HRESULT InputValidationContextFactory::CreateInstanceImpl(_In_ HSTRING memberName, _In_ BOOLEAN isRequired, _In_opt_ IInspectable* outer, _Outptr_ IInspectable** inner, _Outptr_ xaml_controls::IInputValidationContext** instance)
+    _Check_return_ HRESULT InputValidationContextFactory::CreateInstanceImpl(_In_ HSTRING memberName, BOOLEAN isRequired, _In_opt_ IInspectable* outer, _Outptr_ IInspectable** inner, _Outptr_ xaml_controls::IInputValidationContext** instance)
     {
         ctl::ComPtr<xaml_controls::IInputValidationContext> context;
         IFC_RETURN(ctl::AggregableActivationFactory<InputValidationContext>::ActivateInstance(outer, inner));

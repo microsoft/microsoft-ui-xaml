@@ -100,14 +100,14 @@ namespace ctl
             return This()->DeleteTrackerHandle(handle);
         }
         IFACEMETHOD(SetTrackerValue)(
-            _In_ ::TrackerHandle handle,
-            _In_opt_ IUnknown *value) override
+            ::TrackerHandle handle,
+            IUnknown *value) override
         {
             return This()->SetTrackerValue(handle, value);
         }
-        _Success_(!!return) _Check_return_ IFACEMETHOD_(BOOLEAN, TryGetSafeTrackerValue)(
-            _In_ ::TrackerHandle handle,
-            _COM_Outptr_result_maybenull_ IUnknown **returnValue) override
+        IFACEMETHOD_(BOOLEAN, TryGetSafeTrackerValue)(
+            ::TrackerHandle handle,
+            IUnknown **returnValue) override
         {
             return This()->TryGetSafeTrackerValue(handle, returnValue);
         }

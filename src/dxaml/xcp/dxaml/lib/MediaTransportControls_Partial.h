@@ -135,7 +135,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT SetThumbnailImage(_In_ wsts::IInputStream* pstream);
         IFACEMETHOD(add_ThumbnailRequested)(_In_ wf::ITypedEventHandler<xaml_controls::MediaTransportControls*, xaml_media::MediaTransportControlsThumbnailRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_ThumbnailRequested)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_ThumbnailRequested)(EventRegistrationToken tToken) override;
 
         _Check_return_ HRESULT EnterImpl(
             _In_ bool bLive,
@@ -360,7 +360,7 @@ namespace DirectUI
             _Outptr_ HSTRING* pDisplayTime);
 
         _Check_return_ HRESULT GetLocalizedLanguageName(
-            _In_ HSTRING languageTag,
+            _In_opt_ HSTRING languageTag,
             _Outptr_ HSTRING* pProcessedLanguageName);
 
         _Check_return_ HRESULT MarkLanguageSelection(

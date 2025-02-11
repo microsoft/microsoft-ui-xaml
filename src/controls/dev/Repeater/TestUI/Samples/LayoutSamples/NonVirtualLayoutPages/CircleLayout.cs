@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp.Samples
 {
-    class CircleLayout : VirtualizingLayout
+    partial class CircleLayout : VirtualizingLayout
     {
         public double ItemSize { get; set; }
 

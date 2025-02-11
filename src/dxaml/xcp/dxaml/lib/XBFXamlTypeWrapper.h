@@ -31,7 +31,7 @@ namespace DirectUI
         _Check_return_ HRESULT SetXamlMetadataProvider(_In_ xaml_markup::IXamlMetadataProvider* pXamlMetadataProvider);
         HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void** ppObject) override;
 
-        IFACEMETHOD(GetXamlType)(_In_ wxaml_interop::TypeName type, _Outptr_ xaml_markup::IXamlType **value);
+        IFACEMETHOD(GetXamlType)(wxaml_interop::TypeName type, _Outptr_ xaml_markup::IXamlType **value);
         IFACEMETHOD(GetXamlTypeByFullName)(_In_ HSTRING fullName, _Outptr_ xaml_markup::IXamlType **value);
         IFACEMETHOD(GetXmlnsDefinitions)(_Out_ UINT32* definitionsSize, _Outptr_result_buffer_(*definitionsSize) xaml_markup::XmlnsDefinition **definitions);
 

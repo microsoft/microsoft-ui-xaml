@@ -48,7 +48,7 @@ Cleanup:
 }
 
 // Static methods.
-IFACEMETHODIMP DirectUI::SizeHelperFactory::FromDimensions(_In_ FLOAT width, _In_ FLOAT height, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
+IFACEMETHODIMP DirectUI::SizeHelperFactory::FromDimensions(FLOAT width, FLOAT height, _Out_ ABI::Windows::Foundation::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -66,7 +66,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SizeHelperFactory::GetIsEmpty(_In_ ABI::Windows::Foundation::Size target, _Out_ BOOLEAN* pValue)
+IFACEMETHODIMP DirectUI::SizeHelperFactory::GetIsEmpty(ABI::Windows::Foundation::Size target, _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -84,7 +84,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SizeHelperFactory::Equals(_In_ ABI::Windows::Foundation::Size target, _In_ ABI::Windows::Foundation::Size value, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::SizeHelperFactory::Equals(ABI::Windows::Foundation::Size target, ABI::Windows::Foundation::Size value, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

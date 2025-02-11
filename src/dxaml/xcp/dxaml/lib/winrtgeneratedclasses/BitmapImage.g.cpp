@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::BitmapImageGenerated::get_AutoPlay(_Out_ BOOLEAN* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BitmapImage_AutoPlay, pValue));
 }
-IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_AutoPlay(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_AutoPlay(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BitmapImage_AutoPlay, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::BitmapImageGenerated::get_CreateOptions(_Out_ ABI::Micr
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BitmapImage_CreateOptions, pValue));
 }
-IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_CreateOptions(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::BitmapCreateOptions value)
+IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_CreateOptions(ABI::Microsoft::UI::Xaml::Media::Imaging::BitmapCreateOptions value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BitmapImage_CreateOptions, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::BitmapImageGenerated::get_DecodePixelHeight(_Out_ INT* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BitmapImage_DecodePixelHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_DecodePixelHeight(_In_ INT value)
+IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_DecodePixelHeight(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BitmapImage_DecodePixelHeight, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::BitmapImageGenerated::get_DecodePixelType(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BitmapImage_DecodePixelType, pValue));
 }
-IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_DecodePixelType(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::DecodePixelType value)
+IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_DecodePixelType(ABI::Microsoft::UI::Xaml::Media::Imaging::DecodePixelType value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BitmapImage_DecodePixelType, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::BitmapImageGenerated::get_DecodePixelWidth(_Out_ INT* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BitmapImage_DecodePixelWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_DecodePixelWidth(_In_ INT value)
+IFACEMETHODIMP DirectUI::BitmapImageGenerated::put_DecodePixelWidth(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BitmapImage_DecodePixelWidth, value));
@@ -141,7 +141,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::BitmapImageGenerated::remove_DownloadProgress(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::BitmapImageGenerated::remove_DownloadProgress(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DownloadProgressEventSourceType* pEventSource = nullptr;
@@ -196,7 +196,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::BitmapImageGenerated::remove_ImageFailed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::BitmapImageGenerated::remove_ImageFailed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ImageFailedEventSourceType* pEventSource = nullptr;
@@ -251,7 +251,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::BitmapImageGenerated::remove_ImageOpened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::BitmapImageGenerated::remove_ImageOpened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ImageOpenedEventSourceType* pEventSource = nullptr;

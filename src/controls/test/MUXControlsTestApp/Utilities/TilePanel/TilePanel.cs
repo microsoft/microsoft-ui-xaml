@@ -14,7 +14,7 @@ namespace MUXControlsTestApp.Utilities
     /// <summary>
     /// Test panel that lays out Rectangles in columns and rows.
     /// </summary>
-    public class TilePanel : Panel
+    public partial class TilePanel : Panel
     {
         public TilePanel()
         {

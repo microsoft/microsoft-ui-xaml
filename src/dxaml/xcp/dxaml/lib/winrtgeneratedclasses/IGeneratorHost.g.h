@@ -27,12 +27,12 @@ namespace DirectUI
         IFACEMETHOD(PrepareItemContainer)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _In_ IInspectable* pItem) = 0;
         IFACEMETHOD(ClearContainerForItem)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _In_ IInspectable* pItem) = 0;
         IFACEMETHOD(IsHostForItemContainer)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _Out_ BOOLEAN* pReturnValue) = 0;
-        IFACEMETHOD(GetGroupStyle)(_In_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup* pGroup, _In_ UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue) = 0;
-        IFACEMETHOD(SetIsGrouping)(_In_ BOOLEAN isGrouping) = 0;
+        IFACEMETHOD(GetGroupStyle)(_In_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup* pGroup, UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue) = 0;
+        IFACEMETHOD(SetIsGrouping)(BOOLEAN isGrouping) = 0;
         IFACEMETHOD(GetHeaderForGroup)(_In_ IInspectable* pGroup, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) = 0;
         IFACEMETHOD(PrepareGroupContainer)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _In_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup* pGroup) = 0;
         IFACEMETHOD(ClearGroupContainerForGroup)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _In_opt_ ABI::Microsoft::UI::Xaml::Data::ICollectionViewGroup* pGroup) = 0;
-        IFACEMETHOD(SetupContainerContentChangingAfterPrepare)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _In_ IInspectable* pItem, _In_ INT itemIndex, _In_ ABI::Windows::Foundation::Size measureSize) = 0;
+        IFACEMETHOD(SetupContainerContentChangingAfterPrepare)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _In_ IInspectable* pItem, INT itemIndex, ABI::Windows::Foundation::Size measureSize) = 0;
         IFACEMETHOD(RegisterWorkFromArgs)(_In_ ABI::Microsoft::UI::Xaml::Controls::IContainerContentChangingEventArgs* pArgs) = 0;
         IFACEMETHOD(RegisterWorkForContainer)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pContainer) = 0;
         IFACEMETHOD(CanRecycleContainer)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pContainer, _Out_ BOOLEAN* pReturnValue) = 0;
@@ -43,6 +43,6 @@ namespace DirectUI
         IFACEMETHOD(ShouldRaiseChoosingGroupHeaderContainer)(_Out_ BOOLEAN* pReturnValue) = 0;
         IFACEMETHOD(RaiseChoosingGroupHeaderContainer)(_In_ ABI::Microsoft::UI::Xaml::Controls::IChoosingGroupHeaderContainerEventArgs* pArgs) = 0;
         IFACEMETHOD(VirtualizationFinished)() = 0;
-        IFACEMETHOD(OverrideContainerArrangeBounds)(_In_ INT index, _In_ ABI::Windows::Foundation::Rect suggestedBounds, _Out_ ABI::Windows::Foundation::Rect* pNewBounds) = 0;
+        IFACEMETHOD(OverrideContainerArrangeBounds)(INT index, ABI::Windows::Foundation::Rect suggestedBounds, _Out_ ABI::Windows::Foundation::Rect* pNewBounds) = 0;
     };
 }

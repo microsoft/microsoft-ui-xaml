@@ -60,7 +60,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ArePointerWheelEventsIgnored
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_ArePointerWheelEventsIgnored(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_ArePointerWheelEventsIgnored(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -80,7 +80,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_BringIntoViewOnFocusChange(_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_BringIntoViewOnFocusChange(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_BringIntoViewOnFocusChange(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -100,7 +100,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_CanContentRenderOutsideBound
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_CanContentRenderOutsideBounds(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_CanContentRenderOutsideBounds(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -114,7 +114,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ComputedHorizontalScrollBarV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ComputedHorizontalScrollBarVisibility, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ComputedHorizontalScrollBarVisibility(_In_ ABI::Microsoft::UI::Xaml::Visibility value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ComputedHorizontalScrollBarVisibility(ABI::Microsoft::UI::Xaml::Visibility value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ComputedHorizontalScrollBarVisibility, value));
@@ -123,7 +123,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ComputedVerticalScrollBarVis
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ComputedVerticalScrollBarVisibility, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ComputedVerticalScrollBarVisibility(_In_ ABI::Microsoft::UI::Xaml::Visibility value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ComputedVerticalScrollBarVisibility(ABI::Microsoft::UI::Xaml::Visibility value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ComputedVerticalScrollBarVisibility, value));
@@ -142,7 +142,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ExtentHeight(_Out_ DOUBLE* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ExtentHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ExtentHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ExtentHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ExtentHeight, value));
@@ -151,7 +151,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ExtentWidth(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ExtentWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ExtentWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ExtentWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ExtentWidth, value));
@@ -160,7 +160,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_HorizontalAnchorRatio(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_HorizontalAnchorRatio, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalAnchorRatio(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalAnchorRatio(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_HorizontalAnchorRatio, value));
@@ -169,7 +169,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_HorizontalOffset(_Out_ DOUBL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_HorizontalOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_HorizontalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_HorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_HorizontalOffset, value));
@@ -184,7 +184,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_HorizontalScrollBarVisibilit
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalScrollBarVisibility(_In_ ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalScrollBarVisibility(ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility value)
 {
     HRESULT hr = S_OK;
     
@@ -204,7 +204,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_HorizontalScrollMode(_Out_ A
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalScrollMode(_In_ ABI::Microsoft::UI::Xaml::Controls::ScrollMode value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalScrollMode(ABI::Microsoft::UI::Xaml::Controls::ScrollMode value)
 {
     HRESULT hr = S_OK;
     
@@ -218,7 +218,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_HorizontalSnapPointsAlignmen
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_HorizontalSnapPointsAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalSnapPointsAlignment(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalSnapPointsAlignment(ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_HorizontalSnapPointsAlignment, value));
@@ -227,7 +227,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_HorizontalSnapPointsType(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_HorizontalSnapPointsType, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalSnapPointsType(_In_ ABI::Microsoft::UI::Xaml::Controls::SnapPointsType value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_HorizontalSnapPointsType(ABI::Microsoft::UI::Xaml::Controls::SnapPointsType value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_HorizontalSnapPointsType, value));
@@ -242,7 +242,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsDeferredScrollingEnabled(_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsDeferredScrollingEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsDeferredScrollingEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -262,7 +262,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsHorizontalRailEnabled(_Out
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsHorizontalRailEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsHorizontalRailEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -282,7 +282,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsHorizontalScrollChainingEn
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsHorizontalScrollChainingEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsHorizontalScrollChainingEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -322,7 +322,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsRequestBringIntoViewIgnore
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsRequestBringIntoViewIgnored(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsRequestBringIntoViewIgnored(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -342,7 +342,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsScrollInertiaEnabled(_Out_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsScrollInertiaEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsScrollInertiaEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -362,7 +362,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsVerticalRailEnabled(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsVerticalRailEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsVerticalRailEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -382,7 +382,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsVerticalScrollChainingEnab
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsVerticalScrollChainingEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsVerticalScrollChainingEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -402,7 +402,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsZoomChainingEnabled(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsZoomChainingEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsZoomChainingEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -422,7 +422,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_IsZoomInertiaEnabled(_Out_ B
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsZoomInertiaEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_IsZoomInertiaEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -445,7 +445,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_MaxZoomFactor(_Out_ FLOAT* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_MaxZoomFactor, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_MaxZoomFactor(_In_ FLOAT value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_MaxZoomFactor(FLOAT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_MaxZoomFactor, value));
@@ -454,7 +454,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_MinZoomFactor(_Out_ FLOAT* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_MinZoomFactor, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_MinZoomFactor(_In_ FLOAT value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_MinZoomFactor(FLOAT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_MinZoomFactor, value));
@@ -463,7 +463,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ReduceViewportForCoreInputVi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ReduceViewportForCoreInputViewOcclusions, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_ReduceViewportForCoreInputViewOcclusions(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_ReduceViewportForCoreInputViewOcclusions(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ReduceViewportForCoreInputViewOcclusions, value));
@@ -472,7 +472,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ScrollableHeight(_Out_ DOUBL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ScrollableHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ScrollableHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ScrollableHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ScrollableHeight, value));
@@ -481,7 +481,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ScrollableWidth(_Out_ DOUBLE
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ScrollableWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ScrollableWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ScrollableWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ScrollableWidth, value));
@@ -508,7 +508,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_VerticalAnchorRatio(_Out_ DO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_VerticalAnchorRatio, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalAnchorRatio(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalAnchorRatio(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_VerticalAnchorRatio, value));
@@ -517,7 +517,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_VerticalOffset(_Out_ DOUBLE*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_VerticalOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_VerticalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_VerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_VerticalOffset, value));
@@ -532,7 +532,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_VerticalScrollBarVisibility(
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalScrollBarVisibility(_In_ ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalScrollBarVisibility(ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility value)
 {
     HRESULT hr = S_OK;
     
@@ -552,7 +552,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_VerticalScrollMode(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalScrollMode(_In_ ABI::Microsoft::UI::Xaml::Controls::ScrollMode value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalScrollMode(ABI::Microsoft::UI::Xaml::Controls::ScrollMode value)
 {
     HRESULT hr = S_OK;
     
@@ -566,7 +566,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_VerticalSnapPointsAlignment(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_VerticalSnapPointsAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalSnapPointsAlignment(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalSnapPointsAlignment(ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_VerticalSnapPointsAlignment, value));
@@ -575,7 +575,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_VerticalSnapPointsType(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_VerticalSnapPointsType, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalSnapPointsType(_In_ ABI::Microsoft::UI::Xaml::Controls::SnapPointsType value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_VerticalSnapPointsType(ABI::Microsoft::UI::Xaml::Controls::SnapPointsType value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_VerticalSnapPointsType, value));
@@ -584,7 +584,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ViewportHeight(_Out_ DOUBLE*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ViewportHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ViewportHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ViewportHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ViewportHeight, value));
@@ -593,7 +593,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ViewportWidth(_Out_ DOUBLE* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ViewportWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ViewportWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ViewportWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ViewportWidth, value));
@@ -602,7 +602,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ZoomFactor(_Out_ FLOAT* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ZoomFactor, pValue));
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ZoomFactor(_In_ FLOAT value)
+_Check_return_ HRESULT DirectUI::ScrollViewerGenerated::put_ZoomFactor(FLOAT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ZoomFactor, value));
@@ -617,7 +617,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ZoomMode(_Out_ ABI::Microsof
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_ZoomMode(_In_ ABI::Microsoft::UI::Xaml::Controls::ZoomMode value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_ZoomMode(ABI::Microsoft::UI::Xaml::Controls::ZoomMode value)
 {
     HRESULT hr = S_OK;
     
@@ -641,7 +641,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerGenerated::get_ZoomSnapPointsType(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ZoomSnapPointsType, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_ZoomSnapPointsType(_In_ ABI::Microsoft::UI::Xaml::Controls::SnapPointsType value)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::put_ZoomSnapPointsType(ABI::Microsoft::UI::Xaml::Controls::SnapPointsType value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollViewer_ZoomSnapPointsType, value));
@@ -684,7 +684,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_AnchorRequested(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_AnchorRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnchorRequestedEventSourceType* pEventSource = nullptr;
@@ -739,7 +739,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_DirectManipulationCompleted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_DirectManipulationCompleted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DirectManipulationCompletedEventSourceType* pEventSource = nullptr;
@@ -794,7 +794,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_DirectManipulationStarted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_DirectManipulationStarted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DirectManipulationStartedEventSourceType* pEventSource = nullptr;
@@ -849,7 +849,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_ViewChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_ViewChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ViewChangedEventSourceType* pEventSource = nullptr;
@@ -904,7 +904,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_ViewChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::remove_ViewChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ViewChangingEventSourceType* pEventSource = nullptr;
@@ -925,7 +925,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ChangeView(_In_ ABI::Windows::Foundation::IReference<DOUBLE>* pHorizontalOffset, _In_ ABI::Windows::Foundation::IReference<DOUBLE>* pVerticalOffset, _In_ ABI::Windows::Foundation::IReference<FLOAT>* pZoomFactor, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ChangeView(ABI::Windows::Foundation::IReference<DOUBLE>* pHorizontalOffset, ABI::Windows::Foundation::IReference<DOUBLE>* pVerticalOffset, ABI::Windows::Foundation::IReference<FLOAT>* pZoomFactor, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -944,7 +944,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ChangeViewWithOptionalAnimation(_In_ ABI::Windows::Foundation::IReference<DOUBLE>* pHorizontalOffset, _In_ ABI::Windows::Foundation::IReference<DOUBLE>* pVerticalOffset, _In_ ABI::Windows::Foundation::IReference<FLOAT>* pZoomFactor, _In_ BOOLEAN disableAnimation, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ChangeViewWithOptionalAnimation(ABI::Windows::Foundation::IReference<DOUBLE>* pHorizontalOffset, ABI::Windows::Foundation::IReference<DOUBLE>* pVerticalOffset, ABI::Windows::Foundation::IReference<FLOAT>* pZoomFactor, BOOLEAN disableAnimation, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1035,7 +1035,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ScrollToHorizontalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ScrollToHorizontalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1053,7 +1053,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ScrollToVerticalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ScrollToVerticalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1071,7 +1071,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::SetIsNearVerticalAlignmentForced(_In_ BOOLEAN enabled)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::SetIsNearVerticalAlignmentForced(BOOLEAN enabled)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1107,7 +1107,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ZoomToFactor(_In_ FLOAT factor)
+IFACEMETHODIMP DirectUI::ScrollViewerGenerated::ZoomToFactor(FLOAT factor)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1446,7 +1446,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetHorizontalScrollBarVisi
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_HorizontalScrollBarVisibility, pHorizontalScrollBarVisibility));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetHorizontalScrollBarVisibilityStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility horizontalScrollBarVisibility)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetHorizontalScrollBarVisibilityStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility horizontalScrollBarVisibility)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_HorizontalScrollBarVisibility, horizontalScrollBarVisibility));
 }
@@ -1463,7 +1463,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetHorizontalScrollBarVisibility(_
     RRETURN(GetHorizontalScrollBarVisibilityStatic(pElement, pHorizontalScrollBarVisibility));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetHorizontalScrollBarVisibility(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility horizontalScrollBarVisibility)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetHorizontalScrollBarVisibility(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility horizontalScrollBarVisibility)
 {
     RRETURN(SetHorizontalScrollBarVisibilityStatic(pElement, horizontalScrollBarVisibility));
 }
@@ -1472,7 +1472,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetVerticalScrollBarVisibi
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_VerticalScrollBarVisibility, pVerticalScrollBarVisibility));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetVerticalScrollBarVisibilityStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility verticalScrollBarVisibility)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetVerticalScrollBarVisibilityStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility verticalScrollBarVisibility)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_VerticalScrollBarVisibility, verticalScrollBarVisibility));
 }
@@ -1489,7 +1489,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetVerticalScrollBarVisibility(_In
     RRETURN(GetVerticalScrollBarVisibilityStatic(pElement, pVerticalScrollBarVisibility));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetVerticalScrollBarVisibility(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility verticalScrollBarVisibility)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetVerticalScrollBarVisibility(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ScrollBarVisibility verticalScrollBarVisibility)
 {
     RRETURN(SetVerticalScrollBarVisibilityStatic(pElement, verticalScrollBarVisibility));
 }
@@ -1498,7 +1498,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetIsHorizontalRailEnabled
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsHorizontalRailEnabled, pIsHorizontalRailEnabled));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsHorizontalRailEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isHorizontalRailEnabled)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsHorizontalRailEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isHorizontalRailEnabled)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsHorizontalRailEnabled, isHorizontalRailEnabled));
 }
@@ -1515,7 +1515,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetIsHorizontalRailEnabled(_In_ AB
     RRETURN(GetIsHorizontalRailEnabledStatic(pElement, pIsHorizontalRailEnabled));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsHorizontalRailEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isHorizontalRailEnabled)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsHorizontalRailEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isHorizontalRailEnabled)
 {
     RRETURN(SetIsHorizontalRailEnabledStatic(pElement, isHorizontalRailEnabled));
 }
@@ -1524,7 +1524,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetIsVerticalRailEnabledSt
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsVerticalRailEnabled, pIsVerticalRailEnabled));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsVerticalRailEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isVerticalRailEnabled)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsVerticalRailEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isVerticalRailEnabled)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsVerticalRailEnabled, isVerticalRailEnabled));
 }
@@ -1541,7 +1541,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetIsVerticalRailEnabled(_In_ ABI:
     RRETURN(GetIsVerticalRailEnabledStatic(pElement, pIsVerticalRailEnabled));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsVerticalRailEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isVerticalRailEnabled)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsVerticalRailEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isVerticalRailEnabled)
 {
     RRETURN(SetIsVerticalRailEnabledStatic(pElement, isVerticalRailEnabled));
 }
@@ -1550,7 +1550,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetIsHorizontalScrollChain
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsHorizontalScrollChainingEnabled, pIsHorizontalScrollChainingEnabled));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsHorizontalScrollChainingEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isHorizontalScrollChainingEnabled)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsHorizontalScrollChainingEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isHorizontalScrollChainingEnabled)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsHorizontalScrollChainingEnabled, isHorizontalScrollChainingEnabled));
 }
@@ -1567,7 +1567,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetIsHorizontalScrollChainingEnabl
     RRETURN(GetIsHorizontalScrollChainingEnabledStatic(pElement, pIsHorizontalScrollChainingEnabled));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsHorizontalScrollChainingEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isHorizontalScrollChainingEnabled)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsHorizontalScrollChainingEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isHorizontalScrollChainingEnabled)
 {
     RRETURN(SetIsHorizontalScrollChainingEnabledStatic(pElement, isHorizontalScrollChainingEnabled));
 }
@@ -1576,7 +1576,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetIsVerticalScrollChainin
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsVerticalScrollChainingEnabled, pIsVerticalScrollChainingEnabled));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsVerticalScrollChainingEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isVerticalScrollChainingEnabled)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsVerticalScrollChainingEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isVerticalScrollChainingEnabled)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsVerticalScrollChainingEnabled, isVerticalScrollChainingEnabled));
 }
@@ -1593,7 +1593,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetIsVerticalScrollChainingEnabled
     RRETURN(GetIsVerticalScrollChainingEnabledStatic(pElement, pIsVerticalScrollChainingEnabled));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsVerticalScrollChainingEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isVerticalScrollChainingEnabled)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsVerticalScrollChainingEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isVerticalScrollChainingEnabled)
 {
     RRETURN(SetIsVerticalScrollChainingEnabledStatic(pElement, isVerticalScrollChainingEnabled));
 }
@@ -1602,7 +1602,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetIsZoomChainingEnabledSt
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsZoomChainingEnabled, pIsZoomChainingEnabled));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsZoomChainingEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isZoomChainingEnabled)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsZoomChainingEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isZoomChainingEnabled)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsZoomChainingEnabled, isZoomChainingEnabled));
 }
@@ -1619,7 +1619,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetIsZoomChainingEnabled(_In_ ABI:
     RRETURN(GetIsZoomChainingEnabledStatic(pElement, pIsZoomChainingEnabled));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsZoomChainingEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isZoomChainingEnabled)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsZoomChainingEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isZoomChainingEnabled)
 {
     RRETURN(SetIsZoomChainingEnabledStatic(pElement, isZoomChainingEnabled));
 }
@@ -1628,7 +1628,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetIsScrollInertiaEnabledS
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsScrollInertiaEnabled, pIsScrollInertiaEnabled));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsScrollInertiaEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isScrollInertiaEnabled)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsScrollInertiaEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isScrollInertiaEnabled)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsScrollInertiaEnabled, isScrollInertiaEnabled));
 }
@@ -1645,7 +1645,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetIsScrollInertiaEnabled(_In_ ABI
     RRETURN(GetIsScrollInertiaEnabledStatic(pElement, pIsScrollInertiaEnabled));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsScrollInertiaEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isScrollInertiaEnabled)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsScrollInertiaEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isScrollInertiaEnabled)
 {
     RRETURN(SetIsScrollInertiaEnabledStatic(pElement, isScrollInertiaEnabled));
 }
@@ -1654,7 +1654,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetIsZoomInertiaEnabledSta
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsZoomInertiaEnabled, pIsZoomInertiaEnabled));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsZoomInertiaEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isZoomInertiaEnabled)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsZoomInertiaEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isZoomInertiaEnabled)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsZoomInertiaEnabled, isZoomInertiaEnabled));
 }
@@ -1671,7 +1671,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetIsZoomInertiaEnabled(_In_ ABI::
     RRETURN(GetIsZoomInertiaEnabledStatic(pElement, pIsZoomInertiaEnabled));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsZoomInertiaEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isZoomInertiaEnabled)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsZoomInertiaEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isZoomInertiaEnabled)
 {
     RRETURN(SetIsZoomInertiaEnabledStatic(pElement, isZoomInertiaEnabled));
 }
@@ -1680,7 +1680,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetHorizontalScrollModeSta
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_HorizontalScrollMode, pHorizontalScrollMode));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetHorizontalScrollModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollMode horizontalScrollMode)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetHorizontalScrollModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ScrollMode horizontalScrollMode)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_HorizontalScrollMode, horizontalScrollMode));
 }
@@ -1697,7 +1697,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetHorizontalScrollMode(_In_ ABI::
     RRETURN(GetHorizontalScrollModeStatic(pElement, pHorizontalScrollMode));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetHorizontalScrollMode(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollMode horizontalScrollMode)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetHorizontalScrollMode(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ScrollMode horizontalScrollMode)
 {
     RRETURN(SetHorizontalScrollModeStatic(pElement, horizontalScrollMode));
 }
@@ -1706,7 +1706,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetVerticalScrollModeStati
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_VerticalScrollMode, pVerticalScrollMode));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetVerticalScrollModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollMode verticalScrollMode)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetVerticalScrollModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ScrollMode verticalScrollMode)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_VerticalScrollMode, verticalScrollMode));
 }
@@ -1723,7 +1723,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetVerticalScrollMode(_In_ ABI::Mi
     RRETURN(GetVerticalScrollModeStatic(pElement, pVerticalScrollMode));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetVerticalScrollMode(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollMode verticalScrollMode)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetVerticalScrollMode(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ScrollMode verticalScrollMode)
 {
     RRETURN(SetVerticalScrollModeStatic(pElement, verticalScrollMode));
 }
@@ -1732,7 +1732,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetZoomModeStatic(_In_ ABI
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_ZoomMode, pZoomMode));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetZoomModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ZoomMode zoomMode)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetZoomModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ZoomMode zoomMode)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_ZoomMode, zoomMode));
 }
@@ -1749,7 +1749,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetZoomMode(_In_ ABI::Microsoft::U
     RRETURN(GetZoomModeStatic(pElement, pZoomMode));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetZoomMode(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::ZoomMode zoomMode)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetZoomMode(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::ZoomMode zoomMode)
 {
     RRETURN(SetZoomModeStatic(pElement, zoomMode));
 }
@@ -1758,7 +1758,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetIsDeferredScrollingEnab
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsDeferredScrollingEnabled, pIsDeferredScrollingEnabled));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsDeferredScrollingEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isDeferredScrollingEnabled)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetIsDeferredScrollingEnabledStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isDeferredScrollingEnabled)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_IsDeferredScrollingEnabled, isDeferredScrollingEnabled));
 }
@@ -1775,7 +1775,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetIsDeferredScrollingEnabled(_In_
     RRETURN(GetIsDeferredScrollingEnabledStatic(pElement, pIsDeferredScrollingEnabled));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsDeferredScrollingEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN isDeferredScrollingEnabled)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetIsDeferredScrollingEnabled(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN isDeferredScrollingEnabled)
 {
     RRETURN(SetIsDeferredScrollingEnabledStatic(pElement, isDeferredScrollingEnabled));
 }
@@ -1784,7 +1784,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetBringIntoViewOnFocusCha
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_BringIntoViewOnFocusChange, pBringIntoViewOnFocusChange));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetBringIntoViewOnFocusChangeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN bringIntoViewOnFocusChange)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetBringIntoViewOnFocusChangeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN bringIntoViewOnFocusChange)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_BringIntoViewOnFocusChange, bringIntoViewOnFocusChange));
 }
@@ -1801,7 +1801,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetBringIntoViewOnFocusChange(_In_
     RRETURN(GetBringIntoViewOnFocusChangeStatic(pElement, pBringIntoViewOnFocusChange));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetBringIntoViewOnFocusChange(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN bringIntoViewOnFocusChange)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetBringIntoViewOnFocusChange(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN bringIntoViewOnFocusChange)
 {
     RRETURN(SetBringIntoViewOnFocusChangeStatic(pElement, bringIntoViewOnFocusChange));
 }
@@ -1810,7 +1810,7 @@ _Check_return_ HRESULT DirectUI::ScrollViewerFactory::GetCanContentRenderOutside
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_CanContentRenderOutsideBounds, pCanContentRenderOutsideBounds));
 }
 
-_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetCanContentRenderOutsideBoundsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN canContentRenderOutsideBounds)
+_Check_return_ HRESULT DirectUI::ScrollViewerFactory::SetCanContentRenderOutsideBoundsStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN canContentRenderOutsideBounds)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ScrollViewer_CanContentRenderOutsideBounds, canContentRenderOutsideBounds));
 }
@@ -1827,7 +1827,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerFactory::GetCanContentRenderOutsideBounds(_
     RRETURN(GetCanContentRenderOutsideBoundsStatic(pElement, pCanContentRenderOutsideBounds));
 }
 
-IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetCanContentRenderOutsideBounds(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ BOOLEAN canContentRenderOutsideBounds)
+IFACEMETHODIMP DirectUI::ScrollViewerFactory::SetCanContentRenderOutsideBounds(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, BOOLEAN canContentRenderOutsideBounds)
 {
     RRETURN(SetCanContentRenderOutsideBoundsStatic(pElement, canContentRenderOutsideBounds));
 }

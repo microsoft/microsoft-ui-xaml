@@ -8,7 +8,7 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT SolidColorBrushFactory::CreateInstanceWithColorImpl(
-    _In_ wu::Color color,
+    wu::Color color,
     _Outptr_ ISolidColorBrush** ppInstance)
 {
     HRESULT hr = S_OK;

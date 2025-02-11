@@ -41,7 +41,7 @@ _Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::get_ClosedRa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MenuPopupThemeTransition_ClosedRatio, pValue));
 }
-_Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::put_ClosedRatio(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::put_ClosedRatio(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MenuPopupThemeTransition_ClosedRatio, value));
@@ -50,7 +50,7 @@ _Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::get_Directio
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MenuPopupThemeTransition_Direction, pValue));
 }
-_Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::put_Direction(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value)
+_Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::put_Direction(ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MenuPopupThemeTransition_Direction, value));
@@ -59,7 +59,7 @@ _Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::get_OpenedLe
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MenuPopupThemeTransition_OpenedLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::put_OpenedLength(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::MenuPopupThemeTransitionGenerated::put_OpenedLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MenuPopupThemeTransition_OpenedLength, value));

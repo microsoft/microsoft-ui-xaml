@@ -730,7 +730,7 @@ namespace MUXControlsTestApp
             public bool Reset { get; set; }
         }
 
-        private class SampleDataSource : CustomItemsSourceViewWithUniqueIdMapping
+        private partial class SampleDataSource : CustomItemsSourceViewWithUniqueIdMapping
         {
             List<DataItem> _inner;
 

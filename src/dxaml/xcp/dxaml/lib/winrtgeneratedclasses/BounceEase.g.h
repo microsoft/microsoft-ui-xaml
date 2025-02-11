@@ -48,9 +48,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Bounces)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_Bounces)(_In_ INT value) override;
+        IFACEMETHOD(put_Bounces)(INT value) override;
         IFACEMETHOD(get_Bounciness)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Bounciness)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Bounciness)(DOUBLE value) override;
 
         // Events.
 

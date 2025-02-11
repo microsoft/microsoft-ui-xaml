@@ -40,6 +40,9 @@ _Check_return_ HRESULT CRelativePanel::MeasureOverride(_In_ XSIZEF availableSize
     return hr;
 
 Cleanup:
+    desiredSize.width = 0;
+    desiredSize.height = 0;
+
     // If this is a known error, we must throw the appropriate
     // exception based on the AgCode set by the helper class.
     // Otherwise we just fail normally.

@@ -116,13 +116,13 @@ CSvgImageSource::PrepareDecode(bool retainPlaybackState)
 }
 
 // This function is for accessibility, it is called from ImageAutomationPeer::GetNameCore
-_Check_return_ HRESULT CSvgImageSource::GetTitle(_Outptr_ HSTRING* output)
+_Check_return_ HRESULT CSvgImageSource::GetTitle(_Outptr_result_maybenull_ HSTRING* output)
 {
     return GetSvgDocumentString(L"title", output);
 }
 
 // This function is for accessibility, it is called from ImageAutomationPeer::GetFullDescriptionCore
-_Check_return_ HRESULT CSvgImageSource::GetDescription(_Outptr_ HSTRING* output)
+_Check_return_ HRESULT CSvgImageSource::GetDescription(_Outptr_result_maybenull_ HSTRING* output)
 {
     return GetSvgDocumentString(L"desc", output);
 }

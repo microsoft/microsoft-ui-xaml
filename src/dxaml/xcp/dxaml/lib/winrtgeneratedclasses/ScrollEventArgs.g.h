@@ -37,9 +37,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_NewValue)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_NewValue(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_NewValue(DOUBLE value);
         IFACEMETHOD(get_ScrollEventType)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollEventType* pValue) override;
-        _Check_return_ HRESULT put_ScrollEventType(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollEventType value);
+        _Check_return_ HRESULT put_ScrollEventType(ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollEventType value);
 
         // Methods.
 

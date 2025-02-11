@@ -64,7 +64,7 @@ namespace DirectUI
         IFACEMETHOD(get_FallbackValue)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_FallbackValue)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_Mode)(_Out_ ABI::Microsoft::UI::Xaml::Data::BindingMode* pValue) override;
-        IFACEMETHOD(put_Mode)(_In_ ABI::Microsoft::UI::Xaml::Data::BindingMode value) override;
+        IFACEMETHOD(put_Mode)(ABI::Microsoft::UI::Xaml::Data::BindingMode value) override;
         IFACEMETHOD(get_Path)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IPropertyPath** ppValue) override;
         IFACEMETHOD(put_Path)(_In_opt_ ABI::Microsoft::UI::Xaml::IPropertyPath* pValue) override;
         IFACEMETHOD(get_RelativeSource)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Data::IRelativeSource** ppValue) override;
@@ -74,7 +74,7 @@ namespace DirectUI
         IFACEMETHOD(get_TargetNullValue)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_TargetNullValue)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_UpdateSourceTrigger)(_Out_ ABI::Microsoft::UI::Xaml::Data::UpdateSourceTrigger* pValue) override;
-        IFACEMETHOD(put_UpdateSourceTrigger)(_In_ ABI::Microsoft::UI::Xaml::Data::UpdateSourceTrigger value) override;
+        IFACEMETHOD(put_UpdateSourceTrigger)(ABI::Microsoft::UI::Xaml::Data::UpdateSourceTrigger value) override;
 
         // Events.
 

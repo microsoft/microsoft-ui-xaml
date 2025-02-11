@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::ChoosingGroupHeaderContainerEventArgs::get_GroupIndex(_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ChoosingGroupHeaderContainerEventArgs::put_GroupIndex(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ChoosingGroupHeaderContainerEventArgs::put_GroupIndex(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

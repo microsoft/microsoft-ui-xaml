@@ -139,7 +139,7 @@ _Check_return_ HRESULT XamlRenderingBackgroundTaskFactory::get_ResourcesImpl(_Ou
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlRenderingBackgroundTaskFactory::SetScalePercentageImpl(_In_ UINT percentage)
+_Check_return_ HRESULT XamlRenderingBackgroundTaskFactory::SetScalePercentageImpl(UINT percentage)
 {
     // SetScalePercentageImpl can only be called from a UI thread where we have initialized DXamlCore. 
     // TODO: This function needs to improve to support multiple desktop top level windows (Win32) Task# 29571334

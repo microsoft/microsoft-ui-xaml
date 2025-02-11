@@ -67,23 +67,23 @@ namespace DirectUI
 
         // Events.
         IFACEMETHOD(add_CurrentChanged)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_CurrentChanged)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_CurrentChanged)(EventRegistrationToken token) = 0;
         IFACEMETHOD(add_CurrentChanging)(_In_ ABI::Microsoft::UI::Xaml::Data::ICurrentChangingEventHandler* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_CurrentChanging)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_CurrentChanging)(EventRegistrationToken token) = 0;
         _Check_return_ HRESULT GetPropertyChangedEventSourceNoRef(_Outptr_ PropertyChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PropertyChanged)(_In_ ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PropertyChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PropertyChanged)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(GetCustomProperty)(_In_ HSTRING name, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
-        IFACEMETHOD(GetIndexedProperty)(_In_ HSTRING name, _In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
+        IFACEMETHOD(GetIndexedProperty)(_In_ HSTRING name, ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
         IFACEMETHOD(GetStringRepresentation)(_Out_ HSTRING* pReturnValue) override;
-        IFACEMETHOD(LoadMoreItemsAsync)(_In_ UINT count, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Data::LoadMoreItemsResult>** ppReturnValue) override;
+        IFACEMETHOD(LoadMoreItemsAsync)(UINT count, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Data::LoadMoreItemsResult>** ppReturnValue) override;
         IFACEMETHOD(MoveCurrentTo)(_In_opt_ IInspectable* pItem, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(MoveCurrentToFirst)(_Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(MoveCurrentToLast)(_Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(MoveCurrentToNext)(_Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(MoveCurrentToPosition)(_In_ INT index, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(MoveCurrentToPosition)(INT index, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(MoveCurrentToPrevious)(_Out_ BOOLEAN* pReturnValue) override;
 
 

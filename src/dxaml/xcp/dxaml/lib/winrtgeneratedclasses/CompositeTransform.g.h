@@ -48,39 +48,39 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CenterX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_CenterX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_CenterX)(DOUBLE value) override;
         _Check_return_ HRESULT get_CenterXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_CenterXAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_CenterY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_CenterY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_CenterY)(DOUBLE value) override;
         _Check_return_ HRESULT get_CenterYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_CenterYAnimation(_In_opt_ IInspectable* pValue);
         _Check_return_ HRESULT get_RotateAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_RotateAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_Rotation)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Rotation)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Rotation)(DOUBLE value) override;
         IFACEMETHOD(get_ScaleX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ScaleX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ScaleX)(DOUBLE value) override;
         _Check_return_ HRESULT get_ScaleXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_ScaleXAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_ScaleY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ScaleY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ScaleY)(DOUBLE value) override;
         _Check_return_ HRESULT get_ScaleYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_ScaleYAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_SkewX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_SkewX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_SkewX)(DOUBLE value) override;
         _Check_return_ HRESULT get_SkewXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_SkewXAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_SkewY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_SkewY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_SkewY)(DOUBLE value) override;
         _Check_return_ HRESULT get_SkewYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_SkewYAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_TranslateX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_TranslateX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_TranslateX)(DOUBLE value) override;
         _Check_return_ HRESULT get_TranslateXAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_TranslateXAnimation(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_TranslateY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_TranslateY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_TranslateY)(DOUBLE value) override;
         _Check_return_ HRESULT get_TranslateYAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_TranslateYAnimation(_In_opt_ IInspectable* pValue);
 

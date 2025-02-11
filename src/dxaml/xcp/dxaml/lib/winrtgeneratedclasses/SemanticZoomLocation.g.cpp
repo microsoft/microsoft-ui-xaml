@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::SemanticZoomLocationGenerated::get_Bounds(_Out_ ABI::Wi
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SemanticZoomLocationGenerated::put_Bounds(_In_ ABI::Windows::Foundation::Rect value)
+IFACEMETHODIMP DirectUI::SemanticZoomLocationGenerated::put_Bounds(ABI::Windows::Foundation::Rect value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -84,7 +84,7 @@ _Check_return_ HRESULT DirectUI::SemanticZoomLocationGenerated::get_Remainder(_O
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::SemanticZoomLocationGenerated::put_Remainder(_In_ ABI::Windows::Foundation::Rect value)
+_Check_return_ HRESULT DirectUI::SemanticZoomLocationGenerated::put_Remainder(ABI::Windows::Foundation::Rect value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -101,7 +101,7 @@ _Check_return_ HRESULT DirectUI::SemanticZoomLocationGenerated::get_ZoomPoint(_O
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::SemanticZoomLocationGenerated::put_ZoomPoint(_In_ ABI::Windows::Foundation::Point value)
+_Check_return_ HRESULT DirectUI::SemanticZoomLocationGenerated::put_ZoomPoint(ABI::Windows::Foundation::Point value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

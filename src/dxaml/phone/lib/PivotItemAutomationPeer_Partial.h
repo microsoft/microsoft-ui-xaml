@@ -50,7 +50,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
             _Out_ xaml_controls::Pivot** pivotNoRef);
 
         _Check_return_ HRESULT GetOwnerIndex(
-            _Out_ xaml_controls::Pivot* pivotNoRef,
+            _In_ xaml_controls::Pivot* pivotNoRef,
             _Out_ INT* index);
     };
 

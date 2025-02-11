@@ -9,7 +9,7 @@ class CMemoryStreamBuffer final : public IPALDataStreamBuffer
 {
 public:
     _Check_return_ HRESULT Read( _Out_writes_bytes_(cb) void* pv,
-                                        _In_ XUINT32 cb,
+                                        XUINT32 cb,
                                         _Out_opt_ XUINT32* pcbRead);
     XUINT32 Size() {
         XUINT32 size;

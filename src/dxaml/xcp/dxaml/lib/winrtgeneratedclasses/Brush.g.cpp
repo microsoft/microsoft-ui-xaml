@@ -60,7 +60,7 @@ IFACEMETHODIMP DirectUI::BrushGenerated::get_Opacity(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Brush_Opacity, pValue));
 }
-IFACEMETHODIMP DirectUI::BrushGenerated::put_Opacity(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BrushGenerated::put_Opacity(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Brush_Opacity, value));

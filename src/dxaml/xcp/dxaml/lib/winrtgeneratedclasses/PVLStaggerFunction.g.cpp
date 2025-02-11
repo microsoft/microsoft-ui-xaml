@@ -41,7 +41,7 @@ _Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::get_Delay(_Out_ DO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PVLStaggerFunction_Delay, pValue));
 }
-_Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::put_Delay(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::put_Delay(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PVLStaggerFunction_Delay, value));
@@ -50,7 +50,7 @@ _Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::get_DelayReduce(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PVLStaggerFunction_DelayReduce, pValue));
 }
-_Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::put_DelayReduce(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::put_DelayReduce(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PVLStaggerFunction_DelayReduce, value));
@@ -59,7 +59,7 @@ _Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::get_Maximum(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PVLStaggerFunction_Maximum, pValue));
 }
-_Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::put_Maximum(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::put_Maximum(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PVLStaggerFunction_Maximum, value));
@@ -68,7 +68,7 @@ _Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::get_Reverse(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PVLStaggerFunction_Reverse, pValue));
 }
-_Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::put_Reverse(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::PVLStaggerFunctionGenerated::put_Reverse(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PVLStaggerFunction_Reverse, value));

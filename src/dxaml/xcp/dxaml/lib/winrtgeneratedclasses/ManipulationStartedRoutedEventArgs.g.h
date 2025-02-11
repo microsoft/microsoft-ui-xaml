@@ -39,7 +39,7 @@ namespace DirectUI
         IFACEMETHOD(get_Container)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(get_Position)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_PointerDeviceType)(_Out_ ABI::Microsoft::UI::Input::PointerDeviceType* pValue) override;
         IFACEMETHOD(get_Cumulative)(_Out_ ABI::Microsoft::UI::Input::ManipulationDelta* pValue) override;
 

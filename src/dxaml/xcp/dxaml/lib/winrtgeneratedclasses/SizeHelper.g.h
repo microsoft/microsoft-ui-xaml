@@ -42,9 +42,9 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(FromDimensions)(_In_ FLOAT width, _In_ FLOAT height, _Out_ ABI::Windows::Foundation::Size* pReturnValue) override;
-        IFACEMETHOD(GetIsEmpty)(_In_ ABI::Windows::Foundation::Size target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(Equals)(_In_ ABI::Windows::Foundation::Size target, _In_ ABI::Windows::Foundation::Size value, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(FromDimensions)(FLOAT width, FLOAT height, _Out_ ABI::Windows::Foundation::Size* pReturnValue) override;
+        IFACEMETHOD(GetIsEmpty)(ABI::Windows::Foundation::Size target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(Equals)(ABI::Windows::Foundation::Size target, ABI::Windows::Foundation::Size value, _Out_ BOOLEAN* pReturnValue) override;
 
         // Static events.
 
@@ -59,8 +59,8 @@ namespace DirectUI
          _Check_return_ HRESULT get_EmptyImpl(_Out_ ABI::Windows::Foundation::Size* pValue); 
 
         // Customized static  methods.
-         _Check_return_ HRESULT FromDimensionsImpl(_In_ FLOAT width, _In_ FLOAT height, _Out_ ABI::Windows::Foundation::Size* pReturnValue); 
-         _Check_return_ HRESULT GetIsEmptyImpl(_In_ ABI::Windows::Foundation::Size target, _Out_ BOOLEAN* pValue); 
-         _Check_return_ HRESULT EqualsImpl(_In_ ABI::Windows::Foundation::Size target, _In_ ABI::Windows::Foundation::Size value, _Out_ BOOLEAN* pReturnValue); 
+         _Check_return_ HRESULT FromDimensionsImpl(FLOAT width, FLOAT height, _Out_ ABI::Windows::Foundation::Size* pReturnValue); 
+         _Check_return_ HRESULT GetIsEmptyImpl(ABI::Windows::Foundation::Size target, _Out_ BOOLEAN* pValue); 
+         _Check_return_ HRESULT EqualsImpl(ABI::Windows::Foundation::Size target, ABI::Windows::Foundation::Size value, _Out_ BOOLEAN* pReturnValue); 
     };
 }

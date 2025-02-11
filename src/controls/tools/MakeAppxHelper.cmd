@@ -5,7 +5,7 @@ echo -- MakeAppxHelper.cmd %* --
 
 pushd %~dp0
 
-set PATH=%TFS_SourcesDirectory%\tools;%PATH%;%ProgramFiles(x86)%\Windows Kits\10\bin\x86
+set PATH=%TFS_SourcesDirectory%\tools;%PATH%;%WindowsSdkBinPath%x86
 set ExitCode=0
 set ERRORLEVEL=
 

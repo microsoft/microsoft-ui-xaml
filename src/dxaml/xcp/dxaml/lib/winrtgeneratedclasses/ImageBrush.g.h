@@ -56,10 +56,10 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetImageFailedEventSourceNoRef(_Outptr_ ImageFailedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ImageFailed)(_In_ ABI::Microsoft::UI::Xaml::IExceptionRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ImageFailed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ImageFailed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetImageOpenedEventSourceNoRef(_Outptr_ ImageOpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ImageOpened)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ImageOpened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ImageOpened)(EventRegistrationToken token) override;
 
         // Methods.
 

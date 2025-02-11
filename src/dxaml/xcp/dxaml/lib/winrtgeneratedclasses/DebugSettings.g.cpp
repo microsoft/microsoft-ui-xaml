@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::DebugSettingsGenerated::get_EnableFrameRateCounter(_Out
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DebugSettingsGenerated::put_EnableFrameRateCounter(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DebugSettingsGenerated::put_EnableFrameRateCounter(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -78,7 +78,7 @@ IFACEMETHODIMP DirectUI::DebugSettingsGenerated::get_FailFastOnErrors(_Out_ BOOL
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DebugSettingsGenerated::put_FailFastOnErrors(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DebugSettingsGenerated::put_FailFastOnErrors(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::DebugSettingsGenerated::get_IsBindingTracingEnabled(_Ou
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DebugSettingsGenerated::put_IsBindingTracingEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DebugSettingsGenerated::put_IsBindingTracingEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -116,7 +116,7 @@ IFACEMETHODIMP DirectUI::DebugSettingsGenerated::get_IsTextPerformanceVisualizat
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DebugSettingsGenerated::put_IsTextPerformanceVisualizationEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DebugSettingsGenerated::put_IsTextPerformanceVisualizationEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -135,7 +135,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_I
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_IsXamlResourceReferenceTracingEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_IsXamlResourceReferenceTracingEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -154,7 +154,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_L
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_LayoutCycleDebugBreakLevel(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_LayoutCycleDebugBreakLevel(ABI::Microsoft::UI::Xaml::LayoutCycleDebugBreakLevel value)
 {
     HRESULT hr = S_OK;
     
@@ -173,7 +173,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::get_L
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_LayoutCycleTracingLevel(_In_ ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::put_LayoutCycleTracingLevel(ABI::Microsoft::UI::Xaml::LayoutCycleTracingLevel value)
 {
     HRESULT hr = S_OK;
     
@@ -220,7 +220,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::DebugSettingsGenerated::remove_BindingFailed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::DebugSettingsGenerated::remove_BindingFailed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     BindingFailedEventSourceType* pEventSource = nullptr;
@@ -274,7 +274,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::remove_XamlResourceReferenceFailed(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DebugSettingsGenerated::remove_XamlResourceReferenceFailed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     XamlResourceReferenceFailedEventSourceType* pEventSource = nullptr;

@@ -79,7 +79,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimateElementBounds(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _In_ ABI::Microsoft::UI::Xaml::Controls::EstimationReference headerReference, _In_ ABI::Microsoft::UI::Xaml::Controls::EstimationReference containerReference, _In_ ABI::Windows::Foundation::Rect window, _Out_ ABI::Windows::Foundation::Rect* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimateElementBounds(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, ABI::Microsoft::UI::Xaml::Controls::EstimationReference headerReference, ABI::Microsoft::UI::Xaml::Controls::EstimationReference containerReference, ABI::Windows::Foundation::Rect window, _Out_ ABI::Windows::Foundation::Rect* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -97,7 +97,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimateElementIndex(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ ABI::Microsoft::UI::Xaml::Controls::EstimationReference headerReference, _In_ ABI::Microsoft::UI::Xaml::Controls::EstimationReference containerReference, _In_ ABI::Windows::Foundation::Rect window, _Out_ ABI::Windows::Foundation::Rect* pTargetRect, _Out_ INT* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimateElementIndex(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, ABI::Microsoft::UI::Xaml::Controls::EstimationReference headerReference, ABI::Microsoft::UI::Xaml::Controls::EstimationReference containerReference, ABI::Windows::Foundation::Rect window, _Out_ ABI::Windows::Foundation::Rect* pTargetRect, _Out_ INT* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -115,7 +115,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimateIndexFromPoint(_In_ BOOLEAN requestingInsertionIndex, _In_ ABI::Windows::Foundation::Point point, _In_ ABI::Microsoft::UI::Xaml::Controls::EstimationReference reference, _In_ ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Microsoft::UI::Xaml::Controls::IndexSearchHint* pSearchHint, _Out_ ABI::Microsoft::UI::Xaml::Controls::ElementType* pElementType, _Out_ INT* pElementIndex)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimateIndexFromPoint(BOOLEAN requestingInsertionIndex, ABI::Windows::Foundation::Point point, ABI::Microsoft::UI::Xaml::Controls::EstimationReference reference, ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Microsoft::UI::Xaml::Controls::IndexSearchHint* pSearchHint, _Out_ ABI::Microsoft::UI::Xaml::Controls::ElementType* pElementType, _Out_ INT* pElementIndex)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -132,7 +132,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimatePanelExtent(_In_ ABI::Microsoft::UI::Xaml::Controls::EstimationReference lastHeaderReference, _In_ ABI::Microsoft::UI::Xaml::Controls::EstimationReference lastContainerReference, _In_ ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Windows::Foundation::Size* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::EstimatePanelExtent(ABI::Microsoft::UI::Xaml::Controls::EstimationReference lastHeaderReference, ABI::Microsoft::UI::Xaml::Controls::EstimationReference lastContainerReference, ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Windows::Foundation::Size* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -150,7 +150,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementArrangeBounds(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _In_ ABI::Windows::Foundation::Rect containerBounds, _In_ ABI::Windows::Foundation::Rect windowConstraint, _In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Rect* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementArrangeBounds(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, ABI::Windows::Foundation::Rect containerBounds, ABI::Windows::Foundation::Rect windowConstraint, ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Rect* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -168,7 +168,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementBounds(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _In_ ABI::Windows::Foundation::Size containerDesiredSize, _In_ ABI::Microsoft::UI::Xaml::Controls::LayoutReference referenceInformation, _In_ ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Windows::Foundation::Rect* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementBounds(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, ABI::Windows::Foundation::Size containerDesiredSize, ABI::Microsoft::UI::Xaml::Controls::LayoutReference referenceInformation, ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Windows::Foundation::Rect* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -186,7 +186,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementMeasureSize(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _In_ ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Windows::Foundation::Size* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementMeasureSize(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Windows::Foundation::Size* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -204,7 +204,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementTransitionsBounds(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _In_ ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Windows::Foundation::Rect* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetElementTransitionsBounds(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, ABI::Windows::Foundation::Rect windowConstraint, _Out_ ABI::Windows::Foundation::Rect* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -276,7 +276,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetTargetIndexFromNavigationAction(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _In_ ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _In_ ABI::Windows::Foundation::Rect windowConstraint, _In_ INT itemIndexHintForHeaderNavigation, _Out_ ABI::Microsoft::UI::Xaml::Controls::ElementType* pTargetElementType, _Out_ INT* pTargetElementIndex)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::GetTargetIndexFromNavigationAction(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, ABI::Windows::Foundation::Rect windowConstraint, INT itemIndexHintForHeaderNavigation, _Out_ ABI::Microsoft::UI::Xaml::Controls::ElementType* pTargetElementType, _Out_ INT* pTargetElementIndex)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -311,7 +311,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::HasIrregularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _Out_ BOOLEAN* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::HasIrregularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _Out_ BOOLEAN* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -329,7 +329,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::HasSnapPointOnElement(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _Out_ BOOLEAN* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::HasSnapPointOnElement(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, _Out_ BOOLEAN* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -347,7 +347,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::IsIndexLayoutBoundary(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _In_ ABI::Windows::Foundation::Rect windowConstraint, _Out_ BOOLEAN* pIsLeftBoundary, _Out_ BOOLEAN* pIsTopBoundary, _Out_ BOOLEAN* pIsRightBoundary, _Out_ BOOLEAN* pIsBottomBoundary)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::IsIndexLayoutBoundary(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, ABI::Windows::Foundation::Rect windowConstraint, _Out_ BOOLEAN* pIsLeftBoundary, _Out_ BOOLEAN* pIsTopBoundary, _Out_ BOOLEAN* pIsRightBoundary, _Out_ BOOLEAN* pIsBottomBoundary)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -381,7 +381,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::ShouldContinueFillingUpSpace(_In_ ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, _In_ INT elementIndex, _In_ ABI::Microsoft::UI::Xaml::Controls::LayoutReference referenceInformation, _In_ ABI::Windows::Foundation::Rect windowToFill, _Out_ BOOLEAN* pResult)
+IFACEMETHODIMP DirectUI::StackingLayoutStrategyGenerated::ShouldContinueFillingUpSpace(ABI::Microsoft::UI::Xaml::Controls::ElementType elementType, INT elementIndex, ABI::Microsoft::UI::Xaml::Controls::LayoutReference referenceInformation, ABI::Windows::Foundation::Rect windowToFill, _Out_ BOOLEAN* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

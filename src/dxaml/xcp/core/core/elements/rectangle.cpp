@@ -481,13 +481,14 @@ _Check_return_ HRESULT
 CRectangleGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;
     IPALAcceleratedPathGeometry *pPALGeometry = NULL;
     IPALGeometrySink *pPALGeometrySink = NULL;
     CPathFigure* pFigure = NULL;
+    *ppGeometry = nullptr;
 
     // TODO:: Use CreateRectangleGeometry instead of PathGeometry
     // TODO:: Merge code with UpdateAcceleratedGeometry

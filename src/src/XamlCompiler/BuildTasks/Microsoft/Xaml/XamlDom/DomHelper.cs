@@ -317,7 +317,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XamlDom
             return IsNamedDirective(domMember, "DefaultBindMode");
         }
         
-        public static bool IsDataTypeMember(XamlMember xamlMember)
+        public static bool IsDataTypeMember(XamlMember xamlMember, bool checkForDirectiveOnly = false)
         {
             if (xamlMember.IsDirective)
             {
@@ -327,24 +327,34 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.XamlDom
                     return true;
                 }
             }
-            else if (xamlMember.Name.Equals("TargetType", StringComparison.InvariantCulture))
+            else if (!checkForDirectiveOnly && xamlMember.Name.Equals("TargetType", StringComparison.InvariantCulture))
             {
                 return true;
             }
             return false;
         }
 
-        public static bool IsDataTypeMember(XamlDomMember domMember)
+        public static XamlDomMember GetSuppressXamlTrimWarningsMember(XamlDomObject namedObject)
         {
-            XamlMember member = domMember.Member;
-            return IsDataTypeMember(member);
+            return namedObject.MemberNodes.Where(x => DomHelper.IsSuppressXamlTrimWarningsMember(x)).FirstOrDefault();
         }
 
-        public static XamlDomMember GetDataTypeMember(XamlDomObject domObject)
+        public static bool IsSuppressXamlTrimWarningsMember(XamlDomMember domMember)
+        {
+            return IsNamedDirective(domMember, "SuppressXamlTrimWarnings");
+        }
+
+        public static bool IsDataTypeMember(XamlDomMember domMember, bool checkForDirectiveOnly = false)
+        {
+            XamlMember member = domMember.Member;
+            return IsDataTypeMember(member, checkForDirectiveOnly);
+        }
+
+        public static XamlDomMember GetDataTypeMember(XamlDomObject domObject, bool getDirectiveOnly = false)
         {
             foreach (XamlDomMember domMember in domObject.MemberNodes)
             {
-                if (IsDataTypeMember(domMember))
+                if (IsDataTypeMember(domMember, getDirectiveOnly))
                 {
                     return domMember;
                 }

@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::Border::get_BackgroundSizing(_Out_ ABI::Microsoft::UI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Border_BackgroundSizing, pValue));
 }
-IFACEMETHODIMP DirectUI::Border::put_BackgroundSizing(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
+IFACEMETHODIMP DirectUI::Border::put_BackgroundSizing(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Border_BackgroundSizing, value));
@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::Border::get_BorderThickness(_Out_ ABI::Microsoft::UI::X
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Border_BorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::Border::put_BorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::Border::put_BorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Border_BorderThickness, value));
@@ -112,7 +112,7 @@ IFACEMETHODIMP DirectUI::Border::get_CornerRadius(_Out_ ABI::Microsoft::UI::Xaml
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Border_CornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::Border::put_CornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::Border::put_CornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Border_CornerRadius, value));
@@ -121,7 +121,7 @@ IFACEMETHODIMP DirectUI::Border::get_Padding(_Out_ ABI::Microsoft::UI::Xaml::Thi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Border_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::Border::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::Border::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Border_Padding, value));

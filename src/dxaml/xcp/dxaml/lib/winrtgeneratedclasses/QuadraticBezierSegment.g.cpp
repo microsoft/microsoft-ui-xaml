@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::QuadraticBezierSegment::get_Point1(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::QuadraticBezierSegment_Point1, pValue));
 }
-IFACEMETHODIMP DirectUI::QuadraticBezierSegment::put_Point1(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::QuadraticBezierSegment::put_Point1(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::QuadraticBezierSegment_Point1, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::QuadraticBezierSegment::get_Point2(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::QuadraticBezierSegment_Point2, pValue));
 }
-IFACEMETHODIMP DirectUI::QuadraticBezierSegment::put_Point2(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::QuadraticBezierSegment::put_Point2(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::QuadraticBezierSegment_Point2, value));

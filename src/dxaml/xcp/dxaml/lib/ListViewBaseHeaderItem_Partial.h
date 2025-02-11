@@ -17,7 +17,7 @@ namespace DirectUI
                                     m_IsPointerOver(false) {};
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size finalSize,
+            wf::Size finalSize,
             _Out_ wf::Size* returnValue)
             override;
 

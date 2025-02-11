@@ -14,7 +14,7 @@ using namespace DirectUISynonyms;
 IFACEMETHODIMP ContentControl::MeasureOverride(
     // Measurement constraints, a control cannot return a size
     // larger than the constraint.
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     // The desired size of the control.
     _Out_ wf::Size* pReturnValue)
 {
@@ -54,7 +54,7 @@ Cleanup:
 // behavior.
 IFACEMETHODIMP ContentControl::ArrangeOverride(
     // The computed size that is used to arrange the content.
-    _In_ wf::Size arrangeSize,
+    wf::Size arrangeSize,
     // The size of the control.
     _Out_ wf::Size* returnValue)
 {

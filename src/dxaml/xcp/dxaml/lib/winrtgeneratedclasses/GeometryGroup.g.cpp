@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::GeometryGroup::get_FillRule(_Out_ ABI::Microsoft::UI::X
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GeometryGroup_FillRule, pValue));
 }
-IFACEMETHODIMP DirectUI::GeometryGroup::put_FillRule(_In_ ABI::Microsoft::UI::Xaml::Media::FillRule value)
+IFACEMETHODIMP DirectUI::GeometryGroup::put_FillRule(ABI::Microsoft::UI::Xaml::Media::FillRule value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GeometryGroup_FillRule, value));

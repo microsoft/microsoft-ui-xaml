@@ -97,7 +97,7 @@ public:
     static _Check_return_ HRESULT CreateNoAddRef(_In_ CCoreServices *pCore, _In_ const XamlTypeToken& typeToken, _In_ CDependencyObject* pDO, _Out_ std::shared_ptr<XamlQualifiedObject>& outQO);
        
     _Check_return_ HRESULT CreateFromXStringPtr(_In_ xstring_ptr& objectString,
-        _Out_ std::shared_ptr<XamlQualifiedObject>& createdQO);
+        _Inout_ std::shared_ptr<XamlQualifiedObject>& createdQO);
 
     XamlQualifiedObject(_In_ const XamlQualifiedObject &rhs) = delete;
     XamlQualifiedObject& operator=(_In_ const XamlQualifiedObject &rhs) = delete;

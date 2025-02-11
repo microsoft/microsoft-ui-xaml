@@ -16,10 +16,10 @@ using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
 ThicknessFactory::FromLengths(
-    _In_ DOUBLE left,
-    _In_ DOUBLE top,
-    _In_ DOUBLE right,
-    _In_ DOUBLE bottom,
+    DOUBLE left,
+    DOUBLE top,
+    DOUBLE right,
+    DOUBLE bottom,
     _Out_ xaml::Thickness* pReturnValue)
 {
 
@@ -45,7 +45,7 @@ Cleanup:
 
 IFACEMETHODIMP
 ThicknessFactory::FromUniformLength(
-    _In_ DOUBLE uniformLength,
+    DOUBLE uniformLength,
     _Out_ xaml::Thickness* pReturnValue)
 {
     HRESULT hr = S_OK;

@@ -60,7 +60,7 @@ namespace DirectUI
         IFACEMETHOD(get_KeyboardAcceleratorTextOverride)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_KeyboardAcceleratorTextOverride)(_In_opt_ HSTRING value) override;
         _Check_return_ HRESULT get_PreventDismissOnPointer(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_PreventDismissOnPointer(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_PreventDismissOnPointer(BOOLEAN value);
         IFACEMETHOD(get_TemplateSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IMenuFlyoutItemTemplateSettings** ppValue) override;
         _Check_return_ HRESULT put_TemplateSettings(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IMenuFlyoutItemTemplateSettings* pValue);
         IFACEMETHOD(get_Text)(_Out_ HSTRING* pValue) override;
@@ -69,7 +69,7 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetClickEventSourceNoRef(_Outptr_ ClickEventSourceType** ppEventSource);
         IFACEMETHOD(add_Click)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Click)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Click)(EventRegistrationToken token) override;
 
         // Methods.
 

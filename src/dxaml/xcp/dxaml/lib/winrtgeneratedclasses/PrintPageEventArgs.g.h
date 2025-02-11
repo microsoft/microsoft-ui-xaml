@@ -34,7 +34,7 @@ namespace DirectUI
         _Check_return_ HRESULT get_PageVisual(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue);
         _Check_return_ HRESULT put_PageVisual(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         _Check_return_ HRESULT get_HasMorePages(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_HasMorePages(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_HasMorePages(BOOLEAN value);
         _Check_return_ HRESULT get_PrintableArea(_Out_ ABI::Windows::Foundation::Size* pValue);
         _Check_return_ HRESULT get_PageMargins(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue);
 

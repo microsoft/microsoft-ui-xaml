@@ -174,6 +174,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool EnableDefaultValidationContextGeneration { get; private set; }
         public bool EnableWin32Codegen { get; private set; }
         public bool UsingCSWinRT { get; private set; }
+        public bool EnableBindingDiagnostics { get; private set; }
 
         // Controls whether or not usage of features (platform API, x:Bind functionality,
         // conditional XAML, etc.) should be validated against TargetPlatformMinVersion
@@ -324,6 +325,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             EnableDefaultValidationContextGeneration = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableDefaultValidationContextGeneration);
             EnableWin32Codegen = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableWin32Codegen);
             UsingCSWinRT = FeatureControlFlags.HasFlag(FeatureCtrlFlags.UsingCSWinRT);
+            EnableBindingDiagnostics = FeatureControlFlags.HasFlag(FeatureCtrlFlags.EnableBindingDiagnostics);
             IgnoreSpecifiedTargetPlatformMinVersion = IgnoreSpecifiedTargetPlatformMinVersion;
 
             XamlApplications = GetFileItems(i.XamlApplications);
@@ -873,7 +875,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 _xamlMetadataProvider = new XbfMetadataProvider(_schemaContext);
 
                 _projectInfo = GetProjectInfo();
-                _typeInfoCollector = new TypeInfoCollector(_schemaContext, XamlPlatform);
+                _typeInfoCollector = new TypeInfoCollector(_schemaContext, XamlPlatform, EnableBindingDiagnostics);
                 Type ixt = GetIXamlType(_loadedAssemblies);
                 if (ixt == null)
                 {

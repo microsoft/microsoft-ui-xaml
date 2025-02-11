@@ -35,9 +35,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_StartIndex)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_StartIndex(_In_ INT value);
+        _Check_return_ HRESULT put_StartIndex(INT value);
         IFACEMETHOD(get_Length)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_Length(_In_ INT value);
+        _Check_return_ HRESULT put_Length(INT value);
 
         // Methods.
 

@@ -234,6 +234,7 @@ namespace OM
                 TypeDefinition type = IdlInfo.Type;
 
                 // Write annotations.
+                bool wroteAnnotation = true;
                 if (IsArray)
                 {
                     // _In_ UINT {countParameterName}, _In_reads_({countParameterName})
@@ -258,7 +259,15 @@ namespace OM
                     }
                     else
                     {
-                        builder.Append("_In_");
+                        if (!type.IsValueType || type.IsStringType)
+                        {
+                            builder.Append("_In_");
+                        }
+                        else
+                        {
+                            // No need to annotate "_In_" for this type
+                            wroteAnnotation = false;
+                        }
                     }
                     if (IsOptional)
                     {
@@ -268,7 +277,10 @@ namespace OM
                         }
                     }
                 }
-                builder.Append(' ');
+                if (wroteAnnotation)
+                {
+                    builder.Append(' ');
+                }
 
                 // Write type name.
                 if (IsNullable)

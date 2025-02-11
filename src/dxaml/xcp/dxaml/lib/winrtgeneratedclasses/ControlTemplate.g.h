@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_TargetType)(_Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pValue) override;
-        IFACEMETHOD(put_TargetType)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value) override;
+        IFACEMETHOD(put_TargetType)(ABI::Windows::UI::Xaml::Interop::TypeName value) override;
 
         // Events.
 

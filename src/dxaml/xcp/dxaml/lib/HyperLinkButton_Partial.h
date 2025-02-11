@@ -31,7 +31,7 @@ namespace DirectUI
             // Override OnCreateAutomationPeer()
             IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ xaml_automation_peers::IAutomationPeer** returnValue);
             IFACEMETHOD(MeasureOverride)(
-                _In_ wf::Size availableSize,
+                wf::Size availableSize,
                 _Out_ wf::Size* returnValue)
                 override;
 

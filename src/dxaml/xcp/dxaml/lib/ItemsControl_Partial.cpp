@@ -2100,7 +2100,7 @@ _Check_return_
     HRESULT
     ItemsControl::ItemsControlFromItemContainer(
     _In_ xaml::IDependencyObject* container,
-    _Outptr_ IItemsControl** returnValue)
+    _Outptr_result_maybenull_ IItemsControl** returnValue)
 {
     HRESULT hr = S_OK;
 
@@ -3234,7 +3234,7 @@ _Check_return_ HRESULT ItemsControl::GetFirstOrLastFocusableElement(
     const bool skipHeader,
     const bool skipItemsAndGroupHeaders,
     const bool skipFooter,
-    _Outptr_ DependencyObject** ppFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppFocusable)
 {
 #ifdef ICTL_DEBUG
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"ICTL(%s)[0x%p]: GetFirstOrLastFocusableElement. isForFirstFocusableElement=%d, isBackward=%d, skipHeader=%d, skipItemsAndGroupHeaders=%d, skipFooter=%d",
@@ -3453,7 +3453,7 @@ _Check_return_ HRESULT ItemsControl::ProcessTabStopOverride(
     _In_opt_ DependencyObject* pCandidateTabStopElement,
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsTabStopOverridden
     )
 {

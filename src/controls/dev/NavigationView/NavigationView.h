@@ -345,6 +345,8 @@ private:
     void ShadowCasterEaseOutStoryboard_Completed(const winrt::Grid& shadowCaster);
 
     bool IsVisible(const winrt::DependencyObject& obj);
+    winrt::UIElement GetFirstFocusableElement(const winrt::ItemsRepeater& ir);
+    winrt::UIElement GetLastFocusableElement(const winrt::ItemsRepeater& ir);
 
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 

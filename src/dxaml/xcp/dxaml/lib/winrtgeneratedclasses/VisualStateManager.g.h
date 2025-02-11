@@ -59,8 +59,8 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GoToStateCore)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pTemplateRoot, _In_opt_ HSTRING stateName, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pGroup, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualState* pState, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue) override;
-        _Check_return_ HRESULT GoToStateCoreProtected(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pTemplateRoot, _In_opt_ HSTRING stateName, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pGroup, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualState* pState, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToStateCore)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pTemplateRoot, _In_opt_ HSTRING stateName, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pGroup, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualState* pState, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue) override;
+        _Check_return_ HRESULT GoToStateCoreProtected(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pTemplateRoot, _In_opt_ HSTRING stateName, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pGroup, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualState* pState, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(RaiseCurrentStateChanged)(_In_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pStateGroup, _In_ ABI::Microsoft::UI::Xaml::IVisualState* pOldState, _In_ ABI::Microsoft::UI::Xaml::IVisualState* pNewState, _In_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl) override;
         IFACEMETHOD(RaiseCurrentStateChanging)(_In_ ABI::Microsoft::UI::Xaml::IVisualStateGroup* pStateGroup, _In_ ABI::Microsoft::UI::Xaml::IVisualState* pOldState, _In_ ABI::Microsoft::UI::Xaml::IVisualState* pNewState, _In_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl) override;
 
@@ -114,7 +114,7 @@ namespace DirectUI
         IFACEMETHOD(SetCustomVisualStateManager)(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pObj, _In_opt_ ABI::Microsoft::UI::Xaml::IVisualStateManager* pValue);
 
         // Static methods.
-        IFACEMETHOD(GoToState)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_opt_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(GoToState)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_opt_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue) override;
 
         // Static events.
 
@@ -132,6 +132,6 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT GoToStateImpl(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_opt_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue); 
+         _Check_return_ HRESULT GoToStateImpl(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IControl* pControl, _In_opt_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue); 
     };
 }

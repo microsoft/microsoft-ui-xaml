@@ -48,11 +48,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_AlignmentX)(_Out_ ABI::Microsoft::UI::Xaml::Media::AlignmentX* pValue) override;
-        IFACEMETHOD(put_AlignmentX)(_In_ ABI::Microsoft::UI::Xaml::Media::AlignmentX value) override;
+        IFACEMETHOD(put_AlignmentX)(ABI::Microsoft::UI::Xaml::Media::AlignmentX value) override;
         IFACEMETHOD(get_AlignmentY)(_Out_ ABI::Microsoft::UI::Xaml::Media::AlignmentY* pValue) override;
-        IFACEMETHOD(put_AlignmentY)(_In_ ABI::Microsoft::UI::Xaml::Media::AlignmentY value) override;
+        IFACEMETHOD(put_AlignmentY)(ABI::Microsoft::UI::Xaml::Media::AlignmentY value) override;
         IFACEMETHOD(get_Stretch)(_Out_ ABI::Microsoft::UI::Xaml::Media::Stretch* pValue) override;
-        IFACEMETHOD(put_Stretch)(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value) override;
+        IFACEMETHOD(put_Stretch)(ABI::Microsoft::UI::Xaml::Media::Stretch value) override;
 
         // Events.
 

@@ -39,7 +39,7 @@ namespace DirectUI
             _Out_ EventRegistrationToken *token) override;
 
         IFACEMETHOD(remove_VectorChanged)(
-            _In_ EventRegistrationToken token) override;
+            EventRegistrationToken token) override;
 
         // ISupportIncrementalLoading
         IFACEMETHOD(get_HasMoreItems)(_Out_ boolean *value) override;

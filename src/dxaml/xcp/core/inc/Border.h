@@ -68,7 +68,7 @@ public:
         _In_opt_ IInspectable* pValueOuter,
         _Out_ CValue *pResult);
 
-    _Check_return_ HRESULT SetChild(_In_ CUIElement *pContent);
+    _Check_return_ HRESULT SetChild(_In_opt_ CUIElement *pContent);
 
     _Check_return_ HRESULT GetChild(_Outptr_ CUIElement **ppContent);
 

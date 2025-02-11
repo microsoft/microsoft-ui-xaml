@@ -47,7 +47,7 @@ public:
     virtual bool Is2DAligned() { return true; }
 
     void GetTransformerCommon(
-        const XSIZEF& elementSize,
+        _In_ const XSIZEF& elementSize,
         _Outptr_ CPerspectiveTransformer **ppTransformer);
 
     _Check_return_ HRESULT GetContentBounds(

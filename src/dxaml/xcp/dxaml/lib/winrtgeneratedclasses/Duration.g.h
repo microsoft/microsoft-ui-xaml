@@ -23,18 +23,18 @@ namespace DirectUI
 
     public:
         // Extension methods.
-        IFACEMETHOD(GetHasTimeSpan)(_In_ ABI::Microsoft::UI::Xaml::Duration target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(Add)(_In_ ABI::Microsoft::UI::Xaml::Duration target, _In_ ABI::Microsoft::UI::Xaml::Duration duration, _Out_ ABI::Microsoft::UI::Xaml::Duration* pReturnValue) override;
-        IFACEMETHOD(Equals)(_In_ ABI::Microsoft::UI::Xaml::Duration target, _In_ ABI::Microsoft::UI::Xaml::Duration value, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(Subtract)(_In_ ABI::Microsoft::UI::Xaml::Duration target, _In_ ABI::Microsoft::UI::Xaml::Duration duration, _Out_ ABI::Microsoft::UI::Xaml::Duration* pReturnValue) override;
+        IFACEMETHOD(GetHasTimeSpan)(ABI::Microsoft::UI::Xaml::Duration target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(Add)(ABI::Microsoft::UI::Xaml::Duration target, ABI::Microsoft::UI::Xaml::Duration duration, _Out_ ABI::Microsoft::UI::Xaml::Duration* pReturnValue) override;
+        IFACEMETHOD(Equals)(ABI::Microsoft::UI::Xaml::Duration target, ABI::Microsoft::UI::Xaml::Duration value, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(Subtract)(ABI::Microsoft::UI::Xaml::Duration target, ABI::Microsoft::UI::Xaml::Duration duration, _Out_ ABI::Microsoft::UI::Xaml::Duration* pReturnValue) override;
 
         // Static properties.
         IFACEMETHOD(get_Automatic)(_Out_ ABI::Microsoft::UI::Xaml::Duration* pValue) override;
         IFACEMETHOD(get_Forever)(_Out_ ABI::Microsoft::UI::Xaml::Duration* pValue) override;
 
         // Static methods.
-        IFACEMETHOD(Compare)(_In_ ABI::Microsoft::UI::Xaml::Duration duration1, _In_ ABI::Microsoft::UI::Xaml::Duration duration2, _Out_ INT* pReturnValue) override;
-        IFACEMETHOD(FromTimeSpan)(_In_ ABI::Windows::Foundation::TimeSpan timeSpan, _Out_ ABI::Microsoft::UI::Xaml::Duration* pReturnValue) override;
+        IFACEMETHOD(Compare)(ABI::Microsoft::UI::Xaml::Duration duration1, ABI::Microsoft::UI::Xaml::Duration duration2, _Out_ INT* pReturnValue) override;
+        IFACEMETHOD(FromTimeSpan)(ABI::Windows::Foundation::TimeSpan timeSpan, _Out_ ABI::Microsoft::UI::Xaml::Duration* pReturnValue) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

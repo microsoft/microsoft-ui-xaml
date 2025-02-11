@@ -54,7 +54,7 @@ namespace DirectUI
         _Check_return_ HRESULT TearDownAudioGraph();
 
         // For testing purposes only. Invoked by IXamlTestHooks::SetPlayingSoundNodeCallback implementation.
-        void SetPlayingSoundNodeCallback(_In_opt_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback);
+        void SetPlayingSoundNodeCallback(_In_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback);
 
         // For testing purposes only.  Invoked by test cleanup to ensure that the teardown thread is completed
         // prior to returning from the teardown request.
@@ -167,7 +167,7 @@ namespace DirectUI
         // Worker-thread-only public methods
 
         // For testing purposes only. Invoked by IXamlTestHooks::SetPlayingSoundNodeCallback implementation.
-        void SetPlayingSoundNodeCallback(_In_opt_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback)
+        void SetPlayingSoundNodeCallback(_In_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback)
         {
             m_playingSoundNodeCallback = std::move(callback);
         }

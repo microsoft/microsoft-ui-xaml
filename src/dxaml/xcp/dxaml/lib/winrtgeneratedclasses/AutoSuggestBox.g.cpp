@@ -66,7 +66,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::get_AutoMaximizeSuggestionArea
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_AutoMaximizeSuggestionArea, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_AutoMaximizeSuggestionArea(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_AutoMaximizeSuggestionArea(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_AutoMaximizeSuggestionArea, value));
@@ -106,7 +106,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::get_HeaderPlacement(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_HeaderPlacement, value));
@@ -115,7 +115,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::get_InputValidationKind(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_InputValidationKind, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_InputValidationKind(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_InputValidationKind(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_InputValidationKind, value));
@@ -124,7 +124,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::get_InputValidationMode(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_InputValidationMode, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_InputValidationMode(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_InputValidationMode(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_InputValidationMode, value));
@@ -133,7 +133,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::get_IsSuggestionListOpen(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_IsSuggestionListOpen, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_IsSuggestionListOpen(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_IsSuggestionListOpen(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_IsSuggestionListOpen, value));
@@ -142,7 +142,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::get_LightDismissOverlayMode(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_LightDismissOverlayMode, value));
@@ -151,7 +151,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::get_MaxSuggestionListHeight(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_MaxSuggestionListHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_MaxSuggestionListHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_MaxSuggestionListHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_MaxSuggestionListHeight, value));
@@ -205,7 +205,7 @@ IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::get_UpdateTextOnSelect(_Out_ B
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_UpdateTextOnSelect, pValue));
 }
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_UpdateTextOnSelect(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::put_UpdateTextOnSelect(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutoSuggestBox_UpdateTextOnSelect, value));
@@ -271,7 +271,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_HasValidationErrorsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_HasValidationErrorsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HasValidationErrorsChangedEventSourceType* pEventSource = nullptr;
@@ -327,7 +327,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_QuerySubmitted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_QuerySubmitted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     QuerySubmittedEventSourceType* pEventSource = nullptr;
@@ -382,7 +382,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_SuggestionChosen(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_SuggestionChosen(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SuggestionChosenEventSourceType* pEventSource = nullptr;
@@ -437,7 +437,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_TextChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_TextChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextChangedEventSourceType* pEventSource = nullptr;
@@ -493,7 +493,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_ValidationError(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::AutoSuggestBoxGenerated::remove_ValidationError(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ValidationErrorEventSourceType* pEventSource = nullptr;

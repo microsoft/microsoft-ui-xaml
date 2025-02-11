@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::StandardUICommandGenerated::get_Kind(_Out_ ABI::Microso
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StandardUICommand_Kind, pValue));
 }
-IFACEMETHODIMP DirectUI::StandardUICommandGenerated::put_Kind(_In_ ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind value)
+IFACEMETHODIMP DirectUI::StandardUICommandGenerated::put_Kind(ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StandardUICommand_Kind, value));
@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::StandardUICommandFactory::CreateInstance(_In_opt_ IInsp
     IFC_RETURN(hr);
     return S_OK;
 }
-IFACEMETHODIMP DirectUI::StandardUICommandFactory::CreateInstanceWithKind(_In_ ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind kind, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IStandardUICommand** ppInstance)
+IFACEMETHODIMP DirectUI::StandardUICommandFactory::CreateInstanceWithKind(ABI::Microsoft::UI::Xaml::Input::StandardUICommandKind kind, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IStandardUICommand** ppInstance)
 {
     HRESULT hr = S_OK;
     

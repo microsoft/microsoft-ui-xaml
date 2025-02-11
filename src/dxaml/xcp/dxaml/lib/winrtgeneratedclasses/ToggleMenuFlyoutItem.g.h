@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsChecked)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsChecked)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsChecked)(BOOLEAN value) override;
 
         // Events.
 

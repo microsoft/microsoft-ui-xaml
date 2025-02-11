@@ -30,42 +30,70 @@
   <Import Project="Directory.Build.props" />
   <Import Project="$(NugetPackageDirectory)\MUXCustomBuildTasks.$(MuxCustomBuildTasksPackageVersion)\build\MUXCustomBuildTasks.targets" />
   <Import Project="Directory.Build.targets" />
+  <PropertyGroup>
+    <!-- OutDir doesn't contain the project name since this is only a partial project.  We'll add it manually. -->
+    <OutDir>$([System.IO.Path]::GetFullPath("$(OutDir)UpdateMockWinAppSDKPackage\"))</OutDir>
+    <MockPackagePath>$(ProjectRoot)PackageStore\Microsoft.WindowsAppSDK.999.0.0-mock-$(WinUIVersion)-$(Platform)-$(Configuration).nupkg</MockPackagePath>
+  </PropertyGroup>
   <Target Name="Rebuild" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
     <CallTarget Targets="Clean" />
     <CallTarget Targets="Build" />
   </Target>
   <Target Name="Publish" />
-  <Target Name="Clean" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
+  <Target Name="Clean" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <ItemGroup>
+      <OutDirFiles Include="$(OutDir)**\*" />
+    </ItemGroup>
+    <Delete Files="$(MockPackagePath)" />
+    <Delete Files="@(OutDirFiles)" />
+    <RemoveDir Directories="$(OutDir)" />
+  </Target>
   <Target Name="Build" Condition="'$(BuildingInsideVisualStudio)' == 'true'" DependsOnTargets="CheckIfUpdateIsRequired" />
-  <Target Name="CheckIfUpdateIsRequired">
+  <Target Name="SetProperties">
     <PropertyGroup>
       <PackagesDirectory>$(ProjectRoot)packages\</PackagesDirectory>
       <TempPackagesDirectory>$(OutDir)packages\</TempPackagesDirectory>
-      <MicrosoftWindowsSDKBuildToolsPackageName>Microsoft.Windows.SDK.BuildTools</MicrosoftWindowsSDKBuildToolsPackageName>
-      <MicrosoftWindowsSDKBuildToolsTempPackagesDir>$(TempPackagesDirectory)$(MicrosoftWindowsSDKBuildToolsPackageName).$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)</MicrosoftWindowsSDKBuildToolsTempPackagesDir>
-      <WASDKPackageCppDirectoryName>Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)</WASDKPackageCppDirectoryName>
-      <WASDKPackageCSharpDirectoryName>microsoft.windowsappsdk\$(WindowsAppSdkPackageVersion)</WASDKPackageCSharpDirectoryName>
       <BuildMockPackageScriptPath>$(ProjectRoot)scripts\buildMockWinAppSdkPackage.ps1</BuildMockPackageScriptPath>
       <BuildMockPackageScriptParams>$(ProjectRoot) $(Platform) $(Configuration) $(WinUIVersion) 999.0.0-mock $(TempPackagesDirectory)</BuildMockPackageScriptParams>
     </PropertyGroup>
-    <RunPowershellScript Path="$(BuildMockPackageScriptPath)" Parameters="$(BuildMockPackageScriptParams) -Fake">
-      <Output TaskParameter="ExitCode" PropertyName="FakeScriptRunExitCode"/>
-    </RunPowershellScript>
-    <PropertyGroup>
-      <UpdateIsRequired Condition="'$(FakeScriptRunExitCode)' == '1'">true</UpdateIsRequired>
-    </PropertyGroup>
   </Target>
-  <Target Name="UpdateMockWinAppSDKPackage" Condition="'$(UpdateIsRequired)' == 'true'" AfterTargets="Build">
+  <Target Name="CopyDependencies" DependsOnTargets="SetProperties">
     <!-- First we'll create the package themselves and extract them to a temp folder using the Powershell script.
          Microsoft.Windows.SDK.BuildTools is a package we depend on that needs to be in the packages directory
          for dependency resolution. -->
+    <PropertyGroup>
+      <MicrosoftWindowsSDKBuildToolsPackageName>Microsoft.Windows.SDK.BuildTools</MicrosoftWindowsSDKBuildToolsPackageName>
+      <MicrosoftWindowsSDKBuildToolsTempPackagesDir>$(TempPackagesDirectory)$(MicrosoftWindowsSDKBuildToolsPackageName).$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)</MicrosoftWindowsSDKBuildToolsTempPackagesDir>
+      <WebView2PackageName>Microsoft.Web.WebView2</WebView2PackageName>
+      <WebView2TempPackagesDir>$(TempPackagesDirectory)$(WebView2PackageName).$(WebView2Version)</WebView2TempPackagesDir>
+    </PropertyGroup>
     <ItemGroup>
       <MicrosoftWindowsSDKBuildToolsFile Include="$(PackagesDirectory)$(MicrosoftWindowsSDKBuildToolsPackageName).$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)\**\*" />
+      <WebView2File Include="$(PackagesDirectory)$(WebView2PackageName).$(WebView2Version)\**\*" />
     </ItemGroup>
     <Message Text="Copying $(MicrosoftWindowsSDKBuildToolsPackageName), which is a package we depend on for WinAppSDK package creation." Condition="!Exists('$(MicrosoftWindowsSDKBuildToolsTempPackagesDir)')" />
     <Copy SourceFiles="@(MicrosoftWindowsSDKBuildToolsFile)" DestinationFiles="@(MicrosoftWindowsSDKBuildToolsFile->'$(MicrosoftWindowsSDKBuildToolsTempPackagesDir)\%(RecursiveDir)\%(Filename)%(Extension)')"  Condition="!Exists('$(MicrosoftWindowsSDKBuildToolsTempPackagesDir)')" />
-    <RunPowershellScript Path="$(ProjectRoot)scripts\buildMockWinAppSdkPackage.ps1" Parameters="$(ProjectRoot) $(Platform) $(Configuration) $(WinUIVersion) 999.0.0-mock $(TempPackagesDirectory)" />
-    <!-- Next we'll install the packages. Visual Studio complains if we completely delete and regenerate in-use NuGet package folders,
+    <Message Text="Copying $(WebView2PackageName), which is a package we depend on for WinAppSDK package creation." Condition="!Exists('$(WebView2TempPackagesDir)')" />
+    <Copy SourceFiles="@(WebView2File)" DestinationFiles="@(WebView2File->'$(WebView2TempPackagesDir)\%(RecursiveDir)\%(Filename)%(Extension)')"  Condition="!Exists('$(WebView2TempPackagesDir)')" />
+  </Target>
+  <Target Name="CheckIfUpdateIsRequired" DependsOnTargets="CopyDependencies">
+    <!-- We'll only check whether an update is required if the nupkg already exists.  Otherwise, we know we need to create it. -->
+    <RunPowershellScript Path="$(BuildMockPackageScriptPath)" Parameters="$(BuildMockPackageScriptParams) -Fake" Condition="Exists('$(MockPackagePath)')">
+      <Output TaskParameter="ExitCode" PropertyName="FakeScriptRunExitCode"/>
+    </RunPowershellScript>
+    <PropertyGroup>
+      <UpdateIsRequired Condition="'$(FakeScriptRunExitCode)' == '1' or !Exists('$(MockPackagePath)')">true</UpdateIsRequired>
+    </PropertyGroup>
+  </Target>
+  <Target Name="UpdateMockWinAppSDKPackage" Condition="'$(UpdateIsRequired)' == 'true'" AfterTargets="Build" DependsOnTargets="CopyDependencies">
+    <!-- We first need to clear the AppXContents directory for the WindowsAppSDK mock package staging ground, since otherwise a Clean will delete files we need. -->
+    <PropertyGroup>
+      <WASDKPackageCppDirectoryName>Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)</WASDKPackageCppDirectoryName>
+      <WASDKPackageCSharpDirectoryName>microsoft.windowsappsdk\$(WindowsAppSdkPackageVersion)</WASDKPackageCSharpDirectoryName>
+    </PropertyGroup>
+    <!-- Now we can build the mock WindowsAppSDK package. -->
+    <RunPowershellScript Path="$(BuildMockPackageScriptPath)" Parameters="$(BuildMockPackageScriptParams)" />
+    <!-- Finally, we'll install the packages. Visual Studio complains if we completely delete and regenerate in-use NuGet package folders,
          so instead of that, if the package folders already exist, we'll just copy over all of the lib, runtimes, and MSIX files.
          This ensures that the newest built files get used correctly without breaking any Visual Studio NuGet integration. -->
     <ItemGroup>
@@ -91,6 +119,23 @@
     </ItemGroup>
     <Copy SourceFiles="@(WASDKPackageTempFileToCopy)" DestinationFolder="%(CppTargetDirectory)%(RecursiveDir)" />
     <Copy SourceFiles="@(WASDKPackageTempFileToCopy)" DestinationFolder="%(CSharpTargetDirectory)%(RecursiveDir)" />
+
+    <!-- This project needs an output file that changes when the mock WinAppSDK package is updated
+        so that other projects that depend on this one will know to rebuild. -->
+    <Touch Files="$(OutDir).MockWinAppSdkPackageUpdated" AlwaysCreate="true" />
+    
+    <ItemGroup>
+      <FileWrites Include="$(MockPackagePath)" />
+      <FileWrites Include="$(OutDir)**\*" />
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
+    <Content Include="$(OutDir).MockWinAppSdkPackageUpdated" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="GetUpdatedMarkerFilePath" Returns="@(UpdatedMarkerFilePath)">
+    <ItemGroup>
+      <UpdatedMarkerFilePath Include="$(OutDir).MockWinAppSdkPackageUpdated" />
+    </ItemGroup>
   </Target>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'" />
@@ -109,6 +154,7 @@
   <!-- Define targets required for MSBuild's project-to-project protocol -->
   <Target Name="GetNativeManifest" />
   <Target Name="GetCopyToOutputDirectoryItems" />
+  <Target Name="GetCopyToPublishDirectoryItems" />
   <Target Name="GetTargetPathWithTargetPlatformMoniker" />
   <Target Name="GetPackagingOutputs" />
 </Project>

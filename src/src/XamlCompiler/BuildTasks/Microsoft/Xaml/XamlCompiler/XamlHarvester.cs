@@ -349,6 +349,36 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                         }
                     }
                 }
+
+                // Strip SuppressXamlTrimWarnings as we just use it to emit warnings on bindings.
+                if (DomHelper.GetSuppressXamlTrimWarningsMember(domObject) is XamlDomMember suppressTrimWarningsMember)
+                {
+                    // Positions of directives within bindings get reported as the same position
+                    // as the binding member. Due to that, we handle this differently from when it
+                    // is used as a member outside of a binding.
+                    if ((domObject.Type as DirectUIXamlType)?.IsAssignableToBinding == true)
+                    {
+                        fileCodeInfo.SuppressXamlTrimWarningsBindingMembers.Add(new StrippableMember(suppressTrimWarningsMember));
+                    }
+                    else
+                    {
+                        fileCodeInfo.StrippableMembers.Add(new StrippableMember(suppressTrimWarningsMember));
+                    }
+                }
+
+                if (!_isPass1 &&
+                    !DomHelper.IsDerivedFromDataTemplate(domObject) &&
+                    !DomHelper.IsDerivedFromControlTemplate(domObject) &&
+                    DomHelper.GetDataTypeMember(domObject, true) is XamlDomMember dataTypeMember)
+                {
+                    string targetTypeName = DomHelper.GetStringValueOfProperty(dataTypeMember);
+                    if (!String.IsNullOrEmpty(targetTypeName))
+                    {
+                        // Add to DataTemplateList
+                        DataTypeAssignment dataTypeAssignment = new DataTypeAssignment(dataTypeMember);
+                        fileCodeInfo.DataTypeAssignments.Add(dataTypeAssignment);
+                    }
+                }
             }
 
             foreach (XamlDomObject domObject in from obj in iterator.DescendantsAndSelf()

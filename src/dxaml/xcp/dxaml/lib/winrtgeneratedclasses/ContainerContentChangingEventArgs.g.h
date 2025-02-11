@@ -42,26 +42,26 @@ namespace DirectUI
         _Check_return_ HRESULT get_Callback(_Outptr_result_maybenull_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>** ppValue);
         _Check_return_ HRESULT put_Callback(_In_opt_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>* pValue);
         _Check_return_ HRESULT get_ContentShouldBeSet(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_ContentShouldBeSet(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_ContentShouldBeSet(BOOLEAN value);
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_InRecycleQueue)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_InRecycleQueue(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_InRecycleQueue(BOOLEAN value);
         IFACEMETHOD(get_Item)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         _Check_return_ HRESULT put_Item(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_ItemContainer)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ISelectorItem** ppValue) override;
         IFACEMETHOD(get_ItemIndex)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_ItemIndex(_In_ INT value);
+        _Check_return_ HRESULT put_ItemIndex(INT value);
         IFACEMETHOD(get_Phase)(_Out_ UINT* pValue) override;
-        _Check_return_ HRESULT put_Phase(_In_ UINT value);
+        _Check_return_ HRESULT put_Phase(UINT value);
         _Check_return_ HRESULT get_WantsCallBack(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_WantsCallBack(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_WantsCallBack(BOOLEAN value);
 
         // Events.
 
         // Methods.
         IFACEMETHOD(RegisterUpdateCallback)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>* pCallback) override;
-        IFACEMETHOD(RegisterUpdateCallbackWithPhase)(_In_ UINT callbackPhase, _In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>* pCallback) override;
+        IFACEMETHOD(RegisterUpdateCallbackWithPhase)(UINT callbackPhase, _In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>* pCallback) override;
         _Check_return_ HRESULT ResetLifetime();
 
 

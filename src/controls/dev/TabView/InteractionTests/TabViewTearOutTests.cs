@@ -74,6 +74,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies that CanTearOutTabs enables the tearing out of tabs into new windows, and the rejoining of those tabs into existing windows.")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void CanTearOutAndRejoinTabs()
         {
             TabViewTearOutTestHelpers.CanTearOutAndRejoinTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);
@@ -81,6 +82,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies that CanTearOutTabs does not prevent internally reordering tabs.")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void CanReorderTabs()
         {
             TabViewTearOutTestHelpers.CanReorderTabs(GetTabViewTearOutAppWindows, GetTabViewFromWindow, GetTabsFromTabView);

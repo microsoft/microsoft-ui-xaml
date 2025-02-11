@@ -58,38 +58,38 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CompactPaneLength)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_CompactPaneLength)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_CompactPaneLength)(DOUBLE value) override;
         IFACEMETHOD(get_Content)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_Content)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_DisplayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::SplitViewDisplayMode* pValue) override;
-        IFACEMETHOD(put_DisplayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::SplitViewDisplayMode value) override;
+        IFACEMETHOD(put_DisplayMode)(ABI::Microsoft::UI::Xaml::Controls::SplitViewDisplayMode value) override;
         IFACEMETHOD(get_IsPaneOpen)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsPaneOpen)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsPaneOpen)(BOOLEAN value) override;
         IFACEMETHOD(get_LightDismissOverlayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode* pValue) override;
-        IFACEMETHOD(put_LightDismissOverlayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
+        IFACEMETHOD(put_LightDismissOverlayMode)(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
         IFACEMETHOD(get_OpenPaneLength)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_OpenPaneLength)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_OpenPaneLength)(DOUBLE value) override;
         IFACEMETHOD(get_Pane)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_Pane)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_PaneBackground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_PaneBackground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_PanePlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::SplitViewPanePlacement* pValue) override;
-        IFACEMETHOD(put_PanePlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::SplitViewPanePlacement value) override;
+        IFACEMETHOD(put_PanePlacement)(ABI::Microsoft::UI::Xaml::Controls::SplitViewPanePlacement value) override;
         IFACEMETHOD(get_TemplateSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ISplitViewTemplateSettings** ppValue) override;
 
         // Events.
         _Check_return_ HRESULT GetPaneClosedEventSourceNoRef(_Outptr_ PaneClosedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PaneClosed)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SplitView*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PaneClosed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PaneClosed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPaneClosingEventSourceNoRef(_Outptr_ PaneClosingEventSourceType** ppEventSource);
         IFACEMETHOD(add_PaneClosing)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SplitView*, ABI::Microsoft::UI::Xaml::Controls::SplitViewPaneClosingEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PaneClosing)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PaneClosing)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPaneOpenedEventSourceNoRef(_Outptr_ PaneOpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PaneOpened)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SplitView*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PaneOpened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PaneOpened)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPaneOpeningEventSourceNoRef(_Outptr_ PaneOpeningEventSourceType** ppEventSource);
         IFACEMETHOD(add_PaneOpening)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::SplitView*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PaneOpening)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PaneOpening)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(OnBackButtonPressed)(_Out_ BOOLEAN* pResult) override;

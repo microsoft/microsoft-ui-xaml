@@ -42,15 +42,15 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_BeginOffset(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_BeginOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_BeginOffset(DOUBLE value);
         _Check_return_ HRESULT get_ConstantCoefficient(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_ConstantCoefficient(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_ConstantCoefficient(DOUBLE value);
         _Check_return_ HRESULT get_CubicCoefficient(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_CubicCoefficient(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CubicCoefficient(DOUBLE value);
         _Check_return_ HRESULT get_LinearCoefficient(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_LinearCoefficient(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_LinearCoefficient(DOUBLE value);
         _Check_return_ HRESULT get_QuadraticCoefficient(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_QuadraticCoefficient(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_QuadraticCoefficient(DOUBLE value);
 
         // Events.
 

@@ -83,7 +83,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_AllowFocusOnInteraction(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_AllowFocusOnInteraction, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_AllowFocusOnInteraction(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_AllowFocusOnInteraction(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_AllowFocusOnInteraction, value));
@@ -92,7 +92,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_CharacterSpacing(_Out_ INT* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_CharacterSpacing, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_CharacterSpacing(_In_ INT value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_CharacterSpacing(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_CharacterSpacing, value));
@@ -141,7 +141,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_ExitDisplayModeOnAccessKeyInv
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_ExitDisplayModeOnAccessKeyInvoked, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_ExitDisplayModeOnAccessKeyInvoked(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_ExitDisplayModeOnAccessKeyInvoked(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_ExitDisplayModeOnAccessKeyInvoked, value));
@@ -159,7 +159,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_FontSize(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_FontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_FontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_FontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_FontSize, value));
@@ -168,7 +168,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_FontStretch(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_FontStretch, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_FontStretch(_In_ ABI::Windows::UI::Text::FontStretch value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_FontStretch(ABI::Windows::UI::Text::FontStretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_FontStretch, value));
@@ -177,7 +177,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_FontStyle(_Out_ ABI::Windows:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_FontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_FontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_FontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_FontStyle, value));
@@ -186,7 +186,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_FontWeight(_Out_ ABI::Windows
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_FontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_FontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_FontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_FontWeight, value));
@@ -204,7 +204,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_IsAccessKeyScope(_Out_ BOOLEA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_IsAccessKeyScope, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_IsAccessKeyScope(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_IsAccessKeyScope(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_IsAccessKeyScope, value));
@@ -213,7 +213,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_IsTextScaleFactorEnabled(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_IsTextScaleFactorEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_IsTextScaleFactorEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_IsTextScaleFactorEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_IsTextScaleFactorEnabled, value));
@@ -222,7 +222,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_KeyTipHorizontalOffset(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_KeyTipHorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_KeyTipHorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_KeyTipHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_KeyTipHorizontalOffset, value));
@@ -231,7 +231,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_KeyTipPlacementMode(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_KeyTipPlacementMode, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_KeyTipPlacementMode(_In_ ABI::Microsoft::UI::Xaml::Input::KeyTipPlacementMode value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_KeyTipPlacementMode(ABI::Microsoft::UI::Xaml::Input::KeyTipPlacementMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_KeyTipPlacementMode, value));
@@ -240,7 +240,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_KeyTipVerticalOffset(_Out_ DO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_KeyTipVerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_KeyTipVerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_KeyTipVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_KeyTipVerticalOffset, value));
@@ -268,7 +268,7 @@ IFACEMETHODIMP DirectUI::TextElementGenerated::get_TextDecorations(_Out_ ABI::Wi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextElement_TextDecorations, pValue));
 }
-IFACEMETHODIMP DirectUI::TextElementGenerated::put_TextDecorations(_In_ ABI::Windows::UI::Text::TextDecorations value)
+IFACEMETHODIMP DirectUI::TextElementGenerated::put_TextDecorations(ABI::Windows::UI::Text::TextDecorations value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextElement_TextDecorations, value));
@@ -331,7 +331,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextElementGenerated::remove_AccessKeyDisplayDismissed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextElementGenerated::remove_AccessKeyDisplayDismissed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AccessKeyDisplayDismissedEventSourceType* pEventSource = nullptr;
@@ -386,7 +386,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextElementGenerated::remove_AccessKeyDisplayRequested(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextElementGenerated::remove_AccessKeyDisplayRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AccessKeyDisplayRequestedEventSourceType* pEventSource = nullptr;
@@ -441,7 +441,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextElementGenerated::remove_AccessKeyInvoked(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextElementGenerated::remove_AccessKeyInvoked(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AccessKeyInvokedEventSourceType* pEventSource = nullptr;

@@ -47,9 +47,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Color)(_Out_ ABI::Windows::UI::Color* pValue) override;
-        IFACEMETHOD(put_Color)(_In_ ABI::Windows::UI::Color value) override;
+        IFACEMETHOD(put_Color)(ABI::Windows::UI::Color value) override;
         IFACEMETHOD(get_Offset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Offset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Offset)(DOUBLE value) override;
 
         // Events.
 

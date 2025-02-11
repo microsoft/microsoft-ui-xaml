@@ -9,7 +9,7 @@ using namespace RichTextServices;
 
 ContainerNode::ContainerNode(
     _In_ BlockLayoutEngine *pBlockLayoutEngine,
-    _In_ CDependencyObject *pElement,
+    _In_opt_ CDependencyObject *pElement,
     _In_opt_ ContainerNode *pParentNode
     ) : BlockNode(pBlockLayoutEngine, pElement, pParentNode),
     m_pFirstChild(NULL)

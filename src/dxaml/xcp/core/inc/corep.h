@@ -579,6 +579,7 @@ public:
 
     HRESULT GetDispatcherQueueStatics(_Outptr_ msy::IDispatcherQueueStatics** statics);
     HRESULT GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::IDesktopChildSiteBridgeStatics** statics);
+    HRESULT GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics);
     HRESULT GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics);
 
     ixp::ICompositionEasingFunctionStatics* GetCompositionEasingFunctionStatics();
@@ -587,6 +588,12 @@ public:
     ixp::IInputSystemCursorStatics* GetInputSystemCursorStatics();
     ixp::IContentIslandStatics* GetContentIslandStatics();
     ixp::IInputFocusControllerStatics* GetInputFocusControllerStatics();
+
+    ixp::IInputKeyboardSourceStatics2* GetInputKeyboardSourceStatics2();
+    ixp::IInputPreTranslateKeyboardSourceStatics* GetInputPreTranslateKeyboardSourceStatics();
+    ixp::IInputPointerSourceStatics* GetInputPointerSourceStatics();
+    ixp::IInputActivationListenerStatics2* GetInputActivationListenerStatics2();
+    ixp::IInputNonClientPointerSourceStatics* GetInputNonClientPointerSourceStatics();
 
 private:
     // Multiple threads can be accessing the activation factories stored here.
@@ -600,12 +607,19 @@ private:
     wrl::ComPtr<msy::IDispatcherQueueStatics> m_dispatcherQueueStatics;
     wrl::ComPtr<mui::DragDrop::IDragDropManagerStatics> m_dragDropManagerStatics;
     wrl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> m_desktopChildSiteBridgeStatics;
+    wrl::ComPtr<ixp::IDesktopPopupSiteBridgeStatics> m_desktopPopupSiteBridgeStatics;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_compositionEasingFunctionStatics;
     wrl::ComPtr<ixp::IInteropCompositorFactoryPartner> m_interopCompositorFactoryPartner;
     wrl::ComPtr<ixp::ICompositionPathFactory> m_compositionPathFactory;
     wrl::ComPtr<ixp::IInputSystemCursorStatics> m_inputSystemCursorStatics;
     wrl::ComPtr<ixp::IContentIslandStatics> m_contentIslandStatics;
     wrl::ComPtr<ixp::IInputFocusControllerStatics> m_inputFocusControllerStatics;
+
+    wrl::ComPtr<ixp::IInputKeyboardSourceStatics2> m_inputKeyboardSourceStatics2;
+    wrl::ComPtr<ixp::IInputPreTranslateKeyboardSourceStatics> m_inputPreTranslateKeyboardSourceStatics;
+    wrl::ComPtr<ixp::IInputPointerSourceStatics> m_inputPointerSourceStatics;
+    wrl::ComPtr<ixp::IInputActivationListenerStatics2> m_inputActivationListenerStatics2;
+    wrl::ComPtr<ixp::IInputNonClientPointerSourceStatics> m_inputNonClientPointerSourceStatics;
 };
 
 //------------------------------------------------------------------------
@@ -872,7 +886,7 @@ public:
         _In_ bool bForceUtf16,
         _In_ bool bCreatePermanentNamescope,
         _In_ bool bRequireDefaultNamespace,
-        _Outptr_ CDependencyObject **ppDependencyObject,
+        _Outptr_result_maybenull_ CDependencyObject **ppDependencyObject,
         _In_opt_ IPALUri *pBaseUri = nullptr,
         _In_ const xstring_ptr_view& strSourceAssemblyName = xstring_ptr(),
         _In_ bool bExpandTemplatesDuringParse = false);
@@ -1132,7 +1146,7 @@ public:
 // Returns the Identity of current core
     XUINT32 GetIdentity(){ return m_objIdentity;}
 
-    _Check_return_ HRESULT SetCurrentApplication(_In_ CApplication *pApplication);
+    _Check_return_ HRESULT SetCurrentApplication(_In_opt_ CApplication *pApplication);
 
     // Get/set the window render target currently attached to this object.
     void NWSetWindowRenderTarget(_In_opt_ CWindowRenderTarget *pWindowRenderTarget);
@@ -1477,6 +1491,7 @@ public:
     void CheckForLeaks();
 
     _Check_return_ HRESULT CheckMemoryUsage(bool simulateLowMemory);
+    void ReleaseCachedTextFormatters() noexcept;
     DCompTreeHost* GetDCompTreeHost();
 
     void SetThreadingAssertOverride(bool enable);

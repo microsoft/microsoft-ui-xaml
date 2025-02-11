@@ -38,15 +38,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Action)(_Out_ ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction* pValue) override;
-        _Check_return_ HRESULT put_Action(_In_ ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction value);
+        _Check_return_ HRESULT put_Action(ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction value);
         IFACEMETHOD(get_NewItems)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector** ppValue) override;
         _Check_return_ HRESULT put_NewItems(_In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pValue);
         IFACEMETHOD(get_NewStartingIndex)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_NewStartingIndex(_In_ INT value);
+        _Check_return_ HRESULT put_NewStartingIndex(INT value);
         IFACEMETHOD(get_OldItems)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector** ppValue) override;
         _Check_return_ HRESULT put_OldItems(_In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pValue);
         IFACEMETHOD(get_OldStartingIndex)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_OldStartingIndex(_In_ INT value);
+        _Check_return_ HRESULT put_OldStartingIndex(INT value);
 
         // Events.
 
@@ -89,7 +89,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithAllParameters)(_In_ ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction action, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pNewItems, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pOldItems, _In_ INT newIndex, _In_ INT oldIndex, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs** ppInstance);
+        IFACEMETHOD(CreateInstanceWithAllParameters)(ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction action, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pNewItems, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pOldItems, INT newIndex, INT oldIndex, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs** ppInstance);
 
         // Static properties.
 
@@ -107,7 +107,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithAllParametersImpl(_In_ ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction action, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pNewItems, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pOldItems, _In_ INT newIndex, _In_ INT oldIndex, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithAllParametersImpl(ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction action, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pNewItems, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pOldItems, INT newIndex, INT oldIndex, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs** ppInstance);
 
         // Customized static properties.
 

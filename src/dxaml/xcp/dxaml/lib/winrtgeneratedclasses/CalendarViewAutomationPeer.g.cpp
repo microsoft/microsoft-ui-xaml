@@ -147,7 +147,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::GetItem(_In_ INT row, _In_ INT column, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple** ppReturnValue)
+IFACEMETHODIMP DirectUI::CalendarViewAutomationPeerGenerated::GetItem(INT row, INT column, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

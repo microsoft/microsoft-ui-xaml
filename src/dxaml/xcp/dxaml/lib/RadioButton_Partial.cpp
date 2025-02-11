@@ -325,7 +325,7 @@ RadioButton::Unregister(_In_opt_ HSTRING hGroupName, _In_ RadioButton * pRadioBu
 }
 
 _Check_return_ HRESULT
-RadioButton::UnregisterFromGroup(std::list<ctl::WeakRefPtr> *groupElements, _In_ RadioButton * pRadioButton, _Out_ bool* found)
+RadioButton::UnregisterFromGroup(_In_ std::list<ctl::WeakRefPtr> *groupElements, _In_ RadioButton * pRadioButton, _Out_ bool* found)
 {
     *found = false;
 

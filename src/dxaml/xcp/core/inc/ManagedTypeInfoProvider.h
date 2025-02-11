@@ -165,6 +165,7 @@ private:
         _Out_ std::shared_ptr<XamlSchemaContext>& outSchemaContext
         );
 
+    _Success_(return != false)
     bool TryGetTypeWithSpecifiedNamespaceId(
         _In_ const KnownNamespaceIndex nNamespaceIndex,
         _In_ const xstring_ptr& spTypeName,

@@ -482,7 +482,7 @@ CInputServices::CleanPointerElementObject(_In_ CDependencyObject *pObject)
 _Check_return_ HRESULT
 CInputServices::ProcessPointerExitedEventByPointerEnteredElementStateChange(
     _In_ CDependencyObject* pElementDO,
-    _In_opt_ std::shared_ptr<CPointerState> pointerState)
+    _In_ std::shared_ptr<CPointerState> pointerState)
 {
     HRESULT hr = S_OK;
     const CRootVisual *pRootVisual = NULL;
@@ -3355,7 +3355,7 @@ CInputServices::InitializeDirectManipulationContainer(
     IPALDirectManipulationService* pNewDirectManipulationService = NULL;
     IPALDirectManipulationService* pDirectManipulationService = NULL;
 
-    ASSERT(CanDMContainerInitialize(pDMContainer));
+    ASSERT(CInputServices::CanDMContainerInitialize(pDMContainer));
 
     IFCPTR(pDMContainer);
 
@@ -3678,7 +3678,7 @@ CInputServices::InitializeDirectManipulationContainers()
         {
             // Only keep containers that are inactive or do not have a valid IslandInputSite.
             auto pDMContainer = elem.lock();
-            return pDMContainer && (!pDMContainer->IsActive() || !pDMContainer->CanDMContainerInitialize());
+            return pDMContainer && (!pDMContainer->IsActive() || !CInputServices::CanDMContainerInitialize(pDMContainer));
         });
 
         // Process all the remaining active containers
@@ -6629,15 +6629,42 @@ CInputServices::InitializeDirectManipulationViewportValues(
         IFC(pViewport->GetClipContent(iClipContent, &pContent));
         if (pContent)
         {
-            IFC(pDirectManipulationService->GetSecondaryClipContentTransform(
-                pViewport,
-                pContent,
-                pContent->GetContentType(),
-                translationX,
-                translationY,
-                uncompressedZoomFactor,
-                zoomFactorX,
-                zoomFactorY));
+            if (pDirectManipulationService)
+            {
+                IFC(pDirectManipulationService->GetSecondaryClipContentTransform(
+                    pViewport,
+                    pContent,
+                    pContent->GetContentType(),
+                    translationX,
+                    translationY,
+                    uncompressedZoomFactor,
+                    zoomFactorX,
+                    zoomFactorY));
+            }
+            else
+            {
+                // Use provided values for instance for edge scrolling scenarios.
+                switch (pContent->GetContentType())
+                {
+                case XcpDMContentTypeTopLeftHeader:
+                    translationX = 0.0f;
+                    translationY = 0.0f;
+                    break;
+                case XcpDMContentTypeTopHeader:
+                    translationX = initialTranslationX;
+                    translationY = 0.0f;
+                    break;
+                case XcpDMContentTypeLeftHeader:
+                    translationX = 0.0f;
+                    translationY = initialTranslationY;
+                    break;
+                case XcpDMContentTypeCustom:
+                case XcpDMContentTypeDescendant:
+                    translationX = 0.0f;
+                    translationY = 0.0f;
+                    break;
+                }
+            }
 
             pContent->SetInitialTransformationValues(
                 translationX, translationY, uncompressedZoomFactor, zoomFactorX, zoomFactorY);

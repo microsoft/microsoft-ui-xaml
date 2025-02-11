@@ -8,11 +8,6 @@
 class CPlaneProjection final : public CProjection
 {
 public:
-    CPlaneProjection()
-        : CPlaneProjection(nullptr)
-    {
-    }
-
     ~CPlaneProjection() override {};
 
     DECLARE_CREATE(CPlaneProjection);

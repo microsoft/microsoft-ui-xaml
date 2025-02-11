@@ -1041,6 +1041,8 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::GetNode(
     _Out_ CNode** retval) const noexcept
 {
     CNode* pFollow;
+    pFollow = NULL;
+    pPrev = NULL;
 
     XCALL( KTraits::Hash( m_pOwner, key, &nHash ) );
     iBin = nHash%m_nBins;
@@ -1050,8 +1052,6 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::GetNode(
         XRETURN( NULL );
     }
 
-    pFollow = NULL;
-    pPrev = NULL;
     for( CNode* pNode = m_ppBins[iBin]; pNode != NULL; pNode = pNode->m_pNext )
     {
         if( (pNode->GetHash() == nHash) )

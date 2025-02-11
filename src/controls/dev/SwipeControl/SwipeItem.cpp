@@ -87,12 +87,23 @@ void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const w
 
 void SwipeItem::AttachEventHandlers(const winrt::AppBarButton& appBarButton)
 {
-    auto weakThis = get_weak();
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::SwipeItem>(*this))};
     appBarButton.Tapped({ [weakThis](auto& sender, auto& args) {
-        if (auto temp = weakThis.get()) temp->OnItemTapped(sender, args);
+        if(auto strongThis = weakThis.get())
+        {
+            SwipeItem* rawThis = winrt::get_self<SwipeItem>(strongThis);
+            rawThis->OnItemTapped(sender, args);
+        }
     } });
     appBarButton.PointerPressed({ [weakThis](auto& sender, auto& args) {
-        if (auto temp = weakThis.get()) temp->OnPointerPressed(sender, args);
+        if(auto strongThis = weakThis.get())
+        {
+            SwipeItem* rawThis = winrt::get_self<SwipeItem>(strongThis);
+            rawThis->OnPointerPressed(sender, args);
+        }
     } });
 }
 

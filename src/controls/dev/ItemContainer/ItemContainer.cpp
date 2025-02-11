@@ -18,7 +18,7 @@ bool ItemContainerTrace::s_IsVerboseDebugOutputEnabled{ false };
 // Keeps track of the one ItemContainer with the mouse pointer over, if any.
 // The OnPointerExited method does not get invoked when the ItemContainer is scrolled away from the mouse pointer.
 // This static instance allows to clear the mouse over state when any other ItemContainer gets the mouse over state.
-static thread_local winrt::weak_ref<ItemContainer> s_mousePointerOverInstance = nullptr;
+static thread_local winrt::weak_ref<winrt::ItemContainer> s_mousePointerOverInstance = nullptr;
 
 ItemContainer::ItemContainer()
 {
@@ -34,9 +34,9 @@ ItemContainer::~ItemContainer()
 {
     ITEMCONTAINER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    if (auto mousePointerOverInstance = s_mousePointerOverInstance.get())
+    if (auto strongMousePointerOverInstance = s_mousePointerOverInstance.get())
     {
-        if (mousePointerOverInstance.get() == this)
+        if (strongMousePointerOverInstance == static_cast<winrt::ItemContainer>(*this))
         {
             s_mousePointerOverInstance = nullptr;
         }
@@ -613,23 +613,31 @@ void ItemContainer::UpdateCheckboxState()
 
 void ItemContainer::UpdateMousePointerOverInstance(bool isPointerOver)
 {
-    auto mousePointerOverInstance = s_mousePointerOverInstance.get();
+    auto strongMousePointerOverInstance = s_mousePointerOverInstance.get();
 
     if (isPointerOver)
     {
-        if (mousePointerOverInstance == nullptr || mousePointerOverInstance.get() != this)
+        if (strongMousePointerOverInstance == nullptr || strongMousePointerOverInstance != static_cast<winrt::ItemContainer>(*this))
         {
-            if (mousePointerOverInstance != nullptr && mousePointerOverInstance->m_pointerInfo != nullptr)
+            if (strongMousePointerOverInstance != nullptr)
             {
-                mousePointerOverInstance->m_pointerInfo->ResetIsMousePointerOver();
+                ItemContainer* rawMousePointerOverInstance = winrt::get_self<ItemContainer>(strongMousePointerOverInstance);
+                if (rawMousePointerOverInstance->m_pointerInfo != nullptr)
+                {
+                    rawMousePointerOverInstance->m_pointerInfo->ResetIsMousePointerOver();
+                }
             }
 
-            s_mousePointerOverInstance = get_weak();
+            // Previously we used get_weak() here, but we found the potential to hit a 
+            // refcounting problem where in some scenarios the outer object gets
+            // an extra Release() in this process.
+            auto weakThis {winrt::make_weak(static_cast<winrt::ItemContainer>(*this))};
+            s_mousePointerOverInstance = weakThis;
         }
     }
     else
     {
-        if (mousePointerOverInstance != nullptr && mousePointerOverInstance.get() == this)
+        if (strongMousePointerOverInstance != nullptr && strongMousePointerOverInstance == static_cast<winrt::ItemContainer>(*this))
         {
             s_mousePointerOverInstance = nullptr;
         }

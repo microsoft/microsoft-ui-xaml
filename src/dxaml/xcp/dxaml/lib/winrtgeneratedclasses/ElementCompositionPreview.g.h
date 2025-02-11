@@ -46,7 +46,7 @@ namespace DirectUI
         IFACEMETHOD(GetScrollViewerManipulationPropertySet)(_In_ ABI::Microsoft::UI::Xaml::Controls::IScrollViewer* pScrollViewer, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionPropertySet** ppResult) override;
         IFACEMETHOD(SetImplicitShowAnimation)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
         IFACEMETHOD(SetImplicitHideAnimation)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
-        IFACEMETHOD(SetIsTranslationEnabled)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value) override;
+        IFACEMETHOD(SetIsTranslationEnabled)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value) override;
         IFACEMETHOD(GetPointerPositionPropertySet)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pTargetElement, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionPropertySet** ppResult) override;
 
         // Static events.
@@ -71,7 +71,7 @@ namespace DirectUI
          _Check_return_ HRESULT GetScrollViewerManipulationPropertySetImpl(_In_ ABI::Microsoft::UI::Xaml::Controls::IScrollViewer* pScrollViewer, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionPropertySet** ppResult); 
          _Check_return_ HRESULT SetImplicitShowAnimationImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation); 
          _Check_return_ HRESULT SetImplicitHideAnimationImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation); 
-         _Check_return_ HRESULT SetIsTranslationEnabledImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value); 
+         _Check_return_ HRESULT SetIsTranslationEnabledImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value); 
          _Check_return_ HRESULT GetPointerPositionPropertySetImpl(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pTargetElement, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionPropertySet** ppResult); 
     };
 }

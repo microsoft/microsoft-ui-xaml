@@ -60,7 +60,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_Height(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_Height, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_Height(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PanelEx::put_Height(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_Height, value));
 }
@@ -68,7 +68,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_HorizontalAlignment(_Out_ ABI::Microsoft::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_HorizontalAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_HorizontalAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::PanelEx::put_HorizontalAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_HorizontalAlignment, value));
 }
@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_Margin(_Out_ ABI::Microsoft::UI::Xaml::Thi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_Margin, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_Margin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::PanelEx::put_Margin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_Margin, value));
 }
@@ -84,7 +84,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_MaxHeight(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_MaxHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_MaxHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PanelEx::put_MaxHeight(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_MaxHeight, value));
 }
@@ -92,7 +92,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_MaxWidth(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_MaxWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_MaxWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PanelEx::put_MaxWidth(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_MaxWidth, value));
 }
@@ -100,7 +100,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_MinHeight(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_MinHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_MinHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PanelEx::put_MinHeight(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_MinHeight, value));
 }
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_MinWidth(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_MinWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_MinWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PanelEx::put_MinWidth(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_MinWidth, value));
 }
@@ -116,7 +116,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_VerticalAlignment(_Out_ ABI::Microsoft::UI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_VerticalAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_VerticalAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::PanelEx::put_VerticalAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_VerticalAlignment, value));
 }
@@ -124,7 +124,7 @@ IFACEMETHODIMP DirectUI::PanelEx::get_Width(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PanelEx_Width, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelEx::put_Width(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PanelEx::put_Width(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PanelEx_Width, value));
 }

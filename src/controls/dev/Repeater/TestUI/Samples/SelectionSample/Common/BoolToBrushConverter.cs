@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace MUXControlsTestApp.Samples.Selection
 {
-    public class BoolToBrushConverter : IValueConverter
+    public partial class BoolToBrushConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

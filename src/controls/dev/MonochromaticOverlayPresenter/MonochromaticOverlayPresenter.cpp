@@ -35,10 +35,15 @@ void MonochromaticOverlayPresenter::InvalidateBrush()
     if (!_needsBrushUpdate)
     {
         _needsBrushUpdate = true;
-        SharedHelpers::QueueCallbackForCompositionRendering([weakThis = get_weak(), this]() {
-            if (weakThis.get())
+        // Previously we used get_weak() here, but we found the potential to hit a 
+        // refcounting problem where in some scenarios the outer object gets
+        // an extra Release() in this process.
+        auto weakThis {winrt::make_weak(static_cast<winrt::MonochromaticOverlayPresenter>(*this))};
+        SharedHelpers::QueueCallbackForCompositionRendering([weakThis, this]() {
+            if (auto strongThis = weakThis.get())
             {
-                UpdateBrush();
+                MonochromaticOverlayPresenter* rawThis = winrt::get_self<MonochromaticOverlayPresenter>(strongThis);
+                rawThis->UpdateBrush();
             }
             _needsBrushUpdate = false;
         });

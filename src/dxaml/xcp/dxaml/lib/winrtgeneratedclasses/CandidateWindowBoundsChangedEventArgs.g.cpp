@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::CandidateWindowBoundsChangedEventArgs::get_Bounds(_Out_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::CandidateWindowBoundsChangedEventArgs::put_Bounds(_In_ ABI::Windows::Foundation::Rect value)
+_Check_return_ HRESULT DirectUI::CandidateWindowBoundsChangedEventArgs::put_Bounds(ABI::Windows::Foundation::Rect value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

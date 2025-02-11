@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_AcceptsReturn(_Out_ BOOLEAN* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_AcceptsReturn, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_AcceptsReturn(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_AcceptsReturn(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_AcceptsReturn, value));
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_CharacterCasing(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_CharacterCasing, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_CharacterCasing(_In_ ABI::Microsoft::UI::Xaml::Controls::CharacterCasing value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_CharacterCasing(ABI::Microsoft::UI::Xaml::Controls::CharacterCasing value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_CharacterCasing, value));
@@ -115,7 +115,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_DesiredCandidateWindowAlignment(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_DesiredCandidateWindowAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_DesiredCandidateWindowAlignment(_In_ ABI::Microsoft::UI::Xaml::Controls::CandidateWindowAlignment value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_DesiredCandidateWindowAlignment(ABI::Microsoft::UI::Xaml::Controls::CandidateWindowAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_DesiredCandidateWindowAlignment, value));
@@ -146,7 +146,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_HeaderPlacement(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_HeaderPlacement, value));
@@ -164,7 +164,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_HorizontalTextAlignment(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_HorizontalTextAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_HorizontalTextAlignment(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_HorizontalTextAlignment(ABI::Microsoft::UI::Xaml::TextAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_HorizontalTextAlignment, value));
@@ -182,7 +182,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_InputValidationKind(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_InputValidationKind, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_InputValidationKind(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_InputValidationKind(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_InputValidationKind, value));
@@ -191,7 +191,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_InputValidationMode(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_InputValidationMode, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_InputValidationMode(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_InputValidationMode(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_InputValidationMode, value));
@@ -200,7 +200,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_IsColorFontEnabled(_Out_ BOOLEAN*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_IsColorFontEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsColorFontEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsColorFontEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_IsColorFontEnabled, value));
@@ -209,7 +209,7 @@ _Check_return_ HRESULT DirectUI::TextBoxGenerated::get_IsCoreDesktopPopupMenuEna
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_IsCoreDesktopPopupMenuEnabled, pValue));
 }
-_Check_return_ HRESULT DirectUI::TextBoxGenerated::put_IsCoreDesktopPopupMenuEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::TextBoxGenerated::put_IsCoreDesktopPopupMenuEnabled(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_IsCoreDesktopPopupMenuEnabled, value));
 }
@@ -223,7 +223,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_IsDesktopPopupMenuEnabled(_Out_ B
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsDesktopPopupMenuEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsDesktopPopupMenuEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -237,7 +237,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_IsReadOnly(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_IsReadOnly, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsReadOnly(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsReadOnly(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_IsReadOnly, value));
@@ -246,7 +246,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_IsSpellCheckEnabled(_Out_ BOOLEAN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_IsSpellCheckEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsSpellCheckEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsSpellCheckEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_IsSpellCheckEnabled, value));
@@ -255,7 +255,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_IsTelemetryCollectionEnabled(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_IsTelemetryCollectionEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsTelemetryCollectionEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsTelemetryCollectionEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_IsTelemetryCollectionEnabled, value));
@@ -264,7 +264,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_IsTextPredictionEnabled(_Out_ BOO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_IsTextPredictionEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsTextPredictionEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_IsTextPredictionEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_IsTextPredictionEnabled, value));
@@ -273,7 +273,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_MaxLength(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_MaxLength, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_MaxLength(_In_ INT value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_MaxLength(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_MaxLength, value));
@@ -300,7 +300,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_PreventEditFocusLoss(_Out_ BOOLEA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_PreventEditFocusLoss, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_PreventEditFocusLoss(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_PreventEditFocusLoss(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_PreventEditFocusLoss, value));
@@ -309,7 +309,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_PreventKeyboardDisplayOnProgramma
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_PreventKeyboardDisplayOnProgrammaticFocus, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_PreventKeyboardDisplayOnProgrammaticFocus(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_PreventKeyboardDisplayOnProgrammaticFocus(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_PreventKeyboardDisplayOnProgrammaticFocus, value));
@@ -358,7 +358,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_SelectionLength(_Out_ INT* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_SelectionLength, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_SelectionLength(_In_ INT value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_SelectionLength(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_SelectionLength, value));
@@ -367,7 +367,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_SelectionStart(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_SelectionStart, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_SelectionStart(_In_ INT value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_SelectionStart(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_SelectionStart, value));
@@ -385,7 +385,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_TextAlignment(_Out_ ABI::Microsof
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_TextAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_TextAlignment(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_TextAlignment(ABI::Microsoft::UI::Xaml::TextAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_TextAlignment, value));
@@ -394,7 +394,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_TextReadingOrder(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_TextReadingOrder, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_TextReadingOrder(_In_ ABI::Microsoft::UI::Xaml::TextReadingOrder value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_TextReadingOrder(ABI::Microsoft::UI::Xaml::TextReadingOrder value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_TextReadingOrder, value));
@@ -403,7 +403,7 @@ IFACEMETHODIMP DirectUI::TextBoxGenerated::get_TextWrapping(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TextBox_TextWrapping, pValue));
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::put_TextWrapping(_In_ ABI::Microsoft::UI::Xaml::TextWrapping value)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::put_TextWrapping(ABI::Microsoft::UI::Xaml::TextWrapping value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TextBox_TextWrapping, value));
@@ -468,7 +468,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_BeforeTextChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_BeforeTextChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     BeforeTextChangingEventSourceType* pEventSource = nullptr;
@@ -523,7 +523,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_CandidateWindowBoundsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_CandidateWindowBoundsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CandidateWindowBoundsChangedEventSourceType* pEventSource = nullptr;
@@ -578,7 +578,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_ContextMenuOpening(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_ContextMenuOpening(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ContextMenuOpeningEventSourceType* pEventSource = nullptr;
@@ -633,7 +633,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_CopyingToClipboard(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_CopyingToClipboard(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CopyingToClipboardEventSourceType* pEventSource = nullptr;
@@ -688,7 +688,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_CuttingToClipboard(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_CuttingToClipboard(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CuttingToClipboardEventSourceType* pEventSource = nullptr;
@@ -744,7 +744,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_HasValidationErrorsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_HasValidationErrorsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HasValidationErrorsChangedEventSourceType* pEventSource = nullptr;
@@ -800,7 +800,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_Paste(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_Paste(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PasteEventSourceType* pEventSource = nullptr;
@@ -855,7 +855,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_SelectionChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_SelectionChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectionChangedEventSourceType* pEventSource = nullptr;
@@ -910,7 +910,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_SelectionChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_SelectionChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectionChangingEventSourceType* pEventSource = nullptr;
@@ -965,7 +965,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextChangedEventSourceType* pEventSource = nullptr;
@@ -1020,7 +1020,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextChangingEventSourceType* pEventSource = nullptr;
@@ -1075,7 +1075,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextCompositionChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextCompositionChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextCompositionChangedEventSourceType* pEventSource = nullptr;
@@ -1130,7 +1130,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextCompositionEnded(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextCompositionEnded(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextCompositionEndedEventSourceType* pEventSource = nullptr;
@@ -1185,7 +1185,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextCompositionStarted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_TextCompositionStarted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextCompositionStartedEventSourceType* pEventSource = nullptr;
@@ -1241,7 +1241,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_ValidationError(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::remove_ValidationError(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ValidationErrorEventSourceType* pEventSource = nullptr;
@@ -1354,7 +1354,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::GetRectFromCharacterIndex(_In_ INT charIndex, _In_ BOOLEAN trailingEdge, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::GetRectFromCharacterIndex(INT charIndex, BOOLEAN trailingEdge, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -1419,7 +1419,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxGenerated::Select(_In_ INT start, _In_ INT length)
+IFACEMETHODIMP DirectUI::TextBoxGenerated::Select(INT start, INT length)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

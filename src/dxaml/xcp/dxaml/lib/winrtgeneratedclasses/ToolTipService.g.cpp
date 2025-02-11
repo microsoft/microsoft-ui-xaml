@@ -39,7 +39,7 @@ _Check_return_ HRESULT DirectUI::ToolTipServiceFactory::GetPlacementStatic(_In_ 
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ToolTipService_Placement, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::ToolTipServiceFactory::SetPlacementStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value)
+_Check_return_ HRESULT DirectUI::ToolTipServiceFactory::SetPlacementStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::ToolTipService_Placement, value));
 }
@@ -56,7 +56,7 @@ IFACEMETHODIMP DirectUI::ToolTipServiceFactory::GetPlacement(_In_ ABI::Microsoft
     RRETURN(GetPlacementStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::ToolTipServiceFactory::SetPlacement(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value)
+IFACEMETHODIMP DirectUI::ToolTipServiceFactory::SetPlacement(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value)
 {
     RRETURN(SetPlacementStatic(pElement, value));
 }

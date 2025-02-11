@@ -117,7 +117,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
         }
     }
 
-    public class CustomItemsSourceViewWithUniqueIdMapping: CustomItemsSourceView, IKeyIndexMapping
+    public partial class CustomItemsSourceViewWithUniqueIdMapping : CustomItemsSourceView, IKeyIndexMapping
     {
         #region IKeyIndexMapping
 

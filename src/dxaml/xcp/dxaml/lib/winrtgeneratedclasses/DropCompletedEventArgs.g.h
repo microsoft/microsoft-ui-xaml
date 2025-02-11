@@ -36,7 +36,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DropResult)(_Out_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation* pValue) override;
-        _Check_return_ HRESULT put_DropResult(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value);
+        _Check_return_ HRESULT put_DropResult(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value);
 
         // Methods.
 

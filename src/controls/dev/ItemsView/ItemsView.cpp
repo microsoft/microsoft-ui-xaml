@@ -464,14 +464,19 @@ void ItemsView::RaiseSelectionChanged()
 
 void ItemsView::HookItemsSourceViewEvents()
 {
-    ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+    if (m_itemsSourceViewChangedRevoker)
+    {
+        ITEMSVIEW_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"ItemsView::OnSourceListChanged unhooked.");
 
-    m_itemsSourceViewChangedRevoker.revoke();
+        m_itemsSourceViewChangedRevoker.revoke();
+    }
 
     if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         if (auto const& itemsSourceView = itemsRepeater.ItemsSourceView())
         {
+            ITEMSVIEW_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"ItemsView::OnSourceListChanged hooked.");
+
             m_itemsSourceViewChangedRevoker = itemsSourceView.CollectionChanged(winrt::auto_revoke, { this, &ItemsView::OnSourceListChanged });
 
             // Make sure the default ItemTemplate is used when the ItemsSource is non-null and the ItemTemplate is null.
@@ -482,10 +487,10 @@ void ItemsView::HookItemsSourceViewEvents()
 
 void ItemsView::HookItemsRepeaterEvents()
 {
-    ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
-
-    if (auto itemsRepeater = m_itemsRepeater.get())
+    if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
+        ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
         m_itemsRepeaterElementPreparedRevoker = itemsRepeater.ElementPrepared(winrt::auto_revoke, { this, &ItemsView::OnItemsRepeaterElementPrepared });
         m_itemsRepeaterElementClearingRevoker = itemsRepeater.ElementClearing(winrt::auto_revoke, { this, &ItemsView::OnItemsRepeaterElementClearing });
         m_itemsRepeaterElementIndexChangedRevoker = itemsRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &ItemsView::OnItemsRepeaterElementIndexChanged });
@@ -498,17 +503,17 @@ void ItemsView::HookItemsRepeaterEvents()
 void ItemsView::UnhookItemsRepeaterEvents(
     bool isForDestructor)
 {
-    if (isForDestructor)
-    {
-        ITEMSVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    }
-    else
-    {
-        ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
-    }
-
     if (auto itemRepeater = isForDestructor ? m_itemsRepeater.safe_get() : m_itemsRepeater.get())
     {
+        if (isForDestructor)
+        {
+            ITEMSVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        }
+        else
+        {
+            ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+        }
+
         m_itemsRepeaterElementPreparedRevoker.revoke();
         m_itemsRepeaterElementClearingRevoker.revoke();
         m_itemsRepeaterElementIndexChangedRevoker.revoke();
@@ -525,10 +530,10 @@ void ItemsView::UnhookItemsRepeaterEvents(
 
 void ItemsView::HookScrollViewEvents()
 {
-    ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
-
     if (auto const& scrollView = m_scrollView.get())
     {
+        ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
         m_scrollViewAnchorRequestedRevoker = scrollView.AnchorRequested(winrt::auto_revoke, { this, &ItemsView::OnScrollViewAnchorRequested });
         m_scrollViewBringingIntoViewRevoker = scrollView.BringingIntoView(winrt::auto_revoke, { this, &ItemsView::OnScrollViewBringingIntoView });
 #ifdef DBG
@@ -541,17 +546,17 @@ void ItemsView::HookScrollViewEvents()
 void ItemsView::UnhookScrollViewEvents(
     bool isForDestructor)
 {
-    if (isForDestructor)
-    {
-        ITEMSVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    }
-    else
-    {
-        ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
-    }
-
     if (auto scrollView = isForDestructor ? m_scrollView.safe_get() : m_scrollView.get())
     {
+        if (isForDestructor)
+        {
+            ITEMSVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        }
+        else
+        {
+            ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+        }
+
         m_scrollViewAnchorRequestedRevoker.revoke();
         m_scrollViewBringingIntoViewRevoker.revoke();
 #ifdef DBG
@@ -1368,36 +1373,63 @@ void ItemsView::OnSelectionModelSelectionChanged(
     const winrt::SelectionModel& selectionModel,
     const winrt::SelectionModelSelectionChangedEventArgs& args)
 {
-    ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
-
     // Unfortunately using an internal hook to see whether this notification orginated from a collection change or not.
     const bool selectionInvalidatedDueToCollectionChange =
         winrt::get_self<SelectionModel>(selectionModel)->SelectionInvalidatedDueToCollectionChange();
 
-    /*
-    Another option, besides a public API on SelectionModel, would have been to apply the changes
-    asynchronously like below. But that seems fragile compared to delaying the application until
-    the synchronous call to ItemsView::OnSourceListChanged that is about to occur.
-    DispatcherQueue().TryEnqueue(
-        winrt::DispatcherQueuePriority::Low,
-        winrt::DispatcherQueueHandler([weakThis{ get_weak() }]()
-        {
-            if (auto strongThis = weakThis.get())
-            {
-                strongThis->ApplySelectionModelSelectionChange();
-            }
-        }));
-    */
+    ITEMSVIEW_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"selectionInvalidatedDueToCollectionChange", selectionInvalidatedDueToCollectionChange);
 
     if (selectionInvalidatedDueToCollectionChange)
     {
-        // Delay the SelectionModel's selection changes until the upcoming ItemsView::OnSourceListChanged
-        // call because neither m_itemsRepeater's Children nor m_itemsRepeater's ItemsSourceView have been updated yet.
-        // ApplySelectionModelSelectionChange which uses both is thus delayed, but is still going to be called synchronously.
-        m_applySelectionChangeOnSourceListChanged = true;
+        // Delay the SelectionModel's selection changes in ApplySelectionModelSelectionChange until the upcoming ItemsView::OnSourceListChanged
+        // call or asynchronous ApplyDelayedSelectionModelSelectionChange call because neither m_itemsRepeater's Children nor m_itemsRepeater's
+        // ItemsSourceView may have been updated yet.
+        // In some scenarios, ItemsView::OnSourceListChanged is called before ItemsView::OnSelectionModelSelectionChanged - in those cases
+        // the asynchronous ApplyDelayedSelectionModelSelectionChange call is needed.
+        // In other scenarios, ItemsView::OnSourceListChanged is called after ItemsView::OnSelectionModelSelectionChanged - in those cases
+        // the asynchronous ApplyDelayedSelectionModelSelectionChange call is a no-op (because m_applySelectionChangeOnSourceListChanged is reset in ItemsView::OnSourceListChanged).
+        if (!m_applySelectionChangeOnSourceListChanged)
+        {
+            ITEMSVIEW_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"m_applySelectionChangeOnSourceListChanged set. ApplySelectionModelSelectionChange execution delayed.");
+
+            m_applySelectionChangeOnSourceListChanged = true;
+
+            auto weakThis{ winrt::make_weak(static_cast<winrt::ItemsView>(*this)) };
+
+            DispatcherQueue().TryEnqueue(
+                winrt::DispatcherQueuePriority::Low,
+                winrt::DispatcherQueueHandler([weakThis]()
+                {
+                    if (winrt::WindowsXamlManager::GetForCurrentThread() == nullptr)
+                    {
+                        // Exit early if Xaml core has already shut down.
+                        return;
+                    }
+
+                    if (auto strongThis = weakThis.get())
+                    {
+                        ItemsView* rawThis = winrt::get_self<ItemsView>(strongThis);
+                        rawThis->ApplyDelayedSelectionModelSelectionChange();
+                    }
+                }));
+        }
     }
     else
     {
+        ApplySelectionModelSelectionChange();
+    }
+}
+
+void ItemsView::ApplyDelayedSelectionModelSelectionChange()
+{
+    if (m_applySelectionChangeOnSourceListChanged)
+    {
+        ITEMSVIEW_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"m_applySelectionChangeOnSourceListChanged reset. ApplySelectionModelSelectionChange invoked.");
+
+        m_applySelectionChangeOnSourceListChanged = false;
+
+        // Finally apply the SelectionModel's changes notified in ItemsView::OnSelectionModelSelectionChanged
+        // now that both m_itemsRepeater's Children & m_itemsRepeater's ItemsSourceView are up-to-date.
         ApplySelectionModelSelectionChange();
     }
 }
@@ -1483,14 +1515,10 @@ void ItemsView::OnSourceListChanged(
     const winrt::IInspectable& dataSource,
     const winrt::NotifyCollectionChangedEventArgs& args)
 {
-    if (m_applySelectionChangeOnSourceListChanged)
-    {
-        m_applySelectionChangeOnSourceListChanged = false;
+    ITEMSVIEW_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"m_applySelectionChangeOnSourceListChanged", m_applySelectionChangeOnSourceListChanged);
 
-        // Finally apply the SelectionModel's changes notified in ItemsView::OnSelectionModelSelectionChanged
-        // now that both m_itemsRepeater's Children & m_itemsRepeater's ItemsSourceView are up-to-date.
-        ApplySelectionModelSelectionChange();
-    }
+    // Apply any potential selection changes that were delayed in the prior ItemsView::OnSelectionModelSelectionChanged call.
+    ApplyDelayedSelectionModelSelectionChange();
 
     // When the item count goes from 0 to strictly positive, the ItemTemplate property may
     // have to be set to a default template which includes an ItemContainer.
@@ -2231,7 +2259,11 @@ winrt::SelectionModel ItemsView::GetSelectionModel() const
 winrt::hstring ItemsView::DependencyPropertyToStringDbg(
     const winrt::IDependencyProperty& dependencyProperty)
 {
-    if (dependencyProperty == s_ItemsSourceProperty)
+    if (dependencyProperty == s_CurrentItemIndexProperty)
+    {
+        return L"CurrentItemIndex";
+    }
+    else if (dependencyProperty == s_ItemsSourceProperty)
     {
         return L"ItemsSource";
     }
@@ -2239,17 +2271,29 @@ winrt::hstring ItemsView::DependencyPropertyToStringDbg(
     {
         return L"ItemTemplate";
     }
+    else if (dependencyProperty == s_ItemTransitionProviderProperty)
+    {
+        return L"ItemTransitionProvider";
+    }
     else if (dependencyProperty == s_LayoutProperty)
     {
         return L"Layout";
+    }
+    else if (dependencyProperty == s_ScrollViewProperty)
+    {
+        return L"ScrollView";
+    }
+    else if (dependencyProperty == s_SelectedItemProperty)
+    {
+        return L"SelectedItem";
     }
     else if (dependencyProperty == s_SelectionModeProperty)
     {
         return L"SelectionMode";
     }
-    else if (dependencyProperty == s_ScrollViewProperty)
+    else if (dependencyProperty == s_VerticalScrollControllerProperty)
     {
-        return L"ScrollView";
+        return L"VerticalScrollController";
     }
     else
     {

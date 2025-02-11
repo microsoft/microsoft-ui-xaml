@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::ProcessKeyboardAcceleratorEventArgs::get_Handled(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ProcessKeyboardAcceleratorEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ProcessKeyboardAcceleratorEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -67,7 +67,7 @@ _Check_return_ HRESULT DirectUI::ProcessKeyboardAcceleratorEventArgs::get_Handle
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ProcessKeyboardAcceleratorEventArgs::put_HandledShouldNotImpedeTextInput(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ProcessKeyboardAcceleratorEventArgs::put_HandledShouldNotImpedeTextInput(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -84,7 +84,7 @@ IFACEMETHODIMP DirectUI::ProcessKeyboardAcceleratorEventArgs::get_Key(_Out_ ABI:
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ProcessKeyboardAcceleratorEventArgs::put_Key(_In_ ABI::Windows::System::VirtualKey value)
+_Check_return_ HRESULT DirectUI::ProcessKeyboardAcceleratorEventArgs::put_Key(ABI::Windows::System::VirtualKey value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -101,7 +101,7 @@ IFACEMETHODIMP DirectUI::ProcessKeyboardAcceleratorEventArgs::get_Modifiers(_Out
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ProcessKeyboardAcceleratorEventArgs::put_Modifiers(_In_ ABI::Windows::System::VirtualKeyModifiers value)
+_Check_return_ HRESULT DirectUI::ProcessKeyboardAcceleratorEventArgs::put_Modifiers(ABI::Windows::System::VirtualKeyModifiers value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

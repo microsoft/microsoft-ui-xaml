@@ -134,7 +134,7 @@ ItemCollection::IndexOf(
 IFACEMETHODIMP
 ItemCollection::SetAt(
     UINT index,
-    _In_opt_ IInspectable* item)
+    _In_ IInspectable* item)
 {
     HRESULT hr = S_OK;
 

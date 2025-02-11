@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutPresenterTemplateSettings::get_FlyoutContentM
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MenuFlyoutPresenterTemplateSettings_FlyoutContentMinWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::MenuFlyoutPresenterTemplateSettings::put_FlyoutContentMinWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::MenuFlyoutPresenterTemplateSettings::put_FlyoutContentMinWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MenuFlyoutPresenterTemplateSettings_FlyoutContentMinWidth, value));

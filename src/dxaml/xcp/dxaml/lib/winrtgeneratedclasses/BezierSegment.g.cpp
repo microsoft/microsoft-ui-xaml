@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::BezierSegment::get_Point1(_Out_ ABI::Windows::Foundatio
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BezierSegment_Point1, pValue));
 }
-IFACEMETHODIMP DirectUI::BezierSegment::put_Point1(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::BezierSegment::put_Point1(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BezierSegment_Point1, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::BezierSegment::get_Point2(_Out_ ABI::Windows::Foundatio
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BezierSegment_Point2, pValue));
 }
-IFACEMETHODIMP DirectUI::BezierSegment::put_Point2(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::BezierSegment::put_Point2(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BezierSegment_Point2, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::BezierSegment::get_Point3(_Out_ ABI::Windows::Foundatio
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BezierSegment_Point3, pValue));
 }
-IFACEMETHODIMP DirectUI::BezierSegment::put_Point3(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::BezierSegment::put_Point3(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BezierSegment_Point3, value));

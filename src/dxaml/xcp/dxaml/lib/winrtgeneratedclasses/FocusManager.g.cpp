@@ -45,7 +45,7 @@ HRESULT DirectUI::FocusManagerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outp
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::FocusManagerFactory::TryFocusAsync(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FocusState value, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::TryFocusAsync(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FocusState value, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -64,7 +64,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusAsync(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusAsync(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -82,7 +82,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusWithOptionsAsync(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusWithOptionsAsync(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -101,7 +101,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusWithOptions(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocusWithOptions(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -120,7 +120,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextElement(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextElement(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -174,7 +174,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextElementWithOptions(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextElementWithOptions(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -193,7 +193,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusableElement(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusableElement(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -211,7 +211,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusableElementWithHint(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusableElementWithHint(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -229,7 +229,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocus(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::TryMoveFocus(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -284,7 +284,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagement(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppResult)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagement(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -303,7 +303,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementWithHintRect(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ ABI::Windows::Foundation::Rect hintRect, _In_ ABI::Windows::Foundation::Rect exclusionRect, _Outptr_ IInspectable** ppResult)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementWithHintRect(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, ABI::Windows::Foundation::Rect hintRect, ABI::Windows::Foundation::Rect exclusionRect, _Outptr_ IInspectable** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -322,7 +322,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementWithClip(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ BOOLEAN ignoreClipping, _In_ BOOLEAN ignoreCone, _Outptr_ IInspectable** ppResult)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementWithClip(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, BOOLEAN ignoreClipping, BOOLEAN ignoreCone, _Outptr_ IInspectable** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -358,7 +358,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FocusManagerFactory::SetFocusedElementWithDirection(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FocusState focusState, _In_ BOOLEAN animateIfBringIntoView, _In_ BOOLEAN forceBringIntoView, _In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ BOOLEAN requestInputActivation, _Out_ BOOLEAN* pResult)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::SetFocusedElementWithDirection(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FocusState focusState, BOOLEAN animateIfBringIntoView, BOOLEAN forceBringIntoView, ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, BOOLEAN requestInputActivation, _Out_ BOOLEAN* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -8,6 +8,7 @@
 -->
   <PropertyGroup>
     <WindowsSDKArch Condition="'$(Platform)' == 'Win32' or '$(Platform)' == 'AnyCPU'">x86</WindowsSDKArch>
+    <WindowsSDKArch Condition="'$(Platform)' == 'arm64ec'">arm64</WindowsSDKArch>
     <WindowsSDKArch Condition="'$(WindowsSDKArch)' == ''">$(Platform)</WindowsSDKArch>
 
     <UseWindowsSdk Condition="'$(UseWindowsSdk)'=='' and '$(AdhocApp)'=='true'">false</UseWindowsSdk>

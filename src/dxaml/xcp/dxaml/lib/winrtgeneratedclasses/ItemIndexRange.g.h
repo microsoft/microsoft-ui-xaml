@@ -39,10 +39,10 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_FirstIndex)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_FirstIndex(_In_ INT value);
+        _Check_return_ HRESULT put_FirstIndex(INT value);
         IFACEMETHOD(get_LastIndex)(_Out_ INT* pValue) override;
         IFACEMETHOD(get_Length)(_Out_ UINT* pValue) override;
-        _Check_return_ HRESULT put_Length(_In_ UINT value);
+        _Check_return_ HRESULT put_Length(UINT value);
 
         // Events.
 
@@ -80,7 +80,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_ INT firstIndex, _In_ UINT length, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IItemIndexRange** ppInstance);
+        IFACEMETHOD(CreateInstance)(INT firstIndex, UINT length, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IItemIndexRange** ppInstance);
 
         // Static properties.
 
@@ -99,7 +99,7 @@ namespace DirectUI
         _Check_return_ HRESULT CheckActivationAllowed() override;
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ INT firstIndex, _In_ UINT length, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IItemIndexRange** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(INT firstIndex, UINT length, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IItemIndexRange** ppInstance);
 
         // Customized static properties.
 

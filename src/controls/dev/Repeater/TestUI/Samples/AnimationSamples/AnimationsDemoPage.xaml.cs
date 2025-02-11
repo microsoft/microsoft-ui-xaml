@@ -172,7 +172,7 @@ namespace MUXControlsTestApp.Samples
             };
         }
 
-        private class AnimationElementFactory : ElementFactory
+        private partial class AnimationElementFactory : ElementFactory
         {
             private DataTemplate _groupTemplate;
             private DataTemplate _recipeTemplate;

@@ -34,13 +34,13 @@ namespace DirectUI
         _Check_return_ HRESULT get_TitleImpl(_Out_ HSTRING* pValue) override;
         _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) override;
         IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_Activated)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_Closed)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_SizeChanged)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowSizeChangedEventArgs*> * pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_SizeChanged)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_SizeChanged)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_VisibilityChanged)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowVisibilityChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_VisibilityChanged)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_VisibilityChanged)(EventRegistrationToken tToken) override;
         _Check_return_ HRESULT ActivateImpl() override;
         _Check_return_ HRESULT CloseImpl() override;
 

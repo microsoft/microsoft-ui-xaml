@@ -6,7 +6,7 @@
 
 using namespace DirectUI;
 
-_Check_return_ HRESULT GeneralTransform::TransformPointImpl(_In_ wf::Point point, _Out_ wf::Point* pReturnValue)
+_Check_return_ HRESULT GeneralTransform::TransformPointImpl(wf::Point point, _Out_ wf::Point* pReturnValue)
 {
     HRESULT hr = S_OK;
     BOOLEAN success = FALSE;
@@ -48,7 +48,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-Transform::TransformBoundsCore(_In_ wf::Rect rect, _Out_ wf::Rect* pReturnValue)
+Transform::TransformBoundsCore(wf::Rect rect, _Out_ wf::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     XRECTF xrect = {};
@@ -73,7 +73,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-Transform::TryTransformCore(_In_ wf::Point inPoint, _Out_ wf::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue)
+Transform::TryTransformCore(wf::Point inPoint, _Out_ wf::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     XPOINTF xpoint = {};

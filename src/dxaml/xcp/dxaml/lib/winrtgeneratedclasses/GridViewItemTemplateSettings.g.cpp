@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::GridViewItemTemplateSettings::get_DragItemsCount(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GridViewItemTemplateSettings_DragItemsCount, pValue));
 }
-_Check_return_ HRESULT DirectUI::GridViewItemTemplateSettings::put_DragItemsCount(_In_ INT value)
+_Check_return_ HRESULT DirectUI::GridViewItemTemplateSettings::put_DragItemsCount(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GridViewItemTemplateSettings_DragItemsCount, value));

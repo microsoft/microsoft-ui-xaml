@@ -34,7 +34,7 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ContentIslandEnvironmentImpl(_Outptr_result_maybenull_ ixp::IContentIslandEnvironment** contentIslandEnvironment);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_CoordinateConverterImpl(_Outptr_ ixp::IContentCoordinateConverter** coordinateConverter);
 
-        _Check_return_ HRESULT STDMETHODCALLTYPE TryGetContentIslandImpl(_Outptr_result_maybenull_ ixp::IContentIsland** contentIsland);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_ContentIslandImpl(_Outptr_result_maybenull_ ixp::IContentIsland** contentIsland);
 
         _Check_return_ HRESULT GetChangedEventSourceNoRef(_Outptr_ ChangedEventSourceType** ppEventSource) override;
         _Check_return_ HRESULT GetInputActivationChangedEventSourceNoRef(_Outptr_ InputActivationChangedEventSourceType** ppEventSource) override;
@@ -56,7 +56,7 @@ namespace DirectUI
             _In_ DirectUI::DependencyObject* pElement,
             _In_ xaml::IXamlRoot* pXamlRoot);
 
-        _Check_return_ IFACEMETHOD(get_HostWindow)(_Out_ HWND* pValue) override;
+        _Check_return_ IFACEMETHOD(get_HostWindow)(HWND* pValue) override;
 
         _Check_return_ HRESULT GetContentDialogMetadata(_Outptr_ ContentDialogMetadata** ppContentDialogMetadata);
 

@@ -20,7 +20,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(SupportsKeyNavigationAction)(_In_ ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _Out_ BOOLEAN* pReturnValue) = 0;
-        IFACEMETHOD(GetTargetIndexFromNavigationAction)(_In_ UINT sourceIndex, _In_ ABI::Microsoft::UI::Xaml::Controls::ElementType sourceType, _In_ ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _In_ BOOLEAN allowWrap, _In_ UINT itemIndexHintForHeaderNavigation, _Out_ UINT* pComputedTargetIndex, _Out_ ABI::Microsoft::UI::Xaml::Controls::ElementType* pComputedTargetType, _Out_ BOOLEAN* pActionValidForSourceIndex) = 0;
+        IFACEMETHOD(SupportsKeyNavigationAction)(ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, _Out_ BOOLEAN* pReturnValue) = 0;
+        IFACEMETHOD(GetTargetIndexFromNavigationAction)(UINT sourceIndex, ABI::Microsoft::UI::Xaml::Controls::ElementType sourceType, ABI::Microsoft::UI::Xaml::Controls::KeyNavigationAction action, BOOLEAN allowWrap, UINT itemIndexHintForHeaderNavigation, _Out_ UINT* pComputedTargetIndex, _Out_ ABI::Microsoft::UI::Xaml::Controls::ElementType* pComputedTargetType, _Out_ BOOLEAN* pActionValidForSourceIndex) = 0;
     };
 }

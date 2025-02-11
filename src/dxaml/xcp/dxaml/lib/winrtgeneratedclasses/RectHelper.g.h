@@ -44,20 +44,20 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(FromCoordinatesAndDimensions)(_In_ FLOAT x, _In_ FLOAT y, _In_ FLOAT width, _In_ FLOAT height, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(FromPoints)(_In_ ABI::Windows::Foundation::Point point1, _In_ ABI::Windows::Foundation::Point point2, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(FromLocationAndSize)(_In_ ABI::Windows::Foundation::Point location, _In_ ABI::Windows::Foundation::Size size, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(GetIsEmpty)(_In_ ABI::Windows::Foundation::Rect target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(GetBottom)(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue) override;
-        IFACEMETHOD(GetLeft)(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue) override;
-        IFACEMETHOD(GetRight)(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue) override;
-        IFACEMETHOD(GetTop)(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue) override;
-        IFACEMETHOD(Contains)(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Point point, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(Equals)(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect value, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(Intersect)(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(UnionWithPoint)(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(UnionWithRect)(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(DipsRectToPhysicalRect)(_In_ ABI::Windows::Foundation::Rect dipsRect, _Out_ ABI::Windows::Foundation::Rect* pResult) override;
+        IFACEMETHOD(FromCoordinatesAndDimensions)(FLOAT x, FLOAT y, FLOAT width, FLOAT height, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(FromPoints)(ABI::Windows::Foundation::Point point1, ABI::Windows::Foundation::Point point2, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(FromLocationAndSize)(ABI::Windows::Foundation::Point location, ABI::Windows::Foundation::Size size, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(GetIsEmpty)(ABI::Windows::Foundation::Rect target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(GetBottom)(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue) override;
+        IFACEMETHOD(GetLeft)(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue) override;
+        IFACEMETHOD(GetRight)(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue) override;
+        IFACEMETHOD(GetTop)(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue) override;
+        IFACEMETHOD(Contains)(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Point point, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(Equals)(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect value, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(Intersect)(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(UnionWithPoint)(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(UnionWithRect)(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(DipsRectToPhysicalRect)(ABI::Windows::Foundation::Rect dipsRect, _Out_ ABI::Windows::Foundation::Rect* pResult) override;
 
         // Static events.
 
@@ -72,19 +72,19 @@ namespace DirectUI
          _Check_return_ HRESULT get_EmptyImpl(_Out_ ABI::Windows::Foundation::Rect* pValue); 
 
         // Customized static  methods.
-         _Check_return_ HRESULT FromCoordinatesAndDimensionsImpl(_In_ FLOAT x, _In_ FLOAT y, _In_ FLOAT width, _In_ FLOAT height, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
-         _Check_return_ HRESULT FromPointsImpl(_In_ ABI::Windows::Foundation::Point point1, _In_ ABI::Windows::Foundation::Point point2, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
-         _Check_return_ HRESULT FromLocationAndSizeImpl(_In_ ABI::Windows::Foundation::Point location, _In_ ABI::Windows::Foundation::Size size, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
-         _Check_return_ HRESULT GetIsEmptyImpl(_In_ ABI::Windows::Foundation::Rect target, _Out_ BOOLEAN* pValue); 
-         _Check_return_ HRESULT GetBottomImpl(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue); 
-         _Check_return_ HRESULT GetLeftImpl(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue); 
-         _Check_return_ HRESULT GetRightImpl(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue); 
-         _Check_return_ HRESULT GetTopImpl(_In_ ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue); 
-         _Check_return_ HRESULT ContainsImpl(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Point point, _Out_ BOOLEAN* pReturnValue); 
-         _Check_return_ HRESULT EqualsImpl(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect value, _Out_ BOOLEAN* pReturnValue); 
-         _Check_return_ HRESULT IntersectImpl(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
-         _Check_return_ HRESULT UnionWithPointImpl(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
-         _Check_return_ HRESULT UnionWithRectImpl(_In_ ABI::Windows::Foundation::Rect target, _In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
-         _Check_return_ HRESULT DipsRectToPhysicalRectImpl(_In_ ABI::Windows::Foundation::Rect dipsRect, _Out_ ABI::Windows::Foundation::Rect* pResult); 
+         _Check_return_ HRESULT FromCoordinatesAndDimensionsImpl(FLOAT x, FLOAT y, FLOAT width, FLOAT height, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
+         _Check_return_ HRESULT FromPointsImpl(ABI::Windows::Foundation::Point point1, ABI::Windows::Foundation::Point point2, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
+         _Check_return_ HRESULT FromLocationAndSizeImpl(ABI::Windows::Foundation::Point location, ABI::Windows::Foundation::Size size, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
+         _Check_return_ HRESULT GetIsEmptyImpl(ABI::Windows::Foundation::Rect target, _Out_ BOOLEAN* pValue); 
+         _Check_return_ HRESULT GetBottomImpl(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue); 
+         _Check_return_ HRESULT GetLeftImpl(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue); 
+         _Check_return_ HRESULT GetRightImpl(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue); 
+         _Check_return_ HRESULT GetTopImpl(ABI::Windows::Foundation::Rect target, _Out_ FLOAT* pValue); 
+         _Check_return_ HRESULT ContainsImpl(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Point point, _Out_ BOOLEAN* pReturnValue); 
+         _Check_return_ HRESULT EqualsImpl(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect value, _Out_ BOOLEAN* pReturnValue); 
+         _Check_return_ HRESULT IntersectImpl(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
+         _Check_return_ HRESULT UnionWithPointImpl(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
+         _Check_return_ HRESULT UnionWithRectImpl(ABI::Windows::Foundation::Rect target, ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue); 
+         _Check_return_ HRESULT DipsRectToPhysicalRectImpl(ABI::Windows::Foundation::Rect dipsRect, _Out_ ABI::Windows::Foundation::Rect* pResult); 
     };
 }

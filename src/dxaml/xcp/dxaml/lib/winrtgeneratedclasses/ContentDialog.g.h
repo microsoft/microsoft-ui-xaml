@@ -67,13 +67,13 @@ namespace DirectUI
         IFACEMETHOD(get_CloseButtonText)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_CloseButtonText)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_DefaultButton)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogButton* pValue) override;
-        IFACEMETHOD(put_DefaultButton)(_In_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogButton value) override;
+        IFACEMETHOD(put_DefaultButton)(ABI::Microsoft::UI::Xaml::Controls::ContentDialogButton value) override;
         IFACEMETHOD(get_FullSizeDesired)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_FullSizeDesired)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_FullSizeDesired)(BOOLEAN value) override;
         IFACEMETHOD(get_IsPrimaryButtonEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsPrimaryButtonEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsPrimaryButtonEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_IsSecondaryButtonEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsSecondaryButtonEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsSecondaryButtonEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_PrimaryButtonCommand)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Input::ICommand** ppValue) override;
         IFACEMETHOD(put_PrimaryButtonCommand)(_In_opt_ ABI::Microsoft::UI::Xaml::Input::ICommand* pValue) override;
         IFACEMETHOD(get_PrimaryButtonCommandParameter)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
@@ -98,28 +98,28 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetCloseButtonClickEventSourceNoRef(_Outptr_ CloseButtonClickEventSourceType** ppEventSource);
         IFACEMETHOD(add_CloseButtonClick)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogButtonClickEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_CloseButtonClick)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_CloseButtonClick)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetClosedEventSourceNoRef(_Outptr_ ClosedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Closed)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogClosedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Closed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetClosingEventSourceNoRef(_Outptr_ ClosingEventSourceType** ppEventSource);
         IFACEMETHOD(add_Closing)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogClosingEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Closing)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Closing)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetOpenedEventSourceNoRef(_Outptr_ OpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Opened)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogOpenedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Opened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Opened)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPrimaryButtonClickEventSourceNoRef(_Outptr_ PrimaryButtonClickEventSourceType** ppEventSource);
         IFACEMETHOD(add_PrimaryButtonClick)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogButtonClickEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PrimaryButtonClick)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PrimaryButtonClick)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetSecondaryButtonClickEventSourceNoRef(_Outptr_ SecondaryButtonClickEventSourceType** ppEventSource);
         IFACEMETHOD(add_SecondaryButtonClick)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ContentDialog*, ABI::Microsoft::UI::Xaml::Controls::ContentDialogButtonClickEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_SecondaryButtonClick)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_SecondaryButtonClick)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(Hide)() override;
         IFACEMETHOD(OnBackButtonPressed)(_Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(ShowAsync)(_Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult>** ppReturnValue) override;
-        IFACEMETHOD(ShowAsyncWithPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogPlacement placement, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult>** ppReturnValue) override;
+        IFACEMETHOD(ShowAsyncWithPlacement)(ABI::Microsoft::UI::Xaml::Controls::ContentDialogPlacement placement, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult>** ppReturnValue) override;
 
         IFACEMETHOD(OnApplyTemplate)() override;
 

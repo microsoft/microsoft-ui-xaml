@@ -56,8 +56,8 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(CreateStoryboard)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Windows::Foundation::Rect start, _In_ ABI::Windows::Foundation::Rect destination, _In_ ABI::Microsoft::UI::Xaml::TransitionTrigger transitionTrigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards, _Out_ ABI::Microsoft::UI::Xaml::TransitionParent* pParentForTransition) override;
-        IFACEMETHOD(ParticipatesInTransition)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Microsoft::UI::Xaml::TransitionTrigger transitonTrigger, _Out_ BOOLEAN* pResult) override;
+        IFACEMETHOD(CreateStoryboard)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Windows::Foundation::Rect start, ABI::Windows::Foundation::Rect destination, ABI::Microsoft::UI::Xaml::TransitionTrigger transitionTrigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards, _Out_ ABI::Microsoft::UI::Xaml::TransitionParent* pParentForTransition) override;
+        IFACEMETHOD(ParticipatesInTransition)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Microsoft::UI::Xaml::TransitionTrigger transitonTrigger, _Out_ BOOLEAN* pResult) override;
 
 
     protected:

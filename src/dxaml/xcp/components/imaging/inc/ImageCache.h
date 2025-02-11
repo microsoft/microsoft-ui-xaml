@@ -62,7 +62,7 @@ public:
     ImageCache(
         _In_ const xstring_ptr& strCacheKey,
         _In_ const xstring_ptr& strUri,
-        _In_ IPALUri* pAbsoluteUri,
+        _In_opt_ IPALUri* pAbsoluteUri,
         bool isSvg,
         _In_ CCoreServices* pCore,
         _In_ ImageTaskDispatcher* pDispatcher,

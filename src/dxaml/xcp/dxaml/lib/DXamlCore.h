@@ -574,7 +574,7 @@ namespace DirectUI
         BOOLEAN GetWantsRenderingEvent();
         bool GetWantsCompositionTargetRenderedEvent();
 
-        void SetPostTickCallback(_In_opt_ std::function<void()> callback);
+        void SetPostTickCallback(_In_ std::function<void()> callback);
 
         void OverrideTrimImageResourceDelay(bool enabled);
 

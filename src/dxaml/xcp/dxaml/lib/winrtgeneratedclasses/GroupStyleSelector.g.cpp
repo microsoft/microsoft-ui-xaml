@@ -50,7 +50,7 @@ HRESULT DirectUI::GroupStyleSelectorGenerated::QueryInterfaceImpl(_In_ REFIID ii
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::GroupStyleSelectorGenerated::SelectGroupStyle(_In_opt_ IInspectable* pGroup, _In_ UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue)
+IFACEMETHODIMP DirectUI::GroupStyleSelectorGenerated::SelectGroupStyle(_In_opt_ IInspectable* pGroup, UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Controls::IGroupStyleSelectorOverrides* pVirtuals = NULL;
@@ -72,7 +72,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DirectUI::GroupStyleSelectorGenerated::SelectGroupStyleCore(_In_opt_ IInspectable* pGroup, _In_ UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue)
+IFACEMETHODIMP DirectUI::GroupStyleSelectorGenerated::SelectGroupStyleCore(_In_opt_ IInspectable* pGroup, UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

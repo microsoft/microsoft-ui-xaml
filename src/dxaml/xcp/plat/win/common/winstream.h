@@ -7,19 +7,19 @@ class CWinDataStreamBuffer : public IPALDataStreamBuffer
 {
 public:
     static HRESULT Create(_Outptr_result_maybenull_ CWinDataStreamBuffer **ppWinBuffer);
-    static HRESULT Create(_In_ XBYTE fCreateMemoryStream, _In_ XUINT32 cbMaxBytes, _Outptr_result_maybenull_ CWinDataStreamBuffer **ppWinBuffer);
+    static HRESULT Create(_In_ XBYTE fCreateMemoryStream, XUINT32 cbMaxBytes, _Outptr_result_maybenull_ CWinDataStreamBuffer **ppWinBuffer);
     static HRESULT Create(_In_ XUINT32 cbBuffer,
                           _In_reads_opt_(cbBuffer) XUINT8* pBuffer,
                           _Outptr_result_maybenull_ CWinDataStreamBuffer **ppWinBuffer);
     static HRESULT CreateFromIPalMemory(_In_ IPALMemory *pPalMemory, _Outptr_  CWinDataStreamBuffer **ppWinBuffer);
 
     virtual _Check_return_ HRESULT Write(_In_reads_bytes_(cb) void const *pData,
-                                        _In_ XUINT32 cb,
-                                        _In_ XUINT32 cbOffset,
+                                        XUINT32 cb,
+                                        XUINT32 cbOffset,
                                         _In_opt_ IStream *pStream = NULL) = 0;
     virtual _Check_return_ HRESULT Read( _Out_writes_bytes_(cb) void* pv,
-                                        _In_ XUINT32 cbOffset,
-                                        _In_ XUINT32 cb,
+                                        XUINT32 cbOffset,
+                                        XUINT32 cb,
                                         _Out_opt_ XUINT32* pcbRead) = 0;
     virtual _Check_return_ HRESULT SetSize(XUINT32 cb) = 0;
 
@@ -160,12 +160,12 @@ public:
 
     // IStream is only used for IE to save double writting the buffer.
     _Check_return_ HRESULT Write(_In_reads_bytes_(cbLength) void const *pData,
-                                        _In_ XUINT32 cbLength,
-                                        _In_ XUINT32 cbOffset,
+                                        XUINT32 cbLength,
+                                        XUINT32 cbOffset,
                                         _In_opt_ IStream *pStream = NULL) override;
     _Check_return_ HRESULT Read(_Out_writes_bytes_(cbLength) void* pv,
-                                       _In_ XUINT32 cbOffset,
-                                       _In_ XUINT32 cbLength,
+                                       XUINT32 cbOffset,
+                                       XUINT32 cbLength,
                                        _Out_opt_ XUINT32* pcbRead) override;
     _Check_return_ HRESULT SetSize(XUINT32 cb) override;
 
@@ -182,7 +182,7 @@ private:
     _Check_return_ HRESULT CreateMediaMappedMemory(
                                     _In_ XUINT32 nOffset,
                                     _In_ XUINT32 bReadOnly,
-                                    _Out_ CMappedMemory **ppMappedMemory);
+                                    _Outptr_ CMappedMemory **ppMappedMemory);
     _Check_return_ HRESULT CopyViewData(
                                     _In_ CMappedMemory *pView,
                                     _In_ XUINT32 cbOffset,
@@ -225,7 +225,7 @@ class CWinBasicStreamBuffer final : public CWinDataStreamBuffer
 {
 public:
     static HRESULT Create(_Outptr_result_maybenull_ CWinBasicStreamBuffer **ppWinBuffer);
-    static HRESULT Create(_In_ XUINT32 cbMaxBytes, _Outptr_result_maybenull_ CWinBasicStreamBuffer **ppWinBuffer);
+    static HRESULT Create(XUINT32 cbMaxBytes, _Outptr_result_maybenull_ CWinBasicStreamBuffer **ppWinBuffer);
     static HRESULT Create(_In_ XUINT32 cbBuffer,
                           _In_reads_opt_(cbBuffer) XUINT8* pBuffer,
                           _Outptr_result_maybenull_ CWinBasicStreamBuffer **ppWinBuffer);
@@ -235,10 +235,10 @@ public:
     XUINT32 Release() override;
 
     _Check_return_ HRESULT Write(_In_reads_bytes_(cb) void const *pData,
-                                        _In_ XUINT32 cb,
-                                        _In_ XUINT32 cbOffset,
-                                        _In_ IStream *pStream = NULL) override;
-    _Check_return_ HRESULT Read(_Out_writes_bytes_(cb) void* pv, _In_ XUINT32 cbOffset, _In_ XUINT32 cb,  _Out_opt_ XUINT32* pcbRead) override;
+                                        XUINT32 cb,
+                                        XUINT32 cbOffset,
+                                        _In_opt_ IStream *pStream = NULL) override;
+    _Check_return_ HRESULT Read(_Out_writes_bytes_(cb) void* pv, XUINT32 cbOffset, XUINT32 cb, _Out_opt_ XUINT32* pcbRead) override;
     _Check_return_ HRESULT SetSize(XUINT32 cb) override;
 
     XUINT32 Length() override;

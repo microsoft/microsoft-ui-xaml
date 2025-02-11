@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_CheckBoxCornerRadiu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_CheckBoxCornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_CheckBoxCornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_CheckBoxCornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_CheckBoxCornerRadius, value));
@@ -190,7 +190,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_CheckMode(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_CheckMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_CheckMode(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ListViewItemPresenterCheckMode value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_CheckMode(ABI::Microsoft::UI::Xaml::Controls::Primitives::ListViewItemPresenterCheckMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_CheckMode, value));
@@ -217,7 +217,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_ContentMargin(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_ContentMargin, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ContentMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ContentMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_ContentMargin, value));
@@ -226,7 +226,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_DisabledOpacity(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_DisabledOpacity, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_DisabledOpacity(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_DisabledOpacity(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_DisabledOpacity, value));
@@ -253,7 +253,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_DragOpacity(_Out_ D
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_DragOpacity, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_DragOpacity(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_DragOpacity(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_DragOpacity, value));
@@ -286,7 +286,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_ListViewItemPresent
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ListViewItemPresenterHorizontalContentAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ListViewItemPresenterHorizontalContentAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     HRESULT hr = S_OK;
     
@@ -306,7 +306,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_ListViewItemPresent
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ListViewItemPresenterPadding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ListViewItemPresenterPadding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     HRESULT hr = S_OK;
     
@@ -326,7 +326,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_ListViewItemPresent
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ListViewItemPresenterVerticalContentAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ListViewItemPresenterVerticalContentAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     HRESULT hr = S_OK;
     
@@ -358,7 +358,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_PointerOverBackgrou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_PointerOverBackgroundMargin, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_PointerOverBackgroundMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_PointerOverBackgroundMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_PointerOverBackgroundMargin, value));
@@ -394,7 +394,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_ReorderHintOffset(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_ReorderHintOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ReorderHintOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_ReorderHintOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_ReorderHintOffset, value));
@@ -412,7 +412,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_RevealBackgroundSho
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_RevealBackgroundShowsAboveContent, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_RevealBackgroundShowsAboveContent(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_RevealBackgroundShowsAboveContent(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_RevealBackgroundShowsAboveContent, value));
@@ -430,7 +430,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_RevealBorderThickne
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_RevealBorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_RevealBorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_RevealBorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_RevealBorderThickness, value));
@@ -457,7 +457,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_SelectedBorderThick
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectedBorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectedBorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectedBorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectedBorderThickness, value));
@@ -538,7 +538,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_SelectionCheckMarkV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectionCheckMarkVisualEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectionCheckMarkVisualEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectionCheckMarkVisualEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectionCheckMarkVisualEnabled, value));
@@ -556,7 +556,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_SelectionIndicatorC
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorCornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectionIndicatorCornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectionIndicatorCornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorCornerRadius, value));
@@ -574,7 +574,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_SelectionIndicatorM
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectionIndicatorMode(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ListViewItemPresenterSelectionIndicatorMode value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectionIndicatorMode(ABI::Microsoft::UI::Xaml::Controls::Primitives::ListViewItemPresenterSelectionIndicatorMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorMode, value));
@@ -601,7 +601,7 @@ IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::get_SelectionIndicatorV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorVisualEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectionIndicatorVisualEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewItemPresenterGenerated::put_SelectionIndicatorVisualEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewItemPresenter_SelectionIndicatorVisualEnabled, value));

@@ -3208,7 +3208,6 @@ enum class KnownMethodIndex: UINT16
     Window_ReleaseGraphicsDeviceOnSuspend,
     Window_SetAtlasRequestCallback,
     Window_GetWindowContentBoundsForElement,
-    XamlRoot_TryGetContentIsland,
     CustomXamlResourceLoader_GetResource,
     Brush_StartAnimation,
     Brush_StopAnimation,

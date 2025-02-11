@@ -69,5 +69,5 @@ private:
 
     PropertyChanged_revoker m_InternalIsCheckedChangedRevoker{};
 
-    static thread_local std::unique_ptr<std::map<winrt::hstring, winrt::weak_ref<RadioMenuFlyoutItem>>> s_selectionMap;
+    static thread_local std::unique_ptr<std::map<winrt::hstring, winrt::weak_ref<winrt::RadioMenuFlyoutItem>>> s_selectionMap;
 };

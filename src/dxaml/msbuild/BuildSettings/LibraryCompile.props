@@ -50,6 +50,7 @@
       <FavorSizeOrSpeed Condition="'$(Configuration)'=='Release'">Size</FavorSizeOrSpeed>
       <Optimization Condition="'$(Platform)'=='Win32'">Full</Optimization>
       <Optimization Condition="'$(Platform)'=='x64'">Full</Optimization>
+      <Optimization Condition="'$(Platform)'=='arm64ec'">Full</Optimization>
       <Optimization Condition="'$(Configuration)'=='Debug' or '$(NoOptimization)'=='true'">Disabled</Optimization>
       <IntrinsicFunctions Condition="'$(Configuration)'!='Release'">true</IntrinsicFunctions>
 
@@ -70,9 +71,9 @@
       <AdditionalOptions Condition="'$(Configuration)'!='Debug'">%(AdditionalOptions) -DNDEBUG</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'=='Debug'">%(AdditionalOptions) -DDBG=1</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'!='Debug'">%(AdditionalOptions) -d1nodatetime</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalOptions) -homeparams</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64' or '$(Configuration)|$(Platform)'=='Debug|arm64ec'">%(AdditionalOptions) -homeparams</AdditionalOptions>
       <AdditionalOptions Condition="'$(Platform)'=='Win32'">%(AdditionalOptions) -arch:IA32 -d2VolatileMetadata -DBUILD_UMS_ENABLED=0 -DBUILD_WOW64_ENABLED=0 -DFPO=0</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Platform)'=='x64'">%(AdditionalOptions) -D@@@=1 -I@@@ -DAMD64 -D_AMD64_ -D_WIN64 -d2guardcfgdispatch</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Platform)'=='x64' or '$(Platform)'=='arm64ec'">%(AdditionalOptions) -D@@@=1 -I@@@ -DAMD64 -D_AMD64_ -D_WIN64 -d2guardcfgdispatch</AdditionalOptions>
 
       <ShowIncludes Condition="'$(USE_SHOWINCLUDES)' != ''">true</ShowIncludes>
       <!-- $TODO: We only seem to specify -Gz for x32 (not amd64).  Figure out if this is correct -->

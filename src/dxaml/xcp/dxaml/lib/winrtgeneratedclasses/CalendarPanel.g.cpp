@@ -49,7 +49,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_CacheLength(_Out_ D
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_CacheLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_CacheLength(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_CacheLength(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_CacheLength, value));
 }
@@ -57,7 +57,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_Cols(_Out_ INT* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_Cols, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_Cols(_In_ INT value)
+_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_Cols(INT value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_Cols, value));
 }
@@ -85,7 +85,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_ItemMinHeight(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_ItemMinHeight, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_ItemMinHeight(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_ItemMinHeight(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_ItemMinHeight, value));
 }
@@ -93,7 +93,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_ItemMinWidth(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_ItemMinWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_ItemMinWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_ItemMinWidth(DOUBLE value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_ItemMinWidth, value));
 }
@@ -121,7 +121,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_Orientation(_Out_ A
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_Orientation, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_Orientation, value));
 }
@@ -129,7 +129,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_Rows(_Out_ INT* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_Rows, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_Rows(_In_ INT value)
+_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_Rows(INT value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_Rows, value));
 }
@@ -147,7 +147,7 @@ _Check_return_ HRESULT DirectUI::CalendarPanelGenerated::get_StartIndex(_Out_ IN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_StartIndex, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_StartIndex(_In_ INT value)
+_Check_return_ HRESULT DirectUI::CalendarPanelGenerated::put_StartIndex(INT value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarPanel_StartIndex, value));
 }

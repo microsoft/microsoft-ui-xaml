@@ -305,7 +305,7 @@ namespace Diagnostics {
     _Check_return_ HRESULT PropertyChainEvaluator::GetSourceIndex(
         _In_ const ctl::ComPtr<DirectUI::DependencyObject>& setter,
         _In_ BaseValueSource valueSource,
-        unsigned int* sourceIndex)
+        _Out_ unsigned int* sourceIndex)
     {
         // Ensure the sources vector has been created at this point.
         IFC_RETURN(EnsureSourcesVector());

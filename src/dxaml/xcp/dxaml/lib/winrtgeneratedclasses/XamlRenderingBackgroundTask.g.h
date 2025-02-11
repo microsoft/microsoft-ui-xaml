@@ -100,7 +100,7 @@ namespace DirectUI
 
         // Static methods.
         IFACEMETHOD(EnableStandaloneHosting)() override;
-        IFACEMETHOD(SetScalePercentage)(_In_ UINT percentage) override;
+        IFACEMETHOD(SetScalePercentage)(UINT percentage) override;
 
         // Static events.
 
@@ -121,6 +121,6 @@ namespace DirectUI
 
         // Customized static  methods.
          _Check_return_ HRESULT EnableStandaloneHostingImpl(); 
-         _Check_return_ HRESULT SetScalePercentageImpl(_In_ UINT percentage); 
+         _Check_return_ HRESULT SetScalePercentageImpl(UINT percentage); 
     };
 }

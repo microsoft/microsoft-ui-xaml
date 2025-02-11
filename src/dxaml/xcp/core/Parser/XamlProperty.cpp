@@ -255,7 +255,7 @@ bool XamlProperty::IsDirective() const
 //------------------------------------------------------------------------
 //
 _Check_return_ HRESULT XamlProperty::get_DeclaringType(
-    _Out_ std::shared_ptr<XamlType>& outDeclaringType)
+    _Inout_ std::shared_ptr<XamlType>& outDeclaringType)
 {
     // Get a reference to the cached declaring type
     if (!m_spDeclaringType.expired())
@@ -302,8 +302,8 @@ _Check_return_ HRESULT XamlProperty::get_DeclaringType(
 //
 //------------------------------------------------------------------------
 //
-_Check_return_ HRESULT XamlProperty::get_Type(_Out_ std::shared_ptr<XamlType>& outType)
-{
+_Check_return_ HRESULT XamlProperty::get_Type(_Inout_ std::shared_ptr<XamlType>& outType)
+{   
     // Get a reference to the cached type
     if (!m_spType.expired())
     {

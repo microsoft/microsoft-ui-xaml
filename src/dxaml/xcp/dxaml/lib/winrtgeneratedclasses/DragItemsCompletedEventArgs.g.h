@@ -37,7 +37,7 @@ namespace DirectUI
         IFACEMETHOD(get_Items)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVectorView<IInspectable*>** ppValue) override;
         _Check_return_ HRESULT put_Items(_In_opt_ ABI::Windows::Foundation::Collections::IVectorView<IInspectable*>* pValue);
         IFACEMETHOD(get_DropResult)(_Out_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation* pValue) override;
-        _Check_return_ HRESULT put_DropResult(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value);
+        _Check_return_ HRESULT put_DropResult(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value);
 
         // Methods.
 

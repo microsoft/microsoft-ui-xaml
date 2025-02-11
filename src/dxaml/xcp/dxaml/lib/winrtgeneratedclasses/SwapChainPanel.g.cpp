@@ -87,7 +87,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SwapChainPanelGenerated::remove_CompositionScaleChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SwapChainPanelGenerated::remove_CompositionScaleChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CompositionScaleChangedEventSourceType* pEventSource = nullptr;
@@ -108,7 +108,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::SwapChainPanelGenerated::CreateCoreIndependentInputSource(_In_ ABI::Microsoft::UI::Input::InputPointerSourceDeviceKinds deviceKinds, _Outptr_ ABI::Microsoft::UI::Input::IInputPointerSource** ppReturnValue)
+IFACEMETHODIMP DirectUI::SwapChainPanelGenerated::CreateCoreIndependentInputSource(ABI::Microsoft::UI::Input::InputPointerSourceDeviceKinds deviceKinds, _Outptr_ ABI::Microsoft::UI::Input::IInputPointerSource** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

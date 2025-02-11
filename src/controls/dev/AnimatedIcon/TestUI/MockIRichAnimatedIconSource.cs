@@ -8,7 +8,7 @@ using Controls_02_Hamburger = Microsoft.UI.Xaml.Controls.AnimatedVisuals.Animate
 
 namespace MUXControlsTestApp
 {
-    class MockIAnimatedIconSource2 : IAnimatedVisualSource2
+    partial class MockIAnimatedIconSource2 : IAnimatedVisualSource2
     {
         Dictionary<string, double> markers = new Dictionary<string, double>();
 

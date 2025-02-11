@@ -100,7 +100,7 @@ namespace DirectUI
         IFACEMETHOD(OnApplyTemplate)() override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size arrangeSize,
+            wf::Size arrangeSize,
             _Out_ wf::Size* returnValue) override;
 
         _Check_return_ HRESULT ChangeVisualState(_In_ bool useTransitions) override;

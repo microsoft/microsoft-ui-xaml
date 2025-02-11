@@ -53,13 +53,13 @@ namespace DirectUI
         IFACEMETHOD(Clear)() override;
 
 
-        IFACEMETHOD(Append)(_In_opt_  wf::DateTime item) override;
+        IFACEMETHOD(Append)(_In_ wf::DateTime item) override;
 
-        IFACEMETHOD(InsertAt)(UINT index, _In_opt_ wf::DateTime item) override;
+        IFACEMETHOD(InsertAt)(UINT index, _In_ wf::DateTime item) override;
 
-        IFACEMETHOD(SetAt)(UINT index, _In_opt_ wf::DateTime item) override;
+        IFACEMETHOD(SetAt)(UINT index, _In_ wf::DateTime item) override;
 
-        IFACEMETHOD(IndexOf)(_In_opt_ wf::DateTime value, _Out_ UINT *index, _Out_ BOOLEAN *found) override;
+        IFACEMETHOD(IndexOf)(_In_ wf::DateTime value, _Out_ UINT *index, _Out_ BOOLEAN *found) override;
 
     private:
         _Check_return_ HRESULT RaiseCollectionChanging(_In_ TrackableDateCollection_CollectionChanging action, _In_ wf::DateTime addingDate);

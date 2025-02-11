@@ -54,33 +54,33 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_DesiredFormat(_Out_ DirectUI::PrintDocumentFormat* pValue);
-        _Check_return_ HRESULT put_DesiredFormat(_In_ DirectUI::PrintDocumentFormat value);
+        _Check_return_ HRESULT put_DesiredFormat(DirectUI::PrintDocumentFormat value);
         IFACEMETHOD(get_DocumentSource)(_Outptr_result_maybenull_ ABI::Windows::Graphics::Printing::IPrintDocumentSource** ppValue) override;
         _Check_return_ HRESULT get_PrintedPageCount(_Out_ INT* pValue);
 
         // Events.
         _Check_return_ HRESULT GetAddPagesEventSourceNoRef(_Outptr_ AddPagesEventSourceType** ppEventSource);
         IFACEMETHOD(add_AddPages)(_In_ ABI::Microsoft::UI::Xaml::Printing::IAddPagesEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_AddPages)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_AddPages)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetBeginPrintEventSourceNoRef(_Outptr_ BeginPrintEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_BeginPrint(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_BeginPrint(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_BeginPrint(EventRegistrationToken token);
         _Check_return_ HRESULT GetEndPrintEventSourceNoRef(_Outptr_ EndPrintEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_EndPrint(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_EndPrint(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_EndPrint(EventRegistrationToken token);
         _Check_return_ HRESULT GetGetPreviewPageEventSourceNoRef(_Outptr_ GetPreviewPageEventSourceType** ppEventSource);
         IFACEMETHOD(add_GetPreviewPage)(_In_ ABI::Microsoft::UI::Xaml::Printing::IGetPreviewPageEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_GetPreviewPage)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_GetPreviewPage)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPaginateEventSourceNoRef(_Outptr_ PaginateEventSourceType** ppEventSource);
         IFACEMETHOD(add_Paginate)(_In_ ABI::Microsoft::UI::Xaml::Printing::IPaginateEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Paginate)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Paginate)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(AddPage)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pPageVisual) override;
         IFACEMETHOD(AddPagesComplete)() override;
         IFACEMETHOD(InvalidatePreview)() override;
-        IFACEMETHOD(SetPreviewPage)(_In_ INT pageNumber, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPageVisual) override;
-        IFACEMETHOD(SetPreviewPageCount)(_In_ INT count, _In_ ABI::Microsoft::UI::Xaml::Printing::PreviewPageCountType type) override;
+        IFACEMETHOD(SetPreviewPage)(INT pageNumber, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPageVisual) override;
+        IFACEMETHOD(SetPreviewPageCount)(INT count, ABI::Microsoft::UI::Xaml::Printing::PreviewPageCountType type) override;
 
 
     protected:

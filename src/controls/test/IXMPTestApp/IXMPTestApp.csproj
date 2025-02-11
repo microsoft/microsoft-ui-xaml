@@ -222,6 +222,7 @@
     <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
     <AppxDependencyPlatform Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">$(arch)</AppxDependencyPlatform>
     <AppxDependencyPlatform Condition="'$(Platform)' == 'Win32'">x86</AppxDependencyPlatform>
+    <AppxDependencyPlatform Condition="'$(Platform)' == 'ARM64EC'">x64</AppxDependencyPlatform>
     <AppxDependencyPlatform Condition="'$(AppxDependencyPlatform)' == ''">$(Platform)</AppxDependencyPlatform>
   </PropertyGroup>
   <ItemGroup Condition="'$(BuildingInsideVisualStudio)' != 'true'">

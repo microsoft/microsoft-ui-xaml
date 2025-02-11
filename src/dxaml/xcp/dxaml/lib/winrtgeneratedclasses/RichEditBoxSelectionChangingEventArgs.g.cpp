@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxSelectionChangingEventArgs::get_SelectionSta
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::RichEditBoxSelectionChangingEventArgs::put_SelectionStart(_In_ INT value)
+_Check_return_ HRESULT DirectUI::RichEditBoxSelectionChangingEventArgs::put_SelectionStart(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxSelectionChangingEventArgs::get_SelectionLen
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::RichEditBoxSelectionChangingEventArgs::put_SelectionLength(_In_ INT value)
+_Check_return_ HRESULT DirectUI::RichEditBoxSelectionChangingEventArgs::put_SelectionLength(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxSelectionChangingEventArgs::get_Cancel(_Out_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RichEditBoxSelectionChangingEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RichEditBoxSelectionChangingEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

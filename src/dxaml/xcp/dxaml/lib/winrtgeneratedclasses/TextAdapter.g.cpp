@@ -129,7 +129,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextAdapterGenerated::RangeFromPoint(_In_ ABI::Windows::Foundation::Point screenLocation, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue)
+IFACEMETHODIMP DirectUI::TextAdapterGenerated::RangeFromPoint(ABI::Windows::Foundation::Point screenLocation, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::ITextRangeProvider** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

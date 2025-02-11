@@ -40,7 +40,7 @@ namespace DirectUI
             _In_opt_ DependencyObject* pFocusedElement,
             _In_opt_ DependencyObject* pCandidateTabStopElement,
             _In_ BOOLEAN isBackward,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsTabStopOverridden) = 0;
 
         virtual _Check_return_ HRESULT FocusApplicationBar(
@@ -77,7 +77,7 @@ namespace DirectUI
             _In_opt_ AppBar* pBottomAppBar,
             _In_ AppBarTabPriority tabPriority,
             _In_ BOOLEAN startFromEnd,
-            _Outptr_ CDependencyObject **ppNewTabStop) = 0;
+            _Outptr_result_maybenull_ CDependencyObject **ppNewTabStop) = 0;
 
         virtual void SetXamlRoot(
             _In_ XamlRoot* xamlRoot) = 0;

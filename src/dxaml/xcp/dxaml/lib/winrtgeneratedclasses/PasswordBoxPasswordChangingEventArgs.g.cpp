@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxPasswordChangingEventArgs::get_IsContentChan
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::PasswordBoxPasswordChangingEventArgs::put_IsContentChanging(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::PasswordBoxPasswordChangingEventArgs::put_IsContentChanging(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

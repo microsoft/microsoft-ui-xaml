@@ -46,7 +46,7 @@ _Check_return_ HRESULT DirectUI::PrintDocumentGenerated::get_DesiredFormat(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PrintDocument_DesiredFormat, pValue));
 }
-_Check_return_ HRESULT DirectUI::PrintDocumentGenerated::put_DesiredFormat(_In_ DirectUI::PrintDocumentFormat value)
+_Check_return_ HRESULT DirectUI::PrintDocumentGenerated::put_DesiredFormat(DirectUI::PrintDocumentFormat value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PrintDocument_DesiredFormat, value));
 }
@@ -102,7 +102,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PrintDocumentGenerated::remove_AddPages(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PrintDocumentGenerated::remove_AddPages(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AddPagesEventSourceType* pEventSource = nullptr;
@@ -157,7 +157,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::PrintDocumentGenerated::remove_BeginPrint(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::PrintDocumentGenerated::remove_BeginPrint(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     BeginPrintEventSourceType* pEventSource = nullptr;
@@ -211,7 +211,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::PrintDocumentGenerated::remove_EndPrint(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::PrintDocumentGenerated::remove_EndPrint(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     EndPrintEventSourceType* pEventSource = nullptr;
@@ -265,7 +265,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PrintDocumentGenerated::remove_GetPreviewPage(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PrintDocumentGenerated::remove_GetPreviewPage(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     GetPreviewPageEventSourceType* pEventSource = nullptr;
@@ -320,7 +320,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PrintDocumentGenerated::remove_Paginate(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PrintDocumentGenerated::remove_Paginate(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PaginateEventSourceType* pEventSource = nullptr;
@@ -414,7 +414,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::PrintDocumentGenerated::SetPreviewPage(_In_ INT pageNumber, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPageVisual)
+IFACEMETHODIMP DirectUI::PrintDocumentGenerated::SetPreviewPage(INT pageNumber, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPageVisual)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -440,7 +440,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::PrintDocumentGenerated::SetPreviewPageCount(_In_ INT count, _In_ ABI::Microsoft::UI::Xaml::Printing::PreviewPageCountType type)
+IFACEMETHODIMP DirectUI::PrintDocumentGenerated::SetPreviewPageCount(INT count, ABI::Microsoft::UI::Xaml::Printing::PreviewPageCountType type)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -145,4 +145,8 @@
     <value>向前捲動索引標籤清單</value>
     <comment>Tooltip for the tab list scroll increase button.</comment>
   </data>
+  <data name="TabViewNewTabAddedNotification" xml:space="preserve">
+    <value>已新增新索引標籤。</value>
+    <comment>String read by Narrator when a new tab is added.</comment>
+  </data>
 </root>

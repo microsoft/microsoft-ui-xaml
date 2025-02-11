@@ -53,7 +53,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::get_DefaultDuration
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::put_DefaultDuration(_In_ ABI::Windows::Foundation::TimeSpan value)
+IFACEMETHODIMP DirectUI::ConnectedAnimationServiceGenerated::put_DefaultDuration(ABI::Windows::Foundation::TimeSpan value)
 {
     HRESULT hr = S_OK;
     

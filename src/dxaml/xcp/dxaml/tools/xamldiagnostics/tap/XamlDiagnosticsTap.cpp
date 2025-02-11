@@ -819,7 +819,7 @@ XamlDiagnosticsTap::GetHandleFromIInspectable(
 STDMETHODIMP
 XamlDiagnosticsTap::HitTest(
     _In_ RECT rect,
-    _Inout_ unsigned int* pCount,
+    _Out_ unsigned int* pCount,
     _Deref_post_opt_count_(*pCount) InstanceHandle** ppInstanceHandles)
 {
     // TODO: Add a test that ensures we can hit test other UI thread's.

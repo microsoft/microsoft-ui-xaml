@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::MatrixTransform::get_Matrix(_Out_ ABI::Microsoft::UI::X
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MatrixTransform_Matrix, pValue));
 }
-IFACEMETHODIMP DirectUI::MatrixTransform::put_Matrix(_In_ ABI::Microsoft::UI::Xaml::Media::Matrix value)
+IFACEMETHODIMP DirectUI::MatrixTransform::put_Matrix(ABI::Microsoft::UI::Xaml::Media::Matrix value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MatrixTransform_Matrix, value));

@@ -105,7 +105,7 @@ IFACEMETHODIMP DirectUI::NavigationEventArgs::get_SourcePageType(_Out_ ABI::Wind
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NavigationEventArgs::put_SourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value)
+_Check_return_ HRESULT DirectUI::NavigationEventArgs::put_SourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -122,7 +122,7 @@ IFACEMETHODIMP DirectUI::NavigationEventArgs::get_NavigationMode(_Out_ ABI::Micr
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NavigationEventArgs::put_NavigationMode(_In_ ABI::Microsoft::UI::Xaml::Navigation::NavigationMode value)
+_Check_return_ HRESULT DirectUI::NavigationEventArgs::put_NavigationMode(ABI::Microsoft::UI::Xaml::Navigation::NavigationMode value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

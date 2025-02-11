@@ -11,7 +11,7 @@ using System.ComponentModel;
 
 namespace MUXControlsTestApp.Samples.Selection
 {
-    class RepeaterItem : ContentControl
+    partial class RepeaterItem : ContentControl
     {
         public RepeaterItem()
         {

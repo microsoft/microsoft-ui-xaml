@@ -63,8 +63,8 @@ public:
 
     void ClearPCRenderData() override;
 
-    _Check_return_ HRESULT GetTitle(_Outptr_ HSTRING *output);
-    _Check_return_ HRESULT GetDescription(_Outptr_ HSTRING *output);
+    _Check_return_ HRESULT GetTitle(_Outptr_result_maybenull_ HSTRING *output);
+    _Check_return_ HRESULT GetDescription(_Outptr_result_maybenull_ HSTRING *output);
 
 private:
     _Check_return_ HRESULT UpdateCastingSource();

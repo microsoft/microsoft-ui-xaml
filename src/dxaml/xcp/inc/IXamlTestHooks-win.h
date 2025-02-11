@@ -107,7 +107,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     // private heap usage.
     IFACEMETHOD_(void, EmitHeapHandleExportEtwEvent)() = 0;
 
-    IFACEMETHOD_(void, SetPostTickCallback)(_In_opt_ std::function<void()> callback) = 0;
+    IFACEMETHOD_(void, SetPostTickCallback)(_In_ std::function<void()> callback) = 0;
 
     IFACEMETHOD(GetDependencyObjectPropertyValues)(
         _In_ xaml::IDependencyObject* pObject,
@@ -262,7 +262,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
         _Outptr_ xaml::IUIElement** lte) = 0;
     IFACEMETHOD(RemoveTestLTE)(_In_ xaml::IUIElement* lte) = 0;
     IFACEMETHOD(ClearTestLTEs)() = 0;
-    IFACEMETHOD_(void, SetPlayingSoundNodeCallback)(_In_opt_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback) = 0;
+    IFACEMETHOD_(void, SetPlayingSoundNodeCallback)(_In_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback) = 0;
 
     IFACEMETHOD_(BOOLEAN, IsTrackingEffectiveVisibility)(_In_ xaml::IUIElement* element) = 0;
     IFACEMETHOD_(BOOLEAN, IsKeepingVisible)(_In_ xaml::IUIElement* element) = 0;

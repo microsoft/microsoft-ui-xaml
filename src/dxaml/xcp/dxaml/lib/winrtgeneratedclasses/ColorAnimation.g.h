@@ -49,15 +49,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_By)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>** ppValue) override;
-        IFACEMETHOD(put_By)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue) override;
+        IFACEMETHOD(put_By)(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue) override;
         IFACEMETHOD(get_EasingFunction)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::Animation::IEasingFunctionBase** ppValue) override;
         IFACEMETHOD(put_EasingFunction)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::IEasingFunctionBase* pValue) override;
         IFACEMETHOD(get_EnableDependentAnimation)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_EnableDependentAnimation)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_EnableDependentAnimation)(BOOLEAN value) override;
         IFACEMETHOD(get_From)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>** ppValue) override;
-        IFACEMETHOD(put_From)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue) override;
+        IFACEMETHOD(put_From)(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue) override;
         IFACEMETHOD(get_To)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>** ppValue) override;
-        IFACEMETHOD(put_To)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue) override;
+        IFACEMETHOD(put_To)(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue) override;
 
         // Events.
 

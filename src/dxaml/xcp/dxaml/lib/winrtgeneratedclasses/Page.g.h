@@ -59,7 +59,7 @@ namespace DirectUI
         IFACEMETHOD(get_Frame)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IFrame** ppValue) override;
         _Check_return_ HRESULT put_Frame(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IFrame* pValue);
         IFACEMETHOD(get_NavigationCacheMode)(_Out_ ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode* pValue) override;
-        IFACEMETHOD(put_NavigationCacheMode)(_In_ ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode value) override;
+        IFACEMETHOD(put_NavigationCacheMode)(ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode value) override;
         IFACEMETHOD(get_TopAppBar)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IAppBar** ppValue) override;
         IFACEMETHOD(put_TopAppBar)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IAppBar* pValue) override;
 

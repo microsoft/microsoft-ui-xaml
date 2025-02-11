@@ -27,7 +27,7 @@ using WinRT;
 
 namespace MUXControlsTestApp
 {
-    public class EnumToStringConverter : IValueConverter
+    public partial class EnumToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -50,7 +50,7 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class UriToStringConverter : IValueConverter
+    public partial class UriToStringConverter : IValueConverter
     {
         // TextBlock can display Uris without conversion.
         public object Convert(object value, Type targetType, object parameter, string language)
@@ -125,7 +125,7 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class WebView2WithCursor : WebView2
+    public partial class WebView2WithCursor : WebView2
     {
         public Microsoft.UI.Input.InputCursor WrappedProtectedCursor => this.ProtectedCursor;
     }

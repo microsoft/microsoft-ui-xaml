@@ -16,22 +16,22 @@ using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
 Matrix3DFactory::FromElements(
-    _In_ DOUBLE m11,
-    _In_ DOUBLE m12,
-    _In_ DOUBLE m13,
-    _In_ DOUBLE m14,
-    _In_ DOUBLE m21,
-    _In_ DOUBLE m22,
-    _In_ DOUBLE m23,
-    _In_ DOUBLE m24,
-    _In_ DOUBLE m31,
-    _In_ DOUBLE m32,
-    _In_ DOUBLE m33,
-    _In_ DOUBLE m34,
-    _In_ DOUBLE offsetX,
-    _In_ DOUBLE offsetY,
-    _In_ DOUBLE offsetZ,
-    _In_ DOUBLE m44,
+    DOUBLE m11,
+    DOUBLE m12,
+    DOUBLE m13,
+    DOUBLE m14,
+    DOUBLE m21,
+    DOUBLE m22,
+    DOUBLE m23,
+    DOUBLE m24,
+    DOUBLE m31,
+    DOUBLE m32,
+    DOUBLE m33,
+    DOUBLE m34,
+    DOUBLE offsetX,
+    DOUBLE offsetY,
+    DOUBLE offsetZ,
+    DOUBLE m44,
     _Out_ xaml_media::Media3D::Matrix3D* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -69,7 +69,7 @@ Cleanup:
 
 IFACEMETHODIMP
 Matrix3DFactory::GetHasInverse(
-    _In_ xaml_media::Media3D::Matrix3D target,
+    xaml_media::Media3D::Matrix3D target,
     _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
@@ -127,7 +127,7 @@ Cleanup:
 
 IFACEMETHODIMP
 Matrix3DFactory::GetIsIdentity(
-    _In_ xaml_media::Media3D::Matrix3D target,
+    xaml_media::Media3D::Matrix3D target,
     _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
@@ -152,7 +152,7 @@ Cleanup:
 
 IFACEMETHODIMP
 Matrix3DFactory::Invert(
-    _In_ xaml_media::Media3D::Matrix3D target,
+    xaml_media::Media3D::Matrix3D target,
     _Out_ xaml_media::Media3D::Matrix3D* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -178,8 +178,8 @@ Cleanup:
 
 IFACEMETHODIMP
 Matrix3DFactory::Multiply(
-    _In_ xaml_media::Media3D::Matrix3D matrix1,
-    _In_ xaml_media::Media3D::Matrix3D matrix2,
+    xaml_media::Media3D::Matrix3D matrix1,
+    xaml_media::Media3D::Matrix3D matrix2,
     _Out_ xaml_media::Media3D::Matrix3D* pReturnValue)
 {
     HRESULT hr = S_OK;

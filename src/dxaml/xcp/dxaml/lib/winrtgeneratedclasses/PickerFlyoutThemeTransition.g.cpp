@@ -41,7 +41,7 @@ _Check_return_ HRESULT DirectUI::PickerFlyoutThemeTransitionGenerated::get_Offse
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PickerFlyoutThemeTransition_OffsetFromCenter, pValue));
 }
-_Check_return_ HRESULT DirectUI::PickerFlyoutThemeTransitionGenerated::put_OffsetFromCenter(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::PickerFlyoutThemeTransitionGenerated::put_OffsetFromCenter(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PickerFlyoutThemeTransition_OffsetFromCenter, value));
@@ -50,7 +50,7 @@ _Check_return_ HRESULT DirectUI::PickerFlyoutThemeTransitionGenerated::get_Opene
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PickerFlyoutThemeTransition_OpenedLength, pValue));
 }
-_Check_return_ HRESULT DirectUI::PickerFlyoutThemeTransitionGenerated::put_OpenedLength(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::PickerFlyoutThemeTransitionGenerated::put_OpenedLength(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PickerFlyoutThemeTransition_OpenedLength, value));

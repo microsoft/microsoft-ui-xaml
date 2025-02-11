@@ -50,13 +50,13 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Interval)(_Out_ ABI::Windows::Foundation::TimeSpan* pValue) override;
-        IFACEMETHOD(put_Interval)(_In_ ABI::Windows::Foundation::TimeSpan value) override;
+        IFACEMETHOD(put_Interval)(ABI::Windows::Foundation::TimeSpan value) override;
         IFACEMETHOD(get_IsEnabled)(_Out_ BOOLEAN* pValue) override;
 
         // Events.
         _Check_return_ HRESULT GetTickEventSourceNoRef(_Outptr_ TickEventSourceType** ppEventSource);
         IFACEMETHOD(add_Tick)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Tick)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Tick)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(Start)() override;

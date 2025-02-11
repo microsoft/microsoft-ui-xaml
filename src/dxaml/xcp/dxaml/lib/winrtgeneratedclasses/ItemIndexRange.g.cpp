@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::ItemIndexRangeGenerated::get_FirstIndex(_Out_ INT* pVal
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ItemIndexRangeGenerated::put_FirstIndex(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ItemIndexRangeGenerated::put_FirstIndex(INT value)
 {
     HRESULT hr = S_OK;
     
@@ -77,7 +77,7 @@ IFACEMETHODIMP DirectUI::ItemIndexRangeGenerated::get_Length(_Out_ UINT* pValue)
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ItemIndexRangeGenerated::put_Length(_In_ UINT value)
+_Check_return_ HRESULT DirectUI::ItemIndexRangeGenerated::put_Length(UINT value)
 {
     HRESULT hr = S_OK;
     
@@ -111,7 +111,7 @@ _Check_return_ HRESULT DirectUI::ItemIndexRangeFactory::CheckActivationAllowed()
 }
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::ItemIndexRangeFactory::CreateInstance(_In_ INT firstIndex, _In_ UINT length, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IItemIndexRange** ppInstance)
+IFACEMETHODIMP DirectUI::ItemIndexRangeFactory::CreateInstance(INT firstIndex, UINT length, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Data::IItemIndexRange** ppInstance)
 {
     HRESULT hr = S_OK;
     

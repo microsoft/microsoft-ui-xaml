@@ -213,6 +213,7 @@ private:
         const winrt::IInspectable& sender,
         const winrt::RoutedEventArgs& args);
 
+    void ApplyDelayedSelectionModelSelectionChange();
     void ApplySelectionModelSelectionChange();
     int GetAdjacentFocusableElementByDirection(
         const winrt::FocusNavigationDirection& focusNavigationDirection,

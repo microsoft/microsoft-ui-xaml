@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::RepeatButtonGenerated::get_Delay(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RepeatButton_Delay, pValue));
 }
-IFACEMETHODIMP DirectUI::RepeatButtonGenerated::put_Delay(_In_ INT value)
+IFACEMETHODIMP DirectUI::RepeatButtonGenerated::put_Delay(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RepeatButton_Delay, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::RepeatButtonGenerated::get_Interval(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RepeatButton_Interval, pValue));
 }
-IFACEMETHODIMP DirectUI::RepeatButtonGenerated::put_Interval(_In_ INT value)
+IFACEMETHODIMP DirectUI::RepeatButtonGenerated::put_Interval(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RepeatButton_Interval, value));

@@ -47,29 +47,29 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ContentHeight)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_ContentHeight(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_ContentHeight(DOUBLE value);
         IFACEMETHOD(get_EffectiveOverflowButtonVisibility)(_Out_ ABI::Microsoft::UI::Xaml::Visibility* pValue) override;
-        _Check_return_ HRESULT put_EffectiveOverflowButtonVisibility(_In_ ABI::Microsoft::UI::Xaml::Visibility value);
+        _Check_return_ HRESULT put_EffectiveOverflowButtonVisibility(ABI::Microsoft::UI::Xaml::Visibility value);
         IFACEMETHOD(get_NegativeOverflowContentHeight)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_NegativeOverflowContentHeight(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_NegativeOverflowContentHeight(DOUBLE value);
         IFACEMETHOD(get_OverflowContentClipRect)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentClipRect(_In_ ABI::Windows::Foundation::Rect value);
+        _Check_return_ HRESULT put_OverflowContentClipRect(ABI::Windows::Foundation::Rect value);
         IFACEMETHOD(get_OverflowContentCompactYTranslation)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentCompactYTranslation(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OverflowContentCompactYTranslation(DOUBLE value);
         IFACEMETHOD(get_OverflowContentHeight)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentHeight(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OverflowContentHeight(DOUBLE value);
         IFACEMETHOD(get_OverflowContentHiddenYTranslation)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentHiddenYTranslation(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OverflowContentHiddenYTranslation(DOUBLE value);
         IFACEMETHOD(get_OverflowContentHorizontalOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentHorizontalOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OverflowContentHorizontalOffset(DOUBLE value);
         IFACEMETHOD(get_OverflowContentMaxHeight)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentMaxHeight(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OverflowContentMaxHeight(DOUBLE value);
         IFACEMETHOD(get_OverflowContentMaxWidth)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentMaxWidth(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OverflowContentMaxWidth(DOUBLE value);
         IFACEMETHOD(get_OverflowContentMinimalYTranslation)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentMinimalYTranslation(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OverflowContentMinimalYTranslation(DOUBLE value);
         IFACEMETHOD(get_OverflowContentMinWidth)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_OverflowContentMinWidth(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OverflowContentMinWidth(DOUBLE value);
 
         // Events.
 

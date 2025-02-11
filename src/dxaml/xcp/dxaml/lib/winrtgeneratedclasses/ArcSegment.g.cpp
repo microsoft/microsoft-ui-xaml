@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ArcSegment::get_IsLargeArc(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ArcSegment_IsLargeArc, pValue));
 }
-IFACEMETHODIMP DirectUI::ArcSegment::put_IsLargeArc(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ArcSegment::put_IsLargeArc(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ArcSegment_IsLargeArc, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ArcSegment::get_Point(_Out_ ABI::Windows::Foundation::P
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ArcSegment_Point, pValue));
 }
-IFACEMETHODIMP DirectUI::ArcSegment::put_Point(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::ArcSegment::put_Point(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ArcSegment_Point, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::ArcSegment::get_RotationAngle(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ArcSegment_RotationAngle, pValue));
 }
-IFACEMETHODIMP DirectUI::ArcSegment::put_RotationAngle(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ArcSegment::put_RotationAngle(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ArcSegment_RotationAngle, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::ArcSegment::get_Size(_Out_ ABI::Windows::Foundation::Si
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ArcSegment_Size, pValue));
 }
-IFACEMETHODIMP DirectUI::ArcSegment::put_Size(_In_ ABI::Windows::Foundation::Size value)
+IFACEMETHODIMP DirectUI::ArcSegment::put_Size(ABI::Windows::Foundation::Size value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ArcSegment_Size, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::ArcSegment::get_SweepDirection(_Out_ ABI::Microsoft::UI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ArcSegment_SweepDirection, pValue));
 }
-IFACEMETHODIMP DirectUI::ArcSegment::put_SweepDirection(_In_ ABI::Microsoft::UI::Xaml::Media::SweepDirection value)
+IFACEMETHODIMP DirectUI::ArcSegment::put_SweepDirection(ABI::Microsoft::UI::Xaml::Media::SweepDirection value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ArcSegment_SweepDirection, value));

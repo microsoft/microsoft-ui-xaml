@@ -21,10 +21,10 @@ namespace DirectUI
 
             // FocusManager GetFirst/LastFocusableElementOverride
             _Check_return_ HRESULT GetFirstFocusableElementOverride(
-                _Outptr_ DependencyObject** ppFirstFocusable) override;
+                _Outptr_result_maybenull_ DependencyObject** ppFirstFocusable) override;
 
             _Check_return_ HRESULT GetLastFocusableElementOverride(
-                _Outptr_ DependencyObject** ppLastFocusable) override;
+                _Outptr_result_maybenull_ DependencyObject** ppLastFocusable) override;
 
             _Check_return_ HRESULT SetItemsOwner(_In_opt_ xaml_controls::IItemsControl* pItemsOwner);
 

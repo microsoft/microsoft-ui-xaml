@@ -37,7 +37,7 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_Direction)(_Out_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection* pValue) override;
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_InputDevice)(_Out_ ABI::Microsoft::UI::Xaml::Input::FocusInputDeviceKind* pValue) override;
 
         // Methods.

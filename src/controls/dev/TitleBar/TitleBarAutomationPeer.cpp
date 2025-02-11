@@ -27,7 +27,7 @@ winrt::hstring TitleBarAutomationPeer::GetNameCore()
     if (name.empty())
     {
         if (auto titleBar = Owner().try_as<winrt::TitleBar>())
-        {
+        {   
             name = titleBar.Title();
         }
     }

@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Progress)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_Progress)(_In_ INT value) override;
+        IFACEMETHOD(put_Progress)(INT value) override;
 
         // Methods.
 

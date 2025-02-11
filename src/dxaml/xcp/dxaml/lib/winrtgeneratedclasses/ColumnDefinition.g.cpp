@@ -49,7 +49,7 @@ IFACEMETHODIMP DirectUI::ColumnDefinition::get_MaxWidth(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColumnDefinition_MaxWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::ColumnDefinition::put_MaxWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ColumnDefinition::put_MaxWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColumnDefinition_MaxWidth, value));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::ColumnDefinition::get_MinWidth(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColumnDefinition_MinWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::ColumnDefinition::put_MinWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ColumnDefinition::put_MinWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColumnDefinition_MinWidth, value));
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::ColumnDefinition::get_Width(_Out_ ABI::Microsoft::UI::X
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColumnDefinition_Width, pValue));
 }
-IFACEMETHODIMP DirectUI::ColumnDefinition::put_Width(_In_ ABI::Microsoft::UI::Xaml::GridLength value)
+IFACEMETHODIMP DirectUI::ColumnDefinition::put_Width(ABI::Microsoft::UI::Xaml::GridLength value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColumnDefinition_Width, value));

@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Automation.Provider;
 
 namespace MUXControlsTestApp.Samples.Selection
 {
-    public class GroupedRepeaterItemAutomationPeer : FrameworkElementAutomationPeer, ISelectionItemProvider
+    public partial class GroupedRepeaterItemAutomationPeer : FrameworkElementAutomationPeer, ISelectionItemProvider
     {
         private GroupedRepeaterItem _owner;
         public GroupedRepeaterItemAutomationPeer(FrameworkElement owner) : base(owner)

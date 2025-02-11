@@ -15,6 +15,7 @@
     <RuntimeIdentifier Condition="'$(Platform)' == 'x86' or '$(Platform)' == 'Win32'">win-x86</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64EC'">win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
     <!-- PrivateMetaDataTests.cs and many InteractionTests use reflection, not AOT-compatible -->
     <PublishAot>false</PublishAot>
@@ -56,7 +57,7 @@
   </ItemGroup>
   <PropertyGroup>
     <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots@KitsRoot10)</UniversalCRTSdkDir>
-    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\</UniversalCRTSdkDir>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(WindowsSdkDir)</UniversalCRTSdkDir>
     <WindowsMetadataPath>$(UniversalCRTSdkDir)UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
     <AssemblyName>MUXControls.Test</AssemblyName>
     <DependenciesPath>$(USERPROFILE)\.nuget\packages</DependenciesPath>

@@ -31,7 +31,7 @@ namespace DirectUI
         IFACEMETHOD(Refresh)() = 0;
         IFACEMETHOD(NotifyOfItemsChanging)(_In_ ABI::Windows::Foundation::Collections::IVectorChangedEventArgs* pE) = 0;
         IFACEMETHOD(NotifyOfItemsChanged)(_In_ ABI::Windows::Foundation::Collections::IVectorChangedEventArgs* pE) = 0;
-        IFACEMETHOD(NotifyOfItemsReordered)(_In_ UINT count) = 0;
+        IFACEMETHOD(NotifyOfItemsReordered)(UINT count) = 0;
         IFACEMETHOD(GetContainersForIncrementalVisualization)(_Outptr_ DirectUI::IContainerContentChangingIterator** ppReturnValue) = 0;
     };
 }

@@ -97,151 +97,27 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
     for (unsigned int i = 0; i < data->GetSetterCount(); i++)
     {
         KnownPropertyIndex prop = KnownPropertyIndex::UnknownType_UnknownProperty;
-
-        if (data->IsSetterPropertyResolved(i))
-        {
-            prop = data->GetSetterPropertyIndex(i);
-        }
-        else
-        {
-            const xstring_ptr& propertyName = data->GetSetterPropertyString(i);
-            ASSERT(!propertyName.IsNullOrEmpty());
-
-            std::shared_ptr<XamlProperty> xamlProperty;
-            std::shared_ptr<XamlType> xamlType = data->GetSetterPropertyOwnerType(i);
-
-            if (xamlType)
-            {
-                IFC_RETURN(xamlType->GetDependencyProperty(propertyName, xamlProperty));
-            }
-
-            if (xamlProperty == nullptr)
-            {
-                IFC_RETURN(E_FAIL);
-            }
-
-            prop = xamlProperty->get_PropertyToken().GetHandle();
-        }
-
-        ASSERT(prop != KnownPropertyIndex::UnknownType_UnknownProperty);
-
         CValue val;
 
-        if (data->SetterHasContainerValue(i))
+        if (data->SetterHasTokenForSelf(i))
         {
-            val = std::move(data->GetSetterValueContainer(i));
-        }
-        else
-        {
-            std::shared_ptr<CDependencyObject> depObj;
-            std::shared_ptr<XamlQualifiedObject> xqObj;
-            bool resourceFound = false;
-
-            if (objectCreator == nullptr)
-                objectCreator.reset(new CustomWriterRuntimeObjectCreator(NameScopeRegistrationMode::RegisterEntries, context.get()));
-
-            if (data->SetterHasStaticResourceValue(i))
+            if (data->IsTokenForIgnoredConditionalObject(data->GetSetterValueToken(i)))
             {
-                // Get the object, and pass the parent CStyle and property index down.  XamlDiagnostics
-                // needs the original CStyle object and property index that this
-                // setter would have set when this function eventually leads to
-                // CStaticResourceExtension::LookupResourceNoRef
-                IFC_RETURN(objectCreator->LookupStaticResourceValue(data->GetSetterValueToken(i), m_style, prop, &depObj));
-                resourceFound = true;
+                // Nothing to do if any predicate associated with conditional setter evaluates to false
+                continue;
             }
-            else if (data->SetterHasThemeResourceValue(i))
+            else
             {
                 // Create the object
-                IFC_RETURN(objectCreator->CreateThemeResourceInstance(data->GetSetterValueToken(i), m_style, prop, &xqObj));
-                resourceFound = true;
-            }
-            else if (data->SetterHasObjectValue(i))
-            {
-                // Create the object
+                if (objectCreator == nullptr)
+                {
+                    objectCreator.reset(new CustomWriterRuntimeObjectCreator(NameScopeRegistrationMode::RegisterEntries, context.get()));
+                }
                 xref_ptr<CThemeResource> unused;
+                std::shared_ptr<CDependencyObject> depObj;
                 IFC_RETURN(objectCreator->CreateInstance(data->GetSetterValueToken(i), &depObj, &unused));
-            }
-            else if (data->SetterHasTokenForSelf(i))
-            {
-                // Create the object
-                xref_ptr<CThemeResource> unused;
-                IFC_RETURN(objectCreator->CreateInstance(data->GetSetterValueToken(i), &depObj, &unused));
-            }
 
-            if (depObj == nullptr && xqObj == nullptr && !resourceFound)
-            {
-                IFC_RETURN(E_FAIL);
-            }
-
-            // If the object is a custom resource, get its value
-            if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::CustomResource)
-            {
-                CustomResourceExtension* customResource = do_pointer_cast<CustomResourceExtension>(depObj.get());
-                ASSERT(customResource != nullptr);
-                IFC_RETURN(customResource->ProvideValueByPropertyIndex(KnownPropertyIndex::Setter_Value, val));
-            }
-            // Null
-            else if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::NullExtension)
-            {
-                val.SetNull();
-            }
-            // Binding
-            else if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::Binding)
-            {
-                // We support only limited, one-time bindings on style setters.
-                // To get the resolved value, create a temp setter, set the binding on
-                // its Value property, then get the resolved value from Setter.Value.
-                // This is equivalent to how the final resolved value is set on a
-                // non-optimized style setter, where it's set while the setter is
-                // unparented, and the setter is sealed when added to a collection.
-
-                CBinding* binding = do_pointer_cast<CBinding>(depObj.get());
-                ASSERT(binding != nullptr);
-
-                // Create the temp setter just once if necessary.
-                // We can reuse it if there are more bindings.
-                if (tempSetter == nullptr)
-                {
-                    CREATEPARAMETERS cp(m_style->GetContext());
-                    IFC_RETURN(CSetter::Create(tempSetter.ReleaseAndGetAddressOf(), &cp));
-                }
-
-                IFC_RETURN(binding->SetBinding(tempSetter.get(), KnownPropertyIndex::Setter_Value));
-                IFC_RETURN(tempSetter->GetValueByIndex(KnownPropertyIndex::Setter_Value, &val));
-            }
-            // ThemeResource
-            else if (xqObj)
-            {
-                depObj = xqObj->GetAndTransferDependencyObjectOwnership();
-                if (depObj)
-                {
-                    CThemeResourceExtension* pThemeResourceExtension = do_pointer_cast<CThemeResourceExtension>(depObj.get());
-                    xref_ptr<CThemeResource> pThemeResource = make_xref<CThemeResource>(pThemeResourceExtension);
-                    val.SetThemeResourceNoRef(pThemeResource.detach());
-                }
-                else
-                {
-                    IFC_RETURN(AddSetterInfo(prop, std::move(xqObj.get()->GetValue())));
-                    continue;
-                }
-            }
-            // If the object is an external reference, get its value
-            else if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::ExternalObjectReference)
-            {
-                CManagedObjectReference* ref = do_pointer_cast<CManagedObjectReference>(depObj.get());
-                ASSERT(ref != nullptr);
-                if (!ref->m_nativeValue.IsNull())
-                {
-                     IFC_RETURN(val.CopyConverted(ref->m_nativeValue));
-                }
-                else
-                {
-                    val.SetObjectAddRef(depObj.get());
-                }
-            }
-            // If the object is a setter, get info from it
-            else if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::Setter)
-            {
+                // Extract information
                 xref_ptr<CSetter> setter(do_pointer_cast<CSetter>(depObj.get()));
                 IFC_RETURN(setter->GetProperty(m_targetType, &prop));
                 IFC_RETURN(setter->GetValueByIndex(KnownPropertyIndex::Setter_Value, &val));
@@ -252,19 +128,139 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
                     m_mutableSetters.emplace_back(setter, m_properties.size());
                 }
             }
+        }
+        else
+        {
+            if (data->IsSetterPropertyResolved(i))
+            {
+                prop = data->GetSetterPropertyIndex(i);
+            }
             else
             {
-                if (depObj)
-                {
-                    auto dp = DirectUI::MetadataAPI::GetDependencyPropertyByIndex(prop);
-                    if (dp && dp->RequiresMultipleAssociationCheck() && !depObj->DoesAllowMultipleAssociation())
-                    {
-                        std::shared_ptr<ParserErrorReporter> parserErrorReporter;
-                        IFC_RETURN(context->GetSchemaContext()->GetErrorService(parserErrorReporter));
+                const xstring_ptr& propertyName = data->GetSetterPropertyString(i);
+                ASSERT(!propertyName.IsNullOrEmpty());
 
-                        auto lineInfo = objectCreator->GetLineInfoForToken(data->GetSetterValueToken(i));
-                        IFC_RETURN(parserErrorReporter->SetError(AG_E_PARSER2_NONSHAREABLE_OBJECT_NOT_ALLOWED_ON_STYLE_SETTER, lineInfo.LineNumber(), lineInfo.LinePosition()));
-                        IFC_RETURN(E_FAIL);
+                std::shared_ptr<XamlProperty> xamlProperty;
+                std::shared_ptr<XamlType> xamlType = data->GetSetterPropertyOwnerType(i);
+
+                if (xamlType)
+                {
+                    IFC_RETURN(xamlType->GetDependencyProperty(propertyName, xamlProperty));
+                }
+
+                if (xamlProperty == nullptr)
+                {
+                    IFC_RETURN(E_FAIL);
+                }
+
+                prop = xamlProperty->get_PropertyToken().GetHandle();
+            }
+
+            ASSERT(prop != KnownPropertyIndex::UnknownType_UnknownProperty);
+
+
+            if (data->SetterHasContainerValue(i))
+            {
+                val = std::move(data->GetSetterValueContainer(i));
+            }
+            else
+            {
+                std::shared_ptr<CDependencyObject> depObj;
+                std::shared_ptr<XamlQualifiedObject> xqObj;
+                bool resourceFound = false;
+
+                if (objectCreator == nullptr)
+                {
+                    objectCreator.reset(new CustomWriterRuntimeObjectCreator(NameScopeRegistrationMode::RegisterEntries, context.get()));
+                }
+
+                if (data->SetterHasStaticResourceValue(i))
+                {
+                    // Get the object, and pass the parent CStyle and property index down.  XamlDiagnostics
+                    // needs the original CStyle object and property index that this
+                    // setter would have set when this function eventually leads to
+                    // CStaticResourceExtension::LookupResourceNoRef
+                    IFC_RETURN(objectCreator->LookupStaticResourceValue(data->GetSetterValueToken(i), m_style, prop, &depObj));
+                    resourceFound = true;
+                }
+                else if (data->SetterHasThemeResourceValue(i))
+                {
+                    // Create the object
+                    IFC_RETURN(objectCreator->CreateThemeResourceInstance(data->GetSetterValueToken(i), m_style, prop, &xqObj));
+                    resourceFound = true;
+                }
+                else if (data->SetterHasObjectValue(i))
+                {
+                    // Create the object
+                    xref_ptr<CThemeResource> unused;
+                    IFC_RETURN(objectCreator->CreateInstance(data->GetSetterValueToken(i), &depObj, &unused));
+                }
+
+                if (depObj == nullptr && xqObj == nullptr && !resourceFound)
+                {
+                    IFC_RETURN(E_FAIL);
+                }
+
+                // If the object is a custom resource, get its value
+                if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::CustomResource)
+                {
+                    CustomResourceExtension* customResource = do_pointer_cast<CustomResourceExtension>(depObj.get());
+                    ASSERT(customResource != nullptr);
+                    IFC_RETURN(customResource->ProvideValueByPropertyIndex(KnownPropertyIndex::Setter_Value, val));
+                }
+                // Null
+                else if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::NullExtension)
+                {
+                    val.SetNull();
+                }
+                // Binding
+                else if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::Binding)
+                {
+                    // We support only limited, one-time bindings on style setters.
+                    // To get the resolved value, create a temp setter, set the binding on
+                    // its Value property, then get the resolved value from Setter.Value.
+                    // This is equivalent to how the final resolved value is set on a
+                    // non-optimized style setter, where it's set while the setter is
+                    // unparented, and the setter is sealed when added to a collection.
+
+                    CBinding* binding = do_pointer_cast<CBinding>(depObj.get());
+                    ASSERT(binding != nullptr);
+
+                    // Create the temp setter just once if necessary.
+                    // We can reuse it if there are more bindings.
+                    if (tempSetter == nullptr)
+                    {
+                        CREATEPARAMETERS cp(m_style->GetContext());
+                        IFC_RETURN(CSetter::Create(tempSetter.ReleaseAndGetAddressOf(), &cp));
+                    }
+
+                    IFC_RETURN(binding->SetBinding(tempSetter.get(), KnownPropertyIndex::Setter_Value));
+                    IFC_RETURN(tempSetter->GetValueByIndex(KnownPropertyIndex::Setter_Value, &val));
+                }
+                // ThemeResource
+                else if (xqObj)
+                {
+                    depObj = xqObj->GetAndTransferDependencyObjectOwnership();
+                    if (depObj)
+                    {
+                        CThemeResourceExtension* pThemeResourceExtension = do_pointer_cast<CThemeResourceExtension>(depObj.get());
+                        xref_ptr<CThemeResource> pThemeResource = make_xref<CThemeResource>(pThemeResourceExtension);
+                        val.SetThemeResourceNoRef(pThemeResource.detach());
+                    }
+                    else
+                    {
+                        IFC_RETURN(AddSetterInfo(prop, std::move(xqObj.get()->GetValue())));
+                        continue;
+                    }
+                }
+                // If the object is an external reference, get its value
+                else if (depObj && depObj->GetTypeIndex() == KnownTypeIndex::ExternalObjectReference)
+                {
+                    CManagedObjectReference* ref = do_pointer_cast<CManagedObjectReference>(depObj.get());
+                    ASSERT(ref != nullptr);
+                    if (!ref->m_nativeValue.IsNull())
+                    {
+                         IFC_RETURN(val.CopyConverted(ref->m_nativeValue));
                     }
                     else
                     {
@@ -273,7 +269,27 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
                 }
                 else
                 {
-                    val.SetNull();
+                    if (depObj)
+                    {
+                        auto dp = DirectUI::MetadataAPI::GetDependencyPropertyByIndex(prop);
+                        if (dp && dp->RequiresMultipleAssociationCheck() && !depObj->DoesAllowMultipleAssociation())
+                        {
+                            std::shared_ptr<ParserErrorReporter> parserErrorReporter;
+                            IFC_RETURN(context->GetSchemaContext()->GetErrorService(parserErrorReporter));
+
+                            auto lineInfo = objectCreator->GetLineInfoForToken(data->GetSetterValueToken(i));
+                            IFC_RETURN(parserErrorReporter->SetError(AG_E_PARSER2_NONSHAREABLE_OBJECT_NOT_ALLOWED_ON_STYLE_SETTER, lineInfo.LineNumber(), lineInfo.LinePosition()));
+                            IFC_RETURN(E_FAIL);
+                        }
+                        else
+                        {
+                            val.SetObjectAddRef(depObj.get());
+                        }
+                    }
+                    else
+                    {
+                        val.SetNull();
+                    }
                 }
             }
         }

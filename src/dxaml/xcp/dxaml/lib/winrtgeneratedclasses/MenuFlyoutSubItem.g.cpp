@@ -207,7 +207,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::OpenSubMenu(_In_ ABI::Windows::Foundation::Point position)
+IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::OpenSubMenu(ABI::Windows::Foundation::Point position)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -225,7 +225,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::PositionSubMenu(_In_ ABI::Windows::Foundation::Point position)
+IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::PositionSubMenu(ABI::Windows::Foundation::Point position)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -261,7 +261,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::RaiseAutomationPeerExpandCollapse(_In_ BOOLEAN isOpen)
+IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::RaiseAutomationPeerExpandCollapse(BOOLEAN isOpen)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -279,7 +279,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::SetSubMenuDirection(_In_ BOOLEAN isSubMenuDirectionUp)
+IFACEMETHODIMP DirectUI::MenuFlyoutSubItemGenerated::SetSubMenuDirection(BOOLEAN isSubMenuDirectionUp)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -5,13 +5,13 @@
 #include "Activators.g.h"
 #include "BringIntoViewRequestedEventArgs.h"
 
-_Check_return_ HRESULT CBringIntoViewRequestedEventArgs::get_TargetElement(_Outptr_ CUIElement** ppValue)
+_Check_return_ HRESULT CBringIntoViewRequestedEventArgs::get_TargetElement(_Outptr_result_maybenull_ CUIElement** ppValue)
 {
     m_targetElement.CopyTo(ppValue);
     return S_OK;
 }
 
-_Check_return_ HRESULT CBringIntoViewRequestedEventArgs::put_TargetElement(_In_ CUIElement* pValue)
+_Check_return_ HRESULT CBringIntoViewRequestedEventArgs::put_TargetElement(_In_opt_ CUIElement* pValue)
 {
     m_targetElement = pValue;
     // we need a targetElement to bring into view, so we fail if a null value is set.

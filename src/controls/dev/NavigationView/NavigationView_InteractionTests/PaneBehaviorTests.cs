@@ -1349,5 +1349,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 }
             }
         }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
+        public void VerifyIconBoxIsCorrectWidthWhenIconIsNotSet()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
+            {
+                var paneDisplayModeComboboxElement = FindElement.ByName("PaneDisplayModeCombobox");
+                Verify.IsNotNull(paneDisplayModeComboboxElement);
+                var panelDisplayModeComboBox = new ComboBox(paneDisplayModeComboboxElement);
+
+                var CompactPaneLengthComboBoxElement = FindElement.ByName("CompactPaneLengthComboBox");
+                Verify.IsNotNull(CompactPaneLengthComboBoxElement);
+                var compactpaneCheckbox = new ComboBox(CompactPaneLengthComboBoxElement);
+
+                var RemoveIconsButtonElement = FindElement.ByName("RemoveIconsButton");
+                Verify.IsNotNull(RemoveIconsButtonElement);
+                var removeIconsButton = new Button(RemoveIconsButtonElement);
+
+                var GetIconBoxWidthButtonElement = FindElement.ByName("GetIconBoxWidthButton");
+                Verify.IsNotNull(GetIconBoxWidthButtonElement);
+                var getIconBoxWidthButton = new Button(GetIconBoxWidthButtonElement);
+
+                var IconBoxWidthTextBlockElement = FindElement.ByName("IconBoxWidthTextBlock");
+                Verify.IsNotNull(IconBoxWidthTextBlockElement);
+                var iconBoxWidthTextBlock = new TextBlock(IconBoxWidthTextBlockElement);
+
+                Log.Comment("Test PaneDisplayMode=LeftCompact");
+                panelDisplayModeComboBox.SelectItemByName("LeftCompact");
+                Wait.ForIdle();
+
+                Log.Comment("Remove Icons");
+                removeIconsButton.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Verify IconBox width when Icon is not set");
+                getIconBoxWidthButton.Invoke();
+                var iconBoxWidth = iconBoxWidthTextBlock.GetText();
+                Verify.AreEqual("8", iconBoxWidth);
+                
+                Log.Comment("Change CompactPaneLength to 48");
+                compactpaneCheckbox.SelectItemByName("48");
+                Wait.ForIdle();
+
+                Log.Comment("Verify IconBox width when Icon is not set and CompactPaneLength is 48");
+                getIconBoxWidthButton.Invoke();
+                iconBoxWidth = iconBoxWidthTextBlock.GetText();
+                Verify.AreEqual("8", iconBoxWidth);
+
+            }
+        }
     }
 }

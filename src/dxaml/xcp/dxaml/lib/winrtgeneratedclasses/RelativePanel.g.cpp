@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::RelativePanel::get_BackgroundSizing(_Out_ ABI::Microsof
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RelativePanel_BackgroundSizing, pValue));
 }
-IFACEMETHODIMP DirectUI::RelativePanel::put_BackgroundSizing(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
+IFACEMETHODIMP DirectUI::RelativePanel::put_BackgroundSizing(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RelativePanel_BackgroundSizing, value));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::RelativePanel::get_BorderThickness(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RelativePanel_BorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::RelativePanel::put_BorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::RelativePanel::put_BorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RelativePanel_BorderThickness, value));
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::RelativePanel::get_CornerRadius(_Out_ ABI::Microsoft::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RelativePanel_CornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::RelativePanel::put_CornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::RelativePanel::put_CornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RelativePanel_CornerRadius, value));
@@ -82,7 +82,7 @@ IFACEMETHODIMP DirectUI::RelativePanel::get_Padding(_Out_ ABI::Microsoft::UI::Xa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RelativePanel_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::RelativePanel::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::RelativePanel::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RelativePanel_Padding, value));
@@ -425,7 +425,7 @@ _Check_return_ HRESULT DirectUI::RelativePanelFactory::GetAlignLeftWithPanelStat
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignLeftWithPanel, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignLeftWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignLeftWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignLeftWithPanel, value));
 }
@@ -442,7 +442,7 @@ IFACEMETHODIMP DirectUI::RelativePanelFactory::GetAlignLeftWithPanel(_In_ ABI::M
     RRETURN(GetAlignLeftWithPanelStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignLeftWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignLeftWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(SetAlignLeftWithPanelStatic(pElement, value));
 }
@@ -451,7 +451,7 @@ _Check_return_ HRESULT DirectUI::RelativePanelFactory::GetAlignTopWithPanelStati
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignTopWithPanel, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignTopWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignTopWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignTopWithPanel, value));
 }
@@ -468,7 +468,7 @@ IFACEMETHODIMP DirectUI::RelativePanelFactory::GetAlignTopWithPanel(_In_ ABI::Mi
     RRETURN(GetAlignTopWithPanelStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignTopWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignTopWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(SetAlignTopWithPanelStatic(pElement, value));
 }
@@ -477,7 +477,7 @@ _Check_return_ HRESULT DirectUI::RelativePanelFactory::GetAlignRightWithPanelSta
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignRightWithPanel, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignRightWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignRightWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignRightWithPanel, value));
 }
@@ -494,7 +494,7 @@ IFACEMETHODIMP DirectUI::RelativePanelFactory::GetAlignRightWithPanel(_In_ ABI::
     RRETURN(GetAlignRightWithPanelStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignRightWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignRightWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(SetAlignRightWithPanelStatic(pElement, value));
 }
@@ -503,7 +503,7 @@ _Check_return_ HRESULT DirectUI::RelativePanelFactory::GetAlignBottomWithPanelSt
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignBottomWithPanel, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignBottomWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignBottomWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignBottomWithPanel, value));
 }
@@ -520,7 +520,7 @@ IFACEMETHODIMP DirectUI::RelativePanelFactory::GetAlignBottomWithPanel(_In_ ABI:
     RRETURN(GetAlignBottomWithPanelStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignBottomWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignBottomWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(SetAlignBottomWithPanelStatic(pElement, value));
 }
@@ -529,7 +529,7 @@ _Check_return_ HRESULT DirectUI::RelativePanelFactory::GetAlignHorizontalCenterW
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignHorizontalCenterWithPanel, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignHorizontalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignHorizontalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignHorizontalCenterWithPanel, value));
 }
@@ -546,7 +546,7 @@ IFACEMETHODIMP DirectUI::RelativePanelFactory::GetAlignHorizontalCenterWithPanel
     RRETURN(GetAlignHorizontalCenterWithPanelStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignHorizontalCenterWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignHorizontalCenterWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(SetAlignHorizontalCenterWithPanelStatic(pElement, value));
 }
@@ -555,7 +555,7 @@ _Check_return_ HRESULT DirectUI::RelativePanelFactory::GetAlignVerticalCenterWit
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignVerticalCenterWithPanel, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignVerticalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::RelativePanelFactory::SetAlignVerticalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::RelativePanel_AlignVerticalCenterWithPanel, value));
 }
@@ -572,7 +572,7 @@ IFACEMETHODIMP DirectUI::RelativePanelFactory::GetAlignVerticalCenterWithPanel(_
     RRETURN(GetAlignVerticalCenterWithPanelStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignVerticalCenterWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RelativePanelFactory::SetAlignVerticalCenterWithPanel(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(SetAlignVerticalCenterWithPanelStatic(pElement, value));
 }

@@ -19,6 +19,8 @@ public:
     // Minor - Opposite direction
     float& Major(const winrt::Size& size);
     float& Minor(const winrt::Size& size);
+    float& Major(const winrt::Point& point);
+    float& Minor(const winrt::Point& point);
 
     float& MajorSize(const winrt::Rect& rect);
     float& MinorSize(const winrt::Rect& rect);

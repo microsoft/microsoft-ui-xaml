@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Bounds)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        _Check_return_ HRESULT put_Bounds(_In_ ABI::Windows::Foundation::Rect value);
+        _Check_return_ HRESULT put_Bounds(ABI::Windows::Foundation::Rect value);
 
         // Methods.
 

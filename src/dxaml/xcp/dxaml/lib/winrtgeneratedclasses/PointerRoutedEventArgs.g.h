@@ -42,7 +42,7 @@ namespace DirectUI
         IFACEMETHOD(get_KeyModifiers)(_Out_ ABI::Windows::System::VirtualKeyModifiers* pValue) override;
         _Check_return_ HRESULT get_GestureFollowing(_Out_ DirectUI::GestureModes* pValue);
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_IsGenerated)(_Out_ BOOLEAN* pValue) override;
 
         // Methods.

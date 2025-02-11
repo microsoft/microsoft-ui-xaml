@@ -56,21 +56,21 @@ namespace DirectUI
         IFACEMETHOD(get_Background)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_Background)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_BackgroundSizing)(_Out_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing* pValue) override;
-        IFACEMETHOD(put_BackgroundSizing)(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value) override;
+        IFACEMETHOD(put_BackgroundSizing)(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value) override;
         IFACEMETHOD(get_BackgroundTransition)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IBrushTransition** ppValue) override;
         IFACEMETHOD(put_BackgroundTransition)(_In_opt_ ABI::Microsoft::UI::Xaml::IBrushTransition* pValue) override;
         IFACEMETHOD(get_BorderBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_BorderBrush)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_BorderThickness)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_BorderThickness)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_BorderThickness)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_Child)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_Child)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_ChildTransitions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>** ppValue) override;
         IFACEMETHOD(put_ChildTransitions)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>* pValue) override;
         IFACEMETHOD(get_CornerRadius)(_Out_ ABI::Microsoft::UI::Xaml::CornerRadius* pValue) override;
-        IFACEMETHOD(put_CornerRadius)(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value) override;
+        IFACEMETHOD(put_CornerRadius)(ABI::Microsoft::UI::Xaml::CornerRadius value) override;
         IFACEMETHOD(get_Padding)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_Padding)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_Padding)(ABI::Microsoft::UI::Xaml::Thickness value) override;
 
         // Events.
 

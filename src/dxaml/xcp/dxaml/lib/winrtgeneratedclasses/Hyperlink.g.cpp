@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::get_ElementSoundMode(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hyperlink_ElementSoundMode, pValue));
 }
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_ElementSoundMode(_In_ ABI::Microsoft::UI::Xaml::ElementSoundMode value)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_ElementSoundMode(ABI::Microsoft::UI::Xaml::ElementSoundMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hyperlink_ElementSoundMode, value));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::get_IsTabStop(_Out_ BOOLEAN* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hyperlink_IsTabStop, pValue));
 }
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_IsTabStop(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_IsTabStop(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hyperlink_IsTabStop, value));
@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::get_TabIndex(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hyperlink_TabIndex, pValue));
 }
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_TabIndex(_In_ INT value)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_TabIndex(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hyperlink_TabIndex, value));
@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::get_UnderlineStyle(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hyperlink_UnderlineStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_UnderlineStyle(_In_ ABI::Microsoft::UI::Xaml::Documents::UnderlineStyle value)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_UnderlineStyle(ABI::Microsoft::UI::Xaml::Documents::UnderlineStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hyperlink_UnderlineStyle, value));
@@ -103,7 +103,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::get_XYFocusDownNavigationStrategy(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hyperlink_XYFocusDownNavigationStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_XYFocusDownNavigationStrategy(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_XYFocusDownNavigationStrategy(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hyperlink_XYFocusDownNavigationStrategy, value));
@@ -121,7 +121,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::get_XYFocusLeftNavigationStrategy(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hyperlink_XYFocusLeftNavigationStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_XYFocusLeftNavigationStrategy(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_XYFocusLeftNavigationStrategy(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hyperlink_XYFocusLeftNavigationStrategy, value));
@@ -139,7 +139,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::get_XYFocusRightNavigationStrategy(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hyperlink_XYFocusRightNavigationStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_XYFocusRightNavigationStrategy(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_XYFocusRightNavigationStrategy(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hyperlink_XYFocusRightNavigationStrategy, value));
@@ -157,7 +157,7 @@ IFACEMETHODIMP DirectUI::HyperlinkGenerated::get_XYFocusUpNavigationStrategy(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Hyperlink_XYFocusUpNavigationStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_XYFocusUpNavigationStrategy(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::put_XYFocusUpNavigationStrategy(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Hyperlink_XYFocusUpNavigationStrategy, value));
@@ -200,7 +200,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::remove_Click(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::remove_Click(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClickEventSourceType* pEventSource = nullptr;
@@ -255,7 +255,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::remove_GotFocus(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::remove_GotFocus(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     GotFocusEventSourceType* pEventSource = nullptr;
@@ -310,7 +310,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::remove_LostFocus(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::remove_LostFocus(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     LostFocusEventSourceType* pEventSource = nullptr;
@@ -331,7 +331,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::HyperlinkGenerated::Focus(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::HyperlinkGenerated::Focus(ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -41,6 +41,7 @@ namespace System.Xaml
         private const string x_PositionalParameters = "_PositionalParameters";
         private const string x_Shared = "Shared";
         private const string x_Subclass = "Subclass";
+        private const string x_SuppressXamlTrimWarnings = "SuppressXamlTrimWarnings";
         private const string x_SynchronousMode = "SynchronousMode";
         private const string x_TypeArguments = "TypeArguments";
         private const string x_Uid = "Uid";
@@ -166,6 +167,8 @@ namespace System.Xaml
             new Lazy<XamlDirective>(() => GetXamlDirective(x_Shared), true);
         private static Lazy<XamlDirective> s_subclass =
             new Lazy<XamlDirective>(() => GetXamlDirective(x_Subclass), true);
+        private static Lazy<XamlDirective> s_suppressXamlTrimWarnings =
+            new Lazy<XamlDirective>(() => GetXamlDirective(x_SuppressXamlTrimWarnings));
         private static Lazy<XamlDirective> s_synchronousMode =
             new Lazy<XamlDirective>(() => GetXamlDirective(x_SynchronousMode));
         private static Lazy<XamlDirective> s_typeArguments =
@@ -230,6 +233,7 @@ namespace System.Xaml
         public static XamlDirective PositionalParameters { get { return s_positionalParameters.Value; } }
         public static XamlDirective Shared { get { return s_shared.Value; } }
         public static XamlDirective Subclass { get { return s_subclass.Value; } }
+        public static XamlDirective SuppressXamlTrimWarnings { get { return s_suppressXamlTrimWarnings.Value; } }
         public static XamlDirective SynchronousMode { get { return s_synchronousMode.Value; } }
         public static XamlDirective TypeArguments { get { return s_typeArguments.Value; } }
         public static XamlDirective Uid { get { return s_uid.Value; } }

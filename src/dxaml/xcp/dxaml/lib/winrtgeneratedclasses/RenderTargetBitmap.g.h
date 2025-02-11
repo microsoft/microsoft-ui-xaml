@@ -57,7 +57,7 @@ namespace DirectUI
         // Methods.
         IFACEMETHOD(GetPixelsAsync)(_Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::Streams::IBuffer*>** ppReturnValue) override;
         IFACEMETHOD(RenderAsync)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Windows::Foundation::IAsyncAction** ppReturnValue) override;
-        IFACEMETHOD(RenderToSizeAsync)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT scaledWidth, _In_ INT scaledHeight, _Outptr_ ABI::Windows::Foundation::IAsyncAction** ppReturnValue) override;
+        IFACEMETHOD(RenderToSizeAsync)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT scaledWidth, INT scaledHeight, _Outptr_ ABI::Windows::Foundation::IAsyncAction** ppReturnValue) override;
 
 
     protected:

@@ -41,6 +41,5 @@
         <PackageContent Include="$(MSBuildThisFileDirectory)microsoft.ui.xaml.media.dxinterop.idl" PackageLocation="$(IncludesPackageLocation)"/>
         <PackageContent Include="$(OutDir)microsoft.ui.xaml.window.h" PackageLocation="$(IncludesPackageLocation)"/>
         <PackageContent Include="$(MSBuildThisFileDirectory)microsoft.ui.xaml.window.idl" PackageLocation="$(IncludesPackageLocation)"/>
-
     </ItemGroup>
 </Project>

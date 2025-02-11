@@ -49,12 +49,12 @@ namespace DirectUI
         IFACEMETHOD(MeasureOverride)(
             // Measurement constraints, a control cannot return a size
             // larger than the constraint.
-            _In_ wf::Size pAvailableSize,
+            wf::Size pAvailableSize,
             // The desired size of the control.
             _Out_ wf::Size* pDesired) override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size arrangeSize,
+            wf::Size arrangeSize,
             _Out_ wf::Size* pReturnValue)
             override;
 
@@ -78,7 +78,7 @@ namespace DirectUI
             _In_ DependencyObject* pCandidateTabStopElement,
             _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
             const bool isBackward,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsCandidateTabStopOverridden) override;
 
         _Check_return_ HRESULT ChangeVisualState(_In_ bool bUseTransitions) override;
@@ -285,7 +285,7 @@ namespace DirectUI
             _In_ wsy::VirtualKey originalKey,
             _Out_ bool* handled);
 
-        _Check_return_ HRESULT ForeachChildInPanel(_In_ CalendarPanel* pPanel, _In_ std::function<HRESULT(_In_ CalendarViewBaseItem*)>);
+        _Check_return_ HRESULT ForeachChildInPanel(_In_opt_ CalendarPanel* pPanel, _In_ std::function<HRESULT(_In_ CalendarViewBaseItem*)>);
 
         _Check_return_ HRESULT ForeachHost(_In_ std::function<HRESULT(_In_ CalendarViewGeneratorHost* pHost)>);
 

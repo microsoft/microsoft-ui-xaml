@@ -61,7 +61,7 @@ IFACEMETHODIMP DirectUI::AccessKeyManagerFactory::get_AreKeyTipsEnabled(_Out_ BO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::AccessKeyManagerFactory::put_AreKeyTipsEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AccessKeyManagerFactory::put_AreKeyTipsEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     

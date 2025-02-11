@@ -111,10 +111,10 @@ namespace DirectUI
         _Check_return_ HRESULT HeaderFromIndexImpl(_In_ INT index, _Outptr_ xaml::IDependencyObject** returnValue);
 
         _Check_return_ HRESULT GetFirstFocusableElementOverride(
-            _Outptr_ DependencyObject** ppFirstFocusable) override;
+            _Outptr_result_maybenull_ DependencyObject** ppFirstFocusable) override;
 
         _Check_return_ HRESULT GetLastFocusableElementOverride(
-            _Outptr_ DependencyObject** ppLastFocusable) override;
+            _Outptr_result_maybenull_ DependencyObject** ppLastFocusable) override;
 
         // Calls ChangeVisualState on all child SelectorItems (including items inside a GroupItem),
         // with optimizations for the virtualization provided by IOrientedVirtualizingPanel.
@@ -135,7 +135,7 @@ namespace DirectUI
         static _Check_return_ HRESULT GetItemsOwner(
             _In_ xaml::IDependencyObject* element,
             _In_ bool ignopreGrouping,
-            _Outptr_ xaml_controls::IItemsControl** returnValue);
+            _Outptr_result_maybenull_ xaml_controls::IItemsControl** returnValue);
 
         static _Check_return_ HRESULT ItemsControlFromItemContainer(
             _In_ xaml::IDependencyObject* container,
@@ -214,8 +214,8 @@ namespace DirectUI
         _Check_return_ IFACEMETHOD(SetupContainerContentChangingAfterPrepare)(
             _In_ xaml::IDependencyObject* pContainer,
             _In_ IInspectable* pItem,
-            _In_ INT itemIndex,
-            _In_ wf::Size measureSize) override { RRETURN(S_OK); }
+            INT itemIndex,
+            wf::Size measureSize) override { RRETURN(S_OK); }
 
         _Check_return_ IFACEMETHOD(RegisterWorkFromArgs)(
             _In_ xaml_controls::IContainerContentChangingEventArgs* pArgs) override { RRETURN(S_OK); }
@@ -251,8 +251,8 @@ namespace DirectUI
         _Check_return_ IFACEMETHOD(VirtualizationFinished)() override { return S_OK; }
 
         _Check_return_ IFACEMETHOD(OverrideContainerArrangeBounds)(
-            _In_ INT index,
-            _In_ wf::Rect suggestedBounds,
+            INT index,
+            wf::Rect suggestedBounds,
             _Out_ wf::Rect* newBounds) override
         {
             *newBounds = suggestedBounds;
@@ -401,7 +401,7 @@ namespace DirectUI
             const bool skipHeader,
             const bool skipItemsAndGroupHeaders,
             const bool skipFooter,
-            _Outptr_ DependencyObject** ppFocusable);
+            _Outptr_result_maybenull_ DependencyObject** ppFocusable);
 
         // Helper for determining if this ItemsControl uses the default control template made of a single CItemsPresenter child.
         _Check_return_ HRESULT UsesDefaultControlTemplate(
@@ -445,7 +445,7 @@ namespace DirectUI
             _In_opt_ DependencyObject* pCandidateTabStopElement,
             const bool isBackward,
             const bool didCycleFocusAtRootVisualScope,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsTabStopOverridden) override;
 
         // Prepares object's state.

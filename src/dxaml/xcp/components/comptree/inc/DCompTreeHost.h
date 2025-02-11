@@ -134,7 +134,7 @@ public:
     _Check_return_ HRESULT OfferResources();
     _Check_return_ HRESULT ReclaimResources(_Out_ bool *pDiscarded);
     OfferTracker* GetOfferTrackerNoRef() const { return m_offerTracker; }
-    void GetSurfaceFactoriesForCurrentThread(_Out_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector);
+    void GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector);
 
     _Check_return_ HRESULT NotifyUWPWindowLayoutComplete(CWindowRenderTarget &renderTarget);
 

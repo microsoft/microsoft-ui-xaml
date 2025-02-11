@@ -74,7 +74,7 @@ IFACEMETHODIMP <#
        }
    } else { #>
 _Check_return_ HRESULT <# } #>
-<#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.RemoveName #>(_In_ EventRegistrationToken tToken)
+<#= AsCppType(Model.DeclaringClass.GeneratedClassFullName) #>::<#= Model.RemoveName #>(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     <#= Model.EventSourceTypeName #>* pEventSource = nullptr;

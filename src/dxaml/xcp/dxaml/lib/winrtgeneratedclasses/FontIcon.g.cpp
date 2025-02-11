@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::FontIcon::get_FontSize(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIcon_FontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::FontIcon::put_FontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::FontIcon::put_FontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIcon_FontSize, value));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::FontIcon::get_FontStyle(_Out_ ABI::Windows::UI::Text::F
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIcon_FontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::FontIcon::put_FontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::FontIcon::put_FontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIcon_FontStyle, value));
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::FontIcon::get_FontWeight(_Out_ ABI::Windows::UI::Text::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIcon_FontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::FontIcon::put_FontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::FontIcon::put_FontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIcon_FontWeight, value));
@@ -91,7 +91,7 @@ IFACEMETHODIMP DirectUI::FontIcon::get_IsTextScaleFactorEnabled(_Out_ BOOLEAN* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIcon_IsTextScaleFactorEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::FontIcon::put_IsTextScaleFactorEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FontIcon::put_IsTextScaleFactorEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIcon_IsTextScaleFactorEnabled, value));
@@ -100,7 +100,7 @@ IFACEMETHODIMP DirectUI::FontIcon::get_MirroredWhenRightToLeft(_Out_ BOOLEAN* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FontIcon_MirroredWhenRightToLeft, pValue));
 }
-IFACEMETHODIMP DirectUI::FontIcon::put_MirroredWhenRightToLeft(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FontIcon::put_MirroredWhenRightToLeft(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FontIcon_MirroredWhenRightToLeft, value));

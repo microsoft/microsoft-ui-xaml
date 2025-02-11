@@ -47,9 +47,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DesiredDeceleration)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_DesiredDeceleration)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_DesiredDeceleration)(DOUBLE value) override;
         IFACEMETHOD(get_DesiredExpansion)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_DesiredExpansion)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_DesiredExpansion)(DOUBLE value) override;
 
         // Events.
 

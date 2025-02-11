@@ -60,7 +60,7 @@ _Check_return_ HRESULT XBFXamlMetadataProviderWrapper::SetXamlMetadataProvider(_
     RRETURN(S_OK);
 }
 
-IFACEMETHODIMP XBFXamlMetadataProviderWrapper::GetXamlType(_In_ wxaml_interop::TypeName type, _Outptr_ xaml_markup::IXamlType **value)
+IFACEMETHODIMP XBFXamlMetadataProviderWrapper::GetXamlType(wxaml_interop::TypeName type, _Outptr_ xaml_markup::IXamlType **value)
 {
     HRESULT hr = S_OK;
 

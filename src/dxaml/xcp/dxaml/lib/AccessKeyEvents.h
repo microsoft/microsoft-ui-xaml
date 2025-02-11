@@ -31,7 +31,7 @@ public:
         return S_OK;
     }
 
-    _Check_return_ HRESULT remove_IsActiveChanged(_In_ EventRegistrationToken token)
+    _Check_return_ HRESULT remove_IsActiveChanged(EventRegistrationToken token)
     {
         if (isActiveChangedEventSource == nullptr)
         {

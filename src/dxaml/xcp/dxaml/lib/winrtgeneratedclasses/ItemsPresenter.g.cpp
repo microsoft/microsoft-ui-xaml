@@ -83,7 +83,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_CanHorizontallyScroll(_Out
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::put_CanHorizontallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::put_CanHorizontallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -103,7 +103,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_CanVerticallyScroll(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::put_CanVerticallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::put_CanVerticallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -229,7 +229,7 @@ IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::get_Padding(_Out_ ABI::Microso
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsPresenter_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsPresenter_Padding, value));
@@ -322,7 +322,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -377,7 +377,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -398,7 +398,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::GetIrregularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::GetIrregularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -417,7 +417,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::GetRegularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::GetRegularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -508,7 +508,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _In_ BOOLEAN useAnimation, _In_ DOUBLE horizontalAlignmentRatio, _In_ DOUBLE verticalAlignmentRatio, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, BOOLEAN useAnimation, DOUBLE horizontalAlignmentRatio, DOUBLE verticalAlignmentRatio, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -598,7 +598,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::SetHorizontalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::SetHorizontalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -616,7 +616,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::SetVerticalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::ItemsPresenterGenerated::SetVerticalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

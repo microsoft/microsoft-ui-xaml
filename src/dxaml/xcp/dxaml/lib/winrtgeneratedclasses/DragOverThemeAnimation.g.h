@@ -49,11 +49,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Direction)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection* pValue) override;
-        IFACEMETHOD(put_Direction)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value) override;
+        IFACEMETHOD(put_Direction)(ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value) override;
         IFACEMETHOD(get_TargetName)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_TargetName)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_ToOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ToOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ToOffset)(DOUBLE value) override;
 
         // Events.
 

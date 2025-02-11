@@ -113,7 +113,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::VisualStateGroupGenerated::remove_CurrentStateChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::VisualStateGroupGenerated::remove_CurrentStateChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CurrentStateChangedEventSourceType* pEventSource = nullptr;
@@ -168,7 +168,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::VisualStateGroupGenerated::remove_CurrentStateChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::VisualStateGroupGenerated::remove_CurrentStateChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CurrentStateChangingEventSourceType* pEventSource = nullptr;

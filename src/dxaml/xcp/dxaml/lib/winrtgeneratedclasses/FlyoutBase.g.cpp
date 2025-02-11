@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_AllowFocusOnInteraction(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_AllowFocusOnInteraction, pValue));
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_AllowFocusOnInteraction(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_AllowFocusOnInteraction(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_AllowFocusOnInteraction, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_AllowFocusWhenDisabled(_Out_ B
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_AllowFocusWhenDisabled, pValue));
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_AllowFocusWhenDisabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_AllowFocusWhenDisabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_AllowFocusWhenDisabled, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_AreOpenCloseAnimationsEnabled(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_AreOpenCloseAnimationsEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_AreOpenCloseAnimationsEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_AreOpenCloseAnimationsEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_AreOpenCloseAnimationsEnabled, value));
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_ElementSoundMode(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_ElementSoundMode, pValue));
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_ElementSoundMode(_In_ ABI::Microsoft::UI::Xaml::ElementSoundMode value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_ElementSoundMode(ABI::Microsoft::UI::Xaml::ElementSoundMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_ElementSoundMode, value));
@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_InputDevicePrefersPrimaryComma
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_InputDevicePrefersPrimaryCommands, pValue));
 }
-_Check_return_ HRESULT DirectUI::FlyoutBaseGenerated::put_InputDevicePrefersPrimaryCommands(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::FlyoutBaseGenerated::put_InputDevicePrefersPrimaryCommands(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_InputDevicePrefersPrimaryCommands, value));
@@ -124,7 +124,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_IsLightDismissOverlayEnabled(_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_IsLightDismissOverlayEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_IsLightDismissOverlayEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -148,7 +148,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_LightDismissOverlayMode(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_LightDismissOverlayMode, value));
@@ -166,7 +166,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_Placement(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_Placement, pValue));
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_Placement(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_Placement(ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_Placement, value));
@@ -175,7 +175,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_ShouldConstrainToRootBounds(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_ShouldConstrainToRootBounds, pValue));
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_ShouldConstrainToRootBounds(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_ShouldConstrainToRootBounds(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_ShouldConstrainToRootBounds, value));
@@ -184,7 +184,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_ShowMode(_Out_ ABI::Microsoft:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_ShowMode, pValue));
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_ShowMode(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_ShowMode(ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlyoutBase_ShowMode, value));
@@ -217,7 +217,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::get_UsePickerFlyoutTheme(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_UsePickerFlyoutTheme(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::put_UsePickerFlyoutTheme(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -285,7 +285,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::remove_Closed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::remove_Closed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosedEventSourceType* pEventSource = nullptr;
@@ -340,7 +340,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::remove_Closing(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::remove_Closing(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosingEventSourceType* pEventSource = nullptr;
@@ -395,7 +395,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::remove_Opened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::remove_Opened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpenedEventSourceType* pEventSource = nullptr;
@@ -450,7 +450,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::remove_Opening(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::remove_Opening(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpeningEventSourceType* pEventSource = nullptr;
@@ -570,7 +570,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::PlaceFlyoutForDateTimePicker(_In_ ABI::Windows::Foundation::Point point)
+IFACEMETHODIMP DirectUI::FlyoutBaseGenerated::PlaceFlyoutForDateTimePicker(ABI::Windows::Foundation::Point point)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

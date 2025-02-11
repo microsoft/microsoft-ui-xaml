@@ -18,7 +18,7 @@ using namespace DirectUISynonyms;
 // why we update the FlowDirection state of the header button here.
 IFACEMETHODIMP
     HubSection::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     HRESULT hr = S_OK;

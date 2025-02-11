@@ -11,7 +11,7 @@ using Microsoft.UI.Private.Controls;
 
 namespace MUXControlsTestApp.Samples
 {
-    public class RecipeElementFactory : ElementFactory
+    public partial class RecipeElementFactory : ElementFactory
     {
         private DataTemplate _itemTemplate;
         private DataTemplate _groupTemplate;

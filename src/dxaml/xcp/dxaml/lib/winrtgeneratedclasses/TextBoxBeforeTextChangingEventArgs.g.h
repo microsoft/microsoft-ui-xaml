@@ -37,7 +37,7 @@ namespace DirectUI
         IFACEMETHOD(get_NewText)(_Out_ HSTRING* pValue) override;
         _Check_return_ HRESULT put_NewText(_In_opt_ HSTRING value);
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
 
         // Methods.
 

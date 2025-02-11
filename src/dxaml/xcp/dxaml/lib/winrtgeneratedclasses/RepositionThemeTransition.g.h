@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsStaggeringEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsStaggeringEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsStaggeringEnabled)(BOOLEAN value) override;
 
         // Events.
 

@@ -29,7 +29,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-InternalTransform::TransformBoundsCore(_In_ wf::Rect rect, _Out_ wf::Rect* pReturnValue)
+InternalTransform::TransformBoundsCore(wf::Rect rect, _Out_ wf::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     XRECTF xrect = {};
@@ -54,7 +54,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP
-InternalTransform::TryTransformCore(_In_ wf::Point inPoint, _Out_ wf::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue)
+InternalTransform::TryTransformCore(wf::Point inPoint, _Out_ wf::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     XPOINTF xpoint = {};

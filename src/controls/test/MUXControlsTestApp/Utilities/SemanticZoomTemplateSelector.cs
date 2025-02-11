@@ -12,7 +12,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace MUXControlsTestApp
 {
-    public class SemanticZoomTemplateSelector : DataTemplateSelector
+    public partial class SemanticZoomTemplateSelector : DataTemplateSelector
     {
         public SemanticZoomTemplateSelector()
         {

@@ -51,7 +51,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaPlayerElement_AreTransportControlsEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::put_AreTransportControlsEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::put_AreTransportControlsEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaPlayerElement_AreTransportControlsEnabled, value));
@@ -66,7 +66,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::put_AutoPlay(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::put_AutoPlay(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -80,7 +80,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaPlayerElement_IsFullWindow, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::put_IsFullWindow(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::put_IsFullWindow(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaPlayerElement_IsFullWindow, value));
@@ -122,7 +122,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaPlayerElement_Stretch, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::put_Stretch(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerElementGenerated::put_Stretch(ABI::Microsoft::UI::Xaml::Media::Stretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaPlayerElement_Stretch, value));

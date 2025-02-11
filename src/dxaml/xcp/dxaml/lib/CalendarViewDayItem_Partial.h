@@ -23,7 +23,7 @@ namespace DirectUI
         IFACEMETHOD(OnKeyDown)(_In_ xaml_input::IKeyRoutedEventArgs* pArgs) override;
 
 #if DBG
-        _Check_return_ HRESULT put_Date(_In_ wf::DateTime value) override;
+        _Check_return_ HRESULT put_Date(wf::DateTime value) override;
 #endif
 
         _Check_return_ HRESULT GetDate(_Out_ wf::DateTime* pDate) override { return get_Date(pDate); }

@@ -164,8 +164,8 @@ namespace DirectUI
         _Check_return_ IFACEMETHOD(SetupContainerContentChangingAfterPrepare)(
             _In_ xaml::IDependencyObject* pContainer,
             _In_ IInspectable* pItem,
-            _In_ INT itemIndex,
-            _In_ wf::Size measureSize) override { RRETURN(S_OK); }
+            INT itemIndex,
+            wf::Size measureSize) override { RRETURN(S_OK); }
 
         _Check_return_ IFACEMETHOD(RegisterWorkFromArgs)(
             _In_ xaml_controls::IContainerContentChangingEventArgs* pArgs) override { RRETURN(S_OK); }
@@ -201,8 +201,8 @@ namespace DirectUI
         _Check_return_ IFACEMETHOD(VirtualizationFinished)() override { return S_OK; }
 
         _Check_return_ IFACEMETHOD(OverrideContainerArrangeBounds)(
-            _In_ INT index,
-            _In_ wf::Rect suggestedBounds,
+            INT index,
+            wf::Rect suggestedBounds,
             _Out_ wf::Rect* newBounds) override
         {
             *newBounds = suggestedBounds;

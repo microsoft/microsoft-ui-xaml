@@ -48,25 +48,25 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ClipRect)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        _Check_return_ HRESULT put_ClipRect(_In_ ABI::Windows::Foundation::Rect value);
+        _Check_return_ HRESULT put_ClipRect(ABI::Windows::Foundation::Rect value);
         IFACEMETHOD(get_CompactRootMargin)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        _Check_return_ HRESULT put_CompactRootMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value);
+        _Check_return_ HRESULT put_CompactRootMargin(ABI::Microsoft::UI::Xaml::Thickness value);
         IFACEMETHOD(get_CompactVerticalDelta)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CompactVerticalDelta(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CompactVerticalDelta(DOUBLE value);
         IFACEMETHOD(get_HiddenRootMargin)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        _Check_return_ HRESULT put_HiddenRootMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value);
+        _Check_return_ HRESULT put_HiddenRootMargin(ABI::Microsoft::UI::Xaml::Thickness value);
         IFACEMETHOD(get_HiddenVerticalDelta)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_HiddenVerticalDelta(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_HiddenVerticalDelta(DOUBLE value);
         IFACEMETHOD(get_MinimalRootMargin)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        _Check_return_ HRESULT put_MinimalRootMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value);
+        _Check_return_ HRESULT put_MinimalRootMargin(ABI::Microsoft::UI::Xaml::Thickness value);
         IFACEMETHOD(get_MinimalVerticalDelta)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_MinimalVerticalDelta(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_MinimalVerticalDelta(DOUBLE value);
         IFACEMETHOD(get_NegativeCompactVerticalDelta)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_NegativeCompactVerticalDelta(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_NegativeCompactVerticalDelta(DOUBLE value);
         IFACEMETHOD(get_NegativeHiddenVerticalDelta)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_NegativeHiddenVerticalDelta(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_NegativeHiddenVerticalDelta(DOUBLE value);
         IFACEMETHOD(get_NegativeMinimalVerticalDelta)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_NegativeMinimalVerticalDelta(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_NegativeMinimalVerticalDelta(DOUBLE value);
 
         // Events.
 

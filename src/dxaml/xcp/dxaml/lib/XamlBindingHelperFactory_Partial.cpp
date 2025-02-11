@@ -89,14 +89,14 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::ResumeRenderingImpl(_I
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::ConvertValueImpl(_In_ wxaml_interop::TypeName type, _In_ IInspectable* pValue, _Outptr_ IInspectable** ppReturnValue)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::ConvertValueImpl(wxaml_interop::TypeName type, _In_ IInspectable* pValue, _Outptr_ IInspectable** ppReturnValue)
 {
     IFC_RETURN(static_cast<XamlBindingHelperFactory*>(this)->ConvertValueImpl(type, pValue, ppReturnValue));
     return S_OK;
 }
 
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromBooleanImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ BOOLEAN value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromBooleanImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, BOOLEAN value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -107,7 +107,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromBoolean
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromByteImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ BYTE value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromByteImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, BYTE value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -119,7 +119,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromByteImp
 
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromInt32Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ INT value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromInt32Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, INT value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -130,7 +130,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromInt32Im
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromUInt32Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ UINT value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromUInt32Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, UINT value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -141,7 +141,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromUInt32I
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromInt64Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ INT64 value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromInt64Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, INT64 value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -152,7 +152,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromInt64Im
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromUInt64Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ UINT64 value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromUInt64Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, UINT64 value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -163,7 +163,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromUInt64I
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromDoubleImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ DOUBLE value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromDoubleImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, DOUBLE value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -174,7 +174,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromDoubleI
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromSingleImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ FLOAT value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromSingleImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, FLOAT value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -202,7 +202,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromStringI
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromChar16Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ WCHAR value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromChar16Impl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, WCHAR value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -213,7 +213,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromChar16I
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromTimeSpanImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ wf::TimeSpan value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromTimeSpanImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, wf::TimeSpan value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -224,7 +224,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromTimeSpa
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromDateTimeImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ wf::DateTime value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromDateTimeImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, wf::DateTime value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -235,7 +235,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromDateTim
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromPointImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ wf::Point value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromPointImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, wf::Point value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -247,7 +247,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromPointIm
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromSizeImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ wf::Size value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromSizeImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, wf::Size value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);
@@ -259,7 +259,7 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromSizeImp
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromRectImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, _In_ wf::Rect value)
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromRectImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, wf::Rect value)
 {
     IFCPTR_RETURN(pDependencyObject);
     IFCPTR_RETURN(pPropertyToSet);

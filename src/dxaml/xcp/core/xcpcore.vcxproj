@@ -60,7 +60,6 @@
         <ClCompile Include="packaging\application.cpp"/>
 
         <ClCompile Include="common\memorysurface.cpp"/>
-        <ClCompile Include="common\rastpath.cpp"/>
         <ClCompile Include="common\values.cpp"/>
         <ClCompile Include="common\HeaderDependencyBridges.cpp"/>
 
@@ -150,10 +149,4 @@
     </PropertyGroup>
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
-    <ItemDefinitionGroup>
-        <ClCompile>
-            <AdditionalOptions Condition="'$(ExperimentalAnalysis)'=='true'">%(AdditionalOptions) /analyze-</AdditionalOptions>
-            <TreatWarningAsError Condition="'$(ExperimentalAnalysis)'=='true'">true</TreatWarningAsError>
-        </ClCompile>
-    </ItemDefinitionGroup>
 </Project>

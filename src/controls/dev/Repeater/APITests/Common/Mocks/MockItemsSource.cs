@@ -168,7 +168,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mock
         }
     }
 
-    public class MockItemsSourceWithUniqueIdMapping : MockItemsSource, IKeyIndexMapping
+    public partial class MockItemsSourceWithUniqueIdMapping : MockItemsSource, IKeyIndexMapping
     {
         public string KeyFromIndex(int index)
         {

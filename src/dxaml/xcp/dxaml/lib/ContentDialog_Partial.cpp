@@ -46,12 +46,6 @@
 #include "ElementSoundPlayerService_Partial.h"
 #include "XamlTelemetry.h"
 
-#include <FrameworkUdk/Containment.h>
-
-// Bug 53719202: [Regression] [WinAppSdk v1.6 | Extra Unload call] After instantiating a custom dialog, it will immediately raises Unloaded event
-// Bug 53870041: [1.6 servicing] [Regression] [WinAppSdk v1.6 | Extra Unload call] After instantiating a custom dialog, it will immediately raises Unloaded event
-#define WINAPPSDK_CHANGEID_53870041 53870041
-
 #undef min
 #undef max
 
@@ -68,15 +62,6 @@ static const DOUBLE ContentDialog_SIP_Bottom_Margin = 12.0;
 ContentDialog::~ContentDialog()
 {
     VERIFYHR(DetachEventHandlers());
-
-    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_53870041>())
-    {
-        auto xamlRoot = XamlRoot::GetForElementStatic(this);
-        if (m_xamlRootChangedEventHandler && xamlRoot)
-        {
-            VERIFYHR(m_xamlRootChangedEventHandler.DetachEventHandler(xamlRoot.Get()));
-        }
-    }
 
     if (auto popup = m_tpPopup.GetSafeReference())
     {
@@ -333,7 +318,7 @@ IFACEMETHODIMP ContentDialog::OnApplyTemplate()
 }
 
 IFACEMETHODIMP ContentDialog::ArrangeOverride(
-    _In_ wf::Size arrangeSize,
+    wf::Size arrangeSize,
     _Out_ wf::Size* returnValue)
 {
     if (m_isShowing)
@@ -795,14 +780,11 @@ ContentDialog::ShowAsyncWithPlacementImpl(
             IFC_RETURN(PrepareContent());
         }
 
-        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_53870041>())
-        {
-            // We need to explicitly apply the template here to avoid a bug where applying the template
-            // during a measure pass causes us to erroneously raise the Unloaded event immediately after
-            // the Loaded event.
-            BOOLEAN ignore = FALSE;
-            IFC_RETURN(ApplyTemplate(&ignore));
-        }
+        // We need to explicitly apply the template here to avoid a bug where applying the template
+        // during a measure pass causes us to erroneously raise the Unloaded event immediately after
+        // the Loaded event.
+        BOOLEAN ignore = FALSE;
+        IFC_RETURN(ApplyTemplate(&ignore));
 
         IFC_RETURN(HostDialogWithinPopup(false /*wasSmokeLayerFoundAsTemplatePart*/));
 
@@ -1854,14 +1836,11 @@ _Check_return_ HRESULT ContentDialog::DetachEventHandlers()
         }
     }
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_53870041>())
+    if (auto xamlRoot = XamlRoot::GetForElementStatic(this))
     {
-        if (auto xamlRoot = XamlRoot::GetForElementStatic(this))
+        if (m_xamlRootChangedEventHandler)
         {
-            if (m_xamlRootChangedEventHandler)
-            {
-                IFC_RETURN(m_xamlRootChangedEventHandler.DetachEventHandler(xamlRoot.Get()));
-            }
+            IFC_RETURN(m_xamlRootChangedEventHandler.DetachEventHandler(xamlRoot.Get()));
         }
     }
 

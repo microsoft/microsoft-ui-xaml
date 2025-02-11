@@ -45,7 +45,7 @@ _Check_return_ HRESULT DirectUI::RectangleGeometry::get_RadiusX(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RectangleGeometry_RadiusX, pValue));
 }
-_Check_return_ HRESULT DirectUI::RectangleGeometry::put_RadiusX(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::RectangleGeometry::put_RadiusX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RectangleGeometry_RadiusX, value));
@@ -54,7 +54,7 @@ _Check_return_ HRESULT DirectUI::RectangleGeometry::get_RadiusY(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RectangleGeometry_RadiusY, pValue));
 }
-_Check_return_ HRESULT DirectUI::RectangleGeometry::put_RadiusY(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::RectangleGeometry::put_RadiusY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RectangleGeometry_RadiusY, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::RectangleGeometry::get_Rect(_Out_ ABI::Windows::Foundat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RectangleGeometry_Rect, pValue));
 }
-IFACEMETHODIMP DirectUI::RectangleGeometry::put_Rect(_In_ ABI::Windows::Foundation::Rect value)
+IFACEMETHODIMP DirectUI::RectangleGeometry::put_Rect(ABI::Windows::Foundation::Rect value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RectangleGeometry_Rect, value));

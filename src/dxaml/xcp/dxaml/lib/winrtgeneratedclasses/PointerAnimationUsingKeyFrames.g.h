@@ -45,7 +45,7 @@ namespace DirectUI
         // Properties.
         _Check_return_ HRESULT get_KeyFrames(_Outptr_result_maybenull_ DirectUI::PointerKeyFrameCollection** ppValue);
         _Check_return_ HRESULT get_PointerSource(_Out_ DirectUI::PointerDirection* pValue);
-        _Check_return_ HRESULT put_PointerSource(_In_ DirectUI::PointerDirection value);
+        _Check_return_ HRESULT put_PointerSource(DirectUI::PointerDirection value);
 
         // Events.
 

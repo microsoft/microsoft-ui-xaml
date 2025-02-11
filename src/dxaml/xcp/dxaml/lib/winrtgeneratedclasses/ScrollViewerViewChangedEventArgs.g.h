@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsIntermediate)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_IsIntermediate(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsIntermediate(BOOLEAN value);
 
         // Methods.
 

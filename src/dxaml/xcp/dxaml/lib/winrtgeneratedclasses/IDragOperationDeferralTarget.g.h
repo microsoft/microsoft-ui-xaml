@@ -22,6 +22,6 @@ namespace DirectUI
         // Methods.
         IFACEMETHOD(DeferralAdded)() = 0;
         IFACEMETHOD(DeferralCompleted)() = 0;
-        IFACEMETHOD(SetAcceptedOperation)(_In_ IInspectable* pSource, _In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation acceptedOperation) = 0;
+        IFACEMETHOD(SetAcceptedOperation)(_In_ IInspectable* pSource, ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation acceptedOperation) = 0;
     };
 }

@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::HasValidationErrorsChangedEventArgs::get_NewValue(_Out_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::HasValidationErrorsChangedEventArgs::put_NewValue(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::HasValidationErrorsChangedEventArgs::put_NewValue(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

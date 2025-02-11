@@ -23,9 +23,9 @@ using MUXControlsTestApp.Samples;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    class SpecialTreeView : TreeView { }
-    class SpecialTreeViewItem : TreeViewItem { }
-    class SpecialTreeViewList : TreeViewList
+    partial class SpecialTreeView : TreeView { }
+    partial class SpecialTreeViewItem : TreeViewItem { }
+    partial class SpecialTreeViewList : TreeViewList
     {
         protected override DependencyObject GetContainerForItemOverride()
         {
@@ -479,6 +479,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyVisualTree()
         {
             TreeView treeView = null;

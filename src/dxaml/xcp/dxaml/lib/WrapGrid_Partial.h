@@ -89,13 +89,13 @@ namespace DirectUI
             // Measures the items of a WrapGrid in anticipation of arranging
             // them during the ArrangeOverride pass.
             IFACEMETHOD(MeasureOverride)(
-                _In_ wf::Size availableSize,
+                wf::Size availableSize,
                 _Out_ wf::Size* returnValue)
                 override;
 
             // Arranges the items of a WrapGrid.
             IFACEMETHOD(ArrangeOverride)(
-                _In_ wf::Size finalSize,
+                wf::Size finalSize,
                 _Out_ wf::Size* returnValue)
                 override;
             
@@ -147,14 +147,14 @@ namespace DirectUI
 
             // Get the closest element information to the point.
             _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
-                _In_ wf::Point position, 
+                wf::Point position, 
                 _Out_ xaml_primitives::ElementInfo* returnValue) 
                 override;
         
             // Get the index where an item should be inserted if it were dropped at
             // the given position. This will be used by live reordering.
             _Check_return_ IFACEMETHOD(GetInsertionIndex)(
-                _In_ wf::Point position, 
+                wf::Point position, 
                 _Out_ INT* returnValue) 
                 override;
 

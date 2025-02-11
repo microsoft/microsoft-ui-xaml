@@ -94,7 +94,7 @@ namespace DirectUI
 
         // Static methods.
         IFACEMETHOD(GetForCurrentThread)(_Outptr_ ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooks** ppResult) override;
-        IFACEMETHOD(PerformProcessWideLeakDetection)(_In_ INT threshold) override;
+        IFACEMETHOD(PerformProcessWideLeakDetection)(INT threshold) override;
 
         // Static events.
 
@@ -109,6 +109,6 @@ namespace DirectUI
 
         // Customized static  methods.
          _Check_return_ HRESULT GetForCurrentThreadImpl(_Outptr_ ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooks** ppResult); 
-         _Check_return_ HRESULT PerformProcessWideLeakDetectionImpl(_In_ INT threshold); 
+         _Check_return_ HRESULT PerformProcessWideLeakDetectionImpl(INT threshold); 
     };
 }

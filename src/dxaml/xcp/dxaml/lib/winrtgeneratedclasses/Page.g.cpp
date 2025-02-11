@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::PageGenerated::get_NavigationCacheMode(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Page_NavigationCacheMode, pValue));
 }
-IFACEMETHODIMP DirectUI::PageGenerated::put_NavigationCacheMode(_In_ ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode value)
+IFACEMETHODIMP DirectUI::PageGenerated::put_NavigationCacheMode(ABI::Microsoft::UI::Xaml::Navigation::NavigationCacheMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Page_NavigationCacheMode, value));

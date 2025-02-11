@@ -55,7 +55,7 @@
             <!-- For some reason, the ARM64 version of muiload.lib, and *only* the ARM64 version of
                  that specific lib file, has a reference to the non-inlined verion of vsnwprintf,
                  which requires that we also add references to these legacy libs. -->
-            <AdditionalDependencies Condition="'$(Platform)' == 'ARM64'">
+            <AdditionalDependencies Condition="'$(Platform)' == 'ARM64' or '$(Platform)' == 'ARM64EC'">
                 %(AdditionalDependencies);
                 $(VisualStudioLibPath)legacy_stdio_definitions.lib;
                 $(VisualStudioLibPath)legacy_stdio_wide_specifiers.lib;

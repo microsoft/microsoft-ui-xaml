@@ -80,7 +80,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_CanHorizontallyScroll(_Out_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::put_CanHorizontallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::put_CanHorizontallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -100,7 +100,7 @@ IFACEMETHODIMP DirectUI::CarouselPanelGenerated::get_CanVerticallyScroll(_Out_ B
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::put_CanVerticallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::put_CanVerticallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -248,7 +248,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -303,7 +303,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -324,7 +324,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::GetIrregularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::GetIrregularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -343,7 +343,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::GetRegularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::GetRegularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -434,7 +434,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -454,7 +454,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _In_ BOOLEAN useAnimation, _In_ DOUBLE horizontalAlignmentRatio, _In_ DOUBLE verticalAlignmentRatio, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, BOOLEAN useAnimation, DOUBLE horizontalAlignmentRatio, DOUBLE verticalAlignmentRatio, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -616,7 +616,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::SetHorizontalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::SetHorizontalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -634,7 +634,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CarouselPanelGenerated::SetVerticalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::CarouselPanelGenerated::SetVerticalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

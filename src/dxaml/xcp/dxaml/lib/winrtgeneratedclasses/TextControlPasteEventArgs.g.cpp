@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::TextControlPasteEventArgs::get_Handled(_Out_ BOOLEAN* p
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextControlPasteEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextControlPasteEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

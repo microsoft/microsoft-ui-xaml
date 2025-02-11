@@ -46,6 +46,10 @@
 #include "LinedFlowLayoutTrace.h"
 #endif
 
+#ifdef TITLEBAR_INCLUDED
+#include "TitleBarTrace.h"
+#endif
+
 #include "TabViewTrace.h"
 
 /*static*/
@@ -165,6 +169,13 @@ if (type == L"AnnotatedScrollBar" || type.empty())
     {
         LinedFlowLayoutTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         LinedFlowLayoutTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+    }
+#endif
+#ifdef TITLEBAR_INCLUDED
+    if (type == L"TitleBar" || type.empty())
+    {
+        TitleBarTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+        TitleBarTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
 #endif
     if (type == L"TabView" || type.empty())

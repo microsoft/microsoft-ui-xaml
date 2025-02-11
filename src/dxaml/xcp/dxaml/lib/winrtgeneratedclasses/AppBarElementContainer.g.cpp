@@ -53,7 +53,7 @@ IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::get_DynamicOverflowOrd
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarElementContainer_DynamicOverflowOrder, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::put_DynamicOverflowOrder(_In_ INT value)
+IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::put_DynamicOverflowOrder(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarElementContainer_DynamicOverflowOrder, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::get_IsCompact(_Out_ BO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarElementContainer_IsCompact, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::put_IsCompact(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::put_IsCompact(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarElementContainer_IsCompact, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::get_UseOverflowStyle(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarElementContainer_UseOverflowStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::put_UseOverflowStyle(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::AppBarElementContainerGenerated::put_UseOverflowStyle(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarElementContainer_UseOverflowStyle, value));

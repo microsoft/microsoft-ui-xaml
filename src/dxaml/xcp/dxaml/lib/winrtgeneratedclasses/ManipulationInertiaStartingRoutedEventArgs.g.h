@@ -47,7 +47,7 @@ namespace DirectUI
         IFACEMETHOD(get_TranslationBehavior)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Input::IInertiaTranslationBehavior** ppValue) override;
         IFACEMETHOD(put_TranslationBehavior)(_In_opt_ ABI::Microsoft::UI::Xaml::Input::IInertiaTranslationBehavior* pValue) override;
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_PointerDeviceType)(_Out_ ABI::Microsoft::UI::Input::PointerDeviceType* pValue) override;
         IFACEMETHOD(get_Delta)(_Out_ ABI::Microsoft::UI::Input::ManipulationDelta* pValue) override;
         IFACEMETHOD(get_Cumulative)(_Out_ ABI::Microsoft::UI::Input::ManipulationDelta* pValue) override;

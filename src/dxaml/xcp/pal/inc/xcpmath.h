@@ -1142,7 +1142,7 @@ ClipToPolygon(
     XUINT32 cClipPolygon,
     _In_reads_(cClipPolygon) const XPOINTF *ptClipPolygon,
     _Out_ XUINT32 *pcOutputPolygon,
-    _Inout_updates_(*pcOutputPolygon) PointType *ptOutputPolygon
+    _Out_writes_(*pcOutputPolygon) PointType *ptOutputPolygon
     );
 
 //------------------------------------------------------------------------

@@ -10,8 +10,30 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="12">
         <StackPanel Orientation="Vertical">
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="TitleBar OutputDebugString Levels:"
+                           VerticalAlignment="Center"
+                           Margin="2" />
+                <ComboBox x:Name="cmbTitleBarOutputDebugStringLevel"
+                          Margin="2"
+                          Width="120"
+                          HorizontalAlignment="Left"
+                          SelectedIndex="0"
+                          Grid.Column="1"
+                          SelectionChanged="CmbTitleBarOutputDebugStringLevel_SelectionChanged">
+                    <ComboBoxItem>None</ComboBoxItem>
+                    <ComboBoxItem>Info</ComboBoxItem>
+                    <ComboBoxItem>Verbose</ComboBoxItem>
+                </ComboBox>
+            </Grid>
+            
             <TitleBar x:Name="WindowingTitleBar" Title="Windowing TitleBar">
                 <TitleBar.IconSource>
                     <SymbolIconSource Symbol="Home"/>
@@ -24,10 +46,11 @@
                     MinWidth="300" 
                     MaxWidth="500"
                     Margin="8"/>
-                <TitleBar.Footer>
+                <TitleBar.RightContent>
                     <PersonPicture Initials="JD" Width="30" Height="30"/>
-                </TitleBar.Footer>
+                </TitleBar.RightContent>
             </TitleBar>
+
             <Button Content="New Window with Custom TitleBar" Click="TitleBarWindowingButton_Click"/>
         </StackPanel>
     </Grid>

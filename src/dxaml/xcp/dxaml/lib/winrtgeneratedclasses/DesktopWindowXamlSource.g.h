@@ -28,12 +28,12 @@ namespace ctl
         IFACEMETHOD(get_SiteBridge)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IDesktopChildSiteBridge** ppValue) override { return This()->get_SiteBridge(ppValue); }
         IFACEMETHOD(get_SystemBackdrop)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue) override { return This()->get_SystemBackdrop(ppValue); }
         IFACEMETHOD(put_SystemBackdrop)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue) override { return This()->put_SystemBackdrop(pValue); }
-        IFACEMETHOD(Initialize)(_In_ ABI::Microsoft::UI::WindowId parentWindowId) override { return This()->Initialize(parentWindowId); }
+        IFACEMETHOD(Initialize)(ABI::Microsoft::UI::WindowId parentWindowId) override { return This()->Initialize(parentWindowId); }
         IFACEMETHOD(NavigateFocus)(_In_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest* pRequest, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationResult** ppResult) override { return This()->NavigateFocus(pRequest, ppResult); }
         IFACEMETHOD(add_GotFocus)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource*, ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSourceGotFocusEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_GotFocus(pValue, pToken); }
-        IFACEMETHOD(remove_GotFocus)(_In_ EventRegistrationToken token) override { return This()->remove_GotFocus(token); }
+        IFACEMETHOD(remove_GotFocus)(EventRegistrationToken token) override { return This()->remove_GotFocus(token); }
         IFACEMETHOD(add_TakeFocusRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource*, ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSourceTakeFocusRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_TakeFocusRequested(pValue, pToken); }
-        IFACEMETHOD(remove_TakeFocusRequested)(_In_ EventRegistrationToken token) override { return This()->remove_TakeFocusRequested(token); }
+        IFACEMETHOD(remove_TakeFocusRequested)(EventRegistrationToken token) override { return This()->remove_TakeFocusRequested(token); }
     };
     template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2, impl_type> final
@@ -41,7 +41,7 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_ShouldConstrainPopupsToWorkArea)(_Out_ BOOLEAN* pValue) override { return This()->get_ShouldConstrainPopupsToWorkArea(pValue); }
-        IFACEMETHOD(put_ShouldConstrainPopupsToWorkArea)(_In_ BOOLEAN value) override { return This()->put_ShouldConstrainPopupsToWorkArea(value); }
+        IFACEMETHOD(put_ShouldConstrainPopupsToWorkArea)(BOOLEAN value) override { return This()->put_ShouldConstrainPopupsToWorkArea(value); }
     };
 }
 #pragma endregion
@@ -85,7 +85,7 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Content(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_HasFocus(_Out_ BOOLEAN* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ShouldConstrainPopupsToWorkArea(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_ShouldConstrainPopupsToWorkArea(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_ShouldConstrainPopupsToWorkArea(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SiteBridge(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IDesktopChildSiteBridge** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
@@ -93,13 +93,13 @@ namespace DirectUI
         // Events.
         virtual _Check_return_ HRESULT GetGotFocusEventSourceNoRef(_Outptr_ GotFocusEventSourceType** ppEventSource) = 0;
         _Check_return_ HRESULT STDMETHODCALLTYPE add_GotFocus(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource*, ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSourceGotFocusEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_GotFocus(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_GotFocus(EventRegistrationToken token);
         virtual _Check_return_ HRESULT GetTakeFocusRequestedEventSourceNoRef(_Outptr_ TakeFocusRequestedEventSourceType** ppEventSource) = 0;
         _Check_return_ HRESULT STDMETHODCALLTYPE add_TakeFocusRequested(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSource*, ABI::Microsoft::UI::Xaml::Hosting::DesktopWindowXamlSourceTakeFocusRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TakeFocusRequested(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TakeFocusRequested(EventRegistrationToken token);
 
         // Methods.
-        _Check_return_ HRESULT STDMETHODCALLTYPE Initialize(_In_ ABI::Microsoft::UI::WindowId parentWindowId);
+        _Check_return_ HRESULT STDMETHODCALLTYPE Initialize(ABI::Microsoft::UI::WindowId parentWindowId);
         _Check_return_ HRESULT STDMETHODCALLTYPE NavigateFocus(_In_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationRequest* pRequest, _Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlSourceFocusNavigationResult** ppResult);
 
 

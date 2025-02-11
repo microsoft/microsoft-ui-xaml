@@ -846,7 +846,7 @@ _Check_return_ HRESULT MediaPlayerElement::UpdatePosterImageVisibility()
     }
 
 #define EVENT_IMPL_DEL(EventName) \
-    _Check_return_ HRESULT MediaPlayerElement::remove_##EventName(_In_ EventRegistrationToken tToken) \
+    _Check_return_ HRESULT MediaPlayerElement::remove_##EventName(EventRegistrationToken tToken) \
     {\
         BOOLEAN isFullWindow = FALSE;\
         IFC_RETURN(get_IsFullWindow(&isFullWindow));\

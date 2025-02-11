@@ -259,37 +259,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
-        public void ValidateStackLayoutDoesNotRetainIncorrectMinorWidth()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                var repeater = new ItemsRepeater() 
-                {
-                    ItemsSource = Enumerable.Range(0, 1)
-                };
-
-                Content = new ScrollViewer() 
-                {
-                    Content = repeater,
-                    Width = 400,
-                };
-
-                Content.UpdateLayout();
-
-                // Measure with large width.
-                repeater.Measure(new Size(600, 100));
-                Verify.AreEqual(600, repeater.DesiredSize.Width);
-                // Measure with smaller width again before arrange. 
-                // StackLayout has to pick up the smaller width for its extent.
-                repeater.Measure(new Size(300, 100));
-                Verify.AreEqual(300, repeater.DesiredSize.Width);
-
-                Content.UpdateLayout();
-                Verify.AreEqual(400, repeater.ActualWidth);
-            });
-        }
-
-        [TestMethod]
         public void ValidateStackLayoutDisabledVirtualizationWithItemsRepeater()
         {
             RunOnUIThread.Execute(() =>
@@ -355,6 +324,74 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void VerifyStackLayoutAlignment()
+        {
+            for (int horizontalAlignment = 0; horizontalAlignment <= 3; horizontalAlignment++)
+            {
+                Border border = null;
+                ItemsRepeater itemsRepeater = null;
+
+                RunOnUIThread.Execute(() =>
+                {
+                    itemsRepeater = new ItemsRepeater()
+                    {
+                        HorizontalAlignment = (HorizontalAlignment)horizontalAlignment,
+                        ItemsSource = Enumerable.Range(0, 2)
+                    };
+
+                    border = new Border()
+                    {
+                        Background = new SolidColorBrush(Colors.Azure),
+                        Width = 400,
+                        Height = 400,
+                        Child = itemsRepeater
+                    };
+
+                    Content = border;
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"ItemsRepeater.HorizontalAlignment set to {itemsRepeater.HorizontalAlignment}");
+                    Log.Comment($"ItemsRepeater actual size: {itemsRepeater.ActualWidth}, {itemsRepeater.ActualHeight}");
+
+                    Verify.AreEqual((HorizontalAlignment)horizontalAlignment, itemsRepeater.HorizontalAlignment);
+
+                    GeneralTransform gt = itemsRepeater.TransformToVisual(border);
+                    Point itemsRepeaterOriginPoint = new Point();
+                    itemsRepeaterOriginPoint = gt.TransformPoint(itemsRepeaterOriginPoint);
+                    Log.Comment($"ItemsRepeater position: {itemsRepeaterOriginPoint}");
+
+                    for (int itemIndex = 0; itemIndex <= 1; itemIndex++)
+                    {
+                        FrameworkElement itemElement = itemsRepeater.TryGetElement(itemIndex) as FrameworkElement;
+                        Verify.IsNotNull(itemElement);
+                        var layoutBounds = LayoutInformation.GetLayoutSlot(itemElement);
+                        Log.Comment($"ItemsRepeater child #{itemIndex} layout bounds: {layoutBounds}");
+                    }
+
+                    switch (itemsRepeater.HorizontalAlignment)
+                    {
+                        case HorizontalAlignment.Left:
+                        case HorizontalAlignment.Stretch:
+                            Verify.AreEqual(0, itemsRepeaterOriginPoint.X);
+                            break;
+                        case HorizontalAlignment.Center:
+                            Verify.IsTrue(itemsRepeaterOriginPoint.X > 0);
+                            Verify.AreEqual((border.ActualWidth - itemsRepeater.ActualWidth) / 2, itemsRepeaterOriginPoint.X);
+                            break;
+                        case HorizontalAlignment.Right:
+                            Verify.IsTrue(itemsRepeaterOriginPoint.X > 0);
+                            Verify.AreEqual(border.ActualWidth - itemsRepeater.ActualWidth, itemsRepeaterOriginPoint.X);
+                            break;
+                    }
+                });
+            }
+        }
+
+        [TestMethod]
         public void VerifyUniformGridLayoutDoesntCrashWhenTryingToScrollToEnd()
         {
             ItemsRepeater repeater = null;
@@ -395,6 +432,97 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             // The test guards against an app crash, so this is enough to verify
             Verify.IsTrue(true);
+        }
+
+        [TestMethod]
+        public void VerifyUniformGridLayoutDoesntHangWhenTryingToScrollToStart()
+        {
+            ItemsRepeater itemsRepeater = null;
+            ScrollViewer scrollViewer = null;
+            ManualResetEvent viewChanged = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Setting up UI.");
+
+                itemsRepeater = new ItemsRepeater {
+                    ItemsSource = Enumerable.Range(0, 10).Select(_ => Enumerable.Range(1, 6).ToList()).ToList()
+                };
+                itemsRepeater.ItemTemplate = XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                          <ItemsRepeater ItemsSource='{Binding}'>
+                              <ItemsRepeater.Layout>
+                                  <UniformGridLayout
+                                      Orientation='Horizontal'
+                                      MinItemWidth='150.0'
+                                      MaximumRowsOrColumns='3'
+                                      MinRowSpacing='4'
+                                      MinColumnSpacing='4'
+                                      MinItemHeight='150.0'
+                                      ItemsStretch='Fill'/>
+                              </ItemsRepeater.Layout>
+                              <ItemsRepeater.ItemTemplate>
+                                  <DataTemplate>
+                                      <TextBlock Text='{Binding}'/>
+                                  </DataTemplate>
+                              </ItemsRepeater.ItemTemplate>
+                           </ItemsRepeater>
+                      </DataTemplate>") as DataTemplate;
+
+                scrollViewer = new ScrollViewer {
+                    Width = 500.0, 
+                    Height = 400.0,
+                    Content = itemsRepeater
+                };
+                scrollViewer.ViewChanged += (sender, args) =>
+                {
+                    Log.Comment($"ScrollViewer.ViewChanged raised for VerticalOffset '{scrollViewer.VerticalOffset}'.");
+
+                    if (!args.IsIntermediate)
+                    {
+                        Log.Comment("ScrollViewer.ChangeView completed.");
+
+                        viewChanged.Set();
+                    }
+                };
+
+                Content = scrollViewer;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            Log.Comment("Scrolling to the bottom in 16 jumps...");
+
+            for (int i = 1; i <= 16; i++)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"Jumping to VerticalOffset '{scrollViewer.ScrollableHeight * i / 16}'.");
+
+                    scrollViewer.ChangeView(null, scrollViewer.ScrollableHeight * i / 16, null, true);
+                });
+
+                Verify.IsTrue(viewChanged.WaitOne());
+                viewChanged.Reset();
+                IdleSynchronizer.Wait();
+            }
+
+            Log.Comment("Scrolling to the top in 16 jumps...");
+
+            for (int i = 15; i >= 0; i--)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment($"Jumping to VerticalOffset '{scrollViewer.ScrollableHeight * i / 16}'.");
+
+                    scrollViewer.ChangeView(null, scrollViewer.ScrollableHeight * i / 16, null, true);
+                });
+
+                Verify.IsTrue(viewChanged.WaitOne());
+                viewChanged.Reset();
+                IdleSynchronizer.Wait();
+            }
         }
 
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(

@@ -16,7 +16,7 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class TreeViewItemTemplateSelector : DataTemplateSelector
+    public partial class TreeViewItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate Template1 { get; set; }
         public DataTemplate Template2 { get; set; }
@@ -30,7 +30,7 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class TreeViewItemStyleSelector : StyleSelector
+    public partial class TreeViewItemStyleSelector : StyleSelector
     {
         public Style Style1 { get; set; }
         public Style Style2 { get; set; }

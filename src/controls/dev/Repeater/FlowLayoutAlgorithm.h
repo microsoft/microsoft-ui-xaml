@@ -30,8 +30,11 @@ public:
     // Methods
     winrt::Rect LastExtent() const { return m_lastExtent; }
 
-    void InitializeForContext(const winrt::VirtualizingLayoutContext& context, IFlowLayoutAlgorithmDelegates* callbacks);
-    void UninitializeForContext(const winrt::VirtualizingLayoutContext& context);
+    void InitializeForContext(
+        const winrt::VirtualizingLayoutContext& context,
+        IFlowLayoutAlgorithmDelegates* callbacks);
+    void UninitializeForContext(
+        const winrt::VirtualizingLayoutContext& context);
 
     winrt::Size Measure(
         const winrt::Size& availableSize,
@@ -60,7 +63,8 @@ public:
         const winrt::Size& availableSize,
         const winrt::VirtualizingLayoutContext& context);
 
-    winrt::UIElement GetElementIfRealized(int dataindex);
+    winrt::UIElement GetElementIfRealized(
+        int dataIndex);
 
 private:
     // Types
@@ -96,7 +100,14 @@ private:
     bool ShouldContinueFillingUpSpace(
         int index,
         GenerateDirection direction);
-    winrt::Rect EstimateExtent(const winrt::Size& availableSize, const wstring_view& layoutId);
+    winrt::Rect EstimateExtent(
+        const winrt::Size& availableSize,
+        const wstring_view& layoutId);
+    winrt::Rect LayoutRound(
+        const winrt::Rect& value) const;
+    void EvaluateLayoutRoundFactor(
+        const winrt::VirtualizingLayoutContext& context,
+        const winrt::UIElement& element);
     void RaiseLineArranged();
 #pragma endregion
 
@@ -121,15 +132,15 @@ private:
 #pragma region Layout Context Helpers
     winrt::Rect RealizationRect();
     void SetLayoutOrigin();
-#pragma endregion
-
     bool IsVirtualizingContext();
+#pragma endregion
 
     // Fields
     const ITrackerHandleManager* m_owner;
     ::ElementManager m_elementManager;
     winrt::Size m_lastAvailableSize{};
     double m_lastItemSpacing{};
+    double m_layoutRoundFactor{};
     bool m_collectionChangePending{};
     tracker_ref<winrt::VirtualizingLayoutContext> m_context;
     IFlowLayoutAlgorithmDelegates* m_algorithmCallbacks{ nullptr };

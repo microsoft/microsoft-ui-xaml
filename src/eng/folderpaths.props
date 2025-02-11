@@ -14,6 +14,8 @@
   <PropertyGroup>
     <NugetArch Condition="'$(arch)' == 'amd64'">x64</NugetArch>
     <NugetArch Condition="'$(arch)' != 'amd64'">$(arch.ToLowerInvariant())</NugetArch>
+    <IxpNuGetArch>$(NugetArch)</IxpNuGetArch>
+    <IxpNuGetArch Condition="'$(NugetArch)' == 'ARM64EC'">x64</IxpNuGetArch>
   </PropertyGroup>
 
   <!-- Source related paths-->
@@ -116,8 +118,15 @@
     <WindowsSDK_MetadataFoundationPath Condition="'$(XamlLightup)'!='true'">$(ContractMetadataPath)</WindowsSDK_MetadataFoundationPath>
     <WindowsSDK_MetadataPathVersioned Condition="'$(XamlLightup)'!='true'">$(ContractMetadataPath)</WindowsSDK_MetadataPathVersioned>
     <!-- Microsoft.Cpp.WindowsSDK.props makes assumptions about the SDK layout, causing warnings about missing lib paths -->
-    <WindowsSDK_LibraryPath_x86 Condition="'$(TargetPlatformSdkRootOverride)'!=''">;</WindowsSDK_LibraryPath_x86>
-    <WindowsSDK_LibraryPath_x64 Condition="'$(TargetPlatformSdkRootOverride)'!=''">;</WindowsSDK_LibraryPath_x64>
+    <DotNetSdk_LibraryPath_x86 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(DotNetSdk_LibraryPath_x86)')">;</DotNetSdk_LibraryPath_x86>
+    <DotNetSdk_LibraryPath_x64 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(DotNetSdk_LibraryPath_x64)')">;</DotNetSdk_LibraryPath_x64>
+    <DotNetSdk_LibraryPath_arm64 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(DotNetSdk_LibraryPath_arm64)')">;</DotNetSdk_LibraryPath_arm64>
+    <WindowsSDK_LibraryPath_x86 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(WindowsSDK_LibraryPath_x86)')">;</WindowsSDK_LibraryPath_x86>
+    <WindowsSDK_LibraryPath_x64 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(WindowsSDK_LibraryPath_x64)')">;</WindowsSDK_LibraryPath_x64>
+    <WindowsSDK_LibraryPath_arm64 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(WindowsSDK_LibraryPath_arm64)')">;</WindowsSDK_LibraryPath_arm64>
+    <UniversalCRT_LibraryPath_x86 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(UniversalCRT_LibraryPath_x86)')">;</UniversalCRT_LibraryPath_x86>
+    <UniversalCRT_LibraryPath_x64 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(UniversalCRT_LibraryPath_x64)')">;</UniversalCRT_LibraryPath_x64>
+    <UniversalCRT_LibraryPath_arm64 Condition="'$(TargetPlatformSdkRootOverride)'!='' and !Exists('$(UniversalCRT_LibraryPath_arm64)')">;</UniversalCRT_LibraryPath_arm64>
     <!-- Note: no contract metadata package equivalents for TargetPlatformWinMDLocation, WindowsSDK_MetadataPath -->
   </PropertyGroup>
 
@@ -167,8 +176,8 @@
     <LiftedIXPInternalPackagePath>$(NugetPackageDirectory)\$(LiftedIXPInternalPackageName)\$(IxpInternalPackageVersion)</LiftedIXPInternalPackagePath>
     <LiftedIXPInternalIncludePath>$(LiftedIXPInternalPackagePath)\include</LiftedIXPInternalIncludePath>
     <LiftedIXPInternalBuildPath>$(LiftedIXPInternalPackagePath)\build\native</LiftedIXPInternalBuildPath>
-    <LiftedIXPInternalPGIRuntimePath>$(LiftedIXPInternalPackagePath)\runtimes\win10-$(NugetArch)\native\pgi</LiftedIXPInternalPGIRuntimePath>
-    <LiftedIXPInternalLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(NugetArch)</LiftedIXPInternalLibPath>
+    <LiftedIXPInternalPGIRuntimePath>$(LiftedIXPInternalPackagePath)\runtimes\win10-$(IxpNuGetArch)\native\pgi</LiftedIXPInternalPGIRuntimePath>
+    <LiftedIXPInternalLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(IxpNuGetArch)</LiftedIXPInternalLibPath>
 
     <LiftedIXPIncludePaths>$(LiftedIXPIncludePath);$(LiftedIXPInternalIncludePath);$(LiftedIXPGeneratedIncludePath)</LiftedIXPIncludePaths>
   </PropertyGroup>

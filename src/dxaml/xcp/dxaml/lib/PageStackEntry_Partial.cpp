@@ -11,9 +11,9 @@ using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT
 PageStackEntryFactory::CreateInstanceImpl(
-    _In_ wxaml_interop::TypeName sourcePageType, 
-    _In_ IInspectable* parameter, 
-    _In_ xaml_animation::INavigationTransitionInfo* transitionInfo, 
+    wxaml_interop::TypeName sourcePageType, 
+    _In_opt_ IInspectable* parameter, 
+    _In_opt_ xaml_animation::INavigationTransitionInfo* transitionInfo, 
     _Outptr_ xaml::Navigation::IPageStackEntry** ppInstance)
 {
     HRESULT hr = S_OK;

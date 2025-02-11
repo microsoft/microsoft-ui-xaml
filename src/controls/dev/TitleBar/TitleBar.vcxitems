@@ -20,6 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TitleBarTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TitleBar.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\TitleBarTemplateSettings.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TitleBarTrace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TitleBar.properties.cpp" />

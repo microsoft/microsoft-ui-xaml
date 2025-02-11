@@ -53,11 +53,11 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_IsSelectionActive(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsSelectionActive(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsSelectionActive(BOOLEAN value);
         IFACEMETHOD(get_IsSynchronizedWithCurrentItem)(_Out_ ABI::Windows::Foundation::IReference<bool>** ppValue) override;
-        IFACEMETHOD(put_IsSynchronizedWithCurrentItem)(_In_ ABI::Windows::Foundation::IReference<bool>* pValue) override;
+        IFACEMETHOD(put_IsSynchronizedWithCurrentItem)(ABI::Windows::Foundation::IReference<bool>* pValue) override;
         IFACEMETHOD(get_SelectedIndex)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_SelectedIndex)(_In_ INT value) override;
+        IFACEMETHOD(put_SelectedIndex)(INT value) override;
         IFACEMETHOD(get_SelectedItem)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_SelectedItem)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_SelectedValue)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
@@ -68,7 +68,7 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetSelectionChangedEventSourceNoRef(_Outptr_ SelectionChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_SelectionChanged)(_In_ ABI::Microsoft::UI::Xaml::Controls::ISelectionChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_SelectionChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_SelectionChanged)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(BeginInit)() override;

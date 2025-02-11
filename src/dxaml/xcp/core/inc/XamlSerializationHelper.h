@@ -161,7 +161,7 @@ namespace XamlBinaryFormatSerializationHelper
     }
 
     template<typename Vec>
-    _Check_return_ static HRESULT DeserializeVectorFromNodeStream(_Out_ Vec& vecTarget, _In_ const Parser::XamlBinaryFileVersion& version, _In_ IPALStream* pSourceStream)
+    _Check_return_ static HRESULT DeserializeVectorFromNodeStream(_Inout_ Vec& vecTarget, _In_ const Parser::XamlBinaryFileVersion& version, _In_ IPALStream* pSourceStream)
     {
         IFCEXPECT_RETURN(vecTarget.size() == 0);
 
@@ -179,7 +179,7 @@ namespace XamlBinaryFormatSerializationHelper
         return S_OK;
     }
     template<typename Vec>
-    _Check_return_ static HRESULT DeserializeVectorFromMetadataStream(_Out_ Vec& vecTarget, _In_ const Parser::XamlBinaryFileVersion& version, _In_ IPALStream* pSourceStream)
+    _Check_return_ static HRESULT DeserializeVectorFromMetadataStream(_Inout_ Vec& vecTarget, _In_ const Parser::XamlBinaryFileVersion& version, _In_ IPALStream* pSourceStream)
     {
         IFCEXPECT_RETURN(vecTarget.size() == 0);
 

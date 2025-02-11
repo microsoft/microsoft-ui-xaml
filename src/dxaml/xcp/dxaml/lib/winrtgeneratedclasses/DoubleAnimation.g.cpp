@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::DoubleAnimation::get_By(_Out_ ABI::Windows::Foundation:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DoubleAnimation_By, ppValue));
 }
-IFACEMETHODIMP DirectUI::DoubleAnimation::put_By(_In_ ABI::Windows::Foundation::IReference<DOUBLE>* pValue)
+IFACEMETHODIMP DirectUI::DoubleAnimation::put_By(ABI::Windows::Foundation::IReference<DOUBLE>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DoubleAnimation_By, pValue));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::DoubleAnimation::get_EnableDependentAnimation(_Out_ BOO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DoubleAnimation_EnableDependentAnimation, pValue));
 }
-IFACEMETHODIMP DirectUI::DoubleAnimation::put_EnableDependentAnimation(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DoubleAnimation::put_EnableDependentAnimation(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DoubleAnimation_EnableDependentAnimation, value));
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::DoubleAnimation::get_From(_Out_ ABI::Windows::Foundatio
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DoubleAnimation_From, ppValue));
 }
-IFACEMETHODIMP DirectUI::DoubleAnimation::put_From(_In_ ABI::Windows::Foundation::IReference<DOUBLE>* pValue)
+IFACEMETHODIMP DirectUI::DoubleAnimation::put_From(ABI::Windows::Foundation::IReference<DOUBLE>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DoubleAnimation_From, pValue));
@@ -82,7 +82,7 @@ IFACEMETHODIMP DirectUI::DoubleAnimation::get_To(_Out_ ABI::Windows::Foundation:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DoubleAnimation_To, ppValue));
 }
-IFACEMETHODIMP DirectUI::DoubleAnimation::put_To(_In_ ABI::Windows::Foundation::IReference<DOUBLE>* pValue)
+IFACEMETHODIMP DirectUI::DoubleAnimation::put_To(ABI::Windows::Foundation::IReference<DOUBLE>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DoubleAnimation_To, pValue));

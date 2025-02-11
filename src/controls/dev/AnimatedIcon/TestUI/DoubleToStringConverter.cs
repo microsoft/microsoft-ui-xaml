@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml.Data;
 
 namespace MUXControlsTestApp
 {
-    class DoubleToStringConverter : IValueConverter
+    partial class DoubleToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

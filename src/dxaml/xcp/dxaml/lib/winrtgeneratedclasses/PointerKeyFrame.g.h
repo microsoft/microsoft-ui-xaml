@@ -42,9 +42,9 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_PointerValue(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_PointerValue(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_PointerValue(DOUBLE value);
         _Check_return_ HRESULT get_TargetValue(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_TargetValue(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_TargetValue(DOUBLE value);
 
         // Events.
 

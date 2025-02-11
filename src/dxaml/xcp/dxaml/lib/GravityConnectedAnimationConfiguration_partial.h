@@ -11,7 +11,7 @@ namespace DirectUI
     public:
         GravityConnectedAnimationConfiguration() {};
 
-        _Check_return_ HRESULT GetEffectPropertySet(_In_ wfn::Vector3 scaleFactors, _Out_ WUComp::ICompositionPropertySet** effectPropertySet) override;
+        _Check_return_ HRESULT GetEffectPropertySet(wfn::Vector3 scaleFactors, _Out_ WUComp::ICompositionPropertySet** effectPropertySet) override;
         bool ShouldShadowBeCast() override { return m_isShadowEnabled; }
 
         _Check_return_ HRESULT get_IsShadowEnabledImpl(_Out_ BOOLEAN* value);

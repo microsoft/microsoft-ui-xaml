@@ -26,8 +26,8 @@ public:
 
     wrl::ComPtr<WUComp::ICompositionBrush> GetCompositionBrush();
 
-    static _Check_return_ HRESULT RasterizeFill(_In_ CUIElement* pUIElement, const CMILMatrix& realizationScale, const XPOINTF* shapeMaskOffset, const bool renderCollapsedMask, _In_ DCompSurface* surface);
-    static _Check_return_ HRESULT RasterizeStroke(_In_ CUIElement* pUIElement, const CMILMatrix& realizationScale, const XPOINTF* shapeMaskOffset, const bool renderCollapsedMask, _In_ DCompSurface* surface);
+    static _Check_return_ HRESULT RasterizeFill(_In_ CUIElement* pUIElement, const CMILMatrix& realizationScale, _In_ const XPOINTF* shapeMaskOffset, const bool renderCollapsedMask, _In_ DCompSurface* surface);
+    static _Check_return_ HRESULT RasterizeStroke(_In_ CUIElement* pUIElement, const CMILMatrix& realizationScale, _In_ const XPOINTF* shapeMaskOffset, const bool renderCollapsedMask, _In_ DCompSurface* surface);
 
 private:
 

@@ -90,7 +90,7 @@ namespace DirectUI
         // This method go through all blocks and return the block which has given ColumnIndex
         // It goes only on forward direction, it doesn't go on Backward direction
         _Check_return_ HRESULT GetBlock(
-            _In_ XUINT32* colIndex,
+            _Inout_ XUINT32* colIndex,
             _Outptr_ OccupancyBlock** ppBlock);
 
         virtual ~OccupancyBlock();
@@ -285,13 +285,13 @@ namespace DirectUI
 
         // MeasureOverride
         IFACEMETHOD(MeasureOverride)(
-                            _In_ wf::Size availableSize,
+                            wf::Size availableSize,
                           _Out_ wf::Size* pReturnValue)
                             override;
 
         // ArrangeOverride
         IFACEMETHOD(ArrangeOverride)(
-                            _In_ wf::Size arrangeSize,
+                            wf::Size arrangeSize,
                             _Out_ wf::Size* pReturnValue)
                             override;
 

@@ -55,12 +55,12 @@ public:
     template <class T>
     static HRESULT do_query_interface(
         _In_opt_ IUnknown *pIn,
-        _Outptr_ T** pOut);
+        _Outptr_result_maybenull_ T** pOut);
 
     template <>
     static HRESULT do_query_interface(
         _In_opt_ IUnknown *pIn,
-        _Outptr_ HSTRING* pOut);
+        _Outptr_result_maybenull_ HSTRING* pOut);
 
     template <class T>
     static wrl::ComPtr<T> as_or_null(
@@ -73,7 +73,7 @@ public:
     template <class T>
     static HRESULT WinRTCreateInstance(
         _In_ PCWSTR szType,
-        _Outptr_ T** pOut);
+        _COM_Outptr_ T** pOut);
 
     #pragma endregion
 

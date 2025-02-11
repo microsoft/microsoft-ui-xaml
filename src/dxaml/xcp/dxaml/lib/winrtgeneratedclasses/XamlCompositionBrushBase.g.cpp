@@ -77,7 +77,7 @@ IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::get_FallbackColor(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::XamlCompositionBrushBase_FallbackColor, pValue));
 }
-IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::put_FallbackColor(_In_ ABI::Windows::UI::Color value)
+IFACEMETHODIMP DirectUI::XamlCompositionBrushBaseGenerated::put_FallbackColor(ABI::Windows::UI::Color value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::XamlCompositionBrushBase_FallbackColor, value));

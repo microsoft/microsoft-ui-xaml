@@ -54,12 +54,12 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(TransformBounds)(_In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(TransformBoundsCore)(_In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
-        IFACEMETHOD(TransformPoint)(_In_ ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Point* pReturnValue) override;
-        _Check_return_ HRESULT TransformXY(_In_ DOUBLE x, _In_ DOUBLE y, _Out_ ABI::Windows::Foundation::Point* pReturnValue);
-        IFACEMETHOD(TryTransform)(_In_ ABI::Windows::Foundation::Point inPoint, _Out_ ABI::Windows::Foundation::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(TryTransformCore)(_In_ ABI::Windows::Foundation::Point inPoint, _Out_ ABI::Windows::Foundation::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(TransformBounds)(ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(TransformBoundsCore)(ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) override;
+        IFACEMETHOD(TransformPoint)(ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Point* pReturnValue) override;
+        _Check_return_ HRESULT TransformXY(DOUBLE x, DOUBLE y, _Out_ ABI::Windows::Foundation::Point* pReturnValue);
+        IFACEMETHOD(TryTransform)(ABI::Windows::Foundation::Point inPoint, _Out_ ABI::Windows::Foundation::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(TryTransformCore)(ABI::Windows::Foundation::Point inPoint, _Out_ ABI::Windows::Foundation::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue) override;
 
 
     protected:
@@ -69,7 +69,7 @@ namespace DirectUI
         // Customized properties.
 
         // Customized methods.
-         _Check_return_ HRESULT TransformPointImpl(_In_ ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Point* pReturnValue); 
+         _Check_return_ HRESULT TransformPointImpl(ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Point* pReturnValue); 
 
         // Fields.
     };

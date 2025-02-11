@@ -93,7 +93,7 @@ _Check_return_ HRESULT LinearGradientBrush::put_CenterPointImpl(const wfn::Vecto
 
 _Check_return_ HRESULT LinearGradientBrushFactory::CreateInstanceWithGradientStopCollectionAndAngleImpl(
     _In_ wfc::IVector<xaml_media::GradientStop*>* gradientStopCollection,
-    _In_ DOUBLE angle,
+    DOUBLE angle,
     _Outptr_ ILinearGradientBrush** ppInstance)
 {
     HRESULT hr = S_OK;

@@ -415,7 +415,7 @@ BOOLEAN ItemsPresenter::WantsScrollViewerToObscureAvailableSizeBasedOnScrollBarV
 
 // Measures header, footer and the inner panel
 IFACEMETHODIMP ItemsPresenter::MeasureOverride(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* returnValue)
 {
     ctl::ComPtr<IPanel> spPanel;
@@ -626,7 +626,7 @@ IFACEMETHODIMP ItemsPresenter::MeasureOverride(
 
 // Arranges header and inner panel
 IFACEMETHODIMP ItemsPresenter::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     ctl::ComPtr<IPanel> spPanel;

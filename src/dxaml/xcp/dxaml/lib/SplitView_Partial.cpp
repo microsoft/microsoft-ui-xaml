@@ -294,7 +294,7 @@ SplitView::ProcessTabStopOverride(
     _In_opt_ DependencyObject* pCandidateTabStopElement,
     const bool isBackward,
     const bool /*didCycleFocusAtRootVisualScope*/,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsTabStopOverridden
     )
 {
@@ -314,7 +314,7 @@ SplitView::ProcessCandidateTabStopOverride(
     _In_ DependencyObject* /*pCandidateTabStopElement*/,
     _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
     const bool isBackward,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsCandidateTabStopOverridden
     )
 {
@@ -379,7 +379,7 @@ SplitView::GetFirstFocusableElementOverride(_Outptr_result_maybenull_ Dependency
 }
 
 _Check_return_ HRESULT
-SplitView::GetLastFocusableElementOverride(_Outptr_ DependencyObject** lastFocusable)
+SplitView::GetLastFocusableElementOverride(_Outptr_result_maybenull_ DependencyObject** lastFocusable)
 {
     *lastFocusable = nullptr;
 

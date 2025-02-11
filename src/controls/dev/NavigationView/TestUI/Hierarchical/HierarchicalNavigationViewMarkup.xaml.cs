@@ -97,7 +97,11 @@ namespace MUXControlsTestApp
         {
             IList<Object> menuItems = navview.MenuItems;
             navview.SelectedItem = menuItems[1];
+        }
 
+        private void DisableMenuItem1(object sender, RoutedEventArgs e)
+        {
+            MI1.IsEnabled = false;
         }
 
         private void OnItemExpanding(object sender, NavigationViewItemExpandingEventArgs e)

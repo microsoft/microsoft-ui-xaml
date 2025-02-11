@@ -70,9 +70,9 @@ SecondaryContentRelationshipFactory::CreateStickyHeaderRelationshipImpl(
     _In_ xaml::IUIElement *pPanelObject,
     _In_ xaml::IDependencyObject *pPanelTransform,
     _In_ xaml::IDependencyObject* pHeaderTransform,
-    _In_ DOUBLE groupTopY,
-    _In_ DOUBLE groupBottomY,
-    _In_ DOUBLE headerHeight,
+    DOUBLE groupTopY,
+    DOUBLE groupBottomY,
+    DOUBLE headerHeight,
     _Outptr_ xaml::Internal::ISecondaryContentRelationship **ppReturnValue)
 {
     HRESULT hr = S_OK;
@@ -151,8 +151,8 @@ SecondaryContentRelationshipFactory::CreateClipTransformRelationshipImpl(
     _In_ xaml::IUIElement *pScrollViewer,
     _In_ xaml::IUIElement *pClipOwner,
     _In_ xaml::IDependencyObject *pClipTransform,
-    _In_ DOUBLE listExtentHeight,
-    _In_ DOUBLE listViewportHeight,
+    DOUBLE listExtentHeight,
+    DOUBLE listViewportHeight,
     _Outptr_ xaml::Internal::ISecondaryContentRelationship **ppReturnValue)
 {
     HRESULT hr = S_OK;
@@ -251,8 +251,8 @@ SecondaryContentRelationshipFactory::CreateStaticElementRelationshipImpl(
     _In_ xaml::IUIElement *pScrollViewer,
     _In_ xaml::IUIElement *pHeaderObject,
     _In_ xaml::IDependencyObject *pHeaderTransform,
-    _In_ BOOLEAN isHorizontallyStatic,
-    _In_ BOOLEAN isInverted,
+    BOOLEAN isHorizontallyStatic,
+    BOOLEAN isInverted,
     _Outptr_ xaml::Internal::ISecondaryContentRelationship **ppReturnValue)
 {
     HRESULT hr = S_OK;
@@ -346,7 +346,7 @@ DirectUI::CreateNPointSecondaryContentRelationship(
     _In_ DirectManipulationProperty secondaryContentProperty,
     _In_ HSTRING strAssociatedDependencyProperty,
     _In_opt_ HSTRING strOrthogonalPrimaryContentProperty,
-    _In_opt_ DirectManipulationProperty orthogonalSecondaryContentProperty,
+    _In_ DirectManipulationProperty orthogonalSecondaryContentProperty,
     _In_opt_ HSTRING strOrthogonalAssociatedDependencyProperty,
     _In_ UINT numPoints,
     _In_reads_(numPoints) const DOUBLE *pPrimaryContentValues,

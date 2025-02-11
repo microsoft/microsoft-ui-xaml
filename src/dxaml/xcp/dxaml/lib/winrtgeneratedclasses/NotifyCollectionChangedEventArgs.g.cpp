@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::NotifyCollectionChangedEventArgs::get_Action(_Out_ ABI:
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NotifyCollectionChangedEventArgs::put_Action(_In_ ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction value)
+_Check_return_ HRESULT DirectUI::NotifyCollectionChangedEventArgs::put_Action(ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -84,7 +84,7 @@ IFACEMETHODIMP DirectUI::NotifyCollectionChangedEventArgs::get_NewStartingIndex(
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NotifyCollectionChangedEventArgs::put_NewStartingIndex(_In_ INT value)
+_Check_return_ HRESULT DirectUI::NotifyCollectionChangedEventArgs::put_NewStartingIndex(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -118,7 +118,7 @@ IFACEMETHODIMP DirectUI::NotifyCollectionChangedEventArgs::get_OldStartingIndex(
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::NotifyCollectionChangedEventArgs::put_OldStartingIndex(_In_ INT value)
+_Check_return_ HRESULT DirectUI::NotifyCollectionChangedEventArgs::put_OldStartingIndex(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -148,7 +148,7 @@ HRESULT DirectUI::NotifyCollectionChangedEventArgsFactory::QueryInterfaceImpl(_I
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::NotifyCollectionChangedEventArgsFactory::CreateInstanceWithAllParameters(_In_ ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction action, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pNewItems, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pOldItems, _In_ INT newIndex, _In_ INT oldIndex, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs** ppInstance)
+IFACEMETHODIMP DirectUI::NotifyCollectionChangedEventArgsFactory::CreateInstanceWithAllParameters(ABI::Microsoft::UI::Xaml::Interop::NotifyCollectionChangedAction action, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pNewItems, _In_opt_ ABI::Microsoft::UI::Xaml::Interop::IBindableVector* pOldItems, INT newIndex, INT oldIndex, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Interop::INotifyCollectionChangedEventArgs** ppInstance)
 {
     HRESULT hr = S_OK;
     

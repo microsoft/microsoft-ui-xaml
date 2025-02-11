@@ -47,7 +47,7 @@ IFACEMETHODIMP DirectUI::ToolTipGenerated::get_HorizontalOffset(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToolTip_HorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::ToolTipGenerated::put_HorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ToolTipGenerated::put_HorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToolTip_HorizontalOffset, value));
@@ -56,7 +56,7 @@ IFACEMETHODIMP DirectUI::ToolTipGenerated::get_IsOpen(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToolTip_IsOpen, pValue));
 }
-IFACEMETHODIMP DirectUI::ToolTipGenerated::put_IsOpen(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ToolTipGenerated::put_IsOpen(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToolTip_IsOpen, value));
@@ -65,7 +65,7 @@ IFACEMETHODIMP DirectUI::ToolTipGenerated::get_Placement(_Out_ ABI::Microsoft::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToolTip_Placement, pValue));
 }
-IFACEMETHODIMP DirectUI::ToolTipGenerated::put_Placement(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value)
+IFACEMETHODIMP DirectUI::ToolTipGenerated::put_Placement(ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToolTip_Placement, value));
@@ -74,7 +74,7 @@ IFACEMETHODIMP DirectUI::ToolTipGenerated::get_PlacementRect(_Out_ ABI::Windows:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToolTip_PlacementRect, ppValue));
 }
-IFACEMETHODIMP DirectUI::ToolTipGenerated::put_PlacementRect(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue)
+IFACEMETHODIMP DirectUI::ToolTipGenerated::put_PlacementRect(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToolTip_PlacementRect, pValue));
@@ -101,7 +101,7 @@ IFACEMETHODIMP DirectUI::ToolTipGenerated::get_VerticalOffset(_Out_ DOUBLE* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToolTip_VerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::ToolTipGenerated::put_VerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ToolTipGenerated::put_VerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToolTip_VerticalOffset, value));
@@ -144,7 +144,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ToolTipGenerated::remove_Closed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ToolTipGenerated::remove_Closed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosedEventSourceType* pEventSource = nullptr;
@@ -199,7 +199,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ToolTipGenerated::remove_Opened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ToolTipGenerated::remove_Opened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpenedEventSourceType* pEventSource = nullptr;

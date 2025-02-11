@@ -187,7 +187,12 @@ bool CDeferredInvoke::Enqueue(DeferredInvoke * pInvoke, _Out_ bool* isFirstItem)
         }
 
         m_workCount++;
-        GraphicsTelemetry::DeferredInvoke_Enqueue(m_workCount);
+
+        TraceLoggingProviderWrite(
+            GraphicsTelemetry, "Dispatch_EnqueueDeferredInvoke",
+            TraceLoggingUInt32(pInvoke->Msg, "Message"),
+            TraceLoggingUInt32(m_workCount, "WorkCount"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     }
 
     return true;
@@ -237,11 +242,17 @@ CDeferredInvoke::DeferredInvoke * CDeferredInvoke::Dequeue(_Out_ bool* hasMoreWo
             // Completely detach this item
             pInvoke->Next = NULL;
             pInvoke->Prev = NULL;
+
+            m_workCount--;
+
+            TraceLoggingProviderWrite(
+                GraphicsTelemetry, "Dispatch_DequeueDeferredInvoke",
+                TraceLoggingUInt32(pInvoke->Msg, "Message"),
+                TraceLoggingUInt32(m_workCount, "WorkCount"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
         }
 
         *hasMoreWork = (m_pHead != nullptr);
-        m_workCount--;
-        GraphicsTelemetry::DeferredInvoke_Dequeue(m_workCount);
     }
 
     return pInvoke;
@@ -648,6 +659,8 @@ CXcpDispatcher::OnReentrancyProtectedWindowMessage(
     HRESULT hr = S_OK;
     ASSERT(m_bInit);
 
+    ASSERT(m_state != State::Suspended);
+
     // Don't process a message if another message is being processed.
     // This prevents reentrancy caused by a message handler pumping
     // messages.
@@ -701,14 +714,14 @@ CXcpDispatcher::OnReentrancyProtectedWindowMessage(
                 // messages for the duration of the synchronous event. When we
                 // reenable those messages, CoreMessaging will reschedule all the
                 // messages that it skipped.
-                PauseNewDispatch deferReentrancy(m_messageLoopExtensions.get());
+                PauseNewDispatch deferReentrancy(this);
                 OnScriptCallback(reinterpret_cast<CEventInfo *>(lParam));
                 break;
             }
 
         case WM_EXECUTE_ON_UI_CALLBACK_BLOCK_REENTRANCY:
             {
-                PauseNewDispatch deferReentrancy(m_messageLoopExtensions.get());
+                PauseNewDispatch deferReentrancy(this);
                 if (m_pBH)
                 {
                     IFC(m_pBH->ProcessExecuteMessage());
@@ -1186,7 +1199,9 @@ CXcpDispatcher::QueueDeferredInvoke(
     // the same priority as input messages, so ticking will be interleaved with input.
     if (isFirstItem)
     {
-        GraphicsTelemetry::DispatcherQueueTimer_Start();
+        TraceLoggingProviderWrite(
+            GraphicsTelemetry, "Dispatch_StartDispatcherQueueTimer",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
         // If the queue is empty then start the timer to kick things off...
         IFCFAILFAST(m_dispatcherQueueTimer->Start());
@@ -1206,19 +1221,46 @@ HRESULT CALLBACK CXcpDispatcher::MessageTimerCallbackStatic(void* myUserData)
 
 void CXcpDispatcher::MessageTimerCallback()
 {
-    GraphicsTelemetry::DispatcherQueueTimer_Callback();
+    uint32_t workCount = m_DeferredInvoke.GetWorkCount();
 
-    bool dispatchedWork_DontCare;
-    bool hasMoreWork;
-    m_DeferredInvoke.DispatchQueuedMessage(&dispatchedWork_DontCare, &hasMoreWork);
+    TraceLoggingProviderWrite(
+        GraphicsTelemetry, "Dispatch_DispatcherQueueTimerCallback",
+        TraceLoggingUInt32(static_cast<uint32_t>(m_state), "State"),
+        TraceLoggingUInt32(workCount, "WorkCount"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-    if (hasMoreWork)
+    // Explicitly check if there's more work. We'll resume the timer when unsuspending if there's work, and there might
+    // be already a timer callback on its way to dispatch the work. When that resumed timer comes back it can find an
+    // empty queue.
+    if (workCount > 0)
     {
-        // There are more queued messages to dispatch. Request another callback via the timer. This will let CoreMessaging
-        // finish the currently queued input messages before calling us back again. This interleaves ticking with input and
-        // prevents starvation.
-        GraphicsTelemetry::DispatcherQueueTimer_Callback_Restart();
-        IFCFAILFAST(m_dispatcherQueueTimer->Start());
+        if (m_state == State::Suspended)
+        {
+            // If we're suspended, we'll restart the timer when we unsuspend.
+            TraceLoggingProviderWrite(
+                GraphicsTelemetry, "Dispatch_ReentrancyBlocked",
+                TraceLoggingUInt32(workCount, "WorkCount"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+        }
+        else
+        {
+            bool dispatchedWork_DontCare;
+            bool hasMoreWork;
+            m_DeferredInvoke.DispatchQueuedMessage(&dispatchedWork_DontCare, &hasMoreWork);
+
+            if (hasMoreWork)
+            {
+                // There are more queued messages to dispatch. Request another callback via the timer. This will let CoreMessaging
+                // finish the currently queued input messages before calling us back again. This interleaves ticking with input and
+                // prevents starvation.
+
+                TraceLoggingProviderWrite(
+                    GraphicsTelemetry, "Dispatch_StartDispatcherQueueTimer",
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                IFCFAILFAST(m_dispatcherQueueTimer->Start());
+            }
+        }
     }
 }
 
@@ -1228,7 +1270,7 @@ void CXcpDispatcher::MessageTimerCallback()
 // UI thread.
 void CXcpDispatcher::Drain()
 {
-    ASSERT(m_state == State::Running);
+    ASSERT(m_state != State::Draining);
     m_state = State::Draining;
 
     bool hasMoreWork {true};
@@ -1238,6 +1280,38 @@ void CXcpDispatcher::Drain()
         m_DeferredInvoke.DispatchQueuedMessage(&dispatchedWork_DontCare, &hasMoreWork);
     }
     while (hasMoreWork);
+}
+
+void CXcpDispatcher::PauseDispatch()
+{
+    TraceLoggingProviderWrite(
+        GraphicsTelemetry, "Dispatch_PauseDispatch",
+        TraceLoggingUInt32(static_cast<uint32_t>(m_state), "State"),
+        TraceLoggingUInt32(m_DeferredInvoke.GetWorkCount(), "WorkCount"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    m_state = State::Suspended;
+}
+
+void CXcpDispatcher::ResumeDispatch()
+{
+    uint32_t workCount = m_DeferredInvoke.GetWorkCount();
+
+    TraceLoggingProviderWrite(
+        GraphicsTelemetry, "Dispatch_ResumeDispatch",
+        TraceLoggingUInt32(workCount, "WorkCount"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    m_state = State::Running;
+
+    if (workCount > 0)
+    {
+        TraceLoggingProviderWrite(
+            GraphicsTelemetry, "Dispatch_StartDispatcherQueueTimer",
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+        IFCFAILFAST(m_dispatcherQueueTimer->Start());
+    }
 }
 
 //------------------------------------------------------------------------
@@ -1350,4 +1424,32 @@ CXcpDispatcher::SetTicksEnabled(bool fTicksEnabled)
 
 Cleanup:
     RRETURN(hr);
+}
+
+PauseNewDispatch::PauseNewDispatch(_In_opt_ CCoreServices* coreServices)
+{
+    // If called during teardown we might not have a CXcpDispatcher anymore. No-op in that case.
+    if (coreServices)
+    {
+        auto hostSite = coreServices->GetHostSite();
+        if (hostSite)
+        {
+            m_dispatcherNoRef = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+            m_dispatcherNoRef->PauseDispatch();
+        }
+    }
+}
+
+PauseNewDispatch::PauseNewDispatch(_In_ CXcpDispatcher* dispatcher)
+    : m_dispatcherNoRef(dispatcher)
+{
+    m_dispatcherNoRef->PauseDispatch();
+}
+
+PauseNewDispatch::~PauseNewDispatch()
+{
+    if (m_dispatcherNoRef)
+    {
+        m_dispatcherNoRef->ResumeDispatch();
+    }
 }

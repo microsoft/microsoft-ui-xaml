@@ -171,6 +171,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 this.AttributeProcessing(strippableMember);
             }
 
+            // Erase any x:SuppressXamlTrimWarnings directives.
+            // This is treated differently from any other directive as these are put within Bindings
+            // and due to that the position reported is the same as the member it is put within
+            // and we we don't want to strip the entire member.
+            foreach (StrippableMember strippableSuppressTrimWarningsMember in fileCodeInfo.SuppressXamlTrimWarningsBindingMembers)
+            {
+                this.StripSuppressXamlTrimWarningDirectiveInBinding(strippableSuppressTrimWarningsMember);
+            }
+
             // Erase platform-conditional statements from the namespace
             foreach (StrippableNamespace strippableNamespace in fileCodeInfo.StrippableNamespaces)
             {
@@ -430,6 +439,64 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 return replacement;
             }
+        }
+
+        private void StripSuppressXamlTrimWarningDirectiveInBinding(ILineNumberAndErrorInfo element)
+        {
+            const string SuppressXamlTrimWarningsString = "x:SuppressXamlTrimWarnings";
+            const string SuppressXamlTrimWarningsValueTrue = "True";
+            const string SuppressXamlTrimWarningsValueFalse = "False";
+
+            // Keeping the same check as AttributeProcessing and also
+            // to ensure our assumptions remain the same when stripping.
+            var lineNumberInfo = element.LineNumberInfo;
+            if (lineNumberInfo.StartLineNumber != lineNumberInfo.EndLineNumber ||
+                lineNumberInfo.StartLinePosition != lineNumberInfo.EndLinePosition)
+            {
+                this.Errors.Add(element.GetAttributeProcessingError());
+                return;
+            }
+
+            // We start at the column of the member to make sure we only
+            // strip for that member and not any others on the same line.
+            int startLine = lineNumberInfo.StartLineNumber - 1;
+            int startColumn = lineNumberInfo.StartLinePosition - 1;
+
+            string line = this.xamlLines[startLine];
+
+            int directiveStartColumn = line.IndexOf(SuppressXamlTrimWarningsString, startColumn, StringComparison.OrdinalIgnoreCase);
+            if (directiveStartColumn == -1)
+            {
+                this.Errors.Add(element.GetAttributeProcessingError());
+                return;
+            }
+
+            int valueEndColumn = line.IndexOf(SuppressXamlTrimWarningsValueTrue, directiveStartColumn + SuppressXamlTrimWarningsString.Length, StringComparison.OrdinalIgnoreCase);
+            int valueLength = SuppressXamlTrimWarningsValueTrue.Length;
+            if (valueEndColumn == -1)
+            {
+                // Value wasn't true, check for false.
+                valueEndColumn = line.IndexOf(SuppressXamlTrimWarningsValueFalse, directiveStartColumn + SuppressXamlTrimWarningsString.Length, StringComparison.OrdinalIgnoreCase);
+                valueLength = SuppressXamlTrimWarningsValueFalse.Length;
+            }
+
+            if (valueEndColumn == -1)
+            {
+                this.Errors.Add(element.GetAttributeProcessingError());
+                return;
+            }
+
+            // Move start location to include the trailing comma which will be there
+            // in the case of Binding.
+            int trailingCommaColumn = line.LastIndexOf(',', directiveStartColumn, directiveStartColumn - startColumn);
+            startColumn = trailingCommaColumn == -1 ? directiveStartColumn : trailingCommaColumn;
+
+            // Update end to include the value.
+            int endColumn = valueEndColumn + valueLength;
+
+            string spaces = XamlConnectionIdRewriter.GetSpaces(startColumn, endColumn - 1);
+            line = line.Substring(0, startColumn) + spaces + line.Substring(endColumn);
+            this.xamlLines[startLine] = line;
         }
     }
 }

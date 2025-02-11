@@ -97,7 +97,8 @@ private:
         StreamOffsetToken offsetToken;
         bool shouldOptimize = true;
         bool isMutable = false;
-        void reset() { shouldOptimize = true; isMutable = false; }
+        bool isConditional = false;
+        void reset() { shouldOptimize = true; isMutable = false; isConditional = false; }
     } m_currentSetterInfo;
 
     // The current operation is pushed onto the pendingOperations vector below

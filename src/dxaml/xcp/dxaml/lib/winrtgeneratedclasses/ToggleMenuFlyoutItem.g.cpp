@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ToggleMenuFlyoutItemGenerated::get_IsChecked(_Out_ BOOL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleMenuFlyoutItem_IsChecked, pValue));
 }
-IFACEMETHODIMP DirectUI::ToggleMenuFlyoutItemGenerated::put_IsChecked(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ToggleMenuFlyoutItemGenerated::put_IsChecked(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleMenuFlyoutItem_IsChecked, value));

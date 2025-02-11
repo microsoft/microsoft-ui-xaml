@@ -270,7 +270,7 @@ Cleanup:
 // Measures the items of a WrapGrid in anticipation of arranging them during the
 // ArrangeOverride pass.
 IFACEMETHODIMP WrapGrid::MeasureOverride(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* returnValue)
 {
     TraceVirtualizationMeasureBegin();
@@ -704,7 +704,7 @@ WrapGrid::MeasureChildren(
 
 // Arranges the items of a WrapGrid.
 IFACEMETHODIMP WrapGrid::ArrangeOverride(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     wf::Size unorientedStartingSize = {0.0, 0.0};
@@ -1499,7 +1499,7 @@ Cleanup:
 
 // Get the closest element information to the point.
 _Check_return_ HRESULT WrapGrid::GetClosestElementInfo(
-    _In_ wf::Point position,
+    wf::Point position,
     _Out_ xaml_primitives::ElementInfo* returnValue)
 {
     HRESULT hr = S_OK;
@@ -1514,7 +1514,7 @@ Cleanup:
 // Get the index where an item should be inserted if it were dropped at
 // the given position.  This will be used by live reordering.
 _Check_return_ HRESULT WrapGrid::GetInsertionIndex(
-    _In_ wf::Point position,
+    wf::Point position,
     _Out_ INT* returnValue)
 {
     HRESULT hr = S_OK;

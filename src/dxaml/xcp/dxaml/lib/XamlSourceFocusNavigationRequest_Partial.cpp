@@ -68,7 +68,7 @@ XamlSourceFocusNavigationRequest::get_ReasonImpl(_Out_ xaml_hosting::XamlSourceF
 
 _Check_return_ HRESULT
 XamlSourceFocusNavigationRequestFactory::CreateInstanceImpl(
-    _In_ xaml_hosting::XamlSourceFocusNavigationReason reason,
+    xaml_hosting::XamlSourceFocusNavigationReason reason,
     _Outptr_ xaml_hosting::IXamlSourceFocusNavigationRequest** ppResult)
 {
     ctl::ComPtr<XamlSourceFocusNavigationRequest> request;
@@ -79,8 +79,8 @@ XamlSourceFocusNavigationRequestFactory::CreateInstanceImpl(
 
 _Check_return_ HRESULT
 XamlSourceFocusNavigationRequestFactory::CreateInstanceWithHintRectImpl(
-    _In_ xaml_hosting::XamlSourceFocusNavigationReason reason,
-    _In_ wf::Rect origin,
+    xaml_hosting::XamlSourceFocusNavigationReason reason,
+    wf::Rect origin,
     _Outptr_ xaml_hosting::IXamlSourceFocusNavigationRequest** ppResult)
 {
     ctl::ComPtr<XamlSourceFocusNavigationRequest> request;
@@ -91,9 +91,9 @@ XamlSourceFocusNavigationRequestFactory::CreateInstanceWithHintRectImpl(
 
 _Check_return_ HRESULT
 XamlSourceFocusNavigationRequestFactory::CreateInstanceWithHintRectAndCorrelationIdImpl(
-    _In_ xaml_hosting::XamlSourceFocusNavigationReason reason,
-    _In_ wf::Rect origin,
-    _In_ GUID correlationId,
+    xaml_hosting::XamlSourceFocusNavigationReason reason,
+    wf::Rect origin,
+    GUID correlationId,
     _Outptr_ xaml_hosting::IXamlSourceFocusNavigationRequest** ppResult)
 {
     ctl::ComPtr<XamlSourceFocusNavigationRequest> request;

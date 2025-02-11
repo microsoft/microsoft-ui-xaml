@@ -50,7 +50,7 @@ namespace DirectUI
         IFACEMETHOD(get_Peer)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppValue) override;
         IFACEMETHOD(put_Peer)(_In_opt_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pValue) override;
         IFACEMETHOD(get_Type)(_Out_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType* pValue) override;
-        IFACEMETHOD(put_Type)(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType value) override;
+        IFACEMETHOD(put_Type)(ABI::Microsoft::UI::Xaml::Automation::AnnotationType value) override;
 
         // Events.
 
@@ -90,8 +90,8 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance);
-        IFACEMETHOD(CreateWithPeerParameter)(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pPeer, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance);
+        IFACEMETHOD(CreateInstance)(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance);
+        IFACEMETHOD(CreateWithPeerParameter)(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pPeer, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance);
 
         // Static properties.
 
@@ -115,8 +115,8 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance);
-        _Check_return_ HRESULT CreateWithPeerParameterImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pPeer, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance);
+        _Check_return_ HRESULT CreateWithPeerParameterImpl(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pPeer, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance);
 
         // Customized static properties.
 

@@ -56,7 +56,13 @@ _Check_return_ HRESULT DirectUI::PointerRoutedEventArgs::GetIntermediatePointsIm
 
     // Get PointerPoint from the specified transform point
     spArgs.attach(static_cast<CPointerEventArgs*>(GetCorePeer()));
-    IFC(spArgs->m_pPointerEventArgs->GetIntermediateTransformedPoints(pPointerPointTransform, &pPointerPoints));
+    if (spArgs)
+    {
+        if (spArgs->m_pPointerEventArgs)
+        {
+            IFC(spArgs->m_pPointerEventArgs->GetIntermediateTransformedPoints(pPointerPointTransform, &pPointerPoints));
+        }
+    }
 
     BOOLEAN isGenerated;
     IFC(get_IsGenerated(&isGenerated));

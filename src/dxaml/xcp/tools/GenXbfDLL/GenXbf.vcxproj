@@ -64,8 +64,8 @@
     so we can't point it to the regular binplace location that the repo follows
   -->
   <PropertyGroup>
-    <BinplaceSubdirectory Condition="'$(arch)' == 'amd64'">x64</BinplaceSubdirectory>
-    <BinplaceSubdirectory Condition="'$(arch)' != 'amd64'">$(arch.ToLowerInvariant())</BinplaceSubdirectory>
+    <BinplaceSubdirectory>$(Platform.ToLowerInvariant())</BinplaceSubdirectory>
+    <BinplaceSubdirectory Condition="'$(BinplaceSubdirectory)' == 'win32'">x86</BinplaceSubdirectory>
   </PropertyGroup>
   <ItemGroup>
     <BinplaceItem Include="$(XamlBuildPath)\GenXbf.dll">

@@ -192,7 +192,7 @@ _Check_return_ HRESULT ctl::are_equal(
     RRETURN(S_OK);
 }
 
-_Check_return_ bool ctl::are_equal(_In_ IUnknown* pFirst, _In_ IUnknown* pSecond)
+_Check_return_ bool ctl::are_equal(_In_opt_ IUnknown* pFirst, _In_opt_ IUnknown* pSecond)
 {
     auto spFirstIdentity = ctl::query_interface_cast<IUnknown>(pFirst);
     auto spSecondIdentity = ctl::query_interface_cast<IUnknown>(pSecond);

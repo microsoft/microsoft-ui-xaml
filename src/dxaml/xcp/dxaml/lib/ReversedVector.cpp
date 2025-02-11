@@ -128,7 +128,7 @@ ReversedVector::add_VectorChanged(_In_ wfc::VectorChangedEventHandler<IInspectab
 }
 
 _Check_return_ HRESULT
-ReversedVector::remove_VectorChanged(_In_ EventRegistrationToken token)
+ReversedVector::remove_VectorChanged(EventRegistrationToken token)
 {
     IFC_RETURN(m_eventSource.Remove(token));
 

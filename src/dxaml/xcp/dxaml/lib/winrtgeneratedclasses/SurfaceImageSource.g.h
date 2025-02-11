@@ -83,8 +83,8 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithDimensions)(_In_ INT pixelWidth, _In_ INT pixelHeight, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance);
-        IFACEMETHOD(CreateInstanceWithDimensionsAndOpacity)(_In_ INT pixelWidth, _In_ INT pixelHeight, _In_ BOOLEAN isOpaque, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance);
+        IFACEMETHOD(CreateInstanceWithDimensions)(INT pixelWidth, INT pixelHeight, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance);
+        IFACEMETHOD(CreateInstanceWithDimensionsAndOpacity)(INT pixelWidth, INT pixelHeight, BOOLEAN isOpaque, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance);
 
         // Static properties.
 
@@ -106,8 +106,8 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithDimensionsImpl(_In_ INT pixelWidth, _In_ INT pixelHeight, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance);
-        _Check_return_ HRESULT CreateInstanceWithDimensionsAndOpacityImpl(_In_ INT pixelWidth, _In_ INT pixelHeight, _In_ BOOLEAN isOpaque, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithDimensionsImpl(INT pixelWidth, INT pixelHeight, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithDimensionsAndOpacityImpl(INT pixelWidth, INT pixelHeight, BOOLEAN isOpaque, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance);
 
         // Customized static properties.
 

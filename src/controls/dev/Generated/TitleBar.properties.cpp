@@ -13,13 +13,13 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "TitleBar.g.cpp"
 
-GlobalDependencyProperty TitleBarProperties::s_ContentProperty{ nullptr };
-GlobalDependencyProperty TitleBarProperties::s_FooterProperty{ nullptr };
-GlobalDependencyProperty TitleBarProperties::s_HeaderProperty{ nullptr };
+GlobalDependencyProperty TitleBarProperties::s_CenterContentProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_IconSourceProperty{ nullptr };
+GlobalDependencyProperty TitleBarProperties::s_IsBackButtonEnabledProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_IsBackButtonVisibleProperty{ nullptr };
-GlobalDependencyProperty TitleBarProperties::s_IsBackEnabledProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_IsPaneToggleButtonVisibleProperty{ nullptr };
+GlobalDependencyProperty TitleBarProperties::s_LeftContentProperty{ nullptr };
+GlobalDependencyProperty TitleBarProperties::s_RightContentProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_SubtitleProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_TemplateSettingsProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_TitleProperty{ nullptr };
@@ -33,38 +33,16 @@ TitleBarProperties::TitleBarProperties()
 
 void TitleBarProperties::EnsureProperties()
 {
-    if (!s_ContentProperty)
+    if (!s_CenterContentProperty)
     {
-        s_ContentProperty =
+        s_CenterContentProperty =
             InitializeDependencyProperty(
-                L"Content",
-                winrt::name_of<winrt::IInspectable>(),
+                L"CenterContent",
+                winrt::name_of<winrt::UIElement>(),
                 winrt::name_of<winrt::TitleBar>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnContentPropertyChanged));
-    }
-    if (!s_FooterProperty)
-    {
-        s_FooterProperty =
-            InitializeDependencyProperty(
-                L"Footer",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::TitleBar>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnFooterPropertyChanged));
-    }
-    if (!s_HeaderProperty)
-    {
-        s_HeaderProperty =
-            InitializeDependencyProperty(
-                L"Header",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::TitleBar>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
+                ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnCenterContentPropertyChanged));
     }
     if (!s_IconSourceProperty)
     {
@@ -77,6 +55,17 @@ void TitleBarProperties::EnsureProperties()
                 ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIconSourcePropertyChanged));
     }
+    if (!s_IsBackButtonEnabledProperty)
+    {
+        s_IsBackButtonEnabledProperty =
+            InitializeDependencyProperty(
+                L"IsBackButtonEnabled",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TitleBar>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnIsBackButtonEnabledPropertyChanged));
+    }
     if (!s_IsBackButtonVisibleProperty)
     {
         s_IsBackButtonVisibleProperty =
@@ -88,17 +77,6 @@ void TitleBarProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnIsBackButtonVisiblePropertyChanged));
     }
-    if (!s_IsBackEnabledProperty)
-    {
-        s_IsBackEnabledProperty =
-            InitializeDependencyProperty(
-                L"IsBackEnabled",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::TitleBar>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnIsBackEnabledPropertyChanged));
-    }
     if (!s_IsPaneToggleButtonVisibleProperty)
     {
         s_IsPaneToggleButtonVisibleProperty =
@@ -109,6 +87,28 @@ void TitleBarProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnIsPaneToggleButtonVisiblePropertyChanged));
+    }
+    if (!s_LeftContentProperty)
+    {
+        s_LeftContentProperty =
+            InitializeDependencyProperty(
+                L"LeftContent",
+                winrt::name_of<winrt::UIElement>(),
+                winrt::name_of<winrt::TitleBar>(),
+                false /* isAttached */,
+                ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnLeftContentPropertyChanged));
+    }
+    if (!s_RightContentProperty)
+    {
+        s_RightContentProperty =
+            InitializeDependencyProperty(
+                L"RightContent",
+                winrt::name_of<winrt::UIElement>(),
+                winrt::name_of<winrt::TitleBar>(),
+                false /* isAttached */,
+                ValueHelper<winrt::UIElement>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnRightContentPropertyChanged));
     }
     if (!s_SubtitleProperty)
     {
@@ -147,35 +147,19 @@ void TitleBarProperties::EnsureProperties()
 
 void TitleBarProperties::ClearProperties()
 {
-    s_ContentProperty = nullptr;
-    s_FooterProperty = nullptr;
-    s_HeaderProperty = nullptr;
+    s_CenterContentProperty = nullptr;
     s_IconSourceProperty = nullptr;
+    s_IsBackButtonEnabledProperty = nullptr;
     s_IsBackButtonVisibleProperty = nullptr;
-    s_IsBackEnabledProperty = nullptr;
     s_IsPaneToggleButtonVisibleProperty = nullptr;
+    s_LeftContentProperty = nullptr;
+    s_RightContentProperty = nullptr;
     s_SubtitleProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
     s_TitleProperty = nullptr;
 }
 
-void TitleBarProperties::OnContentPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TitleBar>();
-    winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
-}
-
-void TitleBarProperties::OnFooterPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::TitleBar>();
-    winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
-}
-
-void TitleBarProperties::OnHeaderPropertyChanged(
+void TitleBarProperties::OnCenterContentPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -191,6 +175,14 @@ void TitleBarProperties::OnIconSourcePropertyChanged(
     winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
 }
 
+void TitleBarProperties::OnIsBackButtonEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TitleBar>();
+    winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
+}
+
 void TitleBarProperties::OnIsBackButtonVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -199,7 +191,7 @@ void TitleBarProperties::OnIsBackButtonVisiblePropertyChanged(
     winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
 }
 
-void TitleBarProperties::OnIsBackEnabledPropertyChanged(
+void TitleBarProperties::OnIsPaneToggleButtonVisiblePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -207,7 +199,15 @@ void TitleBarProperties::OnIsBackEnabledPropertyChanged(
     winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
 }
 
-void TitleBarProperties::OnIsPaneToggleButtonVisiblePropertyChanged(
+void TitleBarProperties::OnLeftContentPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TitleBar>();
+    winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
+}
+
+void TitleBarProperties::OnRightContentPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -239,43 +239,17 @@ void TitleBarProperties::OnTitlePropertyChanged(
     winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
 }
 
-void TitleBarProperties::Content(winrt::IInspectable const& value)
+void TitleBarProperties::CenterContent(winrt::UIElement const& value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<TitleBar*>(this)->SetValue(s_ContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    static_cast<TitleBar*>(this)->SetValue(s_CenterContentProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
     }
 }
 
-winrt::IInspectable TitleBarProperties::Content()
+winrt::UIElement TitleBarProperties::CenterContent()
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_ContentProperty));
-}
-
-void TitleBarProperties::Footer(winrt::IInspectable const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TitleBar*>(this)->SetValue(s_FooterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::IInspectable TitleBarProperties::Footer()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_FooterProperty));
-}
-
-void TitleBarProperties::Header(winrt::IInspectable const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TitleBar*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::IInspectable TitleBarProperties::Header()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_HeaderProperty));
+    return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_CenterContentProperty));
 }
 
 void TitleBarProperties::IconSource(winrt::IconSource const& value)
@@ -291,6 +265,19 @@ winrt::IconSource TitleBarProperties::IconSource()
     return ValueHelper<winrt::IconSource>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_IconSourceProperty));
 }
 
+void TitleBarProperties::IsBackButtonEnabled(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TitleBar*>(this)->SetValue(s_IsBackButtonEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TitleBarProperties::IsBackButtonEnabled()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_IsBackButtonEnabledProperty));
+}
+
 void TitleBarProperties::IsBackButtonVisible(bool value)
 {
     [[gsl::suppress(con)]]
@@ -304,19 +291,6 @@ bool TitleBarProperties::IsBackButtonVisible()
     return ValueHelper<bool>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_IsBackButtonVisibleProperty));
 }
 
-void TitleBarProperties::IsBackEnabled(bool value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<TitleBar*>(this)->SetValue(s_IsBackEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-    }
-}
-
-bool TitleBarProperties::IsBackEnabled()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_IsBackEnabledProperty));
-}
-
 void TitleBarProperties::IsPaneToggleButtonVisible(bool value)
 {
     [[gsl::suppress(con)]]
@@ -328,6 +302,32 @@ void TitleBarProperties::IsPaneToggleButtonVisible(bool value)
 bool TitleBarProperties::IsPaneToggleButtonVisible()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_IsPaneToggleButtonVisibleProperty));
+}
+
+void TitleBarProperties::LeftContent(winrt::UIElement const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TitleBar*>(this)->SetValue(s_LeftContentProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::UIElement TitleBarProperties::LeftContent()
+{
+    return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_LeftContentProperty));
+}
+
+void TitleBarProperties::RightContent(winrt::UIElement const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TitleBar*>(this)->SetValue(s_RightContentProperty, ValueHelper<winrt::UIElement>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::UIElement TitleBarProperties::RightContent()
+{
+    return ValueHelper<winrt::UIElement>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_RightContentProperty));
 }
 
 void TitleBarProperties::Subtitle(winrt::hstring const& value)

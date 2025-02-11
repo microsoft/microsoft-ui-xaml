@@ -193,7 +193,7 @@ Cleanup:
 // this method to define their own Measure pass behavior.
 _Check_return_ HRESULT
 FrameworkElement::MeasureOverrideImpl(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* returnValue)
 {
     HRESULT hr = S_OK;
@@ -268,7 +268,7 @@ Cleanup:
 // this method to define their own Arrange pass behavior.
 _Check_return_ HRESULT
 FrameworkElement::ArrangeOverrideImpl(
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     _Out_ wf::Size* returnValue)
 {
     HRESULT hr = S_OK;
@@ -916,7 +916,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP FrameworkElement::remove_LayoutUpdated(
-    _In_ EventRegistrationToken tToken)
+    EventRegistrationToken tToken)
 {
     ctl::ComPtr<LayoutUpdatedEventSourceType> layoutUpdatedEventSource;
 
@@ -1047,7 +1047,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP FrameworkElement::remove_SizeChanged(
-    _In_ EventRegistrationToken tToken)
+    EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SizeChangedEventSourceType* pSizeChangedEventSource = nullptr;

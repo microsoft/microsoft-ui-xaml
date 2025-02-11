@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::get_IsScaleAnimationEnable
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::put_IsScaleAnimationEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::put_IsScaleAnimationEnabled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -121,7 +121,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::remove_Completed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::remove_Completed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CompletedEventSourceType* pEventSource = nullptr;
@@ -160,7 +160,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::SetAnimationComponent(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimationComponent component, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
+IFACEMETHODIMP DirectUI::ConnectedAnimationGenerated::SetAnimationComponent(ABI::Microsoft::UI::Xaml::Media::Animation::ConnectedAnimationComponent component, _In_opt_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

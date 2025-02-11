@@ -52,20 +52,20 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsDragging)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_IsDragging(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsDragging(BOOLEAN value);
         _Check_return_ HRESULT get_IsPointerOver(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsPointerOver(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsPointerOver(BOOLEAN value);
 
         // Events.
         _Check_return_ HRESULT GetDragCompletedEventSourceNoRef(_Outptr_ DragCompletedEventSourceType** ppEventSource);
         IFACEMETHOD(add_DragCompleted)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DragCompleted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DragCompleted)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDragDeltaEventSourceNoRef(_Outptr_ DragDeltaEventSourceType** ppEventSource);
         IFACEMETHOD(add_DragDelta)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragDeltaEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DragDelta)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DragDelta)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetDragStartedEventSourceNoRef(_Outptr_ DragStartedEventSourceType** ppEventSource);
         IFACEMETHOD(add_DragStarted)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DragStarted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DragStarted)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(CancelDrag)() override;

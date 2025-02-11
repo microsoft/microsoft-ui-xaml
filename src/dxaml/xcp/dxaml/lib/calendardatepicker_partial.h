@@ -21,7 +21,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT ChangeVisualState(_In_ bool bUseTransitions) override;
 
-        IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ xaml_automation_peers::IAutomationPeer** returnValue) override;
+        IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_result_maybenull_ xaml_automation_peers::IAutomationPeer** returnValue) override;
 
     public:
         _Check_return_ HRESULT GetCurrentFormattedDate(_Out_ HSTRING* value);

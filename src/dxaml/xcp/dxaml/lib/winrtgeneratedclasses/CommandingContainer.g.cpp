@@ -90,7 +90,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CommandingContainerGenerated::remove_ContextChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CommandingContainerGenerated::remove_ContextChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ContextChangedEventSourceType* pEventSource = nullptr;

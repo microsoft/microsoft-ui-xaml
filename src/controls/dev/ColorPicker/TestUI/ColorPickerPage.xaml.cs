@@ -389,7 +389,7 @@ namespace MUXControlsTestApp
         }
     }
 
-    public class MyColorSpectrum : ColorSpectrum
+    public partial class MyColorSpectrum : ColorSpectrum
     {
         protected override void OnApplyTemplate()
         {

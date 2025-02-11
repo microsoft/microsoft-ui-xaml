@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Methods.
         _Check_return_ HRESULT SetPrimaryContentProperty(_In_ HSTRING primaryContentProperty);
-        _Check_return_ HRESULT SetSecondaryContentProperty(_In_ DirectUI::DirectManipulationProperty secondaryContentProperty, _In_ HSTRING associatedDependencyProperty);
+        _Check_return_ HRESULT SetSecondaryContentProperty(DirectUI::DirectManipulationProperty secondaryContentProperty, _In_ HSTRING associatedDependencyProperty);
 
 
     protected:

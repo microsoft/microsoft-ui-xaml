@@ -41,7 +41,7 @@ _Check_return_ HRESULT DirectUI::DependencyPropertyProxyGenerated::get_PropertyI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DependencyPropertyProxy_PropertyId, pValue));
 }
-_Check_return_ HRESULT DirectUI::DependencyPropertyProxyGenerated::put_PropertyId(_In_ INT value)
+_Check_return_ HRESULT DirectUI::DependencyPropertyProxyGenerated::put_PropertyId(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DependencyPropertyProxy_PropertyId, value));

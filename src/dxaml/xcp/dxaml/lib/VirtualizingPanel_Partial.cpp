@@ -40,7 +40,7 @@ VirtualizingPanel::~VirtualizingPanel()
 _Check_return_
 HRESULT
 VirtualizingPanel::GetItemContainerGenerator(
-    _Outptr_ xaml_controls::IItemContainerGenerator** pValue,
+    _Outptr_result_maybenull_ xaml_controls::IItemContainerGenerator** pValue,
     _In_opt_ xaml_controls::IItemsControl* pItemsControlHint)
 {
     HRESULT hr = S_OK;
@@ -76,7 +76,7 @@ Cleanup:
 
 // public api version
 _Check_return_ HRESULT VirtualizingPanel::get_ItemContainerGeneratorImpl(
-    _Outptr_ xaml_controls::IItemContainerGenerator** pValue)
+    _Outptr_result_maybenull_ xaml_controls::IItemContainerGenerator** pValue)
 {
     RRETURN(GetItemContainerGenerator(pValue, NULL));
 }

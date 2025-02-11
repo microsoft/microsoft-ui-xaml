@@ -53,11 +53,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CanChangeViews)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_CanChangeViews)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_CanChangeViews)(BOOLEAN value) override;
         IFACEMETHOD(get_IsZoomedInViewActive)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsZoomedInViewActive)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsZoomedInViewActive)(BOOLEAN value) override;
         IFACEMETHOD(get_IsZoomOutButtonEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsZoomOutButtonEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsZoomOutButtonEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_ZoomedInView)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation** ppValue) override;
         IFACEMETHOD(put_ZoomedInView)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation* pValue) override;
         IFACEMETHOD(get_ZoomedOutView)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomInformation** ppValue) override;
@@ -66,10 +66,10 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetViewChangeCompletedEventSourceNoRef(_Outptr_ ViewChangeCompletedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ViewChangeCompleted)(_In_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ViewChangeCompleted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ViewChangeCompleted)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetViewChangeStartedEventSourceNoRef(_Outptr_ ViewChangeStartedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ViewChangeStarted)(_In_ ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ViewChangeStarted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ViewChangeStarted)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(OnBackButtonPressed)(_Out_ BOOLEAN* pResult) override;

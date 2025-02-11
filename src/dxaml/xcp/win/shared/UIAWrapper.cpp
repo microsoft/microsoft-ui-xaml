@@ -901,8 +901,25 @@ HRESULT STDMETHODCALLTYPE CUIAWrapper::get_FragmentRoot(_Out_ IRawElementProvide
         IFC_NOTRACE(E_FAIL);
     }
 
-    m_pWindow->AddRef();
-    *pRetVal = (IRawElementProviderFragmentRoot*)(m_pWindow);
+    *pRetVal = nullptr;
+
+    if (m_pWindow->IsAutomationOptionFragmentBased())
+    {
+        wrl::ComPtr<ixp::IContentIslandAutomation> contentIslandAutomation;
+        IFCFAILFAST(m_pWindow->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandAutomation)));
+
+        wrl::ComPtr<IInspectable> fragmentRoot;
+        IFCFAILFAST(contentIslandAutomation->get_FragmentRootAutomationProvider(&fragmentRoot));
+        if (fragmentRoot)
+        {
+            fragmentRoot.CopyTo(pRetVal);
+        }
+    }
+    else
+    {
+        wrl::ComPtr<IRawElementProviderFragmentRoot> window(m_pWindow);
+        *pRetVal = window.Detach();
+    }
 
 Cleanup:
     if (FAILED(hr))

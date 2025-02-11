@@ -398,7 +398,7 @@ namespace DirectUI
         template<class T>
         static _Check_return_ typename std::enable_if<!std::is_enum<T>::value, HRESULT>::type UnboxValue(
             _In_ const CValue* box,
-            _Outptr_ wf::IReference<T>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<T>** result)
         {
             return UnboxReferenceValueHelper<T>(
                 box,
@@ -410,7 +410,7 @@ namespace DirectUI
         template<class T>
         static _Check_return_ typename std::enable_if<std::is_enum<T>::value, HRESULT>::type UnboxValue(
             _In_ const CValue* box,
-            _Outptr_ wf::IReference<T>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<T>** result)
         {
             return UnboxReferenceValueHelper<T>(
                 box,
@@ -421,7 +421,7 @@ namespace DirectUI
         template<>
         STATIC_SPEC _Check_return_ HRESULT UnboxValue(
             _In_ const CValue* box,
-            _Outptr_ wf::IReference<bool>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<bool>** result)
         {
             return UnboxReferenceValueHelper<BOOLEAN, bool>(
                 box,
@@ -432,7 +432,7 @@ namespace DirectUI
         template<>
         STATIC_SPEC _Check_return_ HRESULT UnboxValue(
             _In_ const CValue* box,
-            _Outptr_ wf::IReference<wf::TimeSpan>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<wf::TimeSpan>** result)
         {
             return UnboxReferenceValueHelper<wf::TimeSpan>(
                 box,
@@ -443,7 +443,7 @@ namespace DirectUI
         template<>
         STATIC_SPEC _Check_return_ HRESULT UnboxValue(
             _In_ const CValue* box,
-            _Outptr_ wf::IReference<wf::Point>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<wf::Point>** result)
         {
             return UnboxReferenceValueHelper<wf::Point>(
                 box,
@@ -454,7 +454,7 @@ namespace DirectUI
         template<>
         STATIC_SPEC _Check_return_ HRESULT UnboxValue(
             _In_ const CValue* box,
-            _Outptr_ wf::IReference<DOUBLE>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<DOUBLE>** result)
         {
             return UnboxReferenceValueHelper<DOUBLE>(
                 box,
@@ -465,7 +465,7 @@ namespace DirectUI
         template<>
         STATIC_SPEC _Check_return_ HRESULT UnboxValue(
             _In_ const CValue* box,
-            _Outptr_ wf::IReference<INT32>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<INT32>** result)
         {
             return UnboxReferenceValueHelper<INT32>(
                 box,
@@ -663,10 +663,11 @@ namespace DirectUI
         static inline _Check_return_ typename std::enable_if<!std::is_enum<T>::value, HRESULT>::type UnboxReferenceValueHelper(
             _In_ const CValue* box,
             _In_ HRESULT (*CreatorFn)(T value, IInspectable** ppResult),
-            _Outptr_ wf::IReference<U>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<U>** result)
         {
             IFCPTR_RETURN(box);
             IFCPTR_RETURN(result);
+            *result = nullptr;
 
             if (!box->IsNull())
             {
@@ -679,10 +680,6 @@ namespace DirectUI
                 IFC_RETURN(spObj.As(&spObjAsRef));
                 IFC_RETURN(spObjAsRef.MoveTo(result));
             }
-            else
-            {
-                *result = nullptr;
-            }
 
             return S_OK;
         }
@@ -691,7 +688,7 @@ namespace DirectUI
         static inline _Check_return_ typename std::enable_if<std::is_enum<T>::value, HRESULT>::type UnboxReferenceValueHelper(
             _In_ const CValue* box,
             _In_ HRESULT (*CreatorFn)(T value, IInspectable** ppResult),
-            _Outptr_ wf::IReference<U>** result)
+            _COM_Outptr_result_maybenull_ wf::IReference<U>** result)
         {
             IFCPTR_RETURN(box);
             IFCPTR_RETURN(result);

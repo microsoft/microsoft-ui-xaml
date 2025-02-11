@@ -100,7 +100,7 @@ HRESULT DWriteFontAndScriptServices::EnsureSystemFontCollection()
 {
     if (m_systemFontCollection == nullptr)
     {
-        CreateSystemFontCollection(true /*includeDownloadableFonts*/, m_systemFontCollection.ReleaseAndGetAddressOf());
+        IFC_RETURN(CreateSystemFontCollection(true /*includeDownloadableFonts*/, m_systemFontCollection.ReleaseAndGetAddressOf()));
     }
     return S_OK;
 }

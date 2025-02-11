@@ -53,7 +53,7 @@ namespace DirectUI
         IFACEMETHOD(get_ListCommandTarget)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IItemsControl** ppValue) FEATURE_COMMANDINGIMPROVEMENTS_OVERRIDE;
         _Check_return_ HRESULT put_ListCommandTarget(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IItemsControl* pValue);
         IFACEMETHOD(get_CanExecute)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_CanExecute)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_CanExecute)(BOOLEAN value) override;
 
         // Methods.
 

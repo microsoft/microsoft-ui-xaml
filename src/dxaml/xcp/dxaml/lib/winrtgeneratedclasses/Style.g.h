@@ -52,7 +52,7 @@ namespace DirectUI
         IFACEMETHOD(get_IsSealed)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_Setters)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::ISetterBaseCollection** ppValue) override;
         IFACEMETHOD(get_TargetType)(_Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pValue) override;
-        IFACEMETHOD(put_TargetType)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value) override;
+        IFACEMETHOD(put_TargetType)(ABI::Windows::UI::Xaml::Interop::TypeName value) override;
 
         // Events.
 
@@ -91,7 +91,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _Outptr_ ABI::Microsoft::UI::Xaml::IStyle** ppInstance);
+        IFACEMETHOD(CreateInstance)(ABI::Windows::UI::Xaml::Interop::TypeName targetType, _Outptr_ ABI::Microsoft::UI::Xaml::IStyle** ppInstance);
 
         // Static properties.
 
@@ -117,7 +117,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _Outptr_ ABI::Microsoft::UI::Xaml::IStyle** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(ABI::Windows::UI::Xaml::Interop::TypeName targetType, _Outptr_ ABI::Microsoft::UI::Xaml::IStyle** ppInstance);
 
         // Customized static properties.
 

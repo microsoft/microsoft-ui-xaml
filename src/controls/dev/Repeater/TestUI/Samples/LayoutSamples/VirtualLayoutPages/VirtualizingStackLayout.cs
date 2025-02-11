@@ -28,7 +28,7 @@ namespace MUXControlsTestApp.Samples
     // the viewport is somewhere in the middle of the extent. This is achieved by setting the
     // LayoutOrigin property on the context. Once this is set, future viewport will account 
     // for the origin.
-    public class VirtualizingStackLayout : VirtualizingLayout
+    public partial class VirtualizingStackLayout : VirtualizingLayout
     {
         protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
         {

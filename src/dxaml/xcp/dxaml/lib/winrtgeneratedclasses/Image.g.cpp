@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::ImageGenerated::get_NineGrid(_Out_ ABI::Microsoft::UI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Image_NineGrid, pValue));
 }
-IFACEMETHODIMP DirectUI::ImageGenerated::put_NineGrid(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ImageGenerated::put_NineGrid(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Image_NineGrid, value));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::ImageGenerated::get_Stretch(_Out_ ABI::Microsoft::UI::X
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Image_Stretch, pValue));
 }
-IFACEMETHODIMP DirectUI::ImageGenerated::put_Stretch(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value)
+IFACEMETHODIMP DirectUI::ImageGenerated::put_Stretch(ABI::Microsoft::UI::Xaml::Media::Stretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Image_Stretch, value));
@@ -107,7 +107,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ImageGenerated::remove_ImageFailed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ImageGenerated::remove_ImageFailed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ImageFailedEventSourceType* pEventSource = nullptr;
@@ -162,7 +162,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ImageGenerated::remove_ImageOpened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ImageGenerated::remove_ImageOpened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ImageOpenedEventSourceType* pEventSource = nullptr;

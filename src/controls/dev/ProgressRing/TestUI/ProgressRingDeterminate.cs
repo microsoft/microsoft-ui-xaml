@@ -14,7 +14,7 @@ using Microsoft.UI.Composition;
 
 namespace AnimatedVisuals
 {
-    sealed class ProgressRingDeterminate : IAnimatedVisualSource
+    sealed partial class ProgressRingDeterminate : IAnimatedVisualSource
     {
         public IAnimatedVisual TryCreateAnimatedVisual(Compositor compositor, out object diagnostics)
         {
@@ -40,7 +40,7 @@ namespace AnimatedVisuals
             return true;
         }
 
-        sealed class AnimatedVisual : IAnimatedVisual
+        sealed partial class AnimatedVisual : IAnimatedVisual
         {
             const long c_durationTicks = 20000000;
             readonly Compositor _c;

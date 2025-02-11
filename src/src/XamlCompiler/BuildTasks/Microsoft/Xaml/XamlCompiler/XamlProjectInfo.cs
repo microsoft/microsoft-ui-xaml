@@ -28,7 +28,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         EnableXBindDiagnostics = 0x02,
         EnableDefaultValidationContextGeneration = 0x04,
         EnableWin32Codegen = 0x08,
-        UsingCSWinRT = 0x10
+        UsingCSWinRT = 0x10,
+        EnableBindingDiagnostics = 0x20,
     }
 
     internal class XamlProjectInfo

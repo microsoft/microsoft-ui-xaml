@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::MenuFlyoutItemTemplateSettings::get_KeyboardAccelerator
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MenuFlyoutItemTemplateSettings_KeyboardAcceleratorTextMinWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::MenuFlyoutItemTemplateSettings::put_KeyboardAcceleratorTextMinWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::MenuFlyoutItemTemplateSettings::put_KeyboardAcceleratorTextMinWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MenuFlyoutItemTemplateSettings_KeyboardAcceleratorTextMinWidth, value));

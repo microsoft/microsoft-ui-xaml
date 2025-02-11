@@ -129,7 +129,7 @@ ElementCompositionPreviewFactory::SetImplicitHideAnimationImpl(
 _Check_return_ HRESULT
 ElementCompositionPreviewFactory::SetIsTranslationEnabledImpl(
     _In_ xaml::IUIElement* pElement,
-    _In_ BOOLEAN value)
+    BOOLEAN value)
 {
     UIElement* uie = static_cast<UIElement*>(pElement);
     IFC_RETURN(uie->CheckThread());

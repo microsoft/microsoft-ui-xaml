@@ -49,7 +49,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_FastPlayFallbackBehaviour, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_FastPlayFallbackBehaviour(_In_ ABI::Microsoft::UI::Xaml::Media::FastPlayFallbackBehaviour value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_FastPlayFallbackBehaviour(ABI::Microsoft::UI::Xaml::Media::FastPlayFallbackBehaviour value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_FastPlayFallbackBehaviour, value));
@@ -58,7 +58,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsCompact, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsCompact(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsCompact(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsCompact, value));
@@ -67,7 +67,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsFastForwardButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsFastForwardButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsFastForwardButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsFastForwardButtonVisible, value));
@@ -76,7 +76,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsFastForwardEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsFastForwardEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsFastForwardEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsFastForwardEnabled, value));
@@ -85,7 +85,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsFastRewindButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsFastRewindButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsFastRewindButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsFastRewindButtonVisible, value));
@@ -94,7 +94,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsFastRewindEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsFastRewindEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsFastRewindEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsFastRewindEnabled, value));
@@ -103,7 +103,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsNextTrackButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsNextTrackButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsNextTrackButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsNextTrackButtonVisible, value));
@@ -112,7 +112,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsPlaybackRateButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsPlaybackRateButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsPlaybackRateButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsPlaybackRateButtonVisible, value));
@@ -121,7 +121,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsPlaybackRateEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsPlaybackRateEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsPlaybackRateEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsPlaybackRateEnabled, value));
@@ -130,7 +130,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsPreviousTrackButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsPreviousTrackButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsPreviousTrackButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsPreviousTrackButtonVisible, value));
@@ -139,7 +139,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsRepeatButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsRepeatButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsRepeatButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsRepeatButtonVisible, value));
@@ -148,7 +148,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsRepeatEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsRepeatEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsRepeatEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsRepeatEnabled, value));
@@ -157,7 +157,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSeekBarVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSeekBarVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSeekBarVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSeekBarVisible, value));
@@ -166,7 +166,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSeekEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSeekEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSeekEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSeekEnabled, value));
@@ -175,7 +175,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSkipBackwardButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSkipBackwardButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSkipBackwardButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSkipBackwardButtonVisible, value));
@@ -184,7 +184,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSkipBackwardEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSkipBackwardEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSkipBackwardEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSkipBackwardEnabled, value));
@@ -193,7 +193,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSkipForwardButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSkipForwardButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSkipForwardButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSkipForwardButtonVisible, value));
@@ -202,7 +202,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSkipForwardEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSkipForwardEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsSkipForwardEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsSkipForwardEnabled, value));
@@ -211,7 +211,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsStopButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsStopButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsStopButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsStopButtonVisible, value));
@@ -220,7 +220,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsStopEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsStopEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsStopEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsStopEnabled, value));
@@ -229,7 +229,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsVolumeButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsVolumeButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsVolumeButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsVolumeButtonVisible, value));
@@ -238,7 +238,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsVolumeEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsVolumeEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsVolumeEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsVolumeEnabled, value));
@@ -247,7 +247,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsZoomButtonVisible, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsZoomButtonVisible(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsZoomButtonVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsZoomButtonVisible, value));
@@ -256,7 +256,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsZoomEnabled, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsZoomEnabled(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_IsZoomEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_IsZoomEnabled, value));
@@ -265,7 +265,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_ShowAndHideAutomatically, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_ShowAndHideAutomatically(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::put_ShowAndHideAutomatically(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaTransportControls_ShowAndHideAutomatically, value));
@@ -308,7 +308,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::remove_ThumbnailRequested(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaTransportControlsGenerated::remove_ThumbnailRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ThumbnailRequestedEventSourceType* pEventSource = nullptr;

@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::RangeBaseValueChangedEventArgs::get_OldValue(_Out_ DOUB
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::RangeBaseValueChangedEventArgs::put_OldValue(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::RangeBaseValueChangedEventArgs::put_OldValue(DOUBLE value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::RangeBaseValueChangedEventArgs::get_NewValue(_Out_ DOUB
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::RangeBaseValueChangedEventArgs::put_NewValue(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::RangeBaseValueChangedEventArgs::put_NewValue(DOUBLE value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

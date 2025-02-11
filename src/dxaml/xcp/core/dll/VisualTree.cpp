@@ -304,7 +304,7 @@ void VisualTree::EnsureXamlIslandRootCollection()
 //      Returns the main popup root for this visual tree.
 //
 //------------------------------------------------------------------------
-CPopupRoot* VisualTree::GetPopupRoot()
+_Check_return_ CPopupRoot* VisualTree::GetPopupRoot()
 {
     if (!(m_shutdownInProgress || m_isShutdown))
     {
@@ -320,7 +320,7 @@ CPopupRoot* VisualTree::GetPopupRoot()
 //      Returns the visual diagnostics root for this visual tree
 //
 //------------------------------------------------------------------------
-CGrid* VisualTree::GetVisualDiagnosticsRoot()
+_Check_return_ CGrid* VisualTree::GetVisualDiagnosticsRoot()
 {
     if (!m_shutdownInProgress)
     {
@@ -335,7 +335,7 @@ CGrid* VisualTree::GetVisualDiagnosticsRoot()
 //      Returns the connected animation root for this visual tree
 //
 //------------------------------------------------------------------------
-CConnectedAnimationRoot* VisualTree::GetConnectedAnimationRoot()
+_Check_return_ CConnectedAnimationRoot* VisualTree::GetConnectedAnimationRoot()
 {
     if (!m_shutdownInProgress)
     {
@@ -350,7 +350,7 @@ CConnectedAnimationRoot* VisualTree::GetConnectedAnimationRoot()
 //      Returns the main transition root for this visual tree.
 //
 //------------------------------------------------------------------------
-CTransitionRoot* VisualTree::GetTransitionRoot()
+_Check_return_ CTransitionRoot* VisualTree::GetTransitionRoot()
 {
     if (!m_shutdownInProgress)
     {
@@ -365,7 +365,7 @@ CTransitionRoot* VisualTree::GetTransitionRoot()
 //      Returns the main print root for this visual tree.
 //
 //------------------------------------------------------------------------
-CPrintRoot* VisualTree::GetPrintRoot()
+_Check_return_ CPrintRoot* VisualTree::GetPrintRoot()
 {
     if (!m_shutdownInProgress)
     {
@@ -380,7 +380,7 @@ CPrintRoot* VisualTree::GetPrintRoot()
 //      Returns the full window media root for this visual tree.
 //
 //------------------------------------------------------------------------
-CFullWindowMediaRoot* VisualTree::GetFullWindowMediaRoot()
+_Check_return_ CFullWindowMediaRoot* VisualTree::GetFullWindowMediaRoot()
 {
     if (!m_shutdownInProgress)
     {

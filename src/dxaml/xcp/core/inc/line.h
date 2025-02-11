@@ -70,7 +70,7 @@ protected:
     _Check_return_ HRESULT GetPrintGeometryVirtual(
         _In_ const D2DPrecomputeParams& cp,
         _In_ const D2DRenderParams &printParams,
-        _Outptr_ IPALAcceleratedGeometry** ppGeometry
+        _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
         ) override;
 
     //-----------------------------------------------------------------------------

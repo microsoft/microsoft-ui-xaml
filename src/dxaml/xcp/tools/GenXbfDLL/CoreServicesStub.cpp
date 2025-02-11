@@ -276,7 +276,7 @@ HRESULT CCoreServices::ParseXamlWithEventRoot(
     _In_ bool,
     _In_ bool,
     _In_ bool,
-    _Outptr_ CDependencyObject**,
+    _Outptr_result_maybenull_ CDependencyObject**,
     _In_opt_ IPALUri*,
     _In_ const xstring_ptr_view&,
     _In_ bool)
@@ -554,7 +554,7 @@ CCoreServices::GetResourceDictionaryUriCache()
 }
 
 _Check_return_
-HRESULT CCoreServices::SetCurrentApplication(_In_ class CApplication *)
+HRESULT CCoreServices::SetCurrentApplication(_In_opt_ class CApplication *)
 {
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);

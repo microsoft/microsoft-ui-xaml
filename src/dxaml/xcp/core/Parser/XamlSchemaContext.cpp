@@ -173,7 +173,7 @@ _Check_return_ HRESULT XamlSchemaContext::GetXamlAssembly(
 // Sets 'isValidXmlns' parameter to false if input is not of this form.
 _Check_return_ HRESULT XamlSchemaContext::CrackXmlns(
     _In_ const xstring_ptr& strXmlns,
-    _Out_ xstring_ptr& strNamespace,
+    _When_(isValidXmlns, _Out_) xstring_ptr& strNamespace,
     _Out_ bool& isValidXmlns)
 {
     isValidXmlns = false;
@@ -283,7 +283,7 @@ _Check_return_ HRESULT XamlSchemaContext::AddAssemblyXmlnsDefinition(
 _Check_return_ HRESULT
 XamlSchemaContext::GetXamlXmlNamespace(
     _In_ const xstring_ptr& inXmlns,
-    _Out_ std::shared_ptr<XamlNamespace>& outNamespace)
+    std::shared_ptr<XamlNamespace>& outNamespace)
 {
     // TODO: This suggests that perhaps XamlNamespace can be replaced with
     // XamlXmlNamespace.  Leave this here so that no code outside of XamlSchemaContext expects

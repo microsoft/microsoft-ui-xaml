@@ -20,7 +20,6 @@
 #define __XamlIsland_GUID "0eb21081-a1b7-4942-925d-23cf4bafd8e1"
 
 #pragma region forwarders
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
 namespace ctl
 {
     template<typename impl_type>
@@ -34,8 +33,15 @@ namespace ctl
         IFACEMETHOD(get_SystemBackdrop)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue) override { return This()->get_SystemBackdrop(ppValue); }
         IFACEMETHOD(put_SystemBackdrop)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue) override { return This()->put_SystemBackdrop(pValue); }
     };
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_ShouldConstrainPopupsToWorkArea)(_Out_ BOOLEAN* pValue) override { return This()->get_ShouldConstrainPopupsToWorkArea(pValue); }
+        IFACEMETHOD(put_ShouldConstrainPopupsToWorkArea)(BOOLEAN value) override { return This()->put_ShouldConstrainPopupsToWorkArea(value); }
+    };
 }
-#endif
 #pragma endregion
 
 namespace DirectUI
@@ -46,10 +52,11 @@ namespace DirectUI
 
     class __declspec(novtable) XamlIslandGenerated:
         public ctl::WeakReferenceSource
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlIsland, XamlIslandGenerated >
         , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Windows::Foundation::IClosable
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi, XamlIslandGenerated >
 #endif
     {
         friend class DirectUI::XamlIsland;
@@ -57,12 +64,11 @@ namespace DirectUI
         INSPECTABLE_CLASS(L"Microsoft.UI.Xaml.XamlIsland");
 
         BEGIN_INTERFACE_MAP(XamlIslandGenerated, ctl::WeakReferenceSource)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(XamlIslandGenerated, ABI::Microsoft::UI::Xaml::IXamlIsland)
             INTERFACE_ENTRY(XamlIslandGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(XamlIslandGenerated, ABI::Windows::Foundation::IClosable)
-#else
-            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(XamlIslandGenerated, ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi)
 #endif
         END_INTERFACE_MAP(XamlIslandGenerated, ctl::WeakReferenceSource)
 
@@ -77,6 +83,8 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Content(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Content(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ContentIsland(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIsland** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_ShouldConstrainPopupsToWorkArea(_Out_ BOOLEAN* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_ShouldConstrainPopupsToWorkArea(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
 
@@ -106,16 +114,10 @@ namespace DirectUI
     // care.
     class __declspec(novtable) XamlIslandFactory:
        public ctl::AggregableActivationFactory<DirectUI::XamlIsland>
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ABI::Microsoft::UI::Xaml::IXamlIslandFactory
-#endif
     {
         BEGIN_INTERFACE_MAP(XamlIslandFactory, ctl::AggregableActivationFactory<DirectUI::XamlIsland>)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(XamlIslandFactory, ABI::Microsoft::UI::Xaml::IXamlIslandFactory)
-#else
-            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
-#endif
         END_INTERFACE_MAP(XamlIslandFactory, ctl::AggregableActivationFactory<DirectUI::XamlIsland>)
 
     public:

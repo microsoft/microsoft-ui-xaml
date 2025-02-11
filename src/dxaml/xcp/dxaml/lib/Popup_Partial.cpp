@@ -841,7 +841,7 @@ _Check_return_ HRESULT Popup::GetPlainText(
 }
 
 _Check_return_ HRESULT Popup::TruncateAutomationName(
-    _Inout_opt_ HSTRING *stringToTruncate)
+    _Inout_ HSTRING *stringToTruncate)
 {
     if (*stringToTruncate == nullptr)
     {

@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_FlowDirection)(_Out_ ABI::Microsoft::UI::Xaml::FlowDirection* pValue) override;
-        IFACEMETHOD(put_FlowDirection)(_In_ ABI::Microsoft::UI::Xaml::FlowDirection value) override;
+        IFACEMETHOD(put_FlowDirection)(ABI::Microsoft::UI::Xaml::FlowDirection value) override;
         IFACEMETHOD(get_Text)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Text)(_In_opt_ HSTRING value) override;
 

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_ClipRect(_Out_ ABI::Windows
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_ClipRect, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_ClipRect(_In_ ABI::Windows::Foundation::Rect value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_ClipRect(ABI::Windows::Foundation::Rect value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_ClipRect, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_CompactRootMargin(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_CompactRootMargin, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_CompactRootMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_CompactRootMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_CompactRootMargin, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_CompactVerticalDelta(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_CompactVerticalDelta, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_CompactVerticalDelta(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_CompactVerticalDelta(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_CompactVerticalDelta, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_HiddenRootMargin(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_HiddenRootMargin, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_HiddenRootMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_HiddenRootMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_HiddenRootMargin, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_HiddenVerticalDelta(_Out_ D
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_HiddenVerticalDelta, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_HiddenVerticalDelta(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_HiddenVerticalDelta(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_HiddenVerticalDelta, value));
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_MinimalRootMargin(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_MinimalRootMargin, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_MinimalRootMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_MinimalRootMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_MinimalRootMargin, value));
@@ -99,7 +99,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_MinimalVerticalDelta(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_MinimalVerticalDelta, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_MinimalVerticalDelta(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_MinimalVerticalDelta(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_MinimalVerticalDelta, value));
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_NegativeCompactVerticalDelt
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_NegativeCompactVerticalDelta, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_NegativeCompactVerticalDelta(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_NegativeCompactVerticalDelta(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_NegativeCompactVerticalDelta, value));
@@ -117,7 +117,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_NegativeHiddenVerticalDelta
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_NegativeHiddenVerticalDelta, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_NegativeHiddenVerticalDelta(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_NegativeHiddenVerticalDelta(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_NegativeHiddenVerticalDelta, value));
@@ -126,7 +126,7 @@ IFACEMETHODIMP DirectUI::AppBarTemplateSettings::get_NegativeMinimalVerticalDelt
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_NegativeMinimalVerticalDelta, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_NegativeMinimalVerticalDelta(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::AppBarTemplateSettings::put_NegativeMinimalVerticalDelta(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarTemplateSettings_NegativeMinimalVerticalDelta, value));

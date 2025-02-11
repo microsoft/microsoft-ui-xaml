@@ -43,9 +43,10 @@
     </Link>
   </ItemDefinitionGroup>
   <PropertyGroup>
-    <MachineType Condition="'$(Platform)' == 'Win32'" >ix86</MachineType>
+    <MachineType Condition="'$(Platform)' == 'Win32'">ix86</MachineType>
     <MachineType Condition="'$(Platform)' == 'x64'">amd64</MachineType>
-    <MachineType Condition="'$(Platform)' == 'ARM64'"  >arm64</MachineType>
+    <MachineType Condition="'$(Platform)' == 'ARM64'">arm64</MachineType>
+    <MachineType Condition="'$(Platform)' == 'ARM64EC'">arm64ec</MachineType>
     <XamlDynamicLibraryOptions>$(XamlDynamicLibraryOptions) /machine:$(MachineType)</XamlDynamicLibraryOptions>
   </PropertyGroup>
 

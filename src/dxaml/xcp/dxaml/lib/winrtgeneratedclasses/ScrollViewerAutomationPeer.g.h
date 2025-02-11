@@ -60,8 +60,8 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(Scroll)(_In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, _In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount) override;
-        IFACEMETHOD(SetScrollPercent)(_In_ DOUBLE horizontalPercent, _In_ DOUBLE verticalPercent) override;
+        IFACEMETHOD(Scroll)(ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount) override;
+        IFACEMETHOD(SetScrollPercent)(DOUBLE horizontalPercent, DOUBLE verticalPercent) override;
 
 
     protected:

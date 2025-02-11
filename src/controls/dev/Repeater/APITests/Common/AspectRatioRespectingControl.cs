@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 namespace MUXControls.ApiTests.RepeaterTests.Common
 {
     [Microsoft.UI.Xaml.Data.Bindable]
-    public class AspectRatioRespectingControl : ContentPresenter
+    public partial class AspectRatioRespectingControl : ContentPresenter
     {
         protected override Size MeasureOverride(Size availableSize)
         {

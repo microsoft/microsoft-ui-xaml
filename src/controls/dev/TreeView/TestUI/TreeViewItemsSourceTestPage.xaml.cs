@@ -42,7 +42,7 @@ namespace MUXControlsTestApp
             sv.ScrollToVerticalOffset(0);
         }
 
-        private static IEnumerable<UIElement> EnumerateDescendants(UIElement? reference)
+        private static IEnumerable<UIElement> EnumerateDescendants(UIElement reference)
         {
             var children = Enumerable
                 .Range(0, VisualTreeHelper.GetChildrenCount(reference))

@@ -169,7 +169,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CollectionViewGenerated::remove_PropertyChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CollectionViewGenerated::remove_PropertyChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PropertyChangedEventSourceType* pEventSource = nullptr;
@@ -210,7 +210,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CollectionViewGenerated::GetIndexedProperty(_In_ HSTRING name, _In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue)
+IFACEMETHODIMP DirectUI::CollectionViewGenerated::GetIndexedProperty(_In_ HSTRING name, ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -249,7 +249,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CollectionViewGenerated::LoadMoreItemsAsync(_In_ UINT count, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Data::LoadMoreItemsResult>** ppReturnValue)
+IFACEMETHODIMP DirectUI::CollectionViewGenerated::LoadMoreItemsAsync(UINT count, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Data::LoadMoreItemsResult>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -344,7 +344,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CollectionViewGenerated::MoveCurrentToPosition(_In_ INT index, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::CollectionViewGenerated::MoveCurrentToPosition(INT index, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -17,7 +17,7 @@ namespace MUXControlsTestApp.Samples
         }
     }
 
-    public class UICollection: ObservableCollection<UIElement>
+    public partial class UICollection : ObservableCollection<UIElement>
     {
         public UICollection()
         {

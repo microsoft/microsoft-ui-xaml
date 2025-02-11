@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::WindowVisibilityChangedEventArgs::get_Handled(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowVisibilityChangedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::WindowVisibilityChangedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::WindowVisibilityChangedEventArgs::get_Visible(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::WindowVisibilityChangedEventArgs::put_Visible(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::WindowVisibilityChangedEventArgs::put_Visible(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

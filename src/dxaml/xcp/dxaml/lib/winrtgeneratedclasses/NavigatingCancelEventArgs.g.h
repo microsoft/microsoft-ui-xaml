@@ -36,11 +36,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
         IFACEMETHOD(get_NavigationMode)(_Out_ ABI::Microsoft::UI::Xaml::Navigation::NavigationMode* pValue) override;
-        _Check_return_ HRESULT put_NavigationMode(_In_ ABI::Microsoft::UI::Xaml::Navigation::NavigationMode value);
+        _Check_return_ HRESULT put_NavigationMode(ABI::Microsoft::UI::Xaml::Navigation::NavigationMode value);
         IFACEMETHOD(get_SourcePageType)(_Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pValue) override;
-        _Check_return_ HRESULT put_SourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value);
+        _Check_return_ HRESULT put_SourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value);
         IFACEMETHOD(get_Parameter)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         _Check_return_ HRESULT put_Parameter(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_NavigationTransitionInfo)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo** ppValue) override;

@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::Style::get_TargetType(_Out_ ABI::Windows::UI::Xaml::Int
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Style_TargetType, pValue));
 }
-IFACEMETHODIMP DirectUI::Style::put_TargetType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value)
+IFACEMETHODIMP DirectUI::Style::put_TargetType(ABI::Windows::UI::Xaml::Interop::TypeName value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Style_TargetType, value));
@@ -114,7 +114,7 @@ HRESULT DirectUI::StyleFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ voi
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::StyleFactory::CreateInstance(_In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _Outptr_ ABI::Microsoft::UI::Xaml::IStyle** ppInstance)
+IFACEMETHODIMP DirectUI::StyleFactory::CreateInstance(ABI::Windows::UI::Xaml::Interop::TypeName targetType, _Outptr_ ABI::Microsoft::UI::Xaml::IStyle** ppInstance)
 {
     HRESULT hr = S_OK;
     

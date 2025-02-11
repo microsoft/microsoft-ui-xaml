@@ -46,10 +46,10 @@ public:
         _Out_ CValue *pResult);
 
     virtual _Check_return_ HRESULT SetChild(
-        _In_ CUIElement* pContent);
+        _In_opt_ CUIElement* pContent);
 
     virtual _Check_return_ HRESULT GetChild(
-        _Outptr_ CUIElement** ppContent);
+        _Outptr_result_maybenull_ CUIElement** ppContent);
 
     DirectUI::StretchDirection m_stretchDirection   = DirectUI::StretchDirection::Both;
     DirectUI::Stretch m_stretch                     = DirectUI::Stretch::Uniform;

@@ -25,11 +25,11 @@ namespace ctl
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_ActualPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode* pValue) override { return This()->get_ActualPlacement(pValue); }
         IFACEMETHOD(get_DesiredPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode* pValue) override { return This()->get_DesiredPlacement(pValue); }
-        IFACEMETHOD(put_DesiredPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode value) override { return This()->put_DesiredPlacement(value); }
+        IFACEMETHOD(put_DesiredPlacement)(ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode value) override { return This()->put_DesiredPlacement(value); }
         IFACEMETHOD(get_PlacementTarget)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IFrameworkElement** ppValue) override { return This()->get_PlacementTarget(ppValue); }
         IFACEMETHOD(put_PlacementTarget)(_In_opt_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pValue) override { return This()->put_PlacementTarget(pValue); }
         IFACEMETHOD(add_ActualPlacementChanged)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_ActualPlacementChanged(pValue, pToken); }
-        IFACEMETHOD(remove_ActualPlacementChanged)(_In_ EventRegistrationToken token) override { return This()->remove_ActualPlacementChanged(token); }
+        IFACEMETHOD(remove_ActualPlacementChanged)(EventRegistrationToken token) override { return This()->remove_ActualPlacementChanged(token); }
     };
     template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::Controls::Primitives::IPopup3, impl_type> final
@@ -98,24 +98,24 @@ namespace DirectUI
         IFACEMETHOD(get_ChildTransitions)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>** ppValue) override;
         IFACEMETHOD(put_ChildTransitions)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Transition*>* pValue) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_DesiredPlacement(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_DesiredPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_DesiredPlacement(ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode value);
         _Check_return_ HRESULT get_DisableOverlayIsLightDismissCheck(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_DisableOverlayIsLightDismissCheck(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_DisableOverlayIsLightDismissCheck(BOOLEAN value);
         IFACEMETHOD(get_HorizontalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_HorizontalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_HorizontalOffset)(DOUBLE value) override;
         _Check_return_ HRESULT get_IsApplicationBarService(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsApplicationBarService(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsApplicationBarService(BOOLEAN value);
         IFACEMETHOD(get_IsConstrainedToRootBounds)(_Out_ BOOLEAN* pValue) override;
         _Check_return_ HRESULT get_IsContentDialog(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsContentDialog(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsContentDialog(BOOLEAN value);
         IFACEMETHOD(get_IsLightDismissEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsLightDismissEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsLightDismissEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_IsOpen)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsOpen)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsOpen)(BOOLEAN value) override;
         _Check_return_ HRESULT get_IsSubMenu(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsSubMenu(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsSubMenu(BOOLEAN value);
         IFACEMETHOD(get_LightDismissOverlayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode* pValue) override;
-        IFACEMETHOD(put_LightDismissOverlayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
+        IFACEMETHOD(put_LightDismissOverlayMode)(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
         _Check_return_ HRESULT get_OverlayElement(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IFrameworkElement** ppValue);
         _Check_return_ HRESULT put_OverlayElement(_In_opt_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pValue);
         _Check_return_ HRESULT get_OverlayInputPassThroughElement(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue);
@@ -123,22 +123,22 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_PlacementTarget(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IFrameworkElement** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_PlacementTarget(_In_opt_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pValue);
         IFACEMETHOD(get_ShouldConstrainToRootBounds)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_ShouldConstrainToRootBounds)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_ShouldConstrainToRootBounds)(BOOLEAN value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
         IFACEMETHOD(get_VerticalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_VerticalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_VerticalOffset)(DOUBLE value) override;
 
         // Events.
         _Check_return_ HRESULT GetActualPlacementChangedEventSourceNoRef(_Outptr_ ActualPlacementChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_ActualPlacementChanged(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_ActualPlacementChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_ActualPlacementChanged(EventRegistrationToken token);
         _Check_return_ HRESULT GetClosedEventSourceNoRef(_Outptr_ ClosedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Closed)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Closed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetOpenedEventSourceNoRef(_Outptr_ OpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Opened)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Opened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Opened)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(OnBackButtonPressed)(_Out_ BOOLEAN* pResult) override;

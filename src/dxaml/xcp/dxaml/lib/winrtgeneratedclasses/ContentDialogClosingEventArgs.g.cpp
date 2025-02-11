@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ContentDialogClosingEventArgsGenerated::get_Result(_Out
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContentDialogClosingEventArgsGenerated::put_Result(_In_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult value)
+_Check_return_ HRESULT DirectUI::ContentDialogClosingEventArgsGenerated::put_Result(ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::ContentDialogClosingEventArgsGenerated::get_Cancel(_Out
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ContentDialogClosingEventArgsGenerated::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ContentDialogClosingEventArgsGenerated::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

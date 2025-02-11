@@ -53,7 +53,7 @@ namespace DirectUI
 
         IFACEMETHOD_(void, SetErrorHandlerCallback)(_In_ std::shared_ptr<std::function<void(const ErrorHandling::XamlFailureInfo&)>> callback) override;
         IFACEMETHOD_(void, SetLoggerCallback)(_In_ std::shared_ptr<LoggerCallback> callback) override;
-        IFACEMETHOD_(void, SetPostTickCallback)(_In_opt_ std::function<void()> callback) override;
+        IFACEMETHOD_(void, SetPostTickCallback)(_In_ std::function<void()> callback) override;
 
         IFACEMETHOD(GetDependencyObjectPropertyValues)(
             _In_ xaml::IDependencyObject* pObject,
@@ -161,7 +161,7 @@ namespace DirectUI
 
         IFACEMETHOD_(void, SetIsHolographic)(bool value) override;
 
-        IFACEMETHOD(SimulateInputPaneOccludedRect)(xaml::IXamlRoot* xamlRoot, _In_ wf::Rect occludedRect) override;
+        IFACEMETHOD(SimulateInputPaneOccludedRect)(_In_ xaml::IXamlRoot* xamlRoot, _In_ wf::Rect occludedRect) override;
 
         IFACEMETHOD_(void, SetMockUIAClientsListening)() override;
         IFACEMETHOD_(void, ClearMockUIAClientsListening)() override;
@@ -193,7 +193,7 @@ namespace DirectUI
             _Outptr_ xaml::IUIElement** lte) override;
         IFACEMETHOD(RemoveTestLTE)(_In_ xaml::IUIElement* lte) override;
         IFACEMETHOD(ClearTestLTEs)() override;
-        IFACEMETHOD_(void, SetPlayingSoundNodeCallback)(_In_opt_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback) override;
+        IFACEMETHOD_(void, SetPlayingSoundNodeCallback)(_In_ std::function<void(xaml::ElementSoundKind, BOOLEAN isSpatialAudio, float x, float y, float z, double volume)> callback) override;
 
         IFACEMETHOD(TestGetActualToolTip)(
             _In_ xaml::IUIElement* element,

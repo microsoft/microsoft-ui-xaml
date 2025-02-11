@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ScaleTransform::get_CenterX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScaleTransform_CenterX, pValue));
 }
-IFACEMETHODIMP DirectUI::ScaleTransform::put_CenterX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ScaleTransform::put_CenterX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScaleTransform_CenterX, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::ScaleTransform::get_CenterY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScaleTransform_CenterY, pValue));
 }
-IFACEMETHODIMP DirectUI::ScaleTransform::put_CenterY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ScaleTransform::put_CenterY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScaleTransform_CenterY, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::ScaleTransform::get_ScaleX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScaleTransform_ScaleX, pValue));
 }
-IFACEMETHODIMP DirectUI::ScaleTransform::put_ScaleX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ScaleTransform::put_ScaleX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScaleTransform_ScaleX, value));
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::ScaleTransform::get_ScaleY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScaleTransform_ScaleY, pValue));
 }
-IFACEMETHODIMP DirectUI::ScaleTransform::put_ScaleY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ScaleTransform::put_ScaleY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScaleTransform_ScaleY, value));

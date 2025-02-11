@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::SkewTransform::get_AngleX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SkewTransform_AngleX, pValue));
 }
-IFACEMETHODIMP DirectUI::SkewTransform::put_AngleX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SkewTransform::put_AngleX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SkewTransform_AngleX, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::SkewTransform::get_AngleY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SkewTransform_AngleY, pValue));
 }
-IFACEMETHODIMP DirectUI::SkewTransform::put_AngleY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SkewTransform::put_AngleY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SkewTransform_AngleY, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::SkewTransform::get_CenterX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SkewTransform_CenterX, pValue));
 }
-IFACEMETHODIMP DirectUI::SkewTransform::put_CenterX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SkewTransform::put_CenterX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SkewTransform_CenterX, value));
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::SkewTransform::get_CenterY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SkewTransform_CenterY, pValue));
 }
-IFACEMETHODIMP DirectUI::SkewTransform::put_CenterY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SkewTransform::put_CenterY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SkewTransform_CenterY, value));

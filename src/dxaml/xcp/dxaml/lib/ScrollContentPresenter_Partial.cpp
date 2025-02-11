@@ -1612,7 +1612,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetFullScreenPageBottomAppBarHeig
 IFACEMETHODIMP ScrollContentPresenter::MeasureOverride(
     // Measurement constraints, a control cannot return a size larger than the
     // constraint.
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     // The desired size of the control.
     _Out_ wf::Size* pReturnValue)
 {
@@ -2093,7 +2093,7 @@ Cleanup:
 // this method to define their own Arrange pass behavior.
 IFACEMETHODIMP ScrollContentPresenter::ArrangeOverride(
     // The computed size that is used to arrange the content.
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     // The size of the control.
     _Out_ wf::Size* pReturnValue)
 {
@@ -3648,7 +3648,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetZoomedHeadersSize(_Out_ XSIZEF
 
 // Retrieves the primary child as a IUIElement, taking the potential headers into account.
 _Check_return_ HRESULT ScrollContentPresenter::GetPrimaryChild(
-    _Outptr_ xaml::IUIElement** ppChild)
+    _Outptr_result_maybenull_ xaml::IUIElement** ppChild)
 {
     INT childHeaderCount = 0;
     INT childCount = 0;
@@ -3978,7 +3978,7 @@ _Check_return_ HRESULT ScrollContentPresenter::ProcessTabStopOverride(
     _In_opt_ DependencyObject* pCandidateTabStopElement,
     const bool isBackward,
     const bool /*didCycleFocusAtRootVisualScope*/,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsTabStopOverridden
     )
 {
@@ -4439,7 +4439,7 @@ _Check_return_ HRESULT ScrollContentPresenter::ProcessCandidateTabStopOverride(
     _In_ DependencyObject* pCandidateTabStopElement,
     _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
     const bool isBackward,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsCandidateTabStopOverridden)
 {
     HRESULT hr = S_OK;
@@ -4655,7 +4655,7 @@ Cleanup:
 
 // Returns the first focusable element among the headers and content with a TabIndex equal to m_tabIndex.
 _Check_return_ HRESULT ScrollContentPresenter::GetFirstFocusableElementOverride(
-    _Outptr_ DependencyObject** ppFirstFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppFirstFocusable)
 {
     HRESULT hr = S_OK;
     BOOLEAN isTabStop = FALSE;
@@ -4809,7 +4809,7 @@ Cleanup:
 
 // Returns the last focusable element among the headers and content with a TabIndex equal to m_tabIndex.
 _Check_return_ HRESULT ScrollContentPresenter::GetLastFocusableElementOverride(
-    _Outptr_ DependencyObject** ppLastFocusable)
+    _Outptr_result_maybenull_ DependencyObject** ppLastFocusable)
 {
     HRESULT hr = S_OK;
     BOOLEAN isTabStop = FALSE;
@@ -5056,7 +5056,7 @@ _Check_return_ HRESULT ScrollContentPresenter::ProcessTabStopPrivate(
     BOOLEAN isFocusedElementInTopHeader,
     BOOLEAN isFocusedElementInLeftHeader,
     BOOLEAN isFocusedElementInContent,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsTabStopOverridden
     )
 {

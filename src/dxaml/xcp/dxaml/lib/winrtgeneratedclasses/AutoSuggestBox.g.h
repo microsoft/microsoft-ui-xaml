@@ -87,7 +87,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_AutoMaximizeSuggestionArea)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AutoMaximizeSuggestionArea)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AutoMaximizeSuggestionArea)(BOOLEAN value) override;
         IFACEMETHOD(get_Description)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Description)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_ErrorTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
@@ -96,17 +96,17 @@ namespace DirectUI
         IFACEMETHOD(get_Header)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Header)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_HeaderPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement* pValue) FEATURE_HEADERPLACEMENT_OVERRIDE;
-        IFACEMETHOD(put_HeaderPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
+        IFACEMETHOD(put_HeaderPlacement)(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
         IFACEMETHOD(get_InputValidationKind)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(put_InputValidationKind)(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(put_InputValidationKind)(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_InputValidationMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(put_InputValidationMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(put_InputValidationMode)(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_IsSuggestionListOpen)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsSuggestionListOpen)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsSuggestionListOpen)(BOOLEAN value) override;
         IFACEMETHOD(get_LightDismissOverlayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode* pValue) override;
-        IFACEMETHOD(put_LightDismissOverlayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
+        IFACEMETHOD(put_LightDismissOverlayMode)(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
         IFACEMETHOD(get_MaxSuggestionListHeight)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_MaxSuggestionListHeight)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_MaxSuggestionListHeight)(DOUBLE value) override;
         IFACEMETHOD(get_PlaceholderText)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_PlaceholderText)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_QueryIcon)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IIconElement** ppValue) override;
@@ -118,7 +118,7 @@ namespace DirectUI
         IFACEMETHOD(get_TextMemberPath)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_TextMemberPath)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_UpdateTextOnSelect)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_UpdateTextOnSelect)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_UpdateTextOnSelect)(BOOLEAN value) override;
         IFACEMETHOD(get_ValidationCommand)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommand** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(put_ValidationCommand)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommand* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_ValidationContext)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
@@ -129,21 +129,21 @@ namespace DirectUI
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
         _Check_return_ HRESULT GetHasValidationErrorsChangedEventSourceNoRef(_Outptr_ HasValidationErrorsChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_HasValidationErrorsChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl*, ABI::Microsoft::UI::Xaml::Controls::HasValidationErrorsChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(remove_HasValidationErrorsChanged)(_In_ EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(remove_HasValidationErrorsChanged)(EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
 #endif
         _Check_return_ HRESULT GetQuerySubmittedEventSourceNoRef(_Outptr_ QuerySubmittedEventSourceType** ppEventSource);
         IFACEMETHOD(add_QuerySubmitted)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxQuerySubmittedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_QuerySubmitted)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_QuerySubmitted)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetSuggestionChosenEventSourceNoRef(_Outptr_ SuggestionChosenEventSourceType** ppEventSource);
         IFACEMETHOD(add_SuggestionChosen)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxSuggestionChosenEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_SuggestionChosen)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_SuggestionChosen)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetTextChangedEventSourceNoRef(_Outptr_ TextChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_TextChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBox*, ABI::Microsoft::UI::Xaml::Controls::AutoSuggestBoxTextChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_TextChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_TextChanged)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
         _Check_return_ HRESULT GetValidationErrorEventSourceNoRef(_Outptr_ ValidationErrorEventSourceType** ppEventSource);
         IFACEMETHOD(add_ValidationError)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl*, ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(remove_ValidationError)(_In_ EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(remove_ValidationError)(EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
 #endif
 
         // Methods.

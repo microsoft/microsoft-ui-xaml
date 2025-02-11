@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::CalendarViewDayItemChangingEventArgsGenerated::get_InRe
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::CalendarViewDayItemChangingEventArgsGenerated::put_InRecycleQueue(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::CalendarViewDayItemChangingEventArgsGenerated::put_InRecycleQueue(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::CalendarViewDayItemChangingEventArgsGenerated::get_Phas
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::CalendarViewDayItemChangingEventArgsGenerated::put_Phase(_In_ UINT value)
+_Check_return_ HRESULT DirectUI::CalendarViewDayItemChangingEventArgsGenerated::put_Phase(UINT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -105,7 +105,7 @@ _Check_return_ HRESULT DirectUI::CalendarViewDayItemChangingEventArgsGenerated::
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::CalendarViewDayItemChangingEventArgsGenerated::put_WantsCallBack(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::CalendarViewDayItemChangingEventArgsGenerated::put_WantsCallBack(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -149,7 +149,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CalendarViewDayItemChangingEventArgsGenerated::RegisterUpdateCallbackWithPhase(_In_ UINT callbackPhase, _In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>* pCallback)
+IFACEMETHODIMP DirectUI::CalendarViewDayItemChangingEventArgsGenerated::RegisterUpdateCallbackWithPhase(UINT callbackPhase, _In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>* pCallback)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

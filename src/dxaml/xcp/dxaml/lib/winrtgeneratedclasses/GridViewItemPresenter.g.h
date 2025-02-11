@@ -57,35 +57,35 @@ namespace DirectUI
         IFACEMETHOD(get_CheckSelectingBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_CheckSelectingBrush)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_ContentMargin)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_ContentMargin)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_ContentMargin)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_DisabledOpacity)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_DisabledOpacity)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_DisabledOpacity)(DOUBLE value) override;
         IFACEMETHOD(get_DragBackground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_DragBackground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_DragForeground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_DragForeground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_DragOpacity)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_DragOpacity)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_DragOpacity)(DOUBLE value) override;
         IFACEMETHOD(get_FocusBorderBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_FocusBorderBrush)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_GridViewItemPresenterHorizontalContentAlignment)(_Out_ ABI::Microsoft::UI::Xaml::HorizontalAlignment* pValue) override;
-        IFACEMETHOD(put_GridViewItemPresenterHorizontalContentAlignment)(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value) override;
+        IFACEMETHOD(put_GridViewItemPresenterHorizontalContentAlignment)(ABI::Microsoft::UI::Xaml::HorizontalAlignment value) override;
         IFACEMETHOD(get_GridViewItemPresenterPadding)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_GridViewItemPresenterPadding)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_GridViewItemPresenterPadding)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_GridViewItemPresenterVerticalContentAlignment)(_Out_ ABI::Microsoft::UI::Xaml::VerticalAlignment* pValue) override;
-        IFACEMETHOD(put_GridViewItemPresenterVerticalContentAlignment)(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value) override;
+        IFACEMETHOD(put_GridViewItemPresenterVerticalContentAlignment)(ABI::Microsoft::UI::Xaml::VerticalAlignment value) override;
         IFACEMETHOD(get_PlaceholderBackground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_PlaceholderBackground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_PointerOverBackground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_PointerOverBackground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_PointerOverBackgroundMargin)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_PointerOverBackgroundMargin)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_PointerOverBackgroundMargin)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_ReorderHintOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ReorderHintOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ReorderHintOffset)(DOUBLE value) override;
         IFACEMETHOD(get_SelectedBackground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_SelectedBackground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_SelectedBorderThickness)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_SelectedBorderThickness)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_SelectedBorderThickness)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_SelectedForeground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_SelectedForeground)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_SelectedPointerOverBackground)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
@@ -93,7 +93,7 @@ namespace DirectUI
         IFACEMETHOD(get_SelectedPointerOverBorderBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_SelectedPointerOverBorderBrush)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_SelectionCheckMarkVisualEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_SelectionCheckMarkVisualEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_SelectionCheckMarkVisualEnabled)(BOOLEAN value) override;
 
         // Events.
 

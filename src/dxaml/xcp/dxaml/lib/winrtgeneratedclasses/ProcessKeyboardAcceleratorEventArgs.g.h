@@ -38,13 +38,13 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         _Check_return_ HRESULT get_HandledShouldNotImpedeTextInput(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_HandledShouldNotImpedeTextInput(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_HandledShouldNotImpedeTextInput(BOOLEAN value);
         IFACEMETHOD(get_Key)(_Out_ ABI::Windows::System::VirtualKey* pValue) override;
-        _Check_return_ HRESULT put_Key(_In_ ABI::Windows::System::VirtualKey value);
+        _Check_return_ HRESULT put_Key(ABI::Windows::System::VirtualKey value);
         IFACEMETHOD(get_Modifiers)(_Out_ ABI::Windows::System::VirtualKeyModifiers* pValue) override;
-        _Check_return_ HRESULT put_Modifiers(_In_ ABI::Windows::System::VirtualKeyModifiers value);
+        _Check_return_ HRESULT put_Modifiers(ABI::Windows::System::VirtualKeyModifiers value);
 
         // Events.
 

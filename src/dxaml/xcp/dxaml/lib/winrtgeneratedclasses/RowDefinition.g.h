@@ -49,11 +49,11 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_ActualHeight)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_Height)(_Out_ ABI::Microsoft::UI::Xaml::GridLength* pValue) override;
-        IFACEMETHOD(put_Height)(_In_ ABI::Microsoft::UI::Xaml::GridLength value) override;
+        IFACEMETHOD(put_Height)(ABI::Microsoft::UI::Xaml::GridLength value) override;
         IFACEMETHOD(get_MaxHeight)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_MaxHeight)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_MaxHeight)(DOUBLE value) override;
         IFACEMETHOD(get_MinHeight)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_MinHeight)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_MinHeight)(DOUBLE value) override;
 
         // Events.
 

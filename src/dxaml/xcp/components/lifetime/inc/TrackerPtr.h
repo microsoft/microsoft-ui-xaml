@@ -77,7 +77,7 @@ namespace DirectUI
         }
 
         template <typename U>
-        void Set(_In_ U* ptr
+        void Set(_In_opt_ U* ptr
             #if DBG
             , bool fStatic = false
             #endif
@@ -349,7 +349,7 @@ namespace DirectUI
 
             return S_OK;
         }
-        _Check_return_ HRESULT SetAt(_In_ UINT index, _In_ T* item)
+        _Check_return_ HRESULT SetAt(_In_ UINT index, _In_opt_ T* item)
         {
             IFCCHECK_RETURN(index < m_items.size());
 
@@ -360,7 +360,7 @@ namespace DirectUI
             return S_OK;
         }
 
-        _Check_return_ HRESULT InsertAt(_In_ UINT index, _In_ T* item)
+        _Check_return_ HRESULT InsertAt(_In_ UINT index, _In_opt_ T* item)
         {
             TrackerPtr<T> tpItem;
 
@@ -381,7 +381,7 @@ namespace DirectUI
         }
 
 
-        void Append(_In_ T* item
+        void Append(_In_opt_ T* item
             #if DBG
             , bool bStatic = false
             #endif

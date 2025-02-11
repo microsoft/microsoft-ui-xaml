@@ -84,7 +84,7 @@ Cleanup:
 }
 
 #if DBG
-_Check_return_ HRESULT CalendarViewItem::put_Date(_In_ wf::DateTime value)
+_Check_return_ HRESULT CalendarViewItem::put_Date(wf::DateTime value)
 {
     HRESULT hr = S_OK;
 

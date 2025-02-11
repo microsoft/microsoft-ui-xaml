@@ -53,7 +53,7 @@ namespace DirectUI
         IFACEMETHOD(get_Parameter)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         _Check_return_ HRESULT put_Parameter(_In_opt_ IInspectable* pValue);
         IFACEMETHOD(get_SourcePageType)(_Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pValue) override;
-        _Check_return_ HRESULT put_SourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value);
+        _Check_return_ HRESULT put_SourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value);
 
         // Events.
 
@@ -93,7 +93,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pNavigationTransitionInfo, _Outptr_ ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry** ppInstance);
+        IFACEMETHOD(CreateInstance)(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pNavigationTransitionInfo, _Outptr_ ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry** ppInstance);
 
         // Static properties.
 
@@ -116,7 +116,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pNavigationTransitionInfo, _Outptr_ ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pNavigationTransitionInfo, _Outptr_ ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry** ppInstance);
 
         // Customized static properties.
 

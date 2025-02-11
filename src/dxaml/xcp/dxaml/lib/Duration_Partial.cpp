@@ -16,8 +16,8 @@ using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
 DurationFactory::Equals(
-    _In_ xaml::Duration target,
-    _In_ xaml::Duration value,
+    xaml::Duration target,
+    xaml::Duration value,
     _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -53,7 +53,7 @@ Cleanup:
 
 IFACEMETHODIMP
 DurationFactory::FromTimeSpan(
-    _In_ wf::TimeSpan timeSpan,
+    wf::TimeSpan timeSpan,
     _Out_ xaml::Duration* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -81,7 +81,7 @@ Cleanup:
 
 IFACEMETHODIMP
 DurationFactory::GetHasTimeSpan(
-    _In_ xaml::Duration target,
+    xaml::Duration target,
     _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
@@ -102,8 +102,8 @@ Cleanup:
 
 IFACEMETHODIMP
 DurationFactory::Add(
-    _In_ xaml::Duration target,
-    _In_ xaml::Duration duration,
+    xaml::Duration target,
+    xaml::Duration duration,
     _Out_ xaml::Duration* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -278,8 +278,8 @@ Cleanup:
 
 IFACEMETHODIMP
 DurationFactory::Subtract(
-    _In_ xaml::Duration target,
-    _In_ xaml::Duration duration,
+    xaml::Duration target,
+    xaml::Duration duration,
     _Out_ xaml::Duration* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -361,8 +361,8 @@ DurationFactory::get_Forever(
 
 IFACEMETHODIMP
 DurationFactory::Compare(
-    _In_ xaml::Duration t1,
-    _In_ xaml::Duration t2,
+    xaml::Duration t1,
+    xaml::Duration t2,
     _Out_ INT* pReturnValue)
 {
     HRESULT hr = S_OK;

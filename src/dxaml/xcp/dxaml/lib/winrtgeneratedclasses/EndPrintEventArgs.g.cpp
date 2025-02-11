@@ -50,7 +50,7 @@ _Check_return_ HRESULT DirectUI::EndPrintEventArgs::get_ErrorCode(_Out_ INT* pVa
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::EndPrintEventArgs::put_ErrorCode(_In_ INT value)
+_Check_return_ HRESULT DirectUI::EndPrintEventArgs::put_ErrorCode(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

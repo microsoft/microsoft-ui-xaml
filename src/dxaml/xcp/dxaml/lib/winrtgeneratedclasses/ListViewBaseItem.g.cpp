@@ -45,7 +45,7 @@ _Check_return_ HRESULT DirectUI::ListViewBaseItemGenerated::get_IsDraggable(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBaseItem_IsDraggable, pValue));
 }
-_Check_return_ HRESULT DirectUI::ListViewBaseItemGenerated::put_IsDraggable(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ListViewBaseItemGenerated::put_IsDraggable(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBaseItem_IsDraggable, value));
 }

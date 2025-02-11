@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::Vector3TransitionGenerated::get_Components(_Out_ ABI::M
     *pValue = SimpleProperty::Property::id<KnownPropertyIndex::Vector3Transition_Components>::Get(GetHandle());
     return S_OK;
 }
-IFACEMETHODIMP DirectUI::Vector3TransitionGenerated::put_Components(_In_ ABI::Microsoft::UI::Xaml::Vector3TransitionComponents value)
+IFACEMETHODIMP DirectUI::Vector3TransitionGenerated::put_Components(ABI::Microsoft::UI::Xaml::Vector3TransitionComponents value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     SimpleProperty::Property::id<KnownPropertyIndex::Vector3Transition_Components>::Set(GetHandle(), value);
@@ -57,7 +57,7 @@ IFACEMETHODIMP DirectUI::Vector3TransitionGenerated::get_Duration(_Out_ ABI::Win
     *pValue = SimpleProperty::Property::id<KnownPropertyIndex::Vector3Transition_Duration>::Get(GetHandle());
     return S_OK;
 }
-IFACEMETHODIMP DirectUI::Vector3TransitionGenerated::put_Duration(_In_ ABI::Windows::Foundation::TimeSpan value)
+IFACEMETHODIMP DirectUI::Vector3TransitionGenerated::put_Duration(ABI::Windows::Foundation::TimeSpan value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     SimpleProperty::Property::id<KnownPropertyIndex::Vector3Transition_Duration>::Set(GetHandle(), value);

@@ -47,9 +47,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CanHorizontallyScroll)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_CanHorizontallyScroll)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_CanHorizontallyScroll)(BOOLEAN value) override;
         IFACEMETHOD(get_CanVerticallyScroll)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_CanVerticallyScroll)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_CanVerticallyScroll)(BOOLEAN value) override;
         IFACEMETHOD(get_ExtentHeight)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_ExtentWidth)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_HorizontalOffset)(_Out_ DOUBLE* pValue) override;
@@ -68,17 +68,17 @@ namespace DirectUI
         IFACEMETHOD(LineLeft)() override;
         IFACEMETHOD(LineRight)() override;
         IFACEMETHOD(LineUp)() override;
-        IFACEMETHOD(MakeVisible)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _In_ BOOLEAN useAnimation, _In_ DOUBLE horizontalAlignmentRatio, _In_ DOUBLE verticalAlignmentRatio, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY) override;
-        IFACEMETHOD(MouseWheelDown)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelLeft)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelRight)(_In_ UINT mouseWheelDelta) = 0;
-        IFACEMETHOD(MouseWheelUp)(_In_ UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MakeVisible)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, BOOLEAN useAnimation, DOUBLE horizontalAlignmentRatio, DOUBLE verticalAlignmentRatio, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY) override;
+        IFACEMETHOD(MouseWheelDown)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelLeft)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelRight)(UINT mouseWheelDelta) = 0;
+        IFACEMETHOD(MouseWheelUp)(UINT mouseWheelDelta) = 0;
         IFACEMETHOD(PageDown)() override;
         IFACEMETHOD(PageLeft)() override;
         IFACEMETHOD(PageRight)() override;
         IFACEMETHOD(PageUp)() override;
-        IFACEMETHOD(SetHorizontalOffset)(_In_ DOUBLE offset) override;
-        IFACEMETHOD(SetVerticalOffset)(_In_ DOUBLE offset) override;
+        IFACEMETHOD(SetHorizontalOffset)(DOUBLE offset) override;
+        IFACEMETHOD(SetVerticalOffset)(DOUBLE offset) override;
 
 
     protected:

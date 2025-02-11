@@ -74,14 +74,15 @@ void ScrollBarController::SetValues(
     double offset,
     double viewportLength)
 {
-    SCROLLVIEW_TRACE_INFO(
+    SCROLLVIEW_TRACE_INFO_DBG(
         nullptr,
-        L"%s[0x%p](minOffset:%lf, maxOffset:%lf, offset:%lf, viewportLength:%lf, operationsCount:%d)\n",
+        L"%s[0x%p](minOffset:%lf, maxOffset:%lf, offset:%lf, offset %%:%lf, viewportLength:%lf, operationsCount:%d)\n",
         METH_NAME,
         this,
         minOffset,
         maxOffset,
         offset,
+        (offset - minOffset) / (maxOffset - minOffset) * 100.0,
         viewportLength,
         m_operationsCount);
 
@@ -343,7 +344,7 @@ void ScrollBarController::OnScrollBarPropertyChanged(
 
     if (args == winrt::Control::IsEnabledProperty())
     {
-        SCROLLVIEW_TRACE_VERBOSE(
+        SCROLLVIEW_TRACE_VERBOSE_DBG(
             nullptr,
             TRACE_MSG_METH_STR_INT,
             METH_NAME,
@@ -499,7 +500,7 @@ void ScrollBarController::OnScroll(
 bool ScrollBarController::RaiseScrollToRequested(
     double offset)
 {
-    SCROLLVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offset);
+    SCROLLVIEW_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_STR_DBL_DBL, METH_NAME, this, L"offset, offset %:", offset, (offset - m_scrollBar.Minimum()) / (m_scrollBar.Maximum() - m_scrollBar.Minimum()) * 100.0);
 
     if (!m_scrollToRequested)
     {

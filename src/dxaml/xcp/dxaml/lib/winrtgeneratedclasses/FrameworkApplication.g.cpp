@@ -92,7 +92,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkApplicationGenerated
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkApplicationGenerated::put_DispatcherShutdownMode(_In_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::FrameworkApplicationGenerated::put_DispatcherShutdownMode(ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value)
 {
     HRESULT hr = S_OK;
     
@@ -111,7 +111,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_FocusVisualKind(_Out
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_FocusVisualKind(_In_ ABI::Microsoft::UI::Xaml::FocusVisualKind value)
+IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_FocusVisualKind(ABI::Microsoft::UI::Xaml::FocusVisualKind value)
 {
     HRESULT hr = S_OK;
     
@@ -130,7 +130,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_HighContrastAdjustme
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_HighContrastAdjustment(_In_ ABI::Microsoft::UI::Xaml::ApplicationHighContrastAdjustment value)
+IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_HighContrastAdjustment(ABI::Microsoft::UI::Xaml::ApplicationHighContrastAdjustment value)
 {
     HRESULT hr = S_OK;
     
@@ -149,7 +149,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_RequestedTheme(_Out_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_RequestedTheme(_In_ ABI::Microsoft::UI::Xaml::ApplicationTheme value)
+IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_RequestedTheme(ABI::Microsoft::UI::Xaml::ApplicationTheme value)
 {
     HRESULT hr = S_OK;
     
@@ -168,7 +168,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_RequiresPointerMode(
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_RequiresPointerMode(_In_ ABI::Microsoft::UI::Xaml::ApplicationRequiresPointerMode value)
+IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_RequiresPointerMode(ABI::Microsoft::UI::Xaml::ApplicationRequiresPointerMode value)
 {
     HRESULT hr = S_OK;
     
@@ -206,7 +206,7 @@ IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::get_ShutdownModel(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_ShutdownModel(_In_ ABI::Microsoft::UI::Xaml::ShutdownModel value)
+IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::put_ShutdownModel(ABI::Microsoft::UI::Xaml::ShutdownModel value)
 {
     HRESULT hr = S_OK;
     
@@ -737,7 +737,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::SetSynchronizationWindow(_In_ UINT64 commitResizeWindow)
+IFACEMETHODIMP DirectUI::FrameworkApplicationGenerated::SetSynchronizationWindow(UINT64 commitResizeWindow)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -866,7 +866,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FrameworkApplicationFactory::LoadComponentWithResourceLocation(_In_ IInspectable* pComponent, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pResourceLocator, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ComponentResourceLocation componentResourceLocation)
+IFACEMETHODIMP DirectUI::FrameworkApplicationFactory::LoadComponentWithResourceLocation(_In_ IInspectable* pComponent, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pResourceLocator, ABI::Microsoft::UI::Xaml::Controls::Primitives::ComponentResourceLocation componentResourceLocation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

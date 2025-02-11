@@ -109,7 +109,7 @@ Cleanup:
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::RangeBaseAutomationPeerGenerated::SetValue(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RangeBaseAutomationPeerGenerated::SetValue(DOUBLE value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

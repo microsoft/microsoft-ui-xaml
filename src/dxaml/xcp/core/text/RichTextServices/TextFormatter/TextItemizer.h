@@ -101,9 +101,9 @@ namespace RichTextServices
             // values for this range.
             XUINT32 GetNextRangeLength(
                 _In_ XUINT32 rangeStart,
-                _Outptr_ TextAnalysisNode<FssScriptAnalysis> **ppScriptAnalysisNode,
-                _Outptr_ TextAnalysisNode<XUINT8> **ppBidiAnalysisNode,
-                _Outptr_ TextAnalysisNode<IDWriteNumberSubstitution*>  **ppNumberSubstitutionAnalysisNode
+                _Outptr_result_maybenull_ TextAnalysisNode<FssScriptAnalysis> **ppScriptAnalysisNode,
+                _Outptr_result_maybenull_ TextAnalysisNode<XUINT8> **ppBidiAnalysisNode,
+                _Outptr_result_maybenull_ TextAnalysisNode<IDWriteNumberSubstitution*>  **ppNumberSubstitutionAnalysisNode
                 );
         };
     }

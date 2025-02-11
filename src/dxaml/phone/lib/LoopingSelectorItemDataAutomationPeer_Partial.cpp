@@ -13,8 +13,8 @@ LoopingSelectorItemDataAutomationPeer::LoopingSelectorItemDataAutomationPeer() :
 
 _Check_return_ HRESULT
 LoopingSelectorItemDataAutomationPeer::InitializeImpl(
-    IInspectable* pItem,
-    xaml_automation_peers::ILoopingSelectorAutomationPeer* pOwner)
+    _In_ IInspectable* pItem,
+    _In_ xaml_automation_peers::ILoopingSelectorAutomationPeer* pOwner)
 {
     HRESULT hr = S_OK;
     wrl::ComPtr<xaml::Automation::Peers::IAutomationPeerFactory> spInnerFactory;
@@ -86,7 +86,8 @@ LoopingSelectorItemDataAutomationPeer::GetItem(_Outptr_result_maybenull_ IInspec
     RRETURN(S_OK);
 }
 
-HRESULT LoopingSelectorItemDataAutomationPeer::SetItemIndex(_In_ int index)
+_Check_return_ HRESULT
+ LoopingSelectorItemDataAutomationPeer::SetItemIndex(_In_ int index)
 {
     _itemIndex = index;
     RRETURN(S_OK);

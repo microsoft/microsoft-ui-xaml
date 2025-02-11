@@ -49,7 +49,7 @@ HRESULT DirectUI::UIElementCollection::QueryInterfaceImpl(_In_ REFIID iid, _Outp
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::UIElementCollection::Move(_In_ UINT oldIndex, _In_ UINT newIndex)
+IFACEMETHODIMP DirectUI::UIElementCollection::Move(UINT oldIndex, UINT newIndex)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

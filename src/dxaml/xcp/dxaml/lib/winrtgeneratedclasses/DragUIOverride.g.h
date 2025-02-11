@@ -42,20 +42,20 @@ namespace DirectUI
         IFACEMETHOD(get_Caption)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Caption)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_IsCaptionVisible)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsCaptionVisible)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsCaptionVisible)(BOOLEAN value) override;
         IFACEMETHOD(get_IsContentVisible)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsContentVisible)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsContentVisible)(BOOLEAN value) override;
         IFACEMETHOD(get_IsGlyphVisible)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsGlyphVisible)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsGlyphVisible)(BOOLEAN value) override;
 
         // Events.
 
         // Methods.
         IFACEMETHOD(Clear)() override;
         IFACEMETHOD(SetContentFromBitmapImage)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage) override;
-        IFACEMETHOD(SetContentFromBitmapImageWithAnchorPoint)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage, _In_ ABI::Windows::Foundation::Point anchorPoint) override;
+        IFACEMETHOD(SetContentFromBitmapImageWithAnchorPoint)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage, ABI::Windows::Foundation::Point anchorPoint) override;
         IFACEMETHOD(SetContentFromSoftwareBitmap)(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap) override;
-        IFACEMETHOD(SetContentFromSoftwareBitmapWithAnchorPoint)(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap, _In_ ABI::Windows::Foundation::Point anchorPoint) override;
+        IFACEMETHOD(SetContentFromSoftwareBitmapWithAnchorPoint)(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap, ABI::Windows::Foundation::Point anchorPoint) override;
 
 
     protected:

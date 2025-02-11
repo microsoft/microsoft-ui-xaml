@@ -45,15 +45,15 @@ namespace DirectUI
         _Check_return_ HRESULT get_ClipTransform(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ICompositeTransform** ppValue);
         _Check_return_ HRESULT put_ClipTransform(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ICompositeTransform* pValue);
         _Check_return_ HRESULT get_ClipTransformOrigin(_Out_ ABI::Windows::Foundation::Point* pValue);
-        _Check_return_ HRESULT put_ClipTransformOrigin(_In_ ABI::Windows::Foundation::Point value);
+        _Check_return_ HRESULT put_ClipTransformOrigin(ABI::Windows::Foundation::Point value);
         _Check_return_ HRESULT get_CompositeTransform(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ICompositeTransform** ppValue);
         _Check_return_ HRESULT put_CompositeTransform(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ICompositeTransform* pValue);
         _Check_return_ HRESULT get_Opacity(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_Opacity(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_Opacity(DOUBLE value);
         _Check_return_ HRESULT get_OpacityAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_OpacityAnimation(_In_opt_ IInspectable* pValue);
         _Check_return_ HRESULT get_TransformOrigin(_Out_ ABI::Windows::Foundation::Point* pValue);
-        _Check_return_ HRESULT put_TransformOrigin(_In_ ABI::Windows::Foundation::Point value);
+        _Check_return_ HRESULT put_TransformOrigin(ABI::Windows::Foundation::Point value);
 
         // Events.
 

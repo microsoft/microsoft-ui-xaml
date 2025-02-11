@@ -7,7 +7,7 @@ using Windows.Foundation.Collections;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
-    public class WinRTCollection : IObservableVector<object>
+    public partial class WinRTCollection : IObservableVector<object>
     {
         private IList<object> m_data;
 
@@ -103,7 +103,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
             Reset();
         }
 
-        private class VectorChangedEventArgs : IVectorChangedEventArgs
+        private partial class VectorChangedEventArgs : IVectorChangedEventArgs
         {
             public CollectionChange CollectionChange { get; private set; }
             public uint Index { get; private set; }

@@ -72,7 +72,7 @@ public:
     _Check_return_ HRESULT Draw(
         _In_ CCoreServices *pCore,
         bool fForceRedraw,
-        _Inout_ bool * pFrameDrawn);
+        _Out_ bool * pFrameDrawn);
 
     _Check_return_ HRESULT CleanupResources(_In_ bool cleanupDComp, _In_ bool isDeviceLost);
 

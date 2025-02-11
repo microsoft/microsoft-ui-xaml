@@ -66,7 +66,7 @@ Cleanup:
 // XamlScanner::Read and its return values indicate the same conditions.
 _Check_return_ HRESULT XamlScanner::Peek(
     _Out_ XamlScannerNode::ScannerNodeType& sntNextNodeType,
-    _Out_ std::shared_ptr<XamlType>& spNextType)
+    std::shared_ptr<XamlType>& spNextType)
 {
     sntNextNodeType = XamlScannerNode::sntNone;
 

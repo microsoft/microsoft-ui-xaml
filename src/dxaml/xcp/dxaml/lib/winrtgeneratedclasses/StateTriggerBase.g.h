@@ -50,12 +50,12 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_TriggerState(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_TriggerState(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_TriggerState(BOOLEAN value);
 
         // Events.
 
         // Methods.
-        IFACEMETHOD(SetActive)(_In_ BOOLEAN IsActive) override;
+        IFACEMETHOD(SetActive)(BOOLEAN IsActive) override;
 
 
     protected:

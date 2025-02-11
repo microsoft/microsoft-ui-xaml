@@ -62,7 +62,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetService)(_In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(GetService)(ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ IInspectable** ppReturnValue) override;
         IFACEMETHOD(Resolve)(_In_ HSTRING qualifiedTypeName, _Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pReturnValue) override;
 
 

@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::ObjectAnimationUsingKeyFrames::get_EnableDependentAnima
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ObjectAnimationUsingKeyFrames_EnableDependentAnimation, pValue));
 }
-IFACEMETHODIMP DirectUI::ObjectAnimationUsingKeyFrames::put_EnableDependentAnimation(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ObjectAnimationUsingKeyFrames::put_EnableDependentAnimation(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ObjectAnimationUsingKeyFrames_EnableDependentAnimation, value));

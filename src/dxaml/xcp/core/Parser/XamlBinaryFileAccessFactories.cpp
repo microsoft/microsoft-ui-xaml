@@ -21,6 +21,9 @@ namespace Parser
         _Out_ std::shared_ptr<XamlReader>& spReader,
         _Out_ std::shared_ptr<XamlBinaryFormatReader2>& spVersion2Reader)
     {
+        spReader = nullptr;
+        spVersion2Reader = nullptr;
+        
         XUINT32 uiOffset = 0;
         const auto uiBinaryXaml = pFileStream->GetSize();
         auto pBinaryXaml = static_cast<XBYTE*>(pFileStream->GetAddress());

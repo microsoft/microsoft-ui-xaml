@@ -46,7 +46,7 @@ namespace MUXControlsTestApp.Samples
             _dataSource.Remove(index, 1 /* count */ , true /* reset */);
         }
 
-        private class MyDataSource : CustomItemsSourceViewWithUniqueIdMapping
+        private partial class MyDataSource : CustomItemsSourceViewWithUniqueIdMapping
         {
             List<string> _inner;
 

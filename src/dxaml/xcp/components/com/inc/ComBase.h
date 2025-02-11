@@ -175,6 +175,7 @@ namespace ctl
             {
                 FAIL_FAST_USING_EXISTING_ERROR_CONTEXT(E_OUTOFMEMORY);
             }
+            _Analysis_assume_(weakRef != nullptr);
 
             INT_PTR encodedWeakRef = Details::EncodeWeakReferencePointer(weakRef);
 

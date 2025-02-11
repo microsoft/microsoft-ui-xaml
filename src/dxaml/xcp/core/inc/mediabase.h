@@ -102,8 +102,8 @@ protected:
         _Out_opt_ PrimaryStretchDirection* actualStretchDirection);
 
     virtual _Check_return_ HRESULT GetNaturalBounds(_Inout_ XRECTF& pNaturalBounds);
-    _Check_return_ HRESULT MeasureOverride(XSIZEF availableSize, _Out_ XSIZEF& desiredSize) override;
-    _Check_return_ HRESULT ArrangeOverride(XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) override;
+    _Check_return_ HRESULT MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize) override;
+    _Check_return_ HRESULT ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize) override;
 
     virtual bool HasValidMediaSource();
     virtual bool ShouldCreateBackgroundBrush();

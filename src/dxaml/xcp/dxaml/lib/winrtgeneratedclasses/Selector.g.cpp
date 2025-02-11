@@ -49,7 +49,7 @@ _Check_return_ HRESULT DirectUI::SelectorGenerated::get_IsSelectionActive(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Selector_IsSelectionActive, pValue));
 }
-_Check_return_ HRESULT DirectUI::SelectorGenerated::put_IsSelectionActive(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::SelectorGenerated::put_IsSelectionActive(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Selector_IsSelectionActive, value));
 }
@@ -57,7 +57,7 @@ IFACEMETHODIMP DirectUI::SelectorGenerated::get_IsSynchronizedWithCurrentItem(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Selector_IsSynchronizedWithCurrentItem, ppValue));
 }
-IFACEMETHODIMP DirectUI::SelectorGenerated::put_IsSynchronizedWithCurrentItem(_In_ ABI::Windows::Foundation::IReference<bool>* pValue)
+IFACEMETHODIMP DirectUI::SelectorGenerated::put_IsSynchronizedWithCurrentItem(ABI::Windows::Foundation::IReference<bool>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Selector_IsSynchronizedWithCurrentItem, pValue));
@@ -66,7 +66,7 @@ IFACEMETHODIMP DirectUI::SelectorGenerated::get_SelectedIndex(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Selector_SelectedIndex, pValue));
 }
-IFACEMETHODIMP DirectUI::SelectorGenerated::put_SelectedIndex(_In_ INT value)
+IFACEMETHODIMP DirectUI::SelectorGenerated::put_SelectedIndex(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Selector_SelectedIndex, value));
@@ -136,7 +136,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::SelectorGenerated::remove_SelectionChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::SelectorGenerated::remove_SelectionChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectionChangedEventSourceType* pEventSource = nullptr;

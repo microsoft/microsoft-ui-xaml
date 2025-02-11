@@ -460,7 +460,7 @@ DCompTreeHost::ReclaimResources(_Out_ bool *pDiscarded)
 //    Get the main and secondary SFs of the current thread, put them into the
 //    vector, which will consumed by Offer and Reclaim
 //-------------------------------------------------------------------------------
-void DCompTreeHost::GetSurfaceFactoriesForCurrentThread(_Out_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector)
+void DCompTreeHost::GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector)
 {
     //First, we put the main SurfaceFactory into the vector
     if (m_spMainSurfaceFactoryPartner3 != NULL) {
@@ -1004,9 +1004,9 @@ _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVis
         // exit its message loop and tear down the tree. Since CompositionContent already closed everything,
         // Xaml will get lots of RO_E_CLOSED errors. These are all safe to ignore. So tolerate RO_E_CLOSED if
         // we're also in the middle of tearing down the tree.
-        ComPtr<ixp::IContentIsland2> contentIsland2;
-        IFCFAILFAST(compositionContent->QueryInterface(IID_PPV_ARGS(&contentIsland2)));
-        HRESULT hr = contentIsland2->put_Root(visual);
+        ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+        IFCFAILFAST(compositionContent->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
+        HRESULT hr = contentIslandExperimental->put_Root(visual);
         if (FAILED(hr))
         {
             if ( hr != RO_E_CLOSED)
@@ -1094,9 +1094,9 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
                 // CONTENT-TODO: This assumes that only one Visual would be connected into the
                 // Content.  If Xaml needs multiple Visuals, it would need to create its own
                 // ContainerVisual.
-                ComPtr<ixp::IContentIsland2> contentIsland2;
-                IFCFAILFAST(content->QueryInterface(IID_PPV_ARGS(&contentIsland2)));
-                IFC_RETURN(contentIsland2->put_Root(wucVisual));
+                ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+                IFCFAILFAST(content->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
+                IFC_RETURN(contentIslandExperimental->put_Root(wucVisual));
 
                 xamlIslandRoot->SetRootVisual(wucVisual);
 
@@ -1422,18 +1422,8 @@ DCompTreeHost::GetSystemBackdropBrush(_Outptr_result_maybenull_ ABI::Windows::UI
 
     *systemBackdropBrush = nullptr;
 
-    if (m_contentBridge)
-    {
-        Microsoft::WRL::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
-
-        IFC_RETURN(m_contentBridge.As(&compositionSupportsSystemBackdrop));
-        IFC_RETURN(compositionSupportsSystemBackdrop->get_SystemBackdrop(systemBackdropBrush));
-    }
-    else
-    {
-        // Return potentially cached m_systemBackdropBrush.
-        m_systemBackdropBrush.CopyTo(systemBackdropBrush);
-    }
+    // Return potentially cached m_systemBackdropBrush.
+    m_systemBackdropBrush.CopyTo(systemBackdropBrush);
 
     return S_OK;
 }
@@ -1441,26 +1431,8 @@ DCompTreeHost::GetSystemBackdropBrush(_Outptr_result_maybenull_ ABI::Windows::UI
 _Check_return_ HRESULT
 DCompTreeHost::SetSystemBackdropBrush(_In_opt_ ABI::Windows::UI::Composition::ICompositionBrush* systemBackdropBrush)
 {
-    if (m_contentBridge)
-    {
-        Microsoft::WRL::ComPtr<ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop> compositionSupportsSystemBackdrop;
-
-        IFC_RETURN(m_contentBridge.As(&compositionSupportsSystemBackdrop));
-
-#ifdef DBG
-        Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionBrush> systemBackdropBrushDbg;
-
-        IGNOREHR(compositionSupportsSystemBackdrop->get_SystemBackdrop(&systemBackdropBrushDbg));
-        IGNOREHR(gps->DebugOutputSzNoEndl(L"DCompTreeHost::SetSystemBackdropBrush - old systemBackdroBrushp=%p, new systemBackdropBrush=%p\r\n", systemBackdropBrushDbg.Get(), systemBackdropBrush));
-#endif
-
-        IFC_RETURN(compositionSupportsSystemBackdrop->put_SystemBackdrop(systemBackdropBrush));
-    }
-    else
-    {
-        // Cache systemBackdropBrush for subsequent call to SetBackgroundBrush when m_contentBridge is set.
-        m_systemBackdropBrush = systemBackdropBrush;
-    }
+    // Cache systemBackdropBrush for subsequent call to SetBackgroundBrush when m_contentBridge is set.
+    m_systemBackdropBrush = systemBackdropBrush;
 
     return S_OK;
 }
@@ -1765,9 +1737,9 @@ void DCompTreeHost::ShowUIThreadCounters()
             if (!hostVisual)
             {
                 // We don't have the host visual so create one.
-                ComPtr<ixp::IContentIsland2> contentIsland2;
-                IFCFAILFAST(iter->first->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIsland2)));
-                IFCFAILFAST(contentIsland2->put_Root(nullptr));
+                ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+                IFCFAILFAST(iter->first->GetContentIsland()->QueryInterface(IID_PPV_ARGS(&contentIslandExperimental)));
+                IFCFAILFAST(contentIslandExperimental->put_Root(nullptr));
                 IFCFAILFAST(GetCompositor()->CreateContainerVisual(hostVisual.ReleaseAndGetAddressOf()));
 
                 // mark this as our FrameCount/Root host.
@@ -1784,7 +1756,7 @@ void DCompTreeHost::ShowUIThreadCounters()
 
                 rootVisual.Reset();
                 IFCFAILFAST(hostVisual.As(&rootVisual))
-                IFCFAILFAST(contentIsland2->put_Root(rootVisual.Get()));
+                IFCFAILFAST(contentIslandExperimental->put_Root(rootVisual.Get()));
             }
         }
     }

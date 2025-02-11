@@ -52,7 +52,7 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_Children)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>** ppValue) override;
         _Check_return_ HRESULT get_IsEssential(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_IsEssential(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsEssential(BOOLEAN value);
 
         // Events.
 
@@ -62,8 +62,8 @@ namespace DirectUI
         IFACEMETHOD(GetCurrentTime)(_Out_ ABI::Windows::Foundation::TimeSpan* pReturnValue) override;
         IFACEMETHOD(Pause)() override;
         IFACEMETHOD(Resume)() override;
-        IFACEMETHOD(Seek)(_In_ ABI::Windows::Foundation::TimeSpan offset) override;
-        IFACEMETHOD(SeekAlignedToLastTick)(_In_ ABI::Windows::Foundation::TimeSpan offset) override;
+        IFACEMETHOD(Seek)(ABI::Windows::Foundation::TimeSpan offset) override;
+        IFACEMETHOD(SeekAlignedToLastTick)(ABI::Windows::Foundation::TimeSpan offset) override;
         IFACEMETHOD(SkipToFill)() override;
         IFACEMETHOD(Stop)() override;
 

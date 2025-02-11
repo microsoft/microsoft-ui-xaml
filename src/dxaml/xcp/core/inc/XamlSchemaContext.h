@@ -96,7 +96,7 @@ public:
     // Sets 'isValidXmlns' parameter to false if input is not of this form.
     _Check_return_ HRESULT CrackXmlns(
         _In_ const xstring_ptr& strXmlns,
-        _Out_ xstring_ptr& strNamespace,
+        _When_(isValidXmlns, _Out_) xstring_ptr& strNamespace,
         _Out_ bool& isValidXmlns);
 
     _Check_return_ HRESULT AddAssemblyXmlnsDefinition(
@@ -108,7 +108,7 @@ public:
 
     _Check_return_ HRESULT GetXamlXmlNamespace(
         _In_ const xstring_ptr& inXmlns,
-        _Out_ std::shared_ptr<XamlNamespace>& outNamespace
+        std::shared_ptr<XamlNamespace>& outNamespace
         );
 
     const std::shared_ptr<XamlNamespace>& GetXamlNamespaceFromRuntimeIndex(

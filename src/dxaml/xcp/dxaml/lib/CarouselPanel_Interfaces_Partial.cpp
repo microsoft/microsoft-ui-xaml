@@ -684,7 +684,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
-CarouselPanel::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+CarouselPanel::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -740,7 +740,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
-CarouselPanel::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+CarouselPanel::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;

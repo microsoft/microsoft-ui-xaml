@@ -95,7 +95,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PopupGenerated::get_DesiredPl
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_DesiredPlacement, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PopupGenerated::put_DesiredPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PopupGenerated::put_DesiredPlacement(ABI::Microsoft::UI::Xaml::Controls::Primitives::PopupPlacementMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_DesiredPlacement, value));
@@ -104,7 +104,7 @@ _Check_return_ HRESULT DirectUI::PopupGenerated::get_DisableOverlayIsLightDismis
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_DisableOverlayIsLightDismissCheck, pValue));
 }
-_Check_return_ HRESULT DirectUI::PopupGenerated::put_DisableOverlayIsLightDismissCheck(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::PopupGenerated::put_DisableOverlayIsLightDismissCheck(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_DisableOverlayIsLightDismissCheck, value));
 }
@@ -112,7 +112,7 @@ IFACEMETHODIMP DirectUI::PopupGenerated::get_HorizontalOffset(_Out_ DOUBLE* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_HorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::PopupGenerated::put_HorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PopupGenerated::put_HorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_HorizontalOffset, value));
@@ -121,7 +121,7 @@ _Check_return_ HRESULT DirectUI::PopupGenerated::get_IsApplicationBarService(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_IsApplicationBarService, pValue));
 }
-_Check_return_ HRESULT DirectUI::PopupGenerated::put_IsApplicationBarService(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::PopupGenerated::put_IsApplicationBarService(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_IsApplicationBarService, value));
 }
@@ -139,7 +139,7 @@ _Check_return_ HRESULT DirectUI::PopupGenerated::get_IsContentDialog(_Out_ BOOLE
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_IsContentDialog, pValue));
 }
-_Check_return_ HRESULT DirectUI::PopupGenerated::put_IsContentDialog(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::PopupGenerated::put_IsContentDialog(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_IsContentDialog, value));
 }
@@ -147,7 +147,7 @@ IFACEMETHODIMP DirectUI::PopupGenerated::get_IsLightDismissEnabled(_Out_ BOOLEAN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_IsLightDismissEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::PopupGenerated::put_IsLightDismissEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PopupGenerated::put_IsLightDismissEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_IsLightDismissEnabled, value));
@@ -156,7 +156,7 @@ IFACEMETHODIMP DirectUI::PopupGenerated::get_IsOpen(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_IsOpen, pValue));
 }
-IFACEMETHODIMP DirectUI::PopupGenerated::put_IsOpen(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PopupGenerated::put_IsOpen(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_IsOpen, value));
@@ -165,7 +165,7 @@ _Check_return_ HRESULT DirectUI::PopupGenerated::get_IsSubMenu(_Out_ BOOLEAN* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_IsSubMenu, pValue));
 }
-_Check_return_ HRESULT DirectUI::PopupGenerated::put_IsSubMenu(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::PopupGenerated::put_IsSubMenu(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_IsSubMenu, value));
 }
@@ -173,7 +173,7 @@ IFACEMETHODIMP DirectUI::PopupGenerated::get_LightDismissOverlayMode(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::PopupGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::PopupGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_LightDismissOverlayMode, value));
@@ -207,7 +207,7 @@ IFACEMETHODIMP DirectUI::PopupGenerated::get_ShouldConstrainToRootBounds(_Out_ B
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_ShouldConstrainToRootBounds, pValue));
 }
-IFACEMETHODIMP DirectUI::PopupGenerated::put_ShouldConstrainToRootBounds(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PopupGenerated::put_ShouldConstrainToRootBounds(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_ShouldConstrainToRootBounds, value));
@@ -225,7 +225,7 @@ IFACEMETHODIMP DirectUI::PopupGenerated::get_VerticalOffset(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Popup_VerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::PopupGenerated::put_VerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PopupGenerated::put_VerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Popup_VerticalOffset, value));
@@ -268,7 +268,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PopupGenerated::remove_ActualPlacementChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::PopupGenerated::remove_ActualPlacementChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ActualPlacementChangedEventSourceType* pEventSource = nullptr;
@@ -323,7 +323,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PopupGenerated::remove_Closed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PopupGenerated::remove_Closed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosedEventSourceType* pEventSource = nullptr;
@@ -378,7 +378,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PopupGenerated::remove_Opened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PopupGenerated::remove_Opened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpenedEventSourceType* pEventSource = nullptr;

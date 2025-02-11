@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerAnnotation::get_Type(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AutomationPeerAnnotation_Type, pValue));
 }
-IFACEMETHODIMP DirectUI::AutomationPeerAnnotation::put_Type(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType value)
+IFACEMETHODIMP DirectUI::AutomationPeerAnnotation::put_Type(ABI::Microsoft::UI::Xaml::Automation::AnnotationType value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AutomationPeerAnnotation_Type, value));
@@ -86,7 +86,7 @@ HRESULT DirectUI::AutomationPeerAnnotationFactory::QueryInterfaceImpl(_In_ REFII
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::AutomationPeerAnnotationFactory::CreateInstance(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance)
+IFACEMETHODIMP DirectUI::AutomationPeerAnnotationFactory::CreateInstance(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance)
 {
     HRESULT hr = S_OK;
     
@@ -95,7 +95,7 @@ IFACEMETHODIMP DirectUI::AutomationPeerAnnotationFactory::CreateInstance(_In_ AB
 Cleanup:
     return hr;
 }
-IFACEMETHODIMP DirectUI::AutomationPeerAnnotationFactory::CreateWithPeerParameter(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pPeer, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance)
+IFACEMETHODIMP DirectUI::AutomationPeerAnnotationFactory::CreateWithPeerParameter(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer* pPeer, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeerAnnotation** ppInstance)
 {
     HRESULT hr = S_OK;
     ARG_NOTNULL(pPeer, "peer");
