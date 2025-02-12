@@ -66,7 +66,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchGenerated::get_HeaderPlacement(_Out_ ABI::M
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitch_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::ToggleSwitchGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::ToggleSwitchGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitch_HeaderPlacement, value));
@@ -84,7 +84,7 @@ IFACEMETHODIMP DirectUI::ToggleSwitchGenerated::get_IsOn(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleSwitch_IsOn, pValue));
 }
-IFACEMETHODIMP DirectUI::ToggleSwitchGenerated::put_IsOn(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ToggleSwitchGenerated::put_IsOn(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleSwitch_IsOn, value));
@@ -172,7 +172,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ToggleSwitchGenerated::remove_Toggled(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ToggleSwitchGenerated::remove_Toggled(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ToggledEventSourceType* pEventSource = nullptr;

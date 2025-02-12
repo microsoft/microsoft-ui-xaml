@@ -47,7 +47,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Action)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventAction* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        _Check_return_ HRESULT put_Action(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventAction value);
+        _Check_return_ HRESULT put_Action(ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventAction value);
         IFACEMETHOD(get_Error)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationError** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
         _Check_return_ HRESULT put_Error(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationError* pValue);
 
@@ -98,7 +98,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventAction action, _In_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationError* pError, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationErrorEventArgs** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventAction action, _In_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationError* pError, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationErrorEventArgs** ppInstance);
 
         // Customized static properties.
 

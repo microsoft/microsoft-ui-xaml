@@ -56,7 +56,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(SetScreenOffsetOverride)(_In_ ABI::Windows::Foundation::Point offsetOnScreen) override;
+        IFACEMETHOD(SetScreenOffsetOverride)(ABI::Windows::Foundation::Point offsetOnScreen) override;
         IFACEMETHOD(TrySetFocus)(_Out_ BOOLEAN* pResult) override;
 
 

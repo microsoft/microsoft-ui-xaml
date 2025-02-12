@@ -20,9 +20,9 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetClosestElementInfo)(_In_ ABI::Windows::Foundation::Point position, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ElementInfo* pReturnValue) = 0;
-        IFACEMETHOD(GetInsertionIndex)(_In_ ABI::Windows::Foundation::Point position, _Out_ INT* pReturnValue) = 0;
-        IFACEMETHOD(IsLayoutBoundary)(_In_ INT index, _Out_ BOOLEAN* pIsLeftBoundary, _Out_ BOOLEAN* pIsTopBoundary, _Out_ BOOLEAN* pIsRightBoundary, _Out_ BOOLEAN* pIsBottomBoundary) = 0;
+        IFACEMETHOD(GetClosestElementInfo)(ABI::Windows::Foundation::Point position, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ElementInfo* pReturnValue) = 0;
+        IFACEMETHOD(GetInsertionIndex)(ABI::Windows::Foundation::Point position, _Out_ INT* pReturnValue) = 0;
+        IFACEMETHOD(IsLayoutBoundary)(INT index, _Out_ BOOLEAN* pIsLeftBoundary, _Out_ BOOLEAN* pIsTopBoundary, _Out_ BOOLEAN* pIsRightBoundary, _Out_ BOOLEAN* pIsBottomBoundary) = 0;
         IFACEMETHOD(GetItemsBounds)(_Out_ ABI::Windows::Foundation::Rect* pReturnValue) = 0;
     };
 }

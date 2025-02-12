@@ -63,7 +63,7 @@ namespace DirectUI
 
         // Methods.
         IFACEMETHOD(Close)() override;
-        IFACEMETHOD(ShowAt)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pTargetElement, _In_ ABI::Windows::Foundation::Point point) override;
+        IFACEMETHOD(ShowAt)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pTargetElement, ABI::Windows::Foundation::Point point) override;
 
 
     protected:

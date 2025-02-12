@@ -51,19 +51,19 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_RasterizePixelHeight)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_RasterizePixelHeight)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_RasterizePixelHeight)(DOUBLE value) override;
         IFACEMETHOD(get_RasterizePixelWidth)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_RasterizePixelWidth)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_RasterizePixelWidth)(DOUBLE value) override;
         IFACEMETHOD(get_UriSource)(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue) override;
         IFACEMETHOD(put_UriSource)(_In_opt_ ABI::Windows::Foundation::IUriRuntimeClass* pValue) override;
 
         // Events.
         _Check_return_ HRESULT GetOpenedEventSourceNoRef(_Outptr_ OpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Opened)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::Imaging::SvgImageSource*, ABI::Microsoft::UI::Xaml::Media::Imaging::SvgImageSourceOpenedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Opened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Opened)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetOpenFailedEventSourceNoRef(_Outptr_ OpenFailedEventSourceType** ppEventSource);
         IFACEMETHOD(add_OpenFailed)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::Imaging::SvgImageSource*, ABI::Microsoft::UI::Xaml::Media::Imaging::SvgImageSourceFailedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_OpenFailed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_OpenFailed)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(SetSourceAsync)(_In_ ABI::Windows::Storage::Streams::IRandomAccessStream* pStreamSource, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Media::Imaging::SvgImageSourceLoadStatus>** ppReturnValue) override;

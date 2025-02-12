@@ -107,11 +107,20 @@ _Check_return_ HRESULT StyleCustomWriter::WriteObject(
                 {
                     STYLELOG(L"[STYLECW]: Beginning capture of Setter.");
                     m_runtimeData->m_setters.push_back(StyleSetterEssence());
+
                     // Setters marked as conditional should not be optimized, nor should they be
                     // optimized if Property/Value is marked as conditional.
-                    // TODO: Add correct check to disable optimization if conditional.
                     // OptimizedStyle will instantiate the full Setter object at runtime.
-                    m_currentSetterInfo.shouldOptimize = true;
+                    if (m_runtimeData->IsInConditionalScope())
+                    {
+                        m_currentSetterInfo.shouldOptimize = false;
+                        m_currentSetterInfo.isConditional = true;
+                    }
+                    else
+                    {
+                        m_currentSetterInfo.shouldOptimize = true;
+                    }
+
                     m_runtimeData->m_offsetTokenStates.emplace_back(true, true);
                     IFC_RETURN(m_customWriterCallbacks->CreateStreamOffsetToken(&m_currentSetterInfo.offsetToken));
                     m_pendingOperations.emplace_back(m_stackDepth, Operation::WritingSetter);
@@ -127,8 +136,16 @@ _Check_return_ HRESULT StyleCustomWriter::WriteObject(
                 // If we enter here, the Setter Value property is some kind of object.
 
                 STYLELOG(L"[STYLECW]: Beginning capture of object in Setter Value.");
-
-                if (IsType(spXamlType, KnownTypeIndex::StaticResource))
+                
+                if (!m_currentSetterInfo.shouldOptimize)
+                {
+                    // If we have already decided that the setter should not be optimized, then
+                    // we should skip determining the appropriate optimization to apply to the
+                    // object being set on Setter.Value
+                    m_pendingOperations.emplace_back(m_stackDepth, Operation::WritingSetterValueObject);
+                    break;
+                }
+                else if (IsType(spXamlType, KnownTypeIndex::StaticResource))
                 {
                     m_runtimeData->m_offsetTokenStates.emplace_back(false, true);
                     StreamOffsetToken token;
@@ -226,6 +243,11 @@ _Check_return_ HRESULT StyleCustomWriter::WriteEndObject(_Out_ bool* pResult)
                 // will be preserved in the stream (see StyleCustomRuntimeData::PrepareStream).
                 m_runtimeData->m_setters.back().SetSetterObject(m_currentSetterInfo.offsetToken, m_currentSetterInfo.isMutable);
                 m_runtimeData->m_offsetTokenStates[m_currentSetterInfo.offsetToken.GetIndex()].second = false;
+
+                if (m_currentSetterInfo.isConditional)
+                {
+                    m_runtimeData->RecordConditionallyDeclaredObject(m_currentSetterInfo.offsetToken);
+                }
             }
             m_currentSetterInfo.reset();
             break;
@@ -307,6 +329,17 @@ _Check_return_ HRESULT StyleCustomWriter::WriteMember(
         }
         case Operation::WritingSetter:
         {
+            // If we are in a conditional scope at this point, there are two possible causes:
+            // 1) Style.Setters was conditionally declared, in which case we've already decided not to
+            //    optimize this Setter
+            // 2) A property on Setter was conditionally declared so the Setter should not be optimized
+            //    to allow the conditional declaration to be properly evaluated at run-time
+            if (m_runtimeData->IsInConditionalScope())
+            {
+                m_currentSetterInfo.shouldOptimize = false;
+                m_currentSetterInfo.isConditional = true;
+            }
+
             // Expect only Setter Property and Value members.
 
             if (spProperty->IsDirective())
@@ -434,37 +467,38 @@ _Check_return_ HRESULT StyleCustomWriter::WriteEndMember(_Out_ bool* pResult)
 }
 
 _Check_return_ HRESULT StyleCustomWriter::WriteConditionalScope(
-    _In_ const std::shared_ptr<Parser::XamlPredicateAndArgs>& /* unused */,
+    _In_ const std::shared_ptr<Parser::XamlPredicateAndArgs>& xamlPredicateAndArgs,
     _Out_ bool* pResult)
 {
-    // TODO: Complete properly (should push current depth as well as the XamlPredicateAndArgs onto a stack
-    // which is then consulted when we encounter Style.Setters [should store predicate in overall CWRD to control
-    // whether or not a zero Setter count needs to be reported at runtime], or when we're about to create a
-    // StyleSetterEssence [store predicate in the StyleSetterEssence and evaluate at runtime to determine if
-    // the OptimizedStyle should skip over that particular StyleSetterEssence])
-    // For now, only allow conditional XAML within the Setter.Value's value; all other instances (including if the
-    // Setter.Value object itself is declared conditionally, although this would be pretty dumb to do regardless
-    // since it can potentially result in Setter.Value having no value) will result in an exception.
-    if (m_pendingOperations.back().second != Operation::WritingSetterValueObject)
+    // The following uses of Conditional XAML will result in optimization being skipped for some or all
+    // of the Setters to ensure that the conditional XAML predicate is properly evaluated at run-time:
+    // 1) Conditionally declared Style.Setters (all Setters are unoptimized)
+    // 2) Conditionally declared Setter (the Setter is unoptimized)
+    // 3) Conditionally declared property on Setter, e.g. Setter.Property or Setter.Value (the Setter is 
+    //    unoptimized)
+    STYLELOG(L"[STYLECW]: WriteConditionalScope passed in.");
+
+    auto currentOperation = m_pendingOperations.back().second;
+    if (m_runtimeData != nullptr)
     {
-        IFC_RETURN(E_FAIL);
+        m_runtimeData->PushConditionalScope(xamlPredicateAndArgs);
     }
 
-    *pResult = true;
+    *pResult = ShouldHandleOperation(currentOperation);
     return S_OK;
 }
 
 _Check_return_ HRESULT StyleCustomWriter::WriteEndConditionalScope(_Out_ bool* pResult)
 {
-    // TODO: Complete properly (see comment on WriteConditionalScope()).
-    // For now, only allow conditional XAML within the Setter.Value's value; all other instances will result in an
-    // exception.
-    if (m_pendingOperations.back().second != Operation::WritingSetterValueObject)
+    STYLELOG(L"[STYLECW]: WriteEndConditionalScope passed in.");
+
+    auto currentOperation = m_pendingOperations.back().second;
+    if (m_runtimeData != nullptr)
     {
-        IFC_RETURN(E_FAIL);
+        m_runtimeData->PopConditionalScope();
     }
 
-    *pResult = true;
+    *pResult = ShouldHandleOperation(currentOperation);
     return S_OK;
 }
 
@@ -504,70 +538,79 @@ _Check_return_ HRESULT StyleCustomWriter::WriteValue(
         case Operation::WritingSetterProperty:
         case Operation::WritingSetterTarget:
         {
-            // Resolve the Setter Target from a string value to XamlProperty.
-
-            std::shared_ptr<XamlProperty> xamlProperty;
-            std::shared_ptr<XamlType> xamlType;
-            xstring_ptr propertyName;
-            xstring_ptr stringValue;
-
-            GetStringValue(spValue, stringValue);
-
-            ASSERT(!stringValue.IsNullOrEmpty());
-
-            // Get the property name and optionally resolve the type if the value was of
-            // the form "type.property".
-            auto ichDot = stringValue.FindChar(L'.');
-            if (ichDot != xstring_ptr_view::npos)
+            if (!m_currentSetterInfo.shouldOptimize)
             {
-                xstring_ptr typeName;
-                unsigned int length = stringValue.GetCount();
+                // If we have already decided that the setter should not be optimized, then
+                // we should skip trying to resolve the target property now
+                break;
+            }
+            else
+            {
+                // Resolve the Setter Target from a string value to XamlProperty.
 
-                if (currentOperation == Operation::WritingSetterTarget)
+                std::shared_ptr<XamlProperty> xamlProperty;
+                std::shared_ptr<XamlType> xamlType;
+                xstring_ptr propertyName;
+                xstring_ptr stringValue;
+
+                GetStringValue(spValue, stringValue);
+
+                ASSERT(!stringValue.IsNullOrEmpty());
+
+                // Get the property name and optionally resolve the type if the value was of
+                // the form "type.property".
+                auto ichDot = stringValue.FindChar(L'.');
+                if (ichDot != xstring_ptr_view::npos)
                 {
-                    // Setter.Target uses property-path syntax, which requires parentheses
-                    // around fully qualified property names (e.g. "(Canvas.Left)" vs "Canvas.Left")
-                    // so those need to be removed first
-                    bool hasParentheses = stringValue.GetChar(0) == L'(' && stringValue.GetChar(length - 1) == L')';
-                    IFC_RETURN((hasParentheses) ? S_OK : E_FAIL);
+                    xstring_ptr typeName;
+                    unsigned int length = stringValue.GetCount();
 
-                    IFC_RETURN(stringValue.SubString(1, ichDot, &typeName));
-                    IFC_RETURN(stringValue.SubString(ichDot + 1, length - 1, &propertyName));
+                    if (currentOperation == Operation::WritingSetterTarget)
+                    {
+                        // Setter.Target uses property-path syntax, which requires parentheses
+                        // around fully qualified property names (e.g. "(Canvas.Left)" vs "Canvas.Left")
+                        // so those need to be removed first
+                        bool hasParentheses = stringValue.GetChar(0) == L'(' && stringValue.GetChar(length - 1) == L')';
+                        IFC_RETURN((hasParentheses) ? S_OK : E_FAIL);
+
+                        IFC_RETURN(stringValue.SubString(1, ichDot, &typeName));
+                        IFC_RETURN(stringValue.SubString(ichDot + 1, length - 1, &propertyName));
+                    }
+                    else
+                    {
+                        IFC_RETURN(stringValue.SubString(0, ichDot, &typeName));
+                        IFC_RETURN(stringValue.SubString(ichDot + 1, length, &propertyName));
+                    }
+
+                    IFC_RETURN(m_objectWriterContext->get_MarkupExtensionContext()->ResolveXamlType(typeName, xamlType));
                 }
                 else
                 {
-                    IFC_RETURN(stringValue.SubString(0, ichDot, &typeName));
-                    IFC_RETURN(stringValue.SubString(ichDot + 1, length, &propertyName));
+                    ASSERT(m_targetXamlType != nullptr);
+                    xamlType = m_targetXamlType;
+                    propertyName = stringValue;
                 }
 
-                IFC_RETURN(m_objectWriterContext->get_MarkupExtensionContext()->ResolveXamlType(typeName, xamlType));
-            }
-            else
-            {
-                ASSERT(m_targetXamlType != nullptr);
-                xamlType = m_targetXamlType;
-                propertyName = stringValue;
-            }
+                if (xamlType)
+                {
+                    IFC_RETURN(xamlType->GetDependencyProperty(propertyName, xamlProperty));
+                }
+                else
+                {
+                    IFC_RETURN(E_FAIL);
+                }
 
-            if (xamlType)
-            {
-                IFC_RETURN(xamlType->GetDependencyProperty(propertyName, xamlProperty));
-            }
-            else
-            {
-                IFC_RETURN(E_FAIL);
-            }
+                if (xamlProperty == nullptr)
+                {
+                    m_runtimeData->m_setters.back().SetUnresolvedPropertyData(xamlType, propertyName);
+                }
+                else
+                {
+                    m_runtimeData->m_setters.back().SetResolvedPropertyData(xamlProperty);
+                }
 
-            if (xamlProperty == nullptr)
-            {
-                m_runtimeData->m_setters.back().SetUnresolvedPropertyData(xamlType, propertyName);
+                break;
             }
-            else
-            {
-                m_runtimeData->m_setters.back().SetResolvedPropertyData(xamlProperty);
-            }
-
-            break;
         }
         case Operation::WritingSetterValue:
         {

@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_BackgroundSizing(_Out_ A
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_BackgroundSizing, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_BackgroundSizing(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_BackgroundSizing(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_BackgroundSizing, value));
@@ -91,7 +91,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_BorderThickness(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_BorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_BorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_BorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_BorderThickness, value));
@@ -100,7 +100,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_CharacterSpacing(_Out_ I
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_CharacterSpacing, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_CharacterSpacing(_In_ INT value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_CharacterSpacing(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_CharacterSpacing, value));
@@ -145,7 +145,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_CornerRadius(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_CornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_CornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_CornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_CornerRadius, value));
@@ -163,7 +163,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_FontSize(_Out_ DOUBLE* p
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_FontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_FontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_FontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_FontSize, value));
@@ -172,7 +172,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_FontStretch(_Out_ ABI::W
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_FontStretch, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_FontStretch(_In_ ABI::Windows::UI::Text::FontStretch value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_FontStretch(ABI::Windows::UI::Text::FontStretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_FontStretch, value));
@@ -181,7 +181,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_FontStyle(_Out_ ABI::Win
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_FontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_FontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_FontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_FontStyle, value));
@@ -190,7 +190,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_FontWeight(_Out_ ABI::Wi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_FontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_FontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_FontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_FontWeight, value));
@@ -208,7 +208,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_HorizontalContentAlignme
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_HorizontalContentAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_HorizontalContentAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_HorizontalContentAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_HorizontalContentAlignment, value));
@@ -217,7 +217,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_IsTextScaleFactorEnabled
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_IsTextScaleFactorEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_IsTextScaleFactorEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_IsTextScaleFactorEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_IsTextScaleFactorEnabled, value));
@@ -226,7 +226,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_LineHeight(_Out_ DOUBLE*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_LineHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_LineHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_LineHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_LineHeight, value));
@@ -235,7 +235,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_LineStackingStrategy(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_LineStackingStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_LineStackingStrategy(_In_ ABI::Microsoft::UI::Xaml::LineStackingStrategy value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_LineStackingStrategy(ABI::Microsoft::UI::Xaml::LineStackingStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_LineStackingStrategy, value));
@@ -244,7 +244,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_MaxLines(_Out_ INT* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_MaxLines, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_MaxLines(_In_ INT value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_MaxLines(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_MaxLines, value));
@@ -253,7 +253,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_OpticalMarginAlignment(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_OpticalMarginAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_OpticalMarginAlignment(_In_ ABI::Microsoft::UI::Xaml::OpticalMarginAlignment value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_OpticalMarginAlignment(ABI::Microsoft::UI::Xaml::OpticalMarginAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_OpticalMarginAlignment, value));
@@ -262,7 +262,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_Padding(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_Padding, value));
@@ -279,7 +279,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_TextLineBounds(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_TextLineBounds, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_TextLineBounds(_In_ ABI::Microsoft::UI::Xaml::TextLineBounds value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_TextLineBounds(ABI::Microsoft::UI::Xaml::TextLineBounds value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_TextLineBounds, value));
@@ -288,7 +288,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_TextWrapping(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_TextWrapping, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_TextWrapping(_In_ ABI::Microsoft::UI::Xaml::TextWrapping value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_TextWrapping(ABI::Microsoft::UI::Xaml::TextWrapping value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_TextWrapping, value));
@@ -297,7 +297,7 @@ IFACEMETHODIMP DirectUI::ContentPresenterGenerated::get_VerticalContentAlignment
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_VerticalContentAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_VerticalContentAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::ContentPresenterGenerated::put_VerticalContentAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentPresenter_VerticalContentAlignment, value));

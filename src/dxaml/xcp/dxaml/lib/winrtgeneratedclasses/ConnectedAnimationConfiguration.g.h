@@ -42,7 +42,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        virtual _Check_return_ HRESULT GetEffectPropertySet(_In_ ABI::Windows::Foundation::Numerics::Vector3 scaleFactors, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionPropertySet** ppEffectPropertySet) = 0;
+        virtual _Check_return_ HRESULT GetEffectPropertySet(ABI::Windows::Foundation::Numerics::Vector3 scaleFactors, _Outptr_ ABI::Microsoft::UI::Composition::ICompositionPropertySet** ppEffectPropertySet) = 0;
 
 
     protected:

@@ -61,7 +61,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_Date(_Out_ ABI::Windows::Found
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_Date, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_Date(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_Date(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_Date, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_DayVisible(_Out_ BOOLEAN* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_DayVisible, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_DayVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_DayVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_DayVisible, value));
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_HeaderPlacement(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_HeaderPlacement, value));
@@ -115,7 +115,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_LightDismissOverlayMode(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_LightDismissOverlayMode, value));
@@ -124,7 +124,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_MaxYear(_Out_ ABI::Windows::Fo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_MaxYear, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_MaxYear(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_MaxYear(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_MaxYear, value));
@@ -133,7 +133,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_MinYear(_Out_ ABI::Windows::Fo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_MinYear, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_MinYear(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_MinYear(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_MinYear, value));
@@ -151,7 +151,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_MonthVisible(_Out_ BOOLEAN* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_MonthVisible, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_MonthVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_MonthVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_MonthVisible, value));
@@ -160,7 +160,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_Orientation(_Out_ ABI::Microso
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_Orientation, value));
@@ -169,7 +169,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_SelectedDate(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_SelectedDate, ppValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_SelectedDate(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_SelectedDate(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_SelectedDate, pValue));
@@ -187,7 +187,7 @@ IFACEMETHODIMP DirectUI::DatePickerGenerated::get_YearVisible(_Out_ BOOLEAN* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DatePicker_YearVisible, pValue));
 }
-IFACEMETHODIMP DirectUI::DatePickerGenerated::put_YearVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::put_YearVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DatePicker_YearVisible, value));
@@ -230,7 +230,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::DatePickerGenerated::remove_DateChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::remove_DateChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DateChangedEventSourceType* pEventSource = nullptr;
@@ -285,7 +285,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::DatePickerGenerated::remove_SelectedDateChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::DatePickerGenerated::remove_SelectedDateChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectedDateChangedEventSourceType* pEventSource = nullptr;

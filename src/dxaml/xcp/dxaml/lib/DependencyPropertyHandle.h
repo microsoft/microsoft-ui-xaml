@@ -27,7 +27,7 @@ namespace DirectUI
         }
 
         IFACEMETHOD(GetMetadata)(
-            _In_ wxaml_interop::TypeName type,
+            wxaml_interop::TypeName type,
             _Outptr_ xaml::IPropertyMetadata** ppMetadata) override;
 
         // Returns a fully initialized DP.
@@ -57,8 +57,8 @@ namespace DirectUI
 
         IFACEMETHOD(Register)(
             _In_ HSTRING hName,
-            _In_ wxaml_interop::TypeName propertyType,
-            _In_ wxaml_interop::TypeName ownerType,
+            wxaml_interop::TypeName propertyType,
+            wxaml_interop::TypeName ownerType,
             _In_opt_ xaml::IPropertyMetadata* pDefaultMetadata,
             _Outptr_ xaml::IDependencyProperty** ppProperty) override
         {
@@ -72,8 +72,8 @@ namespace DirectUI
 
         IFACEMETHOD(RegisterAttached)(
             _In_ HSTRING hName,
-            _In_ wxaml_interop::TypeName propertyType,
-            _In_ wxaml_interop::TypeName ownerType,
+            wxaml_interop::TypeName propertyType,
+            wxaml_interop::TypeName ownerType,
             _In_opt_ xaml::IPropertyMetadata* pDefaultMetadata,
             _Outptr_ xaml::IDependencyProperty** ppProperty) override
         {

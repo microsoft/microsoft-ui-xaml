@@ -78,7 +78,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Opacity)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Opacity)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Opacity)(DOUBLE value) override;
         IFACEMETHOD(get_RelativeTransform)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ITransform** ppValue) override;
         IFACEMETHOD(put_RelativeTransform)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ITransform* pValue) override;
         IFACEMETHOD(get_Transform)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ITransform** ppValue) override;

@@ -29,8 +29,7 @@ HRESULT DirectUI::XamlIslandGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outp
     {
         *ppObject = static_cast<DirectUI::XamlIsland*>(this);
     }
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlIsland)) && Feature_ExperimentalApi::IsEnabled())
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlIsland)))
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlIsland>(this);
     }
@@ -41,6 +40,11 @@ HRESULT DirectUI::XamlIslandGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outp
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Windows::Foundation::IClosable)))
     {
         *ppObject = static_cast<ABI::Windows::Foundation::IClosable*>(this);
+    }
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlIslandFeature_ExperimentalApi>(this);
     }
 #endif
     else
@@ -82,6 +86,25 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::get_Cont
 Cleanup:
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::get_ShouldConstrainPopupsToWorkArea(_Out_ BOOLEAN* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    
+    IFC(static_cast<XamlIsland*>(this)->get_ShouldConstrainPopupsToWorkAreaImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::put_ShouldConstrainPopupsToWorkArea(BOOLEAN value)
+{
+    HRESULT hr = S_OK;
+    
+    
+    IFC(static_cast<XamlIsland*>(this)->put_ShouldConstrainPopupsToWorkAreaImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlIslandGenerated::get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue)
 {
     HRESULT hr = S_OK;
@@ -108,21 +131,17 @@ Cleanup:
 
 HRESULT DirectUI::XamlIslandFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlIslandFactory)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IXamlIslandFactory*>(this);
     }
     else
-#endif
     {
         RRETURN(ctl::AggregableActivationFactory<DirectUI::XamlIsland>::QueryInterfaceImpl(iid, ppObject));
     }
 
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     AddRefOuter();
     RRETURN(S_OK);
-#endif
 }
 
 _Check_return_ HRESULT DirectUI::XamlIslandFactory::CheckActivationAllowed()
@@ -133,7 +152,6 @@ _Check_return_ HRESULT DirectUI::XamlIslandFactory::CheckActivationAllowed()
 // Factory methods.
 IFACEMETHODIMP DirectUI::XamlIslandFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IXamlIsland** ppInstance)
 {
-    if (!Feature_ExperimentalApi::IsEnabled()) IFC_RETURN(E_NOTIMPL);
 
 
     // Can't just IFC(_RETURN) this because for some validate calls (those with multiple template parameters), the

@@ -57,17 +57,17 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DefaultSectionIndex)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_DefaultSectionIndex)(_In_ INT value) override;
+        IFACEMETHOD(put_DefaultSectionIndex)(INT value) override;
         IFACEMETHOD(get_Header)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Header)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) override;
         IFACEMETHOD(get_IsActiveView)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsActiveView)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsActiveView)(BOOLEAN value) override;
         IFACEMETHOD(get_IsZoomedInView)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsZoomedInView)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsZoomedInView)(BOOLEAN value) override;
         IFACEMETHOD(get_Orientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) override;
-        IFACEMETHOD(put_Orientation)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
+        IFACEMETHOD(put_Orientation)(ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
         IFACEMETHOD(get_SectionHeaders)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<IInspectable*>** ppValue) override;
         IFACEMETHOD(get_Sections)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::HubSection*>** ppValue) override;
         _Check_return_ HRESULT put_Sections(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Controls::HubSection*>* pValue);
@@ -78,10 +78,10 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetSectionHeaderClickEventSourceNoRef(_Outptr_ SectionHeaderClickEventSourceType** ppEventSource);
         IFACEMETHOD(add_SectionHeaderClick)(_In_ ABI::Microsoft::UI::Xaml::Controls::IHubSectionHeaderClickEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_SectionHeaderClick)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_SectionHeaderClick)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetSectionsInViewChangedEventSourceNoRef(_Outptr_ SectionsInViewChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_SectionsInViewChanged)(_In_ ABI::Microsoft::UI::Xaml::Controls::ISectionsInViewChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_SectionsInViewChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_SectionsInViewChanged)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(CompleteViewChange)() override;

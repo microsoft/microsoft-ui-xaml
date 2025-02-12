@@ -107,6 +107,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(FlowLayoutDemoPage));
             };
 
+            stackLayoutDemo.Click += delegate
+            {
+                Frame.NavigateWithoutAnimation(typeof(StackLayoutDemoPage));
+            };
+
             activityFeedLayoutDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(ActivityFeedSamplePage));

@@ -82,7 +82,7 @@ public:
     // XamlScanner::Read and its return values indicate the same conditions.
     _Check_return_ HRESULT Peek(
         _Out_ XamlScannerNode::ScannerNodeType& sntNextNodeType,
-        _Out_ std::shared_ptr<XamlType>& spNextType);
+        std::shared_ptr<XamlType>& spNextType);
 
     const XamlScannerNode& get_CurrentNode()
     {

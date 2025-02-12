@@ -420,7 +420,7 @@ _Check_return_ HRESULT CDependencyObject::SetAndOriginateError(
     _In_ HRESULT hrToOriginate,
     _In_ ::ErrorType eType,
     _In_ XUINT32 iErrorCode,
-    _In_opt_ XUINT32 cParams,
+    _In_ XUINT32 cParams,
     _In_reads_opt_(cParams) const xephemeral_string_ptr* pParams)
 {
     HRESULT hr = S_OK;

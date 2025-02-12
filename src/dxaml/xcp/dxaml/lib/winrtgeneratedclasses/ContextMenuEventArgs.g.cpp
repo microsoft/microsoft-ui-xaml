@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::ContextMenuEventArgsGenerated::get_Handled(_Out_ BOOLEA
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ContextMenuEventArgsGenerated::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ContextMenuEventArgsGenerated::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::ContextMenuEventArgsGenerated::get_CursorLeft(_Out_ DOU
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContextMenuEventArgsGenerated::put_CursorLeft(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ContextMenuEventArgsGenerated::put_CursorLeft(DOUBLE value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -131,7 +131,7 @@ IFACEMETHODIMP DirectUI::ContextMenuEventArgsGenerated::get_CursorTop(_Out_ DOUB
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContextMenuEventArgsGenerated::put_CursorTop(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ContextMenuEventArgsGenerated::put_CursorTop(DOUBLE value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::FlipViewGenerated::get_UseTouchAnimationsForAllNavigati
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::FlipView_UseTouchAnimationsForAllNavigation, pValue));
 }
-IFACEMETHODIMP DirectUI::FlipViewGenerated::put_UseTouchAnimationsForAllNavigation(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FlipViewGenerated::put_UseTouchAnimationsForAllNavigation(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::FlipView_UseTouchAnimationsForAllNavigation, value));

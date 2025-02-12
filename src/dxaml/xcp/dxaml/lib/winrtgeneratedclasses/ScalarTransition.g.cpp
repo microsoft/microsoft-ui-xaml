@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::ScalarTransitionGenerated::get_Duration(_Out_ ABI::Wind
     *pValue = SimpleProperty::Property::id<KnownPropertyIndex::ScalarTransition_Duration>::Get(GetHandle());
     return S_OK;
 }
-IFACEMETHODIMP DirectUI::ScalarTransitionGenerated::put_Duration(_In_ ABI::Windows::Foundation::TimeSpan value)
+IFACEMETHODIMP DirectUI::ScalarTransitionGenerated::put_Duration(ABI::Windows::Foundation::TimeSpan value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     SimpleProperty::Property::id<KnownPropertyIndex::ScalarTransition_Duration>::Set(GetHandle(), value);

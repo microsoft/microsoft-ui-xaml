@@ -24,7 +24,7 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_Symbol)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Symbol* pValue) override { return This()->get_Symbol(pValue); }
-        IFACEMETHOD(put_Symbol)(_In_ ABI::Microsoft::UI::Xaml::Controls::Symbol value) override { return This()->put_Symbol(value); }
+        IFACEMETHOD(put_Symbol)(ABI::Microsoft::UI::Xaml::Controls::Symbol value) override { return This()->put_Symbol(value); }
     };
 }
 #pragma endregion
@@ -63,7 +63,7 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Symbol(_Out_ ABI::Microsoft::UI::Xaml::Controls::Symbol* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_Symbol(_In_ ABI::Microsoft::UI::Xaml::Controls::Symbol value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Symbol(ABI::Microsoft::UI::Xaml::Controls::Symbol value);
 
         // Events.
 

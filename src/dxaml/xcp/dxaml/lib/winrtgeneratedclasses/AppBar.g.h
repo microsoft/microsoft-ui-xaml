@@ -58,29 +58,29 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ClosedDisplayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::AppBarClosedDisplayMode* pValue) override;
-        IFACEMETHOD(put_ClosedDisplayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::AppBarClosedDisplayMode value) override;
+        IFACEMETHOD(put_ClosedDisplayMode)(ABI::Microsoft::UI::Xaml::Controls::AppBarClosedDisplayMode value) override;
         IFACEMETHOD(get_IsOpen)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsOpen)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsOpen)(BOOLEAN value) override;
         IFACEMETHOD(get_IsSticky)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsSticky)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsSticky)(BOOLEAN value) override;
         IFACEMETHOD(get_LightDismissOverlayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode* pValue) override;
-        IFACEMETHOD(put_LightDismissOverlayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
+        IFACEMETHOD(put_LightDismissOverlayMode)(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
         IFACEMETHOD(get_TemplateSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarTemplateSettings** ppValue) override;
         _Check_return_ HRESULT put_TemplateSettings(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarTemplateSettings* pValue);
 
         // Events.
         _Check_return_ HRESULT GetClosedEventSourceNoRef(_Outptr_ ClosedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Closed)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Closed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetClosingEventSourceNoRef(_Outptr_ ClosingEventSourceType** ppEventSource);
         IFACEMETHOD(add_Closing)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Closing)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Closing)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetOpenedEventSourceNoRef(_Outptr_ OpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Opened)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Opened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Opened)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetOpeningEventSourceNoRef(_Outptr_ OpeningEventSourceType** ppEventSource);
         IFACEMETHOD(add_Opening)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Opening)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Opening)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(OnBackButtonPressed)(_Out_ BOOLEAN* pResult) override;

@@ -53,21 +53,21 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_AreStickyGroupHeadersEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AreStickyGroupHeadersEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AreStickyGroupHeadersEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_CacheLength)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_CacheLength)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_CacheLength)(DOUBLE value) override;
         IFACEMETHOD(get_FirstCacheIndex)(_Out_ INT* pValue) override;
         IFACEMETHOD(get_FirstVisibleIndex)(_Out_ INT* pValue) override;
         IFACEMETHOD(get_GroupHeaderPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GroupHeaderPlacement* pValue) override;
-        IFACEMETHOD(put_GroupHeaderPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GroupHeaderPlacement value) override;
+        IFACEMETHOD(put_GroupHeaderPlacement)(ABI::Microsoft::UI::Xaml::Controls::Primitives::GroupHeaderPlacement value) override;
         IFACEMETHOD(get_GroupPadding)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_GroupPadding)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_GroupPadding)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_ItemsUpdatingScrollMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ItemsUpdatingScrollMode* pValue) override;
-        IFACEMETHOD(put_ItemsUpdatingScrollMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::ItemsUpdatingScrollMode value) override;
+        IFACEMETHOD(put_ItemsUpdatingScrollMode)(ABI::Microsoft::UI::Xaml::Controls::ItemsUpdatingScrollMode value) override;
         IFACEMETHOD(get_LastCacheIndex)(_Out_ INT* pValue) override;
         IFACEMETHOD(get_LastVisibleIndex)(_Out_ INT* pValue) override;
         IFACEMETHOD(get_Orientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) override;
-        IFACEMETHOD(put_Orientation)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
+        IFACEMETHOD(put_Orientation)(ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
         IFACEMETHOD(get_ScrollingDirection)(_Out_ ABI::Microsoft::UI::Xaml::Controls::PanelScrollingDirection* pValue) override;
 
         // Events.

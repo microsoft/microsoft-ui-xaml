@@ -27,7 +27,7 @@ public:
     ~CPrintPageEventArgs() override;
 
     _Check_return_ HRESULT get_PageVisual(_Outptr_ CUIElement** ppPageVisual);
-    _Check_return_ HRESULT put_PageVisual(_In_opt_ CUIElement* pPageVisual);
+    _Check_return_ HRESULT put_PageVisual(_In_ CUIElement* pPageVisual);
 
     bool HasMorePages()
     {

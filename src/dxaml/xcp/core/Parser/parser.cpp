@@ -301,14 +301,14 @@ CParser::LoadXamlCore(
 _Check_return_ HRESULT
 CParser::CreateNamescope(
     _In_ CCoreServices *pCore,
-    _In_ CDependencyObject *pFrameworkRoot,
+    _In_opt_ CDependencyObject *pFrameworkRoot,
     _In_ const CParserSettings& parserSettings,
     _Out_ xref_ptr<INameScope>& spNameScope
 )
 {
 
     // Create a name scope if requested (defaults to true)
-    CDependencyObject* pNamescopeOwner = NULL;
+    CDependencyObject* pNamescopeOwner = nullptr;
     if( parserSettings.get_CreateNamescope() )
     {
         // If we have an existing framework root, use that as the namescope owner.
@@ -332,7 +332,10 @@ CParser::CreateNamescope(
     else
     {
         ASSERT( pFrameworkRoot );
-        pNamescopeOwner = pFrameworkRoot->GetStandardNameScopeOwner();
+        if (pFrameworkRoot)
+        {
+            pNamescopeOwner = pFrameworkRoot->GetStandardNameScopeOwner();
+        }
     }
 
 
@@ -387,7 +390,7 @@ CParser::CreateObjectWriter(
     _In_ const xref_ptr<IPALUri>& spBaseUri,
     _In_ xref_ptr<INameScope> spNameScope,
     _Out_ std::shared_ptr<ObjectWriter>& spObjectWriter,
-    _Out_ std::shared_ptr<BinaryFormatObjectWriter>& spBinaryFormatObjectWriter
+    _When_(fEnableEncoding, _Out_) std::shared_ptr<BinaryFormatObjectWriter>& spBinaryFormatObjectWriter
     )
 {
     ObjectWriterSettings objectWriterSettings;

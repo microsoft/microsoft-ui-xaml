@@ -49,7 +49,7 @@ _Check_return_ HRESULT DirectUI::StateTriggerBaseGenerated::get_TriggerState(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StateTriggerBase_TriggerState, pValue));
 }
-_Check_return_ HRESULT DirectUI::StateTriggerBaseGenerated::put_TriggerState(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::StateTriggerBaseGenerated::put_TriggerState(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StateTriggerBase_TriggerState, value));
 }
@@ -57,7 +57,7 @@ _Check_return_ HRESULT DirectUI::StateTriggerBaseGenerated::put_TriggerState(_In
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::StateTriggerBaseGenerated::SetActive(_In_ BOOLEAN IsActive)
+IFACEMETHODIMP DirectUI::StateTriggerBaseGenerated::SetActive(BOOLEAN IsActive)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

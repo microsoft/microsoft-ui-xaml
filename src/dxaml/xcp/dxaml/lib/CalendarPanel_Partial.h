@@ -36,11 +36,11 @@ namespace DirectUI
         _Check_return_ HRESULT Initialize() override;
 
         IFACEMETHOD(MeasureOverride)(
-            _In_ wf::Size pAvailableSize,
+            wf::Size pAvailableSize,
             _Out_ wf::Size* pDesired) override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size arrangeSize,
+            wf::Size arrangeSize,
             _Out_ wf::Size* pReturnValue) override;
 
         // Handle the custom property changed event and call the

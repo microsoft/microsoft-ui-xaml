@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::LineGeometry::get_EndPoint(_Out_ ABI::Windows::Foundati
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LineGeometry_EndPoint, pValue));
 }
-IFACEMETHODIMP DirectUI::LineGeometry::put_EndPoint(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::LineGeometry::put_EndPoint(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LineGeometry_EndPoint, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::LineGeometry::get_StartPoint(_Out_ ABI::Windows::Founda
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LineGeometry_StartPoint, pValue));
 }
-IFACEMETHODIMP DirectUI::LineGeometry::put_StartPoint(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::LineGeometry::put_StartPoint(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LineGeometry_StartPoint, value));

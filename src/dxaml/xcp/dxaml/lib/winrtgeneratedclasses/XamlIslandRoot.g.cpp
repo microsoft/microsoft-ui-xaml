@@ -83,7 +83,7 @@ Cleanup:
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::XamlIslandRootGenerated::SetScreenOffsetOverride(_In_ ABI::Windows::Foundation::Point offsetOnScreen)
+IFACEMETHODIMP DirectUI::XamlIslandRootGenerated::SetScreenOffsetOverride(ABI::Windows::Foundation::Point offsetOnScreen)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DragItemsCount)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_DragItemsCount(_In_ INT value);
+        _Check_return_ HRESULT put_DragItemsCount(INT value);
 
         // Events.
 

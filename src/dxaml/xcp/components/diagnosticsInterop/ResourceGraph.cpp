@@ -39,7 +39,7 @@ namespace Diagnostics
     //which may have been set to a StaticResource lookup.
     void ResourceGraph::UnregisterResourceDependency(
         _In_ CDependencyObject* pFrameworkDependency,
-        _In_ KnownPropertyIndex propertyIndex)
+        KnownPropertyIndex propertyIndex)
     {
         //Check our deferred stack for any resources we haven't added to the graph yet, and add them
         ResolveAllResourceDependencies();
@@ -146,7 +146,7 @@ namespace Diagnostics
     }
 
     void ResourceGraph::RegisterResourceDependency(
-        const std::shared_ptr<ResourceDependency>& dependency,
+        _In_ const std::shared_ptr<ResourceDependency>& dependency,
         _In_ CResourceDictionary* pResourceDictionary,
         const xstring_ptr& resourceKey)
     {

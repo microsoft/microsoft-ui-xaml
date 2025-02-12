@@ -379,7 +379,7 @@ _Check_return_ HRESULT CalendarView::ProcessCandidateTabStopOverride(
     _In_ DependencyObject* pCandidateTabStopElement,
     _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
     const bool isBackward,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsCandidateTabStopOverridden)
 {
     HRESULT hr = S_OK;

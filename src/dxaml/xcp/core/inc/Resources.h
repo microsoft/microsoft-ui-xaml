@@ -640,7 +640,7 @@ public:
         _In_ XUINT32 argCount,
         _Inout_updates_(argCount) CValue* args,
         _In_opt_ IInspectable* pValueOuter,
-        _Out_ CValue* result)
+        _Inout_ CValue* result)
     {
         CColorPaletteResources* _this = nullptr;
         IFC_RETURN(DoPointerCast(_this, obj));

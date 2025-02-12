@@ -141,7 +141,7 @@ IFACEMETHODIMP DirectUI::ManipulationCompletedRoutedEventArgs::get_Handled(_Out_
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ManipulationCompletedRoutedEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ManipulationCompletedRoutedEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

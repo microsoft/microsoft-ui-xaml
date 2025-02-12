@@ -1021,7 +1021,7 @@ protected:
         // This method is called for the actual PropertySet of the Name property on a CDependencyObject.
         _Check_return_ HRESULT SetName(_In_ const xstring_ptr& strNewName);
 
-        virtual _Check_return_ HRESULT RegisterName(_In_ CDependencyObject *pNamescopeOwner, _In_ XUINT32 bTemplateNamescope = FALSE);
+        virtual _Check_return_ HRESULT RegisterName(_In_ CDependencyObject *pNamescopeOwner, XUINT32 bTemplateNamescope = FALSE);
         _Check_return_ HRESULT UnregisterName(_In_ CDependencyObject *pNamescopeOwner);
 
         virtual bool SkipNameRegistrationForChildren()
@@ -1159,7 +1159,7 @@ public:
     _Check_return_ HRESULT CheckThread();
 
     // Set and originate an error.  This function always returns hrToOriginate, so callers can IFC() this function call.
-    _Check_return_ HRESULT SetAndOriginateError(_In_ HRESULT hrToOriginate, _In_::ErrorType eType, _In_ XUINT32 iErrorCode, _In_opt_ XUINT32 cParams = 0, _In_reads_opt_(cParams) const xephemeral_string_ptr* pParams = nullptr);
+    _Check_return_ HRESULT SetAndOriginateError(_In_ HRESULT hrToOriginate, _In_::ErrorType eType, _In_ XUINT32 iErrorCode, _In_ XUINT32 cParams = 0, _In_reads_opt_(cParams) const xephemeral_string_ptr* pParams = nullptr);
 
     // What is a templated parent exactly? What does it mean in the context of our framework? These are good questions
     // that have muddy answers. A template parent is a parse-time concept that should ONLY be used in the context of

@@ -55,8 +55,8 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(CreateTimelinesInternal)(_In_ BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection) override;
-        _Check_return_ HRESULT CreateTimelinesInternalProtected(_In_ BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection);
+        IFACEMETHOD(CreateTimelinesInternal)(BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection) override;
+        _Check_return_ HRESULT CreateTimelinesInternalProtected(BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection);
 
 
     protected:

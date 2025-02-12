@@ -60,9 +60,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_InputValidationKind)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(put_InputValidationKind)(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(put_InputValidationKind)(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_InputValidationMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(put_InputValidationMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(put_InputValidationMode)(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value) FEATURE_INPUTVALIDATION_OVERRIDE;
 
         // Events.
 

@@ -51,7 +51,7 @@ _Check_return_ HRESULT DirectUI::SecondaryContentRelationship::get_IsDescendant(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SecondaryContentRelationship_IsDescendant, pValue));
 }
-_Check_return_ HRESULT DirectUI::SecondaryContentRelationship::put_IsDescendant(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::SecondaryContentRelationship::put_IsDescendant(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SecondaryContentRelationship_IsDescendant, value));
 }
@@ -59,7 +59,7 @@ _Check_return_ HRESULT DirectUI::SecondaryContentRelationship::get_ShouldTargetC
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SecondaryContentRelationship_ShouldTargetClip, pValue));
 }
-_Check_return_ HRESULT DirectUI::SecondaryContentRelationship::put_ShouldTargetClip(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::SecondaryContentRelationship::put_ShouldTargetClip(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SecondaryContentRelationship_ShouldTargetClip, value));
 }
@@ -267,7 +267,7 @@ HRESULT DirectUI::SecondaryContentRelationshipFactory::QueryInterfaceImpl(_In_ R
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateStickyHeaderRelationship(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPanelObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pPanelTransform, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeaderTransform, _In_ DOUBLE groupTopY, _In_ DOUBLE groupBottomY, _In_ DOUBLE headerHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult)
+IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateStickyHeaderRelationship(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pPanelObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pPanelTransform, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeaderTransform, DOUBLE groupTopY, DOUBLE groupBottomY, DOUBLE headerHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -289,7 +289,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateClipTransformRelationship(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pClipOwner, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pClipTransform, _In_ DOUBLE listExtentHeight, _In_ DOUBLE listViewportHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult)
+IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateClipTransformRelationship(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pClipOwner, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pClipTransform, DOUBLE listExtentHeight, DOUBLE listViewportHeight, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -331,7 +331,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateStaticElementRelationship(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pStaticElement, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElementTransform, _In_ BOOLEAN isHorizontallyStatic, _In_ BOOLEAN isInverted, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult)
+IFACEMETHODIMP DirectUI::SecondaryContentRelationshipFactory::CreateStaticElementRelationship(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pScrollViewer, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pStaticElement, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElementTransform, BOOLEAN isHorizontallyStatic, BOOLEAN isInverted, _Outptr_ ABI::Microsoft::UI::Xaml::Internal::ISecondaryContentRelationship** ppResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

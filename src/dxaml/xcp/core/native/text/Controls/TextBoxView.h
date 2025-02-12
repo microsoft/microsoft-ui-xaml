@@ -235,7 +235,7 @@ public:
         _Out_ XRECT_RB* pEndRect
     );
 
-    _Check_return_ HRESULT GetSelectionRects(_Out_ std::vector<RECT>& rects);
+    _Check_return_ HRESULT GetSelectionRects(_Inout_ std::vector<RECT>& rects);
 
 protected:
      _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool fForceRefresh = false) override;

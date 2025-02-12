@@ -386,13 +386,13 @@ namespace DirectUI
 
             // ArrangeOverride
             IFACEMETHOD(ArrangeOverride)(
-                _In_ wf::Size arrangeSize,
+                wf::Size arrangeSize,
                 _Out_ wf::Size* pReturnValue)
                 override;
 
             // MeasureOverride
             IFACEMETHOD(MeasureOverride)(
-                _In_ wf::Size availableSize,
+                wf::Size availableSize,
                 _Out_ wf::Size* pDesired)
                 override;
 
@@ -419,17 +419,17 @@ namespace DirectUI
 
             // FocusManager GetFirst/LastFocusableElementOverride
             _Check_return_ HRESULT GetFirstFocusableElementOverride(
-                _Outptr_ DependencyObject** ppFirstFocusable) override;
+                _Outptr_result_maybenull_ DependencyObject** ppFirstFocusable) override;
 
             _Check_return_ HRESULT GetLastFocusableElementOverride(
-                _Outptr_ DependencyObject** ppLastFocusable) override;
+                _Outptr_result_maybenull_ DependencyObject** ppLastFocusable) override;
 
             // Returns next focusable element in a specified direction.
             // Since Get{First,Last}FocusableElementOverride is called in different context after refactoring change 601761
             // this method needs to be called from Panel::GetFirstFocusableElementOverride in order to retain the same call order as in Win8.
             _Check_return_ HRESULT GetFocusableElement(
                 const bool isBackward,
-                _Outptr_ DependencyObject** ppFocusable);
+                _Outptr_result_maybenull_ DependencyObject** ppFocusable);
 
             #pragma region IGeneratorHost overrides
 
@@ -450,8 +450,8 @@ namespace DirectUI
             _Check_return_ IFACEMETHOD(SetupContainerContentChangingAfterPrepare)(
                 _In_ xaml::IDependencyObject* container,
                 _In_ IInspectable* item,
-                _In_ INT itemIndex,
-                _In_ wf::Size measureSize) override;
+                INT itemIndex,
+                wf::Size measureSize) override;
 
             _Check_return_ IFACEMETHOD(RegisterWorkFromArgs)(
                 _In_ xaml_controls::IContainerContentChangingEventArgs* pArgs) override;
@@ -531,7 +531,7 @@ namespace DirectUI
             // Shared implementation for GetFirstFocusableElementOverride and GetLastFocusableElementOverride.
             _Check_return_ HRESULT GetFocusableElementForModernPanel(
                 _In_ BOOLEAN isBackward,
-                _Outptr_ DependencyObject** ppFocusable);
+                _Outptr_result_maybenull_ DependencyObject** ppFocusable);
 
         private:
 
@@ -571,7 +571,7 @@ namespace DirectUI
             // Helper for getting next focusable control outside of LVB.
             _Check_return_ HRESULT GetNextFocusablePeer(
                 const bool isBackward,
-                _Outptr_ IDependencyObject** ppOutsidePeer);
+                _Outptr_result_maybenull_ IDependencyObject** ppOutsidePeer);
 
             // Ensure itemIndex is within valid range for group with index of groupIndex.  If alwaysSet is TRUE, then
             // set pNewItemIndex to the first item index (atBeginning = TRUE) or the last.
@@ -603,19 +603,19 @@ namespace DirectUI
             _Check_return_ HRESULT GetNextTabStopForElementType(
                 _In_ ElementType elementType,
                 const bool isBackward,
-                _Outptr_ IDependencyObject** ppNextElement);
+                _Outptr_result_maybenull_ IDependencyObject** ppNextElement);
 
             // Get next tab stop for currently focused element type.
             _Check_return_ HRESULT GetNextTabStop(
                 _In_ ElementType elementType,
                const bool isBackward,
-                _Outptr_ IDependencyObject** ppNextElement);
+                _Outptr_result_maybenull_ IDependencyObject** ppNextElement);
 
             // The Panel stores the focus candidate (header or item). For example
             // if there is a scroll into view, the panel would keep the scrolled item
             // as the candidate.
             _Check_return_ HRESULT GetFocusCandidateFromPanel(
-                _Outptr_ xaml::IDependencyObject** ppFocusCandidate);
+                _Outptr_result_maybenull_ xaml::IDependencyObject** ppFocusCandidate);
 
             // State machine for determining next tab stop.
             // Given the current state information it tests if the transition to candidate state is a valid one
@@ -631,7 +631,7 @@ namespace DirectUI
                 _In_ ElementType candidateElementType,
                 const bool isBackward,
                 _Out_ ElementType* pNewElementType,
-                _Outptr_ IDependencyObject** ppNextElement);
+                _Outptr_result_maybenull_ IDependencyObject** ppNextElement);
 
             // Determines the next tab stop given currently focused element and default focus candidate.
             _Check_return_ HRESULT ProcessTabStopInternal(
@@ -640,7 +640,7 @@ namespace DirectUI
                 const bool isBackward,
                 const bool didCycleFocusAtRootVisualScope,
                 _Out_ BOOLEAN* pHandled,
-                _Outptr_ DependencyObject** ppNewTabStop);
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop);
 
             // For Gamepad page navigation, this will return false for: 1) trigger keys on horizontal list 2) shoulder keys for vertical list
             _Check_return_ HRESULT CanPerformKeyboardNavigation(
@@ -1104,7 +1104,7 @@ namespace DirectUI
                 _In_opt_ DependencyObject* pCandidateTabStopElement,
                 const bool isBackward,
                 const bool didCycleFocusAtRootVisualScope,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsTabStopOverridden) override;
 
             // UIElement override for getting next tab stop on path from focus candidate element to root.
@@ -1113,7 +1113,7 @@ namespace DirectUI
                 _In_ DependencyObject* pCandidateTabStopElement,
                 _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
                 const bool isBackward,
-                _Outptr_ DependencyObject** ppNewTabStop,
+                _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
                 _Out_ BOOLEAN* pIsCandidateTabStopOverridden) override;
 
             _Check_return_ HRESULT ItemFocused(
@@ -1275,7 +1275,7 @@ namespace DirectUI
             //  dragPoint   - The point the user moved to. Relative to this ListViewBase.
             //  pIsHandled  - Set to FALSE if the gesture was ignored due to input modality mismatch, set to TRUE otherwise.
             _Check_return_ HRESULT OnDragMoveGesture(
-                _In_ xaml_input::IPointer* pointer,
+                _In_opt_ xaml_input::IPointer* pointer,
                 _In_ wf::Point dragPoint,
                 _Out_ BOOLEAN *pIsHandled);
 
@@ -1386,7 +1386,7 @@ namespace DirectUI
             // or the given IPointer is the pointer currently in charge of a drag
             // and drop operation.
             _Check_return_ HRESULT ShouldAcceptDragInput(
-                _In_ xaml_input::IPointer* pointer,
+                _In_opt_ xaml_input::IPointer* pointer,
                 _Out_ BOOLEAN* shouldAccept);
 
             // Returns TRUE if the given IPointers refer to the same physical device.
@@ -1541,8 +1541,8 @@ namespace DirectUI
                 _In_ ListViewBaseItem* dragOverItem);
 
             _Check_return_ IFACEMETHOD(OverrideContainerArrangeBounds)(
-                _In_ INT index,
-                _In_ wf::Rect suggestedBounds,
+                INT index,
+                wf::Rect suggestedBounds,
                 _Out_ wf::Rect* newBounds) override;
         #pragma endregion
 

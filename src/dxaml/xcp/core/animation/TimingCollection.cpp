@@ -32,7 +32,7 @@ _Check_return_ HRESULT CTimingCollection::Clear()
     return S_OK;
 }
 
-_Check_return_ HRESULT CTimingCollection::Append(_In_ CDependencyObject *pObject, _Out_ XUINT32 *pnIndex)
+_Check_return_ HRESULT CTimingCollection::Append(_In_ CDependencyObject *pObject, _Out_opt_ XUINT32 *pnIndex)
 {
     IFC_RETURN(CheckCanBeModified());
 

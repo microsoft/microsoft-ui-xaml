@@ -206,13 +206,17 @@ NavigationView::NavigationView()
     auto footerItems = winrt::make<Vector<winrt::IInspectable>>();
     SetValue(s_FooterMenuItemsProperty, footerItems);
 
-    auto weakThis = get_weak();
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::NavigationView>(*this))};
     m_topDataProvider.OnRawDataChanged(
         [weakThis](const winrt::NotifyCollectionChangedEventArgs& args)
         {
-            if (auto target = weakThis.get())
+            if(auto strongThis = weakThis.get())
             {
-                target->OnTopNavDataSourceChanged(args);
+                NavigationView* rawThis = winrt::get_self<NavigationView>(strongThis);
+                rawThis->OnTopNavDataSourceChanged(args);
             }
         });
 
@@ -2820,33 +2824,93 @@ void NavigationView::FocusNextDownItem(const winrt::NavigationViewItem& nvi, con
     }
 }
 
+winrt::UIElement NavigationView::GetFirstFocusableElement(const winrt::ItemsRepeater& ir)
+{
+    if (ir == nullptr)
+    {
+        return nullptr;
+    }
+
+    if (auto itemsSourceView = ir.ItemsSourceView())
+    {
+        const auto lastIndex = itemsSourceView.Count() - 1;
+        int index = 0;
+        while (index <= lastIndex)
+        {
+            if (auto element = ir.TryGetElement(index))
+            {
+                if (SharedHelpers::IsFocusableElement(element)) { return element;  }
+            }
+            index++;
+        }
+    }
+    return nullptr;
+}
+
+winrt::UIElement NavigationView::GetLastFocusableElement(const winrt::ItemsRepeater& ir)
+{
+    if (ir == nullptr)
+    {
+        return nullptr;
+    }
+
+    if (auto itemsSourceView = ir.ItemsSourceView())
+    {
+        auto index = itemsSourceView.Count() - 1;
+        while (index >= 0)
+        {
+            if (auto element = ir.TryGetElement(index))
+            {
+                if (SharedHelpers::IsFocusableElement(element)) { return element;  }
+            }
+            index--;
+        }
+    }
+    return nullptr;
+}
+
 void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib)
 {
-    auto const firstElement = [this, nvib]()
+    winrt::ItemsRepeater parentIR = nullptr;
+    if (auto const nvi = m_lastItemExpandedIntoFlyout.get())
     {
-        auto const parentIR = GetParentRootItemsRepeaterForContainer(nvib);
-        return parentIR.TryGetElement(0);
-    }();
+        // Flyout is open, set focus on the first focusable item in flyout
+        auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+        parentIR = nviImpl->GetRepeater();
+    }
+    else
+    {
+        parentIR = GetParentRootItemsRepeaterForContainer(nvib);
+    }
 
-    if (auto controlFirst = firstElement.try_as<winrt::Control>())
+    if (auto firstFocusableElement = GetFirstFocusableElement(parentIR))
     {
-        controlFirst.Focus(winrt::FocusState::Keyboard);
+        if (auto controlFirst = firstFocusableElement.try_as<winrt::Control>())
+        {
+            controlFirst.Focus(winrt::FocusState::Keyboard);
+        }
     }
 }
 
 void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib)
 {
-    auto const parentIR = GetParentRootItemsRepeaterForContainer(nvib);
-
-    if (auto itemsSourceView = parentIR.ItemsSourceView())
+    winrt::ItemsRepeater parentIR = nullptr;
+    if (auto const nvi = m_lastItemExpandedIntoFlyout.get())
     {
-        const auto lastIndex = itemsSourceView.Count() - 1;
-        if (auto lastElement = parentIR.TryGetElement(lastIndex))
+        // Flyout is open, set focus on the last focusable item in flyout
+        auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+        parentIR = nviImpl->GetRepeater();
+    }
+    else
+    {
+        parentIR = GetParentRootItemsRepeaterForContainer(nvib);
+    }
+
+    if (auto lastFocusableElement = GetLastFocusableElement(parentIR))
+    {
+        if (auto control = lastFocusableElement.try_as<winrt::Control>())
         {
-            if (auto controlLast = lastElement.try_as<winrt::Control>())
-            {
-                controlLast.Focus(winrt::FocusState::Programmatic);
-            }
+            control.Focus(winrt::FocusState::Keyboard);
         }
     }
 }

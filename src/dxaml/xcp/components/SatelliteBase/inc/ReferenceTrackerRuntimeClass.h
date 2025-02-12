@@ -118,14 +118,16 @@ namespace Private
                 // references will be truly disconnected. It's only the timeframe between running
                 // our destructor and calling release on the base class instance that's problematic.
                 *ppInterface = nullptr;
+                return E_NOINTERFACE;
             }
 
             return S_OK;
         }
 
         _Check_return_
-        virtual bool QueryInterfaceOverride(_In_ REFIID /*riid*/, _Outptr_ void** /*ppInterface*/)
+        virtual bool QueryInterfaceOverride(_In_ REFIID /*riid*/, _Outptr_ void** ppInterface)
         {
+            *ppInterface = nullptr;
             return false;
         }
 

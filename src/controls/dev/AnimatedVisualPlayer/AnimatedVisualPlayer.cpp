@@ -323,17 +323,22 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
 
     // Subscribe to suspending, resuming, and visibility events so we can pause the animation if it's 
     // definitely not visible.
-    m_suspendingRevoker = winrt::Application::Current().Suspending(winrt::auto_revoke, [weakThis{ get_weak() }](
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::AnimatedVisualPlayer>(*this))};
+    m_suspendingRevoker = winrt::Application::Current().Suspending(winrt::auto_revoke, [weakThis](
         auto const& /*sender*/,
         auto const& /*e*/)
     {
         if (auto strongThis = weakThis.get())
         {
-            strongThis->OnHiding();
+            AnimatedVisualPlayer* rawThis = winrt::get_self<AnimatedVisualPlayer>(strongThis);
+            rawThis->OnHiding();
         }
     });
 
-    m_resumingRevoker = winrt::Application::Current().Resuming(winrt::auto_revoke, [weakThis{ get_weak() }](
+    m_resumingRevoker = winrt::Application::Current().Resuming(winrt::auto_revoke, [weakThis](
         auto const& /*sender*/,
         auto const& /*e*/)
     {
@@ -341,7 +346,8 @@ AnimatedVisualPlayer::AnimatedVisualPlayer()
         {
             if (winrt::CoreWindow::GetForCurrentThread().Visible())
             {
-                strongThis->OnUnhiding();
+                AnimatedVisualPlayer* rawThis = winrt::get_self<AnimatedVisualPlayer>(strongThis);
+                rawThis->OnUnhiding();
             }
         }
     });
@@ -398,27 +404,31 @@ void AnimatedVisualPlayer::OnLoaded(winrt::IInspectable const& /*sender*/, winrt
         m_isUnloaded = false;
     }
 
-    
-    m_xamlRootChangedRevoker = this->XamlRoot().Changed(winrt::auto_revoke, [weakThis{ get_weak() }](
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::AnimatedVisualPlayer>(*this))};
+    m_xamlRootChangedRevoker = this->XamlRoot().Changed(winrt::auto_revoke, [weakThis](
         auto const& /*sender*/, 
         auto const& args)
     {
         if (auto strongThis = weakThis.get())
         {
-            auto xamlRoot = strongThis->XamlRoot();
+            AnimatedVisualPlayer* rawThis = winrt::get_self<AnimatedVisualPlayer>(strongThis);
+            auto xamlRoot = rawThis->XamlRoot();
             bool hostVisibility = xamlRoot.IsHostVisible();
-            if (hostVisibility != strongThis->m_isHostVisible)
+            if (hostVisibility != rawThis->m_isHostVisible)
             {
-                strongThis->m_isHostVisible = hostVisibility;
+                rawThis->m_isHostVisible = hostVisibility;
                 if (hostVisibility)
                 {
                     // Transition from invisible to visible.
-                    strongThis->OnUnhiding();
+                    rawThis->OnUnhiding();
                 }
                 else
                 {
                     // Transition from visible to invisible.
-                    strongThis->OnHiding();
+                    rawThis->OnHiding();
                 }
                 
             }
@@ -832,29 +842,35 @@ void AnimatedVisualPlayer::DestroyAnimations() {
 
     // Call RequestCommit to make sure that previous compositor calls complete before destroying animations.
     // RequestCommitAsync is available only for RS4+
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::AnimatedVisualPlayer>(*this))};
     m_rootVisual.Compositor().RequestCommitAsync().Completed(
-        [me_weak = get_weak(), createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
-            auto me = me_weak.get();
+        [weakThis, createAnimationsCounter = m_createAnimationsCounter](auto, auto) {
+            auto strongThis = weakThis.get();
 
-            if (!me)
+            if (!strongThis)
             {
                 return;
             }
+
+            AnimatedVisualPlayer* rawThis = winrt::get_self<AnimatedVisualPlayer>(strongThis);
 
             // Check if there was any CreateAnimations call after DestroyAnimations.
             // We should not destroy animations in this case,
             // they will be destroyed by the following DestroyAnimations call.
-            if (createAnimationsCounter != me->m_createAnimationsCounter) {
+            if (createAnimationsCounter != rawThis->m_createAnimationsCounter) {
                 return;
             }
 
             // Check if current animated visual supports destroyig animations.
-            if (const auto& animatedVisual = me->m_animatedVisual.get())
+            if (const auto& animatedVisual = rawThis->m_animatedVisual.get())
             {
                 if (const auto& animatedVisual2 = animatedVisual.try_as<winrt::IAnimatedVisual2>())
                 {
                     animatedVisual2.DestroyAnimations();
-                    me->m_isAnimationsCreated = false;
+                    rawThis->m_isAnimationsCreated = false;
                 }
             }
         }
@@ -884,14 +900,19 @@ void AnimatedVisualPlayer::OnSourcePropertyChanged(
     if (auto newDynamicSource = newSource.try_as<winrt::IDynamicAnimatedVisualSource>())
     {
         // Connect to the update notifications of the new source.
+        // Previously we used get_weak() here, but we found the potential to hit a 
+        // refcounting problem where in some scenarios the outer object gets
+        // an extra Release() in this process.
+        auto weakThis {winrt::make_weak(static_cast<winrt::AnimatedVisualPlayer>(*this))};
         m_dynamicAnimatedVisualInvalidatedRevoker
-            = newDynamicSource.AnimatedVisualInvalidated(winrt::auto_revoke, [weakThis{ get_weak() }](
+            = newDynamicSource.AnimatedVisualInvalidated(winrt::auto_revoke, [weakThis](
                 auto const& /*sender*/,
                 auto const& /*e*/)
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->UpdateContent();
+                AnimatedVisualPlayer* rawThis = winrt::get_self<AnimatedVisualPlayer>(strongThis);
+                rawThis->UpdateContent();
             }
         });
     }

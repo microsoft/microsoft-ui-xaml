@@ -85,7 +85,7 @@ private:
     void InitializeInteractionTracker();
     void ConfigurePositionInertiaRestingValues();
 
-    winrt::Visual FindVisualInteractionSourceVisual();
+    winrt::UIElement FindVisualInteractionSourceElement();
     void EnsureClip();
 
     void CloseWithoutAnimation();
@@ -238,11 +238,12 @@ private:
     static constexpr wstring_view s_swipeContentStackPanelName{ L"SwipeContentStackPanel"sv };
     static constexpr wstring_view s_swipeItemStyleName{ L"SwipeItemStyle"sv };
 
-
     static constexpr wstring_view s_swipeItemBackgroundResourceName{ L"SwipeItemBackground"sv };
     static constexpr wstring_view s_swipeItemForegroundResourceName{ L"SwipeItemForeground"sv };
     static constexpr wstring_view s_executeSwipeItemPreThresholdBackgroundResourceName{ L"SwipeItemPreThresholdExecuteBackground"sv };
     static constexpr wstring_view s_executeSwipeItemPostThresholdBackgroundResourceName{ L"SwipeItemPostThresholdExecuteBackground"sv };
     static constexpr wstring_view s_executeSwipeItemPreThresholdForegroundResourceName{ L"SwipeItemPreThresholdExecuteForeground"sv };
     static constexpr wstring_view s_executeSwipeItemPostThresholdForegroundResourceName{ L"SwipeItemPostThresholdExecuteForeground"sv };
+
+    static GlobalDependencyProperty s_VisualInteractionSourceProperty;
 };

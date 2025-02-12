@@ -53,12 +53,12 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DynamicOverflowOrder)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_DynamicOverflowOrder)(_In_ INT value) override;
+        IFACEMETHOD(put_DynamicOverflowOrder)(INT value) override;
         IFACEMETHOD(get_IsCompact)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsCompact)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsCompact)(BOOLEAN value) override;
         IFACEMETHOD(get_IsInOverflow)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_UseOverflowStyle)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_UseOverflowStyle)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_UseOverflowStyle)(BOOLEAN value) override;
 
         // Events.
 

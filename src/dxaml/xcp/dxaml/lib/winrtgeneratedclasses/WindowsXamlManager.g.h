@@ -29,7 +29,7 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(add_XamlShutdownCompletedOnThread)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_XamlShutdownCompletedOnThread(pValue, pToken); }
-        IFACEMETHOD(remove_XamlShutdownCompletedOnThread)(_In_ EventRegistrationToken token) override { return This()->remove_XamlShutdownCompletedOnThread(token); }
+        IFACEMETHOD(remove_XamlShutdownCompletedOnThread)(EventRegistrationToken token) override { return This()->remove_XamlShutdownCompletedOnThread(token); }
     };
 }
 #pragma endregion
@@ -67,7 +67,7 @@ namespace DirectUI
         // Events.
         virtual _Check_return_ HRESULT GetXamlShutdownCompletedOnThreadEventSourceNoRef(_Outptr_ XamlShutdownCompletedOnThreadEventSourceType** ppEventSource) = 0;
         _Check_return_ HRESULT STDMETHODCALLTYPE add_XamlShutdownCompletedOnThread(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Hosting::WindowsXamlManager*, ABI::Microsoft::UI::Xaml::Hosting::XamlShutdownCompletedOnThreadEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_XamlShutdownCompletedOnThread(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_XamlShutdownCompletedOnThread(EventRegistrationToken token);
 
         // Methods.
 

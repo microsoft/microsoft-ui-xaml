@@ -126,160 +126,43 @@ namespace OSVersions
 };
 
 // Returns the version of XBF to use for the given target OS
-static const XamlBinaryFileVersion& GetXBFVersion(const TargetOSVersion& osVersion)
+static const XamlBinaryFileVersion& GetXBFVersion(const TargetOSVersion& /* osVersion */)
 {
-    if (osVersion < OSVersions::WIN10_TH1)
-    {
-        return Parser::XbfV1;
-    }
-    else
-    {
-        // All versions of Windows 10 use XBF v2.1
-        return Parser::XbfV2_1;
-    }
+    return Parser::XbfV2_1;
 }
 
 // Returns the CustomWriterRuntimeDataTypeIndex to use when serializing DeferredElementCustomWriterRuntimeData for the given target OS
-static CustomWriterRuntimeDataTypeIndex GetDeferredElementSerializationVersion(const TargetOSVersion& osVersion)
+static CustomWriterRuntimeDataTypeIndex GetDeferredElementSerializationVersion(const TargetOSVersion& /* osVersion */)
 {
-    if (osVersion < OSVersions::WIN10_RS2)
-    {
-        return CustomWriterRuntimeDataTypeIndex::DeferredElement_v2;
-    }
-    else
-    {
-        return CustomWriterRuntimeDataTypeIndex::DeferredElement_v3;
-    }
+    return CustomWriterRuntimeDataTypeIndex::DeferredElement_v3;
 }
 
 // Returns the CustomWriterRuntimeDataTypeIndex to use when serializing ResourceDictionaryCustomWriterRuntimeData for the given target OS
-static CustomWriterRuntimeDataTypeIndex GetResourceDictionarySerializationVersion(const TargetOSVersion& osVersion)
+static CustomWriterRuntimeDataTypeIndex GetResourceDictionarySerializationVersion(const TargetOSVersion& /* osVersion */)
 {
-    if (osVersion < OSVersions::WIN10_RS1)
-    {
-        return CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS2)
-    {
-        return CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v2;
-    }
-    else
-    {
-        return CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3;
-    }
+    return CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3;
 }
 
 // Returns the CustomWriterRuntimeDataTypeIndex to use when serializing StyleCustomWriterRuntimeData for the given target OS
-static CustomWriterRuntimeDataTypeIndex GetStyleSerializationVersion(const TargetOSVersion& osVersion)
+static CustomWriterRuntimeDataTypeIndex GetStyleSerializationVersion(const TargetOSVersion& /* osVersion */)
 {
-    if (osVersion < OSVersions::WIN10_RS1)
-    {
-        return CustomWriterRuntimeDataTypeIndex::Style_v1;
-    }
-    else
-    {
-        return CustomWriterRuntimeDataTypeIndex::Style_v2;
-    }
+    return CustomWriterRuntimeDataTypeIndex::Style_v3;
 }
 
 // Returns the CustomWriterRuntimeDataTypeIndex to use when serializing VisualStateGroupCollectionCustomWriterRuntimeData for the given target OS
-static CustomWriterRuntimeDataTypeIndex GetVisualStateGroupCollectionSerializationVersion(const TargetOSVersion& osVersion)
+static CustomWriterRuntimeDataTypeIndex GetVisualStateGroupCollectionSerializationVersion(const TargetOSVersion& /* osVersion */)
 {
     return CustomWriterRuntimeDataTypeIndex::VisualStateGroupCollection_v5;
 }
 
 static std::underlying_type_t<::Parser::StableXbfTypeIndex> GetStableXbfTypeIndexCountForTargetOSVersion(const TargetOSVersion& osVersion)
 {
-    if (osVersion < OSVersions::WIN10_TH1)
-    {
-        return 0;
-    }
-    else if (osVersion < OSVersions::WIN10_TH2)
-    {
-        // TPMV = TH1
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfTypeIndex::UnderlineStyle) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS1)
-    {
-        // TPMV = TH2
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfTypeIndex::CalendarDatePickerAutomationPeer) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS2)
-    {
-        // TPMV = RS1
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfTypeIndex::CalendarViewHeaderAutomationPeer) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS3)
-    {
-        // TPMV = RS2
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfTypeIndex::WebViewElement_Deleted0) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS4)
-    {
-        // TPMV = RS3
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfTypeIndex::XamlRenderingBackgroundTask) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS5)
-    {
-        // TPMV = RS4
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfTypeIndex::CommandingContainer) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_19H1)
-    {
-        // TPMV = RS5
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfTypeIndex::XamlUICommand) + 1;
-    }
-    else
-    {
-        return StableXbfTypeCount;
-    }
+    return StableXbfTypeCount;
 }
 
-static std::underlying_type_t<StableXbfPropertyIndex> GetStableXbfPropertyIndexCountForTargetOSVersion(const TargetOSVersion& osVersion)
+static std::underlying_type_t<StableXbfPropertyIndex> GetStableXbfPropertyIndexCountForTargetOSVersion(const TargetOSVersion& /* osVersion */)
 {
-    if (osVersion < OSVersions::WIN10_TH1)
-    {
-        return 0;
-    }
-    else if (osVersion < OSVersions::WIN10_TH2)
-    {
-        // TPMV = TH1
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfPropertyIndex::Popup_IsContentDialog) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS1)
-    {
-        // TPMV = TH2
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfPropertyIndex::UIElement_GlobalScaleFactor) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS2)
-    {
-        // TPMV = RS1
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfPropertyIndex::Application_RequiresPointerMode) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS3)
-    {
-        // TPMV = RS2
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfPropertyIndex::Control_TemplateKeyTipTarget) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS4)
-    {
-        // TPMV = RS3
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfPropertyIndex::ListViewItemPresenter_RevealBorderThickness) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_RS5) // DEAD_CODE_REMOVAL
-    {
-        // TPMV = RS4
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfPropertyIndex::HandwritingView_IsTelemetryCollectionEnabled_Deleted0) + 1;
-    }
-    else if (osVersion < OSVersions::WIN10_19H1)
-    {
-        // TPMV = RS5
-        return static_cast<std::underlying_type_t<::Parser::StableXbfTypeIndex>>(StableXbfPropertyIndex::TimePicker_SelectedTime) + 1;
-    }
-    else
-    {
-        return StableXbfPropertyCount;
-    }
+    return StableXbfPropertyCount;
 }
 
 } };

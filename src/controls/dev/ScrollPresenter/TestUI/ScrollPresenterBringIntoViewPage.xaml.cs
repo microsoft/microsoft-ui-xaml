@@ -699,7 +699,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private class SampleDataSource : CustomItemsSourceViewWithUniqueIdMapping
+        private partial class SampleDataSource : CustomItemsSourceViewWithUniqueIdMapping
         {
             List<string> _inner;
 

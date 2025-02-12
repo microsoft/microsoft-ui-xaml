@@ -25,18 +25,18 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_AreTransportControlsEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_AreTransportControlsEnabled(pValue); }
-        IFACEMETHOD(put_AreTransportControlsEnabled)(_In_ BOOLEAN value) override { return This()->put_AreTransportControlsEnabled(value); }
+        IFACEMETHOD(put_AreTransportControlsEnabled)(BOOLEAN value) override { return This()->put_AreTransportControlsEnabled(value); }
         IFACEMETHOD(get_AutoPlay)(_Out_ BOOLEAN* pValue) override { return This()->get_AutoPlay(pValue); }
-        IFACEMETHOD(put_AutoPlay)(_In_ BOOLEAN value) override { return This()->put_AutoPlay(value); }
+        IFACEMETHOD(put_AutoPlay)(BOOLEAN value) override { return This()->put_AutoPlay(value); }
         IFACEMETHOD(get_IsFullWindow)(_Out_ BOOLEAN* pValue) override { return This()->get_IsFullWindow(pValue); }
-        IFACEMETHOD(put_IsFullWindow)(_In_ BOOLEAN value) override { return This()->put_IsFullWindow(value); }
+        IFACEMETHOD(put_IsFullWindow)(BOOLEAN value) override { return This()->put_IsFullWindow(value); }
         IFACEMETHOD(get_MediaPlayer)(_Outptr_result_maybenull_ ABI::Windows::Media::Playback::IMediaPlayer** ppValue) override { return This()->get_MediaPlayer(ppValue); }
         IFACEMETHOD(get_PosterSource)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IImageSource** ppValue) override { return This()->get_PosterSource(ppValue); }
         IFACEMETHOD(put_PosterSource)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IImageSource* pValue) override { return This()->put_PosterSource(pValue); }
         IFACEMETHOD(get_Source)(_Outptr_result_maybenull_ ABI::Windows::Media::Playback::IMediaPlaybackSource** ppValue) override { return This()->get_Source(ppValue); }
         IFACEMETHOD(put_Source)(_In_opt_ ABI::Windows::Media::Playback::IMediaPlaybackSource* pValue) override { return This()->put_Source(pValue); }
         IFACEMETHOD(get_Stretch)(_Out_ ABI::Microsoft::UI::Xaml::Media::Stretch* pValue) override { return This()->get_Stretch(pValue); }
-        IFACEMETHOD(put_Stretch)(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value) override { return This()->put_Stretch(value); }
+        IFACEMETHOD(put_Stretch)(ABI::Microsoft::UI::Xaml::Media::Stretch value) override { return This()->put_Stretch(value); }
         IFACEMETHOD(get_TransportControls)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControls** ppValue) override { return This()->get_TransportControls(ppValue); }
         IFACEMETHOD(put_TransportControls)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControls* pValue) override { return This()->put_TransportControls(pValue); }
         IFACEMETHOD(SetMediaPlayer)(_In_opt_ ABI::Windows::Media::Playback::IMediaPlayer* pMediaPlayer) override { return This()->SetMediaPlayer(pMediaPlayer); }
@@ -82,18 +82,18 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT STDMETHODCALLTYPE get_AreTransportControlsEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_AreTransportControlsEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_AreTransportControlsEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_AutoPlay(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_AutoPlay(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_AutoPlay(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsFullWindow(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFullWindow(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFullWindow(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_MediaPlayer(_Outptr_result_maybenull_ ABI::Windows::Media::Playback::IMediaPlayer** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_PosterSource(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IImageSource** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_PosterSource(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IImageSource* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Source(_Outptr_result_maybenull_ ABI::Windows::Media::Playback::IMediaPlaybackSource** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Source(_In_opt_ ABI::Windows::Media::Playback::IMediaPlaybackSource* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Stretch(_Out_ ABI::Microsoft::UI::Xaml::Media::Stretch* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_Stretch(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Stretch(ABI::Microsoft::UI::Xaml::Media::Stretch value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_TransportControls(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControls** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_TransportControls(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IMediaTransportControls* pValue);
 

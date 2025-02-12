@@ -30,25 +30,25 @@ namespace DirectUI
 
         // IDropOperationTarget Methods
         IFACEMETHOD(EnterAsync)(
-            _In_ mui::DragDrop::IDragInfo* pDragInfo,
-            _In_ mui::DragDrop::IDragUIOverride* pDragUIOverride,
-            _Deref_out_ wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue) override;
+            mui::DragDrop::IDragInfo* pDragInfo,
+            mui::DragDrop::IDragUIOverride* pDragUIOverride,
+            wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue) override;
         IFACEMETHOD(OverAsync)(
-            _In_ mui::DragDrop::IDragInfo* pDragInfo,
-            _In_ mui::DragDrop::IDragUIOverride* pDragUIOverride,
-            _Deref_out_ wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue) override;
+            mui::DragDrop::IDragInfo* pDragInfo,
+            mui::DragDrop::IDragUIOverride* pDragUIOverride,
+            wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue) override;
         IFACEMETHOD(LeaveAsync)(
-            _In_ mui::DragDrop::IDragInfo* pDragInfo,
-            _Deref_out_ wf::IAsyncAction** ppReturnValue) override;
+            mui::DragDrop::IDragInfo* pDragInfo,
+            wf::IAsyncAction** ppReturnValue) override;
         IFACEMETHOD(DropAsync)(
-            _In_ mui::DragDrop::IDragInfo* pDragInfo,
-            _Deref_out_ wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue) override;
+            mui::DragDrop::IDragInfo* pDragInfo,
+            wf::IAsyncOperation<wadt::DataPackageOperation>** ppReturnValue) override;
 
         HRESULT RaiseDragDropEventActionAsync(
             _In_ DragDropMessageType type,
             _In_ mui::DragDrop::IDragInfo* pDragInfo,
             _In_opt_ RaiseDragDropEventAsyncOperation* pRaiseDragDropEventAsyncOperation,
-            _Deref_out_ wf::IAsyncAction** ppReturnValue);
+            _Outptr_ wf::IAsyncAction** ppReturnValue);
 
         _Check_return_ HRESULT RaiseDragDropEventOperationAsync(
             _In_ DragDropMessageType type,

@@ -36,9 +36,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_OldDate)(_Out_ ABI::Windows::Foundation::DateTime* pValue) override;
-        _Check_return_ HRESULT put_OldDate(_In_ ABI::Windows::Foundation::DateTime value);
+        _Check_return_ HRESULT put_OldDate(ABI::Windows::Foundation::DateTime value);
         IFACEMETHOD(get_NewDate)(_Out_ ABI::Windows::Foundation::DateTime* pValue) override;
-        _Check_return_ HRESULT put_NewDate(_In_ ABI::Windows::Foundation::DateTime value);
+        _Check_return_ HRESULT put_NewDate(ABI::Windows::Foundation::DateTime value);
 
         // Methods.
 

@@ -59,19 +59,19 @@ namespace DirectUI
         IFACEMETHOD(get_HasOverflowContent)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_IsTextTrimmed)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_MaxLines)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_MaxLines)(_In_ INT value) override;
+        IFACEMETHOD(put_MaxLines)(INT value) override;
         IFACEMETHOD(get_OverflowContentTarget)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IRichTextBlockOverflow** ppValue) override;
         IFACEMETHOD(put_OverflowContentTarget)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IRichTextBlockOverflow* pValue) override;
         IFACEMETHOD(get_Padding)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_Padding)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_Padding)(ABI::Microsoft::UI::Xaml::Thickness value) override;
 
         // Events.
         _Check_return_ HRESULT GetIsTextTrimmedChangedEventSourceNoRef(_Outptr_ IsTextTrimmedChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_IsTextTrimmedChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::RichTextBlockOverflow*, ABI::Microsoft::UI::Xaml::Controls::IsTextTrimmedChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_IsTextTrimmedChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_IsTextTrimmedChanged)(EventRegistrationToken token) override;
 
         // Methods.
-        IFACEMETHOD(GetPositionFromPoint)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer** ppReturnValue) override;
+        IFACEMETHOD(GetPositionFromPoint)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer** ppReturnValue) override;
 
 
     protected:

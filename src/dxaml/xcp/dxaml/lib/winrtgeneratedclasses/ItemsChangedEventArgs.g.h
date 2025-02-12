@@ -39,15 +39,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Action)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_Action(_In_ INT value);
+        _Check_return_ HRESULT put_Action(INT value);
         IFACEMETHOD(get_ItemCount)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_ItemCount(_In_ INT value);
+        _Check_return_ HRESULT put_ItemCount(INT value);
         IFACEMETHOD(get_ItemUICount)(_Out_ INT* pValue) override;
-        _Check_return_ HRESULT put_ItemUICount(_In_ INT value);
+        _Check_return_ HRESULT put_ItemUICount(INT value);
         IFACEMETHOD(get_OldPosition)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition* pValue) override;
-        _Check_return_ HRESULT put_OldPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition value);
+        _Check_return_ HRESULT put_OldPosition(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition value);
         IFACEMETHOD(get_Position)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition* pValue) override;
-        _Check_return_ HRESULT put_Position(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition value);
+        _Check_return_ HRESULT put_Position(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition value);
 
         // Events.
 

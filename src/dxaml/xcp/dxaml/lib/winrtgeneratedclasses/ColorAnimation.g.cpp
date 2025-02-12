@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::ColorAnimation::get_By(_Out_ ABI::Windows::Foundation::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorAnimation_By, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorAnimation::put_By(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorAnimation::put_By(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorAnimation_By, pValue));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::ColorAnimation::get_EnableDependentAnimation(_Out_ BOOL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorAnimation_EnableDependentAnimation, pValue));
 }
-IFACEMETHODIMP DirectUI::ColorAnimation::put_EnableDependentAnimation(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ColorAnimation::put_EnableDependentAnimation(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorAnimation_EnableDependentAnimation, value));
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::ColorAnimation::get_From(_Out_ ABI::Windows::Foundation
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorAnimation_From, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorAnimation::put_From(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorAnimation::put_From(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorAnimation_From, pValue));
@@ -82,7 +82,7 @@ IFACEMETHODIMP DirectUI::ColorAnimation::get_To(_Out_ ABI::Windows::Foundation::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorAnimation_To, ppValue));
 }
-IFACEMETHODIMP DirectUI::ColorAnimation::put_To(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
+IFACEMETHODIMP DirectUI::ColorAnimation::put_To(ABI::Windows::Foundation::IReference<ABI::Windows::UI::Color>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorAnimation_To, pValue));

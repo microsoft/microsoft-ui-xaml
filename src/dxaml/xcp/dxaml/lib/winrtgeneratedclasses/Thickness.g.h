@@ -27,8 +27,8 @@ namespace DirectUI
         // Static properties.
 
         // Static methods.
-        IFACEMETHOD(FromLengths)(_In_ DOUBLE left, _In_ DOUBLE top, _In_ DOUBLE right, _In_ DOUBLE bottom, _Out_ ABI::Microsoft::UI::Xaml::Thickness* pReturnValue) override;
-        IFACEMETHOD(FromUniformLength)(_In_ DOUBLE uniformLength, _Out_ ABI::Microsoft::UI::Xaml::Thickness* pReturnValue) override;
+        IFACEMETHOD(FromLengths)(DOUBLE left, DOUBLE top, DOUBLE right, DOUBLE bottom, _Out_ ABI::Microsoft::UI::Xaml::Thickness* pReturnValue) override;
+        IFACEMETHOD(FromUniformLength)(DOUBLE uniformLength, _Out_ ABI::Microsoft::UI::Xaml::Thickness* pReturnValue) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

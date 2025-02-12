@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::WindowChromeGenerated::get_CaptionVisibility(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::WindowChrome_CaptionVisibility, pValue));
 }
-_Check_return_ HRESULT DirectUI::WindowChromeGenerated::put_CaptionVisibility(_In_ ABI::Microsoft::UI::Xaml::Visibility value)
+_Check_return_ HRESULT DirectUI::WindowChromeGenerated::put_CaptionVisibility(ABI::Microsoft::UI::Xaml::Visibility value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::WindowChrome_CaptionVisibility, value));

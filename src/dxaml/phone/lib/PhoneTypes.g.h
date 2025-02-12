@@ -187,9 +187,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Properties.
         IFACEMETHOD(get_OldDate)(_Out_ ABI::Windows::Foundation::DateTime* pValue) ;
-        virtual _Check_return_ HRESULT put_OldDate(_In_ ABI::Windows::Foundation::DateTime value);
+        virtual _Check_return_ HRESULT put_OldDate(ABI::Windows::Foundation::DateTime value);
         IFACEMETHOD(get_NewDate)(_Out_ ABI::Windows::Foundation::DateTime* pValue) ;
-        virtual _Check_return_ HRESULT put_NewDate(_In_ ABI::Windows::Foundation::DateTime value);
+        virtual _Check_return_ HRESULT put_NewDate(ABI::Windows::Foundation::DateTime value);
 
         // Virtual properties.
 
@@ -297,17 +297,17 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         IFACEMETHOD(get_CalendarIdentifier)(_Out_ HSTRING* pValue) ;
         IFACEMETHOD(put_CalendarIdentifier)(_In_opt_ HSTRING value) ;
         IFACEMETHOD(get_Date)(_Out_ ABI::Windows::Foundation::DateTime* pValue) ;
-        IFACEMETHOD(put_Date)(_In_ ABI::Windows::Foundation::DateTime value) ;
+        IFACEMETHOD(put_Date)(ABI::Windows::Foundation::DateTime value) ;
         IFACEMETHOD(get_DayVisible)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_DayVisible)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_DayVisible)(BOOLEAN value) ;
         IFACEMETHOD(get_MonthVisible)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_MonthVisible)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_MonthVisible)(BOOLEAN value) ;
         IFACEMETHOD(get_YearVisible)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_YearVisible)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_YearVisible)(BOOLEAN value) ;
         IFACEMETHOD(get_MinYear)(_Out_ ABI::Windows::Foundation::DateTime* pValue) ;
-        IFACEMETHOD(put_MinYear)(_In_ ABI::Windows::Foundation::DateTime value) ;
+        IFACEMETHOD(put_MinYear)(ABI::Windows::Foundation::DateTime value) ;
         IFACEMETHOD(get_MaxYear)(_Out_ ABI::Windows::Foundation::DateTime* pValue) ;
-        IFACEMETHOD(put_MaxYear)(_In_ ABI::Windows::Foundation::DateTime value) ;
+        IFACEMETHOD(put_MaxYear)(ABI::Windows::Foundation::DateTime value) ;
         IFACEMETHOD(get_DayFormat)(_Out_ HSTRING* pValue) ;
         IFACEMETHOD(put_DayFormat)(_In_opt_ HSTRING value) ;
         IFACEMETHOD(get_MonthFormat)(_Out_ HSTRING* pValue) ;
@@ -420,7 +420,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Methods.
         IFACEMETHOD(GetCustomProperty)(_In_ HSTRING name, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
-        IFACEMETHOD(GetIndexedProperty)(_In_ HSTRING name, _In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
+        IFACEMETHOD(GetIndexedProperty)(_In_ HSTRING name, ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
         IFACEMETHOD(GetStringRepresentation)(_Out_ HSTRING* pReturnValue) override;
 
         // Virtual methods.
@@ -493,7 +493,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Properties.
         IFACEMETHOD(get_IsDefaultShadowEnabled)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_IsDefaultShadowEnabled)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_IsDefaultShadowEnabled)(BOOLEAN value) ;
 
         // Virtual properties.
 
@@ -570,22 +570,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -771,9 +771,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         IFACEMETHOD(get_DisplayMemberPath)(_Out_ HSTRING* pValue) ;
         IFACEMETHOD(put_DisplayMemberPath)(_In_opt_ HSTRING value) ;
         IFACEMETHOD(get_SelectionMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutSelectionMode* pValue) ;
-        IFACEMETHOD(put_SelectionMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutSelectionMode value) ;
+        IFACEMETHOD(put_SelectionMode)(ABI::Microsoft::UI::Xaml::Controls::ListPickerFlyoutSelectionMode value) ;
         IFACEMETHOD(get_SelectedIndex)(_Out_ INT* pValue) ;
-        IFACEMETHOD(put_SelectedIndex)(_In_ INT value) ;
+        IFACEMETHOD(put_SelectedIndex)(INT value) ;
         IFACEMETHOD(get_SelectedItem)(_Outptr_result_maybenull_ IInspectable** ppValue) ;
         IFACEMETHOD(put_SelectedItem)(_In_opt_ IInspectable* pValue) ;
         IFACEMETHOD(get_SelectedValue)(_Outptr_result_maybenull_ IInspectable** ppValue) ;
@@ -949,22 +949,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -1086,7 +1086,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         IFACEMETHOD(get_Content)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) ;
         IFACEMETHOD(put_Content)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) ;
         IFACEMETHOD(get_ConfirmationButtonsVisible)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_ConfirmationButtonsVisible)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_ConfirmationButtonsVisible)(BOOLEAN value) ;
 
         // Virtual properties.
 
@@ -1231,22 +1231,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -1303,9 +1303,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Attached properties.
         IFACEMETHOD(get_SlideInAnimationGroupProperty)(_Outptr_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue);
         IFACEMETHOD(GetSlideInAnimationGroup)(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _Out_ ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup* pValue);
-        IFACEMETHOD(SetSlideInAnimationGroup)(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup value);
+        IFACEMETHOD(SetSlideInAnimationGroup)(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup value);
         _Check_return_ static HRESULT GetSlideInAnimationGroupStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _Out_ ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup* pValue);
-        _Check_return_ static HRESULT SetSlideInAnimationGroupStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup value);
+        _Check_return_ static HRESULT SetSlideInAnimationGroupStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, ABI::Microsoft::UI::Xaml::Controls::PivotSlideInAnimationGroup value);
         _Check_return_ static HRESULT GetSlideInElementInformationStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ static HRESULT SetSlideInElementInformationStatic(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pElement, _In_opt_ IInspectable* pValue);
 
@@ -1381,15 +1381,15 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) ;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) ;
         IFACEMETHOD(get_SelectedIndex)(_Out_ INT* pValue) ;
-        IFACEMETHOD(put_SelectedIndex)(_In_ INT value) ;
+        IFACEMETHOD(put_SelectedIndex)(INT value) ;
         IFACEMETHOD(get_SelectedItem)(_Outptr_result_maybenull_ IInspectable** ppValue) ;
         IFACEMETHOD(put_SelectedItem)(_In_opt_ IInspectable* pValue) ;
         IFACEMETHOD(get_IsLocked)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_IsLocked)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_IsLocked)(BOOLEAN value) ;
         IFACEMETHOD(get_HeaderFocusVisualPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::PivotHeaderFocusVisualPlacement* pValue) ;
-        IFACEMETHOD(put_HeaderFocusVisualPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::PivotHeaderFocusVisualPlacement value) ;
+        IFACEMETHOD(put_HeaderFocusVisualPlacement)(ABI::Microsoft::UI::Xaml::Controls::PivotHeaderFocusVisualPlacement value) ;
         IFACEMETHOD(get_IsHeaderItemsCarouselEnabled)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_IsHeaderItemsCarouselEnabled)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_IsHeaderItemsCarouselEnabled)(BOOLEAN value) ;
 
         // Virtual properties.
 
@@ -1498,22 +1498,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -1678,22 +1678,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -1767,9 +1767,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Properties.
         IFACEMETHOD(get_OldTime)(_Out_ ABI::Windows::Foundation::TimeSpan* pValue) ;
-        virtual _Check_return_ HRESULT put_OldTime(_In_ ABI::Windows::Foundation::TimeSpan value);
+        virtual _Check_return_ HRESULT put_OldTime(ABI::Windows::Foundation::TimeSpan value);
         IFACEMETHOD(get_NewTime)(_Out_ ABI::Windows::Foundation::TimeSpan* pValue) ;
-        virtual _Check_return_ HRESULT put_NewTime(_In_ ABI::Windows::Foundation::TimeSpan value);
+        virtual _Check_return_ HRESULT put_NewTime(ABI::Windows::Foundation::TimeSpan value);
 
         // Virtual properties.
 
@@ -1856,9 +1856,9 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         IFACEMETHOD(get_ClockIdentifier)(_Out_ HSTRING* pValue) ;
         IFACEMETHOD(put_ClockIdentifier)(_In_opt_ HSTRING value) ;
         IFACEMETHOD(get_Time)(_Out_ ABI::Windows::Foundation::TimeSpan* pValue) ;
-        IFACEMETHOD(put_Time)(_In_ ABI::Windows::Foundation::TimeSpan value) ;
+        IFACEMETHOD(put_Time)(ABI::Windows::Foundation::TimeSpan value) ;
         IFACEMETHOD(get_MinuteIncrement)(_Out_ INT* pValue) ;
-        IFACEMETHOD(put_MinuteIncrement)(_In_ INT value) ;
+        IFACEMETHOD(put_MinuteIncrement)(INT value) ;
 
         // Virtual properties.
 
@@ -1951,7 +1951,7 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Properties.
         IFACEMETHOD(get_IsDefaultShadowEnabled)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_IsDefaultShadowEnabled)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_IsDefaultShadowEnabled)(BOOLEAN value) ;
 
         // Virtual properties.
 
@@ -2028,22 +2028,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -2213,8 +2213,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Protected properties.
 
         // Methods.
-        IFACEMETHOD(Convert)(_In_ IInspectable* pValue, _In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue) override;
-        IFACEMETHOD(ConvertBack)(_In_ IInspectable* pValue, _In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(Convert)(_In_ IInspectable* pValue, ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(ConvertBack)(_In_ IInspectable* pValue, ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue) override;
 
         // Virtual methods.
 
@@ -2299,8 +2299,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Protected properties.
 
         // Methods.
-        IFACEMETHOD(Convert)(_In_ IInspectable* pValue, _In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue) override;
-        IFACEMETHOD(ConvertBack)(_In_ IInspectable* pValue, _In_ ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(Convert)(_In_ IInspectable* pValue, ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue) override;
+        IFACEMETHOD(ConvertBack)(_In_ IInspectable* pValue, ABI::Windows::UI::Xaml::Interop::TypeName targetType, _In_opt_ IInspectable* pParameter, _In_opt_ HSTRING language, _Outptr_ IInspectable** ppReturnValue) override;
 
         // Virtual methods.
 
@@ -2391,17 +2391,17 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Properties.
         IFACEMETHOD(get_ShouldLoop)(_Out_ BOOLEAN* pValue) ;
-        IFACEMETHOD(put_ShouldLoop)(_In_ BOOLEAN value) ;
+        IFACEMETHOD(put_ShouldLoop)(BOOLEAN value) ;
         IFACEMETHOD(get_Items)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<IInspectable*>** ppValue) ;
         IFACEMETHOD(put_Items)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<IInspectable*>* pValue) ;
         IFACEMETHOD(get_SelectedIndex)(_Out_ INT* pValue) ;
-        IFACEMETHOD(put_SelectedIndex)(_In_ INT value) ;
+        IFACEMETHOD(put_SelectedIndex)(INT value) ;
         IFACEMETHOD(get_SelectedItem)(_Outptr_result_maybenull_ IInspectable** ppValue) ;
         IFACEMETHOD(put_SelectedItem)(_In_opt_ IInspectable* pValue) ;
         IFACEMETHOD(get_ItemWidth)(_Out_ INT* pValue) ;
-        IFACEMETHOD(put_ItemWidth)(_In_ INT value) ;
+        IFACEMETHOD(put_ItemWidth)(INT value) ;
         IFACEMETHOD(get_ItemHeight)(_Out_ INT* pValue) ;
-        IFACEMETHOD(put_ItemHeight)(_In_ INT value) ;
+        IFACEMETHOD(put_ItemHeight)(INT value) ;
         IFACEMETHOD(get_ItemTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) ;
         IFACEMETHOD(put_ItemTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) ;
 
@@ -2482,22 +2482,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -2621,22 +2621,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -2683,8 +2683,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Protected properties.
 
         // Methods.
-        IFACEMETHOD(GetIrregularSnapPoints)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue) override;
-        IFACEMETHOD(GetRegularSnapPoints)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue) override;
+        IFACEMETHOD(GetIrregularSnapPoints)(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue) override;
+        IFACEMETHOD(GetRegularSnapPoints)(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue) override;
 
         // Virtual methods.
 
@@ -2701,22 +2701,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -2967,22 +2967,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnDropImpl(_In_ ABI::Microsoft::UI::Xaml::IDragEventArgs* pE);
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -3039,22 +3039,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -3101,8 +3101,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Protected properties.
 
         // Methods.
-        IFACEMETHOD(GetIrregularSnapPoints)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue) override;
-        IFACEMETHOD(GetRegularSnapPoints)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue) override;
+        IFACEMETHOD(GetIrregularSnapPoints)(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue) override;
+        IFACEMETHOD(GetRegularSnapPoints)(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue) override;
 
         // Virtual methods.
 
@@ -3119,22 +3119,22 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IFrameworkElementOverrides
-        IFACEMETHOD(MeasureOverride)(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT MeasureOverrideImpl(_In_ ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        IFACEMETHOD(ArrangeOverride)(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
-        virtual _Check_return_ HRESULT ArrangeOverrideImpl(_In_ ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(MeasureOverride)(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT MeasureOverrideImpl(ABI::Windows::Foundation::Size availableSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        IFACEMETHOD(ArrangeOverride)(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
+        virtual _Check_return_ HRESULT ArrangeOverrideImpl(ABI::Windows::Foundation::Size finalSize, _Out_ ABI::Windows::Foundation::Size* pReturnValue);
         IFACEMETHOD(OnApplyTemplate)();
         virtual _Check_return_ HRESULT OnApplyTemplateImpl();
-        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
-        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, _In_ BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        IFACEMETHOD(GoToElementStateCore)(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
+        virtual _Check_return_ HRESULT GoToElementStateCoreImpl(_In_ HSTRING stateName, BOOLEAN useTransitions, _Out_ BOOLEAN* pReturnValue);
 
         // IUIElementOverrides
         IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         virtual _Check_return_ HRESULT OnCreateAutomationPeerImpl(_Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
         IFACEMETHOD(OnDisconnectVisualChildren)();
         virtual _Check_return_ HRESULT OnDisconnectVisualChildrenImpl();
-        IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
-        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        IFACEMETHOD(FindSubElementsForTouchTargeting)(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
+        virtual _Check_return_ HRESULT FindSubElementsForTouchTargetingImpl(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue);
         IFACEMETHOD(GetChildrenInTabFocusOrder)(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenInTabFocusOrderImpl(_Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Microsoft::UI::Xaml::DependencyObject*>** ppReturnValue);
         IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
@@ -3286,8 +3286,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -3300,8 +3300,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -3338,10 +3338,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -3428,8 +3428,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -3442,8 +3442,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -3480,10 +3480,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -3568,8 +3568,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Methods.
         IFACEMETHOD(GetSelection)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple*** ppReturnValue) override;
         IFACEMETHOD(FindItemByProperty)(_In_opt_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple* pStartAfter, _In_opt_ ABI::Microsoft::UI::Xaml::Automation::IAutomationProperty* pAutomationProperty, _In_opt_ IInspectable* pValue, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple** ppReturnValue) override;
-        IFACEMETHOD(Scroll)(_In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, _In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount) override;
-        IFACEMETHOD(SetScrollPercent)(_In_ DOUBLE horizontalPercent, _In_ DOUBLE verticalPercent) override;
+        IFACEMETHOD(Scroll)(ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount) override;
+        IFACEMETHOD(SetScrollPercent)(DOUBLE horizontalPercent, DOUBLE verticalPercent) override;
 
         // Virtual methods.
 
@@ -3582,8 +3582,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -3596,8 +3596,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -3634,10 +3634,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -3738,8 +3738,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -3752,8 +3752,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -3790,10 +3790,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -3883,8 +3883,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -3897,8 +3897,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -3935,10 +3935,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -4025,8 +4025,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -4039,8 +4039,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -4077,10 +4077,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -4194,8 +4194,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
 
         // Methods.
         IFACEMETHOD(GetSelection)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple*** ppReturnValue) override;
-        IFACEMETHOD(Scroll)(_In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, _In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount) override;
-        IFACEMETHOD(SetScrollPercent)(_In_ DOUBLE horizontalPercent, _In_ DOUBLE verticalPercent) override;
+        IFACEMETHOD(Scroll)(ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount) override;
+        IFACEMETHOD(SetScrollPercent)(DOUBLE horizontalPercent, DOUBLE verticalPercent) override;
 
         // Virtual methods.
 
@@ -4212,8 +4212,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT OnCreateItemAutomationPeerImpl(_In_ IInspectable* pItem, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IItemAutomationPeer** ppReturnValue);
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -4226,8 +4226,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -4264,10 +4264,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -4392,8 +4392,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -4406,8 +4406,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -4444,10 +4444,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -4571,8 +4571,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -4585,8 +4585,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -4623,10 +4623,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);
@@ -4715,8 +4715,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         // Override Interfaces
 
         // IAutomationPeerOverrides
-        IFACEMETHOD(GetPatternCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPatternCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPatternCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPatternCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::PatternInterface patternInterface, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetAcceleratorKeyCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetAcceleratorKeyCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetAccessKeyCore)(_Out_ HSTRING* pReturnValue);
@@ -4729,8 +4729,8 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT GetBoundingRectangleCoreImpl(_Out_ ABI::Windows::Foundation::Rect* pReturnValue);
         IFACEMETHOD(GetChildrenCore)(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
         virtual _Check_return_ HRESULT GetChildrenCoreImpl(_Outptr_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationPeer*>** ppReturnValue);
-        IFACEMETHOD(NavigateCore)(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT NavigateCoreImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(NavigateCore)(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT NavigateCoreImpl(ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationNavigationDirection direction, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetClassNameCore)(_Out_ HSTRING* pReturnValue);
         virtual _Check_return_ HRESULT GetClassNameCoreImpl(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(GetClickablePointCore)(_Out_ ABI::Windows::Foundation::Point* pReturnValue);
@@ -4767,10 +4767,10 @@ namespace ABI { namespace Microsoft { namespace UI { namespace Xaml { namespace 
         virtual _Check_return_ HRESULT IsRequiredForFormCoreImpl(_Out_ BOOLEAN* pReturnValue);
         IFACEMETHOD(SetFocusCore)();
         virtual _Check_return_ HRESULT SetFocusCoreImpl();
-        IFACEMETHOD(GetPeerFromPointCore)(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
-        IFACEMETHOD(GetElementFromPointCore)(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
-        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(_In_ ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        IFACEMETHOD(GetPeerFromPointCore)(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        virtual _Check_return_ HRESULT GetPeerFromPointCoreImpl(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Peers::IAutomationPeer** ppReturnValue);
+        IFACEMETHOD(GetElementFromPointCore)(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
+        virtual _Check_return_ HRESULT GetElementFromPointCoreImpl(ABI::Windows::Foundation::Point pointInWindowCoordinates, _Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetFocusedElementCore)(_Outptr_ IInspectable** ppReturnValue);
         virtual _Check_return_ HRESULT GetFocusedElementCoreImpl(_Outptr_ IInspectable** ppReturnValue);
         IFACEMETHOD(GetLiveSettingCore)(_Out_ ABI::Microsoft::UI::Xaml::Automation::Peers::AutomationLiveSetting* pReturnValue);

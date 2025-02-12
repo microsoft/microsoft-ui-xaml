@@ -145,7 +145,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_ExtendsContentIntoTitleBar(_Out_ B
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::put_ExtendsContentIntoTitleBar(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::WindowGenerated::put_ExtendsContentIntoTitleBar(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -205,7 +205,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_TransparentBackground(_Out_ BOOLEA
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::put_TransparentBackground(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::WindowGenerated::put_TransparentBackground(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -303,7 +303,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::MoveWindow(_In_ INT x, _In_ INT y, _In_ INT width, _In_ INT height)
+IFACEMETHODIMP DirectUI::WindowGenerated::MoveWindow(INT x, INT y, INT width, INT height)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -321,7 +321,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::ReleaseGraphicsDeviceOnSuspend(_In_ BOOLEAN enable)
+IFACEMETHODIMP DirectUI::WindowGenerated::ReleaseGraphicsDeviceOnSuspend(BOOLEAN enable)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -357,7 +357,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::SetAtlasSizeHint(_In_ UINT width, _In_ UINT height)
+IFACEMETHODIMP DirectUI::WindowGenerated::SetAtlasSizeHint(UINT width, UINT height)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

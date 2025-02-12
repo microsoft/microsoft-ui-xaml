@@ -10,7 +10,7 @@ using Microsoft.UI.Private.Controls;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
     using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;    
-    public class RecyclingElementFactoryDerived : RecyclingElementFactory
+    public partial class RecyclingElementFactoryDerived : RecyclingElementFactory
     {
         private List<UIElement> _realizedElements = new List<UIElement>();
         private List<int> _realizedElementIndices = new List<int>();

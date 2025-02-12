@@ -1377,7 +1377,7 @@ Cleanup:
 
 IFACEMETHODIMP
     FlipView::MeasureOverride(
-    _In_ wf::Size availableSize,
+    wf::Size availableSize,
     _Out_ wf::Size* returnValue)
 {
     DOUBLE height = 0;
@@ -1412,7 +1412,7 @@ IFACEMETHODIMP
 }
 
 IFACEMETHODIMP
-FlipView::ArrangeOverride(_In_ wf::Size arrangeSize, _Out_ wf::Size* returnValue)
+FlipView::ArrangeOverride(wf::Size arrangeSize, _Out_ wf::Size* returnValue)
 {
     m_inArrange = true;
     auto scopeExit = wil::scope_exit([&]

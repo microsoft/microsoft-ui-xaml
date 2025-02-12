@@ -79,7 +79,7 @@ namespace AccessKeys {
             //If we are attempting to entering AK mode, we need to scan the visual tree to verify that we have
             // access key set anywhere in the entire xaml visual tree (all visual roots included)
             if (!m_modeContainer.GetIsActive() &&
-                (IsLeftAltKey(inputMessage) || IsMenuKeyDown(inputMessage)))
+                (IsAltKey(inputMessage) || IsMenuKeyDown(inputMessage)))
             {
                 bool shouldActivate = false;
 

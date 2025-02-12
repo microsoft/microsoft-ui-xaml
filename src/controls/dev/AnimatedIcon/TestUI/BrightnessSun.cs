@@ -57,7 +57,7 @@ namespace AnimatedVisuals
     // Frame rate:  25 fps
     // Frame count: 40
     // Duration:    1600.0 mS
-    sealed class BrightnessSun
+    sealed partial class BrightnessSun
         : Microsoft.UI.Xaml.Controls.IAnimatedVisualSource, Microsoft.UI.Xaml.Controls.IAnimatedVisualSource2
     {
         // Animation duration: 1.600 seconds.
@@ -127,7 +127,7 @@ namespace AnimatedVisuals
         {
         }
 
-        sealed class BrightnessSun_AnimatedVisual : Microsoft.UI.Xaml.Controls.IAnimatedVisual
+        sealed partial class BrightnessSun_AnimatedVisual : Microsoft.UI.Xaml.Controls.IAnimatedVisual
         {
             const long c_durationTicks = 16000000;
             readonly Compositor _c;

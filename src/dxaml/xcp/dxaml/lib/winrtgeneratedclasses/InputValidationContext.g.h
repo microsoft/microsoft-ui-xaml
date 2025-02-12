@@ -58,7 +58,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsInputRequired)(_Out_ BOOLEAN* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        _Check_return_ HRESULT put_IsInputRequired(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsInputRequired(BOOLEAN value);
         IFACEMETHOD(get_MemberName)(_Out_ HSTRING* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
         _Check_return_ HRESULT put_MemberName(_In_opt_ HSTRING value);
 
@@ -106,7 +106,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_ HSTRING memberName, _In_ BOOLEAN isRequired, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext** ppInstance);
+        IFACEMETHOD(CreateInstance)(_In_ HSTRING memberName, BOOLEAN isRequired, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext** ppInstance);
 
         // Static properties.
 
@@ -128,7 +128,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ HSTRING memberName, _In_ BOOLEAN isRequired, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(_In_ HSTRING memberName, BOOLEAN isRequired, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext** ppInstance);
 
         // Customized static properties.
 

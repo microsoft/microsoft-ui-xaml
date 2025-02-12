@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::SwipeBackThemeAnimationGenerated::get_FromHorizontalOff
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SwipeBackThemeAnimation_FromHorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::SwipeBackThemeAnimationGenerated::put_FromHorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SwipeBackThemeAnimationGenerated::put_FromHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SwipeBackThemeAnimation_FromHorizontalOffset, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::SwipeBackThemeAnimationGenerated::get_FromVerticalOffse
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SwipeBackThemeAnimation_FromVerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::SwipeBackThemeAnimationGenerated::put_FromVerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::SwipeBackThemeAnimationGenerated::put_FromVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SwipeBackThemeAnimation_FromVerticalOffset, value));

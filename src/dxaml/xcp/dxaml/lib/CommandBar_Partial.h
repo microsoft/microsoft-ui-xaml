@@ -21,11 +21,11 @@ namespace DirectUI
         IFACEMETHOD(OnApplyTemplate)() override;
 
         IFACEMETHOD(MeasureOverride)(
-            _In_ wf::Size availableSize,
+            wf::Size availableSize,
             _Out_ wf::Size* returnValue) override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size arrangeSize,
+            wf::Size arrangeSize,
             _Out_ wf::Size* returnValue) override;
 
         _Check_return_ HRESULT NotifyElementVectorChanging(
@@ -95,7 +95,7 @@ namespace DirectUI
             _In_opt_ DependencyObject* pCandidateTabStopElement,
             const bool isBackward,
             const bool didCycleFocusAtRootVisualScope,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsTabStopOverridden
             ) override;
 
@@ -104,7 +104,7 @@ namespace DirectUI
             _In_ DependencyObject* pCandidateTabStopElement,
             _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
             const bool isBackward,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsCandidateTabStopOverridden) override;
 
         _Check_return_ HRESULT EnterImpl(
@@ -268,8 +268,8 @@ namespace DirectUI
         _Check_return_ HRESULT FindNonSeparatorInDynamicPrimaryCommands(
             _In_ bool isForward,
             _In_ INT32 indexMoving,
-            _In_ bool* hasNonSeparator,
-            _In_ INT32* indexNonSeparator);
+            _Out_ bool* hasNonSeparator,
+            _Out_ INT32* indexNonSeparator);
 
         _Check_return_ HRESULT InsertPrimaryCommandToPrimaryCommandsInTransition(
             _In_ UINT32 indexMovingPrimaryCommand,

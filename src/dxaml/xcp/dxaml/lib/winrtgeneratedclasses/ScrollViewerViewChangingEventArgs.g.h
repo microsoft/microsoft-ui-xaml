@@ -40,7 +40,7 @@ namespace DirectUI
         IFACEMETHOD(get_FinalView)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IScrollViewerView** ppValue) override;
         _Check_return_ HRESULT put_FinalView(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IScrollViewerView* pValue);
         IFACEMETHOD(get_IsInertial)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_IsInertial(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_IsInertial(BOOLEAN value);
 
         // Methods.
 

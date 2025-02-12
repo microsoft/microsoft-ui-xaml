@@ -224,6 +224,9 @@ XamlNodeStreamCacheManager::GetXamlBinaryReader(
     xref_ptr<IPALResource> spXbfResource;
     xref_ptr<IPALMemory> spXBFBuffer;
 
+    spXamlReader.reset();
+    spVersion2Reader.reset();
+
     // Get resource, load XBF buffer.
     IFC_RETURN(GetBinaryResourceForXamlUri(strUniqueName, spXbfResource));
 
@@ -353,6 +356,8 @@ XamlNodeStreamCacheManager::GetXamlReader(
 {
     std::shared_ptr<NodeStreamCacheEntry> spNodeStreamCacheEntry;
 
+    spVersion2Reader.reset();
+
     *pfBinaryXamlLoaded = false;
 
     if (strUniqueName.IsNullOrEmpty())
@@ -411,6 +416,9 @@ XamlNodeStreamCacheManager::CreateXamlReaderFromBinaryBuffer(
     // In order to prevent monotonically increasing memory usage, we utilize a 
     // key-value store for the cache to avoid creating multiple XBFv2 readers 
     // for the same memory-mapped resource.
+
+    spXamlReader.reset();
+
     auto cacheKey = static_cast<const void*>(pBinaryXamlBuffer->GetAddress());
     if (bufferType == Parser::XamlBufferType::MemoryMappedResource)
     {

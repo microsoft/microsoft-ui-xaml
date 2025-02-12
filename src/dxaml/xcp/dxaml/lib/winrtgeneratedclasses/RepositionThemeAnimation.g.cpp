@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::RepositionThemeAnimationGenerated::get_FromHorizontalOf
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RepositionThemeAnimation_FromHorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::RepositionThemeAnimationGenerated::put_FromHorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RepositionThemeAnimationGenerated::put_FromHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RepositionThemeAnimation_FromHorizontalOffset, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::RepositionThemeAnimationGenerated::get_FromVerticalOffs
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RepositionThemeAnimation_FromVerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::RepositionThemeAnimationGenerated::put_FromVerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RepositionThemeAnimationGenerated::put_FromVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RepositionThemeAnimation_FromVerticalOffset, value));

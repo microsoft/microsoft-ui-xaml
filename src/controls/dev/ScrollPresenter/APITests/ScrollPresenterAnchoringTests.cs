@@ -954,7 +954,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             Content = scrollPresenter;
         }
 
-        private class TestDataSource : CustomItemsSourceViewWithUniqueIdMapping
+        private partial class TestDataSource : CustomItemsSourceViewWithUniqueIdMapping
         {
             public TestDataSource(List<string> source)
             {

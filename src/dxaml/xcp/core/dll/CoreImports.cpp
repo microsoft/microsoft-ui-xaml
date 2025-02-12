@@ -1721,7 +1721,7 @@ _Check_return_ HRESULT PrintDocument_MakeDocument(
 _Check_return_ HRESULT DependencyObject_GetVisualRelative(
     _In_ CUIElement* pElement,
     _In_ XINT32 iRelativeLinkKind,
-    _Out_ CValue* pRelative)
+    _Inout_ CValue* pRelative)
 {
     CDependencyObject* pObjectNoRef = nullptr;
 
@@ -3769,7 +3769,7 @@ static const KnownPropertyIndex INVALID_PAGE_PROPERTIES_IF_SCBP_CHILD[13] =
 void
 Page_GetSwapChainBackgroundPanelChild(
     _In_ CUIElement *pUIElement,
-    _Outptr_ CSwapChainBackgroundPanel **ppSCBP)
+    _Outptr_result_maybenull_ CSwapChainBackgroundPanel **ppSCBP)
 {
     CSwapChainBackgroundPanel *pSCBP = NULL;
     CUIElement **ppChildren = NULL;

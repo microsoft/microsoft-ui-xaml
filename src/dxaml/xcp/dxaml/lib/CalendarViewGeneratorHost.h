@@ -100,8 +100,8 @@ namespace DirectUI
         _Check_return_ IFACEMETHOD(SetupContainerContentChangingAfterPrepare)(
             _In_ xaml::IDependencyObject* pContainer,
             _In_ IInspectable* pItem,
-            _In_ INT itemIndex,
-            _In_ wf::Size measureSize) override { return S_OK; }
+            INT itemIndex,
+            wf::Size measureSize) override { return S_OK; }
 
          _Check_return_ IFACEMETHOD(RegisterWorkFromArgs)(
             _In_ xaml_controls::IContainerContentChangingEventArgs* pArgs) override { return S_OK; }
@@ -137,8 +137,8 @@ namespace DirectUI
         _Check_return_ IFACEMETHOD(VirtualizationFinished)() override { return S_OK; }
 
         _Check_return_ IFACEMETHOD(OverrideContainerArrangeBounds)(
-            _In_ INT index,
-            _In_ wf::Rect suggestedBounds,
+            INT index,
+            wf::Rect suggestedBounds,
             _Out_ wf::Rect* newBounds) override
         {
             *newBounds = suggestedBounds;
@@ -150,7 +150,7 @@ namespace DirectUI
         // IVector<IInspectable*> interface
         IFACEMETHOD(GetAt)(_In_ UINT index, _Outptr_ IInspectable** item) override;
         IFACEMETHOD(get_Size)(_Out_ UINT* value) override;
-        IFACEMETHOD(GetView)(_Outptr_opt_result_maybenull_ wfc::IVectorView<IInspectable*>** view) override;
+        IFACEMETHOD(GetView)(_Outptr_result_maybenull_ wfc::IVectorView<IInspectable*>** view) override;
         IFACEMETHOD(IndexOf)(_In_opt_ IInspectable* value, _Out_ UINT* index, _Out_ BOOLEAN* found) override;
         IFACEMETHOD(SetAt)(_In_ UINT index, _In_opt_ IInspectable* item) override;
         IFACEMETHOD(InsertAt)(_In_ UINT index, _In_ IInspectable* item) override;

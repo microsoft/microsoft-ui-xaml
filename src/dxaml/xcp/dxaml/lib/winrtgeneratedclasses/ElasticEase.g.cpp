@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ElasticEase::get_Oscillations(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ElasticEase_Oscillations, pValue));
 }
-IFACEMETHODIMP DirectUI::ElasticEase::put_Oscillations(_In_ INT value)
+IFACEMETHODIMP DirectUI::ElasticEase::put_Oscillations(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ElasticEase_Oscillations, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ElasticEase::get_Springiness(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ElasticEase_Springiness, pValue));
 }
-IFACEMETHODIMP DirectUI::ElasticEase::put_Springiness(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ElasticEase::put_Springiness(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ElasticEase_Springiness, value));

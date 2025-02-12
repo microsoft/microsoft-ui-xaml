@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Duration)(_Out_ ABI::Windows::Foundation::TimeSpan* pValue) override;
-        IFACEMETHOD(put_Duration)(_In_ ABI::Windows::Foundation::TimeSpan value) override;
+        IFACEMETHOD(put_Duration)(ABI::Windows::Foundation::TimeSpan value) override;
 
         // Events.
 

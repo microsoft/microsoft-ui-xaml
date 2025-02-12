@@ -546,55 +546,64 @@ HWND WebView2::GetHostHwnd() noexcept
 
 void WebView2::RegisterCoreEventHandlers()
 {
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::WebView2>(*this))};
     m_coreNavigationStartingRevoker = m_coreWebView.NavigationStarting(winrt::auto_revoke, {
-        [weakThis{ get_weak() }](auto const&, winrt::CoreWebView2NavigationStartingEventArgs const& args)
+        [weakThis](auto const&, winrt::CoreWebView2NavigationStartingEventArgs const& args)
         {
             if (auto strongThis = weakThis.get())
             {
+                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
                 // Update Uri without navigation
-                strongThis->UpdateSourceInternal();
-                strongThis->FireNavigationStarting(args);
+                rawThis->UpdateSourceInternal();
+                rawThis->FireNavigationStarting(args);
             }
         } });
 
     m_coreSourceChangedRevoker = m_coreWebView.SourceChanged(winrt::auto_revoke, {
-        [weakThis{ get_weak() }](auto const&, winrt::CoreWebView2SourceChangedEventArgs const& args)
+        [weakThis](auto const&, winrt::CoreWebView2SourceChangedEventArgs const& args)
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->UpdateSourceInternal();
+                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
+                rawThis->UpdateSourceInternal();
             }
         } });
 
     m_coreNavigationCompletedRevoker = m_coreWebView.NavigationCompleted(winrt::auto_revoke, {
-        [weakThis{ get_weak() }](auto const&, winrt::CoreWebView2NavigationCompletedEventArgs const& args)
+        [weakThis](auto const&, winrt::CoreWebView2NavigationCompletedEventArgs const& args)
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->FireNavigationCompleted(args);
+                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
+                rawThis->FireNavigationCompleted(args);
             }
         } });
 
     m_coreWebMessageReceivedRevoker = m_coreWebView.WebMessageReceived(winrt::auto_revoke, {
-        [weakThis{ get_weak() }](auto const&, winrt::CoreWebView2WebMessageReceivedEventArgs const& args)
+        [weakThis](auto const&, winrt::CoreWebView2WebMessageReceivedEventArgs const& args)
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->FireWebMessageReceived(args);
+                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
+                rawThis->FireWebMessageReceived(args);
             }
         } });
 
     m_coreMoveFocusRequestedRevoker = m_coreWebViewController.MoveFocusRequested(winrt::auto_revoke, {
-        [weakThis{ get_weak() }](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
+        [weakThis](auto const&, const winrt::CoreWebView2MoveFocusRequestedEventArgs& args)
         {
             if (auto strongThis = weakThis.get())
             {
+                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
                 winrt::CoreWebView2MoveFocusReason moveFocusRequestedReason{ args.Reason() };
 
                 if (moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next ||
                     moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Previous)
                 {
-                    winrt::XamlRoot xamlRoot = strongThis->XamlRoot();
+                    winrt::XamlRoot xamlRoot = rawThis->XamlRoot();
                     if (xamlRoot)
                     {
                         winrt::FocusNavigationDirection xamlDirection = moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next
@@ -625,7 +634,7 @@ void WebView2::RegisterCoreEventHandlers()
 
                             // If core webview is also losing focus via something other than TAB (web LostFocus event fired)
                             // and the TAB handling is arriving later (eg due to longer MOJO delay), skip manually moving Xaml Focus to next element.
-                            winrt::DependencyObject thisElement = strongThis->try_as<winrt::DependencyObject>();
+                            winrt::DependencyObject thisElement = rawThis->try_as<winrt::DependencyObject>();
                             if (thisElement == focusedElement)
                             {
                                 // Move focus to the next XAML element
@@ -638,7 +647,7 @@ void WebView2::RegisterCoreEventHandlers()
                             // which we are in if FindNextElement() returns either null or the (already focused) WebView2. The appropriate 
                             // behavior here is to cycle focus inside the webview, "wrapping around" to the other end (regardless of
                             //  WebView2.KeyboardNavigationMode).To achieve this, manually Call MoveFocus() in the specified direction.
-                            strongThis->MoveFocusIntoCoreWebView2(moveFocusRequestedReason);
+                            rawThis->MoveFocusIntoCoreWebView2(moveFocusRequestedReason);
                         }
                     }
                 }
@@ -651,14 +660,15 @@ void WebView2::RegisterCoreEventHandlers()
         } });
 
     m_coreProcessFailedRevoker = m_coreWebView.ProcessFailed(winrt::auto_revoke, {
-        [weakThis{ get_weak() }](auto const&, const winrt::CoreWebView2ProcessFailedEventArgs& args)
+        [weakThis](auto const&, const winrt::CoreWebView2ProcessFailedEventArgs& args)
         {
             if (auto strongThis = weakThis.get())
             {
+                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
                 // Moving focus out of WebView2
                 winrt::FocusNavigationDirection xamlDirection{ winrt::FocusNavigationDirection::Next };
                 winrt::FindNextElementOptions findNextElementOptions;
-                winrt::XamlRoot xamlRoot = strongThis->XamlRoot();
+                winrt::XamlRoot xamlRoot = rawThis->XamlRoot();
 
                 if (xamlRoot)
                 {
@@ -673,28 +683,29 @@ void WebView2::RegisterCoreEventHandlers()
                 winrt::CoreWebView2ProcessFailedKind coreProcessFailedKind{ args.ProcessFailedKind() };
                 if (coreProcessFailedKind == winrt::CoreWebView2ProcessFailedKind::BrowserProcessExited)
                 {
-                    strongThis->m_isCoreFailure_BrowserExited_State = true;
+                    rawThis->m_isCoreFailure_BrowserExited_State = true;
 
                     // CoreWebView2 takes care of clearing the event handlers when closing the host,
                     // but we still need to reset the event tokens
-                    strongThis->UnregisterCoreEventHandlers();
+                    rawThis->UnregisterCoreEventHandlers();
 
                     // Null these out so we can't try to use them anymore
-                    strongThis->m_coreWebViewCompositionController = nullptr;
-                    strongThis->m_coreWebViewController = nullptr;
-                    strongThis->m_coreWebView = nullptr;
-                    strongThis->ResetProperties();
+                    rawThis->m_coreWebViewCompositionController = nullptr;
+                    rawThis->m_coreWebViewController = nullptr;
+                    rawThis->m_coreWebView = nullptr;
+                    rawThis->ResetProperties();
                 }
 
-                strongThis->FireCoreProcessFailedEvent(args);
+                rawThis->FireCoreProcessFailedEvent(args);
             }
         } });
 
     m_cursorChangedRevoker = m_coreWebViewCompositionController.CursorChanged(winrt::auto_revoke, {
-        [weakThis{ get_weak() }](auto const& controller, auto const& obj)
+        [weakThis](auto const& controller, auto const& obj)
         {
             if (auto strongThis = weakThis.get())
             {
+                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
                 winrt::CoreCursor coreCursor = controller.Cursor();
                 winrt::IInputSystemCursor inputSystemCursor;
 
@@ -746,7 +757,7 @@ void WebView2::RegisterCoreEventHandlers()
                 }
 
                 winrt::InputCursor inputCursorToSet = inputSystemCursor.as<winrt::InputCursor>();
-                strongThis->ProtectedCursor(inputCursorToSet);
+                rawThis->ProtectedCursor(inputCursorToSet);
             }
         } });
 }
@@ -1562,12 +1573,17 @@ void WebView2::TryCompleteInitialization()
     }
 
     XamlRootChangedHelper(true /* forceUpdate */);
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::WebView2>(*this))};
     m_xamlRootChangedRevoker = this->XamlRoot().Changed(winrt::auto_revoke,
-        [weakThis{ get_weak() }](auto const& /*sender*/, auto const& /*args*/)
+        [weakThis](auto const& /*sender*/, auto const& /*args*/)
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->HandleXamlRootChanged();
+                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
+                rawThis->HandleXamlRootChanged();
             }
         });
 
@@ -1592,14 +1608,19 @@ void WebView2::TryCompleteInitialization()
     if (!m_textScaleChangedRevoker)
     {
         m_textScaleChangedRevoker = GetUISettings().TextScaleFactorChanged(winrt::auto_revoke,
-            [weakThis{ get_weak() }](auto&&, auto&&)
+            [weakThis](auto&&, auto&&)
             {
                 if (auto strongThis = weakThis.get())
                 {
+                    WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
                     // OnTextScaleFactorChanged happens in non-UI thread, use dispatcher to call UpdateCoreWebViewScale in UI thread.
-                    strongThis->m_dispatcherHelper.RunAsync([strongThis]()
+                    rawThis->m_dispatcherHelper.RunAsync([weakThis]()
                         {
-                            strongThis->UpdateCoreWebViewScale();
+                            if (auto strongThis = weakThis.get())
+                            {
+                                WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
+                                rawThis->UpdateCoreWebViewScale();
+                            }
                         });
                 }
             });

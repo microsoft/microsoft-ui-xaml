@@ -87,7 +87,7 @@ IFACEMETHODIMP DirectUI::ContentDialogGenerated::get_DefaultButton(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentDialog_DefaultButton, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::put_DefaultButton(_In_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogButton value)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::put_DefaultButton(ABI::Microsoft::UI::Xaml::Controls::ContentDialogButton value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentDialog_DefaultButton, value));
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::ContentDialogGenerated::get_FullSizeDesired(_Out_ BOOLE
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentDialog_FullSizeDesired, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::put_FullSizeDesired(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::put_FullSizeDesired(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentDialog_FullSizeDesired, value));
@@ -105,7 +105,7 @@ IFACEMETHODIMP DirectUI::ContentDialogGenerated::get_IsPrimaryButtonEnabled(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentDialog_IsPrimaryButtonEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::put_IsPrimaryButtonEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::put_IsPrimaryButtonEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentDialog_IsPrimaryButtonEnabled, value));
@@ -114,7 +114,7 @@ IFACEMETHODIMP DirectUI::ContentDialogGenerated::get_IsSecondaryButtonEnabled(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ContentDialog_IsSecondaryButtonEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::put_IsSecondaryButtonEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::put_IsSecondaryButtonEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ContentDialog_IsSecondaryButtonEnabled, value));
@@ -247,7 +247,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_CloseButtonClick(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_CloseButtonClick(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CloseButtonClickEventSourceType* pEventSource = nullptr;
@@ -302,7 +302,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_Closed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_Closed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosedEventSourceType* pEventSource = nullptr;
@@ -357,7 +357,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_Closing(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_Closing(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ClosingEventSourceType* pEventSource = nullptr;
@@ -412,7 +412,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_Opened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_Opened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     OpenedEventSourceType* pEventSource = nullptr;
@@ -467,7 +467,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_PrimaryButtonClick(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_PrimaryButtonClick(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PrimaryButtonClickEventSourceType* pEventSource = nullptr;
@@ -522,7 +522,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_SecondaryButtonClick(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::remove_SecondaryButtonClick(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SecondaryButtonClickEventSourceType* pEventSource = nullptr;
@@ -657,7 +657,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ContentDialogGenerated::ShowAsyncWithPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogPlacement placement, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult>** ppReturnValue)
+IFACEMETHODIMP DirectUI::ContentDialogGenerated::ShowAsyncWithPlacement(ABI::Microsoft::UI::Xaml::Controls::ContentDialogPlacement placement, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

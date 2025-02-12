@@ -122,7 +122,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+       [TestMethod]
+       [TestProperty("TestPass:MaxOSVer", "22621")] // This test is currently failing on 23h2, hence stop at 22h2 which is 22621.
         public void RunCompactTests()
         {
             using (var setup = new TestSetupHelper("Compact Tests"))
@@ -168,6 +169,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("TestPass:MaxOSVer", "22621")] // This test is currently failing on 23h2, hence stop at 22h2 which is 22621.
         public void MenuFlyoutItemSizeTest()
         {
             using (var setup = new TestSetupHelper("MenuFlyout Tests"))

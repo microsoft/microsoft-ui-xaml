@@ -30,7 +30,7 @@ namespace DirectUI
     //      Retrieves the current CustomXamlResourceLoader, if any.
     //
     //---------------------------------------------------------------------------
-    _Check_return_ HRESULT CustomXamlResourceLoaderFactory::get_CurrentImpl(_Outptr_ xaml::Resources::ICustomXamlResourceLoader **ppValue)
+    _Check_return_ HRESULT CustomXamlResourceLoaderFactory::get_CurrentImpl(_Outptr_result_maybenull_ xaml::Resources::ICustomXamlResourceLoader **ppValue)
     {
         HRESULT hr = S_OK;
         ICustomResourceLoader *pInternalLoader = NULL;
@@ -59,7 +59,7 @@ namespace DirectUI
     //      Sets the current CustomXamlResourceLoader.
     //
     //---------------------------------------------------------------------------
-    _Check_return_ HRESULT CustomXamlResourceLoaderFactory::put_CurrentImpl(_In_ xaml::Resources::ICustomXamlResourceLoader *pValue)
+    _Check_return_ HRESULT CustomXamlResourceLoaderFactory::put_CurrentImpl(_In_opt_ xaml::Resources::ICustomXamlResourceLoader *pValue)
     {
         HRESULT hr = S_OK;
         CustomXamlResourceLoaderWrapper *pLoaderWrapper = NULL;

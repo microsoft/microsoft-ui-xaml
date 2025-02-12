@@ -328,7 +328,7 @@ _Check_return_ HRESULT
 CWinHttp11StreamBuffer::CreateMediaMappedMemory(
     _In_ XUINT32 cbOffset,
     _In_ XUINT32 bReadOnly,
-    _Inout_ CMappedMemory **ppMappedMemory)
+    _Outptr_ CMappedMemory **ppMappedMemory)
 {
     HRESULT hr = S_OK;
     CMappedMemory* pMemory = NULL;
@@ -462,7 +462,7 @@ _Check_return_ HRESULT CWinHttp11StreamBuffer::UpdateMappingSize(_In_ XUINT32 cb
 // Add new data to the end of the data stream
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CWinHttp11StreamBuffer::Write(_In_reads_bytes_(cbLength) void const *pData, XUINT32 cbLength, XUINT32 cbOffset, _In_ IStream *pStream)
+_Check_return_ HRESULT CWinHttp11StreamBuffer::Write(_In_reads_bytes_(cbLength) void const *pData, XUINT32 cbLength, XUINT32 cbOffset, _In_opt_ IStream *pStream)
 {
     XUINT32 cbWrite = 0;
     XUINT32 cbCursor = cbOffset;
@@ -1006,7 +1006,7 @@ XUINT32 CWinBasicStreamBuffer::Release()
 // Add new data to the end of the data stream
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CWinBasicStreamBuffer::Write(_In_reads_bytes_(cb) void const *pData, XUINT32 cb, XUINT32 cbOffset, _In_ IStream *pStream)
+_Check_return_ HRESULT CWinBasicStreamBuffer::Write(_In_reads_bytes_(cb) void const *pData, XUINT32 cb, XUINT32 cbOffset, _In_opt_ IStream *pStream)
 {
     XUINT32 tempSize = 0;
     XUINT32 minTempSize = 0;

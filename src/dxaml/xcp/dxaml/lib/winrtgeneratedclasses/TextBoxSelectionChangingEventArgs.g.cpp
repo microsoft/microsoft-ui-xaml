@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::TextBoxSelectionChangingEventArgs::get_SelectionStart(_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::TextBoxSelectionChangingEventArgs::put_SelectionStart(_In_ INT value)
+_Check_return_ HRESULT DirectUI::TextBoxSelectionChangingEventArgs::put_SelectionStart(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::TextBoxSelectionChangingEventArgs::get_SelectionLength(
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::TextBoxSelectionChangingEventArgs::put_SelectionLength(_In_ INT value)
+_Check_return_ HRESULT DirectUI::TextBoxSelectionChangingEventArgs::put_SelectionLength(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::TextBoxSelectionChangingEventArgs::get_Cancel(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxSelectionChangingEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxSelectionChangingEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

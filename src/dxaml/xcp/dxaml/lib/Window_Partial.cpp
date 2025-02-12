@@ -188,7 +188,7 @@ IFACEMETHODIMP Window::add_Activated(_In_ wf::ITypedEventHandler<IInspectable*, 
     return S_OK;
 }
 
-IFACEMETHODIMP Window::remove_Activated(_In_ EventRegistrationToken token)
+IFACEMETHODIMP Window::remove_Activated(EventRegistrationToken token)
 {
     IFC_RETURN(m_spWindowImpl->remove_Activated(token));
 
@@ -202,7 +202,7 @@ IFACEMETHODIMP Window::add_Closed(_In_ wf::ITypedEventHandler<IInspectable*, xam
     return S_OK;
 }
 
-IFACEMETHODIMP Window::remove_Closed(_In_ EventRegistrationToken token)
+IFACEMETHODIMP Window::remove_Closed(EventRegistrationToken token)
 {
     IFC_RETURN(m_spWindowImpl->remove_Closed(token));
 
@@ -216,7 +216,7 @@ IFACEMETHODIMP Window::add_SizeChanged(_In_ wf::ITypedEventHandler<IInspectable*
     return S_OK;
 }
 
-IFACEMETHODIMP Window::remove_SizeChanged(_In_ EventRegistrationToken token)
+IFACEMETHODIMP Window::remove_SizeChanged(EventRegistrationToken token)
 {
     IFC_RETURN(m_spWindowImpl->remove_SizeChanged(token));
 
@@ -230,7 +230,7 @@ IFACEMETHODIMP Window::add_VisibilityChanged(_In_ wf::ITypedEventHandler<IInspec
     return S_OK;
 }
 
-IFACEMETHODIMP Window::remove_VisibilityChanged(_In_ EventRegistrationToken token)
+IFACEMETHODIMP Window::remove_VisibilityChanged(EventRegistrationToken token)
 {
     IFC_RETURN(m_spWindowImpl->remove_VisibilityChanged(token));
 
@@ -301,7 +301,7 @@ _Check_return_ HRESULT Window::put_SystemBackdropImpl(_In_opt_ xaml::Media::ISys
 // ----------------------------------------------------------------------
 //                          IWindowNative
 // ----------------------------------------------------------------------
-_Check_return_ HRESULT Window::get_WindowHandle(_Out_ HWND* pValue)
+_Check_return_ HRESULT Window::get_WindowHandle(HWND* pValue)
 {
     IFC_RETURN(m_spWindowImpl->get_WindowHandle(pValue));
 

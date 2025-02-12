@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_CanContentRenderOu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollContentPresenter_CanContentRenderOutsideBounds, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::put_CanContentRenderOutsideBounds(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::put_CanContentRenderOutsideBounds(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollContentPresenter_CanContentRenderOutsideBounds, value));
@@ -65,7 +65,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_CanHorizontallyScr
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::put_CanHorizontallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::put_CanHorizontallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_CanVerticallyScrol
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::put_CanVerticallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::put_CanVerticallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -169,7 +169,7 @@ IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::get_SizesContentToTemp
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollContentPresenter_SizesContentToTemplatedParent, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::put_SizesContentToTemplatedParent(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::put_SizesContentToTemplatedParent(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollContentPresenter_SizesContentToTemplatedParent, value));
@@ -280,7 +280,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -300,7 +300,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _In_ BOOLEAN useAnimation, _In_ DOUBLE horizontalAlignmentRatio, _In_ DOUBLE verticalAlignmentRatio, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
+IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, BOOLEAN useAnimation, DOUBLE horizontalAlignmentRatio, DOUBLE verticalAlignmentRatio, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -462,7 +462,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::SetHorizontalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::SetHorizontalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -480,7 +480,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::SetVerticalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::ScrollContentPresenterGenerated::SetVerticalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

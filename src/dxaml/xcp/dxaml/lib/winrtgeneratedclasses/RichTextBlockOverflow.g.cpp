@@ -95,7 +95,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::get_MaxLines(_Out_ INT*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichTextBlockOverflow_MaxLines, pValue));
 }
-IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::put_MaxLines(_In_ INT value)
+IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::put_MaxLines(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichTextBlockOverflow_MaxLines, value));
@@ -113,7 +113,7 @@ IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::get_Padding(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichTextBlockOverflow_Padding, pValue));
 }
-IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::put_Padding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::put_Padding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichTextBlockOverflow_Padding, value));
@@ -156,7 +156,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::remove_IsTextTrimmedChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::remove_IsTextTrimmedChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     IsTextTrimmedChangedEventSourceType* pEventSource = nullptr;
@@ -177,7 +177,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::GetPositionFromPoint(_In_ ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer** ppReturnValue)
+IFACEMETHODIMP DirectUI::RichTextBlockOverflowGenerated::GetPositionFromPoint(ABI::Windows::Foundation::Point point, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::DragCompletedEventArgsGenerated::get_HorizontalChange(_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragCompletedEventArgsGenerated::put_HorizontalChange(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::DragCompletedEventArgsGenerated::put_HorizontalChange(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -74,7 +74,7 @@ IFACEMETHODIMP DirectUI::DragCompletedEventArgsGenerated::get_VerticalChange(_Ou
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragCompletedEventArgsGenerated::put_VerticalChange(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::DragCompletedEventArgsGenerated::put_VerticalChange(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -93,7 +93,7 @@ IFACEMETHODIMP DirectUI::DragCompletedEventArgsGenerated::get_Canceled(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DragCompletedEventArgsGenerated::put_Canceled(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::DragCompletedEventArgsGenerated::put_Canceled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -122,7 +122,7 @@ HRESULT DirectUI::DragCompletedEventArgsFactory::QueryInterfaceImpl(_In_ REFIID 
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::DragCompletedEventArgsFactory::CreateInstanceWithHorizontalChangeVerticalChangeAndCanceled(_In_ DOUBLE horizontalChange, _In_ DOUBLE verticalChange, _In_ BOOLEAN canceled, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs** ppInstance)
+IFACEMETHODIMP DirectUI::DragCompletedEventArgsFactory::CreateInstanceWithHorizontalChangeVerticalChangeAndCanceled(DOUBLE horizontalChange, DOUBLE verticalChange, BOOLEAN canceled, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventArgs** ppInstance)
 {
     HRESULT hr = S_OK;
     

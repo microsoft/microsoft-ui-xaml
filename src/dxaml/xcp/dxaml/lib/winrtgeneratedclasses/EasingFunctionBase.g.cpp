@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::EasingFunctionBaseGenerated::get_EasingMode(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::EasingFunctionBase_EasingMode, pValue));
 }
-IFACEMETHODIMP DirectUI::EasingFunctionBaseGenerated::put_EasingMode(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::EasingMode value)
+IFACEMETHODIMP DirectUI::EasingFunctionBaseGenerated::put_EasingMode(ABI::Microsoft::UI::Xaml::Media::Animation::EasingMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::EasingFunctionBase_EasingMode, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::EasingFunctionBaseGenerated::put_EasingMode(_In_ ABI::M
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::EasingFunctionBaseGenerated::Ease(_In_ DOUBLE normalizedTime, _Out_ DOUBLE* pReturnValue)
+IFACEMETHODIMP DirectUI::EasingFunctionBaseGenerated::Ease(DOUBLE normalizedTime, _Out_ DOUBLE* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::EllipseGeometry::get_Center(_Out_ ABI::Windows::Foundat
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::EllipseGeometry_Center, pValue));
 }
-IFACEMETHODIMP DirectUI::EllipseGeometry::put_Center(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::EllipseGeometry::put_Center(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::EllipseGeometry_Center, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::EllipseGeometry::get_RadiusX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::EllipseGeometry_RadiusX, pValue));
 }
-IFACEMETHODIMP DirectUI::EllipseGeometry::put_RadiusX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::EllipseGeometry::put_RadiusX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::EllipseGeometry_RadiusX, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::EllipseGeometry::get_RadiusY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::EllipseGeometry_RadiusY, pValue));
 }
-IFACEMETHODIMP DirectUI::EllipseGeometry::put_RadiusY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::EllipseGeometry::put_RadiusY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::EllipseGeometry_RadiusY, value));

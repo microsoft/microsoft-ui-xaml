@@ -406,7 +406,7 @@ namespace DirectUI
         //  E.G. If StepFrequency==0.1 and Value==0.57, the disambiguation UI shows 0.6
         IFACEMETHOD(Convert)(
             _In_ IInspectable *value,
-            _In_ wxaml_interop::TypeName targetType,
+            wxaml_interop::TypeName targetType,
             _In_opt_ IInspectable *parameter,
             _In_ HSTRING language,
             _Outptr_ IInspectable **returnValue);
@@ -414,7 +414,7 @@ namespace DirectUI
         //  Convert from target to source
         IFACEMETHODIMP ConvertBack(
             _In_ IInspectable *value,
-            _In_ wxaml_interop::TypeName targetType,
+            wxaml_interop::TypeName targetType,
             _In_opt_ IInspectable *parameter,
             _In_ HSTRING language,
             _Outptr_ IInspectable **returnValue) override

@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::Viewbox::get_Stretch(_Out_ ABI::Microsoft::UI::Xaml::Me
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Viewbox_Stretch, pValue));
 }
-IFACEMETHODIMP DirectUI::Viewbox::put_Stretch(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value)
+IFACEMETHODIMP DirectUI::Viewbox::put_Stretch(ABI::Microsoft::UI::Xaml::Media::Stretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Viewbox_Stretch, value));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::Viewbox::get_StretchDirection(_Out_ ABI::Microsoft::UI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Viewbox_StretchDirection, pValue));
 }
-IFACEMETHODIMP DirectUI::Viewbox::put_StretchDirection(_In_ ABI::Microsoft::UI::Xaml::Controls::StretchDirection value)
+IFACEMETHODIMP DirectUI::Viewbox::put_StretchDirection(ABI::Microsoft::UI::Xaml::Controls::StretchDirection value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Viewbox_StretchDirection, value));

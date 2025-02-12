@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::AppBarButtonTemplateSettings::get_KeyboardAcceleratorTe
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::AppBarButtonTemplateSettings_KeyboardAcceleratorTextMinWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::AppBarButtonTemplateSettings::put_KeyboardAcceleratorTextMinWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::AppBarButtonTemplateSettings::put_KeyboardAcceleratorTextMinWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::AppBarButtonTemplateSettings_KeyboardAcceleratorTextMinWidth, value));

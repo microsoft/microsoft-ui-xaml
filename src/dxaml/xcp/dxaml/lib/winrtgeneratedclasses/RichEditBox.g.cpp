@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_AcceptsReturn(_Out_ BOOLEAN* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_AcceptsReturn, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_AcceptsReturn(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_AcceptsReturn(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_AcceptsReturn, value));
@@ -68,7 +68,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_CharacterCasing(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_CharacterCasing, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_CharacterCasing(_In_ ABI::Microsoft::UI::Xaml::Controls::CharacterCasing value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_CharacterCasing(ABI::Microsoft::UI::Xaml::Controls::CharacterCasing value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_CharacterCasing, value));
@@ -77,7 +77,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_ClipboardCopyFormat(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_ClipboardCopyFormat, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_ClipboardCopyFormat(_In_ ABI::Microsoft::UI::Xaml::Controls::RichEditClipboardFormat value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_ClipboardCopyFormat(ABI::Microsoft::UI::Xaml::Controls::RichEditClipboardFormat value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_ClipboardCopyFormat, value));
@@ -95,7 +95,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_DesiredCandidateWindowAlignme
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_DesiredCandidateWindowAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_DesiredCandidateWindowAlignment(_In_ ABI::Microsoft::UI::Xaml::Controls::CandidateWindowAlignment value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_DesiredCandidateWindowAlignment(ABI::Microsoft::UI::Xaml::Controls::CandidateWindowAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_DesiredCandidateWindowAlignment, value));
@@ -104,7 +104,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_DisabledFormattingAccelerator
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_DisabledFormattingAccelerators, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_DisabledFormattingAccelerators(_In_ ABI::Microsoft::UI::Xaml::Controls::DisabledFormattingAccelerators value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_DisabledFormattingAccelerators(ABI::Microsoft::UI::Xaml::Controls::DisabledFormattingAccelerators value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_DisabledFormattingAccelerators, value));
@@ -132,7 +132,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_HeaderPlacement(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_HeaderPlacement, value));
@@ -150,7 +150,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_HorizontalTextAlignment(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_HorizontalTextAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_HorizontalTextAlignment(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_HorizontalTextAlignment(ABI::Microsoft::UI::Xaml::TextAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_HorizontalTextAlignment, value));
@@ -168,7 +168,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_IsColorFontEnabled(_Out_ BOOL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsColorFontEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsColorFontEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsColorFontEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsColorFontEnabled, value));
@@ -177,7 +177,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_IsReadOnly(_Out_ BOOLEAN* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsReadOnly, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsReadOnly(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsReadOnly(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsReadOnly, value));
@@ -186,7 +186,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_IsSpellCheckEnabled(_Out_ BOO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsSpellCheckEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsSpellCheckEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsSpellCheckEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsSpellCheckEnabled, value));
@@ -195,7 +195,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_IsTelemetryCollectionEnabled(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsTelemetryCollectionEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsTelemetryCollectionEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsTelemetryCollectionEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsTelemetryCollectionEnabled, value));
@@ -204,7 +204,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_IsTextPredictionEnabled(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsTextPredictionEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsTextPredictionEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_IsTextPredictionEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_IsTextPredictionEnabled, value));
@@ -213,7 +213,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_MaxLength(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_MaxLength, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_MaxLength(_In_ INT value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_MaxLength(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_MaxLength, value));
@@ -231,7 +231,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_PreventKeyboardDisplayOnProgr
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_PreventKeyboardDisplayOnProgrammaticFocus, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_PreventKeyboardDisplayOnProgrammaticFocus(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_PreventKeyboardDisplayOnProgrammaticFocus(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_PreventKeyboardDisplayOnProgrammaticFocus, value));
@@ -271,7 +271,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_TextAlignment(_Out_ ABI::Micr
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_TextAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_TextAlignment(_In_ ABI::Microsoft::UI::Xaml::TextAlignment value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_TextAlignment(ABI::Microsoft::UI::Xaml::TextAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_TextAlignment, value));
@@ -290,7 +290,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_TextReadingOrder(_Out_ ABI::M
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_TextReadingOrder, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_TextReadingOrder(_In_ ABI::Microsoft::UI::Xaml::TextReadingOrder value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_TextReadingOrder(ABI::Microsoft::UI::Xaml::TextReadingOrder value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_TextReadingOrder, value));
@@ -299,7 +299,7 @@ IFACEMETHODIMP DirectUI::RichEditBoxGenerated::get_TextWrapping(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RichEditBox_TextWrapping, pValue));
 }
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_TextWrapping(_In_ ABI::Microsoft::UI::Xaml::TextWrapping value)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::put_TextWrapping(ABI::Microsoft::UI::Xaml::TextWrapping value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RichEditBox_TextWrapping, value));
@@ -342,7 +342,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_CandidateWindowBoundsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_CandidateWindowBoundsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CandidateWindowBoundsChangedEventSourceType* pEventSource = nullptr;
@@ -397,7 +397,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_ContextMenuOpening(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_ContextMenuOpening(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ContextMenuOpeningEventSourceType* pEventSource = nullptr;
@@ -452,7 +452,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_CopyingToClipboard(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_CopyingToClipboard(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CopyingToClipboardEventSourceType* pEventSource = nullptr;
@@ -507,7 +507,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_CuttingToClipboard(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_CuttingToClipboard(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CuttingToClipboardEventSourceType* pEventSource = nullptr;
@@ -562,7 +562,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_Paste(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_Paste(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PasteEventSourceType* pEventSource = nullptr;
@@ -617,7 +617,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_SelectionChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_SelectionChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectionChangedEventSourceType* pEventSource = nullptr;
@@ -672,7 +672,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_SelectionChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_SelectionChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectionChangingEventSourceType* pEventSource = nullptr;
@@ -727,7 +727,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextChangedEventSourceType* pEventSource = nullptr;
@@ -782,7 +782,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextChangingEventSourceType* pEventSource = nullptr;
@@ -837,7 +837,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextCompositionChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextCompositionChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextCompositionChangedEventSourceType* pEventSource = nullptr;
@@ -892,7 +892,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextCompositionEnded(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextCompositionEnded(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextCompositionEndedEventSourceType* pEventSource = nullptr;
@@ -947,7 +947,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextCompositionStarted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RichEditBoxGenerated::remove_TextCompositionStarted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextCompositionStartedEventSourceType* pEventSource = nullptr;

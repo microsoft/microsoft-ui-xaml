@@ -45,7 +45,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::BitmapIconSourceGenerated::ge
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BitmapIconSource_ShowAsMonochrome, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::BitmapIconSourceGenerated::put_ShowAsMonochrome(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::BitmapIconSourceGenerated::put_ShowAsMonochrome(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BitmapIconSource_ShowAsMonochrome, value));

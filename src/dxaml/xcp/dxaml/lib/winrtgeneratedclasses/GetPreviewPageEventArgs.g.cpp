@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::GetPreviewPageEventArgs::get_PageNumber(_Out_ INT* pVal
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::GetPreviewPageEventArgs::put_PageNumber(_In_ INT value)
+_Check_return_ HRESULT DirectUI::GetPreviewPageEventArgs::put_PageNumber(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

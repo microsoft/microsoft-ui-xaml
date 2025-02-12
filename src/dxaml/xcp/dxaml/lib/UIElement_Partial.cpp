@@ -229,9 +229,9 @@ _Check_return_ HRESULT UIElement::StopAnimationImpl(_In_ WUComp::ICompositionAni
     return uie->StopAnimation(animation);
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::PopulatePropertyInfo(
-    _In_ HSTRING propertyName,
-    _In_ WUComp::IAnimationPropertyInfo* animationPropertyInfo
+HRESULT STDMETHODCALLTYPE UIElement::PopulatePropertyInfo(
+    HSTRING propertyName,
+    WUComp::IAnimationPropertyInfo* animationPropertyInfo
     )
 {
     return PopulatePropertyInfoOverrideProtected(propertyName, animationPropertyInfo);
@@ -246,7 +246,7 @@ _Check_return_ HRESULT UIElement::PopulatePropertyInfoOverrideImpl(
     return uie->PopulatePropertyInfo(propertyName, animationPropertyInfo);
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::GetVisualInternal(_Outptr_ WUComp::IVisual** visual)
+HRESULT STDMETHODCALLTYPE UIElement::GetVisualInternal(WUComp::IVisual** visual)
 {
     return GetElementVisual(visual);
 }
@@ -278,7 +278,7 @@ Cleanup:
 // custom layout for their layout children call this method from their own
 // MeasureOverride implementations to form a recursive layout update.
 _Check_return_ HRESULT UIElement::MeasureImpl(
-    _In_ wf::Size availableSize)
+    wf::Size availableSize)
 {
     HRESULT hr = S_OK;
 
@@ -2143,7 +2143,7 @@ UIElementFactory::InternalGetIsEnabledImpl(
 _Check_return_ HRESULT
 UIElementFactory::InternalPutIsEnabledImpl(
     _In_ xaml::IUIElement* pElement,
-    _In_ BOOLEAN value)
+    BOOLEAN value)
 {
     UIElement* pUIElement = static_cast<UIElement*>(pElement);
 
@@ -2643,7 +2643,7 @@ UIElement::ProcessTabStop(
     _In_opt_ CDependencyObject* pCandidateTabStopElement,
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
-    _Outptr_ CDependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ CDependencyObject** ppNewTabStop,
     _Out_ bool* pIsTabStopOverridden)
 {
     HRESULT hr = S_OK;
@@ -2770,7 +2770,7 @@ _Check_return_ HRESULT UIElement::ProcessTabStopInternal(
     _In_opt_ DependencyObject* pCandidateTabStop,
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pCandidateTabStopOverridden)
 {
     HRESULT hr = S_OK;
@@ -2807,7 +2807,7 @@ _Check_return_ HRESULT UIElement::ProcessCandidateTabStopInternal(
     _In_opt_ DependencyObject* pCurrentTabStop,
     _In_opt_ DependencyObject* pOverriddenCandidateTabStop,
     _In_ BOOLEAN isBackward,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pCandidateTabStopOverridden)
 {
     HRESULT hr = S_OK;
@@ -2843,7 +2843,7 @@ Cleanup:
 _Check_return_ HRESULT
 UIElement::GetNextTabStop(
     _In_ CDependencyObject* pFocusedElement,
-    _Outptr_ CDependencyObject** ppNextTabStop)
+    _Outptr_result_maybenull_ CDependencyObject** ppNextTabStop)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<DependencyObject> spTarget;
@@ -2874,7 +2874,7 @@ Cleanup:
 _Check_return_ HRESULT
 UIElement::GetPreviousTabStop(
     _In_ CDependencyObject* pFocusedElement,
-    _Outptr_ CDependencyObject** ppPreviousTabStop)
+    _Outptr_result_maybenull_ CDependencyObject** ppPreviousTabStop)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<DependencyObject> spTarget;
@@ -2967,7 +2967,7 @@ _Check_return_ HRESULT UIElement::FocusWithDirection(
 _Check_return_ HRESULT
 UIElement::GetFirstFocusableElement(
     _In_ CDependencyObject* pSearchStart,
-    _Outptr_ CDependencyObject** ppFirstFocusable)
+    _Outptr_result_maybenull_ CDependencyObject** ppFirstFocusable)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<DependencyObject> spTarget;
@@ -2998,7 +2998,7 @@ Cleanup:
 _Check_return_ HRESULT
 UIElement::GetLastFocusableElement(
     _In_ CDependencyObject* pSearchStart,
-    _Outptr_ CDependencyObject** ppLastFocusable)
+    _Outptr_result_maybenull_ CDependencyObject** ppLastFocusable)
 {
     HRESULT hr = S_OK;
     ctl::ComPtr<DependencyObject> spTarget;
@@ -3200,13 +3200,13 @@ _Check_return_ HRESULT STDMETHODCALLTYPE UIElement::add_PreviewKeyUp(_In_ xaml_i
     return S_OK;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::remove_PreviewKeyDown(_In_ EventRegistrationToken token)
+_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::remove_PreviewKeyDown(EventRegistrationToken token)
 {
     IFC_RETURN(UIElementGenerated::remove_PreviewKeyDown(token));
     return S_OK;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::remove_PreviewKeyUp(_In_ EventRegistrationToken token)
+_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::remove_PreviewKeyUp(EventRegistrationToken token)
 {
     IFC_RETURN(UIElementGenerated::remove_PreviewKeyUp(token));
     return S_OK;
@@ -3254,7 +3254,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE UIElement::add_Shown(_In_ wf::IEventHan
     return S_OK;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::remove_Shown(_In_ EventRegistrationToken token)
+_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::remove_Shown(EventRegistrationToken token)
 {
     IFC_RETURN(UIElementGenerated::remove_Shown(token));
 
@@ -3282,7 +3282,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE UIElement::add_Hidden(_In_ wf::IEventHa
     return S_OK;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::remove_Hidden(_In_ EventRegistrationToken token)
+_Check_return_ HRESULT STDMETHODCALLTYPE UIElement::remove_Hidden(EventRegistrationToken token)
 {
     IFC_RETURN(UIElementGenerated::remove_Hidden(token));
 

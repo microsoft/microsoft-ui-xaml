@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::VirtualizingStackPanelGenerated::get_AreScrollSnapPoint
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::VirtualizingStackPanel_AreScrollSnapPointsRegular, pValue));
 }
-IFACEMETHODIMP DirectUI::VirtualizingStackPanelGenerated::put_AreScrollSnapPointsRegular(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::VirtualizingStackPanelGenerated::put_AreScrollSnapPointsRegular(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::VirtualizingStackPanel_AreScrollSnapPointsRegular, value));
@@ -59,7 +59,7 @@ IFACEMETHODIMP DirectUI::VirtualizingStackPanelGenerated::get_Orientation(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::VirtualizingStackPanel_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::VirtualizingStackPanelGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::VirtualizingStackPanelGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::VirtualizingStackPanel_Orientation, value));
@@ -102,7 +102,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::VirtualizingStackPanelGenerated::remove_CleanUpVirtualizedItemEvent(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::VirtualizingStackPanelGenerated::remove_CleanUpVirtualizedItemEvent(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CleanUpVirtualizedItemEventEventSourceType* pEventSource = nullptr;
@@ -256,7 +256,7 @@ _Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::GetVirtualizatio
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::VirtualizingStackPanel_VirtualizationMode, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::SetVirtualizationModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode value)
+_Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::SetVirtualizationModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pElement), KnownPropertyIndex::VirtualizingStackPanel_VirtualizationMode, value));
 }
@@ -273,7 +273,7 @@ IFACEMETHODIMP DirectUI::VirtualizingStackPanelFactory::GetVirtualizationMode(_I
     RRETURN(GetVirtualizationModeStatic(pElement, pValue));
 }
 
-IFACEMETHODIMP DirectUI::VirtualizingStackPanelFactory::SetVirtualizationMode(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode value)
+IFACEMETHODIMP DirectUI::VirtualizingStackPanelFactory::SetVirtualizationMode(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode value)
 {
     RRETURN(SetVirtualizationModeStatic(pElement, value));
 }
@@ -282,7 +282,7 @@ _Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::GetIsVirtualizin
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pO), KnownPropertyIndex::VirtualizingStackPanel_IsVirtualizing, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::SetIsVirtualizingStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::SetIsVirtualizingStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::DependencyObject*>(pO), KnownPropertyIndex::VirtualizingStackPanel_IsVirtualizing, value));
 }
@@ -299,7 +299,7 @@ IFACEMETHODIMP DirectUI::VirtualizingStackPanelFactory::GetIsVirtualizing(_In_ A
     RRETURN(GetIsVirtualizingStatic(pO, pValue));
 }
 
-IFACEMETHODIMP DirectUI::VirtualizingStackPanelFactory::SetIsVirtualizing(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::VirtualizingStackPanelFactory::SetIsVirtualizing(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, BOOLEAN value)
 {
     RRETURN(SetIsVirtualizingStatic(pO, value));
 }
@@ -308,7 +308,7 @@ _Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::GetIsContainerGe
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::VirtualizingStackPanel_IsContainerGeneratedForInsert, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::SetIsContainerGeneratedForInsertStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::VirtualizingStackPanelFactory::SetIsContainerGeneratedForInsertStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::VirtualizingStackPanel_IsContainerGeneratedForInsert, value));
 }

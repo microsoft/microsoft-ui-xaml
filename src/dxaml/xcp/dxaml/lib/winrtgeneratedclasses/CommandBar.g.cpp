@@ -70,7 +70,7 @@ IFACEMETHODIMP DirectUI::CommandBarGenerated::get_DefaultLabelPosition(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBar_DefaultLabelPosition, pValue));
 }
-IFACEMETHODIMP DirectUI::CommandBarGenerated::put_DefaultLabelPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition value)
+IFACEMETHODIMP DirectUI::CommandBarGenerated::put_DefaultLabelPosition(ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBar_DefaultLabelPosition, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::CommandBarGenerated::get_IsDynamicOverflowEnabled(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBar_IsDynamicOverflowEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::CommandBarGenerated::put_IsDynamicOverflowEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CommandBarGenerated::put_IsDynamicOverflowEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBar_IsDynamicOverflowEnabled, value));
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::CommandBarGenerated::get_OverflowButtonVisibility(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CommandBar_OverflowButtonVisibility, pValue));
 }
-IFACEMETHODIMP DirectUI::CommandBarGenerated::put_OverflowButtonVisibility(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarOverflowButtonVisibility value)
+IFACEMETHODIMP DirectUI::CommandBarGenerated::put_OverflowButtonVisibility(ABI::Microsoft::UI::Xaml::Controls::CommandBarOverflowButtonVisibility value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CommandBar_OverflowButtonVisibility, value));
@@ -159,7 +159,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CommandBarGenerated::remove_DynamicOverflowItemsChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CommandBarGenerated::remove_DynamicOverflowItemsChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DynamicOverflowItemsChangingEventSourceType* pEventSource = nullptr;

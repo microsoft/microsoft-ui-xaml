@@ -60,7 +60,7 @@ _Check_return_ HRESULT ArrayFromString(
     _Outptr_result_buffer_(*pcSuffix) const WCHAR** ppSuffix,
     _In_ UINT32 cElements,
     _Out_writes_(cElements) FLOAT *peResult,
-    _In_opt_ UINT32 bConsumeString = TRUE);
+    _In_ UINT32 bConsumeString = TRUE);
 
 template <std::size_t count>
 _Check_return_ HRESULT ArrayFromString(

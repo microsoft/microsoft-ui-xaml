@@ -49,9 +49,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_HorizontalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_HorizontalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_HorizontalOffset)(DOUBLE value) override;
         IFACEMETHOD(get_VerticalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_VerticalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_VerticalOffset)(DOUBLE value) override;
 
         // Events.
 

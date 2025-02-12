@@ -2692,14 +2692,41 @@ IFACEMETHODIMP ListViewBaseItem::OnDragOver(
 IFACEMETHODIMP ListViewBaseItem::OnDragLeave(
     _In_ xaml::IDragEventArgs* args)
 {
-    ctl::ComPtr<ListViewBase> spListView = GetParentListView();
+    IFC_RETURN(LeaveDragOver(GetParentListView(), nullptr));
 
-    if (spListView)
+    return S_OK;
+}
+
+// Declares this item as no longer being dragged over and instead uses the
+// pointer-over visual state if the args' pointer is within its boundaries.
+_Check_return_ HRESULT ListViewBaseItem::LeaveDragOver(
+    _In_opt_ ListViewBase* listViewBase,
+    _In_opt_ xaml::IDragEventArgs* args)
+{
+    if (listViewBase)
     {
-        IFC_RETURN(spListView->SetDragOverItem(nullptr));
+        IFC_RETURN(listViewBase->SetDragOverItem(nullptr));        
     }
 
-    IFC_RETURN(SetIsDragOver(FALSE /* isDragOver */));
+    IFC_RETURN(SetIsDragOver(FALSE /*isDragOver*/));
+
+    if (args)
+    {
+        wf::Point dragPointRelativeToLVBI{};
+        double width{}, height{};
+
+        IFC_RETURN(args->GetPosition(this, &dragPointRelativeToLVBI));
+        IFC_RETURN(get_ActualWidth(&width));
+        IFC_RETURN(get_ActualHeight(&height));
+
+        if (dragPointRelativeToLVBI.X >= 0.0 && dragPointRelativeToLVBI.X <= width &&
+            dragPointRelativeToLVBI.Y >= 0.0 && dragPointRelativeToLVBI.Y <= height)
+        {
+            // Pointer is within item's boundaries. Use the PointerOver visual state.
+            m_shouldEnterPointerOver = TRUE;
+            // No need to call ChangeVisualState as SetIsDragOver above already did so.
+        }
+    }
 
     return S_OK;
 }

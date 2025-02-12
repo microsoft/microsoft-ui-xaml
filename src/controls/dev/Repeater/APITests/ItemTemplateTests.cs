@@ -775,7 +775,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
     }
 
-    public class MySelector : DataTemplateSelector
+    public partial class MySelector : DataTemplateSelector
     {
         public DataTemplate TemplateOdd { get; set; }
 
@@ -787,7 +787,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
     }
 
-    public class MyContainerSelector : DataTemplateSelector
+    public partial class MyContainerSelector : DataTemplateSelector
     {
         public DataTemplate TemplateOdd { get; set; }
 

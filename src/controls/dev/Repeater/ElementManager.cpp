@@ -111,7 +111,7 @@ void ElementManager::Insert(int realizedIndex, int dataIndex, const winrt::UIEle
     if (m_useLayoutBounds)
     {
         // Set bounds to an invalid rect since we do not know it yet.
-        m_realizedElementLayoutBounds.insert(m_realizedElementLayoutBounds.begin() + realizedIndex, winrt::Rect{ -1.f, -1.f, -1.f, -1.f });
+        m_realizedElementLayoutBounds.insert(m_realizedElementLayoutBounds.begin() + realizedIndex, InvalidBounds);
     }
 }
 
@@ -171,13 +171,13 @@ void ElementManager::ClearRealizedRange()
     ClearRealizedRange(0, GetRealizedElementCount());
 }
 
-
 winrt::Rect ElementManager::GetLayoutBoundsForDataIndex(int dataIndex) const
 {
     MUX_ASSERT(m_useLayoutBounds);
 
     const int realizedIndex = GetRealizedRangeIndexFromDataIndex(dataIndex);
-    return m_realizedElementLayoutBounds[realizedIndex];
+
+    return GetLayoutBoundsForRealizedIndex(realizedIndex);
 }
 
 void ElementManager::SetLayoutBoundsForDataIndex(int dataIndex, const winrt::Rect& bounds)
@@ -185,9 +185,9 @@ void ElementManager::SetLayoutBoundsForDataIndex(int dataIndex, const winrt::Rec
     MUX_ASSERT(m_useLayoutBounds);
 
     const int realizedIndex = GetRealizedRangeIndexFromDataIndex(dataIndex);
-    m_realizedElementLayoutBounds[realizedIndex] = bounds;
-}
 
+    SetLayoutBoundsForRealizedIndex(realizedIndex, bounds);
+}
 
 winrt::Rect ElementManager::GetLayoutBoundsForRealizedIndex(int realizedIndex) const
 {
@@ -203,6 +203,12 @@ void ElementManager::SetLayoutBoundsForRealizedIndex(int realizedIndex, const wi
     m_realizedElementLayoutBounds[realizedIndex] = bounds;
 }
 
+bool ElementManager::IsLayoutBoundsForRealizedIndexSet(int realizedIndex) const
+{
+    MUX_ASSERT(realizedIndex >= 0 && realizedIndex < GetRealizedElementCount());
+
+    return m_realizedElementLayoutBounds[realizedIndex] != InvalidBounds;
+}
 
 bool ElementManager::IsDataIndexRealized(int index) const
 {
@@ -225,7 +231,6 @@ bool ElementManager::IsIndexValidInData(int currentIndex) const
 {
     return currentIndex >= 0 && currentIndex < m_context.ItemCount();
 }
-
 
 winrt::UIElement ElementManager::GetRealizedElement(int dataIndex)
 {
@@ -269,7 +274,6 @@ bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOr
         const auto effectiveOrientation = scrollOrientationSameAsFlow ?
             (orientation == ScrollOrientation::Vertical ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical) :
             orientation;
-
 
         const auto windowStart = effectiveOrientation == ScrollOrientation::Vertical ? window.Y : window.X;
         const auto windowEnd = effectiveOrientation == ScrollOrientation::Vertical ? window.Y + window.Height : window.X + window.Width;
@@ -494,7 +498,6 @@ void ElementManager::OnItemsRemoved(int index, int count)
     }
 }
 
-
 bool ElementManager::IsVirtualizingContext() const
 {
     if (m_context)
@@ -505,3 +508,31 @@ bool ElementManager::IsVirtualizingContext() const
     }
     return false;
 }
+
+#ifdef DBG
+void ElementManager::LogElementManagerDbg(
+    int indent,
+    const wstring_view& layoutId)
+{
+    ITEMSREPEATER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_IND_STR_STR_INT, METH_NAME, this,
+        indent, layoutId.data(),
+        L"FirstRealizedDataIndex:",
+        m_firstRealizedDataIndex);
+
+    const int boundsCount = static_cast<int>(m_realizedElementLayoutBounds.size());
+
+    if (m_useLayoutBounds && boundsCount)
+    {
+        for (int rangeIndex = 0; rangeIndex < boundsCount; rangeIndex++)
+        {
+            winrt::Rect bounds = m_realizedElementLayoutBounds[rangeIndex];
+
+            ITEMSREPEATER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_IND_STR_STR_INT_FLT_FLT_FLT_FLT, METH_NAME, this,
+                indent, layoutId.data(),
+                L"Element dataIndex & layout bounds:",
+                GetDataIndexFromRealizedRangeIndex(rangeIndex),
+                bounds.X, bounds.Y, bounds.Width, bounds.Height);
+        }
+    }
+}
+#endif // DBG

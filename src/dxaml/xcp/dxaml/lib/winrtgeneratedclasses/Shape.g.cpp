@@ -61,7 +61,7 @@ IFACEMETHODIMP DirectUI::Shape::get_Stretch(_Out_ ABI::Microsoft::UI::Xaml::Medi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Shape_Stretch, pValue));
 }
-IFACEMETHODIMP DirectUI::Shape::put_Stretch(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value)
+IFACEMETHODIMP DirectUI::Shape::put_Stretch(ABI::Microsoft::UI::Xaml::Media::Stretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Shape_Stretch, value));
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::Shape::get_StrokeDashCap(_Out_ ABI::Microsoft::UI::Xaml
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeDashCap, pValue));
 }
-IFACEMETHODIMP DirectUI::Shape::put_StrokeDashCap(_In_ ABI::Microsoft::UI::Xaml::Media::PenLineCap value)
+IFACEMETHODIMP DirectUI::Shape::put_StrokeDashCap(ABI::Microsoft::UI::Xaml::Media::PenLineCap value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeDashCap, value));
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::Shape::get_StrokeDashOffset(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeDashOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::Shape::put_StrokeDashOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Shape::put_StrokeDashOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeDashOffset, value));
@@ -106,7 +106,7 @@ IFACEMETHODIMP DirectUI::Shape::get_StrokeEndLineCap(_Out_ ABI::Microsoft::UI::X
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeEndLineCap, pValue));
 }
-IFACEMETHODIMP DirectUI::Shape::put_StrokeEndLineCap(_In_ ABI::Microsoft::UI::Xaml::Media::PenLineCap value)
+IFACEMETHODIMP DirectUI::Shape::put_StrokeEndLineCap(ABI::Microsoft::UI::Xaml::Media::PenLineCap value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeEndLineCap, value));
@@ -115,7 +115,7 @@ IFACEMETHODIMP DirectUI::Shape::get_StrokeLineJoin(_Out_ ABI::Microsoft::UI::Xam
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeLineJoin, pValue));
 }
-IFACEMETHODIMP DirectUI::Shape::put_StrokeLineJoin(_In_ ABI::Microsoft::UI::Xaml::Media::PenLineJoin value)
+IFACEMETHODIMP DirectUI::Shape::put_StrokeLineJoin(ABI::Microsoft::UI::Xaml::Media::PenLineJoin value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeLineJoin, value));
@@ -124,7 +124,7 @@ IFACEMETHODIMP DirectUI::Shape::get_StrokeMiterLimit(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeMiterLimit, pValue));
 }
-IFACEMETHODIMP DirectUI::Shape::put_StrokeMiterLimit(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Shape::put_StrokeMiterLimit(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeMiterLimit, value));
@@ -133,7 +133,7 @@ IFACEMETHODIMP DirectUI::Shape::get_StrokeStartLineCap(_Out_ ABI::Microsoft::UI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeStartLineCap, pValue));
 }
-IFACEMETHODIMP DirectUI::Shape::put_StrokeStartLineCap(_In_ ABI::Microsoft::UI::Xaml::Media::PenLineCap value)
+IFACEMETHODIMP DirectUI::Shape::put_StrokeStartLineCap(ABI::Microsoft::UI::Xaml::Media::PenLineCap value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeStartLineCap, value));
@@ -142,7 +142,7 @@ IFACEMETHODIMP DirectUI::Shape::get_StrokeThickness(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::Shape::put_StrokeThickness(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Shape::put_StrokeThickness(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Shape_StrokeThickness, value));

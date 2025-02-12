@@ -207,7 +207,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
-StackPanel::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+StackPanel::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -265,7 +265,7 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 IFACEMETHODIMP
-StackPanel::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+StackPanel::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -367,7 +367,7 @@ Cleanup:
 
 // Get the closest element information to the point.
 _Check_return_ HRESULT StackPanel::GetClosestElementInfo(
-    _In_ wf::Point position,
+    wf::Point position,
     _Out_ xaml_primitives::ElementInfo* returnValue)
 {
     HRESULT hr = S_OK;
@@ -383,7 +383,7 @@ Cleanup:
 // In case of stackPanel, the position is position from the very first Item
 // StackPanel goes through all children and finds the insertion position
 _Check_return_ HRESULT StackPanel::GetInsertionIndex(
-    _In_ wf::Point position,
+    wf::Point position,
     _Out_ INT* returnValue)
 {
     HRESULT hr = S_OK;

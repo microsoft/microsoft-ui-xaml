@@ -106,7 +106,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_HeaderPlacement(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_HeaderPlacement, value));
@@ -124,7 +124,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_InputValidationKind(_Out_ ABI::M
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_InputValidationKind, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_InputValidationKind(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_InputValidationKind(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_InputValidationKind, value));
@@ -133,7 +133,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_InputValidationMode(_Out_ ABI::M
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_InputValidationMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_InputValidationMode(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_InputValidationMode(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_InputValidationMode, value));
@@ -142,7 +142,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_IsDropDownOpen(_Out_ BOOLEAN* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_IsDropDownOpen, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_IsDropDownOpen(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_IsDropDownOpen(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_IsDropDownOpen, value));
@@ -151,7 +151,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_IsEditable(_Out_ BOOLEAN* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_IsEditable, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_IsEditable(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_IsEditable(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_IsEditable, value));
@@ -160,7 +160,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_IsSelectionBoxHighlighted(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_IsSelectionBoxHighlighted, pValue));
 }
-_Check_return_ HRESULT DirectUI::ComboBoxGenerated::put_IsSelectionBoxHighlighted(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ComboBoxGenerated::put_IsSelectionBoxHighlighted(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_IsSelectionBoxHighlighted, value));
@@ -169,7 +169,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_IsTextSearchEnabled(_Out_ BOOLEA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_IsTextSearchEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_IsTextSearchEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_IsTextSearchEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_IsTextSearchEnabled, value));
@@ -178,7 +178,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_LightDismissOverlayMode(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_LightDismissOverlayMode, value));
@@ -187,7 +187,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_MaxDropDownHeight(_Out_ DOUBLE* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_MaxDropDownHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_MaxDropDownHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_MaxDropDownHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_MaxDropDownHeight, value));
@@ -232,7 +232,7 @@ IFACEMETHODIMP DirectUI::ComboBoxGenerated::get_SelectionChangedTrigger(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ComboBox_SelectionChangedTrigger, pValue));
 }
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_SelectionChangedTrigger(_In_ ABI::Microsoft::UI::Xaml::Controls::ComboBoxSelectionChangedTrigger value)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::put_SelectionChangedTrigger(ABI::Microsoft::UI::Xaml::Controls::ComboBoxSelectionChangedTrigger value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ComboBox_SelectionChangedTrigger, value));
@@ -324,7 +324,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_DropDownClosed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_DropDownClosed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DropDownClosedEventSourceType* pEventSource = nullptr;
@@ -379,7 +379,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_DropDownOpened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_DropDownOpened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DropDownOpenedEventSourceType* pEventSource = nullptr;
@@ -435,7 +435,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_HasValidationErrorsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_HasValidationErrorsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HasValidationErrorsChangedEventSourceType* pEventSource = nullptr;
@@ -491,7 +491,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_TextSubmitted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_TextSubmitted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TextSubmittedEventSourceType* pEventSource = nullptr;
@@ -547,7 +547,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_ValidationError(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ComboBoxGenerated::remove_ValidationError(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ValidationErrorEventSourceType* pEventSource = nullptr;

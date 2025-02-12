@@ -543,6 +543,7 @@ private:
     winrt::ScrollingZoomMode GetMouseWheelZoomMode();
 #endif
 
+    double GetLayoutRoundFactor() const;
     double GetComputedMaxWidth(
         double defaultMaxWidth,
         const winrt::FrameworkElement& content) const;
@@ -819,6 +820,7 @@ private:
     double m_unzoomedExtentHeight{ 0.0 };
     double m_viewportWidth{ 0.0 };
     double m_viewportHeight{ 0.0 };
+    double m_layoutRoundFactor{ 0.0 };
     bool m_horizontalSnapPointsNeedViewportUpdates{ false }; // True when at least one horizontal snap point is not near aligned.
     bool m_verticalSnapPointsNeedViewportUpdates{ false }; // True when at least one vertical snap point is not near aligned.
     bool m_isAnchorElementDirty{ true }; // False when m_anchorElement is up-to-date, True otherwise.
@@ -915,11 +917,6 @@ private:
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> m_sortedConsolidatedHorizontalSnapPoints{};
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>>, SnapPointWrapperComparator<winrt::ZoomSnapPointBase>> m_sortedConsolidatedZoomSnapPoints{};
-
-    // Maximum difference for offsets to be considered equal. Used for pointer wheel scrolling.
-    static constexpr float s_offsetEqualityEpsilon{ 0.00001f };
-    // Maximum difference for zoom factors to be considered equal. Used for pointer wheel zooming.
-    static constexpr float s_zoomFactorEqualityEpsilon{ 0.00001f };
 
     // Property names being targeted for the ScrollPresenter.Content's Visual.
     // RedStone v1 case:

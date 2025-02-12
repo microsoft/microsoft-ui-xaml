@@ -828,6 +828,7 @@ unsigned int XamlBinaryFormatSubReader2::ReadUInt()
     return returnValue;
 }
 
+_Success_(return != false)
 bool XamlBinaryFormatSubReader2::TryRead7BitEncodedInt(
     _In_ XUINT8 *pBuffer,
     _In_ XUINT32 cbBufferTotalSize,

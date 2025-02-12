@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::BrushTransitionGenerated::get_Duration(_Out_ ABI::Windo
     *pValue = SimpleProperty::Property::id<KnownPropertyIndex::BrushTransition_Duration>::Get(GetHandle());
     return S_OK;
 }
-IFACEMETHODIMP DirectUI::BrushTransitionGenerated::put_Duration(_In_ ABI::Windows::Foundation::TimeSpan value)
+IFACEMETHODIMP DirectUI::BrushTransitionGenerated::put_Duration(ABI::Windows::Foundation::TimeSpan value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     SimpleProperty::Property::id<KnownPropertyIndex::BrushTransition_Duration>::Set(GetHandle(), value);

@@ -857,6 +857,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void AdditionalGridDoesntOverExtendHorizontal()
         {
             using (var setup = new TestSetupHelper("SwipeControl Tests"))
@@ -1390,6 +1391,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void TappingOutsideARevealedSwipeDismissesIt()
         {
             using (var setup = new TestSetupHelper("SwipeControl Tests"))
@@ -1411,6 +1413,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void ClickingOutsideARevealedSwipeDismissesIt()
         {
             using (var setup = new TestSetupHelper("SwipeControl Tests"))

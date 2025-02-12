@@ -156,7 +156,7 @@ Cleanup:
 // MeasureOverride, this creates OccupancyMap and find the size of the Map
 // which is occupied
 IFACEMETHODIMP VariableSizedWrapGrid::MeasureOverride(
-                _In_ wf::Size availableSize,
+                wf::Size availableSize,
                 _Out_ wf::Size* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -333,7 +333,7 @@ Cleanup:
 // ArrangeOverride
 // Uses OccupancyMap to arrange elements
 IFACEMETHODIMP VariableSizedWrapGrid::ArrangeOverride(
-                    _In_ wf::Size finalSize,
+                    wf::Size finalSize,
                     _Out_ wf::Size* returnValue)
 {
     HRESULT hr = S_OK;

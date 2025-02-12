@@ -50,7 +50,7 @@ _Check_return_ HRESULT DirectUI::SelectorItemGenerated::get_IsPointerOver(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::SelectorItemGenerated::put_IsPointerOver(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::SelectorItemGenerated::put_IsPointerOver(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -68,7 +68,7 @@ IFACEMETHODIMP DirectUI::SelectorItemGenerated::get_IsSelected(_Out_ BOOLEAN* pV
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::SelectorItemGenerated::put_IsSelected(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::SelectorItemGenerated::put_IsSelected(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     

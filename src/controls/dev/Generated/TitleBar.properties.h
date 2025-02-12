@@ -9,26 +9,26 @@ class TitleBarProperties
 public:
     TitleBarProperties();
 
-    void Content(winrt::IInspectable const& value);
-    winrt::IInspectable Content();
-
-    void Footer(winrt::IInspectable const& value);
-    winrt::IInspectable Footer();
-
-    void Header(winrt::IInspectable const& value);
-    winrt::IInspectable Header();
+    void CenterContent(winrt::UIElement const& value);
+    winrt::UIElement CenterContent();
 
     void IconSource(winrt::IconSource const& value);
     winrt::IconSource IconSource();
 
+    void IsBackButtonEnabled(bool value);
+    bool IsBackButtonEnabled();
+
     void IsBackButtonVisible(bool value);
     bool IsBackButtonVisible();
 
-    void IsBackEnabled(bool value);
-    bool IsBackEnabled();
-
     void IsPaneToggleButtonVisible(bool value);
     bool IsPaneToggleButtonVisible();
+
+    void LeftContent(winrt::UIElement const& value);
+    winrt::UIElement LeftContent();
+
+    void RightContent(winrt::UIElement const& value);
+    winrt::UIElement RightContent();
 
     void Subtitle(winrt::hstring const& value);
     winrt::hstring Subtitle();
@@ -39,24 +39,24 @@ public:
     void Title(winrt::hstring const& value);
     winrt::hstring Title();
 
-    static winrt::DependencyProperty ContentProperty() { return s_ContentProperty; }
-    static winrt::DependencyProperty FooterProperty() { return s_FooterProperty; }
-    static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
+    static winrt::DependencyProperty CenterContentProperty() { return s_CenterContentProperty; }
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
+    static winrt::DependencyProperty IsBackButtonEnabledProperty() { return s_IsBackButtonEnabledProperty; }
     static winrt::DependencyProperty IsBackButtonVisibleProperty() { return s_IsBackButtonVisibleProperty; }
-    static winrt::DependencyProperty IsBackEnabledProperty() { return s_IsBackEnabledProperty; }
     static winrt::DependencyProperty IsPaneToggleButtonVisibleProperty() { return s_IsPaneToggleButtonVisibleProperty; }
+    static winrt::DependencyProperty LeftContentProperty() { return s_LeftContentProperty; }
+    static winrt::DependencyProperty RightContentProperty() { return s_RightContentProperty; }
     static winrt::DependencyProperty SubtitleProperty() { return s_SubtitleProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
     static winrt::DependencyProperty TitleProperty() { return s_TitleProperty; }
 
-    static GlobalDependencyProperty s_ContentProperty;
-    static GlobalDependencyProperty s_FooterProperty;
-    static GlobalDependencyProperty s_HeaderProperty;
+    static GlobalDependencyProperty s_CenterContentProperty;
     static GlobalDependencyProperty s_IconSourceProperty;
+    static GlobalDependencyProperty s_IsBackButtonEnabledProperty;
     static GlobalDependencyProperty s_IsBackButtonVisibleProperty;
-    static GlobalDependencyProperty s_IsBackEnabledProperty;
     static GlobalDependencyProperty s_IsPaneToggleButtonVisibleProperty;
+    static GlobalDependencyProperty s_LeftContentProperty;
+    static GlobalDependencyProperty s_RightContentProperty;
     static GlobalDependencyProperty s_SubtitleProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
     static GlobalDependencyProperty s_TitleProperty;
@@ -72,15 +72,7 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnContentPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnFooterPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnHeaderPropertyChanged(
+    static void OnCenterContentPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -88,15 +80,23 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
+    static void OnIsBackButtonEnabledPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnIsBackButtonVisiblePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnIsBackEnabledPropertyChanged(
+    static void OnIsPaneToggleButtonVisiblePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnIsPaneToggleButtonVisiblePropertyChanged(
+    static void OnLeftContentPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnRightContentPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

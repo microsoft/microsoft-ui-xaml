@@ -170,6 +170,74 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void HomeEndExtendedCasesNavigationTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {                
+                // Set the pane display mode to left compact
+                var paneDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                Verify.IsNotNull(paneDisplayModeComboBox);
+                Log.Comment("Set PaneDisplayMode to LeftCompact");
+                paneDisplayModeComboBox.SelectItemByName("LeftCompact");
+                Wait.ForIdle();
+
+                // Click on the first item to open flyout
+                var item1 = FindElement.ByName("Menu Item 1");
+                Verify.IsNotNull(item1);
+                Log.Comment("Expand Menu Item 1");
+                InputHelper.LeftClick(item1);
+                Wait.ForIdle();
+
+                Log.Comment("Find first and last items in the flyout");
+                var item2 = FindElement.ByName("Menu Item 2");
+                Verify.IsNotNull(item2);
+                var itemB = FindElement.ByName("Menu Item B");
+                Verify.IsNotNull(itemB);
+
+                Log.Comment("Verify the End key puts focus on the last menu item");
+                KeyboardHelper.PressKey(Key.End);
+                Wait.ForIdle();
+                Verify.IsTrue(itemB.HasKeyboardFocus);
+
+                Log.Comment("Verify the Home key puts focus on the first menu item");
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                Verify.IsTrue(item2.HasKeyboardFocus);
+
+                Log.Comment("Press esc key to dismiss flyout");
+                KeyboardHelper.PressKey(Key.Escape);
+                Wait.ForIdle();
+
+                // Set the pane display mode to left
+                Log.Comment("Set PaneDisplayMode to Left");
+                paneDisplayModeComboBox.SelectItemByName("Left");
+                Wait.ForIdle();
+
+                Log.Comment("Disable Menu Item 1");
+                UIObject disableItemButtonObject = FindElement.ByName("Disable Menu Item 1");
+                Verify.IsNotNull(disableItemButtonObject);
+                Button disableItemButton = new Button(disableItemButtonObject);
+                disableItemButton.Click();
+                Wait.ForIdle();
+
+                // Click on the first item to open flyout
+                var item20 = FindElement.ByName("Menu Item 20");
+                Verify.IsNotNull(item20);
+                Log.Comment("Click on Menu Item 20");
+                InputHelper.LeftClick(item20);
+                Wait.ForIdle();
+
+                UIObject MI6 = FindElement.ByName("Menu Item 6 (Selectable)");
+                Verify.IsNotNull(MI6);
+
+                Log.Comment("If first item is not focusable, verify it finds the next focusable item.");
+                KeyboardHelper.PressKey(Key.Home);
+                Wait.ForIdle();
+                Verify.IsTrue(MI6.HasKeyboardFocus);
+            }
+        }
+
+        [TestMethod]
         public void TabNavigationTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();

@@ -49,7 +49,7 @@ IFACEMETHODIMP DirectUI::WrapGridGenerated::get_HorizontalChildrenAlignment(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::WrapGrid_HorizontalChildrenAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::WrapGridGenerated::put_HorizontalChildrenAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::WrapGridGenerated::put_HorizontalChildrenAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::WrapGrid_HorizontalChildrenAlignment, value));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::WrapGridGenerated::get_ItemHeight(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::WrapGrid_ItemHeight, pValue));
 }
-IFACEMETHODIMP DirectUI::WrapGridGenerated::put_ItemHeight(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::WrapGridGenerated::put_ItemHeight(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::WrapGrid_ItemHeight, value));
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::WrapGridGenerated::get_ItemWidth(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::WrapGrid_ItemWidth, pValue));
 }
-IFACEMETHODIMP DirectUI::WrapGridGenerated::put_ItemWidth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::WrapGridGenerated::put_ItemWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::WrapGrid_ItemWidth, value));
@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::WrapGridGenerated::get_MaximumRowsOrColumns(_Out_ INT* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::WrapGrid_MaximumRowsOrColumns, pValue));
 }
-IFACEMETHODIMP DirectUI::WrapGridGenerated::put_MaximumRowsOrColumns(_In_ INT value)
+IFACEMETHODIMP DirectUI::WrapGridGenerated::put_MaximumRowsOrColumns(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::WrapGrid_MaximumRowsOrColumns, value));
@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::WrapGridGenerated::get_Orientation(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::WrapGrid_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::WrapGridGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::WrapGridGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::WrapGrid_Orientation, value));
@@ -94,7 +94,7 @@ IFACEMETHODIMP DirectUI::WrapGridGenerated::get_VerticalChildrenAlignment(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::WrapGrid_VerticalChildrenAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::WrapGridGenerated::put_VerticalChildrenAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::WrapGridGenerated::put_VerticalChildrenAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::WrapGrid_VerticalChildrenAlignment, value));

@@ -103,6 +103,7 @@ _Check_return_ HRESULT CWindowRenderTarget::Draw(
 {
     HRESULT hr = S_OK;
     CWindowRenderTarget* pRenderTargetNoRef = this;
+    *pFrameDrawn = FALSE;
 
     // First check to see if the compositor scheduler has had an error (which
     // will typically be either a device lost or a stale device).

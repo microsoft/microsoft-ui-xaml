@@ -94,7 +94,7 @@ Cleanup:
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-TimelineFactory::put_AllowDependentAnimationsImpl(_In_ BOOLEAN value)
+TimelineFactory::put_AllowDependentAnimationsImpl(BOOLEAN value)
 {
     HRESULT hr = S_OK;
 

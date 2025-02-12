@@ -32,7 +32,7 @@ namespace DirectUI
             INTERFACE_ENTRY(ValidationErrorsObservableVectorWrapper, wfc::IIterable<IInspectable *>)
         END_INTERFACE_MAP(ValidationErrorsObservableVectorWrapper, ctl::WeakReferenceSource)
 
-        HRESULT QueryInterfaceImpl(const IID& riid, _COM_Outptr_ void** ppObject) final;
+        HRESULT QueryInterfaceImpl(_In_ const IID& riid, _COM_Outptr_ void** ppObject) final;
 
     public:
 

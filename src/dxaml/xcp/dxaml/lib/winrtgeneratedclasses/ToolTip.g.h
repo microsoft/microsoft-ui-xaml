@@ -53,27 +53,27 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_HorizontalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_HorizontalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_HorizontalOffset)(DOUBLE value) override;
         IFACEMETHOD(get_IsOpen)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsOpen)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsOpen)(BOOLEAN value) override;
         IFACEMETHOD(get_Placement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode* pValue) override;
-        IFACEMETHOD(put_Placement)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value) override;
+        IFACEMETHOD(put_Placement)(ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value) override;
         IFACEMETHOD(get_PlacementRect)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>** ppValue) override;
-        IFACEMETHOD(put_PlacementRect)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue) override;
+        IFACEMETHOD(put_PlacementRect)(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::Rect>* pValue) override;
         IFACEMETHOD(get_PlacementTarget)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_PlacementTarget)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_TemplateSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IToolTipTemplateSettings** ppValue) override;
         _Check_return_ HRESULT put_TemplateSettings(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IToolTipTemplateSettings* pValue);
         IFACEMETHOD(get_VerticalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_VerticalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_VerticalOffset)(DOUBLE value) override;
 
         // Events.
         _Check_return_ HRESULT GetClosedEventSourceNoRef(_Outptr_ ClosedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Closed)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Closed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetOpenedEventSourceNoRef(_Outptr_ OpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Opened)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Opened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Opened)(EventRegistrationToken token) override;
 
         // Methods.
 

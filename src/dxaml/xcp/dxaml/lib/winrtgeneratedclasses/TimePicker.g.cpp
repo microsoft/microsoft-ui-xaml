@@ -70,7 +70,7 @@ IFACEMETHODIMP DirectUI::TimePickerGenerated::get_HeaderPlacement(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TimePicker_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::TimePickerGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::TimePickerGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TimePicker_HeaderPlacement, value));
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::TimePickerGenerated::get_LightDismissOverlayMode(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TimePicker_LightDismissOverlayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::TimePickerGenerated::put_LightDismissOverlayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
+IFACEMETHODIMP DirectUI::TimePickerGenerated::put_LightDismissOverlayMode(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TimePicker_LightDismissOverlayMode, value));
@@ -97,7 +97,7 @@ IFACEMETHODIMP DirectUI::TimePickerGenerated::get_MinuteIncrement(_Out_ INT* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TimePicker_MinuteIncrement, pValue));
 }
-IFACEMETHODIMP DirectUI::TimePickerGenerated::put_MinuteIncrement(_In_ INT value)
+IFACEMETHODIMP DirectUI::TimePickerGenerated::put_MinuteIncrement(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TimePicker_MinuteIncrement, value));
@@ -106,7 +106,7 @@ IFACEMETHODIMP DirectUI::TimePickerGenerated::get_SelectedTime(_Out_ ABI::Window
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TimePicker_SelectedTime, ppValue));
 }
-IFACEMETHODIMP DirectUI::TimePickerGenerated::put_SelectedTime(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue)
+IFACEMETHODIMP DirectUI::TimePickerGenerated::put_SelectedTime(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TimePicker_SelectedTime, pValue));
@@ -115,7 +115,7 @@ IFACEMETHODIMP DirectUI::TimePickerGenerated::get_Time(_Out_ ABI::Windows::Found
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TimePicker_Time, pValue));
 }
-IFACEMETHODIMP DirectUI::TimePickerGenerated::put_Time(_In_ ABI::Windows::Foundation::TimeSpan value)
+IFACEMETHODIMP DirectUI::TimePickerGenerated::put_Time(ABI::Windows::Foundation::TimeSpan value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TimePicker_Time, value));
@@ -158,7 +158,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TimePickerGenerated::remove_SelectedTimeChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TimePickerGenerated::remove_SelectedTimeChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectedTimeChangedEventSourceType* pEventSource = nullptr;
@@ -213,7 +213,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TimePickerGenerated::remove_TimeChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TimePickerGenerated::remove_TimeChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TimeChangedEventSourceType* pEventSource = nullptr;

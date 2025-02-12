@@ -50,9 +50,9 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_SelectedItems)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<IInspectable*>** ppValue) override;
         IFACEMETHOD(get_SelectionMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::SelectionMode* pValue) override;
-        IFACEMETHOD(put_SelectionMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::SelectionMode value) override;
+        IFACEMETHOD(put_SelectionMode)(ABI::Microsoft::UI::Xaml::Controls::SelectionMode value) override;
         IFACEMETHOD(get_SingleSelectionFollowsFocus)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_SingleSelectionFollowsFocus)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_SingleSelectionFollowsFocus)(BOOLEAN value) override;
 
         // Events.
 

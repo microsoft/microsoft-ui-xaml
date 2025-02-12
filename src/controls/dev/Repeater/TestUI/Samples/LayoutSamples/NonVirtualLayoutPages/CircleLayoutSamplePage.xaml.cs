@@ -119,7 +119,7 @@ namespace MUXControlsTestApp.Samples
         }
     }
 
-    public class PersonDataSource : CustomItemsSourceViewWithUniqueIdMapping
+    public partial class PersonDataSource : CustomItemsSourceViewWithUniqueIdMapping
     {
         private ObservableCollection<Person> _data;
 
@@ -142,7 +142,7 @@ namespace MUXControlsTestApp.Samples
         }
     }
 
-    public class PersonElementFactory : ElementFactory
+    public partial class PersonElementFactory : ElementFactory
     {
         private DataTemplate _personTemplate;
 

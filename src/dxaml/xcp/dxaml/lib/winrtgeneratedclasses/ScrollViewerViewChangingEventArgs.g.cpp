@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerViewChangingEventArgs::get_IsInertial(_Out_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerViewChangingEventArgs::put_IsInertial(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ScrollViewerViewChangingEventArgs::put_IsInertial(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

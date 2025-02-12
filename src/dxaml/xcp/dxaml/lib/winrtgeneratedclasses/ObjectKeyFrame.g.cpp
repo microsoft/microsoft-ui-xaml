@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ObjectKeyFrame::get_KeyTime(_Out_ ABI::Microsoft::UI::X
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ObjectKeyFrame_KeyTime, pValue));
 }
-IFACEMETHODIMP DirectUI::ObjectKeyFrame::put_KeyTime(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value)
+IFACEMETHODIMP DirectUI::ObjectKeyFrame::put_KeyTime(ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ObjectKeyFrame_KeyTime, value));

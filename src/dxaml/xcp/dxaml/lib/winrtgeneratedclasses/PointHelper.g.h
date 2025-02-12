@@ -41,7 +41,7 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(FromCoordinates)(_In_ FLOAT x, _In_ FLOAT y, _Out_ ABI::Windows::Foundation::Point* pReturnValue) override;
+        IFACEMETHOD(FromCoordinates)(FLOAT x, FLOAT y, _Out_ ABI::Windows::Foundation::Point* pReturnValue) override;
 
         // Static events.
 
@@ -55,6 +55,6 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT FromCoordinatesImpl(_In_ FLOAT x, _In_ FLOAT y, _Out_ ABI::Windows::Foundation::Point* pReturnValue); 
+         _Check_return_ HRESULT FromCoordinatesImpl(FLOAT x, FLOAT y, _Out_ ABI::Windows::Foundation::Point* pReturnValue); 
     };
 }

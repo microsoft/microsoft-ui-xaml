@@ -40,10 +40,10 @@ namespace DirectUI
 
         // Attached properties.
         static _Check_return_ HRESULT GetPlacementStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode* pValue);
-        static _Check_return_ HRESULT SetPlacementStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value);
+        static _Check_return_ HRESULT SetPlacementStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value);
         IFACEMETHOD(get_PlacementProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetPlacement)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode* pValue);
-        IFACEMETHOD(SetPlacement)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value);
+        IFACEMETHOD(SetPlacement)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::Primitives::PlacementMode value);
         static _Check_return_ HRESULT GetPlacementTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue);
         static _Check_return_ HRESULT SetPlacementTargetStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue);
         IFACEMETHOD(get_PlacementTargetProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;

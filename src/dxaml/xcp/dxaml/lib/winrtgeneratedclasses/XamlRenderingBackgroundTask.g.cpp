@@ -161,7 +161,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlRenderingBackgroundTaskFactory::SetScalePercentage(_In_ UINT percentage)
+IFACEMETHODIMP DirectUI::XamlRenderingBackgroundTaskFactory::SetScalePercentage(UINT percentage)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

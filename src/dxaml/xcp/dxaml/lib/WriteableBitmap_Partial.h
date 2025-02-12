@@ -33,7 +33,7 @@ namespace DirectUI
         _Check_return_ HRESULT RefreshPixelBuffer();
 
     protected:
-        _Check_return_ HRESULT OnStreamReadCompleted(_In_ wsts::IStreamReadOperation *pOperation, wf::AsyncStatus status) override;
+        _Check_return_ HRESULT OnStreamReadCompleted(_In_ wsts::IStreamReadOperation *pOperation, _In_ wf::AsyncStatus status) override;
 
     private:
         ctl::ComPtr<PixelBuffer> m_spPixelBuffer;

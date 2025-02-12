@@ -16,7 +16,7 @@ using Microsoft.UI.Dispatching;
 
 namespace MUXControlsTestApp.Utilities
 {
-    internal sealed class CompositionScrollControllerPanningInfo : IScrollControllerPanningInfo
+    internal sealed partial class CompositionScrollControllerPanningInfo : IScrollControllerPanningInfo
     {
         private DispatcherQueue dispatcherQueue = null;
         private CompositionPropertySet expressionAnimationSources = null;
@@ -473,7 +473,7 @@ namespace MUXControlsTestApp.Utilities
         }
     }
 
-    public sealed class CompositionScrollController : Control, IScrollController
+    public sealed partial class CompositionScrollController : Control, IScrollController
     {
         public event TypedEventHandler<CompositionScrollController, CompositionScrollControllerOffsetChangeCompletedEventArgs> OffsetChangeCompleted;
 

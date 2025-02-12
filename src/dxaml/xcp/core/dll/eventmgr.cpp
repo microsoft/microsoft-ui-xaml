@@ -1616,7 +1616,7 @@ CEventManager::Execute()
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CEventManager::ProcessQueue(_In_opt_ bool fProcessFastQueue)
+CEventManager::ProcessQueue(_In_ bool fProcessFastQueue)
 {
     if (!fProcessFastQueue)
     {

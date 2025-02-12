@@ -23,13 +23,13 @@ namespace DirectUI
             virtual _Check_return_ HRESULT get_TitleImpl(_Out_ HSTRING* pValue) = 0;
             virtual _Check_return_ HRESULT put_TitleImpl(_In_opt_ HSTRING value) = 0;
             IFACEMETHOD(add_Activated)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken)  = 0;
-            IFACEMETHOD(remove_Activated)(_In_ EventRegistrationToken tToken) = 0;
+            IFACEMETHOD(remove_Activated)(EventRegistrationToken tToken) = 0;
             IFACEMETHOD(add_Closed)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken) = 0;
-            IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken tToken) = 0;
+            IFACEMETHOD(remove_Closed)(EventRegistrationToken tToken) = 0;
             IFACEMETHOD(add_SizeChanged)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowSizeChangedEventArgs*> * pValue, _Out_ EventRegistrationToken* ptToken) = 0;
-            IFACEMETHOD(remove_SizeChanged)(_In_ EventRegistrationToken tToken) = 0;
+            IFACEMETHOD(remove_SizeChanged)(EventRegistrationToken tToken) = 0;
             IFACEMETHOD(add_VisibilityChanged)(_In_ wf::ITypedEventHandler<IInspectable*, xaml::WindowVisibilityChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* ptToken)  = 0;
-            IFACEMETHOD(remove_VisibilityChanged)(_In_ EventRegistrationToken tToken) = 0;
+            IFACEMETHOD(remove_VisibilityChanged)(EventRegistrationToken tToken) = 0;
             virtual _Check_return_ HRESULT ActivateImpl() = 0;
             virtual _Check_return_ HRESULT CloseImpl() = 0;
 

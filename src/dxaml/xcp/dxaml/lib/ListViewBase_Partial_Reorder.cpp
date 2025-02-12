@@ -1179,6 +1179,12 @@ IFACEMETHODIMP ListViewBase::OnDrop(
 
     IFC(ListViewBaseGenerated::OnDrop(pArgs));
 
+    if (m_tpDragOverItem)
+    {
+        // Reset the dragged-over item and potentially switch to the pointer-over visual state.
+        IFC(m_tpDragOverItem.Cast<ListViewBaseItem>()->LeaveDragOver(this, pArgs));
+    }
+
     IFC(CompleteDrop());
 
 Cleanup:
@@ -2343,8 +2349,8 @@ _Check_return_ HRESULT ListViewBase::SetDragOverItem(
 }
 
 _Check_return_ IFACEMETHODIMP ListViewBase::OverrideContainerArrangeBounds(
-    _In_ INT index,
-    _In_ wf::Rect suggestedBounds,
+    INT index,
+    wf::Rect suggestedBounds,
     _Out_ wf::Rect* newBounds)
 {
     // by default, we use the suggested bounds

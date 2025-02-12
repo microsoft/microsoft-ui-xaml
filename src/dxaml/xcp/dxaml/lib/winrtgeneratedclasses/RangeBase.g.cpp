@@ -49,7 +49,7 @@ IFACEMETHODIMP DirectUI::RangeBaseGenerated::get_LargeChange(_Out_ DOUBLE* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RangeBase_LargeChange, pValue));
 }
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_LargeChange(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_LargeChange(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RangeBase_LargeChange, value));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::RangeBaseGenerated::get_Maximum(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RangeBase_Maximum, pValue));
 }
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_Maximum(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_Maximum(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RangeBase_Maximum, value));
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::RangeBaseGenerated::get_Minimum(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RangeBase_Minimum, pValue));
 }
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_Minimum(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_Minimum(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RangeBase_Minimum, value));
@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::RangeBaseGenerated::get_SmallChange(_Out_ DOUBLE* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RangeBase_SmallChange, pValue));
 }
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_SmallChange(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_SmallChange(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RangeBase_SmallChange, value));
@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::RangeBaseGenerated::get_Value(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RangeBase_Value, pValue));
 }
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_Value(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::put_Value(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RangeBase_Value, value));
@@ -128,7 +128,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::remove_ValueChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::remove_ValueChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ValueChangedEventSourceType* pEventSource = nullptr;
@@ -149,7 +149,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::OnMaximumChanged(_In_ DOUBLE oldMaximum, _In_ DOUBLE newMaximum)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::OnMaximumChanged(DOUBLE oldMaximum, DOUBLE newMaximum)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -168,7 +168,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::RangeBaseGenerated::OnMaximumChangedProtected(_In_ DOUBLE oldMaximum, _In_ DOUBLE newMaximum)
+_Check_return_ HRESULT DirectUI::RangeBaseGenerated::OnMaximumChangedProtected(DOUBLE oldMaximum, DOUBLE newMaximum)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBaseOverrides* pVirtuals = NULL;
@@ -189,7 +189,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::OnMinimumChanged(_In_ DOUBLE oldMinimum, _In_ DOUBLE newMinimum)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::OnMinimumChanged(DOUBLE oldMinimum, DOUBLE newMinimum)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -208,7 +208,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::RangeBaseGenerated::OnMinimumChangedProtected(_In_ DOUBLE oldMinimum, _In_ DOUBLE newMinimum)
+_Check_return_ HRESULT DirectUI::RangeBaseGenerated::OnMinimumChangedProtected(DOUBLE oldMinimum, DOUBLE newMinimum)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBaseOverrides* pVirtuals = NULL;
@@ -229,7 +229,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RangeBaseGenerated::OnValueChanged(_In_ DOUBLE oldValue, _In_ DOUBLE newValue)
+IFACEMETHODIMP DirectUI::RangeBaseGenerated::OnValueChanged(DOUBLE oldValue, DOUBLE newValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -248,7 +248,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::RangeBaseGenerated::OnValueChangedProtected(_In_ DOUBLE oldValue, _In_ DOUBLE newValue)
+_Check_return_ HRESULT DirectUI::RangeBaseGenerated::OnValueChangedProtected(DOUBLE oldValue, DOUBLE newValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Controls::Primitives::IRangeBaseOverrides* pVirtuals = NULL;

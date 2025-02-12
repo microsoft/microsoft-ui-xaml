@@ -5879,7 +5879,7 @@ namespace Microsoft.UI.Xaml
     [Guids(ClassGuid = "eaad7a20-751b-4a85-b6c9-50231742b28f")]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
     [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), 7)]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform(4, typeof(Microsoft.UI.Xaml.WinUIContract), 8)]
     public sealed class XamlRoot
     {
         private XamlRoot() { }
@@ -5917,8 +5917,9 @@ namespace Microsoft.UI.Xaml
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public Microsoft.UI.Content.ContentCoordinateConverter CoordinateConverter { get; }
 
-        [VelocityFeature("Feature_ExperimentalApi")]
-        public Microsoft.UI.Content.ContentIsland TryGetContentIsland() { return null; }
+        [Version(4)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Microsoft.UI.Content.ContentIsland ContentIsland { get; }
     }
 
     [TypeTable(ForceInclude = true)]
@@ -5928,8 +5929,8 @@ namespace Microsoft.UI.Xaml
         Windows.Foundation.Object GetService(Windows.UI.Xaml.Interop.TypeName type);
     }
 
-    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
-    [VelocityFeature("Feature_ExperimentalApi")]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 8)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
@@ -5962,6 +5963,16 @@ namespace Microsoft.UI.Xaml
         [TypeTable(IsExcludedFromDXaml = true)]
         [RequiresMultipleAssociationCheck]
         public Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [TypeTable(IsExcludedFromDXaml = true)]
+        public bool ShouldConstrainPopupsToWorkArea
         {
             get;
             set;

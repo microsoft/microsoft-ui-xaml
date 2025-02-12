@@ -38,7 +38,7 @@ HRESULT DirectUI::PointHelperFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outpt
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::PointHelperFactory::FromCoordinates(_In_ FLOAT x, _In_ FLOAT y, _Out_ ABI::Windows::Foundation::Point* pReturnValue)
+IFACEMETHODIMP DirectUI::PointHelperFactory::FromCoordinates(FLOAT x, FLOAT y, _Out_ ABI::Windows::Foundation::Point* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

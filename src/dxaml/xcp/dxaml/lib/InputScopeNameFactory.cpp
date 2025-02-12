@@ -13,7 +13,7 @@ using namespace DirectUI;
 //  
 //---------------------------------------------------------------------------
 _Check_return_ HRESULT InputScopeNameFactory::CreateInstanceImpl(
-    _In_ xaml_input::InputScopeNameValue nameValue,
+    xaml_input::InputScopeNameValue nameValue,
     _Outptr_ xaml_input::IInputScopeName** ppInstance)
 {
     HRESULT hr = S_OK;

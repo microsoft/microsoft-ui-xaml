@@ -57,7 +57,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedCente
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedCenterPoint(_In_ ABI::Windows::Foundation::Numerics::Vector2 value)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedCenterPoint(ABI::Windows::Foundation::Numerics::Vector2 value)
 {
     HRESULT hr = S_OK;
     
@@ -76,7 +76,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedRotat
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedRotation(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedRotation(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -95,7 +95,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedScale
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedScale(_In_ ABI::Windows::Foundation::Numerics::Vector2 value)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedScale(ABI::Windows::Foundation::Numerics::Vector2 value)
 {
     HRESULT hr = S_OK;
     
@@ -114,7 +114,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedTrans
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedTransformMatrix(_In_ ABI::Windows::Foundation::Numerics::Matrix3x2 value)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedTransformMatrix(ABI::Windows::Foundation::Numerics::Matrix3x2 value)
 {
     HRESULT hr = S_OK;
     
@@ -133,7 +133,7 @@ _Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::get_AnimatedTrans
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedTranslation(_In_ ABI::Windows::Foundation::Numerics::Vector2 value)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::put_AnimatedTranslation(ABI::Windows::Foundation::Numerics::Vector2 value)
 {
     HRESULT hr = S_OK;
     
@@ -152,7 +152,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_CenterPoint(_In_ ABI::Windows::Foundation::Numerics::Vector2 value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_CenterPoint(ABI::Windows::Foundation::Numerics::Vector2 value)
 {
     HRESULT hr = S_OK;
     
@@ -166,7 +166,7 @@ IFACEMETHODIMP DirectUI::LinearGradientBrushGenerated::get_EndPoint(_Out_ ABI::W
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LinearGradientBrush_EndPoint, pValue));
 }
-IFACEMETHODIMP DirectUI::LinearGradientBrushGenerated::put_EndPoint(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::LinearGradientBrushGenerated::put_EndPoint(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LinearGradientBrush_EndPoint, value));
@@ -181,7 +181,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_Rotation(_In_ DOUBLE value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_Rotation(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -201,7 +201,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_Scale(_In_ ABI::Windows::Foundation::Numerics::Vector2 value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_Scale(ABI::Windows::Foundation::Numerics::Vector2 value)
 {
     HRESULT hr = S_OK;
     
@@ -215,7 +215,7 @@ IFACEMETHODIMP DirectUI::LinearGradientBrushGenerated::get_StartPoint(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::LinearGradientBrush_StartPoint, pValue));
 }
-IFACEMETHODIMP DirectUI::LinearGradientBrushGenerated::put_StartPoint(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::LinearGradientBrushGenerated::put_StartPoint(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::LinearGradientBrush_StartPoint, value));
@@ -230,7 +230,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_TransformMatrix(_In_ ABI::Windows::Foundation::Numerics::Matrix3x2 value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_TransformMatrix(ABI::Windows::Foundation::Numerics::Matrix3x2 value)
 {
     HRESULT hr = S_OK;
     
@@ -250,7 +250,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated:
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_Translation(_In_ ABI::Windows::Foundation::Numerics::Vector2 value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::put_Translation(ABI::Windows::Foundation::Numerics::Vector2 value)
 {
     HRESULT hr = S_OK;
     
@@ -308,7 +308,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedCenterPointChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedCenterPointChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedCenterPointChangedEventSourceType* pEventSource = nullptr;
@@ -374,7 +374,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedRotationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedRotationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedRotationChangedEventSourceType* pEventSource = nullptr;
@@ -440,7 +440,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedScaleChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedScaleChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedScaleChangedEventSourceType* pEventSource = nullptr;
@@ -506,7 +506,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedTransformMatrixChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedTransformMatrixChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedTransformMatrixChangedEventSourceType* pEventSource = nullptr;
@@ -572,7 +572,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedTranslationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::LinearGradientBrushGenerated::remove_AnimatedTranslationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedTranslationChangedEventSourceType* pEventSource = nullptr;
@@ -638,7 +638,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_CenterPointChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_CenterPointChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CenterPointChangedEventSourceType* pEventSource = nullptr;
@@ -705,7 +705,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_RotationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_RotationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     RotationChangedEventSourceType* pEventSource = nullptr;
@@ -772,7 +772,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_ScaleChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_ScaleChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ScaleChangedEventSourceType* pEventSource = nullptr;
@@ -839,7 +839,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_TransformMatrixChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_TransformMatrixChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TransformMatrixChangedEventSourceType* pEventSource = nullptr;
@@ -906,7 +906,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_TranslationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::LinearGradientBrushGenerated::remove_TranslationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TranslationChangedEventSourceType* pEventSource = nullptr;
@@ -951,7 +951,7 @@ HRESULT DirectUI::LinearGradientBrushFactory::QueryInterfaceImpl(_In_ REFIID iid
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::LinearGradientBrushFactory::CreateInstanceWithGradientStopCollectionAndAngle(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>* pGradientStopCollection, _In_ DOUBLE angle, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush** ppInstance)
+IFACEMETHODIMP DirectUI::LinearGradientBrushFactory::CreateInstanceWithGradientStopCollectionAndAngle(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>* pGradientStopCollection, DOUBLE angle, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush** ppInstance)
 {
     HRESULT hr = S_OK;
     ARG_NOTNULL(pGradientStopCollection, "gradientStopCollection");

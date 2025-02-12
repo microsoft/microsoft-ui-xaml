@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Reason)(_Out_ ABI::Microsoft::UI::Xaml::Controls::AutoSuggestionBoxTextChangeReason* pValue) override;
-        IFACEMETHOD(put_Reason)(_In_ ABI::Microsoft::UI::Xaml::Controls::AutoSuggestionBoxTextChangeReason value) override;
+        IFACEMETHOD(put_Reason)(ABI::Microsoft::UI::Xaml::Controls::AutoSuggestionBoxTextChangeReason value) override;
 
         // Events.
 

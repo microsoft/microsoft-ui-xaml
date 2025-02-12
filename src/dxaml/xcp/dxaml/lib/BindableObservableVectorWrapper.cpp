@@ -80,7 +80,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP BindableObservableVectorWrapper::remove_VectorChanged(
-    _In_ EventRegistrationToken token)
+    EventRegistrationToken token)
 {
     RRETURN(m_vectorChangedHandlers.RemoveHandler(token));
 }

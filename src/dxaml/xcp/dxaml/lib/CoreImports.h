@@ -514,7 +514,7 @@ namespace CoreImports
     _Check_return_ HRESULT DependencyObject_GetVisualRelative(
         _In_ CUIElement* pElement,
         _In_ XINT32 iRelativeLinkKind,
-        _Out_ CValue* pRelative);
+        _Inout_ CValue* pRelative);
 
     _Check_return_ HRESULT ClearUIElementChildren(
         _In_ CUIElement* pElement);

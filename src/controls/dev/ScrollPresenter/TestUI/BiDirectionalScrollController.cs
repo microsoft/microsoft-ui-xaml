@@ -30,7 +30,7 @@ namespace MUXControlsTestApp.Utilities
         }
     }
 
-    public sealed class BiDirectionalScrollController : ContentControl
+    public sealed partial class BiDirectionalScrollController : ContentControl
     {
         private class UniScrollControllerScrollingScrollCompletedEventArgs
         {
@@ -46,7 +46,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        private class UniScrollController : IScrollController
+        private partial class UniScrollController : IScrollController
         {
             public event TypedEventHandler<IScrollController, object> CanScrollChanged;
             public event TypedEventHandler<IScrollController, object> IsScrollingWithMouseChanged;

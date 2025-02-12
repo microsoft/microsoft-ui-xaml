@@ -54,25 +54,25 @@ namespace DirectUI
         IFACEMETHOD(put_Fill)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_GeometryTransform)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ITransform** ppValue) override;
         IFACEMETHOD(get_Stretch)(_Out_ ABI::Microsoft::UI::Xaml::Media::Stretch* pValue) override;
-        IFACEMETHOD(put_Stretch)(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value) override;
+        IFACEMETHOD(put_Stretch)(ABI::Microsoft::UI::Xaml::Media::Stretch value) override;
         IFACEMETHOD(get_Stroke)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_Stroke)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_StrokeDashArray)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<DOUBLE>** ppValue) override;
         IFACEMETHOD(put_StrokeDashArray)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<DOUBLE>* pValue) override;
         IFACEMETHOD(get_StrokeDashCap)(_Out_ ABI::Microsoft::UI::Xaml::Media::PenLineCap* pValue) override;
-        IFACEMETHOD(put_StrokeDashCap)(_In_ ABI::Microsoft::UI::Xaml::Media::PenLineCap value) override;
+        IFACEMETHOD(put_StrokeDashCap)(ABI::Microsoft::UI::Xaml::Media::PenLineCap value) override;
         IFACEMETHOD(get_StrokeDashOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_StrokeDashOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_StrokeDashOffset)(DOUBLE value) override;
         IFACEMETHOD(get_StrokeEndLineCap)(_Out_ ABI::Microsoft::UI::Xaml::Media::PenLineCap* pValue) override;
-        IFACEMETHOD(put_StrokeEndLineCap)(_In_ ABI::Microsoft::UI::Xaml::Media::PenLineCap value) override;
+        IFACEMETHOD(put_StrokeEndLineCap)(ABI::Microsoft::UI::Xaml::Media::PenLineCap value) override;
         IFACEMETHOD(get_StrokeLineJoin)(_Out_ ABI::Microsoft::UI::Xaml::Media::PenLineJoin* pValue) override;
-        IFACEMETHOD(put_StrokeLineJoin)(_In_ ABI::Microsoft::UI::Xaml::Media::PenLineJoin value) override;
+        IFACEMETHOD(put_StrokeLineJoin)(ABI::Microsoft::UI::Xaml::Media::PenLineJoin value) override;
         IFACEMETHOD(get_StrokeMiterLimit)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_StrokeMiterLimit)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_StrokeMiterLimit)(DOUBLE value) override;
         IFACEMETHOD(get_StrokeStartLineCap)(_Out_ ABI::Microsoft::UI::Xaml::Media::PenLineCap* pValue) override;
-        IFACEMETHOD(put_StrokeStartLineCap)(_In_ ABI::Microsoft::UI::Xaml::Media::PenLineCap value) override;
+        IFACEMETHOD(put_StrokeStartLineCap)(ABI::Microsoft::UI::Xaml::Media::PenLineCap value) override;
         IFACEMETHOD(get_StrokeThickness)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_StrokeThickness)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_StrokeThickness)(DOUBLE value) override;
 
         // Events.
 

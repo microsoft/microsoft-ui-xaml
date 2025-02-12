@@ -78,7 +78,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowsXamlManagerGenerated::remove_XamlShutdownCompletedOnThread(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowsXamlManagerGenerated::remove_XamlShutdownCompletedOnThread(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     XamlShutdownCompletedOnThreadEventSourceType* pEventSource = nullptr;

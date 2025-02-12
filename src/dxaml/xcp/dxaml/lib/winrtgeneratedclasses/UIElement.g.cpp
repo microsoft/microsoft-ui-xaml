@@ -151,7 +151,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_AllowDrop(_Out_ BOOLEAN* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_AllowDrop, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_AllowDrop(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_AllowDrop(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_AllowDrop, value));
@@ -166,7 +166,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedCenterPoint(_Ou
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedCenterPoint(_In_ ABI::Windows::Foundation::Numerics::Vector3 value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedCenterPoint(ABI::Windows::Foundation::Numerics::Vector3 value)
 {
     HRESULT hr = S_OK;
     
@@ -185,7 +185,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedRotation(_Out_ 
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedRotation(_In_ FLOAT value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedRotation(FLOAT value)
 {
     HRESULT hr = S_OK;
     
@@ -204,7 +204,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedRotationAxis(_O
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedRotationAxis(_In_ ABI::Windows::Foundation::Numerics::Vector3 value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedRotationAxis(ABI::Windows::Foundation::Numerics::Vector3 value)
 {
     HRESULT hr = S_OK;
     
@@ -223,7 +223,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedScale(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedScale(_In_ ABI::Windows::Foundation::Numerics::Vector3 value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedScale(ABI::Windows::Foundation::Numerics::Vector3 value)
 {
     HRESULT hr = S_OK;
     
@@ -242,7 +242,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedTransformMatrix
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedTransformMatrix(_In_ ABI::Windows::Foundation::Numerics::Matrix4x4 value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedTransformMatrix(ABI::Windows::Foundation::Numerics::Matrix4x4 value)
 {
     HRESULT hr = S_OK;
     
@@ -261,7 +261,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_AnimatedTranslation(_Ou
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedTranslation(_In_ ABI::Windows::Foundation::Numerics::Vector3 value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_AnimatedTranslation(ABI::Windows::Foundation::Numerics::Vector3 value)
 {
     HRESULT hr = S_OK;
     
@@ -283,7 +283,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_CanBeScrollAnchor(_Out_ BOOLEAN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_CanBeScrollAnchor, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_CanBeScrollAnchor(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_CanBeScrollAnchor(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_CanBeScrollAnchor, value));
@@ -292,7 +292,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_CanDrag(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_CanDrag, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_CanDrag(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_CanDrag(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_CanDrag, value));
@@ -315,7 +315,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_CenterPoint(_Out_ ABI::Windows:
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_CenterPoint(_In_ ABI::Windows::Foundation::Numerics::Vector3 value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_CenterPoint(ABI::Windows::Foundation::Numerics::Vector3 value)
 {
     HRESULT hr = S_OK;
     
@@ -346,7 +346,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_CompositeMode(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_CompositeMode, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_CompositeMode(_In_ ABI::Microsoft::UI::Xaml::Media::ElementCompositeMode value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_CompositeMode(ABI::Microsoft::UI::Xaml::Media::ElementCompositeMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_CompositeMode, value));
@@ -382,7 +382,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_ExitDisplayModeOnAccessKeyInvok
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_ExitDisplayModeOnAccessKeyInvoked, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_ExitDisplayModeOnAccessKeyInvoked(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_ExitDisplayModeOnAccessKeyInvoked(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_ExitDisplayModeOnAccessKeyInvoked, value));
@@ -395,7 +395,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_GlobalScaleFactor(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_GlobalScaleFactor, pValue));
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_GlobalScaleFactor(_In_ FLOAT value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_GlobalScaleFactor(FLOAT value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_GlobalScaleFactor, value));
 }
@@ -419,7 +419,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_HandOffVisualTransformM
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_HandOffVisualTransformMatrix3D, pValue));
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_HandOffVisualTransformMatrix3D(_In_ ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_HandOffVisualTransformMatrix3D(ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_HandOffVisualTransformMatrix3D, value));
 }
@@ -427,7 +427,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_HighContrastAdjustment(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_HighContrastAdjustment, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_HighContrastAdjustment(_In_ ABI::Microsoft::UI::Xaml::ElementHighContrastAdjustment value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_HighContrastAdjustment(ABI::Microsoft::UI::Xaml::ElementHighContrastAdjustment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_HighContrastAdjustment, value));
@@ -446,7 +446,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_IsAccessKeyScope(_Out_ BOOLEAN*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_IsAccessKeyScope, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsAccessKeyScope(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsAccessKeyScope(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsAccessKeyScope, value));
@@ -455,7 +455,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_IsDoubleTapEnabled(_Out_ BOOLEA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_IsDoubleTapEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsDoubleTapEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsDoubleTapEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsDoubleTapEnabled, value));
@@ -464,7 +464,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_IsGamepadFocusCandidate
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_IsGamepadFocusCandidate, pValue));
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_IsGamepadFocusCandidate(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_IsGamepadFocusCandidate(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsGamepadFocusCandidate, value));
 }
@@ -472,7 +472,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_IsHitTestVisible(_Out_ BOOLEAN*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_IsHitTestVisible, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsHitTestVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsHitTestVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsHitTestVisible, value));
@@ -481,7 +481,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_IsHoldingEnabled(_Out_ BOOLEAN*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_IsHoldingEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsHoldingEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsHoldingEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsHoldingEnabled, value));
@@ -490,7 +490,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_IsRightTapEnabled(_Out_ BOOLEAN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_IsRightTapEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsRightTapEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsRightTapEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsRightTapEnabled, value));
@@ -499,7 +499,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_IsTabStop(_Out_ BOOLEAN* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_IsTabStop, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsTabStop(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsTabStop(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsTabStop, value));
@@ -508,7 +508,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_IsTapEnabled(_Out_ BOOLEAN* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_IsTapEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsTapEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_IsTapEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_IsTapEnabled, value));
@@ -523,7 +523,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_KeepAliveCount(_Out_ IN
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_KeepAliveCount(_In_ INT value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_KeepAliveCount(INT value)
 {
     HRESULT hr = S_OK;
     
@@ -536,7 +536,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_KeyboardAcceleratorPlacementMod
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_KeyboardAcceleratorPlacementMode, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_KeyboardAcceleratorPlacementMode(_In_ ABI::Microsoft::UI::Xaml::Input::KeyboardAcceleratorPlacementMode value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_KeyboardAcceleratorPlacementMode(ABI::Microsoft::UI::Xaml::Input::KeyboardAcceleratorPlacementMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_KeyboardAcceleratorPlacementMode, value));
@@ -558,7 +558,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_KeyTipHorizontalOffset(_Out_ DO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_KeyTipHorizontalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_KeyTipHorizontalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_KeyTipHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_KeyTipHorizontalOffset, value));
@@ -567,7 +567,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_KeyTipPlacementMode(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_KeyTipPlacementMode, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_KeyTipPlacementMode(_In_ ABI::Microsoft::UI::Xaml::Input::KeyTipPlacementMode value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_KeyTipPlacementMode(ABI::Microsoft::UI::Xaml::Input::KeyTipPlacementMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_KeyTipPlacementMode, value));
@@ -585,7 +585,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_KeyTipVerticalOffset(_Out_ DOUB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_KeyTipVerticalOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_KeyTipVerticalOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_KeyTipVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_KeyTipVerticalOffset, value));
@@ -604,7 +604,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_ManipulationMode(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_ManipulationMode, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_ManipulationMode(_In_ ABI::Microsoft::UI::Xaml::Input::ManipulationModes value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_ManipulationMode(ABI::Microsoft::UI::Xaml::Input::ManipulationModes value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_ManipulationMode, value));
@@ -629,7 +629,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Opacity(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_Opacity, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_Opacity(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_Opacity(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_Opacity, value));
@@ -696,7 +696,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_RasterizationScale(_Out_ DOUBLE
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_RasterizationScale(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_RasterizationScale(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -723,7 +723,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_RenderTransformOrigin(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_RenderTransformOrigin, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_RenderTransformOrigin(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_RenderTransformOrigin(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(NonStrictOnlyApiCheck(this, L"RenderTransformOrigin"));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_RenderTransformOrigin, value));
@@ -738,7 +738,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Rotation(_Out_ FLOAT* pValue)
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_Rotation(_In_ FLOAT value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_Rotation(FLOAT value)
 {
     HRESULT hr = S_OK;
     
@@ -758,7 +758,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_RotationAxis(_Out_ ABI::Windows
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_RotationAxis(_In_ ABI::Windows::Foundation::Numerics::Vector3 value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_RotationAxis(ABI::Windows::Foundation::Numerics::Vector3 value)
 {
     HRESULT hr = S_OK;
     
@@ -787,7 +787,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Scale(_Out_ ABI::Windows::Found
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_Scale(_In_ ABI::Windows::Foundation::Numerics::Vector3 value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_Scale(ABI::Windows::Foundation::Numerics::Vector3 value)
 {
     HRESULT hr = S_OK;
     
@@ -819,7 +819,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_TabFocusNavigation(_Out_ ABI::M
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_TabFocusNavigation, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_TabFocusNavigation(_In_ ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_TabFocusNavigation(ABI::Microsoft::UI::Xaml::Input::KeyboardNavigationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_TabFocusNavigation, value));
@@ -828,7 +828,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_TabIndex(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_TabIndex, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_TabIndex(_In_ INT value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_TabIndex(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_TabIndex, value));
@@ -838,7 +838,7 @@ _Check_return_ HRESULT DirectUI::UIElementGenerated::get_ThemeShadowReceiverCoun
     *pValue = SimpleProperty::Property::id<KnownPropertyIndex::UIElement_ThemeShadowReceiverCount>::Get(GetHandle());
     return S_OK;
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::put_ThemeShadowReceiverCount(_In_ INT value)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::put_ThemeShadowReceiverCount(INT value)
 {
     SimpleProperty::Property::id<KnownPropertyIndex::UIElement_ThemeShadowReceiverCount>::Set(GetHandle(), value);
     return S_OK;
@@ -862,7 +862,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_TransformMatrix(_Out_ ABI::Wind
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_TransformMatrix(_In_ ABI::Windows::Foundation::Numerics::Matrix4x4 value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_TransformMatrix(ABI::Windows::Foundation::Numerics::Matrix4x4 value)
 {
     HRESULT hr = S_OK;
     
@@ -899,7 +899,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Translation(_Out_ ABI::Windows:
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_Translation(_In_ ABI::Windows::Foundation::Numerics::Vector3 value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_Translation(ABI::Windows::Foundation::Numerics::Vector3 value)
 {
     HRESULT hr = S_OK;
     
@@ -922,7 +922,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_UseLayoutRounding(_Out_ BOOLEAN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_UseLayoutRounding, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_UseLayoutRounding(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_UseLayoutRounding(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_UseLayoutRounding, value));
@@ -931,7 +931,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_UseSystemFocusVisuals(_Out_ BOO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_UseSystemFocusVisuals, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_UseSystemFocusVisuals(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_UseSystemFocusVisuals(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_UseSystemFocusVisuals, value));
@@ -940,7 +940,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_Visibility(_Out_ ABI::Microsoft
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_Visibility, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_Visibility(_In_ ABI::Microsoft::UI::Xaml::Visibility value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_Visibility(ABI::Microsoft::UI::Xaml::Visibility value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_Visibility, value));
@@ -978,7 +978,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_XYFocusDownNavigationStrategy(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusDownNavigationStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusDownNavigationStrategy(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusDownNavigationStrategy(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusDownNavigationStrategy, value));
@@ -987,7 +987,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_XYFocusKeyboardNavigation(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusKeyboardNavigation, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusKeyboardNavigation(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusKeyboardNavigationMode value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusKeyboardNavigation(ABI::Microsoft::UI::Xaml::Input::XYFocusKeyboardNavigationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusKeyboardNavigation, value));
@@ -1005,7 +1005,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_XYFocusLeftNavigationStrategy(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusLeftNavigationStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusLeftNavigationStrategy(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusLeftNavigationStrategy(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusLeftNavigationStrategy, value));
@@ -1023,7 +1023,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_XYFocusRightNavigationStrategy(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusRightNavigationStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusRightNavigationStrategy(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusRightNavigationStrategy(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusRightNavigationStrategy, value));
@@ -1041,7 +1041,7 @@ IFACEMETHODIMP DirectUI::UIElementGenerated::get_XYFocusUpNavigationStrategy(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusUpNavigationStrategy, pValue));
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusUpNavigationStrategy(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
+IFACEMETHODIMP DirectUI::UIElementGenerated::put_XYFocusUpNavigationStrategy(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::UIElement_XYFocusUpNavigationStrategy, value));
@@ -1084,7 +1084,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_AccessKeyDisplayDismissed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_AccessKeyDisplayDismissed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AccessKeyDisplayDismissedEventSourceType* pEventSource = nullptr;
@@ -1139,7 +1139,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_AccessKeyDisplayRequested(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_AccessKeyDisplayRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AccessKeyDisplayRequestedEventSourceType* pEventSource = nullptr;
@@ -1194,7 +1194,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_AccessKeyInvoked(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_AccessKeyInvoked(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AccessKeyInvokedEventSourceType* pEventSource = nullptr;
@@ -1258,7 +1258,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedCenterPointChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedCenterPointChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedCenterPointChangedEventSourceType* pEventSource = nullptr;
@@ -1322,7 +1322,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedRotationAxisChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedRotationAxisChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedRotationAxisChangedEventSourceType* pEventSource = nullptr;
@@ -1386,7 +1386,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedRotationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedRotationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedRotationChangedEventSourceType* pEventSource = nullptr;
@@ -1450,7 +1450,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedScaleChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedScaleChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedScaleChangedEventSourceType* pEventSource = nullptr;
@@ -1514,7 +1514,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedTransformMatrixChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedTransformMatrixChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedTransformMatrixChangedEventSourceType* pEventSource = nullptr;
@@ -1578,7 +1578,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedTranslationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::remove_AnimatedTranslationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     AnimatedTranslationChangedEventSourceType* pEventSource = nullptr;
@@ -1633,7 +1633,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_BringIntoViewRequested(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_BringIntoViewRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     BringIntoViewRequestedEventSourceType* pEventSource = nullptr;
@@ -1698,7 +1698,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_CenterPointChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_CenterPointChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CenterPointChangedEventSourceType* pEventSource = nullptr;
@@ -1755,7 +1755,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_CharacterReceived(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_CharacterReceived(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CharacterReceivedEventSourceType* pEventSource = nullptr;
@@ -1810,7 +1810,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ContextCanceled(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ContextCanceled(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ContextCanceledEventSourceType* pEventSource = nullptr;
@@ -1865,7 +1865,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ContextRequested(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ContextRequested(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ContextRequestedEventSourceType* pEventSource = nullptr;
@@ -1920,7 +1920,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DoubleTapped(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DoubleTapped(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DoubleTappedEventSourceType* pEventSource = nullptr;
@@ -1975,7 +1975,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DragEnter(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DragEnter(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragEnterEventSourceType* pEventSource = nullptr;
@@ -2030,7 +2030,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DragLeave(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DragLeave(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragLeaveEventSourceType* pEventSource = nullptr;
@@ -2085,7 +2085,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DragOver(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DragOver(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragOverEventSourceType* pEventSource = nullptr;
@@ -2120,7 +2120,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DragStarting(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DragStarting(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragStartingEventSourceType* pEventSource = nullptr;
@@ -2175,7 +2175,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_Drop(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_Drop(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DropEventSourceType* pEventSource = nullptr;
@@ -2230,7 +2230,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DropCompleted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_DropCompleted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DropCompletedEventSourceType* pEventSource = nullptr;
@@ -2285,7 +2285,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_GettingFocus(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_GettingFocus(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     GettingFocusEventSourceType* pEventSource = nullptr;
@@ -2340,7 +2340,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_GotFocus(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_GotFocus(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     GotFocusEventSourceType* pEventSource = nullptr;
@@ -2396,7 +2396,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_Hidden(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_Hidden(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HiddenEventSourceType* pEventSource = nullptr;
@@ -2452,7 +2452,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_Holding(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_Holding(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HoldingEventSourceType* pEventSource = nullptr;
@@ -2507,7 +2507,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_KeyDown(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_KeyDown(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     KeyDownEventSourceType* pEventSource = nullptr;
@@ -2562,7 +2562,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_KeyUp(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_KeyUp(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     KeyUpEventSourceType* pEventSource = nullptr;
@@ -2617,7 +2617,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_LosingFocus(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_LosingFocus(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     LosingFocusEventSourceType* pEventSource = nullptr;
@@ -2672,7 +2672,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_LostFocus(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_LostFocus(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     LostFocusEventSourceType* pEventSource = nullptr;
@@ -2727,7 +2727,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationCompleted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationCompleted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ManipulationCompletedEventSourceType* pEventSource = nullptr;
@@ -2782,7 +2782,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationDelta(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationDelta(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ManipulationDeltaEventSourceType* pEventSource = nullptr;
@@ -2837,7 +2837,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationInertiaStarting(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationInertiaStarting(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ManipulationInertiaStartingEventSourceType* pEventSource = nullptr;
@@ -2892,7 +2892,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationStarted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationStarted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ManipulationStartedEventSourceType* pEventSource = nullptr;
@@ -2947,7 +2947,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationStarting(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ManipulationStarting(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ManipulationStartingEventSourceType* pEventSource = nullptr;
@@ -3002,7 +3002,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_NoFocusCandidateFound(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_NoFocusCandidateFound(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     NoFocusCandidateFoundEventSourceType* pEventSource = nullptr;
@@ -3057,7 +3057,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerCanceled(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerCanceled(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PointerCanceledEventSourceType* pEventSource = nullptr;
@@ -3112,7 +3112,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerCaptureLost(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerCaptureLost(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PointerCaptureLostEventSourceType* pEventSource = nullptr;
@@ -3167,7 +3167,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerEntered(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerEntered(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PointerEnteredEventSourceType* pEventSource = nullptr;
@@ -3222,7 +3222,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerExited(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerExited(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PointerExitedEventSourceType* pEventSource = nullptr;
@@ -3277,7 +3277,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerMoved(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerMoved(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PointerMovedEventSourceType* pEventSource = nullptr;
@@ -3332,7 +3332,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerPressed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerPressed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PointerPressedEventSourceType* pEventSource = nullptr;
@@ -3387,7 +3387,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerReleased(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerReleased(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PointerReleasedEventSourceType* pEventSource = nullptr;
@@ -3442,7 +3442,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerWheelChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PointerWheelChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PointerWheelChangedEventSourceType* pEventSource = nullptr;
@@ -3497,7 +3497,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PreviewKeyDown(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PreviewKeyDown(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PreviewKeyDownEventSourceType* pEventSource = nullptr;
@@ -3552,7 +3552,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PreviewKeyUp(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_PreviewKeyUp(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PreviewKeyUpEventSourceType* pEventSource = nullptr;
@@ -3607,7 +3607,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ProcessKeyboardAccelerators(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_ProcessKeyboardAccelerators(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ProcessKeyboardAcceleratorsEventSourceType* pEventSource = nullptr;
@@ -3662,7 +3662,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_RightTapped(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_RightTapped(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     RightTappedEventSourceType* pEventSource = nullptr;
@@ -3727,7 +3727,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_RotationAxisChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_RotationAxisChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     RotationAxisChangedEventSourceType* pEventSource = nullptr;
@@ -3794,7 +3794,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_RotationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_RotationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     RotationChangedEventSourceType* pEventSource = nullptr;
@@ -3861,7 +3861,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_ScaleChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_ScaleChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ScaleChangedEventSourceType* pEventSource = nullptr;
@@ -3919,7 +3919,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_Shown(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_Shown(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ShownEventSourceType* pEventSource = nullptr;
@@ -3975,7 +3975,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::UIElementGenerated::remove_Tapped(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::UIElementGenerated::remove_Tapped(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TappedEventSourceType* pEventSource = nullptr;
@@ -4040,7 +4040,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_TransformMatrixChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_TransformMatrixChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TransformMatrixChangedEventSourceType* pEventSource = nullptr;
@@ -4107,7 +4107,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_TranslationChanged(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::UIElementGenerated::remove_TranslationChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TranslationChangedEventSourceType* pEventSource = nullptr;
@@ -4130,7 +4130,7 @@ Cleanup:
 #endif
 
 // Methods.
-IFACEMETHODIMP DirectUI::UIElementGenerated::AddHandler(_In_ ABI::Microsoft::UI::Xaml::IRoutedEvent* pRoutedEvent, _In_ IInspectable* pHandler, _In_ BOOLEAN handledEventsToo)
+IFACEMETHODIMP DirectUI::UIElementGenerated::AddHandler(_In_ ABI::Microsoft::UI::Xaml::IRoutedEvent* pRoutedEvent, _In_ IInspectable* pHandler, BOOLEAN handledEventsToo)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -4149,7 +4149,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::Arrange(_In_ ABI::Windows::Foundation::Rect finalRect)
+IFACEMETHODIMP DirectUI::UIElementGenerated::Arrange(ABI::Windows::Foundation::Rect finalRect)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -4224,7 +4224,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::FindSubElementsForTouchTargeting(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+IFACEMETHODIMP DirectUI::UIElementGenerated::FindSubElementsForTouchTargeting(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -4244,7 +4244,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::UIElementGenerated::FindSubElementsForTouchTargetingProtected(_In_ ABI::Windows::Foundation::Point point, _In_ ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::FindSubElementsForTouchTargetingProtected(ABI::Windows::Foundation::Point point, ABI::Windows::Foundation::Rect boundingRect, _Outptr_ ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Collections::IIterable<ABI::Windows::Foundation::Point>*>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::IUIElementOverrides* pVirtuals = NULL;
@@ -4265,7 +4265,7 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::Focus(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::UIElementGenerated::Focus(ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -4284,7 +4284,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::FocusNoActivate(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pResult)
+IFACEMETHODIMP DirectUI::UIElementGenerated::FocusNoActivate(ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -4380,7 +4380,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::UIElementGenerated::LayoutRound(_In_ FLOAT value, _Out_ FLOAT* pReturnValue)
+_Check_return_ HRESULT DirectUI::UIElementGenerated::LayoutRound(FLOAT value, _Out_ FLOAT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -4407,7 +4407,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementGenerated::Measure(_In_ ABI::Windows::Foundation::Size availableSize)
+IFACEMETHODIMP DirectUI::UIElementGenerated::Measure(ABI::Windows::Foundation::Size availableSize)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -6837,7 +6837,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::UIElementFactory::InternalPutIsEnabled(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::UIElementFactory::InternalPutIsEnabled(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -92,7 +92,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::RenderTargetBitmapGenerated::RenderToSizeAsync(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT scaledWidth, _In_ INT scaledHeight, _Outptr_ ABI::Windows::Foundation::IAsyncAction** ppReturnValue)
+IFACEMETHODIMP DirectUI::RenderTargetBitmapGenerated::RenderToSizeAsync(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT scaledWidth, INT scaledHeight, _Outptr_ ABI::Windows::Foundation::IAsyncAction** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

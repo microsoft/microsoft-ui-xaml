@@ -39,17 +39,17 @@ namespace DirectUI
         IFACEMETHOD(get_TargetElement)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_TargetElement)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_AnimationDesired)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AnimationDesired)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AnimationDesired)(BOOLEAN value) override;
         IFACEMETHOD(get_TargetRect)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        IFACEMETHOD(put_TargetRect)(_In_ ABI::Windows::Foundation::Rect value) override;
+        IFACEMETHOD(put_TargetRect)(ABI::Windows::Foundation::Rect value) override;
         IFACEMETHOD(get_HorizontalAlignmentRatio)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_VerticalAlignmentRatio)(_Out_ DOUBLE* pValue) override;
         IFACEMETHOD(get_HorizontalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_HorizontalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_HorizontalOffset)(DOUBLE value) override;
         IFACEMETHOD(get_VerticalOffset)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_VerticalOffset)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_VerticalOffset)(DOUBLE value) override;
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
 
         // Methods.
 

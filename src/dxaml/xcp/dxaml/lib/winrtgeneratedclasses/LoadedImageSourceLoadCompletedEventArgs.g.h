@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Status)(_Out_ ABI::Microsoft::UI::Xaml::Media::LoadedImageSourceLoadStatus* pValue) override;
-        _Check_return_ HRESULT put_Status(_In_ ABI::Microsoft::UI::Xaml::Media::LoadedImageSourceLoadStatus value);
+        _Check_return_ HRESULT put_Status(ABI::Microsoft::UI::Xaml::Media::LoadedImageSourceLoadStatus value);
 
         // Methods.
 

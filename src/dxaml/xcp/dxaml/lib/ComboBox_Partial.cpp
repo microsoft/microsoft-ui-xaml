@@ -2259,7 +2259,7 @@ _Check_return_ HRESULT ComboBox::ProcessTabStopOverride(
     _In_opt_ DependencyObject* pCandidateTabStopElement,
     const bool isBackward,
     const bool didCycleFocusAtRootVisualScope,
-    _Outptr_ DependencyObject** ppNewTabStop,
+    _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
     _Out_ BOOLEAN* pIsTabStopOverridden
     )
 {
@@ -4640,7 +4640,7 @@ Cleanup:
 // this method to define their own Arrange pass behavior.
 IFACEMETHODIMP ComboBox::ArrangeOverride(
     // The computed size that is used to arrange the content.
-    _In_ wf::Size finalSize,
+    wf::Size finalSize,
     // The size of the control.
     _Out_ wf::Size* pReturnValue)
 {

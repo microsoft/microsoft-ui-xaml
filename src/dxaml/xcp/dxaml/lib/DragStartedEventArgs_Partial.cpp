@@ -12,8 +12,8 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT DragStartedEventArgsFactory::CreateInstanceWithHorizontalOffsetAndVerticalOffsetImpl(
-    _In_ DOUBLE dHorizontalOffset,
-    _In_ DOUBLE dVerticalOffset,
+    DOUBLE dHorizontalOffset,
+    DOUBLE dVerticalOffset,
     _In_opt_ IInspectable* pOuter,
     _Outptr_ IInspectable** ppInner,
     _Outptr_ IDragStartedEventArgs** ppInstance)

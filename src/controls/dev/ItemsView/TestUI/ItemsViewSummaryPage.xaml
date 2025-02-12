@@ -443,49 +443,54 @@
                 <Button x:Name="btnSetLayoutForcedIndexBasedLayoutOrientation" Content="S" Margin="1" Grid.Row="27" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutForcedIndexBasedLayoutOrientation_Click"/>
                 <Button x:Name="btnResetLayoutForcedIndexBasedLayoutOrientation" Content="R" Margin="1" Grid.Row="27" Grid.Column="4" VerticalAlignment="Center" Click="BtnResetLayoutForcedIndexBasedLayoutOrientation_Click"/>
 
-                <TextBlock Text="StackLayout" Grid.Row="28" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+                <TextBlock Text="LogItemIndexDbg:" Grid.Row="28" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLayoutLogItemIndexDbg" Text="-1" Grid.Row="28" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutLogItemIndexDbg" Content="G" Margin="1" Grid.Row="28" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutLogItemIndexDbg_Click"/>
+                <Button x:Name="btnSetLayoutLogItemIndexDbg" Content="S" Margin="1" Grid.Row="28" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutLogItemIndexDbg_Click"/>
 
-                <TextBlock Text="Orientation:" Grid.Row="29" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbStackLayoutOrientation" Grid.Row="29" Grid.Column="1" 
+                <TextBlock Text="StackLayout" Grid.Row="29" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+
+                <TextBlock Text="Orientation:" Grid.Row="30" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbStackLayoutOrientation" Grid.Row="30" Grid.Column="1" 
                     HorizontalAlignment="Stretch" VerticalAlignment="Center">
                     <ComboBoxItem>Horizontal</ComboBoxItem>
                     <ComboBoxItem>Vertical</ComboBoxItem>
                 </ComboBox>
-                <Button x:Name="btnGetStackLayoutOrientation" Content="G" Margin="1" Grid.Row="29" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetStackLayoutOrientation_Click"/>
-                <Button x:Name="btnSetStackLayoutOrientation" Content="S" Margin="1" Grid.Row="29" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetStackLayoutOrientation_Click"/>
+                <Button x:Name="btnGetStackLayoutOrientation" Content="G" Margin="1" Grid.Row="30" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetStackLayoutOrientation_Click"/>
+                <Button x:Name="btnSetStackLayoutOrientation" Content="S" Margin="1" Grid.Row="30" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetStackLayoutOrientation_Click"/>
 
-                <TextBlock Text="Spacing:" Grid.Row="30" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtStackLayoutSpacing" Grid.Row="30" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetStackLayoutSpacing" Content="G" Margin="1" Grid.Row="30" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetStackLayoutSpacing_Click"/>
-                <Button x:Name="btnSetStackLayoutSpacing" Content="S" Margin="1" Grid.Row="30" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetStackLayoutSpacing_Click"/>
+                <TextBlock Text="Spacing:" Grid.Row="31" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtStackLayoutSpacing" Grid.Row="31" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetStackLayoutSpacing" Content="G" Margin="1" Grid.Row="31" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetStackLayoutSpacing_Click"/>
+                <Button x:Name="btnSetStackLayoutSpacing" Content="S" Margin="1" Grid.Row="31" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetStackLayoutSpacing_Click"/>
 
-                <TextBlock Text="UniformGridLayout" Grid.Row="31" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+                <TextBlock Text="UniformGridLayout" Grid.Row="32" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
 
-                <TextBlock Text="MaximumRowsOrColumns:" Grid.Row="32" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtUniformGridLayoutMaximumRowsOrColumns" Text="0" Grid.Row="32" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetUniformGridLayoutMaximumRowsOrColumns" Content="G" Margin="1" Grid.Row="32" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetUniformGridLayoutMaximumRowsOrColumns_Click"/>
-                <Button x:Name="btnSetUniformGridLayoutMaximumRowsOrColumns" Content="S" Margin="1" Grid.Row="32" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetUniformGridLayoutMaximumRowsOrColumns_Click"/>
+                <TextBlock Text="MaximumRowsOrColumns:" Grid.Row="33" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtUniformGridLayoutMaximumRowsOrColumns" Text="0" Grid.Row="33" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetUniformGridLayoutMaximumRowsOrColumns" Content="G" Margin="1" Grid.Row="33" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetUniformGridLayoutMaximumRowsOrColumns_Click"/>
+                <Button x:Name="btnSetUniformGridLayoutMaximumRowsOrColumns" Content="S" Margin="1" Grid.Row="33" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetUniformGridLayoutMaximumRowsOrColumns_Click"/>
 
-                <TextBlock Text="MinRowSpacing:" Grid.Row="33" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtUniformGridLayoutMinRowSpacing" Text="0" Grid.Row="33" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetUniformGridLayoutMinRowSpacing" Content="G" Margin="1" Grid.Row="33" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetUniformGridLayoutMinRowSpacing_Click"/>
-                <Button x:Name="btnSetUniformGridLayoutMinRowSpacing" Content="S" Margin="1" Grid.Row="33" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetUniformGridLayoutMinRowSpacing_Click"/>
+                <TextBlock Text="MinRowSpacing:" Grid.Row="34" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtUniformGridLayoutMinRowSpacing" Text="0" Grid.Row="34" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetUniformGridLayoutMinRowSpacing" Content="G" Margin="1" Grid.Row="34" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetUniformGridLayoutMinRowSpacing_Click"/>
+                <Button x:Name="btnSetUniformGridLayoutMinRowSpacing" Content="S" Margin="1" Grid.Row="34" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetUniformGridLayoutMinRowSpacing_Click"/>
 
-                <TextBlock Text="MinColumnSpacing:" Grid.Row="34" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtUniformGridLayoutMinColumnSpacing" Text="0" Grid.Row="34" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetUniformGridLayoutMinColumnSpacing" Content="G" Margin="1" Grid.Row="34" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetUniformGridLayoutMinColumnSpacing_Click"/>
-                <Button x:Name="btnSetUniformGridLayoutMinColumnSpacing" Content="S" Margin="1" Grid.Row="34" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetUniformGridLayoutMinColumnSpacing_Click"/>
+                <TextBlock Text="MinColumnSpacing:" Grid.Row="35" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtUniformGridLayoutMinColumnSpacing" Text="0" Grid.Row="35" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetUniformGridLayoutMinColumnSpacing" Content="G" Margin="1" Grid.Row="35" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetUniformGridLayoutMinColumnSpacing_Click"/>
+                <Button x:Name="btnSetUniformGridLayoutMinColumnSpacing" Content="S" Margin="1" Grid.Row="35" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetUniformGridLayoutMinColumnSpacing_Click"/>
 
-                <TextBlock Text="ItemsStretch:" Grid.Row="35" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbUniformGridLayoutItemsStretch" Margin="1" Grid.Row="35" Grid.Column="1"
+                <TextBlock Text="ItemsStretch:" Grid.Row="36" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbUniformGridLayoutItemsStretch" Margin="1" Grid.Row="36" Grid.Column="1"
                     HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbUniformGridLayoutItemsStretch_SelectionChanged">
                     <ComboBoxItem>None</ComboBoxItem>
                     <ComboBoxItem>Fill</ComboBoxItem>
                     <ComboBoxItem>Uniform</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="ItemsJustification:" Grid.Row="36" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbUniformGridLayoutItemsJustification" Margin="1" Grid.Row="36" Grid.Column="1"
+                <TextBlock Text="ItemsJustification:" Grid.Row="37" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbUniformGridLayoutItemsJustification" Margin="1" Grid.Row="37" Grid.Column="1"
                     HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="0" SelectionChanged="CmbUniformGridLayoutItemsJustification_SelectionChanged">
                     <ComboBoxItem>Start</ComboBoxItem>
                     <ComboBoxItem>Center</ComboBoxItem>
@@ -495,60 +500,55 @@
                     <ComboBoxItem>SpaceEvenly</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="Orientation:" Grid.Row="37" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbUniformGridLayoutOrientation" Grid.Row="37" Grid.Column="1" 
+                <TextBlock Text="Orientation:" Grid.Row="38" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbUniformGridLayoutOrientation" Grid.Row="38" Grid.Column="1" 
                     HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectedIndex="1">
                     <ComboBoxItem>Vertical</ComboBoxItem>
                     <ComboBoxItem>Horizontal</ComboBoxItem>
                 </ComboBox>
-                <Button x:Name="btnGetUniformGridLayoutOrientation" Content="G" Margin="1" Grid.Row="37" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetUniformGridLayoutOrientation_Click"/>
-                <Button x:Name="btnSetUniformGridLayoutOrientation" Content="S" Margin="1" Grid.Row="37" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetUniformGridLayoutOrientation_Click"/>
+                <Button x:Name="btnGetUniformGridLayoutOrientation" Content="G" Margin="1" Grid.Row="38" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetUniformGridLayoutOrientation_Click"/>
+                <Button x:Name="btnSetUniformGridLayoutOrientation" Content="S" Margin="1" Grid.Row="38" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetUniformGridLayoutOrientation_Click"/>
 
-                <TextBlock Text="LinedFlowLayout" Grid.Row="38" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
+                <TextBlock Text="LinedFlowLayout" Grid.Row="39" Grid.ColumnSpan="5" Foreground="DarkOrange"/>
 
-                <CheckBox x:Name="chkLinedFlowLayoutIsFastPathSupportedDbg" Grid.Row="39" Grid.ColumnSpan="6" Content="Is fast path supported?" IsChecked="True" Margin="1" Checked="ChkLinedFlowLayoutIsFastPathSupportedDbg_IsCheckedChanged" Unchecked="ChkLinedFlowLayoutIsFastPathSupportedDbg_IsCheckedChanged"/>
+                <CheckBox x:Name="chkLinedFlowLayoutIsFastPathSupportedDbg" Grid.Row="40" Grid.ColumnSpan="6" Content="Is fast path supported?" IsChecked="True" Margin="1" Checked="ChkLinedFlowLayoutIsFastPathSupportedDbg_IsCheckedChanged" Unchecked="ChkLinedFlowLayoutIsFastPathSupportedDbg_IsCheckedChanged"/>
                 
-                <TextBlock Text="RealizedItemIndexDbg:" Grid.Row="40" VerticalAlignment="Center"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="40" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                <TextBlock Text="RealizedItemIndexDbg:" Grid.Row="41" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="41" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                     <TextBox x:Name="txtLinedFlowLayoutFirstRealizedItemIndexDbg" Text="-1" IsReadOnly="True" Margin="0,0,4,0"/>
                     <TextBox x:Name="txtLinedFlowLayoutLastRealizedItemIndexDbg" Text="-1" IsReadOnly="True"/>
                 </StackPanel>
-                <Button x:Name="btnGetLinedFlowLayoutRealizedItemIndexesDbg" Content="G" Margin="1" Grid.Row="40" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutRealizedItemIndexesDbg_Click"/>
+                <Button x:Name="btnGetLinedFlowLayoutRealizedItemIndexesDbg" Content="G" Margin="1" Grid.Row="41" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutRealizedItemIndexesDbg_Click"/>
 
-                <TextBlock Text="FrozenItemIndexDbg:" Grid.Row="41" VerticalAlignment="Center"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="41" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                <TextBlock Text="FrozenItemIndexDbg:" Grid.Row="42" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="42" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center">
                     <TextBox x:Name="txtLinedFlowLayoutFirstFrozenItemIndexDbg" Text="-1" IsReadOnly="True" Margin="0,0,4,0"/>
                     <TextBox x:Name="txtLinedFlowLayoutLastFrozenItemIndexDbg" Text="-1" IsReadOnly="True"/>
                 </StackPanel>
-                <Button x:Name="btnGetLinedFlowLayoutFrozenItemIndexesDbg" Content="G" Margin="1" Grid.Row="41" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutFrozenItemIndexesDbg_Click"/>
+                <Button x:Name="btnGetLinedFlowLayoutFrozenItemIndexesDbg" Content="G" Margin="1" Grid.Row="42" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutFrozenItemIndexesDbg_Click"/>
 
-                <TextBlock Text="SnappedAverageItemsPerLineDbg:" Grid.Row="42" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtLinedFlowLayoutSnappedAverageItemsPerLineDbg" Text="0.0" IsReadOnly="True" Grid.Row="42" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetLinedFlowLayoutSnappedAverageItemsPerLineDbg" Content="G" Margin="1" Grid.Row="42" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutSnappedAverageItemsPerLineDbg_Click"/>
+                <TextBlock Text="SnappedAverageItemsPerLineDbg:" Grid.Row="43" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutSnappedAverageItemsPerLineDbg" Text="0.0" IsReadOnly="True" Grid.Row="43" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutSnappedAverageItemsPerLineDbg" Content="G" Margin="1" Grid.Row="43" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutSnappedAverageItemsPerLineDbg_Click"/>
 
-                <TextBlock Text="ForcedAvgItemsPerLineDividerDbg:" Grid.Row="43" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Text="0.0" Grid.Row="43" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Content="G" Margin="1" Grid.Row="43" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg_Click"/>
-                <Button x:Name="btnSetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Content="S" Margin="1" Grid.Row="43" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg_Click"/>
+                <TextBlock Text="ForcedAvgItemsPerLineDividerDbg:" Grid.Row="44" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Text="0.0" Grid.Row="44" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Content="G" Margin="1" Grid.Row="44" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg" Content="S" Margin="1" Grid.Row="44" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedAverageItemsPerLineDividerDbg_Click"/>
 
-                <TextBlock Text="AverageItemAspectRatioDbg:" Grid.Row="44" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtLinedFlowLayoutAverageItemAspectRatioDbg" Text="0.0" IsReadOnly="True" Grid.Row="44" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetLinedFlowLayoutAverageItemAspectRatioDbg" Content="G" Margin="1" Grid.Row="44" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutAverageItemAspectRatioDbg_Click"/>
+                <TextBlock Text="AverageItemAspectRatioDbg:" Grid.Row="45" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutAverageItemAspectRatioDbg" Text="0.0" IsReadOnly="True" Grid.Row="45" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutAverageItemAspectRatioDbg" Content="G" Margin="1" Grid.Row="45" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutAverageItemAspectRatioDbg_Click"/>
 
-                <TextBlock Text="ForcedAvgItemAspectRatioDbg:" Grid.Row="45" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtLinedFlowLayoutForcedAverageItemAspectRatioDbg" Text="0.0" Grid.Row="45" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetLinedFlowLayoutForcedAverageItemAspectRatioDbg" Content="G" Margin="1" Grid.Row="45" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedAverageItemAspectRatioDbg_Click"/>
-                <Button x:Name="btnSetLinedFlowLayoutForcedAverageItemAspectRatioDbg" Content="S" Margin="1" Grid.Row="45" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedAverageItemAspectRatioDbg_Click"/>
+                <TextBlock Text="ForcedAvgItemAspectRatioDbg:" Grid.Row="46" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutForcedAverageItemAspectRatioDbg" Text="0.0" Grid.Row="46" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutForcedAverageItemAspectRatioDbg" Content="G" Margin="1" Grid.Row="46" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedAverageItemAspectRatioDbg_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutForcedAverageItemAspectRatioDbg" Content="S" Margin="1" Grid.Row="46" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedAverageItemAspectRatioDbg_Click"/>
 
-                <TextBlock Text="ForcedWrapMultiplierDbg:" Grid.Row="46" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtLinedFlowLayoutForcedWrapMultiplierDbg" Text="0.0" Grid.Row="46" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetLinedFlowLayoutForcedWrapMultiplierDbg" Content="G" Margin="1" Grid.Row="46" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedWrapMultiplierDbg_Click"/>
-                <Button x:Name="btnSetLinedFlowLayoutForcedWrapMultiplierDbg" Content="S" Margin="1" Grid.Row="46" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedWrapMultiplierDbg_Click"/>
-
-                <TextBlock Text="LogItemIndexDbg:" Grid.Row="47" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtLinedFlowLayoutLogItemIndexDbg" Text="-1" Grid.Row="47" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetLinedFlowLayoutLogItemIndexDbg" Content="G" Margin="1" Grid.Row="47" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutLogItemIndexDbg_Click"/>
-                <Button x:Name="btnSetLinedFlowLayoutLogItemIndexDbg" Content="S" Margin="1" Grid.Row="47" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutLogItemIndexDbg_Click"/>
+                <TextBlock Text="ForcedWrapMultiplierDbg:" Grid.Row="47" VerticalAlignment="Center"/>
+                <TextBox x:Name="txtLinedFlowLayoutForcedWrapMultiplierDbg" Text="0.0" Grid.Row="47" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLinedFlowLayoutForcedWrapMultiplierDbg" Content="G" Margin="1" Grid.Row="47" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutForcedWrapMultiplierDbg_Click"/>
+                <Button x:Name="btnSetLinedFlowLayoutForcedWrapMultiplierDbg" Content="S" Margin="1" Grid.Row="47" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedWrapMultiplierDbg_Click"/>
 
                 <TextBlock Text="ActualLineHeight:" Grid.Row="48" VerticalAlignment="Center"/>
                 <TextBox x:Name="txtLinedFlowLayoutActualLineHeight" Text="0" Grid.Row="48" Grid.Column="1" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>

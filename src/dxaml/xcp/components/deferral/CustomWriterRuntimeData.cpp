@@ -33,6 +33,7 @@ namespace
         switch (typeIndex)
         {
             case CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3:
+            case CustomWriterRuntimeDataTypeIndex::Style_v3:
             {
                 return true;
             }
@@ -89,6 +90,7 @@ HRESULT CustomWriterRuntimeData::Deserialize(_In_ XamlBinaryFormatSubReader2* re
 
         case CustomWriterRuntimeDataTypeIndex::Style_v1:
         case CustomWriterRuntimeDataTypeIndex::Style_v2:
+        case CustomWriterRuntimeDataTypeIndex::Style_v3:
             runtimeData = CreateAndDeserializeRuntimeData<StyleCustomRuntimeData>(reader, typeIndex);
             break;
 

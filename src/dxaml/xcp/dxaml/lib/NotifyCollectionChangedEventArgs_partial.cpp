@@ -8,11 +8,11 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT NotifyCollectionChangedEventArgsFactory::CreateInstanceWithAllParametersImpl(
-    _In_ xaml_interop::NotifyCollectionChangedAction action, 
-    _In_ xaml_interop::IBindableVector* newItems, 
-    _In_ xaml_interop::IBindableVector* oldItems, 
-    _In_ INT newIndex, 
-    _In_ INT oldIndex, 
+    xaml_interop::NotifyCollectionChangedAction action, 
+    _In_opt_ xaml_interop::IBindableVector* newItems, 
+    _In_opt_ xaml_interop::IBindableVector* oldItems, 
+    INT newIndex, 
+    INT oldIndex, 
     _In_opt_ IInspectable* pOuter, 
     _Outptr_ IInspectable** ppInner, 
     _Outptr_ xaml_interop::INotifyCollectionChangedEventArgs** ppInstance)

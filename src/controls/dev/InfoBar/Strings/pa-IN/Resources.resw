@@ -142,11 +142,11 @@
     <comment>Automation name used to announce the severity informational icon.</comment>
   </data>
   <data name="InfoBarIconSeveritySuccessName" xml:space="preserve">
-    <value>ਸਫਲਤਾ ਦਾ ਆਈਕੋਨ</value>
+    <value>ਸਫਲਤਾ ਆਈਕੋਨ</value>
     <comment>Automation name used to announce the severity success icon.</comment>
   </data>
   <data name="InfoBarIconSeverityWarningName" xml:space="preserve">
-    <value>ਚੇਤਾਵਨੀ ਆਈਕੋਨ</value>
+    <value>ਚੇਤਾਵਨੀ ਪ੍ਰਤੀਰੂਪ</value>
     <comment>Automation name used to announce the severity warning icon.</comment>
   </data>
   <data name="InfoBarOpenedNotification" xml:space="preserve">

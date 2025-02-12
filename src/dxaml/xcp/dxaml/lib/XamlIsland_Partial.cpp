@@ -64,15 +64,18 @@ _Check_return_ HRESULT XamlIsland::Initialize()
     ctl::ComPtr<FrameworkApplication> frameworkApplication = FrameworkApplication::GetCurrentNoRef();
     IFC_RETURN(frameworkApplication->CreateIslandRootWithContentBridge(ctl::iinspectable_cast(this), nullptr, m_spXamlIsland.ReleaseAndGetAddressOf()));
 
-    // Create and store the composition island
-    m_xamlIsland = m_spXamlIsland.Cast<XamlIslandRoot>();
-
     // Get and store the XamlIslandRoot
-    m_pXamlIslandCore = static_cast<CXamlIslandRoot *>(m_xamlIsland->GetHandle());
+    m_xamlIslandRoot = m_spXamlIsland.Cast<XamlIslandRoot>();
+
+    // Get and store the CXamlIslandRoot
+    m_pXamlIslandCore = static_cast<CXamlIslandRoot *>(m_xamlIslandRoot->GetHandle());
 
     // Set the background transparent so that the SystemBackdrop is not occluded.
     m_pXamlIslandCore->SetHasTransparentBackground(true);
 
+    // Note: This is marking CXamlIslandRoot::SetContentRequested, which is required for the island
+    // to get a present target and to start rendering. See xamlIslandRoot->GetContentRequested() check inside
+    // DCompTreeHost::EnsureXamlIslandTargetRoots.
     m_pXamlIslandCore->SetContentRequested(true);
 
     if (auto interop = Diagnostics::GetDiagnosticsInterop(false))
@@ -80,16 +83,16 @@ _Check_return_ HRESULT XamlIsland::Initialize()
         interop->SignalRootMutation(ctl::iinspectable_cast(this), VisualMutationType::Add);
     }
 
-    // Configure the XamlIsland2 will take focus when requested
+    // Configure the XamlIsland will take focus when requested
     // Get a FocusControllerStatics and get current FocusController for ContentIsland
     ctl::ComPtr<ixp::IInputFocusController> inputFocusController;
     IFCFAILFAST(ActivationFactoryCache::GetActivationFactoryCache()->GetInputFocusControllerStatics()->GetForIsland(m_pXamlIslandCore->GetContentIsland(), &inputFocusController));
     IFCFAILFAST(inputFocusController.As(&m_inputFocusController2));
 
-    XamlIslandRoot* xamlIsland = m_xamlIsland;
+    XamlIslandRoot* xamlIslandRoot = m_xamlIslandRoot;
     IFCFAILFAST(m_inputFocusController2->add_NavigateFocusRequested(
         WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<ixp::InputFocusController*, ixp::FocusNavigationRequestEventArgs*>>(
-            [xamlIsland](ixp::IInputFocusController* sender, ixp::IFocusNavigationRequestEventArgs* args) -> HRESULT
+            [xamlIslandRoot](ixp::IInputFocusController* sender, ixp::IFocusNavigationRequestEventArgs* args) -> HRESULT
             {
                 // Convert IXP FocusNavigationRequest to Xaml FocusNavigationRequest
                 wrl::ComPtr<xaml_hosting::IXamlSourceFocusNavigationRequest> xamlSourceFocusNavigationRequest;
@@ -153,9 +156,9 @@ _Check_return_ HRESULT XamlIsland::Initialize()
                 // Get Xaml FocusController and FocusManager
                 ctl::ComPtr<IInspectable> spInsp;
                 ctl::ComPtr<xaml_hosting::IFocusController> spFocusController;
-                IFC_RETURN(xamlIsland->get_FocusController(&spInsp));
+                IFC_RETURN(xamlIslandRoot->get_FocusController(&spInsp));
                 IFC_RETURN(spInsp.As(&spFocusController));
-                CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(xamlIsland->GetHandle());
+                CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(xamlIslandRoot->GetHandle());
 
                 // Pass IXP focus navigation on to Xaml focus navigation logic to set Xaml logical focus
                 ctl::ComPtr<xaml_hosting::IXamlSourceFocusNavigationResult> pResult = nullptr;
@@ -175,8 +178,8 @@ _Check_return_ HRESULT XamlIsland::Initialize()
     // is needed before CInputServices::InitializeDirectManipulationContainers can activate DM for a
     // ScrollViewer.
     wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
-    wrl::ComPtr<ixp::IContentIsland2> contentIsland2;
-    IFCFAILFAST(contentIsland.As(&contentIsland2));
+    wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+    IFCFAILFAST(contentIsland.As(&contentIslandExperimental));
 
     // Right now, the InputSite only has a valid HWND once the island has connected. This means that
     // we wait to set it on the XamlIslandRoot until the connected event. Once velocity key
@@ -187,7 +190,7 @@ _Check_return_ HRESULT XamlIsland::Initialize()
     ctl::WeakRefPtr wrThis;
     IFC_RETURN(ctl::AsWeak(this, &wrThis));
 
-    IFCFAILFAST(contentIsland2->add_Connected(
+    IFCFAILFAST(contentIslandExperimental->add_Connected(
         WRLHelper::MakeAgileCallback<wf::IEventHandler<ixp::ContentIsland *>>(
             [wrThis](IInspectable *, ixp::IContentIsland * /* content */) mutable -> HRESULT
             {
@@ -204,7 +207,7 @@ _Check_return_ HRESULT XamlIsland::Initialize()
             .Get(),
         &m_islandConnectedToken));
 
-    IFCFAILFAST(contentIsland2->add_Disconnected(
+    IFCFAILFAST(contentIslandExperimental->add_Disconnected(
         WRLHelper::MakeAgileCallback<wf::IEventHandler<ixp::ContentIsland *>>(
             [wrThis](IInspectable *, ixp::IContentIsland * /* content */) mutable -> HRESULT
             {
@@ -264,8 +267,33 @@ _Check_return_ HRESULT XamlIsland::put_ContentImpl(_In_opt_ xaml::IUIElement* pV
 
 _Check_return_ HRESULT XamlIsland::get_ContentIslandImpl(_Outptr_ ixp::IContentIsland **ppValue)
 {
-    *ppValue = m_pXamlIslandCore->GetContentIsland();
+    ctl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
+    *ppValue = contentIsland.Detach(); 
 
+    return S_OK;
+}
+
+_Check_return_ HRESULT XamlIsland::get_ShouldConstrainPopupsToWorkAreaImpl(_Out_ boolean *pValue)
+{
+    *pValue = true;
+
+    // Note: XamlIslandRoot won't have a ContentRoot (and VisualTree) if it's closing. No-op this case.
+    auto visualTreeNoRef = m_pXamlIslandCore->GetVisualTreeNoRef();
+    if (visualTreeNoRef)
+    {
+        *pValue = visualTreeNoRef->ShouldConstrainPopupsToWorkArea();
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT XamlIsland::put_ShouldConstrainPopupsToWorkAreaImpl(_In_opt_ boolean value)
+{
+    // Note: XamlIslandRoot won't have a ContentRoot (and VisualTree) if it's closing. No-op this case.
+    auto visualTreeNoRef = m_pXamlIslandCore->GetVisualTreeNoRef();
+    if (visualTreeNoRef)
+    {
+        visualTreeNoRef->SetShouldConstrainPopupsToWorkArea(!!value);
+    }
     return S_OK;
 }
 
@@ -387,20 +415,20 @@ IFACEMETHODIMP XamlIsland::Close()
     if (m_islandConnectedToken.value != 0)
     {
         wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
-        wrl::ComPtr<ixp::IContentIsland2> contentIsland2;
-        IFCFAILFAST(contentIsland.As(&contentIsland2));
+        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+        IFCFAILFAST(contentIsland.As(&contentIslandExperimental));
 
-        IFCFAILFAST(contentIsland2->remove_Connected(m_islandConnectedToken));
+        IFCFAILFAST(contentIslandExperimental->remove_Connected(m_islandConnectedToken));
         m_islandConnectedToken.value = 0;
     }
 
     if (m_islandDisconnectedToken.value != 0)
     {
         wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
-        wrl::ComPtr<ixp::IContentIsland2> contentIsland2;
-        IFCFAILFAST(contentIsland.As(&contentIsland2));
+        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+        IFCFAILFAST(contentIsland.As(&contentIslandExperimental));
 
-        IFCFAILFAST(contentIsland2->remove_Disconnected(m_islandDisconnectedToken));
+        IFCFAILFAST(contentIslandExperimental->remove_Disconnected(m_islandDisconnectedToken));
         m_islandDisconnectedToken.value = 0;
     }
 
@@ -444,4 +472,10 @@ IFACEMETHODIMP XamlIsland::Close()
     }
 
     return S_OK;
+}
+
+void XamlIsland::PrepareToClose()
+{
+    CContentRoot *contentRoot = m_pXamlIslandCore->GetContentRootNoRef();
+    contentRoot->PrepareToClose();
 }

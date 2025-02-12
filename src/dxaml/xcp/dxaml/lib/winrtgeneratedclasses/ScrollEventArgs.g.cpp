@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::ScrollEventArgsGenerated::get_NewValue(_Out_ DOUBLE* pV
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ScrollEventArgsGenerated::put_NewValue(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollEventArgsGenerated::put_NewValue(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
@@ -74,7 +74,7 @@ IFACEMETHODIMP DirectUI::ScrollEventArgsGenerated::get_ScrollEventType(_Out_ ABI
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ScrollEventArgsGenerated::put_ScrollEventType(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollEventType value)
+_Check_return_ HRESULT DirectUI::ScrollEventArgsGenerated::put_ScrollEventType(ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollEventType value)
 {
     HRESULT hr = S_OK;
     

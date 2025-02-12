@@ -490,7 +490,7 @@ namespace DirectUI
     {
         IFACEMETHOD(UntypedAppend)(_In_ IInspectable* pItem);
         IFACEMETHOD(UntypedGetSize)(_Out_ unsigned int* pSize);
-        IFACEMETHOD(UntypedGetAt)(_In_ unsigned int index, _Outptr_ IInspectable** ppItem);
+        IFACEMETHOD(UntypedGetAt)(_In_ unsigned int index, _COM_Outptr_ IInspectable** ppItem);
         IFACEMETHOD(UntypedInsertAt)(_In_ unsigned int index, _In_ IInspectable* pItem);
         IFACEMETHOD(UntypedRemoveAt)(_In_ unsigned int index);
         IFACEMETHOD(UntypedClear)();
@@ -619,7 +619,7 @@ namespace DirectUI
             return E_NOTIMPL;
         }
 
-        IFACEMETHODIMP SetAt(UINT index, _In_opt_ T_abi item) override
+        IFACEMETHODIMP SetAt(UINT index, _In_ T_abi item) override
         {
             IFC_RETURN(CheckThread());
             UINT size = 0;
@@ -817,10 +817,11 @@ namespace DirectUI
 
         IFACEMETHODIMP UntypedGetAt(
             _In_ unsigned int index,
-            _Outptr_ IInspectable** ppItem) override
+            _COM_Outptr_ IInspectable** ppItem) override
         {
             wrl::ComPtr<typename std::remove_pointer<T_abi>::type> spTypedItem;
 
+            *ppItem = nullptr;
             IFC_RETURN(this->CheckThread());
             IFC_RETURN(this->GetAt(index, &spTypedItem));
             IFC_RETURN(spTypedItem.CopyTo(ppItem));
@@ -937,7 +938,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP remove_VectorChanged(_In_ EventRegistrationToken tToken) override
+        IFACEMETHODIMP remove_VectorChanged(EventRegistrationToken tToken) override
         {
             HRESULT hr = S_OK;
             VectorChangedEventSourceType* pEventSource = NULL;
@@ -1351,7 +1352,7 @@ namespace DirectUI
         ValueTypeView() = default;
 
     public:
-        IFACEMETHODIMP IndexOf(_In_opt_ T value, _Out_ UINT *index, _Out_ BOOLEAN *found) override
+        IFACEMETHODIMP IndexOf(_In_ T value, _Out_ UINT *index, _Out_ BOOLEAN *found) override
         {
             HRESULT hr = S_OK;
 
@@ -1426,12 +1427,12 @@ namespace DirectUI
             RRETURN(E_NOTIMPL);
         }
 
-        IFACEMETHODIMP IndexOf(_In_opt_ T value, _Out_ UINT *index, _Out_ BOOLEAN *found) override
+        IFACEMETHODIMP IndexOf(_In_ T value, _Out_ UINT *index, _Out_ BOOLEAN *found) override
         {
             RRETURN(ValueTypeView<T>::IndexOf(value, index, found));
         }
 
-        IFACEMETHODIMP SetAt(UINT index, _In_opt_ T item) override
+        IFACEMETHODIMP SetAt(UINT index, _In_ T item) override
         {
             HRESULT hr = S_OK;
 
@@ -1453,7 +1454,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP InsertAt(UINT index, _In_opt_ T item) override
+        IFACEMETHODIMP InsertAt(UINT index, _In_ T item) override
         {
             HRESULT hr = S_OK;
 
@@ -1484,7 +1485,7 @@ namespace DirectUI
             RRETURN(hr);
         }
 
-        IFACEMETHODIMP Append(_In_opt_ T item) override
+        IFACEMETHODIMP Append(_In_ T item) override
         {
             HRESULT hr = S_OK;
 
@@ -1580,7 +1581,7 @@ namespace DirectUI
         }
 
         /*eventremove*/
-        IFACEMETHODIMP remove_VectorChanged(_In_ EventRegistrationToken token) override
+        IFACEMETHODIMP remove_VectorChanged(EventRegistrationToken token) override
         {
             HRESULT hr = S_OK;
 

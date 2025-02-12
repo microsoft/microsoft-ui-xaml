@@ -52,25 +52,25 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_AutoReverse)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AutoReverse)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AutoReverse)(BOOLEAN value) override;
         IFACEMETHOD(get_BeginTime)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>** ppValue) override;
-        IFACEMETHOD(put_BeginTime)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue) override;
+        IFACEMETHOD(put_BeginTime)(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue) override;
         IFACEMETHOD(get_Duration)(_Out_ ABI::Microsoft::UI::Xaml::Duration* pValue) override;
-        IFACEMETHOD(put_Duration)(_In_ ABI::Microsoft::UI::Xaml::Duration value) override;
+        IFACEMETHOD(put_Duration)(ABI::Microsoft::UI::Xaml::Duration value) override;
         IFACEMETHOD(get_FillBehavior)(_Out_ ABI::Microsoft::UI::Xaml::Media::Animation::FillBehavior* pValue) override;
-        IFACEMETHOD(put_FillBehavior)(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::FillBehavior value) override;
+        IFACEMETHOD(put_FillBehavior)(ABI::Microsoft::UI::Xaml::Media::Animation::FillBehavior value) override;
         IFACEMETHOD(get_RepeatBehavior)(_Out_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior* pValue) override;
-        IFACEMETHOD(put_RepeatBehavior)(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior value) override;
+        IFACEMETHOD(put_RepeatBehavior)(ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior value) override;
         IFACEMETHOD(get_SpeedRatio)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_SpeedRatio)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_SpeedRatio)(DOUBLE value) override;
 
         // Events.
         _Check_return_ HRESULT GetCompletedEventSourceNoRef(_Outptr_ CompletedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Completed)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Completed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Completed)(EventRegistrationToken token) override;
 
         // Methods.
-        virtual _Check_return_ HRESULT CreateTimelines(_In_ BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection) = 0;
+        virtual _Check_return_ HRESULT CreateTimelines(BOOLEAN onlyGenerateSteadyState, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Timeline*>* pTimelineCollection) = 0;
 
 
     protected:
@@ -108,7 +108,7 @@ namespace DirectUI
 
         // Static properties.
         IFACEMETHOD(get_AllowDependentAnimations)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AllowDependentAnimations)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AllowDependentAnimations)(BOOLEAN value) override;
 
         // Dependency properties.
         IFACEMETHOD(get_AutoReverseProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
@@ -137,7 +137,7 @@ namespace DirectUI
 
         // Customized static properties.
          _Check_return_ HRESULT get_AllowDependentAnimationsImpl(_Out_ BOOLEAN* pValue); 
-         _Check_return_ HRESULT put_AllowDependentAnimationsImpl(_In_ BOOLEAN value); 
+         _Check_return_ HRESULT put_AllowDependentAnimationsImpl(BOOLEAN value); 
 
         // Customized static  methods.
     };

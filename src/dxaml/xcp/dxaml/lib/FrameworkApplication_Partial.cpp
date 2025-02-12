@@ -260,7 +260,7 @@ IFACEMETHODIMP FrameworkApplication::add_UnhandledException(_In_ xaml::IUnhandle
     return m_UnhandledExceptionEventSource.Add(pValue, pToken);
 }
 
-IFACEMETHODIMP FrameworkApplication::remove_UnhandledException(_In_ EventRegistrationToken token)
+IFACEMETHODIMP FrameworkApplication::remove_UnhandledException(EventRegistrationToken token)
 {
     return m_UnhandledExceptionEventSource.Remove(token);
 }
@@ -274,7 +274,7 @@ FrameworkApplication::add_ResourceManagerRequested(
 }
 
 _Check_return_ HRESULT STDMETHODCALLTYPE 
-FrameworkApplication::remove_ResourceManagerRequested(_In_ EventRegistrationToken token)
+FrameworkApplication::remove_ResourceManagerRequested(EventRegistrationToken token)
 {
     return m_resourceManagerRequestedEventSource.Remove(token);
 }
@@ -302,7 +302,7 @@ IFACEMETHODIMP FrameworkApplication::add_Suspending(_In_ xaml::ISuspendingEventH
     return S_OK;
 }
 
-IFACEMETHODIMP FrameworkApplication::remove_Suspending(_In_ EventRegistrationToken token)
+IFACEMETHODIMP FrameworkApplication::remove_Suspending(EventRegistrationToken token)
 {
     XAML::PLM::PLMHandler* pPLMHandler = NULL;
 
@@ -332,7 +332,7 @@ IFACEMETHODIMP FrameworkApplication::add_Resuming(_In_ wf::IEventHandler<IInspec
     return S_OK;
 }
 
-IFACEMETHODIMP FrameworkApplication::remove_Resuming(_In_ EventRegistrationToken token)
+IFACEMETHODIMP FrameworkApplication::remove_Resuming(EventRegistrationToken token)
 {
     XAML::PLM::PLMHandler* pPLMHandler = NULL;
 
@@ -358,7 +358,7 @@ IFACEMETHODIMP FrameworkApplication::add_LeavingBackground(_In_ xaml::ILeavingBa
     return S_OK;
 }
 
-IFACEMETHODIMP FrameworkApplication::remove_LeavingBackground(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP FrameworkApplication::remove_LeavingBackground(EventRegistrationToken tToken)
 {
     XAML::PLM::PLMHandler* pPLMHandler = NULL;
 
@@ -384,7 +384,7 @@ IFACEMETHODIMP FrameworkApplication::add_EnteredBackground(_In_ xaml::IEnteredBa
     return S_OK;
 }
 
-IFACEMETHODIMP FrameworkApplication::remove_EnteredBackground(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP FrameworkApplication::remove_EnteredBackground(EventRegistrationToken tToken)
 {
     XAML::PLM::PLMHandler* pPLMHandler = NULL;
 
@@ -478,7 +478,7 @@ _Check_return_ HRESULT FrameworkApplicationFactory::LoadComponentImpl(
 _Check_return_ HRESULT FrameworkApplicationFactory::LoadComponentWithResourceLocationImpl(
     _In_ IInspectable *pComponent,
     _In_ wf::IUriRuntimeClass *pUri,
-    _In_ xaml_primitives::ComponentResourceLocation resourceLocation)
+    xaml_primitives::ComponentResourceLocation resourceLocation)
 {
     HRESULT hr = S_OK;
 

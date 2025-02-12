@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::PaneThemeTransitionGenerated::get_Edge(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PaneThemeTransition_Edge, pValue));
 }
-IFACEMETHODIMP DirectUI::PaneThemeTransitionGenerated::put_Edge(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::EdgeTransitionLocation value)
+IFACEMETHODIMP DirectUI::PaneThemeTransitionGenerated::put_Edge(ABI::Microsoft::UI::Xaml::Controls::Primitives::EdgeTransitionLocation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PaneThemeTransition_Edge, value));

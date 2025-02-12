@@ -616,6 +616,16 @@ winrt::Size ScrollPresenter::MeasureOverride(winrt::Size const& availableSize)
 
     m_availableSize = availableSize;
 
+    const double layoutRoundFactor = GetLayoutRoundFactor();
+
+    if (m_layoutRoundFactor != layoutRoundFactor)
+    {
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"old layoutRoundFactor:", m_layoutRoundFactor);
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"new layoutRoundFactor:", layoutRoundFactor);
+
+        m_layoutRoundFactor = layoutRoundFactor;
+    }
+
     winrt::Size contentDesiredSize{ 0.0f, 0.0f };
     const winrt::UIElement content = Content();
 
@@ -668,6 +678,7 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
 {
     SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"finalSize", finalSize.Width, finalSize.Height);
 
+    const bool layoutRoundFactorChanged = m_layoutRoundFactor != GetLayoutRoundFactor();
     const winrt::UIElement content = Content();
     winrt::Rect finalContentRect{};
 
@@ -702,25 +713,25 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
         const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
 
         const winrt::Thickness contentMargin = [contentAsFE]()
-        {
-            return contentAsFE ? contentAsFE.Margin() : winrt::Thickness{ 0 };
-        }();
+            {
+                return contentAsFE ? contentAsFE.Margin() : winrt::Thickness{ 0 };
+            }();
 
         const bool wasContentArrangeWidthStretched = [contentAsFE, contentArrangeSize, viewport]()
-        {
-            return contentAsFE &&
-                contentAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch &&
-                isnan(contentAsFE.Width()) &&
-                contentArrangeSize.Width < viewport.Width;
-        }();
+            {
+                return contentAsFE &&
+                    contentAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch &&
+                    isnan(contentAsFE.Width()) &&
+                    contentArrangeSize.Width < viewport.Width;
+            }();
 
         const bool wasContentArrangeHeightStretched = [contentAsFE, contentArrangeSize, viewport]()
-        {
-            return contentAsFE &&
-                contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
-                isnan(contentAsFE.Height()) &&
-                contentArrangeSize.Height < viewport.Height;
-        }();
+            {
+                return contentAsFE &&
+                    contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
+                    isnan(contentAsFE.Height()) &&
+                    contentArrangeSize.Height < viewport.Height;
+            }();
 
         if (wasContentArrangeWidthStretched)
         {
@@ -943,12 +954,25 @@ winrt::Size ScrollPresenter::ArrangeOverride(winrt::Size const& finalSize)
     const winrt::Rect newClipRect{ 0.0f, 0.0f, viewport.Width, viewport.Height };
     rectangleGeometry.Rect(newClipRect);
 
-    UpdateUnzoomedExtentAndViewport(
-        renderSizeChanged,
-        newUnzoomedExtentWidth  /*unzoomedExtentWidth*/,
-        newUnzoomedExtentHeight /*unzoomedExtentHeight*/,
-        viewport.Width          /*viewportWidth*/,
-        viewport.Height         /*viewportHeight*/);
+    if (layoutRoundFactorChanged)
+    {
+        // The global scale factor has changed since the last measure pass. Do not record the viewport size and extent based on the old
+        // scale factor. Instead, trigger new measure & arrange passes which will provide the new precise availableSize, result in the
+        // correct viewport and content sizes and push them to the potential scroll controllers. Calling UpdateUnzoomedExtentAndViewport
+        // with slightly incorrect sizes could result in wrong IScrollController::CanScroll evaluations and layout cycles.
+        SCROLLPRESENTER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"layoutRoundFactor changed since last measure pass.");
+
+        InvalidateMeasure();
+    }
+    else
+    {
+        UpdateUnzoomedExtentAndViewport(
+            renderSizeChanged,
+            newUnzoomedExtentWidth  /*unzoomedExtentWidth*/,
+            newUnzoomedExtentHeight /*unzoomedExtentHeight*/,
+            viewport.Width          /*viewportWidth*/,
+            viewport.Height         /*viewportHeight*/);
+    }
 
     m_isAnchorElementDirty = true;
     return viewport;
@@ -2915,6 +2939,19 @@ winrt::ScrollingZoomMode ScrollPresenter::GetMouseWheelZoomMode()
     return ZoomMode();
 }
 #endif
+
+double ScrollPresenter::GetLayoutRoundFactor() const
+{
+    if (UseLayoutRounding())
+    {
+        if (const auto xamlRoot = XamlRoot())
+        {
+            return xamlRoot.RasterizationScale();
+        }
+    }
+
+    return 0.0;
+}
 
 double ScrollPresenter::GetComputedMaxWidth(
     double defaultMaxWidth,
@@ -5546,14 +5583,25 @@ void ScrollPresenter::UpdateScrollControllerIsScrollable(ScrollPresenterDimensio
 
 void ScrollPresenter::UpdateScrollControllerValues(ScrollPresenterDimension dimension)
 {
+    // To avoid rounding imprecisions incorrectly causing a scroll controller to be declared scrollable,
+    // no scrollable size smaller than this epsilon is provided to it.
+    const double c_scrollableEpsilon{ 0.0001 };
+
     if (dimension == ScrollPresenterDimension::HorizontalScroll)
     {
+        double scrollableWidth = ScrollableWidth();
+
+        if (scrollableWidth < c_scrollableEpsilon)
+        {
+            scrollableWidth = 0.0;
+        }
+
         if (m_horizontalScrollController)
         {
             m_horizontalScrollController.get().SetValues(
                 0.0 /*minOffset*/,
-                ScrollableWidth() /*maxOffset*/,
-                m_zoomedHorizontalOffset /*offset*/,
+                scrollableWidth,
+                std::min(scrollableWidth, m_zoomedHorizontalOffset) /*offset*/,
                 ViewportWidth() /*viewportLength*/);
         }
     }
@@ -5563,10 +5611,17 @@ void ScrollPresenter::UpdateScrollControllerValues(ScrollPresenterDimension dime
 
         if (m_verticalScrollController)
         {
+            double scrollableHeight = ScrollableHeight();
+
+            if (scrollableHeight < c_scrollableEpsilon)
+            {
+                scrollableHeight = 0.0;
+            }
+
             m_verticalScrollController.get().SetValues(
                 0.0 /*minOffset*/,
-                ScrollableHeight() /*maxOffset*/,
-                m_zoomedVerticalOffset /*offset*/,
+                scrollableHeight /*maxOffset*/,
+                std::min(scrollableHeight, m_zoomedVerticalOffset) /*offset*/,
                 ViewportHeight() /*viewportLength*/);
         }
     }

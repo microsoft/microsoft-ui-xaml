@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::DropCompletedEventArgs::get_DropResult(_Out_ ABI::Windo
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DropCompletedEventArgs::put_DropResult(_In_ ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value)
+_Check_return_ HRESULT DirectUI::DropCompletedEventArgs::put_DropResult(ABI::Windows::ApplicationModel::DataTransfer::DataPackageOperation value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

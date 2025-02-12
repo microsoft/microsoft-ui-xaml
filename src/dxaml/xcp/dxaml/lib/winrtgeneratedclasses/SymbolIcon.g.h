@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Symbol)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Symbol* pValue) override;
-        IFACEMETHOD(put_Symbol)(_In_ ABI::Microsoft::UI::Xaml::Controls::Symbol value) override;
+        IFACEMETHOD(put_Symbol)(ABI::Microsoft::UI::Xaml::Controls::Symbol value) override;
 
         // Events.
 
@@ -87,7 +87,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithSymbol)(_In_ ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
+        IFACEMETHOD(CreateInstanceWithSymbol)(ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
 
         // Static properties.
 
@@ -110,7 +110,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithSymbolImpl(_In_ ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithSymbolImpl(ABI::Microsoft::UI::Xaml::Controls::Symbol symbol, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISymbolIcon** ppInstance);
 
         // Customized static properties.
 

@@ -23,17 +23,17 @@ namespace DirectUI
 
     public:
         // Extension methods.
-        IFACEMETHOD(GetIsAbsolute)(_In_ ABI::Microsoft::UI::Xaml::GridLength target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(GetIsAuto)(_In_ ABI::Microsoft::UI::Xaml::GridLength target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(GetIsStar)(_In_ ABI::Microsoft::UI::Xaml::GridLength target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(Equals)(_In_ ABI::Microsoft::UI::Xaml::GridLength target, _In_ ABI::Microsoft::UI::Xaml::GridLength value, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(GetIsAbsolute)(ABI::Microsoft::UI::Xaml::GridLength target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(GetIsAuto)(ABI::Microsoft::UI::Xaml::GridLength target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(GetIsStar)(ABI::Microsoft::UI::Xaml::GridLength target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(Equals)(ABI::Microsoft::UI::Xaml::GridLength target, ABI::Microsoft::UI::Xaml::GridLength value, _Out_ BOOLEAN* pReturnValue) override;
 
         // Static properties.
         IFACEMETHOD(get_Auto)(_Out_ ABI::Microsoft::UI::Xaml::GridLength* pValue) override;
 
         // Static methods.
-        IFACEMETHOD(FromPixels)(_In_ DOUBLE pixels, _Out_ ABI::Microsoft::UI::Xaml::GridLength* pReturnValue) override;
-        IFACEMETHOD(FromValueAndType)(_In_ DOUBLE value, _In_ ABI::Microsoft::UI::Xaml::GridUnitType type, _Out_ ABI::Microsoft::UI::Xaml::GridLength* pReturnValue) override;
+        IFACEMETHOD(FromPixels)(DOUBLE pixels, _Out_ ABI::Microsoft::UI::Xaml::GridLength* pReturnValue) override;
+        IFACEMETHOD(FromValueAndType)(DOUBLE value, ABI::Microsoft::UI::Xaml::GridUnitType type, _Out_ ABI::Microsoft::UI::Xaml::GridLength* pReturnValue) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

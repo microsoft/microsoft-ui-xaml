@@ -47,7 +47,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_NameValue)(_Out_ ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue* pValue) override;
-        IFACEMETHOD(put_NameValue)(_In_ ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue value) override;
+        IFACEMETHOD(put_NameValue)(ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue value) override;
 
         // Events.
 
@@ -85,7 +85,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_ ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue nameValue, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IInputScopeName** ppInstance);
+        IFACEMETHOD(CreateInstance)(ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue nameValue, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IInputScopeName** ppInstance);
 
         // Static properties.
 
@@ -108,7 +108,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue nameValue, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IInputScopeName** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue nameValue, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IInputScopeName** ppInstance);
 
         // Customized static properties.
 

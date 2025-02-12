@@ -38,11 +38,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_HorizontalOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_HorizontalOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_HorizontalOffset(DOUBLE value);
         IFACEMETHOD(get_VerticalOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_VerticalOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_VerticalOffset(DOUBLE value);
         IFACEMETHOD(get_ZoomFactor)(_Out_ FLOAT* pValue) override;
-        _Check_return_ HRESULT put_ZoomFactor(_In_ FLOAT value);
+        _Check_return_ HRESULT put_ZoomFactor(FLOAT value);
 
         // Events.
 

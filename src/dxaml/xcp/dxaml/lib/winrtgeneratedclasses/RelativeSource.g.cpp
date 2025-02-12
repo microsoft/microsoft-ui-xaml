@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::RelativeSource::get_Mode(_Out_ ABI::Microsoft::UI::Xaml
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RelativeSource_Mode, pValue));
 }
-IFACEMETHODIMP DirectUI::RelativeSource::put_Mode(_In_ ABI::Microsoft::UI::Xaml::Data::RelativeSourceMode value)
+IFACEMETHODIMP DirectUI::RelativeSource::put_Mode(ABI::Microsoft::UI::Xaml::Data::RelativeSourceMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RelativeSource_Mode, value));

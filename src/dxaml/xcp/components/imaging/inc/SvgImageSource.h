@@ -38,8 +38,8 @@ public:
         _Out_ uint32_t* height
         ) final;
 
-    _Check_return_ HRESULT GetTitle(_Outptr_ HSTRING* output) final;
-    _Check_return_ HRESULT GetDescription(_Outptr_ HSTRING* output) final;
+    _Check_return_ HRESULT GetTitle(_Outptr_result_maybenull_ HSTRING* output) final;
+    _Check_return_ HRESULT GetDescription(_Outptr_result_maybenull_ HSTRING* output) final;
 
     // Exposed metadata for codegen
     XFLOAT m_rasterizeWidth;

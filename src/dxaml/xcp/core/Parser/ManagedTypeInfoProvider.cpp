@@ -680,6 +680,7 @@ _Check_return_ HRESULT XamlManagedTypeInfoProvider::GetSchemaContext(
 // the token was found (the value is redundant since the token is empty, but the
 // value makes it easier to chain together a series of lookups and short circuit
 // after one is successful).  This is not a callback.
+_Success_(return != false)
 bool XamlManagedTypeInfoProvider::TryGetTypeWithSpecifiedNamespaceId(
     _In_ const KnownNamespaceIndex nNamespaceIndex,
     _In_ const xstring_ptr& spTypeName,

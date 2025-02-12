@@ -56,7 +56,7 @@ namespace DirectUI
 
         // Methods.
         IFACEMETHOD(GetCustomProperty)(_In_ HSTRING name, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
-        IFACEMETHOD(GetIndexedProperty)(_In_ HSTRING name, _In_ ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
+        IFACEMETHOD(GetIndexedProperty)(_In_ HSTRING name, ABI::Windows::UI::Xaml::Interop::TypeName type, _Outptr_ ABI::Microsoft::UI::Xaml::Data::ICustomProperty** ppReturnValue) override;
         IFACEMETHOD(GetStringRepresentation)(_Out_ HSTRING* pReturnValue) override;
 
 

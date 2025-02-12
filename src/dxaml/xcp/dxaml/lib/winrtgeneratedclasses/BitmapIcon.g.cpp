@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::BitmapIcon::get_ShowAsMonochrome(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BitmapIcon_ShowAsMonochrome, pValue));
 }
-IFACEMETHODIMP DirectUI::BitmapIcon::put_ShowAsMonochrome(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::BitmapIcon::put_ShowAsMonochrome(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BitmapIcon_ShowAsMonochrome, value));

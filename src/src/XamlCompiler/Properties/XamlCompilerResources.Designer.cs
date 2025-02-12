@@ -628,6 +628,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ensure the property path is trimming and AOT compatible by making use of &apos;Compiled Bindings (x:bind)&apos; if possible or by specifying the &apos;x:DataType&apos; directive with the respective binding data context and marking the type declaration with the &apos;WinRT.GeneratedBindableCustomProperty&apos; attribute or the &apos;Microsoft.UI.Xaml.Data.Bindable&apos; attribute. If you are unable to do either but can ensure the data type is attributed correctly, then you can also suppress the warning by specifying `x:SuppressXamlTrimWarnings=Tru [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string XamlCompiler_BindingAotCompatibility {
+            get {
+                return ResourceManager.GetString("XamlCompiler_BindingAotCompatibility", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Binding failure in assigning &apos;{0}.{1}&apos; = &apos;{2}&apos; at {3}, line {4} : .
         /// </summary>
         internal static string XamlCompiler_BindingSetValueFailed {
@@ -1002,6 +1011,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
         internal static string XamlCompiler_InvalidValueForPhase {
             get {
                 return ResourceManager.GetString("XamlCompiler_InvalidValueForPhase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value for &apos;x:SuppressXamlTrimWarnings&apos; must be True or False..
+        /// </summary>
+        internal static string XamlCompiler_InvalidValueForSuppressXamlTrimWarnings {
+            get {
+                return ResourceManager.GetString("XamlCompiler_InvalidValueForSuppressXamlTrimWarnings", resourceCulture);
             }
         }
         

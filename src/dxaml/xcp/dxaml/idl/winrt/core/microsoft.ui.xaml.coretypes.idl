@@ -39,9 +39,9 @@ cpp_quote("#undef GetCurrentTime")
 
 namespace Microsoft.UI.Xaml
 {
-    [contractversion(7)]
+    [contractversion(8)]
     apicontract WinUIContract{};
-    [contractversion(7)]
+    [contractversion(8)]
     apicontract XamlContract{};
 }
 
@@ -884,7 +884,7 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         TextEditTextChanged,
         LayoutInvalidated,
         [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 8)]
         Notification,
     };
 
@@ -1896,18 +1896,23 @@ namespace Microsoft.UI.Xaml
         Microsoft.UI.Xaml.Controls.Control Control;
     };
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
-    [feature(Feature_ExperimentalApi)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 8)]
     [webhosthidden]
     unsealed runtimeclass XamlIsland
-        : [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
+        : [contract(Microsoft.UI.Xaml.WinUIContract, 8)]
         Windows.Foundation.IClosable
     {
         [method_name("CreateInstance")] XamlIsland();
         Microsoft.UI.Xaml.UIElement Content;
         Microsoft.UI.Content.ContentIsland ContentIsland{ get; };
         Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 8)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.IXamlIslandFeature_ExperimentalApi")]
+        {
+            Boolean ShouldConstrainPopupsToWorkArea;
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -1930,11 +1935,9 @@ namespace Microsoft.UI.Xaml
             Microsoft.UI.Content.ContentCoordinateConverter CoordinateConverter{ get; };
         }
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 7)]
-        [feature(Feature_ExperimentalApi)]
-        [interface_name("Microsoft.UI.Xaml.IXamlRootFeature_ExperimentalApi")]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 8)]
         {
-            Microsoft.UI.Content.ContentIsland TryGetContentIsland();
+            Microsoft.UI.Content.ContentIsland ContentIsland{ get; };
         }
     };
 

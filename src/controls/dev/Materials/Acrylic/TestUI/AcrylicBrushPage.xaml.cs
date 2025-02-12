@@ -734,7 +734,7 @@ namespace MUXControlsTestApp
             UpdateSharedState();
         }
 
-        private class WrapperEffectBrush : XamlCompositionBrushBase
+        private partial class WrapperEffectBrush : XamlCompositionBrushBase
         {
             public WrapperEffectBrush(CompositionEffectBrush brush)
             {

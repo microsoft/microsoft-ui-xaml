@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::get_IsSourceGrouped(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_IsSourceGrouped, pValue));
 }
-IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::put_IsSourceGrouped(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CollectionViewSourceGenerated::put_IsSourceGrouped(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CollectionViewSource_IsSourceGrouped, value));

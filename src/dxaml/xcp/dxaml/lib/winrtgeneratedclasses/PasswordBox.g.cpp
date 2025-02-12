@@ -102,7 +102,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_HeaderPlacement(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PasswordBox_HeaderPlacement, pValue));
 }
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_HeaderPlacement(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_HeaderPlacement(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PasswordBox_HeaderPlacement, value));
@@ -140,7 +140,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_InputValidationKind(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PasswordBox_InputValidationKind, pValue));
 }
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_InputValidationKind(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_InputValidationKind(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PasswordBox_InputValidationKind, value));
@@ -149,7 +149,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_InputValidationMode(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PasswordBox_InputValidationMode, pValue));
 }
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_InputValidationMode(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_InputValidationMode(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PasswordBox_InputValidationMode, value));
@@ -158,7 +158,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_IsPasswordRevealButtonEnabled
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PasswordBox_IsPasswordRevealButtonEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_IsPasswordRevealButtonEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_IsPasswordRevealButtonEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PasswordBox_IsPasswordRevealButtonEnabled, value));
@@ -167,7 +167,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_MaxLength(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PasswordBox_MaxLength, pValue));
 }
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_MaxLength(_In_ INT value)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_MaxLength(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PasswordBox_MaxLength, value));
@@ -194,7 +194,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_PasswordRevealMode(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PasswordBox_PasswordRevealMode, pValue));
 }
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_PasswordRevealMode(_In_ ABI::Microsoft::UI::Xaml::Controls::PasswordRevealMode value)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_PasswordRevealMode(ABI::Microsoft::UI::Xaml::Controls::PasswordRevealMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PasswordBox_PasswordRevealMode, value));
@@ -212,7 +212,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_PreventKeyboardDisplayOnProgr
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PasswordBox_PreventKeyboardDisplayOnProgrammaticFocus, pValue));
 }
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_PreventKeyboardDisplayOnProgrammaticFocus(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_PreventKeyboardDisplayOnProgrammaticFocus(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PasswordBox_PreventKeyboardDisplayOnProgrammaticFocus, value));
@@ -239,7 +239,7 @@ IFACEMETHODIMP DirectUI::PasswordBoxGenerated::get_TextReadingOrder(_Out_ ABI::M
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PasswordBox_TextReadingOrder, pValue));
 }
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_TextReadingOrder(_In_ ABI::Microsoft::UI::Xaml::TextReadingOrder value)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::put_TextReadingOrder(ABI::Microsoft::UI::Xaml::TextReadingOrder value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PasswordBox_TextReadingOrder, value));
@@ -304,7 +304,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_ContextMenuOpening(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_ContextMenuOpening(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ContextMenuOpeningEventSourceType* pEventSource = nullptr;
@@ -360,7 +360,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_HasValidationErrorsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_HasValidationErrorsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HasValidationErrorsChangedEventSourceType* pEventSource = nullptr;
@@ -416,7 +416,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_PasswordChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_PasswordChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PasswordChangedEventSourceType* pEventSource = nullptr;
@@ -471,7 +471,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_PasswordChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_PasswordChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PasswordChangingEventSourceType* pEventSource = nullptr;
@@ -526,7 +526,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_Paste(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_Paste(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     PasteEventSourceType* pEventSource = nullptr;
@@ -582,7 +582,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_ValidationError(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::PasswordBoxGenerated::remove_ValidationError(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ValidationErrorEventSourceType* pEventSource = nullptr;

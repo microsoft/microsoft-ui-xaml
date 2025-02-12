@@ -28,7 +28,7 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(add_ResourceManagerRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, ABI::Microsoft::UI::Xaml::ResourceManagerRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_ResourceManagerRequested(pValue, pToken); }
-        IFACEMETHOD(remove_ResourceManagerRequested)(_In_ EventRegistrationToken token) override { return This()->remove_ResourceManagerRequested(token); }
+        IFACEMETHOD(remove_ResourceManagerRequested)(EventRegistrationToken token) override { return This()->remove_ResourceManagerRequested(token); }
     };
     template<typename impl_type>
     class interface_forwarder< ABI::Microsoft::UI::Xaml::IApplication3, impl_type> final
@@ -36,7 +36,7 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_DispatcherShutdownMode)(_Out_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode* pValue) override { return This()->get_DispatcherShutdownMode(pValue); }
-        IFACEMETHOD(put_DispatcherShutdownMode)(_In_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value) override { return This()->put_DispatcherShutdownMode(value); }
+        IFACEMETHOD(put_DispatcherShutdownMode)(ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value) override { return This()->put_DispatcherShutdownMode(value); }
     };
 }
 #pragma endregion
@@ -88,42 +88,42 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_DebugSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDebugSettings** ppValue) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_DispatcherShutdownMode(_Out_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_DispatcherShutdownMode(_In_ ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_DispatcherShutdownMode(ABI::Microsoft::UI::Xaml::DispatcherShutdownMode value);
         IFACEMETHOD(get_FocusVisualKind)(_Out_ ABI::Microsoft::UI::Xaml::FocusVisualKind* pValue) override;
-        IFACEMETHOD(put_FocusVisualKind)(_In_ ABI::Microsoft::UI::Xaml::FocusVisualKind value) override;
+        IFACEMETHOD(put_FocusVisualKind)(ABI::Microsoft::UI::Xaml::FocusVisualKind value) override;
         IFACEMETHOD(get_HighContrastAdjustment)(_Out_ ABI::Microsoft::UI::Xaml::ApplicationHighContrastAdjustment* pValue) override;
-        IFACEMETHOD(put_HighContrastAdjustment)(_In_ ABI::Microsoft::UI::Xaml::ApplicationHighContrastAdjustment value) override;
+        IFACEMETHOD(put_HighContrastAdjustment)(ABI::Microsoft::UI::Xaml::ApplicationHighContrastAdjustment value) override;
         IFACEMETHOD(get_RequestedTheme)(_Out_ ABI::Microsoft::UI::Xaml::ApplicationTheme* pValue) override;
-        IFACEMETHOD(put_RequestedTheme)(_In_ ABI::Microsoft::UI::Xaml::ApplicationTheme value) override;
+        IFACEMETHOD(put_RequestedTheme)(ABI::Microsoft::UI::Xaml::ApplicationTheme value) override;
         IFACEMETHOD(get_RequiresPointerMode)(_Out_ ABI::Microsoft::UI::Xaml::ApplicationRequiresPointerMode* pValue) FEATURE_UWPSUPPORTAPI_OVERRIDE;
-        IFACEMETHOD(put_RequiresPointerMode)(_In_ ABI::Microsoft::UI::Xaml::ApplicationRequiresPointerMode value) FEATURE_UWPSUPPORTAPI_OVERRIDE;
+        IFACEMETHOD(put_RequiresPointerMode)(ABI::Microsoft::UI::Xaml::ApplicationRequiresPointerMode value) FEATURE_UWPSUPPORTAPI_OVERRIDE;
         IFACEMETHOD(get_Resources)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IResourceDictionary** ppValue) override;
         IFACEMETHOD(put_Resources)(_In_opt_ ABI::Microsoft::UI::Xaml::IResourceDictionary* pValue) override;
         IFACEMETHOD(get_ShutdownModel)(_Out_ ABI::Microsoft::UI::Xaml::ShutdownModel* pValue) override;
-        IFACEMETHOD(put_ShutdownModel)(_In_ ABI::Microsoft::UI::Xaml::ShutdownModel value) override;
+        IFACEMETHOD(put_ShutdownModel)(ABI::Microsoft::UI::Xaml::ShutdownModel value) override;
         IFACEMETHOD(get_Windows)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVectorView<ABI::Microsoft::UI::Xaml::Window*>** ppValue) override;
 
         // Events.
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
         IFACEMETHOD(add_EnteredBackground)(_In_ ABI::Microsoft::UI::Xaml::IEnteredBackgroundEventHandler* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_EnteredBackground)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_EnteredBackground)(EventRegistrationToken token) = 0;
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
         IFACEMETHOD(add_LeavingBackground)(_In_ ABI::Microsoft::UI::Xaml::ILeavingBackgroundEventHandler* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_LeavingBackground)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_LeavingBackground)(EventRegistrationToken token) = 0;
 #endif
         virtual _Check_return_ HRESULT STDMETHODCALLTYPE add_ResourceManagerRequested(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, ABI::Microsoft::UI::Xaml::ResourceManagerRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken);
-        virtual _Check_return_ HRESULT STDMETHODCALLTYPE remove_ResourceManagerRequested(_In_ EventRegistrationToken token);
+        virtual _Check_return_ HRESULT STDMETHODCALLTYPE remove_ResourceManagerRequested(EventRegistrationToken token);
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
         IFACEMETHOD(add_Resuming)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_Resuming)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_Resuming)(EventRegistrationToken token) = 0;
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_UwpSupportApi)
         IFACEMETHOD(add_Suspending)(_In_ ABI::Microsoft::UI::Xaml::ISuspendingEventHandler* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_Suspending)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_Suspending)(EventRegistrationToken token) = 0;
 #endif
         IFACEMETHOD(add_UnhandledException)(_In_ ABI::Microsoft::UI::Xaml::IUnhandledExceptionEventHandler* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_UnhandledException)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_UnhandledException)(EventRegistrationToken token) = 0;
 
         // Methods.
         IFACEMETHOD(CreateIslandRoot)(_Outptr_ ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot** ppResult) override;
@@ -168,7 +168,7 @@ namespace DirectUI
         _Check_return_ HRESULT OnWindowCreatedProtected(_In_ ABI::Microsoft::UI::Xaml::IWindowCreatedEventArgs* pArgs);
 #endif
         IFACEMETHOD(RemoveIsland)(_In_ ABI::Microsoft::UI::Xaml::Hosting::IXamlIslandRoot* pIsland) override;
-        IFACEMETHOD(SetSynchronizationWindow)(_In_ UINT64 commitResizeWindow) override;
+        IFACEMETHOD(SetSynchronizationWindow)(UINT64 commitResizeWindow) override;
         IFACEMETHOD(StartOnCurrentThread)(_In_opt_ ABI::Microsoft::UI::Xaml::IApplicationInitializationCallback* pCallback) override;
 
 
@@ -219,7 +219,7 @@ namespace DirectUI
         // Static methods.
         IFACEMETHOD(Start)(_In_opt_ ABI::Microsoft::UI::Xaml::IApplicationInitializationCallback* pCallback) override;
         IFACEMETHOD(LoadComponent)(_In_ IInspectable* pComponent, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pResourceLocator) override;
-        IFACEMETHOD(LoadComponentWithResourceLocation)(_In_ IInspectable* pComponent, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pResourceLocator, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ComponentResourceLocation componentResourceLocation) override;
+        IFACEMETHOD(LoadComponentWithResourceLocation)(_In_ IInspectable* pComponent, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pResourceLocator, ABI::Microsoft::UI::Xaml::Controls::Primitives::ComponentResourceLocation componentResourceLocation) override;
         IFACEMETHOD(EnableFailFastOnStowedException)() override;
 
         // Static events.
@@ -238,7 +238,7 @@ namespace DirectUI
         // Customized static  methods.
          _Check_return_ HRESULT StartImpl(_In_opt_ ABI::Microsoft::UI::Xaml::IApplicationInitializationCallback* pCallback); 
          _Check_return_ HRESULT LoadComponentImpl(_In_ IInspectable* pComponent, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pResourceLocator); 
-         _Check_return_ HRESULT LoadComponentWithResourceLocationImpl(_In_ IInspectable* pComponent, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pResourceLocator, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ComponentResourceLocation componentResourceLocation); 
+         _Check_return_ HRESULT LoadComponentWithResourceLocationImpl(_In_ IInspectable* pComponent, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pResourceLocator, ABI::Microsoft::UI::Xaml::Controls::Primitives::ComponentResourceLocation componentResourceLocation); 
          _Check_return_ HRESULT EnableFailFastOnStowedExceptionImpl(); 
     };
 }

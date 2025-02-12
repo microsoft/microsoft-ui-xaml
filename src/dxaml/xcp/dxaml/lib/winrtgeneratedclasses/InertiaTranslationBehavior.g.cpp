@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::InertiaTranslationBehavior::get_DesiredDeceleration(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InertiaTranslationBehavior_DesiredDeceleration, pValue));
 }
-IFACEMETHODIMP DirectUI::InertiaTranslationBehavior::put_DesiredDeceleration(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::InertiaTranslationBehavior::put_DesiredDeceleration(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InertiaTranslationBehavior_DesiredDeceleration, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::InertiaTranslationBehavior::get_DesiredDisplacement(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InertiaTranslationBehavior_DesiredDisplacement, pValue));
 }
-IFACEMETHODIMP DirectUI::InertiaTranslationBehavior::put_DesiredDisplacement(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::InertiaTranslationBehavior::put_DesiredDisplacement(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InertiaTranslationBehavior_DesiredDisplacement, value));

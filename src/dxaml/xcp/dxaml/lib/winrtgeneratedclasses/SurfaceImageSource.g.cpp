@@ -63,7 +63,7 @@ HRESULT DirectUI::SurfaceImageSourceFactoryGenerated::QueryInterfaceImpl(_In_ RE
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::SurfaceImageSourceFactoryGenerated::CreateInstanceWithDimensions(_In_ INT pixelWidth, _In_ INT pixelHeight, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance)
+IFACEMETHODIMP DirectUI::SurfaceImageSourceFactoryGenerated::CreateInstanceWithDimensions(INT pixelWidth, INT pixelHeight, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance)
 {
     HRESULT hr = S_OK;
     
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::SurfaceImageSourceFactoryGenerated::CreateInstanceWithD
 Cleanup:
     return hr;
 }
-IFACEMETHODIMP DirectUI::SurfaceImageSourceFactoryGenerated::CreateInstanceWithDimensionsAndOpacity(_In_ INT pixelWidth, _In_ INT pixelHeight, _In_ BOOLEAN isOpaque, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance)
+IFACEMETHODIMP DirectUI::SurfaceImageSourceFactoryGenerated::CreateInstanceWithDimensionsAndOpacity(INT pixelWidth, INT pixelHeight, BOOLEAN isOpaque, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Media::Imaging::ISurfaceImageSource** ppInstance)
 {
     HRESULT hr = S_OK;
     

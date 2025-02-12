@@ -25,7 +25,7 @@ CUIDMContainer::Create(
     _In_ CUIElement* pUIElement)
 {
     HRESULT hr = S_OK;
-    CUIDMContainer* pUIDMContainer = NULL;
+    CUIDMContainer* pUIDMContainer = nullptr;
 
     IFCPTR(ppDMContainer);
     IFCPTR(pCoreServices);
@@ -34,7 +34,7 @@ CUIDMContainer::Create(
     pUIDMContainer = new CUIDMContainer(pCoreServices, pUIElement);
 
     *ppDMContainer = pUIDMContainer;
-    pUIDMContainer = NULL;
+    pUIDMContainer = nullptr;
 
 Cleanup:
     delete pUIDMContainer;
@@ -58,7 +58,7 @@ CUIDMContainer::SetManipulationHandler(
     if (m_pDMContainerHandler)
     {
         m_pDMContainerHandler->Release();
-        m_pDMContainerHandler = NULL;
+        m_pDMContainerHandler = nullptr;
     }
 
     if (pHandler)
@@ -67,24 +67,13 @@ CUIDMContainer::SetManipulationHandler(
         m_pDMContainerHandler = pHandler;
     }
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_SetManipulationHandler(
-                pUIElement,
-                m_pDMContainerHandler));
-
-            pUIElement->SetIsDirectManipulationContainer(m_pDMContainerHandler != nullptr);
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_SetManipulationHandler(
-            m_pUIElement,
+            pUIElement,
             m_pDMContainerHandler));
 
-        m_pUIElement->SetIsDirectManipulationContainer(m_pDMContainerHandler != NULL);
+        pUIElement->SetIsDirectManipulationContainer(m_pDMContainerHandler != nullptr);
     }
 
     return S_OK;
@@ -109,20 +98,10 @@ CUIDMContainer::SetManipulationHandlerWantsNotifications(
 
     IFCEXPECT_ASSERT_RETURN(m_pCoreServices);
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_SetManipulationHandlerWantsNotifications(
-                pUIElement,
-                pManipulatedElement,
-                fWantsNotifications));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_SetManipulationHandlerWantsNotifications(
-            m_pUIElement,
+            pUIElement,
             pManipulatedElement,
             fWantsNotifications));
     }
@@ -155,21 +134,10 @@ CUIDMContainer::GetCanManipulateElements(
     *pfCanManipulateElementsNonTouch = FALSE;
     *pfCanManipulateElementsWithBringIntoViewport = FALSE;
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_GetCanManipulateElements(
-                pUIElement,
-                pfCanManipulateElementsByTouch,
-                pfCanManipulateElementsNonTouch,
-                pfCanManipulateElementsWithBringIntoViewport));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_GetCanManipulateElements(
-            m_pUIElement,
+            pUIElement,
             pfCanManipulateElementsByTouch,
             pfCanManipulateElementsNonTouch,
             pfCanManipulateElementsWithBringIntoViewport));
@@ -193,19 +161,10 @@ CUIDMContainer::SetPointedElement(
 {
     IFCPTR_RETURN(pPointedElement);
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_SetPointedElement(
-                pUIElement,
-                pPointedElement));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_SetPointedElement(
-            m_pUIElement,
+            pUIElement,
             pPointedElement));
     }
 
@@ -230,26 +189,15 @@ CUIDMContainer::GetManipulatedElement(
     _Outptr_ CUIElement** ppManipulatedElement) const
 {
     HRESULT hr = S_OK;
-    CUIElement* pManipulatedElement = NULL;
+    CUIElement* pManipulatedElement = nullptr;
 
     IFCPTR(ppManipulatedElement);
-    *ppManipulatedElement = NULL;
+    *ppManipulatedElement = nullptr;
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC(FxCallbacks::UIElement_GetManipulatedElement(
-                pUIElement,
-                pPointedElement,
-                pChildElement,
-                &pManipulatedElement));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC(FxCallbacks::UIElement_GetManipulatedElement(
-            m_pUIElement,
+            pUIElement,
             pPointedElement,
             pChildElement,
             &pManipulatedElement));
@@ -257,7 +205,7 @@ CUIDMContainer::GetManipulatedElement(
 
     AddRefInterface(pManipulatedElement);
     *ppManipulatedElement = pManipulatedElement;
-    pManipulatedElement = NULL;
+    pManipulatedElement = nullptr;
 
 Cleanup:
     ReleaseInterface(pManipulatedElement);
@@ -310,7 +258,7 @@ CUIDMContainer::GetManipulationViewport(
     }
     if (ppConfigurations)
     {
-        *ppConfigurations = NULL;
+        *ppConfigurations = nullptr;
     }
     if (pChainedMotionTypes)
     {
@@ -325,29 +273,10 @@ CUIDMContainer::GetManipulationViewport(
         *pVerticalOverpanMode = XcpDMOverpanModeDefault;
     }
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_GetManipulationViewport(
-                pUIElement,
-                pManipulatedElement,
-                pBounds,
-                pInputTransform,
-                reinterpret_cast<XUINT32*>(pTouchConfiguration),
-                reinterpret_cast<XUINT32*>(pNonTouchConfiguration),
-                reinterpret_cast<XUINT32*>(pBringIntoViewportConfiguration),
-                reinterpret_cast<XUINT32*>(pHorizontalOverpanMode),
-                reinterpret_cast<XUINT32*>(pVerticalOverpanMode),
-                pcConfigurations,
-                reinterpret_cast<XUINT32**>(ppConfigurations),
-                reinterpret_cast<XUINT32*>(pChainedMotionTypes)));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_GetManipulationViewport(
-            m_pUIElement,
+            pUIElement,
             pManipulatedElement,
             pBounds,
             pInputTransform,
@@ -424,28 +353,10 @@ CUIDMContainer::GetManipulationPrimaryContent(
         *pfIsLayoutRefreshed = FALSE;
     }
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_GetManipulationPrimaryContent(
-                pUIElement,
-                pManipulatedElement,
-                pOffsets,
-                pBounds,
-                reinterpret_cast<XUINT32*>(pHorizontalAligment),
-                reinterpret_cast<XUINT32*>(pVerticalAligment),
-                pMinZoomFactor,
-                pMaxZoomFactor,
-                pfIsHorizontalStretchAlignmentTreatedAsNear,
-                pfIsVerticalStretchAlignmentTreatedAsNear,
-                pfIsLayoutRefreshed));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_GetManipulationPrimaryContent(
-            m_pUIElement,
+            pUIElement,
             pManipulatedElement,
             pOffsets,
             pBounds,
@@ -479,20 +390,10 @@ CUIDMContainer::GetManipulationSecondaryContent(
 
     pOffsets->width = pOffsets->height = 0.0f;
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_GetManipulationSecondaryContent(
-                pUIElement,
-                pContentElement,
-                pOffsets));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_GetManipulationSecondaryContent(
-            m_pUIElement,
+            pUIElement,
             pContentElement,
             pOffsets));
     }
@@ -534,25 +435,10 @@ CUIDMContainer::GetManipulationPrimaryContentTransform(
         *pZoomFactor = 0.0f;
     }
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_GetManipulationPrimaryContentTransform(
-                pUIElement,
-                pManipulatedElement,
-                fInManipulation,
-                fForInitialTransformationAdjustment,
-                fForMargins,
-                pTranslationX,
-                pTranslationY,
-                pZoomFactor));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_GetManipulationPrimaryContentTransform(
-            m_pUIElement,
+            pUIElement,
             pManipulatedElement,
             fInManipulation,
             fForInitialTransformationAdjustment,
@@ -588,22 +474,10 @@ CUIDMContainer::GetManipulationSecondaryContentTransform(
     IFCPTR_RETURN(pZoomFactor);
     *pZoomFactor = 1.0f;
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_GetManipulationSecondaryContentTransform(
-                pUIElement,
-                pContentElement,
-                pTranslationX,
-                pTranslationY,
-                pZoomFactor));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_GetManipulationSecondaryContentTransform(
-            m_pUIElement,
+            pUIElement,
             pContentElement,
             pTranslationX,
             pTranslationY,
@@ -663,35 +537,17 @@ CUIDMContainer::GetManipulationSnapPoints(
     }
     if (ppIrregularSnapPoints)
     {
-        *ppIrregularSnapPoints = NULL;
+        *ppIrregularSnapPoints = nullptr;
     }
     if (pSnapCoordinate)
     {
         *pSnapCoordinate = (motionType == XcpDMMotionTypeZoom) ? XcpDMSnapCoordinateOrigin : XcpDMSnapCoordinateBoundary;
     }
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_GetManipulationSnapPoints(
-                pUIElement,
-                pManipulatedElement,
-                motionType,
-                pfAreSnapPointsOptional,
-                pfAreSnapPointsSingle,
-                pfAreSnapPointsRegular,
-                pRegularOffset,
-                pRegularInterval,
-                pcIrregularSnapPoints,
-                ppIrregularSnapPoints,
-                reinterpret_cast<XUINT32*>(pSnapCoordinate)));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_GetManipulationSnapPoints(
-            m_pUIElement,
+            pUIElement,
             pManipulatedElement,
             motionType,
             pfAreSnapPointsOptional,
@@ -723,19 +579,10 @@ CUIDMContainer::NotifyManipulatabilityAffectingPropertyChanged(
 {
     IFCEXPECT_ASSERT_RETURN(m_pCoreServices);
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_NotifyManipulatabilityAffectingPropertyChanged(
-                pUIElement,
-                fIsInLiveTree));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_NotifyManipulatabilityAffectingPropertyChanged(
-            m_pUIElement,
+            pUIElement,
             fIsInLiveTree));
     }
 
@@ -763,22 +610,10 @@ CUIDMContainer::NotifyContentAlignmentAffectingPropertyChanged(
 
     IFCPTR_RETURN(pManipulatedElement);
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_NotifyContentAlignmentAffectingPropertyChanged(
-                pUIElement,
-                pManipulatedElement,
-                fIsForHorizontalAlignment,
-                fIsForStretchAlignment,
-                fIsStretchAlignmentTreatedAsNear));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_NotifyContentAlignmentAffectingPropertyChanged(
-            m_pUIElement,
+            pUIElement,
             pManipulatedElement,
             fIsForHorizontalAlignment,
             fIsForStretchAlignment,
@@ -818,32 +653,10 @@ CUIDMContainer::NotifyManipulationProgress(
 
     IFCPTR_RETURN(pManipulatedElement);
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_NotifyManipulationProgress(
-                pUIElement,
-                pManipulatedElement,
-                static_cast<XUINT32>(state),
-                xCumulativeTranslation,
-                yCumulativeTranslation,
-                zCumulativeFactor,
-                xInertiaEndTranslation,
-                yInertiaEndTranslation,
-                zInertiaEndFactor,
-                xCenter,
-                yCenter,
-                fIsInertiaEndTransformValid,
-                fIsInertial,
-                fIsTouchConfigurationActivated,
-                fIsBringIntoViewportConfigurationActivated));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_NotifyManipulationProgress(
-            m_pUIElement,
+            pUIElement,
             pManipulatedElement,
             static_cast<XUINT32>(state),
             xCumulativeTranslation,
@@ -869,19 +682,10 @@ CUIDMContainer::NotifyManipulationStateChanged(
 {
     IFCEXPECT_ASSERT_RETURN(m_pCoreServices);
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_NotifyManipulationStateChanged(
-                pUIElement,
-                static_cast<XUINT32>(state)));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_NotifyManipulationStateChanged(
-            m_pUIElement,
+            pUIElement,
             static_cast<XUINT32>(state)));
     }
 
@@ -915,24 +719,10 @@ CUIDMContainer::NotifyBringIntoViewportNeeded(
 
     IFCPTR_RETURN(pManipulatedElement);
 
-    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_54705344>())
-    {
-        if (const auto pUIElement = m_pUIElementWeakRef.lock())
-        {
-            IFC_RETURN(FxCallbacks::UIElement_NotifyBringIntoViewportNeeded(
-                pUIElement,
-                pManipulatedElement,
-                translationX,
-                translationY,
-                zoomFactor,
-                fTransformIsValid,
-                fTransformIsInertiaEnd));
-        }
-    }
-    else
+    if (const auto pUIElement = m_pUIElementWeakRef.lock())
     {
         IFC_RETURN(FxCallbacks::UIElement_NotifyBringIntoViewportNeeded(
-            m_pUIElement,
+            pUIElement,
             pManipulatedElement,
             translationX,
             translationY,

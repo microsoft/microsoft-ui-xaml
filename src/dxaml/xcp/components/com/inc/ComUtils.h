@@ -56,7 +56,7 @@ namespace ctl
     }
 
     template <typename T, typename U>
-    ComPtr<T> query_interface_cast(_In_ U* pIn)
+    ComPtr<T> query_interface_cast(_In_opt_ U* pIn)
     {
         HRESULT hr = S_OK;
         T* pCasted = NULL;
@@ -225,10 +225,10 @@ namespace ctl
         _In_ IUnknown *pSecond,
         _Out_ bool *pAreEqual);
 
-    _Check_return_ bool are_equal(_In_ IUnknown* pFirst, _In_ IUnknown* pSecond);
+    _Check_return_ bool are_equal(_In_opt_ IUnknown* pFirst, _In_opt_ IUnknown* pSecond);
 
     template <typename T, typename U>
-    _Check_return_ bool are_equal(_In_ T* pFirst, _In_ U* pSecond)
+    _Check_return_ bool are_equal(_In_opt_ T* pFirst, _In_opt_ U* pSecond)
     {
         return are_equal(ctl::iunknown_cast(pFirst), ctl::iunknown_cast(pSecond));
     }

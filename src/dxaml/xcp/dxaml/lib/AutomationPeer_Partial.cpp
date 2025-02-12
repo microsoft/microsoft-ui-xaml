@@ -3916,7 +3916,7 @@ Cleanup:
 }
 
 _Check_return_ HRESULT AutomationPeerFactory::ListenerExistsImpl(
- _In_ xaml_automation_peers::AutomationEvents eventId,
+ xaml_automation_peers::AutomationEvents eventId,
  _Out_ BOOLEAN* returnValue)
 {
     HRESULT hr = S_OK;

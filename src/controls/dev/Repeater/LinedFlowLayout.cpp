@@ -780,9 +780,9 @@ void LinedFlowLayout::ArrangeConstrainedLines(
                     element.Arrange(elementRect);
 
 #ifdef DBG
-                    if (sizedItemIndex == m_logItemIndexDbg)
+                    if (sizedItemIndex == LogItemIndexDbg())
                     {
-                        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, element, L"Arrange element");
                         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"Arrange line", lineIndex);
                     }
@@ -803,9 +803,9 @@ void LinedFlowLayout::ArrangeConstrainedLines(
                                 const float desiredWidth = recordedSizeIterator->second;
 
                                 if ((std::abs(desiredWidth - element.DesiredSize().Width) >= 1.0f || std::abs(actualLineHeight - element.DesiredSize().Height) >= 1.0f) ||
-                                    sizedItemIndex == m_logItemIndexDbg)
+                                    sizedItemIndex == LogItemIndexDbg())
                                 {
-                                    if (sizedItemIndex != m_logItemIndexDbg)
+                                    if (sizedItemIndex != LogItemIndexDbg())
                                     {
                                         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"sizedItemIndex", sizedItemIndex);
                                     }
@@ -823,9 +823,9 @@ void LinedFlowLayout::ArrangeConstrainedLines(
                             const float arrangeWidthDbg = recordedSizeIterator->second;
 
                             if (std::abs(arrangeWidthDbg - element.DesiredSize().Width) >= 1.0f ||
-                                sizedItemIndex == m_logItemIndexDbg)
+                                sizedItemIndex == LogItemIndexDbg())
                             {
-                                if (sizedItemIndex != m_logItemIndexDbg)
+                                if (sizedItemIndex != LogItemIndexDbg())
                                 {
                                     LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"sizedItemIndex", sizedItemIndex);
                                 }
@@ -836,7 +836,7 @@ void LinedFlowLayout::ArrangeConstrainedLines(
                             }
                         }
                     }
-                    else if (sizedItemIndex == m_logItemIndexDbg)
+                    else if (sizedItemIndex == LogItemIndexDbg())
                     {
                         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"desiredWidth", element.DesiredSize().Width);
                         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"arrangeWidth", arrangeWidth);
@@ -1694,9 +1694,9 @@ void LinedFlowLayout::ComputeItemsLayoutWithLockedItems(
                         }
 
 #ifdef DBG
-                        if (sizedItemIndex == m_logItemIndexDbg)
+                        if (sizedItemIndex == LogItemIndexDbg())
                         {
-                            LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                            LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                             LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"measured with elementAvailableSize (1)",
                                 elementAvailableSize.Width,
                                 elementAvailableSize.Height);
@@ -1726,9 +1726,9 @@ void LinedFlowLayout::ComputeItemsLayoutWithLockedItems(
                             element.Measure(elementAvailableSize);
 
 #ifdef DBG
-                            if (sizedItemIndex == m_logItemIndexDbg)
+                            if (sizedItemIndex == LogItemIndexDbg())
                             {
-                                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                                 LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"measured with elementAvailableSize (2)",
                                     elementAvailableSize.Width,
                                     elementAvailableSize.Height);
@@ -1783,9 +1783,9 @@ void LinedFlowLayout::ComputeItemsLayoutWithLockedItems(
                         element.Measure(elementAvailableSize);
 
 #ifdef DBG
-                        if (sizedItemIndex == m_logItemIndexDbg)
+                        if (sizedItemIndex == LogItemIndexDbg())
                         {
-                            LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                            LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                             LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"measured with elementAvailableSize (3)",
                                 elementAvailableSize.Width,
                                 elementAvailableSize.Height);
@@ -2847,9 +2847,9 @@ void LinedFlowLayout::EnsureAndMeasureItemRange(
                             itemAspectRatio.m_weight = desiredWidthGreaterThanMinWidth ? c_maxAspectRatioWeight : 1;
                         
 #ifdef DBG
-                            if (realizedItemIndex == m_logItemIndexDbg)
+                            if (realizedItemIndex == LogItemIndexDbg())
                             {
-                                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                                 LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"initial aspect ratio", aspectRatio);
                             }
 #endif
@@ -2881,9 +2881,9 @@ void LinedFlowLayout::EnsureAndMeasureItemRange(
                                 }
                             }
 #ifdef DBG
-                            if (realizedItemIndex == m_logItemIndexDbg)
+                            if (realizedItemIndex == LogItemIndexDbg())
                             {
-                                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                                 LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
                                     itemAspectRatio.m_aspectRatio == aspectRatio ? L"same aspect ratio" : L"new aspect ratio", aspectRatio);
                                 LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"weight", itemAspectRatio.m_weight);
@@ -2899,9 +2899,9 @@ void LinedFlowLayout::EnsureAndMeasureItemRange(
                     }
 
 #ifdef DBG
-                    if (realizedItemIndex == m_logItemIndexDbg)
+                    if (realizedItemIndex == LogItemIndexDbg())
                     {
-                        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"measured with elementAvailableSize",
                             elementAvailableSize.Width,
                             elementAvailableSize.Height);
@@ -5170,8 +5170,10 @@ void LinedFlowLayout::InvalidateLayout(
 // Invokes InvalidateLayout asynchronously with only invalidateMeasure == True to trigger a new measure pass.
 void LinedFlowLayout::InvalidateMeasureAsync()
 {
-    auto weakThis = get_weak();
-
+    // Previously we used get_weak() here, but we found the potential to hit a 
+    // refcounting problem where in some scenarios the outer object gets
+    // an extra Release() in this process.
+    auto weakThis {winrt::make_weak(static_cast<winrt::LinedFlowLayout>(*this))};
     m_dispatcherQueue.TryEnqueue(winrt::DispatcherQueueHandler(
         [weakThis]()
     {
@@ -5181,9 +5183,10 @@ void LinedFlowLayout::InvalidateMeasureAsync()
             return;
         }
 
-        if (auto strongThis = weakThis.get())
+        if(auto strongThis = weakThis.get())
         {
-            strongThis->InvalidateLayout(false /*forceRelayout*/, false /*resetItemsInfo*/, true /*invalidateMeasure*/);
+            LinedFlowLayout* rawThis = winrt::get_self<LinedFlowLayout>(strongThis);
+            rawThis->InvalidateLayout(false /*forceRelayout*/, false /*resetItemsInfo*/, true /*invalidateMeasure*/);
         }
     }));
 }
@@ -5505,11 +5508,11 @@ std::tuple<bool, bool, bool> LinedFlowLayout::ItemRangesHaveNewDesiredWidths(
                             LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"index causing relayout for changed desired size", itemIndex);
                             LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"oldDesiredWidth", oldDesiredWidth);
                         }
-                        else if (itemIndex == m_logItemIndexDbg)
+                        else if (itemIndex == LogItemIndexDbg())
                         {
                             LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"beginRealizedItemIndex", beginRealizedItemIndex);
                             LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"endRealizedItemIndex", endRealizedItemIndex);
-                            LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                            LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                             LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"oldDesiredWidth", oldDesiredWidth);
                         }
 #endif
@@ -5575,9 +5578,9 @@ std::tuple<bool, bool, bool> LinedFlowLayout::ItemRangesHaveNewDesiredWidths(
                         }
                     }
 #ifdef DBG
-                    else if (itemIndex == m_logItemIndexDbg)
+                    else if (itemIndex == LogItemIndexDbg())
                     {
-                        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"newDesiredWidth", newDesiredWidth);
                     }
 #endif
@@ -6887,9 +6890,9 @@ void LinedFlowLayout::MeasureItemRange(
             }
 
 #ifdef DBG
-            if (realizedItemIndex == m_logItemIndexDbg)
+            if (realizedItemIndex == LogItemIndexDbg())
             {
-                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                 LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"measured with elementAvailableSize",
                     arrangeWidth,
                     actualLineHeight);
@@ -6956,9 +6959,9 @@ void LinedFlowLayout::MeasureItemRangeRegularPath(
                 element.Measure(winrt::Size{ elementAvailableWidth, static_cast<float>(actualLineHeight) });
             }
 #ifdef DBG
-            if (realizedItemIndex == m_logItemIndexDbg)
+            if (realizedItemIndex == LogItemIndexDbg())
             {
-                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                 LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"measured with elementAvailableSize",
                     elementAvailableWidth,
                     actualLineHeight);
@@ -7316,9 +7319,9 @@ void LinedFlowLayout::SetArrangeWidthFromItemsInfo(
 #ifdef DBG
     LINEDFLOWLAYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"itemIndex", itemIndex);
 
-    if (itemIndex == m_logItemIndexDbg)
+    if (itemIndex == LogItemIndexDbg())
     {
-        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"arrangeWidth", arrangeWidth);
     }
     else
@@ -7376,9 +7379,9 @@ void LinedFlowLayout::SetDesiredAspectRatioFromItemsInfo(
 #ifdef DBG
     LINEDFLOWLAYOUT_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"itemIndex", itemIndex);
 
-    if (itemIndex == m_logItemIndexDbg)
+    if (itemIndex == LogItemIndexDbg())
     {
-        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+        LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
         LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"desiredAspectRatio", desiredAspectRatio);
     }
     else
@@ -7635,9 +7638,9 @@ void LinedFlowLayout::UpdateAspectRatiosWithItemsInfo()
             updateItemAspectRatio = true;
 
 #ifdef DBG
-            if (m_itemsInfoFirstIndex + index == m_logItemIndexDbg)
+            if (m_itemsInfoFirstIndex + index == LogItemIndexDbg())
             {
-                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                 LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this, L"ItemsInfo aspect ratio", aspectRatio);
             }
 #endif
@@ -7658,9 +7661,9 @@ void LinedFlowLayout::UpdateAspectRatiosWithItemsInfo()
             if (std::abs(itemAspectRatio.m_aspectRatio - aspectRatio) > 0.5 / (m_roundingScaleFactor * actualLineHeight))
             {
 #ifdef DBG
-                if (m_itemsInfoFirstIndex + index == m_logItemIndexDbg)
+                if (m_itemsInfoFirstIndex + index == LogItemIndexDbg())
                 {
-                    LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", m_logItemIndexDbg);
+                    LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"logItemIndexDbg", LogItemIndexDbg());
                     LINEDFLOWLAYOUT_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"ItemsInfo aspect ratio overwriting", itemAspectRatio.m_aspectRatio, aspectRatio);
                 }
 #endif

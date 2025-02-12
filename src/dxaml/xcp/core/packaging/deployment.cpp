@@ -16,7 +16,7 @@ CDeployment::~CDeployment()
     ReleaseInterface(m_pTempApplicationForResourceLookup);
 }
 
-_Check_return_ HRESULT CDeployment::SetCurrentApplication(_In_ CApplication *pApplication)
+_Check_return_ HRESULT CDeployment::SetCurrentApplication(_In_opt_ CApplication *pApplication)
 {
     AddRefInterface(pApplication);
     ReleaseInterface(m_pApplication);

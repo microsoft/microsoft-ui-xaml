@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::FlyoutBaseClosingEventArgs::get_Cancel(_Out_ BOOLEAN* p
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FlyoutBaseClosingEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FlyoutBaseClosingEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

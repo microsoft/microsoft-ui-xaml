@@ -44,10 +44,10 @@ namespace DirectUI
 
         // Methods.
         IFACEMETHOD(SetContentFromBitmapImage)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage) override;
-        IFACEMETHOD(SetContentFromBitmapImageWithAnchorPoint)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage, _In_ ABI::Windows::Foundation::Point anchorPoint) override;
+        IFACEMETHOD(SetContentFromBitmapImageWithAnchorPoint)(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage, ABI::Windows::Foundation::Point anchorPoint) override;
         IFACEMETHOD(SetContentFromDataPackage)() override;
         IFACEMETHOD(SetContentFromSoftwareBitmap)(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap) override;
-        IFACEMETHOD(SetContentFromSoftwareBitmapWithAnchorPoint)(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap, _In_ ABI::Windows::Foundation::Point anchorPoint) override;
+        IFACEMETHOD(SetContentFromSoftwareBitmapWithAnchorPoint)(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap, ABI::Windows::Foundation::Point anchorPoint) override;
 
 
     protected:

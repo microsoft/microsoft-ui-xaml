@@ -47,15 +47,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DropDownClosedHeight)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_DropDownClosedHeight(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_DropDownClosedHeight(DOUBLE value);
         IFACEMETHOD(get_DropDownContentMinWidth)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_DropDownContentMinWidth(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_DropDownContentMinWidth(DOUBLE value);
         IFACEMETHOD(get_DropDownOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_DropDownOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_DropDownOffset(DOUBLE value);
         IFACEMETHOD(get_DropDownOpenedHeight)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_DropDownOpenedHeight(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_DropDownOpenedHeight(DOUBLE value);
         IFACEMETHOD(get_SelectedItemDirection)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection* pValue) override;
-        _Check_return_ HRESULT put_SelectedItemDirection(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value);
+        _Check_return_ HRESULT put_SelectedItemDirection(ABI::Microsoft::UI::Xaml::Controls::Primitives::AnimationDirection value);
 
         // Events.
 

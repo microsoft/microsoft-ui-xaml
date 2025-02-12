@@ -16,8 +16,8 @@ using namespace DirectUISynonyms;
 
 IFACEMETHODIMP
 GridLengthFactory::Equals(
-    _In_ xaml::GridLength target,
-    _In_ xaml::GridLength value,
+    xaml::GridLength target,
+    xaml::GridLength value,
     _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -53,7 +53,7 @@ Cleanup:
 
 IFACEMETHODIMP
 GridLengthFactory::FromPixels(
-    _In_ DOUBLE pixels,
+    DOUBLE pixels,
     _Out_ xaml::GridLength* pReturnValue)
 {
     RRETURN(FromValueAndType(pixels, xaml::GridUnitType_Pixel, pReturnValue));
@@ -68,8 +68,8 @@ GridLengthFactory::FromPixels(
 
 IFACEMETHODIMP
 GridLengthFactory::FromValueAndType(
-    _In_ DOUBLE value,
-    _In_ xaml::GridUnitType type,
+    DOUBLE value,
+    xaml::GridUnitType type,
     _Out_ xaml::GridLength* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -119,7 +119,7 @@ Cleanup:
 //------------------------------------------------------------------------
 
 IFACEMETHODIMP
-GridLengthFactory::GetIsAbsolute(_In_ xaml::GridLength target, _Out_ BOOLEAN* pValue)
+GridLengthFactory::GetIsAbsolute(xaml::GridLength target, _Out_ BOOLEAN* pValue)
 
 {
     HRESULT hr = S_OK;
@@ -139,7 +139,7 @@ Cleanup:
 //------------------------------------------------------------------------
 
 IFACEMETHODIMP
-GridLengthFactory::GetIsAuto(_In_ xaml::GridLength target, _Out_ BOOLEAN* pValue)
+GridLengthFactory::GetIsAuto(xaml::GridLength target, _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
 
@@ -159,7 +159,7 @@ Cleanup:
 //------------------------------------------------------------------------
 
 IFACEMETHODIMP
-GridLengthFactory::GetIsStar(_In_ xaml::GridLength target, _Out_ BOOLEAN* pValue)
+GridLengthFactory::GetIsStar(xaml::GridLength target, _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
 

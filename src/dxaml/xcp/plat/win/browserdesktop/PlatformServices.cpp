@@ -509,7 +509,7 @@ CWindowsServices::XcpRenderCountersIncrement(_In_ XUINT32 uCounter)
 }
 
 HRESULT
-CWinRenderCounters::Create(_Out_ IXcpRenderCounters **ppRenderCounters)
+CWinRenderCounters::Create(_Outptr_ IXcpRenderCounters **ppRenderCounters)
 {
     HRESULT hr = S_OK;
 

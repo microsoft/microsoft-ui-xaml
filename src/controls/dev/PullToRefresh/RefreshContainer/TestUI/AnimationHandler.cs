@@ -15,7 +15,7 @@ using Microsoft.UI.Private.Controls;
 
 namespace MUXControlsTestApp
 {
-    class AnimationHandler : IAdapterAnimationHandler
+    partial class AnimationHandler : IAdapterAnimationHandler
     {
         Compositor compositor;
         RefreshPullDirection refreshPullDirection;

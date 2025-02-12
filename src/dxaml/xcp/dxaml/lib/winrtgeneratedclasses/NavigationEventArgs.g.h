@@ -42,9 +42,9 @@ namespace DirectUI
         IFACEMETHOD(get_NavigationTransitionInfo)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo** ppValue) override;
         _Check_return_ HRESULT put_NavigationTransitionInfo(_In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pValue);
         IFACEMETHOD(get_SourcePageType)(_Out_ ABI::Windows::UI::Xaml::Interop::TypeName* pValue) override;
-        _Check_return_ HRESULT put_SourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value);
+        _Check_return_ HRESULT put_SourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value);
         IFACEMETHOD(get_NavigationMode)(_Out_ ABI::Microsoft::UI::Xaml::Navigation::NavigationMode* pValue) override;
-        _Check_return_ HRESULT put_NavigationMode(_In_ ABI::Microsoft::UI::Xaml::Navigation::NavigationMode value);
+        _Check_return_ HRESULT put_NavigationMode(ABI::Microsoft::UI::Xaml::Navigation::NavigationMode value);
         IFACEMETHOD(get_Uri)(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue) override;
         IFACEMETHOD(put_Uri)(_In_opt_ ABI::Windows::Foundation::IUriRuntimeClass* pValue) override;
 

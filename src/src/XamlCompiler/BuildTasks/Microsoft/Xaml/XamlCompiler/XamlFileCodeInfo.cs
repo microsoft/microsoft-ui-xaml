@@ -12,6 +12,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private List<StrippableMember> strippableMembers = new List<StrippableMember>();
         private List<StrippableObject> strippableObjects = new List<StrippableObject>();
         private List<StrippableNamespace> strippableNamespaces = new List<StrippableNamespace>();
+        private List<StrippableMember> suppressTrimWarningsBindingMembers = new List<StrippableMember>();
 
         public XamlFileCodeInfo()
         {
@@ -29,6 +30,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public List<StrippableMember> StrippableMembers { get { return strippableMembers; } }
         public List<StrippableObject> StrippableObjects { get { return strippableObjects; } }
         public List<StrippableNamespace> StrippableNamespaces { get { return strippableNamespaces; } }
+        public List<StrippableMember> SuppressXamlTrimWarningsBindingMembers { get { return suppressTrimWarningsBindingMembers; } }
 
         // Fullpath is used for the #pragma checksum()
         public string FullPathToXamlFile { get; set; }

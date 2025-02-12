@@ -65,43 +65,43 @@ namespace DirectUI
         IFACEMETHOD(get_CalendarIdentifier)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_CalendarIdentifier)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_Date)(_Out_ ABI::Windows::Foundation::DateTime* pValue) override;
-        IFACEMETHOD(put_Date)(_In_ ABI::Windows::Foundation::DateTime value) override;
+        IFACEMETHOD(put_Date)(ABI::Windows::Foundation::DateTime value) override;
         IFACEMETHOD(get_DayFormat)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_DayFormat)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_DayVisible)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_DayVisible)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_DayVisible)(BOOLEAN value) override;
         IFACEMETHOD(get_Header)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Header)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_HeaderPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement* pValue) FEATURE_HEADERPLACEMENT_OVERRIDE;
-        IFACEMETHOD(put_HeaderPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
+        IFACEMETHOD(put_HeaderPlacement)(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) override;
         IFACEMETHOD(get_LightDismissOverlayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode* pValue) override;
-        IFACEMETHOD(put_LightDismissOverlayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
+        IFACEMETHOD(put_LightDismissOverlayMode)(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
         IFACEMETHOD(get_MaxYear)(_Out_ ABI::Windows::Foundation::DateTime* pValue) override;
-        IFACEMETHOD(put_MaxYear)(_In_ ABI::Windows::Foundation::DateTime value) override;
+        IFACEMETHOD(put_MaxYear)(ABI::Windows::Foundation::DateTime value) override;
         IFACEMETHOD(get_MinYear)(_Out_ ABI::Windows::Foundation::DateTime* pValue) override;
-        IFACEMETHOD(put_MinYear)(_In_ ABI::Windows::Foundation::DateTime value) override;
+        IFACEMETHOD(put_MinYear)(ABI::Windows::Foundation::DateTime value) override;
         IFACEMETHOD(get_MonthFormat)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_MonthFormat)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_MonthVisible)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_MonthVisible)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_MonthVisible)(BOOLEAN value) override;
         IFACEMETHOD(get_Orientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) override;
-        IFACEMETHOD(put_Orientation)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
+        IFACEMETHOD(put_Orientation)(ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
         IFACEMETHOD(get_SelectedDate)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>** ppValue) override;
-        IFACEMETHOD(put_SelectedDate)(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue) override;
+        IFACEMETHOD(put_SelectedDate)(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue) override;
         IFACEMETHOD(get_YearFormat)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_YearFormat)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_YearVisible)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_YearVisible)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_YearVisible)(BOOLEAN value) override;
 
         // Events.
         _Check_return_ HRESULT GetDateChangedEventSourceNoRef(_Outptr_ DateChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_DateChanged)(_In_ ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Controls::DatePickerValueChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DateChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DateChanged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetSelectedDateChangedEventSourceNoRef(_Outptr_ SelectedDateChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_SelectedDateChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::DatePicker*, ABI::Microsoft::UI::Xaml::Controls::DatePickerSelectedValueChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_SelectedDateChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_SelectedDateChanged)(EventRegistrationToken token) override;
 
         // Methods.
 

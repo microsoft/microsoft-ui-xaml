@@ -863,12 +863,12 @@ namespace DirectUI
         IFACEMETHOD(MeasureOverride)(
             // Measurement constraints, a control cannot return a size
             // larger than the constraint.
-            _In_ wf::Size pAvailableSize,
+            wf::Size pAvailableSize,
             // The desired size of the control.
             _Out_ wf::Size* pDesired) noexcept override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size finalSize,
+            wf::Size finalSize,
             _Out_ wf::Size* returnValue) noexcept override;
 
         // GotFocus event handler.

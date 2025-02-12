@@ -45,7 +45,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerPresenterGenerated
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaPlayerPresenter_IsFullWindow, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerPresenterGenerated::put_IsFullWindow(_In_ BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerPresenterGenerated::put_IsFullWindow(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaPlayerPresenter_IsFullWindow, value));
@@ -63,7 +63,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerPresenterGenerated
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::MediaPlayerPresenter_Stretch, pValue));
 }
-_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerPresenterGenerated::put_Stretch(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::MediaPlayerPresenterGenerated::put_Stretch(ABI::Microsoft::UI::Xaml::Media::Stretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::MediaPlayerPresenter_Stretch, value));

@@ -43,7 +43,7 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_MarkupExtensionType(_Out_ DirectUI::MarkupExtensionType* pValue);
-        _Check_return_ HRESULT put_MarkupExtensionType(_In_ DirectUI::MarkupExtensionType value);
+        _Check_return_ HRESULT put_MarkupExtensionType(DirectUI::MarkupExtensionType value);
         _Check_return_ HRESULT get_NativeValue(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_NativeValue(_In_opt_ IInspectable* pValue);
 

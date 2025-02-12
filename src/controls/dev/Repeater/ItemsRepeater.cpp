@@ -122,11 +122,13 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
 #endif
 
         // Checking if we have an data template and it is empty
-        if (m_isItemTemplateEmpty) {
+        if (m_isItemTemplateEmpty)
+        {
             // Has no content, so we will draw nothing and request zero space
             extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, 0, 0 };
         }
-        else {
+        else
+        {
             desiredSize = layout.Measure(layoutContext, availableSize);
             extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
         }
@@ -150,7 +152,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
     }
 
     m_viewportManager->SetLayoutExtent(extent);
-    m_lastAvailableSize = availableSize;
+
     return desiredSize;
 }
 
@@ -495,23 +497,23 @@ void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt:
     // If we skipped an unload event, reset the scrollers now and invalidate measure so that we get a new
     // layout pass during which we will hookup new scrollers.
     // The potential cache buffer is also reset so that the realization window regrows from scratch.
-    if (_loadedCounter > _unloadedCounter)
+    if (m_loadedCounter > m_unloadedCounter)
     {
         InvalidateMeasure();
         m_viewportManager->ResetScrollers();
         m_viewportManager->ResetLayoutRealizationWindowCacheBuffer();
     }
-    ++_loadedCounter;
+    ++m_loadedCounter;
 }
 
 void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
 {
     m_stackLayoutMeasureCounter = 0u;
 
-    ++_unloadedCounter;
+    ++m_unloadedCounter;
     // Only reset the scrollers if this unload event is in-sync.
     // The potential cache buffer is also reset so that the realization window regrows from scratch.
-    if (_unloadedCounter == _loadedCounter)
+    if (m_unloadedCounter == m_loadedCounter)
     {
         m_viewportManager->ResetScrollers();
         m_viewportManager->ResetLayoutRealizationWindowCacheBuffer();
@@ -687,11 +689,11 @@ void ItemsRepeater::OnLayoutChanged(winrt::Layout oldValue, winrt::Layout newVal
     m_viewManager.OnLayoutChanging();
     m_transitionManager.OnLayoutChanging();
 
-    if(!oldValue && !isInitialSetup)
+    if (!oldValue && !isInitialSetup)
     {
         oldValue = GetDefaultLayout();
     }
-    if(!newValue)
+    if (!newValue)
     {
         newValue = GetDefaultLayout();
     }
@@ -778,12 +780,70 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
 
 void ItemsRepeater::InvalidateMeasureForLayout(winrt::Layout const&, winrt::IInspectable const&)
 {
+    if (UseLayoutRounding())
+    {
+        if (const auto xamlRoot = XamlRoot())
+        {
+            const double layoutRoundFactor = xamlRoot.RasterizationScale();
+
+            if (layoutRoundFactor != m_layoutRoundFactor)
+            {
+                if (m_layoutRoundFactor != 0.0)
+                {
+                    // Invoke InvalidateMeasure for all children owned by the layout so that they
+                    // get re-measured using the new global scale factor.
+                    // Otherwise they keep using their old DesiredSize based on the old factor
+                    // which may be slightly different.
+                    // This could have unwanted effects, like StackLayoutState::m_areElementsMeasuredRegular
+                    // being incorrectly set to False in the StackLayout case.
+                    InvalidateChildrenMeasure();
+                }
+
+                // ItemsRepeater has its own m_layoutRoundFactor field to avoid:
+                //  - the need for a new public ItemsRepeater API,
+                //  - the need for an internal ItemsRepeater/Layout communication.
+                m_layoutRoundFactor = layoutRoundFactor;
+            }
+        }
+        else
+        {
+            m_layoutRoundFactor = 0.0;
+        }
+    }
+    else
+    {
+        m_layoutRoundFactor = 0.0;
+    }
+
     InvalidateMeasure();
 }
 
 void ItemsRepeater::InvalidateArrangeForLayout(winrt::Layout const&, winrt::IInspectable const&)
 {
     InvalidateArrange();
+}
+
+// Invalidates all children owned by the layout.
+void ItemsRepeater::InvalidateChildrenMeasure()
+{
+    ITEMSREPEATER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    const auto children = Children();
+    const auto childrenCount = children.Size();
+
+    for (unsigned childIndex = 0u; childIndex < childrenCount; childIndex++)
+    {
+        if (auto element = children.GetAt(childIndex))
+        {
+            if (const auto virtInfo = GetVirtualizationInfo(element))
+            {
+                if (virtInfo->Owner() == ElementOwner::Layout)
+                {
+                    element.InvalidateMeasure();
+                }
+            }
+        }
+    }
 }
 
 void ItemsRepeater::EnsureDefaultLayoutState()
@@ -819,7 +879,7 @@ winrt::IIterable<winrt::DependencyObject> ItemsRepeater::CreateChildrenInTabFocu
 
 winrt::Layout ItemsRepeater::GetEffectiveLayout()
 {
-    if(auto layout = Layout())
+    if (auto layout = Layout())
     {
         return layout;
     }

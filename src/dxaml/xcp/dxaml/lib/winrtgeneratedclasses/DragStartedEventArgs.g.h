@@ -37,9 +37,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_HorizontalOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_HorizontalOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_HorizontalOffset(DOUBLE value);
         IFACEMETHOD(get_VerticalOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_VerticalOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_VerticalOffset(DOUBLE value);
 
         // Methods.
 
@@ -72,7 +72,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithHorizontalOffsetAndVerticalOffset)(_In_ DOUBLE horizontalOffset, _In_ DOUBLE verticalOffset, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs** ppInstance);
+        IFACEMETHOD(CreateInstanceWithHorizontalOffsetAndVerticalOffset)(DOUBLE horizontalOffset, DOUBLE verticalOffset, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs** ppInstance);
 
         // Static properties.
 
@@ -90,7 +90,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithHorizontalOffsetAndVerticalOffsetImpl(_In_ DOUBLE horizontalOffset, _In_ DOUBLE verticalOffset, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithHorizontalOffsetAndVerticalOffsetImpl(DOUBLE horizontalOffset, DOUBLE verticalOffset, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventArgs** ppInstance);
 
         // Customized static properties.
 

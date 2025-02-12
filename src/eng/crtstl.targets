@@ -15,14 +15,15 @@
     <!-- We'll not use debug libraries when using the Hybrid CRT because doing so causes linker issues.
          See the comment below about _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH. -->
     <UseDebugLibraries Condition="'$(UseHybridCrt)'=='true'">false</UseDebugLibraries>
-    <PlatformTarget Condition="'$(PlatformTarget)' == '' and '$(Platform)' == 'Win32'">x86</PlatformTarget>
-    <PlatformTarget Condition="'$(PlatformTarget)' == ''">$(Platform)</PlatformTarget>
+    <VcLibPlatform Condition="'$(VcLibPlatform)' == '' and '$(Platform)' == 'Win32'">x86</VcLibPlatform>
+    <VcLibPlatform Condition="'$(VcLibPlatform)' == ''">$(Platform)</VcLibPlatform>
   </PropertyGroup>
 
   <PropertyGroup>
-    <VisualStudioLibPath Condition="'$(PlatformTarget)' == 'x86'">$(_VC_LibraryPath_VC_x86_Desktop)\</VisualStudioLibPath>
-    <VisualStudioLibPath Condition="'$(PlatformTarget)' == 'x64'">$(_VC_LibraryPath_VC_x64_Desktop)\</VisualStudioLibPath>
-    <VisualStudioLibPath Condition="'$(PlatformTarget)' == 'arm64'">$(_VC_LibraryPath_VC_arm64_Desktop)\</VisualStudioLibPath>
+    <VisualStudioLibPath Condition="'$(VcLibPlatform)' == 'x86'">$(_VC_LibraryPath_VC_x86_Desktop)\</VisualStudioLibPath>
+    <VisualStudioLibPath Condition="'$(VcLibPlatform)' == 'x64'">$(_VC_LibraryPath_VC_x64_Desktop)\</VisualStudioLibPath>
+    <VisualStudioLibPath Condition="'$(VcLibPlatform)' == 'arm64'">$(_VC_LibraryPath_VC_arm64_Desktop)\</VisualStudioLibPath>
+    <VisualStudioLibPath Condition="'$(VcLibPlatform)' == 'arm64ec'">$(_VC_LibraryPath_VC_arm64_Desktop)\</VisualStudioLibPath>
   </PropertyGroup>
 
   <!-- However, we do need to explicitly disable optimization when we've set UseDebugLibraries to false.

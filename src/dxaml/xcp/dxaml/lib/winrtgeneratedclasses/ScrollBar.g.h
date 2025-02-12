@@ -52,22 +52,22 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IndicatorMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollingIndicatorMode* pValue) override;
-        IFACEMETHOD(put_IndicatorMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollingIndicatorMode value) override;
+        IFACEMETHOD(put_IndicatorMode)(ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollingIndicatorMode value) override;
         IFACEMETHOD(get_Orientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) override;
-        IFACEMETHOD(put_Orientation)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
+        IFACEMETHOD(put_Orientation)(ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
         IFACEMETHOD(get_ViewportSize)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_ViewportSize)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_ViewportSize)(DOUBLE value) override;
 
         // Events.
         _Check_return_ HRESULT GetScrollEventSourceNoRef(_Outptr_ ScrollEventSourceType** ppEventSource);
         IFACEMETHOD(add_Scroll)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IScrollEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Scroll)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Scroll)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetThumbDragCompletedEventSourceNoRef(_Outptr_ ThumbDragCompletedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_ThumbDragCompleted(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragCompletedEventHandler* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_ThumbDragCompleted(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_ThumbDragCompleted(EventRegistrationToken token);
         _Check_return_ HRESULT GetThumbDragStartedEventSourceNoRef(_Outptr_ ThumbDragStartedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_ThumbDragStarted(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IDragStartedEventHandler* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_ThumbDragStarted(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_ThumbDragStarted(EventRegistrationToken token);
 
         // Methods.
 

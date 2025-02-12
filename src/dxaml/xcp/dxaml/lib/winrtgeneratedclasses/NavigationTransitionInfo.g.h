@@ -58,8 +58,8 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(CreateStoryboards)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Microsoft::UI::Xaml::Media::Animation::NavigationTrigger trigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards) override;
-        IFACEMETHOD(CreateStoryboardsCore)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ ABI::Microsoft::UI::Xaml::Media::Animation::NavigationTrigger trigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards) override;
+        IFACEMETHOD(CreateStoryboards)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Microsoft::UI::Xaml::Media::Animation::NavigationTrigger trigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards) override;
+        IFACEMETHOD(CreateStoryboardsCore)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, ABI::Microsoft::UI::Xaml::Media::Animation::NavigationTrigger trigger, _In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::Storyboard*>* pStoryboards) override;
         IFACEMETHOD(GetNavigationStateCore)(_Out_ HSTRING* pReturnValue) override;
         _Check_return_ HRESULT GetNavigationStateCoreProtected(_Out_ HSTRING* pReturnValue);
         IFACEMETHOD(SetNavigationStateCore)(_In_ HSTRING navigationState) override;

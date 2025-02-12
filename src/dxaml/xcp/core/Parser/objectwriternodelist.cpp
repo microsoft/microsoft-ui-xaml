@@ -202,7 +202,7 @@ template<std::size_t EXPECTEDCOUNT>
 bool ObjectWriterNodeList::TryPopRequiredElements(
     _In_ const std::array<ObjectWriterNodeType, EXPECTEDCOUNT>& expectedStackTopNodeType,
     _In_ std::vector<ObjectWriterNode>& nodeList,
-    _Out_ std::vector<ObjectWriterNode>& poppedList)
+    _Inout_ std::vector<ObjectWriterNode>& poppedList)
 {
     bool found = FoundRequiredElements(expectedStackTopNodeType, nodeList);
 

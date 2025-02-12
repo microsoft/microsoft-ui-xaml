@@ -39,6 +39,9 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'arm64ec' ">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <Import Project="$(MUXCProjectRoot)MidlShared.props" />
   <ItemGroup>
@@ -51,6 +54,7 @@
         Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir). -->
     <WebView2UseWinRT>true</WebView2UseWinRT>
   </PropertyGroup>
+
   <Import Project="$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" />
 
   <ItemGroup>

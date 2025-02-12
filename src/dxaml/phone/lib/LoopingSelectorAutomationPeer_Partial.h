@@ -40,7 +40,7 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         _Check_return_ HRESULT InitializeImpl(
             _In_ xaml_primitives::ILoopingSelector* pOwner) override;
 
-        _Check_return_ HRESULT GetOwnerAsInternalPtrNoRef(_Outptr_ xaml_primitives::LoopingSelector** ppOwnerNoRef);
+        _Check_return_ HRESULT GetOwnerAsInternalPtrNoRef(_Outptr_result_maybenull_ xaml_primitives::LoopingSelector** ppOwnerNoRef);
 
         _Check_return_ HRESULT FindStartIndex(
             _In_opt_ xaml::Automation::Provider::IIRawElementProviderSimple* pStartAfter,

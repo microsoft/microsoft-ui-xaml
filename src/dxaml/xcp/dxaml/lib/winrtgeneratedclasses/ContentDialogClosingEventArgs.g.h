@@ -37,9 +37,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Result)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult* pValue) override;
-        _Check_return_ HRESULT put_Result(_In_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult value);
+        _Check_return_ HRESULT put_Result(ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult value);
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
 
         // Methods.
         IFACEMETHOD(GetDeferral)(_Outptr_ ABI::Microsoft::UI::Xaml::Controls::IContentDialogClosingDeferral** ppReturnValue) override;

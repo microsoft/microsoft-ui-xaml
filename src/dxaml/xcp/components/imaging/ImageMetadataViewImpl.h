@@ -14,7 +14,7 @@ class CD3D11Device;
 class ImageMetadataViewImpl final : public ImageMetadataView
 {
 public:
-    void SetEncodedImageData(_In_opt_ std::shared_ptr<EncodedImageData> encodedImageData, HRESULT downloadStatus);
+    void SetEncodedImageData(_In_ std::shared_ptr<EncodedImageData> encodedImageData, HRESULT downloadStatus);
     void SetDownloadProgress(float downloadProgress);
 
     // ImageMetadataView

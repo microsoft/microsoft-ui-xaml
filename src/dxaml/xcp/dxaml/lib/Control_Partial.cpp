@@ -1253,7 +1253,7 @@ Cleanup:
 
 IFACEMETHODIMP
 Control::remove_IsEnabledChanged(
-    _In_ EventRegistrationToken tToken)
+    EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CIsEnabledChangedEventSource* pEventSourceNoRef = nullptr;

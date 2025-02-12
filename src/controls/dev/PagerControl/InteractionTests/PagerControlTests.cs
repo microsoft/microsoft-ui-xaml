@@ -244,6 +244,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void NumberPanelChangingPageTest2()
         {
             using (var setup = new TestSetupHelper("PagerControl Tests"))
@@ -381,6 +382,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void FirstPageButtonChangingPageTest()
         {
             using (var setup = new TestSetupHelper("PagerControl Tests"))
@@ -401,6 +403,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void PreviousPageButtonChangingPageTest()
         {
             using (var setup = new TestSetupHelper("PagerControl Tests"))

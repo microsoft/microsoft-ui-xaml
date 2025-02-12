@@ -47,7 +47,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(Move)(_In_ UINT oldIndex, _In_ UINT newIndex) override;
+        IFACEMETHOD(Move)(UINT oldIndex, UINT newIndex) override;
 
 
     protected:

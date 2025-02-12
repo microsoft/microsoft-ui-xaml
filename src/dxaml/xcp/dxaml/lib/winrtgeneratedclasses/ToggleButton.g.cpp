@@ -49,7 +49,7 @@ IFACEMETHODIMP DirectUI::ToggleButtonGenerated::get_IsChecked(_Out_ ABI::Windows
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleButton_IsChecked, ppValue));
 }
-IFACEMETHODIMP DirectUI::ToggleButtonGenerated::put_IsChecked(_In_ ABI::Windows::Foundation::IReference<bool>* pValue)
+IFACEMETHODIMP DirectUI::ToggleButtonGenerated::put_IsChecked(ABI::Windows::Foundation::IReference<bool>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleButton_IsChecked, pValue));
@@ -58,7 +58,7 @@ IFACEMETHODIMP DirectUI::ToggleButtonGenerated::get_IsThreeState(_Out_ BOOLEAN* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToggleButton_IsThreeState, pValue));
 }
-IFACEMETHODIMP DirectUI::ToggleButtonGenerated::put_IsThreeState(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ToggleButtonGenerated::put_IsThreeState(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToggleButton_IsThreeState, value));
@@ -101,7 +101,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ToggleButtonGenerated::remove_Checked(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ToggleButtonGenerated::remove_Checked(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CheckedEventSourceType* pEventSource = nullptr;
@@ -156,7 +156,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ToggleButtonGenerated::remove_Indeterminate(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ToggleButtonGenerated::remove_Indeterminate(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     IndeterminateEventSourceType* pEventSource = nullptr;
@@ -211,7 +211,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ToggleButtonGenerated::remove_Unchecked(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ToggleButtonGenerated::remove_Unchecked(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     UncheckedEventSourceType* pEventSource = nullptr;

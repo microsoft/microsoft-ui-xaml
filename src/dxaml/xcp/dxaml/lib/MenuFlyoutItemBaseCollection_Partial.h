@@ -65,7 +65,7 @@ namespace DirectUI
 
     public:
         // Override these methods so that we notify the MenuFlyout that its items collection has changed.
-        IFACEMETHOD(SetAt)(_In_ UINT index, _In_opt_ xaml_controls::IMenuFlyoutItemBase* item) override;
+        IFACEMETHOD(SetAt)(_In_ UINT index, _In_ xaml_controls::IMenuFlyoutItemBase* item) override;
         IFACEMETHOD(InsertAt)(_In_ UINT index, _In_opt_ xaml_controls::IMenuFlyoutItemBase* item) override;
         IFACEMETHOD(RemoveAt)(_In_ UINT index) override;
         IFACEMETHOD(Append)(_In_opt_ xaml_controls::IMenuFlyoutItemBase* item) override;

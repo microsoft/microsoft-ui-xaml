@@ -51,7 +51,7 @@ namespace DirectUI
         // Properties.
         IFACEMETHOD(get_Inlines)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Documents::Inline*>** ppValue) override;
         IFACEMETHOD(get_TextIndent)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_TextIndent)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_TextIndent)(DOUBLE value) override;
 
         // Events.
 

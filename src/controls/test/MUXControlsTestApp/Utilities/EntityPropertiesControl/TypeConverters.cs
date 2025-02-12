@@ -14,7 +14,7 @@ using Microsoft.UI;
 
 namespace MUXControlsTestApp.Utilities
 {
-    public class EnumConverter : IValueConverter
+    public partial class EnumConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -81,7 +81,7 @@ namespace MUXControlsTestApp.Utilities
         }
     }
 
-    public class SolidColorBrushConverter : IValueConverter
+    public partial class SolidColorBrushConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
@@ -128,7 +128,7 @@ namespace MUXControlsTestApp.Utilities
         }
     }
 
-    public class UniversalConverter : IValueConverter
+    public partial class UniversalConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

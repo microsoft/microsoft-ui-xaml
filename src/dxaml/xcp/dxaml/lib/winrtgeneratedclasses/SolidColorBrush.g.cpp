@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::SolidColorBrush::get_Color(_Out_ ABI::Windows::UI::Colo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::SolidColorBrush_Color, pValue));
 }
-IFACEMETHODIMP DirectUI::SolidColorBrush::put_Color(_In_ ABI::Windows::UI::Color value)
+IFACEMETHODIMP DirectUI::SolidColorBrush::put_Color(ABI::Windows::UI::Color value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::SolidColorBrush_Color, value));
@@ -116,7 +116,7 @@ HRESULT DirectUI::SolidColorBrushFactory::QueryInterfaceImpl(_In_ REFIID iid, _O
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::SolidColorBrushFactory::CreateInstanceWithColor(_In_ ABI::Windows::UI::Color color, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush** ppInstance)
+IFACEMETHODIMP DirectUI::SolidColorBrushFactory::CreateInstanceWithColor(ABI::Windows::UI::Color color, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush** ppInstance)
 {
     HRESULT hr = S_OK;
     

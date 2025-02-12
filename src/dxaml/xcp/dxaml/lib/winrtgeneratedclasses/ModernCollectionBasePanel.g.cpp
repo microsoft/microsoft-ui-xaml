@@ -100,7 +100,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_AreStic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ModernCollectionBasePanel_AreStickyGroupHeadersEnabledBase, pValue));
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_AreStickyGroupHeadersEnabledBase(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_AreStickyGroupHeadersEnabledBase(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ModernCollectionBasePanel_AreStickyGroupHeadersEnabledBase, value));
@@ -124,7 +124,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_FirstCa
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_FirstCacheGroupIndexBase(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_FirstCacheGroupIndexBase(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -142,7 +142,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_FirstCa
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_FirstCacheIndexBase(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_FirstCacheIndexBase(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -160,7 +160,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_FirstVi
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_FirstVisibleGroupIndexBase(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_FirstVisibleGroupIndexBase(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -178,7 +178,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_FirstVi
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_FirstVisibleIndexBase(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_FirstVisibleIndexBase(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -197,7 +197,7 @@ IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::get_IsRegisteredFor
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::put_IsRegisteredForCallbacks(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::put_IsRegisteredForCallbacks(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -215,7 +215,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_LastCac
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_LastCacheGroupIndexBase(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_LastCacheGroupIndexBase(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -233,7 +233,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_LastCac
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_LastCacheIndexBase(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_LastCacheIndexBase(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -251,7 +251,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_LastVis
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_LastVisibleGroupIndexBase(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_LastVisibleGroupIndexBase(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -269,7 +269,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_LastVis
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_LastVisibleIndexBase(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_LastVisibleIndexBase(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -288,7 +288,7 @@ _Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::get_Panning
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_PanningDirectionBase(_In_ ABI::Microsoft::UI::Xaml::Controls::PanelScrollingDirection value)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::put_PanningDirectionBase(ABI::Microsoft::UI::Xaml::Controls::PanelScrollingDirection value)
 {
     HRESULT hr = S_OK;
     
@@ -336,7 +336,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -391,7 +391,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -446,7 +446,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::remove_VisibleIndicesUpdated(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::ModernCollectionBasePanelGenerated::remove_VisibleIndicesUpdated(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VisibleIndicesUpdatedEventSourceType* pEventSource = nullptr;
@@ -485,7 +485,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::ContainerFromIndex(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::ContainerFromIndex(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -541,7 +541,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::FindRecyclingCandidate(_In_ INT index, _Out_ BOOLEAN* pHasMatchingCandidate)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::FindRecyclingCandidate(INT index, _Out_ BOOLEAN* pHasMatchingCandidate)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -559,7 +559,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GenerateContainerAtIndex(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppReturnValue)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GenerateContainerAtIndex(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -578,7 +578,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GenerateHeaderAtGroupIndex(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppReturnValue)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GenerateHeaderAtGroupIndex(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -673,7 +673,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetInsertionIndexes(_In_ ABI::Windows::Foundation::Point position, _Out_ INT* pFirst, _Out_ INT* pSecond)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetInsertionIndexes(ABI::Windows::Foundation::Point position, _Out_ INT* pFirst, _Out_ INT* pSecond)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -691,7 +691,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetIrregularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetIrregularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -748,7 +748,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetRegularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::GetRegularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -827,7 +827,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::HeaderFromIndex(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::HeaderFromIndex(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -866,7 +866,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::IndexFromHeader(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeader, _In_ BOOLEAN excludeHiddenEmptyGroups, _Out_ INT* pReturnValue)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::IndexFromHeader(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeader, BOOLEAN excludeHiddenEmptyGroups, _Out_ INT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -961,7 +961,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::NotifyOfItemsReordered(_In_ UINT count)
+IFACEMETHODIMP DirectUI::ModernCollectionBasePanelGenerated::NotifyOfItemsReordered(UINT count)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -41,7 +41,7 @@ _Check_return_ HRESULT DirectUI::ParametricCurveSegment::get_BeginOffset(_Out_ D
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_BeginOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_BeginOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_BeginOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_BeginOffset, value));
@@ -50,7 +50,7 @@ _Check_return_ HRESULT DirectUI::ParametricCurveSegment::get_ConstantCoefficient
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_ConstantCoefficient, pValue));
 }
-_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_ConstantCoefficient(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_ConstantCoefficient(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_ConstantCoefficient, value));
@@ -59,7 +59,7 @@ _Check_return_ HRESULT DirectUI::ParametricCurveSegment::get_CubicCoefficient(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_CubicCoefficient, pValue));
 }
-_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_CubicCoefficient(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_CubicCoefficient(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_CubicCoefficient, value));
@@ -68,7 +68,7 @@ _Check_return_ HRESULT DirectUI::ParametricCurveSegment::get_LinearCoefficient(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_LinearCoefficient, pValue));
 }
-_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_LinearCoefficient(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_LinearCoefficient(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_LinearCoefficient, value));
@@ -77,7 +77,7 @@ _Check_return_ HRESULT DirectUI::ParametricCurveSegment::get_QuadraticCoefficien
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_QuadraticCoefficient, pValue));
 }
-_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_QuadraticCoefficient(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ParametricCurveSegment::put_QuadraticCoefficient(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ParametricCurveSegment_QuadraticCoefficient, value));

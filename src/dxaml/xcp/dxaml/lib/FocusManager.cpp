@@ -344,7 +344,7 @@ static _Check_return_ HRESULT TryMoveFocusStatic(
 
 _Check_return_ HRESULT
 FocusManagerFactory::TryMoveFocusAsyncImpl(
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
     _Outptr_ wf::IAsyncOperation<xaml_input::FocusMovementResult*>** ppReturnValue)
 {
     BOOLEAN focusMoved = FALSE;
@@ -355,7 +355,7 @@ FocusManagerFactory::TryMoveFocusAsyncImpl(
 
 _Check_return_ HRESULT
 FocusManagerFactory::TryMoveFocusWithOptionsAsyncImpl(
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
     _In_ xaml_input::IFindNextElementOptions* focusNavigationOptions,
     _Outptr_ wf::IAsyncOperation<xaml_input::FocusMovementResult*>** ppReturnValue)
 {
@@ -367,7 +367,7 @@ FocusManagerFactory::TryMoveFocusWithOptionsAsyncImpl(
 
 _Check_return_ HRESULT
 FocusManagerFactory::TryMoveFocusImpl(
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
     _Out_ BOOLEAN* pIsFocusMoved)
 {
     IFC_RETURN(TryMoveFocusStatic(focusNavigationDirection, nullptr, pIsFocusMoved, nullptr));
@@ -376,7 +376,7 @@ FocusManagerFactory::TryMoveFocusImpl(
 
 _Check_return_ HRESULT
 FocusManagerFactory::TryMoveFocusWithOptionsImpl(
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
     _In_ xaml_input::IFindNextElementOptions* pFocusNavigationOverride,
     _Out_ BOOLEAN* pIsFocusMoved)
 {
@@ -386,7 +386,7 @@ FocusManagerFactory::TryMoveFocusWithOptionsImpl(
 
 _Check_return_ HRESULT FocusManagerFactory::TryFocusAsyncImpl(
     _In_ xaml::IDependencyObject* pElement,
-    _In_ xaml::FocusState focusState,
+    xaml::FocusState focusState,
     _Outptr_ wf::IAsyncOperation<xaml_input::FocusMovementResult*>** asyncOperation)
 {
     CFocusManager* focusManager = VisualTree::GetFocusManagerForElement(static_cast<DirectUI::DependencyObject*>(pElement)->GetHandle());
@@ -427,7 +427,7 @@ _Check_return_ HRESULT FocusManagerFactory::TryFocusAsyncImpl(
 }
 
 _Check_return_ HRESULT
-FocusManagerFactory::FindNextFocusableElementImpl(_In_ xaml_input::FocusNavigationDirection focusNavigationDirection, _Outptr_ xaml::IUIElement** ppReturnValue)
+FocusManagerFactory::FindNextFocusableElementImpl(xaml_input::FocusNavigationDirection focusNavigationDirection, _Outptr_ xaml::IUIElement** ppReturnValue)
 {
     if (InIslandsMode())
     {
@@ -447,7 +447,7 @@ FocusManagerFactory::FindNextFocusableElementImpl(_In_ xaml_input::FocusNavigati
 }
 
 _Check_return_ HRESULT
-FocusManagerFactory::FindNextFocusableElementWithHintImpl(_In_ xaml_input::FocusNavigationDirection focusNavigationDirection, _In_ wf::Rect focusHintRectangle, _Outptr_ xaml::IUIElement** ppReturnValue)
+FocusManagerFactory::FindNextFocusableElementWithHintImpl(xaml_input::FocusNavigationDirection focusNavigationDirection, wf::Rect focusHintRectangle, _Outptr_ xaml::IUIElement** ppReturnValue)
 {
     if (InIslandsMode())
     {
@@ -469,7 +469,7 @@ FocusManagerFactory::FindNextFocusableElementWithHintImpl(_In_ xaml_input::Focus
 }
 
 _Check_return_ HRESULT
-FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementImpl(_In_ xaml_input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppReturnValue)
+FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementImpl(xaml_input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppReturnValue)
 {
     ctl::ComPtr<IInspectable> spScope(pSearchRoot);
     ctl::ComPtr<xaml::IDependencyObject> spScopeDO;
@@ -525,11 +525,11 @@ FocusManagerFactory::SetEngagedControlImpl(_In_ IInspectable* pEngagedControl)
 _Check_return_ HRESULT
 FocusManagerFactory::SetFocusedElementWithDirectionImpl(
     _In_ xaml::IDependencyObject* pElement,
-    _In_ xaml::FocusState focusState,
-    _In_ BOOLEAN animateIfBringIntoView,
-    _In_ BOOLEAN forceBringIntoView,
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
-    _In_ BOOLEAN requestInputActivation,
+    xaml::FocusState focusState,
+    BOOLEAN animateIfBringIntoView,
+    BOOLEAN forceBringIntoView,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
+    BOOLEAN requestInputActivation,
     _Out_ BOOLEAN* pFocusUpdated)
 {
     ctl::ComPtr<xaml::IDependencyObject> spElementToFocus(pElement);
@@ -687,7 +687,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::add_GotFocus(
 }
 
 IFACEMETHODIMP DirectUI::FocusManagerFactory::remove_GotFocus(
-    _In_ EventRegistrationToken token)
+    EventRegistrationToken token)
 {
     ctl::ComPtr<CEventSource<wf::IEventHandler<xaml_input::FocusManagerGotFocusEventArgs*>, IInspectable, xaml_input::IFocusManagerGotFocusEventArgs>> spEventSource;
     wf::IEventHandler<xaml_input::FocusManagerGotFocusEventArgs*>* pValue = (wf::IEventHandler<xaml_input::FocusManagerGotFocusEventArgs*>*)token.value;
@@ -734,7 +734,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::add_LostFocus(
 }
 
 IFACEMETHODIMP DirectUI::FocusManagerFactory::remove_LostFocus(
-    _In_ EventRegistrationToken token)
+    EventRegistrationToken token)
 {
     ctl::ComPtr<CEventSource<wf::IEventHandler<xaml_input::FocusManagerLostFocusEventArgs*>, IInspectable, xaml_input::IFocusManagerLostFocusEventArgs>> spEventSource;
     wf::IEventHandler<xaml_input::FocusManagerLostFocusEventArgs*>* pValue = (wf::IEventHandler<xaml_input::FocusManagerLostFocusEventArgs*>*)token.value;
@@ -781,7 +781,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::add_GettingFocus(
 }
 
 IFACEMETHODIMP DirectUI::FocusManagerFactory::remove_GettingFocus(
-    _In_ EventRegistrationToken token)
+    EventRegistrationToken token)
 {
     ctl::ComPtr<CEventSource<wf::IEventHandler<xaml_input::GettingFocusEventArgs*>, IInspectable, xaml_input::IGettingFocusEventArgs>> spEventSource;
     wf::IEventHandler<xaml_input::GettingFocusEventArgs*>* pValue = (wf::IEventHandler<xaml_input::GettingFocusEventArgs*>*)token.value;
@@ -828,7 +828,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::add_LosingFocus(
 }
 
 IFACEMETHODIMP DirectUI::FocusManagerFactory::remove_LosingFocus(
-    _In_ EventRegistrationToken token)
+    EventRegistrationToken token)
 {
     ctl::ComPtr<CEventSource<wf::IEventHandler<xaml_input::LosingFocusEventArgs*>, IInspectable, xaml_input::ILosingFocusEventArgs>> spEventSource;
     wf::IEventHandler<xaml_input::LosingFocusEventArgs*>* pValue = (wf::IEventHandler<xaml_input::LosingFocusEventArgs*>*)token.value;
@@ -872,7 +872,7 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::add_FocusedElementRemoved(_In_ xam
     return S_OK;
 }
 
-IFACEMETHODIMP DirectUI::FocusManagerFactory::remove_FocusedElementRemoved(_In_ EventRegistrationToken token)
+IFACEMETHODIMP DirectUI::FocusManagerFactory::remove_FocusedElementRemoved(EventRegistrationToken token)
 {
     ctl::ComPtr<CEventSource<xaml_input::IFocusedElementRemovedEventHandler, IInspectable, xaml_input::IFocusedElementRemovedEventArgs>> eventSource;
     xaml_input::IFocusedElementRemovedEventHandler* value = (xaml_input::IFocusedElementRemovedEventHandler*)token.value;
@@ -897,10 +897,10 @@ IFACEMETHODIMP DirectUI::FocusManagerFactory::remove_FocusedElementRemoved(_In_ 
 
 _Check_return_ HRESULT
 FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementWithHintRectImpl(
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
     _In_ IInspectable* pSearchRoot,
-    _In_ wf::Rect focusHintRectangle,
-    _In_ wf::Rect focusExclusionRectangle,
+    wf::Rect focusHintRectangle,
+    wf::Rect focusExclusionRectangle,
     _Outptr_ IInspectable** ppReturnValue)
 {
     ctl::ComPtr<IInspectable> spScope(pSearchRoot);
@@ -933,10 +933,10 @@ FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementWithHintRectImpl
 
 _Check_return_ HRESULT
 FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementWithClipImpl(
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
     _In_ IInspectable* pSearchRoot,
-    _In_ BOOLEAN ignoreClipping,
-    _In_ BOOLEAN ignoreCone,
+    BOOLEAN ignoreClipping,
+    BOOLEAN ignoreCone,
     _Outptr_ IInspectable** ppReturnValue)
 {
     ctl::ComPtr<IInspectable> spScope(pSearchRoot);
@@ -966,7 +966,7 @@ FocusManagerFactory::FindNextFocusWithSearchRootIgnoreEngagementWithClipImpl(
 
 _Check_return_ HRESULT
 FocusManagerFactory::FindNextElementImpl(
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
     _Outptr_ xaml::IDependencyObject** ppReturnValue)
 {
     // Return error if FindNextElement is called without focus navigation option in islands/ desktop
@@ -988,7 +988,7 @@ FocusManagerFactory::FindNextElementImpl(
 
 _Check_return_ HRESULT
 FocusManagerFactory::FindNextElementWithOptionsImpl(
-    _In_ xaml_input::FocusNavigationDirection focusNavigationDirection,
+    xaml_input::FocusNavigationDirection focusNavigationDirection,
     _In_ xaml_input::IFindNextElementOptions* pFocusNavigationOverride,
     _Outptr_ xaml::IDependencyObject** ppReturnValue)
 {

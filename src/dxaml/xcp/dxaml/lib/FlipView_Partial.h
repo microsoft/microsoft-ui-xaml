@@ -139,11 +139,11 @@ namespace DirectUI
     protected:
 
         IFACEMETHOD(MeasureOverride)(
-            _In_ wf::Size availableSize,
+            wf::Size availableSize,
             _Out_ wf::Size* returnValue) override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size arrangeSize,
+            wf::Size arrangeSize,
             _Out_ wf::Size* returnValue) override;
 
         // Invoked whenever application code or internal processes call ApplyTemplate.

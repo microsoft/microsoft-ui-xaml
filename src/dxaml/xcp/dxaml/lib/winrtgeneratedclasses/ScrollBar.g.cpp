@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ScrollBarGenerated::get_IndicatorMode(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollBar_IndicatorMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollBarGenerated::put_IndicatorMode(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollingIndicatorMode value)
+IFACEMETHODIMP DirectUI::ScrollBarGenerated::put_IndicatorMode(ABI::Microsoft::UI::Xaml::Controls::Primitives::ScrollingIndicatorMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollBar_IndicatorMode, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ScrollBarGenerated::get_Orientation(_Out_ ABI::Microsof
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollBar_Orientation, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollBarGenerated::put_Orientation(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value)
+IFACEMETHODIMP DirectUI::ScrollBarGenerated::put_Orientation(ABI::Microsoft::UI::Xaml::Controls::Orientation value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollBar_Orientation, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::ScrollBarGenerated::get_ViewportSize(_Out_ DOUBLE* pVal
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ScrollBar_ViewportSize, pValue));
 }
-IFACEMETHODIMP DirectUI::ScrollBarGenerated::put_ViewportSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ScrollBarGenerated::put_ViewportSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ScrollBar_ViewportSize, value));
@@ -106,7 +106,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ScrollBarGenerated::remove_Scroll(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ScrollBarGenerated::remove_Scroll(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ScrollEventSourceType* pEventSource = nullptr;
@@ -161,7 +161,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::ScrollBarGenerated::remove_ThumbDragCompleted(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::ScrollBarGenerated::remove_ThumbDragCompleted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ThumbDragCompletedEventSourceType* pEventSource = nullptr;
@@ -215,7 +215,7 @@ Cleanup:
     return hr;
 }
 
-_Check_return_ HRESULT DirectUI::ScrollBarGenerated::remove_ThumbDragStarted(_In_ EventRegistrationToken tToken)
+_Check_return_ HRESULT DirectUI::ScrollBarGenerated::remove_ThumbDragStarted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ThumbDragStartedEventSourceType* pEventSource = nullptr;

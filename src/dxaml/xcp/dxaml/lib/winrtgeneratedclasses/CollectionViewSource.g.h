@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsSourceGrouped)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsSourceGrouped)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsSourceGrouped)(BOOLEAN value) override;
         IFACEMETHOD(get_ItemsPath)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IPropertyPath** ppValue) override;
         IFACEMETHOD(put_ItemsPath)(_In_opt_ ABI::Microsoft::UI::Xaml::IPropertyPath* pValue) override;
         IFACEMETHOD(get_Source)(_Outptr_result_maybenull_ IInspectable** ppValue) override;

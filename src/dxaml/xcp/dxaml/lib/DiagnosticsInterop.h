@@ -281,7 +281,7 @@ namespace Diagnostics
 
         static _Check_return_ HRESULT ResolveResource(
             _In_ const std::shared_ptr<ResourceDependency>& resourceDependency,
-            _In_opt_ const xref_ptr<CResourceDictionary>& dictionaryFoundIn,
+            _In_ const xref_ptr<CResourceDictionary>& dictionaryFoundIn,
             const xstring_ptr& resourceKey,
             _In_opt_ xaml::IUIElement* resolutionContext,
             _Out_ wrl::ComPtr<IInspectable>& unboxedValue);

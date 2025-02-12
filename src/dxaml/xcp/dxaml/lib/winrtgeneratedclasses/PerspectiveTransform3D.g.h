@@ -48,11 +48,11 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Depth)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Depth)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Depth)(DOUBLE value) override;
         IFACEMETHOD(get_OffsetX)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_OffsetX)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_OffsetX)(DOUBLE value) override;
         IFACEMETHOD(get_OffsetY)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_OffsetY)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_OffsetY)(DOUBLE value) override;
 
         // Events.
 

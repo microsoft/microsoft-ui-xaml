@@ -24,59 +24,59 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_FastPlayFallbackBehaviour)(_Out_ ABI::Microsoft::UI::Xaml::Media::FastPlayFallbackBehaviour* pValue) override { return This()->get_FastPlayFallbackBehaviour(pValue); }
-        IFACEMETHOD(put_FastPlayFallbackBehaviour)(_In_ ABI::Microsoft::UI::Xaml::Media::FastPlayFallbackBehaviour value) override { return This()->put_FastPlayFallbackBehaviour(value); }
+        IFACEMETHOD(put_FastPlayFallbackBehaviour)(ABI::Microsoft::UI::Xaml::Media::FastPlayFallbackBehaviour value) override { return This()->put_FastPlayFallbackBehaviour(value); }
         IFACEMETHOD(get_IsCompact)(_Out_ BOOLEAN* pValue) override { return This()->get_IsCompact(pValue); }
-        IFACEMETHOD(put_IsCompact)(_In_ BOOLEAN value) override { return This()->put_IsCompact(value); }
+        IFACEMETHOD(put_IsCompact)(BOOLEAN value) override { return This()->put_IsCompact(value); }
         IFACEMETHOD(get_IsFastForwardButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsFastForwardButtonVisible(pValue); }
-        IFACEMETHOD(put_IsFastForwardButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsFastForwardButtonVisible(value); }
+        IFACEMETHOD(put_IsFastForwardButtonVisible)(BOOLEAN value) override { return This()->put_IsFastForwardButtonVisible(value); }
         IFACEMETHOD(get_IsFastForwardEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsFastForwardEnabled(pValue); }
-        IFACEMETHOD(put_IsFastForwardEnabled)(_In_ BOOLEAN value) override { return This()->put_IsFastForwardEnabled(value); }
+        IFACEMETHOD(put_IsFastForwardEnabled)(BOOLEAN value) override { return This()->put_IsFastForwardEnabled(value); }
         IFACEMETHOD(get_IsFastRewindButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsFastRewindButtonVisible(pValue); }
-        IFACEMETHOD(put_IsFastRewindButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsFastRewindButtonVisible(value); }
+        IFACEMETHOD(put_IsFastRewindButtonVisible)(BOOLEAN value) override { return This()->put_IsFastRewindButtonVisible(value); }
         IFACEMETHOD(get_IsFastRewindEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsFastRewindEnabled(pValue); }
-        IFACEMETHOD(put_IsFastRewindEnabled)(_In_ BOOLEAN value) override { return This()->put_IsFastRewindEnabled(value); }
+        IFACEMETHOD(put_IsFastRewindEnabled)(BOOLEAN value) override { return This()->put_IsFastRewindEnabled(value); }
         IFACEMETHOD(get_IsNextTrackButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsNextTrackButtonVisible(pValue); }
-        IFACEMETHOD(put_IsNextTrackButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsNextTrackButtonVisible(value); }
+        IFACEMETHOD(put_IsNextTrackButtonVisible)(BOOLEAN value) override { return This()->put_IsNextTrackButtonVisible(value); }
         IFACEMETHOD(get_IsPlaybackRateButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsPlaybackRateButtonVisible(pValue); }
-        IFACEMETHOD(put_IsPlaybackRateButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsPlaybackRateButtonVisible(value); }
+        IFACEMETHOD(put_IsPlaybackRateButtonVisible)(BOOLEAN value) override { return This()->put_IsPlaybackRateButtonVisible(value); }
         IFACEMETHOD(get_IsPlaybackRateEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsPlaybackRateEnabled(pValue); }
-        IFACEMETHOD(put_IsPlaybackRateEnabled)(_In_ BOOLEAN value) override { return This()->put_IsPlaybackRateEnabled(value); }
+        IFACEMETHOD(put_IsPlaybackRateEnabled)(BOOLEAN value) override { return This()->put_IsPlaybackRateEnabled(value); }
         IFACEMETHOD(get_IsPreviousTrackButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsPreviousTrackButtonVisible(pValue); }
-        IFACEMETHOD(put_IsPreviousTrackButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsPreviousTrackButtonVisible(value); }
+        IFACEMETHOD(put_IsPreviousTrackButtonVisible)(BOOLEAN value) override { return This()->put_IsPreviousTrackButtonVisible(value); }
         IFACEMETHOD(get_IsRepeatButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsRepeatButtonVisible(pValue); }
-        IFACEMETHOD(put_IsRepeatButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsRepeatButtonVisible(value); }
+        IFACEMETHOD(put_IsRepeatButtonVisible)(BOOLEAN value) override { return This()->put_IsRepeatButtonVisible(value); }
         IFACEMETHOD(get_IsRepeatEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsRepeatEnabled(pValue); }
-        IFACEMETHOD(put_IsRepeatEnabled)(_In_ BOOLEAN value) override { return This()->put_IsRepeatEnabled(value); }
+        IFACEMETHOD(put_IsRepeatEnabled)(BOOLEAN value) override { return This()->put_IsRepeatEnabled(value); }
         IFACEMETHOD(get_IsSeekBarVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsSeekBarVisible(pValue); }
-        IFACEMETHOD(put_IsSeekBarVisible)(_In_ BOOLEAN value) override { return This()->put_IsSeekBarVisible(value); }
+        IFACEMETHOD(put_IsSeekBarVisible)(BOOLEAN value) override { return This()->put_IsSeekBarVisible(value); }
         IFACEMETHOD(get_IsSeekEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsSeekEnabled(pValue); }
-        IFACEMETHOD(put_IsSeekEnabled)(_In_ BOOLEAN value) override { return This()->put_IsSeekEnabled(value); }
+        IFACEMETHOD(put_IsSeekEnabled)(BOOLEAN value) override { return This()->put_IsSeekEnabled(value); }
         IFACEMETHOD(get_IsSkipBackwardButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsSkipBackwardButtonVisible(pValue); }
-        IFACEMETHOD(put_IsSkipBackwardButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsSkipBackwardButtonVisible(value); }
+        IFACEMETHOD(put_IsSkipBackwardButtonVisible)(BOOLEAN value) override { return This()->put_IsSkipBackwardButtonVisible(value); }
         IFACEMETHOD(get_IsSkipBackwardEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsSkipBackwardEnabled(pValue); }
-        IFACEMETHOD(put_IsSkipBackwardEnabled)(_In_ BOOLEAN value) override { return This()->put_IsSkipBackwardEnabled(value); }
+        IFACEMETHOD(put_IsSkipBackwardEnabled)(BOOLEAN value) override { return This()->put_IsSkipBackwardEnabled(value); }
         IFACEMETHOD(get_IsSkipForwardButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsSkipForwardButtonVisible(pValue); }
-        IFACEMETHOD(put_IsSkipForwardButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsSkipForwardButtonVisible(value); }
+        IFACEMETHOD(put_IsSkipForwardButtonVisible)(BOOLEAN value) override { return This()->put_IsSkipForwardButtonVisible(value); }
         IFACEMETHOD(get_IsSkipForwardEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsSkipForwardEnabled(pValue); }
-        IFACEMETHOD(put_IsSkipForwardEnabled)(_In_ BOOLEAN value) override { return This()->put_IsSkipForwardEnabled(value); }
+        IFACEMETHOD(put_IsSkipForwardEnabled)(BOOLEAN value) override { return This()->put_IsSkipForwardEnabled(value); }
         IFACEMETHOD(get_IsStopButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsStopButtonVisible(pValue); }
-        IFACEMETHOD(put_IsStopButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsStopButtonVisible(value); }
+        IFACEMETHOD(put_IsStopButtonVisible)(BOOLEAN value) override { return This()->put_IsStopButtonVisible(value); }
         IFACEMETHOD(get_IsStopEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsStopEnabled(pValue); }
-        IFACEMETHOD(put_IsStopEnabled)(_In_ BOOLEAN value) override { return This()->put_IsStopEnabled(value); }
+        IFACEMETHOD(put_IsStopEnabled)(BOOLEAN value) override { return This()->put_IsStopEnabled(value); }
         IFACEMETHOD(get_IsVolumeButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsVolumeButtonVisible(pValue); }
-        IFACEMETHOD(put_IsVolumeButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsVolumeButtonVisible(value); }
+        IFACEMETHOD(put_IsVolumeButtonVisible)(BOOLEAN value) override { return This()->put_IsVolumeButtonVisible(value); }
         IFACEMETHOD(get_IsVolumeEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsVolumeEnabled(pValue); }
-        IFACEMETHOD(put_IsVolumeEnabled)(_In_ BOOLEAN value) override { return This()->put_IsVolumeEnabled(value); }
+        IFACEMETHOD(put_IsVolumeEnabled)(BOOLEAN value) override { return This()->put_IsVolumeEnabled(value); }
         IFACEMETHOD(get_IsZoomButtonVisible)(_Out_ BOOLEAN* pValue) override { return This()->get_IsZoomButtonVisible(pValue); }
-        IFACEMETHOD(put_IsZoomButtonVisible)(_In_ BOOLEAN value) override { return This()->put_IsZoomButtonVisible(value); }
+        IFACEMETHOD(put_IsZoomButtonVisible)(BOOLEAN value) override { return This()->put_IsZoomButtonVisible(value); }
         IFACEMETHOD(get_IsZoomEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsZoomEnabled(pValue); }
-        IFACEMETHOD(put_IsZoomEnabled)(_In_ BOOLEAN value) override { return This()->put_IsZoomEnabled(value); }
+        IFACEMETHOD(put_IsZoomEnabled)(BOOLEAN value) override { return This()->put_IsZoomEnabled(value); }
         IFACEMETHOD(get_ShowAndHideAutomatically)(_Out_ BOOLEAN* pValue) override { return This()->get_ShowAndHideAutomatically(pValue); }
-        IFACEMETHOD(put_ShowAndHideAutomatically)(_In_ BOOLEAN value) override { return This()->put_ShowAndHideAutomatically(value); }
+        IFACEMETHOD(put_ShowAndHideAutomatically)(BOOLEAN value) override { return This()->put_ShowAndHideAutomatically(value); }
         IFACEMETHOD(Hide)() override { return This()->Hide(); }
         IFACEMETHOD(Show)() override { return This()->Show(); }
         IFACEMETHOD(add_ThumbnailRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::MediaTransportControls*, ABI::Microsoft::UI::Xaml::Media::MediaTransportControlsThumbnailRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_ThumbnailRequested(pValue, pToken); }
-        IFACEMETHOD(remove_ThumbnailRequested)(_In_ EventRegistrationToken token) override { return This()->remove_ThumbnailRequested(token); }
+        IFACEMETHOD(remove_ThumbnailRequested)(EventRegistrationToken token) override { return This()->remove_ThumbnailRequested(token); }
     };
 }
 #pragma endregion
@@ -118,60 +118,60 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT STDMETHODCALLTYPE get_FastPlayFallbackBehaviour(_Out_ ABI::Microsoft::UI::Xaml::Media::FastPlayFallbackBehaviour* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_FastPlayFallbackBehaviour(_In_ ABI::Microsoft::UI::Xaml::Media::FastPlayFallbackBehaviour value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_FastPlayFallbackBehaviour(ABI::Microsoft::UI::Xaml::Media::FastPlayFallbackBehaviour value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsCompact(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsCompact(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsCompact(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsFastForwardButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFastForwardButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFastForwardButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsFastForwardEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFastForwardEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFastForwardEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsFastRewindButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFastRewindButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFastRewindButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsFastRewindEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFastRewindEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsFastRewindEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsNextTrackButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsNextTrackButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsNextTrackButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsPlaybackRateButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsPlaybackRateButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsPlaybackRateButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsPlaybackRateEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsPlaybackRateEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsPlaybackRateEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsPreviousTrackButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsPreviousTrackButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsPreviousTrackButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsRepeatButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsRepeatButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsRepeatButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsRepeatEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsRepeatEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsRepeatEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsSeekBarVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSeekBarVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSeekBarVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsSeekEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSeekEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSeekEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsSkipBackwardButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSkipBackwardButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSkipBackwardButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsSkipBackwardEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSkipBackwardEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSkipBackwardEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsSkipForwardButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSkipForwardButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSkipForwardButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsSkipForwardEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSkipForwardEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsSkipForwardEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsStopButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsStopButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsStopButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsStopEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsStopEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsStopEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsVolumeButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsVolumeButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsVolumeButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsVolumeEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsVolumeEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsVolumeEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsZoomButtonVisible(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsZoomButtonVisible(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsZoomButtonVisible(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsZoomEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsZoomEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsZoomEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ShowAndHideAutomatically(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_ShowAndHideAutomatically(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_ShowAndHideAutomatically(BOOLEAN value);
 
         // Events.
         _Check_return_ HRESULT GetThumbnailRequestedEventSourceNoRef(_Outptr_ ThumbnailRequestedEventSourceType** ppEventSource);
         virtual _Check_return_ HRESULT STDMETHODCALLTYPE add_ThumbnailRequested(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::MediaTransportControls*, ABI::Microsoft::UI::Xaml::Media::MediaTransportControlsThumbnailRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken);
-        virtual _Check_return_ HRESULT STDMETHODCALLTYPE remove_ThumbnailRequested(_In_ EventRegistrationToken token);
+        virtual _Check_return_ HRESULT STDMETHODCALLTYPE remove_ThumbnailRequested(EventRegistrationToken token);
 
         // Methods.
         _Check_return_ HRESULT STDMETHODCALLTYPE Hide();

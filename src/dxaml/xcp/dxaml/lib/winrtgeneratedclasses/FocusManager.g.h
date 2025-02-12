@@ -42,36 +42,36 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(TryFocusAsync)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FocusState value, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue) override;
-        IFACEMETHOD(TryMoveFocusAsync)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue) override;
-        IFACEMETHOD(TryMoveFocusWithOptionsAsync)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue) override;
-        IFACEMETHOD(TryMoveFocusWithOptions)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Out_ BOOLEAN* pReturnValue) override;
-        IFACEMETHOD(FindNextElement)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
+        IFACEMETHOD(TryFocusAsync)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FocusState value, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue) override;
+        IFACEMETHOD(TryMoveFocusAsync)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue) override;
+        IFACEMETHOD(TryMoveFocusWithOptionsAsync)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue) override;
+        IFACEMETHOD(TryMoveFocusWithOptions)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(FindNextElement)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
         IFACEMETHOD(FindFirstFocusableElement)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pSearchScope, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
         IFACEMETHOD(FindLastFocusableElement)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pSearchScope, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
-        IFACEMETHOD(FindNextElementWithOptions)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
-        IFACEMETHOD(FindNextFocusableElement)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult) override;
-        IFACEMETHOD(FindNextFocusableElementWithHint)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult) override;
-        IFACEMETHOD(TryMoveFocus)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(FindNextElementWithOptions)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue) override;
+        IFACEMETHOD(FindNextFocusableElement)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult) override;
+        IFACEMETHOD(FindNextFocusableElementWithHint)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult) override;
+        IFACEMETHOD(TryMoveFocus)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Out_ BOOLEAN* pReturnValue) override;
         IFACEMETHOD(GetFocusedElement)(_Outptr_ IInspectable** ppReturnValue) override;
         IFACEMETHOD(GetFocusedElementWithRoot)(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_result_maybenull_ IInspectable** ppReturnValue) override;
-        IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagement)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppResult) override;
-        IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagementWithHintRect)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ ABI::Windows::Foundation::Rect hintRect, _In_ ABI::Windows::Foundation::Rect exclusionRect, _Outptr_ IInspectable** ppResult) override;
-        IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagementWithClip)(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ BOOLEAN ignoreClipping, _In_ BOOLEAN ignoreCone, _Outptr_ IInspectable** ppResult) override;
+        IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagement)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppResult) override;
+        IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagementWithHintRect)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, ABI::Windows::Foundation::Rect hintRect, ABI::Windows::Foundation::Rect exclusionRect, _Outptr_ IInspectable** ppResult) override;
+        IFACEMETHOD(FindNextFocusWithSearchRootIgnoreEngagementWithClip)(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, BOOLEAN ignoreClipping, BOOLEAN ignoreCone, _Outptr_ IInspectable** ppResult) override;
         IFACEMETHOD(SetEngagedControl)(_In_ IInspectable* pEngagedControl) override;
-        IFACEMETHOD(SetFocusedElementWithDirection)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FocusState focusState, _In_ BOOLEAN animateIfBringIntoView, _In_ BOOLEAN forceBringIntoView, _In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ BOOLEAN requestInputActivation, _Out_ BOOLEAN* pResult) override;
+        IFACEMETHOD(SetFocusedElementWithDirection)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FocusState focusState, BOOLEAN animateIfBringIntoView, BOOLEAN forceBringIntoView, ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, BOOLEAN requestInputActivation, _Out_ BOOLEAN* pResult) override;
 
         // Static events.
         IFACEMETHOD(add_GotFocus)(_In_ ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Input::FocusManagerGotFocusEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_GotFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_GotFocus)(EventRegistrationToken token) override;
         IFACEMETHOD(add_LostFocus)(_In_ ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Input::FocusManagerLostFocusEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_LostFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_LostFocus)(EventRegistrationToken token) override;
         IFACEMETHOD(add_GettingFocus)(_In_ ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Input::GettingFocusEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_GettingFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_GettingFocus)(EventRegistrationToken token) override;
         IFACEMETHOD(add_LosingFocus)(_In_ ABI::Windows::Foundation::IEventHandler<ABI::Microsoft::UI::Xaml::Input::LosingFocusEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_LosingFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_LosingFocus)(EventRegistrationToken token) override;
         IFACEMETHOD(add_FocusedElementRemoved)(_In_ ABI::Microsoft::UI::Xaml::Input::IFocusedElementRemovedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_FocusedElementRemoved)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_FocusedElementRemoved)(EventRegistrationToken token) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
@@ -83,23 +83,23 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT TryFocusAsyncImpl(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FocusState value, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue); 
-         _Check_return_ HRESULT TryMoveFocusAsyncImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue); 
-         _Check_return_ HRESULT TryMoveFocusWithOptionsAsyncImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue); 
-         _Check_return_ HRESULT TryMoveFocusWithOptionsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Out_ BOOLEAN* pReturnValue); 
-         _Check_return_ HRESULT FindNextElementImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue); 
+         _Check_return_ HRESULT TryFocusAsyncImpl(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FocusState value, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue); 
+         _Check_return_ HRESULT TryMoveFocusAsyncImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue); 
+         _Check_return_ HRESULT TryMoveFocusWithOptionsAsyncImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Windows::Foundation::IAsyncOperation<ABI::Microsoft::UI::Xaml::Input::FocusMovementResult*>** ppReturnValue); 
+         _Check_return_ HRESULT TryMoveFocusWithOptionsImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Out_ BOOLEAN* pReturnValue); 
+         _Check_return_ HRESULT FindNextElementImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue); 
          _Check_return_ HRESULT FindFirstFocusableElementImpl(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pSearchScope, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue); 
          _Check_return_ HRESULT FindLastFocusableElementImpl(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pSearchScope, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue); 
-         _Check_return_ HRESULT FindNextElementWithOptionsImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue); 
-         _Check_return_ HRESULT FindNextFocusableElementImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult); 
-         _Check_return_ HRESULT FindNextFocusableElementWithHintImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult); 
-         _Check_return_ HRESULT TryMoveFocusImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Out_ BOOLEAN* pReturnValue); 
+         _Check_return_ HRESULT FindNextElementWithOptionsImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ ABI::Microsoft::UI::Xaml::Input::IFindNextElementOptions* pFocusNavigationOptions, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue); 
+         _Check_return_ HRESULT FindNextFocusableElementImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult); 
+         _Check_return_ HRESULT FindNextFocusableElementWithHintImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, ABI::Windows::Foundation::Rect hintRect, _Outptr_ ABI::Microsoft::UI::Xaml::IUIElement** ppResult); 
+         _Check_return_ HRESULT TryMoveFocusImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _Out_ BOOLEAN* pReturnValue); 
          _Check_return_ HRESULT GetFocusedElementImpl(_Outptr_ IInspectable** ppReturnValue); 
          _Check_return_ HRESULT GetFocusedElementWithRootImpl(_In_ ABI::Microsoft::UI::Xaml::IXamlRoot* pXamlRoot, _Outptr_result_maybenull_ IInspectable** ppReturnValue); 
-         _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppResult); 
-         _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementWithHintRectImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ ABI::Windows::Foundation::Rect hintRect, _In_ ABI::Windows::Foundation::Rect exclusionRect, _Outptr_ IInspectable** ppResult); 
-         _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementWithClipImpl(_In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _In_ BOOLEAN ignoreClipping, _In_ BOOLEAN ignoreCone, _Outptr_ IInspectable** ppResult); 
+         _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, _Outptr_ IInspectable** ppResult); 
+         _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementWithHintRectImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, ABI::Windows::Foundation::Rect hintRect, ABI::Windows::Foundation::Rect exclusionRect, _Outptr_ IInspectable** ppResult); 
+         _Check_return_ HRESULT FindNextFocusWithSearchRootIgnoreEngagementWithClipImpl(ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ IInspectable* pSearchRoot, BOOLEAN ignoreClipping, BOOLEAN ignoreCone, _Outptr_ IInspectable** ppResult); 
          _Check_return_ HRESULT SetEngagedControlImpl(_In_ IInspectable* pEngagedControl); 
-         _Check_return_ HRESULT SetFocusedElementWithDirectionImpl(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::FocusState focusState, _In_ BOOLEAN animateIfBringIntoView, _In_ BOOLEAN forceBringIntoView, _In_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, _In_ BOOLEAN requestInputActivation, _Out_ BOOLEAN* pResult); 
+         _Check_return_ HRESULT SetFocusedElementWithDirectionImpl(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::FocusState focusState, BOOLEAN animateIfBringIntoView, BOOLEAN forceBringIntoView, ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection focusNavigationDirection, BOOLEAN requestInputActivation, _Out_ BOOLEAN* pResult); 
     };
 }

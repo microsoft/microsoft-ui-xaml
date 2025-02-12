@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::PathFigure::get_IsClosed(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PathFigure_IsClosed, pValue));
 }
-IFACEMETHODIMP DirectUI::PathFigure::put_IsClosed(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PathFigure::put_IsClosed(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PathFigure_IsClosed, value));
@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::PathFigure::get_IsFilled(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PathFigure_IsFilled, pValue));
 }
-IFACEMETHODIMP DirectUI::PathFigure::put_IsFilled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PathFigure::put_IsFilled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PathFigure_IsFilled, value));
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::PathFigure::get_StartPoint(_Out_ ABI::Windows::Foundati
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PathFigure_StartPoint, pValue));
 }
-IFACEMETHODIMP DirectUI::PathFigure::put_StartPoint(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::PathFigure::put_StartPoint(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PathFigure_StartPoint, value));

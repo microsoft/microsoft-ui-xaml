@@ -55,7 +55,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetCurrentTransitionContext)(_In_ INT LayoutTickId, _Out_ DirectUI::ThemeTransitionContext* pReturnValue) = 0;
+        IFACEMETHOD(GetCurrentTransitionContext)(INT LayoutTickId, _Out_ DirectUI::ThemeTransitionContext* pReturnValue) = 0;
         IFACEMETHOD(GetDropOffsetToRoot)(_Out_ ABI::Windows::Foundation::Point* pReturnValue) = 0;
         IFACEMETHOD(IsCollectionMutatingFast)(_Out_ BOOLEAN* pReturnValue) = 0;
 

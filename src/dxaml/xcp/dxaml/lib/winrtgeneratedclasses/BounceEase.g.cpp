@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::BounceEase::get_Bounces(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BounceEase_Bounces, pValue));
 }
-IFACEMETHODIMP DirectUI::BounceEase::put_Bounces(_In_ INT value)
+IFACEMETHODIMP DirectUI::BounceEase::put_Bounces(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BounceEase_Bounces, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::BounceEase::get_Bounciness(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::BounceEase_Bounciness, pValue));
 }
-IFACEMETHODIMP DirectUI::BounceEase::put_Bounciness(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::BounceEase::put_Bounciness(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::BounceEase_Bounciness, value));

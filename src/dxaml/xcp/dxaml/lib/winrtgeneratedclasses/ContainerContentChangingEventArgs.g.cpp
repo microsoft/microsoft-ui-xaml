@@ -68,7 +68,7 @@ _Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::get
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_ContentShouldBeSet(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_ContentShouldBeSet(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::get_Handled
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -102,7 +102,7 @@ IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::get_InRecyc
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_InRecycleQueue(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_InRecycleQueue(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -146,7 +146,7 @@ IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::get_ItemInd
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_ItemIndex(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_ItemIndex(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -163,7 +163,7 @@ IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::get_Phase(_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_Phase(_In_ UINT value)
+_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_Phase(UINT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -180,7 +180,7 @@ _Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::get
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_WantsCallBack(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ContainerContentChangingEventArgsGenerated::put_WantsCallBack(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -209,7 +209,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::RegisterUpdateCallbackWithPhase(_In_ UINT callbackPhase, _In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>* pCallback)
+IFACEMETHODIMP DirectUI::ContainerContentChangingEventArgsGenerated::RegisterUpdateCallbackWithPhase(UINT callbackPhase, _In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::ListViewBase*, ABI::Microsoft::UI::Xaml::Controls::ContainerContentChangingEventArgs*>* pCallback)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

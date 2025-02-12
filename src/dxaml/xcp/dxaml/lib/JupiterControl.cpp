@@ -817,7 +817,7 @@ _Check_return_ HRESULT CJupiterControl::UIARaiseNotificationEvent(
     _In_ CAutomationPeer* ap,
     UIAXcp::AutomationNotificationKind notificationKind,
     UIAXcp::AutomationNotificationProcessing notificationProcessing,
-    _In_opt_ xstring_ptr displayString,
+    _In_ xstring_ptr displayString,
     _In_ xstring_ptr activityId)
 {
     if (m_pUIAWindow)

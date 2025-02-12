@@ -183,6 +183,7 @@ public:
 #define SR_TabViewCloseButtonTooltipWithKA L"TabViewCloseButtonTooltipWithKA"
 #define SR_TabViewScrollDecreaseButtonTooltip L"TabViewScrollDecreaseButtonTooltip"
 #define SR_TabViewScrollIncreaseButtonTooltip L"TabViewScrollIncreaseButtonTooltip"
+#define SR_TabViewNewTabAddedNotification L"TabViewNewTabAddedNotification"
 #define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
 #define SR_NumberBoxMaximumValueStatus L"NumberBoxMaximumValueStatus"

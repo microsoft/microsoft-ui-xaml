@@ -79,19 +79,19 @@ namespace DirectUI
 
         // Static properties.
         IFACEMETHOD(get_Volume)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_Volume)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_Volume)(DOUBLE value) override;
         IFACEMETHOD(get_State)(_Out_ ABI::Microsoft::UI::Xaml::ElementSoundPlayerState* pValue) override;
-        IFACEMETHOD(put_State)(_In_ ABI::Microsoft::UI::Xaml::ElementSoundPlayerState value) override;
+        IFACEMETHOD(put_State)(ABI::Microsoft::UI::Xaml::ElementSoundPlayerState value) override;
         IFACEMETHOD(get_SpatialAudioMode)(_Out_ ABI::Microsoft::UI::Xaml::ElementSpatialAudioMode* pValue) override;
-        IFACEMETHOD(put_SpatialAudioMode)(_In_ ABI::Microsoft::UI::Xaml::ElementSpatialAudioMode value) override;
+        IFACEMETHOD(put_SpatialAudioMode)(ABI::Microsoft::UI::Xaml::ElementSpatialAudioMode value) override;
 
         // Dependency properties.
 
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(Play)(_In_ ABI::Microsoft::UI::Xaml::ElementSoundKind sound) override;
-        IFACEMETHOD(RequestInteractionSoundForElement)(_In_ ABI::Microsoft::UI::Xaml::ElementSoundKind sound, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement) override;
+        IFACEMETHOD(Play)(ABI::Microsoft::UI::Xaml::ElementSoundKind sound) override;
+        IFACEMETHOD(RequestInteractionSoundForElement)(ABI::Microsoft::UI::Xaml::ElementSoundKind sound, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement) override;
         IFACEMETHOD(GetEffectiveSoundMode)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ ABI::Microsoft::UI::Xaml::ElementSoundMode* pResult) override;
 
         // Static events.
@@ -105,15 +105,15 @@ namespace DirectUI
 
         // Customized static properties.
          _Check_return_ HRESULT get_VolumeImpl(_Out_ DOUBLE* pValue); 
-         _Check_return_ HRESULT put_VolumeImpl(_In_ DOUBLE value); 
+         _Check_return_ HRESULT put_VolumeImpl(DOUBLE value); 
          _Check_return_ HRESULT get_StateImpl(_Out_ ABI::Microsoft::UI::Xaml::ElementSoundPlayerState* pValue); 
-         _Check_return_ HRESULT put_StateImpl(_In_ ABI::Microsoft::UI::Xaml::ElementSoundPlayerState value); 
+         _Check_return_ HRESULT put_StateImpl(ABI::Microsoft::UI::Xaml::ElementSoundPlayerState value); 
          _Check_return_ HRESULT get_SpatialAudioModeImpl(_Out_ ABI::Microsoft::UI::Xaml::ElementSpatialAudioMode* pValue); 
-         _Check_return_ HRESULT put_SpatialAudioModeImpl(_In_ ABI::Microsoft::UI::Xaml::ElementSpatialAudioMode value); 
+         _Check_return_ HRESULT put_SpatialAudioModeImpl(ABI::Microsoft::UI::Xaml::ElementSpatialAudioMode value); 
 
         // Customized static  methods.
-         _Check_return_ HRESULT PlayImpl(_In_ ABI::Microsoft::UI::Xaml::ElementSoundKind sound); 
-         _Check_return_ HRESULT RequestInteractionSoundForElementImpl(_In_ ABI::Microsoft::UI::Xaml::ElementSoundKind sound, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement); 
+         _Check_return_ HRESULT PlayImpl(ABI::Microsoft::UI::Xaml::ElementSoundKind sound); 
+         _Check_return_ HRESULT RequestInteractionSoundForElementImpl(ABI::Microsoft::UI::Xaml::ElementSoundKind sound, _In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement); 
          _Check_return_ HRESULT GetEffectiveSoundModeImpl(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ ABI::Microsoft::UI::Xaml::ElementSoundMode* pResult); 
     };
 }

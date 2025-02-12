@@ -51,7 +51,7 @@ _Check_return_ HRESULT DirectUI::StoryboardGenerated::get_IsEssential(_Out_ BOOL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Storyboard_IsEssential, pValue));
 }
-_Check_return_ HRESULT DirectUI::StoryboardGenerated::put_IsEssential(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::StoryboardGenerated::put_IsEssential(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Storyboard_IsEssential, value));
 }
@@ -169,7 +169,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StoryboardGenerated::Seek(_In_ ABI::Windows::Foundation::TimeSpan offset)
+IFACEMETHODIMP DirectUI::StoryboardGenerated::Seek(ABI::Windows::Foundation::TimeSpan offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -187,7 +187,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::StoryboardGenerated::SeekAlignedToLastTick(_In_ ABI::Windows::Foundation::TimeSpan offset)
+IFACEMETHODIMP DirectUI::StoryboardGenerated::SeekAlignedToLastTick(ABI::Windows::Foundation::TimeSpan offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

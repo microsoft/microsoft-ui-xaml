@@ -161,6 +161,19 @@ void ViewportManagerWithPlatformFeatures::SetVisibleWindow(const winrt::Rect& vi
     }
 }
 
+void ViewportManagerWithPlatformFeatures::SetLastLayoutRealizationWindow(const winrt::Rect& layoutRealizationWindow)
+{
+    if (layoutRealizationWindow.X != m_lastLayoutRealizationWindow.X || layoutRealizationWindow.Y != m_lastLayoutRealizationWindow.Y ||
+        layoutRealizationWindow.Width != m_lastLayoutRealizationWindow.Width || layoutRealizationWindow.Height != m_lastLayoutRealizationWindow.Height)
+    {
+        ITEMSREPEATER_TRACE_INFO_DBG(nullptr, TRACE_MSG_METH_STR_STR_FLT_FLT_FLT_FLT, METH_NAME, this,
+            GetLayoutId().data(), L"m_lastLayoutRealizationWindow set:",
+            layoutRealizationWindow.X, layoutRealizationWindow.Y, layoutRealizationWindow.Width, layoutRealizationWindow.Height);
+
+        m_lastLayoutRealizationWindow = layoutRealizationWindow;
+    }
+}
+
 void ViewportManagerWithPlatformFeatures::SetPendingViewportShift(const winrt::Point& pendingViewportShift)
 {
     if (pendingViewportShift.X != m_pendingViewportShift.X || pendingViewportShift.Y != m_pendingViewportShift.Y)
@@ -199,6 +212,17 @@ void ViewportManagerWithPlatformFeatures::SetUnshiftableShift(float unshiftableS
     }
 }
 
+void ViewportManagerWithPlatformFeatures::SetLastScrollPresenterViewChangeCorrelationId(int correlationId)
+{
+    if (correlationId != m_lastScrollPresenterViewChangeCorrelationId)
+    {
+        ITEMSREPEATER_TRACE_INFO_DBG(nullptr, TRACE_MSG_METH_STR_STR_INT, METH_NAME, this,
+            GetLayoutId().data(), L"m_lastScrollPresenterViewChangeCorrelationId set:", correlationId);
+
+        m_lastScrollPresenterViewChangeCorrelationId = correlationId;
+    }
+}
+
 void ViewportManagerWithPlatformFeatures::SetLayoutExtent(const winrt::Rect& layoutExtent)
 {
 #ifdef DBG
@@ -208,7 +232,10 @@ void ViewportManagerWithPlatformFeatures::SetLayoutExtent(const winrt::Rect& lay
     TraceFieldsDbg();
 #endif // DBG
 
-    SetExpectedViewportShift(m_expectedViewportShift.X + m_layoutExtent.X - layoutExtent.X, m_expectedViewportShift.Y + m_layoutExtent.Y - layoutExtent.Y);
+    const float expectedViewportShiftX = m_expectedViewportShift.X + m_layoutExtent.X - layoutExtent.X;
+    const float expectedViewportShiftY = m_expectedViewportShift.Y + m_layoutExtent.Y - layoutExtent.Y;
+
+    SetExpectedViewportShift(expectedViewportShiftX, expectedViewportShiftY);
 
     // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
     if (std::abs(m_expectedViewportShift.X) > 1.f || std::abs(m_expectedViewportShift.Y) > 1.f)
@@ -240,11 +267,11 @@ void ViewportManagerWithPlatformFeatures::SetLayoutExtent(const winrt::Rect& lay
 
     SetPendingViewportShift(m_expectedViewportShift);
 
-    // We just finished a measure pass and have a new extent.
-    // Let's make sure the scroller will run its arrange so that it tracks the anchor.
     if (m_scroller)
-    { 
-        m_scroller.as<winrt::UIElement>().InvalidateArrange(); 
+    {
+        // We just finished a measure pass and have a new extent.
+        // Let's make sure the scroller will run its arrange so that it tracks the anchor.
+        m_scroller.as<winrt::UIElement>().InvalidateArrange();
     }
 }
 
@@ -271,6 +298,19 @@ void ViewportManagerWithPlatformFeatures::ResetVisibleWindow()
             m_visibleWindow.X, m_visibleWindow.Y, m_visibleWindow.Width, m_visibleWindow.Height);
 
         m_visibleWindow = {};
+    }
+}
+
+void ViewportManagerWithPlatformFeatures::ResetLastLayoutRealizationWindow()
+{
+    if (m_lastLayoutRealizationWindow.X != 0.0f || m_lastLayoutRealizationWindow.Y != 0.0f ||
+        m_lastLayoutRealizationWindow.Width != 0.0f || m_lastLayoutRealizationWindow.Height != 0.0f)
+    {
+        ITEMSREPEATER_TRACE_INFO_DBG(nullptr, TRACE_MSG_METH_STR_STR_FLT_FLT_FLT_FLT, METH_NAME, this,
+            GetLayoutId().data(), L"m_lastLayoutRealizationWindow reset:",
+            m_lastLayoutRealizationWindow.X, m_lastLayoutRealizationWindow.Y, m_lastLayoutRealizationWindow.Width, m_lastLayoutRealizationWindow.Height);
+
+        m_lastLayoutRealizationWindow = {};
     }
 }
 
@@ -309,6 +349,37 @@ void ViewportManagerWithPlatformFeatures::ResetUnshiftableShift()
         m_unshiftableShift = {};
     }
 }
+
+void ViewportManagerWithPlatformFeatures::ResetLastScrollPresenterViewChangeCorrelationId()
+{
+    if (m_lastScrollPresenterViewChangeCorrelationId != -1)
+    {
+        ITEMSREPEATER_TRACE_INFO_DBG(nullptr, TRACE_MSG_METH_STR_STR_INT, METH_NAME, this,
+            GetLayoutId().data(), L"m_lastScrollPresenterViewChangeCorrelationId reset:",
+            m_lastScrollPresenterViewChangeCorrelationId);
+
+        m_lastScrollPresenterViewChangeCorrelationId = -1;
+    }
+}
+
+#ifdef DBG
+void ViewportManagerWithPlatformFeatures::OnScrollViewerViewChangingDbg(winrt::IInspectable const& /*sender*/, winrt::ScrollViewerViewChangingEventArgs const& args)
+{
+    const winrt::ScrollViewerView nextViewDbg = args.NextView();
+
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_DBL_DBL, METH_NAME, this,
+        GetLayoutId().data(), L"ScrollViewerViewChangingEventArgs nextView:", nextViewDbg.HorizontalOffset(), nextViewDbg.VerticalOffset());
+}
+
+void ViewportManagerWithPlatformFeatures::OnScrollViewerViewChangedDbg(winrt::IInspectable const& /*sender*/, winrt::ScrollViewerViewChangedEventArgs const& args)
+{
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_INT, METH_NAME, this,
+        GetLayoutId().data(), L"ScrollViewerViewChangedEventArgs.IsIntermediate", args.IsIntermediate());
+
+    TraceScrollerDbg();
+    TraceFieldsDbg();
+}
+#endif // DBG
 
 void ViewportManagerWithPlatformFeatures::OnLayoutChanged(bool isVirtualizing)
 {
@@ -400,7 +471,7 @@ void ViewportManagerWithPlatformFeatures::OnOwnerMeasuring()
         ResetLayoutRealizationWindowCacheBuffer();
     }
 
-    m_lastLayoutRealizationWindow = currentLayoutRealizationWindow;
+    SetLastLayoutRealizationWindow(currentLayoutRealizationWindow);
 
     if (m_skipScrollAnchorRegistrationsDuringNextMeasurePass)
     {
@@ -446,6 +517,32 @@ void ViewportManagerWithPlatformFeatures::OnOwnerArranged()
 
     ResetExpectedViewportShift();
 
+    if (m_unshiftableShift.X != 0.0f || m_unshiftableShift.Y != 0.0f)
+    {
+        double horizontalOffset{};
+        double verticalOffset{};
+
+        if (const auto scrollViewer = m_scroller.try_as<winrt::Controls::IScrollViewer>())
+        {
+            horizontalOffset = scrollViewer.HorizontalOffset();
+            verticalOffset = scrollViewer.VerticalOffset();
+        }
+        else if (const auto scrollPresenter = m_scroller.try_as<winrt::Controls::Primitives::IScrollPresenter>())
+        {
+            horizontalOffset = scrollPresenter.HorizontalOffset();
+            verticalOffset = scrollPresenter.VerticalOffset();
+        }
+
+        if ((m_unshiftableShift.X != 0.0f && std::abs(m_visibleWindow.X - horizontalOffset) < 1.0) ||
+            (m_unshiftableShift.Y != 0.0f && std::abs(m_visibleWindow.Y - verticalOffset) < 1.0))
+        {
+            // Reset m_unshiftableShift & trigger measure path. This situation arises for example when the first item
+            // in a collection is removed and the layout origin is increased.
+            ResetUnshiftableShift();
+            TryInvalidateMeasure();
+        }
+    }
+
     if (!m_managingViewportDisabled)
     {
         // This is because of a bug that causes effective viewport to not 
@@ -483,6 +580,7 @@ void ViewportManagerWithPlatformFeatures::OnLayoutUpdated(winrt::IInspectable co
     ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, GetLayoutId().data());
 
     m_layoutUpdatedRevoker.revoke();
+
     if (m_managingViewportDisabled)
     {
         return;
@@ -623,13 +721,24 @@ void ViewportManagerWithPlatformFeatures::OnCompositionTargetRendering(const win
 
 void ViewportManagerWithPlatformFeatures::ResetScrollers()
 {
+#ifdef DBG
+    m_scrollViewerViewChangingRevokerDbg.revoke();
+    m_scrollViewerViewChangedRevokerDbg.revoke();
+#endif // DBG
     m_scroller.set(nullptr);
     m_scrollPresenterScrollStartingRevoker.revoke();
+    m_scrollPresenterScrollCompletedRevoker.revoke();
     m_scrollPresenterZoomStartingRevoker.revoke();
+    m_scrollPresenterZoomCompletedRevoker.revoke();
     m_effectiveViewportChangedRevoker.revoke();
+    m_isAnchorOutsideRealizedRange = false;
     m_skipScrollAnchorRegistrationsDuringNextMeasurePass = false;
     m_skipScrollAnchorRegistrationsDuringNextArrangePass = false;
     m_ensuredScroller = false;
+    ResetExpectedViewportShift();
+    ResetPendingViewportShift();
+    ResetUnshiftableShift();
+    ResetLastScrollPresenterViewChangeCorrelationId();
 }
 
 void ViewportManagerWithPlatformFeatures::OnCacheBuildActionCompleted()
@@ -655,17 +764,22 @@ void ViewportManagerWithPlatformFeatures::OnCacheBuildActionCompleted()
 // measure/arrange pass based on the anticipated view.
 void ViewportManagerWithPlatformFeatures::OnScrollPresenterScrollStarting(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingScrollStartingEventArgs const& args)
 {
-    OnScrollPresenterViewChangeStarting(scrollPresenter, args.HorizontalOffset(), args.VerticalOffset(), args.ZoomFactor());
+    OnScrollPresenterViewChangeStarting(scrollPresenter, args.CorrelationId(), args.HorizontalOffset(), args.VerticalOffset(), args.ZoomFactor());
 }
 
 void ViewportManagerWithPlatformFeatures::OnScrollPresenterZoomStarting(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingZoomStartingEventArgs const& args)
 {
-    OnScrollPresenterViewChangeStarting(scrollPresenter, args.HorizontalOffset(), args.VerticalOffset(), args.ZoomFactor());
+    OnScrollPresenterViewChangeStarting(scrollPresenter, args.CorrelationId(), args.HorizontalOffset(), args.VerticalOffset(), args.ZoomFactor());
 }
 
-void ViewportManagerWithPlatformFeatures::OnScrollPresenterViewChangeStarting(winrt::ScrollPresenter const& scrollPresenter, double horizontalOffset, double verticalOffset, float zoomFactor)
+void ViewportManagerWithPlatformFeatures::OnScrollPresenterViewChangeStarting(winrt::ScrollPresenter const& scrollPresenter, int correlationId, double horizontalOffset, double verticalOffset, float zoomFactor)
 {
-    const float blankViewportRatioTolerated = 0.05f;
+    // No UI re-generation is performed if the last recorded realization window, m_lastLayoutRealizationWindow, is empty. This avoids UI generation when the actual effective viewport is empty.
+    if (m_lastLayoutRealizationWindow.Width == 0.0f || m_lastLayoutRealizationWindow.Height == 0.0f)
+    {
+        return;
+    }
+
     const float anticipatedHorizontalOffset = static_cast<float>(horizontalOffset);
     const float anticipatedVerticalOffset = static_cast<float>(verticalOffset);
     const float anticipatedZoomFactor = zoomFactor;
@@ -681,6 +795,8 @@ void ViewportManagerWithPlatformFeatures::OnScrollPresenterViewChangeStarting(wi
     const winrt::FrameworkElement ownerAsFE = owner.as<winrt::FrameworkElement>();
 
 #ifdef DBG
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_INT, METH_NAME, this, GetLayoutId().data(),
+        L"CorrelationId:", correlationId);
     ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_FLT_FLT, METH_NAME, this, GetLayoutId().data(),
         L"Anticipated HorizontalOffset, VerticalOffset:", anticipatedHorizontalOffset, anticipatedVerticalOffset);
     ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this, GetLayoutId().data(),
@@ -723,33 +839,56 @@ void ViewportManagerWithPlatformFeatures::OnScrollPresenterViewChangeStarting(wi
         }
     }
 
-    // No UI re-generation is performed if the last recorded realization window, m_lastLayoutRealizationWindow, is empty. This avoids UI generation when the actual effective viewport is empty.
-    if (m_lastLayoutRealizationWindow.Width > 0.0f && m_lastLayoutRealizationWindow.Height > 0.0f &&
-        m_unshiftableShift == winrt::Point() && // Do not affect start of a bring-into-view operation when the target layout anchor is realized and arranged, which results in m_unshiftableShift being set.
-        (anticipatedLayoutRealizationWindow.X < m_lastLayoutRealizationWindow.X - blankViewportRatioTolerated * scaledViewportWidth ||
-         anticipatedLayoutRealizationWindow.X > m_lastLayoutRealizationWindow.X + m_lastLayoutRealizationWindow.Width - (1.0f - blankViewportRatioTolerated) * scaledViewportWidth ||
-         anticipatedLayoutRealizationWindow.Y < m_lastLayoutRealizationWindow.Y - blankViewportRatioTolerated * scaledViewportHeight ||
-         anticipatedLayoutRealizationWindow.Y > m_lastLayoutRealizationWindow.Y + m_lastLayoutRealizationWindow.Height - (1.0f - blankViewportRatioTolerated) * scaledViewportHeight))
+    // Using the smallest effective viewport, viewportWidth x viewportHeight, to cover the ScrollPresenter's viewport. It may still be too large if a part of the scroller is not displayed on screen.
+    const bool invalidatedMeasure = UpdateViewport(anticipatedLayoutRealizationWindow);
+
+    if (invalidatedMeasure)
     {
-        // Using the smallest effective viewport, viewportWidth x viewportHeight, to cover the ScrollPresenter's viewport. It may still be too large if a part of the scroller is not displayed on screen.
-        const bool invalidatedMeasure = UpdateViewport(anticipatedLayoutRealizationWindow);
+        UnregisterScrollAnchorCandidates(nullptr /*exceptionElement*/, true /*registerAsPreparedAndArrangedElements*/);
 
-        if (invalidatedMeasure)
-        {
-            UnregisterScrollAnchorCandidates(nullptr /*exceptionElement*/, true /*registerAsPreparedAndArrangedElements*/);
+        ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"m_skipScrollAnchorRegistrationsDuringNextMeasurePass/m_skipScrollAnchorRegistrationsDuringNextArrangePass set.");
 
-            ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"m_skipScrollAnchorRegistrationsDuringNextMeasurePass/m_skipScrollAnchorRegistrationsDuringNextArrangePass set.");
+        // During such a UI re-generation, scroll anchoring is momentarily turned off to avoid unwanted anchoring-driven scrolls.
+        m_skipScrollAnchorRegistrationsDuringNextMeasurePass = true;
+        m_skipScrollAnchorRegistrationsDuringNextArrangePass = true;
 
-            // During such a UI re-generation, scroll anchoring is momentarily turned off to avoid unwanted anchoring-driven scrolls.
-            m_skipScrollAnchorRegistrationsDuringNextMeasurePass = true;
-            m_skipScrollAnchorRegistrationsDuringNextArrangePass = true;
-        }
+        SetLastScrollPresenterViewChangeCorrelationId(correlationId);
+    }
+}
+
+void ViewportManagerWithPlatformFeatures::OnScrollPresenterScrollCompleted(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingScrollCompletedEventArgs const& args)
+{
+#ifdef DBG
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, GetLayoutId().data(), args.CorrelationId());
+
+    TraceScrollerDbg();
+#endif // DBG
+
+    OnScrollPresenterViewChangeCompleted(args.CorrelationId());
+}
+
+void ViewportManagerWithPlatformFeatures::OnScrollPresenterZoomCompleted(winrt::ScrollPresenter const& scrollPresenter, winrt::ScrollingZoomCompletedEventArgs const& args)
+{
+#ifdef DBG
+    ITEMSREPEATER_TRACE_INFO(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, GetLayoutId().data(), args.CorrelationId());
+
+    TraceScrollerDbg();
+#endif // DBG
+
+    OnScrollPresenterViewChangeCompleted(args.CorrelationId());
+}
+
+void ViewportManagerWithPlatformFeatures::OnScrollPresenterViewChangeCompleted(int correlationId)
+{
+    if (correlationId == m_lastScrollPresenterViewChangeCorrelationId && m_lastScrollPresenterViewChangeCorrelationId != -1)
+    {
+        ResetLastScrollPresenterViewChangeCorrelationId();
     }
 }
 
 void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::FrameworkElement const& sender, winrt::EffectiveViewportChangedEventArgs const& args)
 {
-    winrt::Rect effectiveViewport = args.EffectiveViewport();
+    const winrt::Rect effectiveViewport = args.EffectiveViewport();
 
 #ifdef DBG
     MUX_ASSERT(!m_managingViewportDisabled);
@@ -760,8 +899,15 @@ void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::Fram
     TraceScrollerDbg();
 #endif // DBG
 
+    if (m_lastScrollPresenterViewChangeCorrelationId != -1)
+    {
+        ITEMSREPEATER_TRACE_INFO_DBG(nullptr, TRACE_MSG_METH_STR_STR_INT, METH_NAME, this, GetLayoutId().data(), L"Early exit during ScrollPresenter view change.", m_lastScrollPresenterViewChangeCorrelationId);
+
+        return;
+    }
+
     bool invalidateMeasure = false;
-    const bool invalidatedMeasure = UpdateViewport(args.EffectiveViewport());
+    const bool invalidatedMeasure = UpdateViewport(effectiveViewport);
     const winrt::Point emptyPoint = {};
     const winrt::Rect emptyRect = {};
 
@@ -818,11 +964,23 @@ void ViewportManagerWithPlatformFeatures::EnsureScroller()
             m_effectiveViewportChangedRevoker = m_owner->EffectiveViewportChanged(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged });
         }
 
-        if (const auto scrollPresenter2 = m_scroller.try_as<winrt::IScrollPresenter2>())
+        if (const auto scrollPresenter = m_scroller.try_as<winrt::IScrollPresenter>())
         {
-            m_scrollPresenterScrollStartingRevoker = scrollPresenter2.ScrollStarting(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterScrollStarting });
-            m_scrollPresenterZoomStartingRevoker = scrollPresenter2.ZoomStarting(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterZoomStarting });
+            if (const auto scrollPresenter2 = m_scroller.try_as<winrt::IScrollPresenter2>())
+            {
+                m_scrollPresenterScrollStartingRevoker = scrollPresenter2.ScrollStarting(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterScrollStarting });
+                m_scrollPresenterScrollCompletedRevoker = scrollPresenter.ScrollCompleted(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterScrollCompleted });
+                m_scrollPresenterZoomStartingRevoker = scrollPresenter2.ZoomStarting(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterZoomStarting });
+                m_scrollPresenterZoomCompletedRevoker = scrollPresenter.ZoomCompleted(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollPresenterZoomCompleted });
+            }
         }
+#ifdef DBG
+        else if (const auto scrollViewer = m_scroller.try_as<winrt::Controls::IScrollViewer>())
+        {
+            m_scrollViewerViewChangingRevokerDbg = scrollViewer.ViewChanging(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollViewerViewChangingDbg });
+            m_scrollViewerViewChangedRevokerDbg = scrollViewer.ViewChanged(winrt::auto_revoke, { this, &ViewportManagerWithPlatformFeatures::OnScrollViewerViewChangedDbg });
+        }
+#endif // DBG
 
         m_ensuredScroller = true;
     }

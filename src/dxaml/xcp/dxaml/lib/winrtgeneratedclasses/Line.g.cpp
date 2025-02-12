@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::Line::get_X1(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Line_X1, pValue));
 }
-IFACEMETHODIMP DirectUI::Line::put_X1(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Line::put_X1(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Line_X1, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::Line::get_X2(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Line_X2, pValue));
 }
-IFACEMETHODIMP DirectUI::Line::put_X2(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Line::put_X2(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Line_X2, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::Line::get_Y1(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Line_Y1, pValue));
 }
-IFACEMETHODIMP DirectUI::Line::put_Y1(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Line::put_Y1(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Line_Y1, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::Line::get_Y2(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Line_Y2, pValue));
 }
-IFACEMETHODIMP DirectUI::Line::put_Y2(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Line::put_Y2(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Line_Y2, value));

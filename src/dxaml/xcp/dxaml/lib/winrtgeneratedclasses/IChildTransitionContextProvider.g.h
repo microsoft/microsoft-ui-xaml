@@ -20,7 +20,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(GetChildTransitionContext)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT LayoutTickId, _Out_ DirectUI::ThemeTransitionContext* pReturnValue) = 0;
+        IFACEMETHOD(GetChildTransitionContext)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT LayoutTickId, _Out_ DirectUI::ThemeTransitionContext* pReturnValue) = 0;
         IFACEMETHOD(GetChildTransitionBounds)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ ABI::Windows::Foundation::Rect* pReturnValue) = 0;
         IFACEMETHOD(IsCollectionMutatingFast)(_Out_ BOOLEAN* pReturnValue) = 0;
     };

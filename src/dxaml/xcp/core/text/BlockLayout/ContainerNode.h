@@ -17,7 +17,7 @@ class ContainerNode : public BlockNode
 public:
     ContainerNode(
         _In_ BlockLayoutEngine *pBlockLayoutEngine,
-        _In_ CDependencyObject *pElement,
+        _In_opt_ CDependencyObject *pElement,
         _In_opt_ ContainerNode *pParentNode
         );
 

@@ -49,13 +49,13 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ColorInterpolationMode)(_Out_ ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode* pValue) override;
-        IFACEMETHOD(put_ColorInterpolationMode)(_In_ ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode value) override;
+        IFACEMETHOD(put_ColorInterpolationMode)(ABI::Microsoft::UI::Xaml::Media::ColorInterpolationMode value) override;
         IFACEMETHOD(get_GradientStops)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>** ppValue) override;
         IFACEMETHOD(put_GradientStops)(_In_opt_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>* pValue) override;
         IFACEMETHOD(get_MappingMode)(_Out_ ABI::Microsoft::UI::Xaml::Media::BrushMappingMode* pValue) override;
-        IFACEMETHOD(put_MappingMode)(_In_ ABI::Microsoft::UI::Xaml::Media::BrushMappingMode value) override;
+        IFACEMETHOD(put_MappingMode)(ABI::Microsoft::UI::Xaml::Media::BrushMappingMode value) override;
         IFACEMETHOD(get_SpreadMethod)(_Out_ ABI::Microsoft::UI::Xaml::Media::GradientSpreadMethod* pValue) override;
-        IFACEMETHOD(put_SpreadMethod)(_In_ ABI::Microsoft::UI::Xaml::Media::GradientSpreadMethod value) override;
+        IFACEMETHOD(put_SpreadMethod)(ABI::Microsoft::UI::Xaml::Media::GradientSpreadMethod value) override;
 
         // Events.
 

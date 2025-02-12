@@ -103,12 +103,12 @@ DirectUI::MatrixHelper::FromCMILMatrix(
 
 IFACEMETHODIMP
 MatrixFactory::FromElements(
-    _In_ DOUBLE m11,
-    _In_ DOUBLE m12,
-    _In_ DOUBLE m21,
-    _In_ DOUBLE m22,
-    _In_ DOUBLE offsetX,
-    _In_ DOUBLE offsetY,
+    DOUBLE m11,
+    DOUBLE m12,
+    DOUBLE m21,
+    DOUBLE m22,
+    DOUBLE offsetX,
+    DOUBLE offsetY,
     _Out_ xaml_media::Matrix* pReturnValue)
 {
     HRESULT hr = S_OK;
@@ -136,7 +136,7 @@ Cleanup:
 
 IFACEMETHODIMP
 MatrixFactory::GetIsIdentity(
-    _In_ xaml_media::Matrix target,
+    xaml_media::Matrix target,
     _Out_ BOOLEAN* pValue)
 {
     HRESULT hr = S_OK;
@@ -160,8 +160,8 @@ Cleanup:
 
 IFACEMETHODIMP
 MatrixFactory::Transform(
-    _In_ xaml_media::Matrix target,
-    _In_ wf::Point point,
+    xaml_media::Matrix target,
+    wf::Point point,
     _Out_ wf::Point* pReturnValue)
 {
     HRESULT hr = S_OK;

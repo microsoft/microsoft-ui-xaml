@@ -66,7 +66,7 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetContextChangedEventSourceNoRef(_Outptr_ ContextChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ContextChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CommandingContainer*, ABI::Microsoft::UI::Xaml::Controls::CommandingContextChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_COMMANDINGIMPROVEMENTS_OVERRIDE;
-        IFACEMETHOD(remove_ContextChanged)(_In_ EventRegistrationToken token) FEATURE_COMMANDINGIMPROVEMENTS_OVERRIDE;
+        IFACEMETHOD(remove_ContextChanged)(EventRegistrationToken token) FEATURE_COMMANDINGIMPROVEMENTS_OVERRIDE;
 
         // Methods.
 

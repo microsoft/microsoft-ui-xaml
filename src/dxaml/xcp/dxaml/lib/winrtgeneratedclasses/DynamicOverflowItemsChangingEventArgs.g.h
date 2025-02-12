@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Action)(_Out_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDynamicOverflowAction* pValue) override;
-        _Check_return_ HRESULT put_Action(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDynamicOverflowAction value);
+        _Check_return_ HRESULT put_Action(ABI::Microsoft::UI::Xaml::Controls::CommandBarDynamicOverflowAction value);
 
         // Methods.
 

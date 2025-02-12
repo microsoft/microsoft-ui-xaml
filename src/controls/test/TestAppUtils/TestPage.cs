@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace MUXControlsTestApp
 {
-    public class TestPage : Page
+    public partial class TestPage : Page
     {
         public TestPage()
         {

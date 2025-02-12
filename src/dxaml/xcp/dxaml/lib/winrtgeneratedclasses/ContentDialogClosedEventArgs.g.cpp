@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ContentDialogClosedEventArgs::get_Result(_Out_ ABI::Mic
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ContentDialogClosedEventArgs::put_Result(_In_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult value)
+_Check_return_ HRESULT DirectUI::ContentDialogClosedEventArgs::put_Result(ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

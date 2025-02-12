@@ -78,51 +78,51 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_AllowFocusOnInteraction)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AllowFocusOnInteraction)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AllowFocusOnInteraction)(BOOLEAN value) override;
         IFACEMETHOD(get_AllowFocusWhenDisabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AllowFocusWhenDisabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AllowFocusWhenDisabled)(BOOLEAN value) override;
         IFACEMETHOD(get_AreOpenCloseAnimationsEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AreOpenCloseAnimationsEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AreOpenCloseAnimationsEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_ElementSoundMode)(_Out_ ABI::Microsoft::UI::Xaml::ElementSoundMode* pValue) override;
-        IFACEMETHOD(put_ElementSoundMode)(_In_ ABI::Microsoft::UI::Xaml::ElementSoundMode value) override;
+        IFACEMETHOD(put_ElementSoundMode)(ABI::Microsoft::UI::Xaml::ElementSoundMode value) override;
         IFACEMETHOD(get_InputDevicePrefersPrimaryCommands)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_InputDevicePrefersPrimaryCommands(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_InputDevicePrefersPrimaryCommands(BOOLEAN value);
         IFACEMETHOD(get_IsConstrainedToRootBounds)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_IsLightDismissOverlayEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsLightDismissOverlayEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsLightDismissOverlayEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_IsOpen)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_LightDismissOverlayMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode* pValue) override;
-        IFACEMETHOD(put_LightDismissOverlayMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
+        IFACEMETHOD(put_LightDismissOverlayMode)(ABI::Microsoft::UI::Xaml::Controls::LightDismissOverlayMode value) override;
         IFACEMETHOD(get_OverlayInputPassThroughElement)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_OverlayInputPassThroughElement)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_Placement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode* pValue) override;
-        IFACEMETHOD(put_Placement)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode value) override;
+        IFACEMETHOD(put_Placement)(ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutPlacementMode value) override;
         IFACEMETHOD(get_ShouldConstrainToRootBounds)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_ShouldConstrainToRootBounds)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_ShouldConstrainToRootBounds)(BOOLEAN value) override;
         IFACEMETHOD(get_ShowMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode* pValue) override;
-        IFACEMETHOD(put_ShowMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode value) override;
+        IFACEMETHOD(put_ShowMode)(ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutShowMode value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
         IFACEMETHOD(get_Target)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IFrameworkElement** ppValue) override;
         _Check_return_ HRESULT put_Target(_In_opt_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pValue);
         IFACEMETHOD(get_UsePickerFlyoutTheme)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_UsePickerFlyoutTheme)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_UsePickerFlyoutTheme)(BOOLEAN value) override;
         IFACEMETHOD(get_XamlRoot)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IXamlRoot** ppValue) override;
         IFACEMETHOD(put_XamlRoot)(_In_opt_ ABI::Microsoft::UI::Xaml::IXamlRoot* pValue) override;
 
         // Events.
         _Check_return_ HRESULT GetClosedEventSourceNoRef(_Outptr_ ClosedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Closed)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Closed)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetClosingEventSourceNoRef(_Outptr_ ClosingEventSourceType** ppEventSource);
         IFACEMETHOD(add_Closing)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutBase*, ABI::Microsoft::UI::Xaml::Controls::Primitives::FlyoutBaseClosingEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Closing)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Closing)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetOpenedEventSourceNoRef(_Outptr_ OpenedEventSourceType** ppEventSource);
         IFACEMETHOD(add_Opened)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Opened)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Opened)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetOpeningEventSourceNoRef(_Outptr_ OpeningEventSourceType** ppEventSource);
         IFACEMETHOD(add_Opening)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Opening)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Opening)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(CreatePresenter)(_Outptr_ ABI::Microsoft::UI::Xaml::Controls::IControl** ppReturnValue) override;
@@ -130,7 +130,7 @@ namespace DirectUI
         IFACEMETHOD(Hide)() override;
         IFACEMETHOD(OnProcessKeyboardAccelerators)(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs) override;
         _Check_return_ HRESULT OnProcessKeyboardAcceleratorsProtected(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
-        IFACEMETHOD(PlaceFlyoutForDateTimePicker)(_In_ ABI::Windows::Foundation::Point point) override;
+        IFACEMETHOD(PlaceFlyoutForDateTimePicker)(ABI::Windows::Foundation::Point point) override;
         IFACEMETHOD(ShowAt)(_In_ ABI::Microsoft::UI::Xaml::IFrameworkElement* pPlacementTarget) override;
         IFACEMETHOD(ShowAtWithOptions)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pPlacementTarget, _In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutShowOptions* pShowOptions) override;
         IFACEMETHOD(TryInvokeKeyboardAccelerator)(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs) override;

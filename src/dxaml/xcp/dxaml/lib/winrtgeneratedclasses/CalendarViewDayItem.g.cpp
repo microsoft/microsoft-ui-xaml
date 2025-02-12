@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::CalendarViewDayItemGenerated::get_Date(_Out_ ABI::Windo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewDayItem_Date, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewDayItemGenerated::put_Date(_In_ ABI::Windows::Foundation::DateTime value)
+_Check_return_ HRESULT DirectUI::CalendarViewDayItemGenerated::put_Date(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewDayItem_Date, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::CalendarViewDayItemGenerated::get_IsBlackout(_Out_ BOOL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewDayItem_IsBlackout, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewDayItemGenerated::put_IsBlackout(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CalendarViewDayItemGenerated::put_IsBlackout(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewDayItem_IsBlackout, value));

@@ -103,7 +103,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_CalendarItemBorderThickness(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_CalendarItemBorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_CalendarItemBorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_CalendarItemBorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_CalendarItemBorderThickness, value));
@@ -112,7 +112,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_CalendarItemCornerRadius(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_CalendarItemCornerRadius, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_CalendarItemCornerRadius(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_CalendarItemCornerRadius(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_CalendarItemCornerRadius, value));
@@ -175,7 +175,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_DayItemFontSize(_Out_ DOUBLE
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_DayItemFontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DayItemFontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DayItemFontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_DayItemFontSize, value));
@@ -184,7 +184,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_DayItemFontStyle(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_DayItemFontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DayItemFontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DayItemFontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_DayItemFontStyle, value));
@@ -193,7 +193,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_DayItemFontWeight(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_DayItemFontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DayItemFontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DayItemFontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_DayItemFontWeight, value));
@@ -202,7 +202,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_DayItemMargin(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_DayItemMargin, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DayItemMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DayItemMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_DayItemMargin, value));
@@ -229,7 +229,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_DisplayMode(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_DisplayMode, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DisplayMode(_In_ ABI::Microsoft::UI::Xaml::Controls::CalendarViewDisplayMode value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_DisplayMode(ABI::Microsoft::UI::Xaml::Controls::CalendarViewDisplayMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_DisplayMode, value));
@@ -238,7 +238,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstDayOfWeek(_Out_ ABI::Wi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstDayOfWeek, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstDayOfWeek(_In_ ABI::Windows::Globalization::DayOfWeek value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstDayOfWeek(ABI::Windows::Globalization::DayOfWeek value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstDayOfWeek, value));
@@ -256,7 +256,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstOfMonthLabelFontSize(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfMonthLabelFontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfMonthLabelFontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontSize, value));
@@ -265,7 +265,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstOfMonthLabelFontStyle(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfMonthLabelFontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfMonthLabelFontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontStyle, value));
@@ -274,7 +274,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstOfMonthLabelFontWeight(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfMonthLabelFontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfMonthLabelFontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfMonthLabelFontWeight, value));
@@ -283,7 +283,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstOfMonthLabelMargin(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfMonthLabelMargin, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfMonthLabelMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfMonthLabelMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfMonthLabelMargin, value));
@@ -301,7 +301,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstOfYearDecadeLabelFontSi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfYearDecadeLabelFontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfYearDecadeLabelFontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontSize, value));
@@ -310,7 +310,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstOfYearDecadeLabelFontSt
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfYearDecadeLabelFontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfYearDecadeLabelFontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontStyle, value));
@@ -319,7 +319,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstOfYearDecadeLabelFontWe
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfYearDecadeLabelFontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfYearDecadeLabelFontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelFontWeight, value));
@@ -328,7 +328,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_FirstOfYearDecadeLabelMargin
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelMargin, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfYearDecadeLabelMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_FirstOfYearDecadeLabelMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_FirstOfYearDecadeLabelMargin, value));
@@ -346,7 +346,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_HorizontalDayItemAlignment(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_HorizontalDayItemAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_HorizontalDayItemAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_HorizontalDayItemAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_HorizontalDayItemAlignment, value));
@@ -355,7 +355,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_HorizontalFirstOfMonthLabelA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_HorizontalFirstOfMonthLabelAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_HorizontalFirstOfMonthLabelAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_HorizontalFirstOfMonthLabelAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_HorizontalFirstOfMonthLabelAlignment, value));
@@ -373,7 +373,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_IsGroupLabelVisible(_Out_ BO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_IsGroupLabelVisible, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_IsGroupLabelVisible(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_IsGroupLabelVisible(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_IsGroupLabelVisible, value));
@@ -382,7 +382,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_IsOutOfScopeEnabled(_Out_ BO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_IsOutOfScopeEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_IsOutOfScopeEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_IsOutOfScopeEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_IsOutOfScopeEnabled, value));
@@ -391,7 +391,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_IsTodayHighlighted(_Out_ BOO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_IsTodayHighlighted, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_IsTodayHighlighted(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_IsTodayHighlighted(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_IsTodayHighlighted, value));
@@ -400,7 +400,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_MaxDate(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_MaxDate, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MaxDate(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MaxDate(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_MaxDate, value));
@@ -409,7 +409,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_MinDate(_Out_ ABI::Windows::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_MinDate, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MinDate(_In_ ABI::Windows::Foundation::DateTime value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MinDate(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_MinDate, value));
@@ -427,7 +427,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_MonthYearItemFontSize(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_MonthYearItemFontSize, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MonthYearItemFontSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MonthYearItemFontSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_MonthYearItemFontSize, value));
@@ -436,7 +436,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_MonthYearItemFontStyle(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_MonthYearItemFontStyle, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MonthYearItemFontStyle(_In_ ABI::Windows::UI::Text::FontStyle value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MonthYearItemFontStyle(ABI::Windows::UI::Text::FontStyle value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_MonthYearItemFontStyle, value));
@@ -445,7 +445,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_MonthYearItemFontWeight(_Out
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_MonthYearItemFontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MonthYearItemFontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MonthYearItemFontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_MonthYearItemFontWeight, value));
@@ -454,7 +454,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_MonthYearItemMargin(_Out_ AB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_MonthYearItemMargin, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MonthYearItemMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_MonthYearItemMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_MonthYearItemMargin, value));
@@ -463,7 +463,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_NumberOfWeeksInView(_Out_ IN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_NumberOfWeeksInView, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_NumberOfWeeksInView(_In_ INT value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_NumberOfWeeksInView(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_NumberOfWeeksInView, value));
@@ -607,7 +607,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_SelectionMode(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_SelectionMode, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_SelectionMode(_In_ ABI::Microsoft::UI::Xaml::Controls::CalendarViewSelectionMode value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_SelectionMode(ABI::Microsoft::UI::Xaml::Controls::CalendarViewSelectionMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_SelectionMode, value));
@@ -661,7 +661,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_TodayFontWeight(_Out_ ABI::W
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_TodayFontWeight, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_TodayFontWeight(_In_ ABI::Windows::UI::Text::FontWeight value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_TodayFontWeight(ABI::Windows::UI::Text::FontWeight value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_TodayFontWeight, value));
@@ -722,7 +722,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_VerticalDayItemAlignment(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_VerticalDayItemAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_VerticalDayItemAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_VerticalDayItemAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_VerticalDayItemAlignment, value));
@@ -731,7 +731,7 @@ IFACEMETHODIMP DirectUI::CalendarViewGenerated::get_VerticalFirstOfMonthLabelAli
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarView_VerticalFirstOfMonthLabelAlignment, pValue));
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_VerticalFirstOfMonthLabelAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::put_VerticalFirstOfMonthLabelAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarView_VerticalFirstOfMonthLabelAlignment, value));
@@ -774,7 +774,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::remove_CalendarViewDayItemChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::remove_CalendarViewDayItemChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CalendarViewDayItemChangingEventSourceType* pEventSource = nullptr;
@@ -829,7 +829,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::remove_SelectedDatesChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::remove_SelectedDatesChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     SelectedDatesChangedEventSourceType* pEventSource = nullptr;
@@ -850,7 +850,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::SetDisplayDate(_In_ ABI::Windows::Foundation::DateTime date)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::SetDisplayDate(ABI::Windows::Foundation::DateTime date)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -868,7 +868,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::CalendarViewGenerated::SetYearDecadeDisplayDimensions(_In_ INT columns, _In_ INT rows)
+IFACEMETHODIMP DirectUI::CalendarViewGenerated::SetYearDecadeDisplayDimensions(INT columns, INT rows)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

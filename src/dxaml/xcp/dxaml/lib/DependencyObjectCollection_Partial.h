@@ -35,7 +35,7 @@ namespace DirectUI
             _In_ wfc::VectorChangedEventHandler<xaml::DependencyObject*> *pHandler,
             _Out_ EventRegistrationToken *token) override;
 
-        IFACEMETHODIMP remove_VectorChanged(_In_ EventRegistrationToken token) override;
+        IFACEMETHODIMP remove_VectorChanged(EventRegistrationToken token) override;
 
         _Check_return_ HRESULT OnChildUpdated(_In_ DependencyObject *pChild) override;
 

@@ -24,7 +24,7 @@ namespace DirectUI
             _In_opt_ DependencyObject* pCandidateTabStopElement,
             const bool isBackward,
             const bool didCycleFocusAtRootVisualScope,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsTabStopOverridden
             ) override;
 
@@ -33,7 +33,7 @@ namespace DirectUI
             _In_ DependencyObject* pCandidateTabStopElement,
             _In_opt_ DependencyObject* pOverriddenCandidateTabStopElement,
             const bool isBackward,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsCandidateTabStopOverridden
             ) override;
 
@@ -41,7 +41,7 @@ namespace DirectUI
             _Outptr_result_maybenull_ DependencyObject** firstFocusable) override;
 
         _Check_return_ HRESULT GetLastFocusableElementOverride(
-            _Outptr_ DependencyObject** lastFocusable) override;
+            _Outptr_result_maybenull_ DependencyObject** lastFocusable) override;
 
         _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;
 

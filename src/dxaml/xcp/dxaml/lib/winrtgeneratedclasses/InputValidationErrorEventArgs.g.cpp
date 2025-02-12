@@ -65,7 +65,7 @@ IFACEMETHODIMP DirectUI::InputValidationErrorEventArgs::get_Action(_Out_ ABI::Mi
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::InputValidationErrorEventArgs::put_Action(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventAction value)
+_Check_return_ HRESULT DirectUI::InputValidationErrorEventArgs::put_Action(ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventAction value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

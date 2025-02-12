@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks
 {
-    class MockVirtualizingLayout : VirtualizingLayout
+    partial class MockVirtualizingLayout : VirtualizingLayout
     {
         public Func<Size, VirtualizingLayoutContext, Size> MeasureLayoutFunc { get; set; }
         public Func<Size, VirtualizingLayoutContext, Size> ArrangeLayoutFunc { get; set; }

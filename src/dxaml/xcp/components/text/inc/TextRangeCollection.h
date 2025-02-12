@@ -26,7 +26,7 @@ public:
     // CCollection overrides
 
     _Check_return_ HRESULT Append(_In_ CValue& value, _Out_opt_ uint32_t* indexOut = nullptr) override;
-    _Check_return_ HRESULT Insert(_In_ uint32_t index, _In_ CValue& value) override;
+    _Check_return_ HRESULT Insert(uint32_t index, _In_ CValue& value) override;
     _Check_return_ void* RemoveAt(uint32_t index) override;
     _Check_return_ void* GetItemWithAddRef(uint32_t index) override;
     _Check_return_ HRESULT IndexOf(_In_ CValue& value, _Out_ int32_t* indexOut) override;

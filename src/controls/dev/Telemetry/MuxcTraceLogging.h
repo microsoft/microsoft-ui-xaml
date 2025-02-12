@@ -32,6 +32,7 @@
 #define KEYWORD_SELECTORBAR        0x0000000000001000
 #define KEYWORD_NAVIGATIONVIEW     0x0000000000002000
 #define KEYWORD_INKTOOLBAR         0x0000000000004000
+#define KEYWORD_TITLEBAR           0x0000000000008000
 
 // Common output formats
 #define TRACE_MSG_METH L"%s[0x%p]()\n"
@@ -57,6 +58,7 @@
 #define TRACE_MSG_METH_IND_STR L"%s[0x%p](%*s)\n"
 #define TRACE_MSG_METH_IND_STR_STR L"%s[0x%p](%*s, %s)\n"
 #define TRACE_MSG_METH_IND_STR_STR_INT L"%s[0x%p](%*s, %s, %d)\n"
+#define TRACE_MSG_METH_IND_STR_STR_INT_INT L"%s[0x%p](%*s, %s, %d, %d)\n"
 #define TRACE_MSG_METH_IND_STR_STR_FLT L"%s[0x%p](%*s, %s, %f)\n"
 #define TRACE_MSG_METH_IND_STR_STR_FLT_FLT L"%s[0x%p](%*s, %s, %f, %f)\n"
 #define TRACE_MSG_METH_IND_STR_STR_FLT_FLT_FLT_FLT L"%s[0x%p](%*s, %s, %f, %f, %f, %f)\n"

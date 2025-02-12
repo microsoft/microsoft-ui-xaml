@@ -38,9 +38,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_Size)(_Out_ ABI::Windows::Foundation::Size* pValue) override;
-        _Check_return_ HRESULT put_Size(_In_ ABI::Windows::Foundation::Size value);
+        _Check_return_ HRESULT put_Size(ABI::Windows::Foundation::Size value);
 
         // Events.
 

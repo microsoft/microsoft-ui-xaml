@@ -339,9 +339,9 @@ HRESULT TextItemizer::SetLineBreakpoints(
 //---------------------------------------------------------------------------
 XUINT32 TextItemizer::GetNextRangeLength(
     _In_ XUINT32 rangeStart,
-    _Outptr_ TextAnalysisNode<FssScriptAnalysis> **ppScriptAnalysisNode,
-    _Outptr_ TextAnalysisNode<XUINT8> **ppBidiAnalysisNode,
-    _Outptr_ TextAnalysisNode<IDWriteNumberSubstitution*> **ppNumberSubstitutionNode
+    _Outptr_result_maybenull_ TextAnalysisNode<FssScriptAnalysis> **ppScriptAnalysisNode,
+    _Outptr_result_maybenull_ TextAnalysisNode<XUINT8> **ppBidiAnalysisNode,
+    _Outptr_result_maybenull_ TextAnalysisNode<IDWriteNumberSubstitution*> **ppNumberSubstitutionNode
     )
 {
     XUINT32 rangeStop = XUINT32_MAX;

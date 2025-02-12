@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_CanHorizontally
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::put_CanHorizontallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::put_CanHorizontallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -116,7 +116,7 @@ IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::get_CanVerticallySc
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::put_CanVerticallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::put_CanVerticallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -264,7 +264,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::remove_HorizontalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::remove_HorizontalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     HorizontalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -319,7 +319,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::remove_VerticalSnapPointsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::remove_VerticalSnapPointsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     VerticalSnapPointsChangedEventSourceType* pEventSource = nullptr;
@@ -340,7 +340,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::GetInsertionIndexes(_In_ ABI::Windows::Foundation::Point position, _Out_ INT* pFirst, _Out_ INT* pSecond)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::GetInsertionIndexes(ABI::Windows::Foundation::Point position, _Out_ INT* pFirst, _Out_ INT* pSecond)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -358,7 +358,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::GetIrregularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::GetIrregularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Outptr_ ABI::Windows::Foundation::Collections::IVectorView<FLOAT>** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -377,7 +377,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::GetRegularSnapPoints(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::GetRegularSnapPoints(ABI::Microsoft::UI::Xaml::Controls::Orientation orientation, ABI::Microsoft::UI::Xaml::Controls::Primitives::SnapPointsAlignment alignment, _Out_ FLOAT* pOffset, _Out_ FLOAT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -468,7 +468,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -488,7 +488,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _In_ BOOLEAN useAnimation, _In_ DOUBLE horizontalAlignmentRatio, _In_ DOUBLE verticalAlignmentRatio, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, BOOLEAN useAnimation, DOUBLE horizontalAlignmentRatio, DOUBLE verticalAlignmentRatio, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -650,7 +650,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::SetHorizontalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::SetHorizontalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -668,7 +668,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::SetVerticalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::OrientedVirtualizingPanelGenerated::SetVerticalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -805,7 +805,7 @@ _Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelFactory::GetIsContaine
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::OrientedVirtualizingPanel_IsContainerGeneratedForInsert, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelFactory::SetIsContainerGeneratedForInsertStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::OrientedVirtualizingPanelFactory::SetIsContainerGeneratedForInsertStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::OrientedVirtualizingPanel_IsContainerGeneratedForInsert, value));
 }

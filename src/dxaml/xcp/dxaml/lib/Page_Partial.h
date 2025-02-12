@@ -75,11 +75,11 @@ namespace DirectUI
         _Check_return_ HRESULT UnregisterAppBars() override;
 
         IFACEMETHOD(MeasureOverride)(
-            _In_ wf::Size availableSize,
+            wf::Size availableSize,
             _Out_ wf::Size* pReturnValue) override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size finalSize,
+            wf::Size finalSize,
             _Out_ wf::Size* pReturnValue) override;
 
     private:

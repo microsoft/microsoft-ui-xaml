@@ -47,21 +47,21 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CurtainCurrentToOffOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CurtainCurrentToOffOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CurtainCurrentToOffOffset(DOUBLE value);
         IFACEMETHOD(get_CurtainCurrentToOnOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CurtainCurrentToOnOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CurtainCurrentToOnOffset(DOUBLE value);
         IFACEMETHOD(get_CurtainOffToOnOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CurtainOffToOnOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CurtainOffToOnOffset(DOUBLE value);
         IFACEMETHOD(get_CurtainOnToOffOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CurtainOnToOffOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CurtainOnToOffOffset(DOUBLE value);
         IFACEMETHOD(get_KnobCurrentToOffOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_KnobCurrentToOffOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_KnobCurrentToOffOffset(DOUBLE value);
         IFACEMETHOD(get_KnobCurrentToOnOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_KnobCurrentToOnOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_KnobCurrentToOnOffset(DOUBLE value);
         IFACEMETHOD(get_KnobOffToOnOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_KnobOffToOnOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_KnobOffToOnOffset(DOUBLE value);
         IFACEMETHOD(get_KnobOnToOffOffset)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_KnobOnToOffOffset(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_KnobOnToOffOffset(DOUBLE value);
 
         // Events.
 

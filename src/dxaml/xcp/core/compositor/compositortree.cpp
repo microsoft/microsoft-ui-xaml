@@ -317,7 +317,7 @@ HWClip::TransformPointsHelper(_In_ const CMILMatrix *pTransform)
 /* static */ _Check_return_ HRESULT HWClip::ApplyTransformAndClip_DropZPreserveW(
     XUINT32 sourcePointCount,
     _Inout_updates_(sourcePointCount) XPOINTF4 *pSourcePoints,
-    _In_opt_ const std::shared_ptr<const CMILMatrix4x4> p3DProjection,
+    const std::shared_ptr<const CMILMatrix4x4> p3DProjection,
     _In_ const CMILMatrix *p2DTransform,
     _In_ const HWClip *p2DClip,
     _Out_ XUINT32 *pDestPointCount,
@@ -494,7 +494,7 @@ Cleanup:
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
 HWClip::ApplyTransformAndClip(
-    _In_opt_ const std::shared_ptr<const CMILMatrix4x4> p3DProjection,
+    const std::shared_ptr<const CMILMatrix4x4> p3DProjection,
     _In_ const CMILMatrix *p2DTransform,
     _In_ const HWClip *p2DClip,
     _Out_opt_ bool *pWasClipped
@@ -1231,7 +1231,7 @@ HWClip::GetRectilinearClip(_Out_ XRECTF *pRect, _In_ const CMILMatrix* pTransfor
 //
 //------------------------------------------------------------------------
 void
-HWClip::GetPolygonClip(_Outptr_ XPOINTF **ppPoints, _Out_ XUINT32 *pPointsCount) const
+HWClip::GetPolygonClip(_Outptr_result_buffer_(*pPointsCount) XPOINTF **ppPoints, _Out_ XUINT32 *pPointsCount) const
 {
     ASSERT(m_cPoints != 0 || m_pPoints == NULL);
 
@@ -1486,7 +1486,7 @@ TransformAndClipFrame::PrependNetTransformTo(_Inout_ CMILMatrix4x4 *pCombinedTra
 //------------------------------------------------------------------------
 void
 TransformAndClipFrame::Get2DTransform(
-    _Outptr_ CMILMatrix *p2DTransform
+    _Out_ CMILMatrix *p2DTransform
     ) const
 {
     *p2DTransform = m_2DTransform;
@@ -1863,7 +1863,7 @@ TransformAndClipStack::GetCombinedTransform(_Out_ CMILMatrix4x4 *pCombinedTransf
 //------------------------------------------------------------------------
 void
 TransformAndClipStack::Get2DTransformInLeafmostProjection(
-    _Outptr_ CMILMatrix *p2DTransform
+    _Out_ CMILMatrix *p2DTransform
     ) const
 {
     GetTopFrameConst()->Get2DTransform(p2DTransform);

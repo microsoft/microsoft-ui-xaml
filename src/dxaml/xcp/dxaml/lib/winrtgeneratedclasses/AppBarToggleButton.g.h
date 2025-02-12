@@ -57,29 +57,29 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_DynamicOverflowOrder)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_DynamicOverflowOrder)(_In_ INT value) override;
+        IFACEMETHOD(put_DynamicOverflowOrder)(INT value) override;
         IFACEMETHOD(get_Icon)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IIconElement** ppValue) override;
         IFACEMETHOD(put_Icon)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IIconElement* pValue) override;
         IFACEMETHOD(get_IsCompact)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsCompact)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsCompact)(BOOLEAN value) override;
         IFACEMETHOD(get_IsInOverflow)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_KeyboardAcceleratorTextOverride)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_KeyboardAcceleratorTextOverride)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_Label)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Label)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_LabelPosition)(_Out_ ABI::Microsoft::UI::Xaml::Controls::CommandBarLabelPosition* pValue) override;
-        IFACEMETHOD(put_LabelPosition)(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarLabelPosition value) override;
+        IFACEMETHOD(put_LabelPosition)(ABI::Microsoft::UI::Xaml::Controls::CommandBarLabelPosition value) override;
         IFACEMETHOD(get_TemplateSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarToggleButtonTemplateSettings** ppValue) override;
         _Check_return_ HRESULT put_TemplateSettings(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IAppBarToggleButtonTemplateSettings* pValue);
         IFACEMETHOD(get_UseOverflowStyle)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_UseOverflowStyle)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_UseOverflowStyle)(BOOLEAN value) override;
 
         // Events.
 
         // Methods.
         IFACEMETHOD(GetHasBottomLabel)(_Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(GetHasRightLabel)(_Out_ BOOLEAN* pResult) override;
-        IFACEMETHOD(SetDefaultLabelPosition)(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition defaultLabelPosition) override;
+        IFACEMETHOD(SetDefaultLabelPosition)(ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition defaultLabelPosition) override;
 
 
     protected:

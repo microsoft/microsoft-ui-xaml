@@ -52,46 +52,46 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ElementSoundMode)(_Out_ ABI::Microsoft::UI::Xaml::ElementSoundMode* pValue) override;
-        IFACEMETHOD(put_ElementSoundMode)(_In_ ABI::Microsoft::UI::Xaml::ElementSoundMode value) override;
+        IFACEMETHOD(put_ElementSoundMode)(ABI::Microsoft::UI::Xaml::ElementSoundMode value) override;
         IFACEMETHOD(get_FocusState)(_Out_ ABI::Microsoft::UI::Xaml::FocusState* pValue) override;
         IFACEMETHOD(get_IsTabStop)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsTabStop)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsTabStop)(BOOLEAN value) override;
         IFACEMETHOD(get_NavigateUri)(_Outptr_result_maybenull_ ABI::Windows::Foundation::IUriRuntimeClass** ppValue) override;
         IFACEMETHOD(put_NavigateUri)(_In_opt_ ABI::Windows::Foundation::IUriRuntimeClass* pValue) override;
         IFACEMETHOD(get_TabIndex)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_TabIndex)(_In_ INT value) override;
+        IFACEMETHOD(put_TabIndex)(INT value) override;
         IFACEMETHOD(get_UnderlineStyle)(_Out_ ABI::Microsoft::UI::Xaml::Documents::UnderlineStyle* pValue) override;
-        IFACEMETHOD(put_UnderlineStyle)(_In_ ABI::Microsoft::UI::Xaml::Documents::UnderlineStyle value) override;
+        IFACEMETHOD(put_UnderlineStyle)(ABI::Microsoft::UI::Xaml::Documents::UnderlineStyle value) override;
         IFACEMETHOD(get_XYFocusDown)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_XYFocusDown)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusDownNavigationStrategy)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy* pValue) override;
-        IFACEMETHOD(put_XYFocusDownNavigationStrategy)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
+        IFACEMETHOD(put_XYFocusDownNavigationStrategy)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
         IFACEMETHOD(get_XYFocusLeft)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_XYFocusLeft)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusLeftNavigationStrategy)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy* pValue) override;
-        IFACEMETHOD(put_XYFocusLeftNavigationStrategy)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
+        IFACEMETHOD(put_XYFocusLeftNavigationStrategy)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
         IFACEMETHOD(get_XYFocusRight)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_XYFocusRight)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusRightNavigationStrategy)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy* pValue) override;
-        IFACEMETHOD(put_XYFocusRightNavigationStrategy)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
+        IFACEMETHOD(put_XYFocusRightNavigationStrategy)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
         IFACEMETHOD(get_XYFocusUp)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_XYFocusUp)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusUpNavigationStrategy)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy* pValue) override;
-        IFACEMETHOD(put_XYFocusUpNavigationStrategy)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
+        IFACEMETHOD(put_XYFocusUpNavigationStrategy)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategy value) override;
 
         // Events.
         _Check_return_ HRESULT GetClickEventSourceNoRef(_Outptr_ ClickEventSourceType** ppEventSource);
         IFACEMETHOD(add_Click)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Documents::Hyperlink*, ABI::Microsoft::UI::Xaml::Documents::HyperlinkClickEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Click)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Click)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetGotFocusEventSourceNoRef(_Outptr_ GotFocusEventSourceType** ppEventSource);
         IFACEMETHOD(add_GotFocus)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_GotFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_GotFocus)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetLostFocusEventSourceNoRef(_Outptr_ LostFocusEventSourceType** ppEventSource);
         IFACEMETHOD(add_LostFocus)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_LostFocus)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_LostFocus)(EventRegistrationToken token) override;
 
         // Methods.
-        IFACEMETHOD(Focus)(_In_ ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(Focus)(ABI::Microsoft::UI::Xaml::FocusState value, _Out_ BOOLEAN* pReturnValue) override;
 
 
     protected:

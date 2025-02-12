@@ -35,9 +35,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_OldTime)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>** ppValue) override;
-        _Check_return_ HRESULT put_OldTime(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue);
+        _Check_return_ HRESULT put_OldTime(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue);
         IFACEMETHOD(get_NewTime)(_Out_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>** ppValue) override;
-        _Check_return_ HRESULT put_NewTime(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue);
+        _Check_return_ HRESULT put_NewTime(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue);
 
         // Methods.
 

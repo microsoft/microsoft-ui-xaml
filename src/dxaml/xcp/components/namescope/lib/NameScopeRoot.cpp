@@ -14,6 +14,7 @@
 #include <CControl.h>
 #include <ContentPresenter.h>
 #include <ItemsPresenter.h>
+#include "XamlTelemetry.h"
 
 namespace Jupiter {
     namespace NameScoping {
@@ -40,6 +41,25 @@ namespace Jupiter {
         void NameScopeRoot::RemoveNameScopeIfExists(_In_ const CDependencyObject* nameScopeOwner, NameScopeType nameScopeType)
         {
             m_namescopeTables.erase(std::make_pair(nameScopeOwner, nameScopeType));
+
+            // Shrink down the backing vector if there are too many empty buckets. We have scenarios where lots of tabs
+            // are opened and closed, and after garbage collection this map has over 32k buckets yet only ~30 items,
+            // which unnecessarily takes up memory. As a heuristic, shrink when there are 100x more buckets than items.
+            // Also only shrink if there are more than 500 buckets so we don't thrash when there are only a few
+            // elements.
+            if (m_namescopeTables.bucket_count() > 500 && m_namescopeTables.load_factor() < 0.01)
+            {
+                // Note: rehash in xhash only increases the number of buckets. We have to build a new unordered_map.
+                NameScopeTableMap shrunk(std::make_move_iterator(m_namescopeTables.begin()), std::make_move_iterator(m_namescopeTables.end()));
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "Memory_ResizeNameScopeRootUnorderedMap",
+                    TraceLoggingUInt64(m_namescopeTables.bucket_count(), "OriginalBucketCount"),
+                    TraceLoggingUInt64(shrunk.bucket_count(), "NewBucketCount"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                m_namescopeTables = std::move(shrunk);
+            }
         }
 
         void NameScopeRoot::ClearNamedObjectIfExists(const xstring_ptr_view& name, _In_ const CDependencyObject* nameScopeOwner)

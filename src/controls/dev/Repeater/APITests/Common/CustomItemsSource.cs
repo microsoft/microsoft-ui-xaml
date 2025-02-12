@@ -153,7 +153,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
         }
     }
 
-    class CustomItemsSourceWithUniqueId : CustomItemsSource, IKeyIndexMapping
+    partial class CustomItemsSourceWithUniqueId : CustomItemsSource, IKeyIndexMapping
     {
         public CustomItemsSourceWithUniqueId(List<int> source) : base(source)
         { }

@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::DatePickerValueChangedEventArgsGenerated::get_OldDate(_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DatePickerValueChangedEventArgsGenerated::put_OldDate(_In_ ABI::Windows::Foundation::DateTime value)
+_Check_return_ HRESULT DirectUI::DatePickerValueChangedEventArgsGenerated::put_OldDate(ABI::Windows::Foundation::DateTime value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::DatePickerValueChangedEventArgsGenerated::get_NewDate(_
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::DatePickerValueChangedEventArgsGenerated::put_NewDate(_In_ ABI::Windows::Foundation::DateTime value)
+_Check_return_ HRESULT DirectUI::DatePickerValueChangedEventArgsGenerated::put_NewDate(ABI::Windows::Foundation::DateTime value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

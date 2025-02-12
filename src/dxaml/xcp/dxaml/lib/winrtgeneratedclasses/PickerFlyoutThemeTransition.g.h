@@ -44,9 +44,9 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_OffsetFromCenter(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_OffsetFromCenter(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OffsetFromCenter(DOUBLE value);
         _Check_return_ HRESULT get_OpenedLength(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_OpenedLength(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_OpenedLength(DOUBLE value);
 
         // Events.
 

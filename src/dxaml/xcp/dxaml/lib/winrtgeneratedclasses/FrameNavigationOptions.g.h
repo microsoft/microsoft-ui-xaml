@@ -39,7 +39,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsNavigationStackEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsNavigationStackEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsNavigationStackEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_TransitionInfoOverride)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo** ppValue) override;
         IFACEMETHOD(put_TransitionInfoOverride)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pValue) override;
 

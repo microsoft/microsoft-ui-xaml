@@ -140,12 +140,12 @@ CPopup::~CPopup()
 
 void CPopup::EnsureBridgeClosed()
 {
-    if (m_popupWindowBridge)
+    if (m_desktopPopupSiteBridge)
     {
         if (m_bridgeClosedToken.value)
         {
             wrl::ComPtr<mu::IClosableNotifier> closableNotifier;
-            IFCFAILFAST(m_popupWindowBridge.As(&closableNotifier));
+            IFCFAILFAST(m_desktopPopupSiteBridge.As(&closableNotifier));
 
             IGNOREHR(closableNotifier->remove_FrameworkClosed(m_bridgeClosedToken));
         }
@@ -157,7 +157,7 @@ void CPopup::EnsureBridgeClosed()
         if (!m_bridgeClosed)
         {
             wrl::ComPtr<wf::IClosable> closable;
-            IFCFAILFAST(m_popupWindowBridge.As(&closable));
+            IFCFAILFAST(m_desktopPopupSiteBridge.As(&closable));
             IFCFAILFAST(closable->Close());
         }
 
@@ -1023,7 +1023,7 @@ bool CPopup::HasPointerCapture() const
     return false;
 }
 
-// Create windowed popup's window, if it doesn't exit
+// Create windowed popup's window, if it doesn't exist
 _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCreated)
 {
     *windowCreated = false;
@@ -1037,10 +1037,10 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCr
     // menu for all TextBoxes, for example, so we need to check that this windowed popup is still anchored to the same
     // island. If not, release all the window-related resources and re-create them.
     //
-    CXamlIslandRoot* island = GetAssociatedXamlIslandNoRef();
+    CXamlIslandRoot* xamlIslandRoot = GetAssociatedXamlIslandNoRef();
 
     UINT64 currentXamlIslandId;
-    IFC_RETURN(island->GetContentIsland()->get_Id(&currentXamlIslandId));
+    IFC_RETURN(xamlIslandRoot->GetContentIsland()->get_Id(&currentXamlIslandId));
 
     if (m_previousXamlIslandId != currentXamlIslandId)
     {
@@ -1052,53 +1052,47 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCr
 
         m_contentIsland.Reset();
         m_inputSiteAdapter.reset();
-        m_popupWindowBridge.Reset();
-        m_desktopBridge.Reset();
+        m_desktopPopupSiteBridge.Reset();
         m_windowedPopupWindow = NULL;
+
+        // The UIA provider is also bound to the previous XamlIsland/ContentIsland, so we need to destroy it.
+        if (m_spUIAWindow)
+        {
+            m_spUIAWindow->UIADisconnectAllProviders();
+            m_spUIAWindow->Deinit();
+            m_spUIAWindow.reset();
+        }
 
         m_previousXamlIslandId = currentXamlIslandId;
     }
 
-    if (!m_popupWindowBridge)
+    if (!m_desktopPopupSiteBridge)
     {
         // PopupSiteBridges can't be created from CoreWindowSiteBridge, only from DesktopChildSiteBridge. That means
         // windowed popups aren't supported for UWPs (see DoesPlatformSupportWindowedPopup). The lack of support comes
         // from lack of features for top-level window moving, monitor tracking, and light dismiss behavior in UWPs.
-        ASSERT(island != nullptr);
+        ASSERT(xamlIslandRoot != nullptr);
 
-        wrl::ComPtr<ixp::IDesktopChildSiteBridge> desktopChildSiteBridge { island->GetDesktopContentBridgeNoRef() };
-        wrl::ComPtr<ixp::IDesktopSiteBridge2> contentSiteBridge;
+        wrl::ComPtr<ixp::IContentIsland> contentIsland { xamlIslandRoot->GetContentIsland() };
 
-        if (desktopChildSiteBridge)
-        {
-            IFCFAILFAST(desktopChildSiteBridge.As(&contentSiteBridge));
-        }
-        else
-        {
-            // https://task.ms/48749483
-            // This is a temporary workaround to support windowed popups in a XamlIsland. See the
-            // definition of GetDesktopSiteBridge for more information.
-            auto desktopSiteBridge = GetDesktopSiteBridge();
-            IFCFAILFAST(desktopSiteBridge.As(&contentSiteBridge));
-        }
-
-        wrl::ComPtr<mu::IClosableNotifier> contentSiteBridgeAsClosable;
-        IFCFAILFAST(contentSiteBridge.As(&contentSiteBridgeAsClosable));
+        wrl::ComPtr<mu::IClosableNotifier> contentIslandAsClosable;
+        IFCFAILFAST(contentIsland.As(&contentIslandAsClosable));
 
         BOOLEAN isClosed;
-        IFC_RETURN(contentSiteBridgeAsClosable->get_IsClosed(&isClosed));
+        IFC_RETURN(contentIslandAsClosable->get_IsClosed(&isClosed));
 
         if (isClosed)
         {
             return S_OK;
         }
 
-        IFC_RETURN(contentSiteBridge->TryCreatePopupSiteBridge(m_popupWindowBridge.ReleaseAndGetAddressOf()));
+        wrl::ComPtr<ixp::IDesktopPopupSiteBridgeStatics> popupStatics;
+        IFC_RETURN(ActivationFactoryCache::GetActivationFactoryCache()->GetDesktopPopupSiteBridgeStatics(&popupStatics));
+        IFC_RETURN(popupStatics->Create(contentIsland.Get(), &m_desktopPopupSiteBridge));
 
         // Retrieve and cache the windowed popup hwnd.
         ABI::Microsoft::UI::WindowId windowId;
-        IFCFAILFAST(m_popupWindowBridge.As(&m_desktopBridge));
-        IFC_RETURN(m_desktopBridge->get_WindowId(&windowId));
+        IFC_RETURN(m_desktopPopupSiteBridge->get_WindowId(&windowId));
         IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &m_windowedPopupWindow));
 
         // Ensure that the window text is correct for UIA.
@@ -1111,7 +1105,7 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCr
 
         {
             wrl::ComPtr<mu::IClosableNotifier> closableNotifier;
-            IFCFAILFAST(m_popupWindowBridge.As(&closableNotifier));
+            IFCFAILFAST(m_desktopPopupSiteBridge.As(&closableNotifier));
 
             // It's safe to capture "this" here becasue we ensure the event is unsubscribed in CPopup's dtor.
             auto frameworkClosedCallback = [this]() -> HRESULT
@@ -1141,7 +1135,7 @@ wrl::ComPtr<ixp::IIslandInputSitePartner> CPopup::GetIslandInputSite() const
 {
     if (IsWindowed())
     {
-        // If we're windowed, we have our own ContentIsland connected to a PopupWindowBridge.
+        // If we're windowed, we have our own ContentIsland connected to a DesktopPopupSiteBridge.
         // Our ContentIsland will have its own IslandInputSite stored in our InputSiteAdpater when connected to the bridge.
         return (nullptr != m_inputSiteAdapter) ? m_inputSiteAdapter->GetIslandInputSite() : nullptr;
     }
@@ -1149,31 +1143,6 @@ wrl::ComPtr<ixp::IIslandInputSitePartner> CPopup::GetIslandInputSite() const
     // If we are not windowed we can simply return the default ElementIslandInputSite.
     // This really should be possible to be make const, but the do_pointer_cast is blocking (see depends.cpp).
     return const_cast<CPopup*>(this)->GetElementIslandInputSite();
-}
-
-wrl::ComPtr<ixp::IDesktopSiteBridge> CPopup::GetDesktopSiteBridge()
-{
-    // https://task.ms/48749483
-    // TODO: Remove once XAML creates Windowed popups without a DesktopSiteBridge. This is a
-    // temporary workaround since we need a DesktopSiteBridge to create windowed popups.
-    // XamlIslands do not have access to a bridge, and may not be hosted in a DesktopSiteBridge
-    // at all, but to unblock the scenario we need a way to create popups. This method
-    // should not be used except to create windowed popups, and once we have another way to
-    // create them this should be removed.
-
-    wrl::ComPtr<ixp::IDesktopSiteBridge> desktopSiteBridge;
-
-    if (auto xamlIsland = GetAssociatedXamlIslandNoRef())
-    {
-        wrl::ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
-        wrl::ComPtr<ixp::IContentIsland> contentIsland = xamlIsland->GetContentIsland();
-
-        IFCFAILFAST(contentIsland.As(&contentIslandPartner));
-
-        IFCFAILFAST(contentIslandPartner->get_TEMP_DesktopSiteBridge(&desktopSiteBridge));
-    }
-
-    return desktopSiteBridge;
 }
 
 // Ensure that DComp resources are created for windowed popup
@@ -1188,7 +1157,7 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         }
     }
 
-    if (m_popupWindowBridge && !m_contentIsland)
+    if (m_desktopPopupSiteBridge && !m_contentIsland)
     {
         wrl::ComPtr<ixp::IContentIslandStatics> contentStatics;
         IFC_RETURN(wf::GetActivationFactory(wrl::Wrappers::HStringReference(
@@ -1215,7 +1184,7 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
                 }).Get(),
                 &m_automationProviderRequestedToken));
 
-        IFC_RETURN(m_desktopBridge->Connect(m_contentIsland.Get()));
+        IFC_RETURN(m_desktopPopupSiteBridge->Connect(m_contentIsland.Get()));
 
         m_inputSiteAdapter = std::make_unique<WindowedPopupInputSiteAdapter>();
         CContentRoot* contentRoot = VisualTree::GetContentRootForElement(this);
@@ -1304,9 +1273,9 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
 
     if (m_contentIsland)
     {
-        wrl::ComPtr<ixp::IContentIsland2> contentIsland2;
-        IFCFAILFAST(m_contentIsland.As(&contentIsland2));
-        contentIsland2->put_Root(nullptr);
+        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+        IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
+        contentIslandExperimental->put_Root(nullptr);
     }
 
     m_contentIslandRootVisual.Reset();
@@ -1329,13 +1298,13 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
 _Check_return_ HRESULT
 CPopup::ShowWindowForWindowedPopup()
 {
-    IFCEXPECT_RETURN(m_popupWindowBridge);
+    IFCEXPECT_RETURN(m_desktopPopupSiteBridge);
 
-    if (m_popupWindowBridge)
+    if (m_desktopPopupSiteBridge)
     {
         IFC_RETURN(EnsureDCompResourcesForWindowedPopup());
 
-        m_desktopBridge->Show();
+        m_desktopPopupSiteBridge->Show();
     }
 
     return S_OK;
@@ -1345,9 +1314,9 @@ CPopup::ShowWindowForWindowedPopup()
 _Check_return_ HRESULT
 CPopup::HideWindowForWindowedPopup()
 {
-    if (m_popupWindowBridge)
+    if (m_desktopPopupSiteBridge)
     {
-        m_desktopBridge->Hide();
+        m_desktopPopupSiteBridge->Hide();
 
         // In case this popup has a cached point, closes, then opens again, we don't want it to replay that cached
         // point. When the parent island for this popup gets a pointer message, it'll clear the cached point on all
@@ -1390,7 +1359,7 @@ bool CPopup::ReplayPointerUpdate()
 _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
 {
     // Ignore if not windowed
-    if (!m_desktopBridge)
+    if (!m_desktopPopupSiteBridge)
     {
         return S_OK;
     }
@@ -1450,17 +1419,9 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
             // This MoveAndResize call results in a WM_WINDOWPOSCHANGED message, and we're seeing cases where a
             // third-party library is hooking into the wndproc, responding to WM_WINDOWPOSCHANGED, and is calling
             // SendMessage in response. That causes messages to be pumped, which causes reentrancy in to Xaml and a
-            // crash. For now, disable lifted CoreMessaging's dispatching for the duration of the MoveAndResize call.
-            // In the future, we'll want a mechanism that can protect against reentrancy without messing with the lifted
-            // CoreMessaging dispatcher. See https://task.ms/49218302.
-            CXcpDispatcher* dispatcher = nullptr;
-            auto hostSite = GetContext()->GetHostSite();
-            if (hostSite)
-            {
-                dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
-            }
-            PauseNewDispatch deferReentrancy(dispatcher ? dispatcher->GetMessageLoopExtensionsNoRef() : nullptr);
-            IFC_RETURN(m_desktopBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
+            // crash. Disable Xaml dispatching for the duration of the MoveAndResize call.
+            PauseNewDispatch deferReentrancy(GetContext());
+            IFC_RETURN(m_desktopPopupSiteBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
         }
     }
 
@@ -1942,17 +1903,9 @@ _Check_return_ HRESULT CPopup::AdjustWindowedPopupBoundsForDropShadow(_In_ const
             // This MoveAndResize call results in a WM_WINDOWPOSCHANGED message, and we're seeing cases where a
             // third-party library is hooking into the wndproc, responding to WM_WINDOWPOSCHANGED, and is calling
             // SendMessage in response. That causes messages to be pumped, which causes reentrancy in to Xaml and a
-            // crash. For now, disable lifted CoreMessaging's dispatching for the duration of the MoveAndResize call.
-            // In the future, we'll want a mechanism that can protect against reentrancy without messing with the lifted
-            // CoreMessaging dispatcher. See https://task.ms/49218302.
-            CXcpDispatcher* dispatcher = nullptr;
-            auto hostSite = GetContext()->GetHostSite();
-            if (hostSite)
-            {
-                dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
-            }
-            PauseNewDispatch deferReentrancy(dispatcher ? dispatcher->GetMessageLoopExtensionsNoRef() : nullptr);
-            IFC_RETURN(m_desktopBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
+            // crash. Disable Xaml dispatching for the duration of the MoveAndResize call.
+            PauseNewDispatch deferReentrancy(GetContext());
+            IFC_RETURN(m_desktopPopupSiteBridge->MoveAndResize(m_windowedPopupMoveAndResizeRect));
         }
     }
 
@@ -2205,15 +2158,15 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             visualChildren->InsertAtBottom(m_windowedPopupDebugVisual.Get());
         }
 
-        wrl::ComPtr<ixp::IContentIsland2> contentIsland2;
-        IFCFAILFAST(m_contentIsland.As(&contentIsland2));
-        contentIsland2->put_Root(m_contentIslandRootVisual.Get());
+        wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
+        IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
+        contentIslandExperimental->put_Root(m_contentIslandRootVisual.Get());
     }
 }
 
 void CPopup::EnsureUIAWindow()
 {
-    if (m_spUIAWindow == nullptr && m_popupWindowBridge)
+    if (m_spUIAWindow == nullptr && m_desktopPopupSiteBridge)
     {
         auto core = GetContext();
 

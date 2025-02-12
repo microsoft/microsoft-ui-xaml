@@ -54,8 +54,8 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(SelectGroupStyle)(_In_opt_ IInspectable* pGroup, _In_ UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue) override;
-        IFACEMETHOD(SelectGroupStyleCore)(_In_opt_ IInspectable* pGroup, _In_ UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue) override;
+        IFACEMETHOD(SelectGroupStyle)(_In_opt_ IInspectable* pGroup, UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue) override;
+        IFACEMETHOD(SelectGroupStyleCore)(_In_opt_ IInspectable* pGroup, UINT level, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IGroupStyle** ppReturnValue) override;
 
 
     protected:

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::PerspectiveTransform3D::get_Depth(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PerspectiveTransform3D_Depth, pValue));
 }
-IFACEMETHODIMP DirectUI::PerspectiveTransform3D::put_Depth(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PerspectiveTransform3D::put_Depth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PerspectiveTransform3D_Depth, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::PerspectiveTransform3D::get_OffsetX(_Out_ DOUBLE* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PerspectiveTransform3D_OffsetX, pValue));
 }
-IFACEMETHODIMP DirectUI::PerspectiveTransform3D::put_OffsetX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PerspectiveTransform3D::put_OffsetX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PerspectiveTransform3D_OffsetX, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::PerspectiveTransform3D::get_OffsetY(_Out_ DOUBLE* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PerspectiveTransform3D_OffsetY, pValue));
 }
-IFACEMETHODIMP DirectUI::PerspectiveTransform3D::put_OffsetY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PerspectiveTransform3D::put_OffsetY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PerspectiveTransform3D_OffsetY, value));

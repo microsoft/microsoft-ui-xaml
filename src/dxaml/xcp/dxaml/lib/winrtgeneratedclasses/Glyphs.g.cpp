@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::Glyphs::get_ColorFontPaletteIndex(_Out_ INT* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Glyphs_ColorFontPaletteIndex, pValue));
 }
-IFACEMETHODIMP DirectUI::Glyphs::put_ColorFontPaletteIndex(_In_ INT value)
+IFACEMETHODIMP DirectUI::Glyphs::put_ColorFontPaletteIndex(INT value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Glyphs_ColorFontPaletteIndex, value));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::Glyphs::get_FontRenderingEmSize(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Glyphs_FontRenderingEmSize, pValue));
 }
-IFACEMETHODIMP DirectUI::Glyphs::put_FontRenderingEmSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Glyphs::put_FontRenderingEmSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Glyphs_FontRenderingEmSize, value));
@@ -91,7 +91,7 @@ IFACEMETHODIMP DirectUI::Glyphs::get_IsColorFontEnabled(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Glyphs_IsColorFontEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::Glyphs::put_IsColorFontEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::Glyphs::put_IsColorFontEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Glyphs_IsColorFontEnabled, value));
@@ -100,7 +100,7 @@ IFACEMETHODIMP DirectUI::Glyphs::get_OriginX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Glyphs_OriginX, pValue));
 }
-IFACEMETHODIMP DirectUI::Glyphs::put_OriginX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Glyphs::put_OriginX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Glyphs_OriginX, value));
@@ -109,7 +109,7 @@ IFACEMETHODIMP DirectUI::Glyphs::get_OriginY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Glyphs_OriginY, pValue));
 }
-IFACEMETHODIMP DirectUI::Glyphs::put_OriginY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Glyphs::put_OriginY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Glyphs_OriginY, value));
@@ -118,7 +118,7 @@ IFACEMETHODIMP DirectUI::Glyphs::get_StyleSimulations(_Out_ ABI::Microsoft::UI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Glyphs_StyleSimulations, pValue));
 }
-IFACEMETHODIMP DirectUI::Glyphs::put_StyleSimulations(_In_ ABI::Microsoft::UI::Xaml::Media::StyleSimulations value)
+IFACEMETHODIMP DirectUI::Glyphs::put_StyleSimulations(ABI::Microsoft::UI::Xaml::Media::StyleSimulations value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Glyphs_StyleSimulations, value));

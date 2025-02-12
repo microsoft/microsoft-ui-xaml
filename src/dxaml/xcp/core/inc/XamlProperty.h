@@ -134,8 +134,8 @@ public:
 
     HRESULT get_Name(_Out_ xstring_ptr* pstrOutName);
     _Check_return_ HRESULT get_FullName(_Out_ xstring_ptr* pstrOutFullName);
-    virtual _Check_return_ HRESULT get_DeclaringType(_Out_ std::shared_ptr<XamlType>& outDeclaringType);
-    _Check_return_ HRESULT get_Type(_Out_ std::shared_ptr<XamlType>& outType);
+    virtual _Check_return_ HRESULT get_DeclaringType(_Inout_ std::shared_ptr<XamlType>& outDeclaringType);
+    _Check_return_ HRESULT get_Type(_Inout_ std::shared_ptr<XamlType>& outType);
     HRESULT get_TargetType(std::shared_ptr<XamlType>& outTargetType);
     HRESULT get_TextSyntax(std::shared_ptr<XamlTextSyntax>& outXamlTextSyntax);
 

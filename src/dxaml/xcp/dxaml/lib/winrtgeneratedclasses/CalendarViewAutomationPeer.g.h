@@ -66,7 +66,7 @@ namespace DirectUI
 
         // Methods.
         IFACEMETHOD(GetColumnHeaders)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple*** ppReturnValue) override;
-        IFACEMETHOD(GetItem)(_In_ INT row, _In_ INT column, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple** ppReturnValue) override;
+        IFACEMETHOD(GetItem)(INT row, INT column, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple** ppReturnValue) override;
         IFACEMETHOD(GetRowHeaders)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple*** ppReturnValue) override;
         IFACEMETHOD(GetSelection)(_Out_ UINT* pReturnValueCount, _Out_writes_to_ptr_(*pReturnValueCount) ABI::Microsoft::UI::Xaml::Automation::Provider::IIRawElementProviderSimple*** ppReturnValue) override;
         IFACEMETHOD(SetValue)(_In_ HSTRING value) override;

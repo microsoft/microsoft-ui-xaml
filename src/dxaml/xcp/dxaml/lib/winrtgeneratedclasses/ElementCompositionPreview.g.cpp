@@ -148,7 +148,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::SetIsTranslationEnabled(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ElementCompositionPreviewFactory::SetIsTranslationEnabled(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

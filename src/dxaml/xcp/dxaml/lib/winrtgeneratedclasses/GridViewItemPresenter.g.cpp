@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_ContentMargin(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_ContentMargin, pValue));
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_ContentMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_ContentMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_ContentMargin, value));
@@ -82,7 +82,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_DisabledOpacity(_Ou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_DisabledOpacity, pValue));
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_DisabledOpacity(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_DisabledOpacity(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_DisabledOpacity, value));
@@ -109,7 +109,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_DragOpacity(_Out_ D
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_DragOpacity, pValue));
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_DragOpacity(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_DragOpacity(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_DragOpacity, value));
@@ -133,7 +133,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_GridViewItemPresent
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_GridViewItemPresenterHorizontalContentAlignment(_In_ ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_GridViewItemPresenterHorizontalContentAlignment(ABI::Microsoft::UI::Xaml::HorizontalAlignment value)
 {
     HRESULT hr = S_OK;
     
@@ -153,7 +153,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_GridViewItemPresent
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_GridViewItemPresenterPadding(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_GridViewItemPresenterPadding(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     HRESULT hr = S_OK;
     
@@ -173,7 +173,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_GridViewItemPresent
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_GridViewItemPresenterVerticalContentAlignment(_In_ ABI::Microsoft::UI::Xaml::VerticalAlignment value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_GridViewItemPresenterVerticalContentAlignment(ABI::Microsoft::UI::Xaml::VerticalAlignment value)
 {
     HRESULT hr = S_OK;
     
@@ -205,7 +205,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_PointerOverBackgrou
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_PointerOverBackgroundMargin, pValue));
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_PointerOverBackgroundMargin(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_PointerOverBackgroundMargin(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_PointerOverBackgroundMargin, value));
@@ -214,7 +214,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_ReorderHintOffset(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_ReorderHintOffset, pValue));
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_ReorderHintOffset(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_ReorderHintOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_ReorderHintOffset, value));
@@ -232,7 +232,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_SelectedBorderThick
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_SelectedBorderThickness, pValue));
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_SelectedBorderThickness(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_SelectedBorderThickness(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_SelectedBorderThickness, value));
@@ -268,7 +268,7 @@ IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::get_SelectionCheckMarkV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_SelectionCheckMarkVisualEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_SelectionCheckMarkVisualEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::GridViewItemPresenterGenerated::put_SelectionCheckMarkVisualEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::GridViewItemPresenter_SelectionCheckMarkVisualEnabled, value));

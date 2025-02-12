@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_EnableDependentAnimation)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_EnableDependentAnimation)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_EnableDependentAnimation)(BOOLEAN value) override;
         IFACEMETHOD(get_KeyFrames)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::Animation::ObjectKeyFrame*>** ppValue) override;
 
         // Events.

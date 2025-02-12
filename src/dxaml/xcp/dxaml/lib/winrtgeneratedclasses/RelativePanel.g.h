@@ -51,15 +51,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_BackgroundSizing)(_Out_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing* pValue) override;
-        IFACEMETHOD(put_BackgroundSizing)(_In_ ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value) override;
+        IFACEMETHOD(put_BackgroundSizing)(ABI::Microsoft::UI::Xaml::Controls::BackgroundSizing value) override;
         IFACEMETHOD(get_BorderBrush)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IBrush** ppValue) override;
         IFACEMETHOD(put_BorderBrush)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IBrush* pValue) override;
         IFACEMETHOD(get_BorderThickness)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_BorderThickness)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_BorderThickness)(ABI::Microsoft::UI::Xaml::Thickness value) override;
         IFACEMETHOD(get_CornerRadius)(_Out_ ABI::Microsoft::UI::Xaml::CornerRadius* pValue) override;
-        IFACEMETHOD(put_CornerRadius)(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value) override;
+        IFACEMETHOD(put_CornerRadius)(ABI::Microsoft::UI::Xaml::CornerRadius value) override;
         IFACEMETHOD(get_Padding)(_Out_ ABI::Microsoft::UI::Xaml::Thickness* pValue) override;
-        IFACEMETHOD(put_Padding)(_In_ ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(put_Padding)(ABI::Microsoft::UI::Xaml::Thickness value) override;
 
         // Events.
 
@@ -162,35 +162,35 @@ namespace DirectUI
         IFACEMETHOD(GetAlignBottomWith)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_result_maybenull_ IInspectable** ppValue);
         IFACEMETHOD(SetAlignBottomWith)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_opt_ IInspectable* pValue);
         static _Check_return_ HRESULT GetAlignLeftWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetAlignLeftWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetAlignLeftWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         IFACEMETHOD(get_AlignLeftWithPanelProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetAlignLeftWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetAlignLeftWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        IFACEMETHOD(SetAlignLeftWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         static _Check_return_ HRESULT GetAlignTopWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetAlignTopWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetAlignTopWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         IFACEMETHOD(get_AlignTopWithPanelProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetAlignTopWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetAlignTopWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        IFACEMETHOD(SetAlignTopWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         static _Check_return_ HRESULT GetAlignRightWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetAlignRightWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetAlignRightWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         IFACEMETHOD(get_AlignRightWithPanelProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetAlignRightWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetAlignRightWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        IFACEMETHOD(SetAlignRightWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         static _Check_return_ HRESULT GetAlignBottomWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetAlignBottomWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetAlignBottomWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         IFACEMETHOD(get_AlignBottomWithPanelProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetAlignBottomWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetAlignBottomWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        IFACEMETHOD(SetAlignBottomWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         static _Check_return_ HRESULT GetAlignHorizontalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetAlignHorizontalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetAlignHorizontalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         IFACEMETHOD(get_AlignHorizontalCenterWithPanelProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetAlignHorizontalCenterWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetAlignHorizontalCenterWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        IFACEMETHOD(SetAlignHorizontalCenterWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         static _Check_return_ HRESULT GetAlignVerticalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetAlignVerticalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetAlignVerticalCenterWithPanelStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
         IFACEMETHOD(get_AlignVerticalCenterWithPanelProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetAlignVerticalCenterWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetAlignVerticalCenterWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        IFACEMETHOD(SetAlignVerticalCenterWithPanel)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
 
         // Static methods.
 

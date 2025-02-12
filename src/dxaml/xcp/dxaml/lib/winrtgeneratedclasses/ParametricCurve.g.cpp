@@ -71,7 +71,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ParametricCurve::SetSecondaryContentProperty(_In_ DirectUI::DirectManipulationProperty secondaryContentProperty, _In_ HSTRING associatedDependencyProperty)
+_Check_return_ HRESULT DirectUI::ParametricCurve::SetSecondaryContentProperty(DirectUI::DirectManipulationProperty secondaryContentProperty, _In_ HSTRING associatedDependencyProperty)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

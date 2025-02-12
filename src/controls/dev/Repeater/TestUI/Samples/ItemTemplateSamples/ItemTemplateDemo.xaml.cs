@@ -108,7 +108,7 @@ namespace MUXControlsTestApp.Samples
         }
     }
 
-    public class MySelector : DataTemplateSelector
+    public partial class MySelector : DataTemplateSelector
     {
         public DataTemplate TemplateOdd { get; set; }
 
@@ -120,7 +120,7 @@ namespace MUXControlsTestApp.Samples
         }
     }
 
-    public class MyItemsRepeater : ItemsRepeater
+    public partial class MyItemsRepeater : ItemsRepeater
     {
         public MyItemsRepeater()
         {

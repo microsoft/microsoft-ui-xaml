@@ -38,7 +38,7 @@ namespace DirectUI
         // Static properties.
         IFACEMETHOD(get_IsDisplayModeEnabled)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(get_AreKeyTipsEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AreKeyTipsEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AreKeyTipsEnabled)(BOOLEAN value) override;
 
         // Dependency properties.
 
@@ -50,7 +50,7 @@ namespace DirectUI
 
         // Static events.
         IFACEMETHOD(add_IsDisplayModeEnabledChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_IsDisplayModeEnabledChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_IsDisplayModeEnabledChanged)(EventRegistrationToken token) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
@@ -62,7 +62,7 @@ namespace DirectUI
         // Customized static properties.
          _Check_return_ HRESULT get_IsDisplayModeEnabledImpl(_Out_ BOOLEAN* pValue); 
          _Check_return_ HRESULT get_AreKeyTipsEnabledImpl(_Out_ BOOLEAN* pValue); 
-         _Check_return_ HRESULT put_AreKeyTipsEnabledImpl(_In_ BOOLEAN value); 
+         _Check_return_ HRESULT put_AreKeyTipsEnabledImpl(BOOLEAN value); 
 
         // Customized static  methods.
          _Check_return_ HRESULT ExitDisplayModeImpl(); 

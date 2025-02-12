@@ -109,7 +109,7 @@ Cleanup:
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::Scroll(_In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, _In_ ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount)
+IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::Scroll(ABI::Microsoft::UI::Xaml::Automation::ScrollAmount horizontalAmount, ABI::Microsoft::UI::Xaml::Automation::ScrollAmount verticalAmount)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -127,7 +127,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::SetScrollPercent(_In_ DOUBLE horizontalPercent, _In_ DOUBLE verticalPercent)
+IFACEMETHODIMP DirectUI::ScrollViewerAutomationPeerGenerated::SetScrollPercent(DOUBLE horizontalPercent, DOUBLE verticalPercent)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

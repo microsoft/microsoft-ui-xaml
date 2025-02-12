@@ -282,8 +282,8 @@ void XYFocus::RankElements(
     _In_ const double maxRootBoundsDistance,
     _In_ DirectUI::XYFocusNavigationStrategy mode,
     _In_ XRECTF_RB* exclusionRect,
-    _In_opt_ bool ignoreClipping,
-    _In_opt_ bool ignoreCone)
+    _In_ bool ignoreClipping,
+    _In_ bool ignoreCone)
 {
     XRECTF_RB exclusionBounds;
     EmptyRectF(&exclusionBounds);
@@ -316,7 +316,7 @@ double XYFocus::GetMaxRootBoundsDistance(
     _In_ const std::vector<XYFocusParams>& list,
     _In_ const XRECTF_RB& bounds,
     _In_ DirectUI::FocusNavigationDirection direction,
-    _In_opt_ bool ignoreClipping)
+    _In_ bool ignoreClipping)
 {
     auto max = std::max_element(list.begin(), list.end(), [&](XYFocusParams paramA, XYFocusParams paramB)
     {

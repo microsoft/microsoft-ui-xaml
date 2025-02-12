@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsDefaultShadowEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsDefaultShadowEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsDefaultShadowEnabled)(BOOLEAN value) override;
 
         // Events.
 

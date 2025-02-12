@@ -49,9 +49,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Delay)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_Delay)(_In_ INT value) override;
+        IFACEMETHOD(put_Delay)(INT value) override;
         IFACEMETHOD(get_Interval)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_Interval)(_In_ INT value) override;
+        IFACEMETHOD(put_Interval)(INT value) override;
 
         // Events.
 

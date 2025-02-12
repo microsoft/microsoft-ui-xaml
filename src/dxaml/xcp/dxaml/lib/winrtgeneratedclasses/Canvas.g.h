@@ -94,20 +94,20 @@ namespace DirectUI
 
         // Attached properties.
         static _Check_return_ HRESULT GetLeftStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ DOUBLE* pLength);
-        static _Check_return_ HRESULT SetLeftStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ DOUBLE length);
+        static _Check_return_ HRESULT SetLeftStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, DOUBLE length);
         IFACEMETHOD(get_LeftProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetLeft)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ DOUBLE* pLength);
-        IFACEMETHOD(SetLeft)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ DOUBLE length);
+        IFACEMETHOD(SetLeft)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, DOUBLE length);
         static _Check_return_ HRESULT GetTopStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ DOUBLE* pLength);
-        static _Check_return_ HRESULT SetTopStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ DOUBLE length);
+        static _Check_return_ HRESULT SetTopStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, DOUBLE length);
         IFACEMETHOD(get_TopProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetTop)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ DOUBLE* pLength);
-        IFACEMETHOD(SetTop)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ DOUBLE length);
+        IFACEMETHOD(SetTop)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, DOUBLE length);
         static _Check_return_ HRESULT GetZIndexStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ INT* pValue);
-        static _Check_return_ HRESULT SetZIndexStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT value);
+        static _Check_return_ HRESULT SetZIndexStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT value);
         IFACEMETHOD(get_ZIndexProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetZIndex)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ INT* pValue);
-        IFACEMETHOD(SetZIndex)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ INT value);
+        IFACEMETHOD(SetZIndex)(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, INT value);
 
         // Static methods.
 

@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsActive)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsActive)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsActive)(BOOLEAN value) override;
 
         // Events.
 

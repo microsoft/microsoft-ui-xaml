@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::RepositionThemeTransitionGenerated::get_IsStaggeringEna
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::RepositionThemeTransition_IsStaggeringEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::RepositionThemeTransitionGenerated::put_IsStaggeringEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::RepositionThemeTransitionGenerated::put_IsStaggeringEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::RepositionThemeTransition_IsStaggeringEnabled, value));

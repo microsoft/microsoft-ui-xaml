@@ -12,8 +12,8 @@ using namespace DirectUI;
 using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT DragDeltaEventArgsFactory::CreateInstanceWithHorizontalChangeAndVerticalChangeImpl(
-    _In_ DOUBLE dHorizontalChange,
-    _In_ DOUBLE dVerticalChange,
+    DOUBLE dHorizontalChange,
+    DOUBLE dVerticalChange,
     _In_opt_ IInspectable* pOuter,
     _Outptr_ IInspectable** ppInner,
     _Outptr_ IDragDeltaEventArgs** ppInstance)

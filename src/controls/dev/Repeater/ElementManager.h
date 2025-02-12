@@ -9,7 +9,6 @@
 // help with collection changes.
 class ElementManager final
 {
-
 public:
     ElementManager(const ITrackerHandleManager* owner, bool useLayoutBounds = true) : m_owner(owner), m_useLayoutBounds(useLayoutBounds) { }
 
@@ -33,6 +32,8 @@ public:
     winrt::Rect GetLayoutBoundsForRealizedIndex(int realizedIndex) const;
     void SetLayoutBoundsForRealizedIndex(int realizedIndex, const winrt::Rect& bounds);
 
+    bool IsLayoutBoundsForRealizedIndexSet(int realizedIndex) const;
+
     bool IsDataIndexRealized(int index) const;
     bool IsIndexValidInData(int currentIndex) const;
 
@@ -50,6 +51,10 @@ public:
     int GetDataIndexFromRealizedRangeIndex(int rangeIndex) const;
     int GetRealizedRangeIndexFromDataIndex(int dataIndex) const;
 
+#ifdef DBG
+    void LogElementManagerDbg(int indent, const wstring_view& layoutId);
+#endif // DBG
+
 private:
     void DiscardElementsOutsideWindow(const winrt::Rect& window, const ScrollOrientation& orientation);
     static bool Intersects(const winrt::Rect& lhs, const winrt::Rect& rhs, const ScrollOrientation& orientation);
@@ -66,4 +71,6 @@ private:
     std::vector<winrt::Rect> m_realizedElementLayoutBounds;
     int m_firstRealizedDataIndex{ -1 };
     winrt::VirtualizingLayoutContext m_context{ nullptr };
+
+    static constexpr winrt::Rect InvalidBounds{ -1.0f, -1.0f, -1.0f, -1.0f };
 };

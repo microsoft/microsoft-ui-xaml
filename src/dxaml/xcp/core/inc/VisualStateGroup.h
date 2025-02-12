@@ -57,7 +57,7 @@ private:
 
 #pragma region Legacy VSM
 public:
-    HRESULT _Check_return_ FindStateByName(_In_z_ const WCHAR *pStateName, _Out_ CVisualState **ppVisualState);
+    HRESULT _Check_return_ FindStateByName(_In_z_ const WCHAR *pStateName, _Outptr_result_maybenull_ CVisualState **ppVisualState);
 
     HRESULT _Check_return_ StartNewThenStopOld(
         _In_ CFrameworkElement* pControl,

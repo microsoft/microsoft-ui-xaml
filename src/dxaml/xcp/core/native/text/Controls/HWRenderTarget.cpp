@@ -687,7 +687,11 @@ void HWRenderTarget::DrawGlyphRun(
         // position to the middle of the first non-zero with glyph in the glyph run.
         while (glyphIndex < glyphRun->glyphCount)
         {
-            if (glyphRun->glyphAdvances[glyphIndex] > 0)
+            // Beyond checking for non zero glyph Advances, 
+            // we also need to check for glyph advances with zero advances and single glyph counts.
+            // This is to handle glyphs like the square root symbol.
+            if (glyphRun->glyphAdvances[glyphIndex] > 0 || 
+                (glyphRun->glyphAdvances[glyphIndex] == 0 && glyphRun->glyphCount == 1))
             {
                 glyphRunStartPoint.x += (glyphRun->glyphAdvances[glyphIndex] / 2) * dirModifier;
                 break;

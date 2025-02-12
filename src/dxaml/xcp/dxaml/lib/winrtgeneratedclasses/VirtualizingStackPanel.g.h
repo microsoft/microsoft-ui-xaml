@@ -53,14 +53,14 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_AreScrollSnapPointsRegular)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_AreScrollSnapPointsRegular)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_AreScrollSnapPointsRegular)(BOOLEAN value) override;
         IFACEMETHOD(get_Orientation)(_Out_ ABI::Microsoft::UI::Xaml::Controls::Orientation* pValue) override;
-        IFACEMETHOD(put_Orientation)(_In_ ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
+        IFACEMETHOD(put_Orientation)(ABI::Microsoft::UI::Xaml::Controls::Orientation value) override;
 
         // Events.
         _Check_return_ HRESULT GetCleanUpVirtualizedItemEventEventSourceNoRef(_Outptr_ CleanUpVirtualizedItemEventEventSourceType** ppEventSource);
         IFACEMETHOD(add_CleanUpVirtualizedItemEvent)(_In_ ABI::Microsoft::UI::Xaml::Controls::ICleanUpVirtualizedItemEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_CleanUpVirtualizedItemEvent)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_CleanUpVirtualizedItemEvent)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(OnCleanUpVirtualizedItem)(_In_ ABI::Microsoft::UI::Xaml::Controls::ICleanUpVirtualizedItemEventArgs* pE) override;
@@ -107,17 +107,17 @@ namespace DirectUI
 
         // Attached properties.
         static _Check_return_ HRESULT GetVirtualizationModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode* pValue);
-        static _Check_return_ HRESULT SetVirtualizationModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode value);
+        static _Check_return_ HRESULT SetVirtualizationModeStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode value);
         IFACEMETHOD(get_VirtualizationModeProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetVirtualizationMode)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode* pValue);
-        IFACEMETHOD(SetVirtualizationMode)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _In_ ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode value);
+        IFACEMETHOD(SetVirtualizationMode)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, ABI::Microsoft::UI::Xaml::Controls::VirtualizationMode value);
         static _Check_return_ HRESULT GetIsVirtualizingStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetIsVirtualizingStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetIsVirtualizingStatic(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, BOOLEAN value);
         IFACEMETHOD(get_IsVirtualizingProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         IFACEMETHOD(GetIsVirtualizing)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, _Out_ BOOLEAN* pValue);
-        IFACEMETHOD(SetIsVirtualizing)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, _In_ BOOLEAN value);
+        IFACEMETHOD(SetIsVirtualizing)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pO, BOOLEAN value);
         static _Check_return_ HRESULT GetIsContainerGeneratedForInsertStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Out_ BOOLEAN* pValue);
-        static _Check_return_ HRESULT SetIsContainerGeneratedForInsertStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value);
+        static _Check_return_ HRESULT SetIsContainerGeneratedForInsertStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value);
 
         // Static methods.
 

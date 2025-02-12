@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::HubSectionGenerated::get_IsHeaderInteractive(_Out_ BOOL
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::HubSection_IsHeaderInteractive, pValue));
 }
-IFACEMETHODIMP DirectUI::HubSectionGenerated::put_IsHeaderInteractive(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::HubSectionGenerated::put_IsHeaderInteractive(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::HubSection_IsHeaderInteractive, value));

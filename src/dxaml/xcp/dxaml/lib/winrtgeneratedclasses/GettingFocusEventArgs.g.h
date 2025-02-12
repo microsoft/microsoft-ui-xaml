@@ -41,10 +41,10 @@ namespace DirectUI
         IFACEMETHOD(get_FocusState)(_Out_ ABI::Microsoft::UI::Xaml::FocusState* pValue) override;
         IFACEMETHOD(get_Direction)(_Out_ ABI::Microsoft::UI::Xaml::Input::FocusNavigationDirection* pValue) override;
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_InputDevice)(_Out_ ABI::Microsoft::UI::Xaml::Input::FocusInputDeviceKind* pValue) override;
         IFACEMETHOD(get_Cancel)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Cancel)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Cancel)(BOOLEAN value) override;
         IFACEMETHOD(get_CorrelationId)(_Out_ GUID* pValue) override;
 
         // Methods.

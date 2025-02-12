@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ToolTipTemplateSettings::get_FromHorizontalOffset(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToolTipTemplateSettings_FromHorizontalOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToolTipTemplateSettings::put_FromHorizontalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToolTipTemplateSettings::put_FromHorizontalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToolTipTemplateSettings_FromHorizontalOffset, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ToolTipTemplateSettings::get_FromVerticalOffset(_Out_ D
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ToolTipTemplateSettings_FromVerticalOffset, pValue));
 }
-_Check_return_ HRESULT DirectUI::ToolTipTemplateSettings::put_FromVerticalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ToolTipTemplateSettings::put_FromVerticalOffset(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ToolTipTemplateSettings_FromVerticalOffset, value));

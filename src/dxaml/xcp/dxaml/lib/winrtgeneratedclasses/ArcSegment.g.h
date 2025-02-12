@@ -48,15 +48,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsLargeArc)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsLargeArc)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsLargeArc)(BOOLEAN value) override;
         IFACEMETHOD(get_Point)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_Point)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_Point)(ABI::Windows::Foundation::Point value) override;
         IFACEMETHOD(get_RotationAngle)(_Out_ DOUBLE* pValue) override;
-        IFACEMETHOD(put_RotationAngle)(_In_ DOUBLE value) override;
+        IFACEMETHOD(put_RotationAngle)(DOUBLE value) override;
         IFACEMETHOD(get_Size)(_Out_ ABI::Windows::Foundation::Size* pValue) override;
-        IFACEMETHOD(put_Size)(_In_ ABI::Windows::Foundation::Size value) override;
+        IFACEMETHOD(put_Size)(ABI::Windows::Foundation::Size value) override;
         IFACEMETHOD(get_SweepDirection)(_Out_ ABI::Microsoft::UI::Xaml::Media::SweepDirection* pValue) override;
-        IFACEMETHOD(put_SweepDirection)(_In_ ABI::Microsoft::UI::Xaml::Media::SweepDirection value) override;
+        IFACEMETHOD(put_SweepDirection)(ABI::Microsoft::UI::Xaml::Media::SweepDirection value) override;
 
         // Events.
 

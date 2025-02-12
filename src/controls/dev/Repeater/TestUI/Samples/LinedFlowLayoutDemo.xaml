@@ -139,9 +139,9 @@
                 <Button x:Name="btnSetLinedFlowLayoutForcedWrapMultiplierDbg" Content="S" Margin="1" Grid.Row="8" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutForcedWrapMultiplierDbg_Click"/>
 
                 <TextBlock Text="LogItemIndexDbg:" Grid.Row="9" VerticalAlignment="Center"/>
-                <TextBox x:Name="txtLinedFlowLayoutLogItemIndexDbg" Text="-1" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                <Button x:Name="btnGetLinedFlowLayoutLogItemIndexDbg" Content="G" Margin="1" Grid.Row="9" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLinedFlowLayoutLogItemIndexDbg_Click"/>
-                <Button x:Name="btnSetLinedFlowLayoutLogItemIndexDbg" Content="S" Margin="1" Grid.Row="9" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLinedFlowLayoutLogItemIndexDbg_Click"/>
+                <TextBox x:Name="txtLayoutLogItemIndexDbg" Text="-1" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <Button x:Name="btnGetLayoutLogItemIndexDbg" Content="G" Margin="1" Grid.Row="9" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetLayoutLogItemIndexDbg_Click"/>
+                <Button x:Name="btnSetLayoutLogItemIndexDbg" Content="S" Margin="1" Grid.Row="9" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetLayoutLogItemIndexDbg_Click"/>
 
                 <TextBlock Text="ActualLineHeight:" Grid.Row="10" VerticalAlignment="Center"/>
                 <TextBox x:Name="txtLinedFlowLayoutActualLineHeight" Text="0" Grid.Row="10" Grid.Column="1" IsReadOnly="True" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>

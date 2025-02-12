@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::StateTrigger::get_IsActive(_Out_ BOOLEAN* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::StateTrigger_IsActive, pValue));
 }
-IFACEMETHODIMP DirectUI::StateTrigger::put_IsActive(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::StateTrigger::put_IsActive(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::StateTrigger_IsActive, value));

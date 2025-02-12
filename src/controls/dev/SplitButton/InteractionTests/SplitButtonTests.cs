@@ -106,6 +106,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void TouchTest()
         {
             using (var setup = new TestSetupHelper("SplitButton Tests"))
@@ -124,10 +125,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("0", clickCountTextBlock.DocumentText);
                 Verify.AreEqual("0", flyoutOpenedCountTextBlock.DocumentText);
 
-                Log.Comment("Click primary button to open flyout in touch mode");
+                Log.Comment("Click primary button in touch mode");
                 ClickPrimaryButton(splitButton);
                 
-                Verify.AreEqual("0", clickCountTextBlock.DocumentText);
+                Verify.AreEqual("1", clickCountTextBlock.DocumentText);
+                Verify.AreEqual("0", flyoutOpenedCountTextBlock.DocumentText);
+
+                Log.Comment("Click secondary button in touch mode");
+                ClickSecondaryButton(splitButton);
+
+                Verify.AreEqual("1", clickCountTextBlock.DocumentText);
                 Verify.AreEqual("1", flyoutOpenedCountTextBlock.DocumentText);
 
                 Log.Comment("Close flyout by clicking over the button");

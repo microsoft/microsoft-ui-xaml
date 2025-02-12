@@ -51,8 +51,8 @@
     <AppxManifest Include="Package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="TestAppCX_TemporaryKey.pfx" />
     <None Include="packages.config" />
+    <None Include="$(MUXProjectRoot)build\WinUITest.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainPage.xaml" />
@@ -60,6 +60,5 @@
     <Page Include="MenuBarTestPage.xaml" />
     <Page Include="CornerRadiusTestPage.xaml" />
     <Page Include="TreeViewTestPage.xaml" />
-    <Page Include="BackdropMaterialTestPage.xaml" />
   </ItemGroup>
 </Project>

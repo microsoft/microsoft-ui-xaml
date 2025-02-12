@@ -36,9 +36,18 @@ public:
 #pragma endregion
 
 #pragma region IFlowLayoutAlgorithmDelegates
-    winrt::Size Algorithm_GetMeasureSize(int index, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context) override;
-    winrt::Size Algorithm_GetProvisionalArrangeSize(int index, const winrt::Size& measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& context) override;
-    bool Algorithm_ShouldBreakLine(int index, double remainingSpace) override;
+    winrt::Size Algorithm_GetMeasureSize(
+        int index,
+        const winrt::Size& availableSize,
+        const winrt::VirtualizingLayoutContext& context) override;
+    winrt::Size Algorithm_GetProvisionalArrangeSize(
+        int index,
+        const winrt::Size& measureSize,
+        const winrt::Size& desiredSize,
+        const winrt::VirtualizingLayoutContext& context) override;
+    bool Algorithm_ShouldBreakLine(
+        int index,
+        double remainingSpace) override;
     winrt::FlowLayoutAnchorInfo Algorithm_GetAnchorForRealizationRect(
         const winrt::Size& availableSize,
         const winrt::VirtualizingLayoutContext& context) override;
@@ -46,7 +55,8 @@ public:
         int targetIndex,
         const winrt::Size& availableSize,
         const winrt::VirtualizingLayoutContext& context) override;
-    winrt::Rect Algorithm_GetExtent(const winrt::Size& availableSize,
+    winrt::Rect Algorithm_GetExtent(
+        const winrt::Size& availableSize,
         const winrt::VirtualizingLayoutContext& context,
         const winrt::UIElement& firstRealized,
         int firstRealizedItemIndex,
@@ -67,24 +77,48 @@ public:
         int /*countInLine*/,
         double /*lineSize*/,
         const winrt::VirtualizingLayoutContext& /*context*/) override {}
+    void Algorithm_OnLayoutRoundFactorChanged(
+        const winrt::VirtualizingLayoutContext& /*context*/) override {}
+
+#ifdef DBG
+    int Algorithm_GetFlowLayoutLogItemIndexDbg() override;
+    void Algorithm_SetFlowLayoutAnchorInfoDbg(
+        int index,
+        double offset) override;
+#endif // DBG
 #pragma endregion
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnPropertyChanged(
+        const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     // Methods
-    int GetItemsPerLine(winrt::Size const& availableSize, winrt::VirtualizingLayoutContext const& context);
-    float GetMinorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context);
-    float GetMajorSizeWithSpacing(winrt::VirtualizingLayoutContext const& context);
+    unsigned int GetItemsPerLine(
+        winrt::Size const& availableSize,
+        winrt::VirtualizingLayoutContext const& context);
+    float GetMinorItemSizeWithSpacing(
+        winrt::VirtualizingLayoutContext const& context);
+    float GetMajorItemSizeWithSpacing(
+        winrt::VirtualizingLayoutContext const& context);
+    float GetMajorSize(
+        int itemsCount,
+        unsigned int itemsPerLine,
+        float majorItemSizeWithSpacing);
 
-    winrt::Rect GetLayoutRectForDataIndex(const winrt::Size& availableSize, int index, const winrt::Rect& lastExtent, const winrt::VirtualizingLayoutContext& context);
+    winrt::Rect GetLayoutRectForDataIndex(
+        const winrt::Size& availableSize,
+        int index,
+        const winrt::Rect& lastExtent,
+        const winrt::VirtualizingLayoutContext& context);
 
-    winrt::com_ptr<UniformGridLayoutState> GetAsGridState(const winrt::IInspectable& state)
+    winrt::com_ptr<UniformGridLayoutState> GetAsGridState(
+        const winrt::IInspectable& state)
     {
         return winrt::get_self<UniformGridLayoutState>(state.as<winrt::UniformGridLayoutState>())->get_strong();
     }
 
-    ::FlowLayoutAlgorithm& GetFlowAlgorithm(const winrt::VirtualizingLayoutContext& context)
+    ::FlowLayoutAlgorithm& GetFlowAlgorithm(
+        const winrt::VirtualizingLayoutContext& context)
     {
         return GetAsGridState(context.LayoutState())->FlowAlgorithm();
     }

@@ -327,6 +327,12 @@ namespace DirectUI
                 _In_ xaml_controls::Orientation panelOrientation,
                 _Out_ bool* pResult);
 
+            // Declares this item as no longer being dragged over and instead uses the
+            // pointer-over visual state if the args' pointer is within its boundaries.
+           _Check_return_ HRESULT LeaveDragOver(
+                _In_opt_ ListViewBase* listViewBase,
+                _In_opt_ xaml::IDragEventArgs* args);
+
         private:
 
             // Called when the ListViewBaseItem has been constructed and added to

@@ -25,15 +25,15 @@ namespace DirectUI
 
         // IPointerPointTransform Methods
         IFACEMETHOD(get_Inverse)(
-            _Outptr_ mui::IPointerPointTransform **ppValue) override;
+            mui::IPointerPointTransform **ppValue) override;
         IFACEMETHOD(TryTransform)(
-            _In_ wf::Point inPoint,
-            _Out_ wf::Point * outPoint,
-            _Out_ BOOLEAN * returnValue) override;
+            wf::Point inPoint,
+            wf::Point * outPoint,
+            BOOLEAN * returnValue) override;
         IFACEMETHOD(TryTransformBounds)(
-            _In_ wf::Rect inRect,
-            _Out_ wf::Rect * outRect,
-            _Out_ BOOLEAN * returnValue) override;
+            wf::Rect inRect,
+            wf::Rect * outRect,
+            BOOLEAN * returnValue) override;
 
         _Check_return_ HRESULT SetTransform(
             _In_ xaml_media::IGeneralTransform* pTransform,

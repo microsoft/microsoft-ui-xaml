@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::Rectangle::get_RadiusX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Rectangle_RadiusX, pValue));
 }
-IFACEMETHODIMP DirectUI::Rectangle::put_RadiusX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Rectangle::put_RadiusX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Rectangle_RadiusX, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::Rectangle::get_RadiusY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Rectangle_RadiusY, pValue));
 }
-IFACEMETHODIMP DirectUI::Rectangle::put_RadiusY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::Rectangle::put_RadiusY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Rectangle_RadiusY, value));

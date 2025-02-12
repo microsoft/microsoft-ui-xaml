@@ -59,11 +59,11 @@ namespace DirectUI
         IFACEMETHOD(get_CommandBarTemplateSettings)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ICommandBarTemplateSettings** ppValue) override;
         _Check_return_ HRESULT put_CommandBarTemplateSettings(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::ICommandBarTemplateSettings* pValue);
         IFACEMETHOD(get_DefaultLabelPosition)(_Out_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition* pValue) override;
-        IFACEMETHOD(put_DefaultLabelPosition)(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition value) override;
+        IFACEMETHOD(put_DefaultLabelPosition)(ABI::Microsoft::UI::Xaml::Controls::CommandBarDefaultLabelPosition value) override;
         IFACEMETHOD(get_IsDynamicOverflowEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsDynamicOverflowEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsDynamicOverflowEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_OverflowButtonVisibility)(_Out_ ABI::Microsoft::UI::Xaml::Controls::CommandBarOverflowButtonVisibility* pValue) override;
-        IFACEMETHOD(put_OverflowButtonVisibility)(_In_ ABI::Microsoft::UI::Xaml::Controls::CommandBarOverflowButtonVisibility value) override;
+        IFACEMETHOD(put_OverflowButtonVisibility)(ABI::Microsoft::UI::Xaml::Controls::CommandBarOverflowButtonVisibility value) override;
         IFACEMETHOD(get_ParentMenu)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IMenu** ppValue) override;
         IFACEMETHOD(put_ParentMenu)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IMenu* pValue) override;
         IFACEMETHOD(get_PrimaryCommands)(_Outptr_result_maybenull_ ABI::Windows::Foundation::Collections::IObservableVector<ABI::Microsoft::UI::Xaml::Controls::ICommandBarElement*>** ppValue) override;
@@ -72,7 +72,7 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetDynamicOverflowItemsChangingEventSourceNoRef(_Outptr_ DynamicOverflowItemsChangingEventSourceType** ppEventSource);
         IFACEMETHOD(add_DynamicOverflowItemsChanging)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CommandBar*, ABI::Microsoft::UI::Xaml::Controls::DynamicOverflowItemsChangingEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_DynamicOverflowItemsChanging)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_DynamicOverflowItemsChanging)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(Close)() override;

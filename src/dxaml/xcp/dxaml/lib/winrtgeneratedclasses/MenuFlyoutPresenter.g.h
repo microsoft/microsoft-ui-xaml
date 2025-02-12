@@ -69,7 +69,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_IsDefaultShadowEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsDefaultShadowEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsDefaultShadowEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_Owner)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner** ppValue) override;
         IFACEMETHOD(put_Owner)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner* pValue) override;
         IFACEMETHOD(get_OwningMenu)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IMenu** ppValue) override;

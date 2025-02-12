@@ -17,7 +17,7 @@ namespace MUXControlsTestApp.Samples
     ///  even rows - wide narrow narrow
     ///  This pattern repeats.
     /// </summary>
-    public class ActivityFeedLayout : VirtualizingLayout
+    public partial class ActivityFeedLayout : VirtualizingLayout
     {
         #region Layout parameters
 

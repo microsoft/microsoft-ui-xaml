@@ -84,7 +84,7 @@ IFACEMETHODIMP DirectUI::PageStackEntryGenerated::get_SourcePageType(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PageStackEntry_SourcePageType, pValue));
 }
-_Check_return_ HRESULT DirectUI::PageStackEntryGenerated::put_SourcePageType(_In_ ABI::Windows::UI::Xaml::Interop::TypeName value)
+_Check_return_ HRESULT DirectUI::PageStackEntryGenerated::put_SourcePageType(ABI::Windows::UI::Xaml::Interop::TypeName value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PageStackEntry_SourcePageType, value));
@@ -115,7 +115,7 @@ HRESULT DirectUI::PageStackEntryFactory::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::PageStackEntryFactory::CreateInstance(_In_ ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pNavigationTransitionInfo, _Outptr_ ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry** ppInstance)
+IFACEMETHODIMP DirectUI::PageStackEntryFactory::CreateInstance(ABI::Windows::UI::Xaml::Interop::TypeName sourcePageType, _In_opt_ IInspectable* pParameter, _In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::INavigationTransitionInfo* pNavigationTransitionInfo, _Outptr_ ABI::Microsoft::UI::Xaml::Navigation::IPageStackEntry** ppInstance)
 {
     HRESULT hr = S_OK;
     

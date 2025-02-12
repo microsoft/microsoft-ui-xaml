@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml.Media;
 
 namespace MUXControlsTestApp
 {
-    class ColorToSolidColorBrushConverter : IValueConverter
+    partial class ColorToSolidColorBrushConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

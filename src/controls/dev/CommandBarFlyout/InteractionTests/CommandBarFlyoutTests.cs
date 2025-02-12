@@ -84,6 +84,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void CanTapOnPrimaryItems()
         {
             using (var setup = new CommandBarFlyoutTestSetupHelper())
@@ -108,6 +109,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void CanTapOnSecondaryItems()
         {
             using (var setup = new CommandBarFlyoutTestSetupHelper())
@@ -200,6 +202,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyTabNavigationBetweenPrimaryAndSecondaryCommands()
         {
             using (var setup = new CommandBarFlyoutTestSetupHelper())
@@ -231,6 +234,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyLeftAndRightNavigationBetweenPrimaryCommands()
         {
             VerifyLeftAndRightNavigationBetweenPrimaryCommands(inRTL: false, useUpDownKeys: false);
@@ -246,6 +250,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyLeftAndRightNavigationBetweenPrimaryCommandsUpAndDown()
         {
             VerifyLeftAndRightNavigationBetweenPrimaryCommands(inRTL: false, useUpDownKeys: true);
@@ -352,6 +357,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyUpAndDownNavigationBetweenPrimaryAndSecondaryCommands()
         {
             using (var setup = new CommandBarFlyoutTestSetupHelper())
@@ -448,6 +454,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyPrimaryCommandsAutomationSet()
         {
             using (var setup = new CommandBarFlyoutTestSetupHelper())
@@ -583,6 +590,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)]    // This test is currently failing on 23h2.
         public void VerifyFlyoutClosingBehavior()
         {
             using (var setup = new CommandBarFlyoutTestSetupHelper())

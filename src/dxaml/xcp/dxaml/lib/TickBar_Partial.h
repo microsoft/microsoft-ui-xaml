@@ -21,7 +21,7 @@ namespace DirectUI
 
         // Arranges the items of a TickBar.
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size finalSize,
+            wf::Size finalSize,
             _Out_ wf::Size* returnValue)
             override;
 

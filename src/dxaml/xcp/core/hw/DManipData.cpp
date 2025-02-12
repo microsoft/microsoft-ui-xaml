@@ -130,7 +130,7 @@ DManipDataWinRT::~DManipDataWinRT()
     }
 }
 
-bool DManipDataWinRT::HasSharedManipulationTransform(_In_ bool targetsClip)
+bool DManipDataWinRT::HasSharedManipulationTransform(bool targetsClip)
 {
     return targetsClip ? GetSharedClipTransform() != nullptr : GetOverallContentPropertySet() != nullptr;
 }

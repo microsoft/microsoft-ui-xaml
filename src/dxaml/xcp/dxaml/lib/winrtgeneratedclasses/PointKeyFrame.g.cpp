@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::PointKeyFrame::get_KeyTime(_Out_ ABI::Microsoft::UI::Xa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointKeyFrame_KeyTime, pValue));
 }
-IFACEMETHODIMP DirectUI::PointKeyFrame::put_KeyTime(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value)
+IFACEMETHODIMP DirectUI::PointKeyFrame::put_KeyTime(ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointKeyFrame_KeyTime, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::PointKeyFrame::get_Value(_Out_ ABI::Windows::Foundation
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointKeyFrame_Value, pValue));
 }
-IFACEMETHODIMP DirectUI::PointKeyFrame::put_Value(_In_ ABI::Windows::Foundation::Point value)
+IFACEMETHODIMP DirectUI::PointKeyFrame::put_Value(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointKeyFrame_Value, value));

@@ -148,7 +148,7 @@ public:
         _In_ CAutomationPeer* ap,
         UIAXcp::AutomationNotificationKind notificationKind,
         UIAXcp::AutomationNotificationProcessing notificationProcessing,
-        _In_opt_ xstring_ptr displayString,
+        _In_ xstring_ptr displayString,
         _In_ xstring_ptr activityId) override;
     _Check_return_ HRESULT GetUIAWindow(
         _In_ CDependencyObject *pElement,

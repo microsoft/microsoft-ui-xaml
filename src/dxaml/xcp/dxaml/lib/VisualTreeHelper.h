@@ -15,26 +15,26 @@ namespace DirectUI
 
         // IVisualTreeHelperStatics implementation
         IFACEMETHODIMP FindElementsInHostCoordinatesPoint(
-            _In_ wf::Point intersectingPoint,
-            _In_opt_ xaml::IUIElement* pSubTree,
-            _Out_ wfc::IIterable<xaml::UIElement*>** ppElements) override;
+            wf::Point intersectingPoint,
+            xaml::IUIElement* pSubTree,
+            wfc::IIterable<xaml::UIElement*>** ppElements) override;
 
         IFACEMETHODIMP FindElementsInHostCoordinatesRect(
-            _In_ wf::Rect intersectingRect,
-            _In_opt_ xaml::IUIElement* pSubTree,
-            _Out_ wfc::IIterable<xaml::UIElement*>** ppElements) override;
+            wf::Rect intersectingRect,
+            xaml::IUIElement* pSubTree,
+            wfc::IIterable<xaml::UIElement*>** ppElements) override;
 
         IFACEMETHODIMP FindAllElementsInHostCoordinatesPoint(
-            _In_ wf::Point intersectingPoint,
-            _In_opt_ xaml::IUIElement* pSubTree,
-            _In_ BOOLEAN includeAllElements,
-            _Out_ wfc::IIterable<xaml::UIElement*>** ppElements) override;
+            wf::Point intersectingPoint,
+            xaml::IUIElement* pSubTree,
+            BOOLEAN includeAllElements,
+            wfc::IIterable<xaml::UIElement*>** ppElements) override;
 
         IFACEMETHODIMP FindAllElementsInHostCoordinatesRect(
-            _In_ wf::Rect intersectingRect,
-            _In_opt_ xaml::IUIElement* pSubTree,
-            _In_ BOOLEAN includeAllElements,
-            _Out_ wfc::IIterable<xaml::UIElement*>** ppElements) override;
+            wf::Rect intersectingRect,
+            xaml::IUIElement* pSubTree,
+            BOOLEAN includeAllElements,
+            wfc::IIterable<xaml::UIElement*>** ppElements) override;
 
         IFACEMETHODIMP GetChild(
             _In_ xaml::IDependencyObject* pReference,

@@ -100,7 +100,7 @@ IFACEMETHODIMP DirectUI::ItemsControlGenerated::get_IsGrouping(_Out_ BOOLEAN* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsControl_IsGrouping, pValue));
 }
-_Check_return_ HRESULT DirectUI::ItemsControlGenerated::put_IsGrouping(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ItemsControlGenerated::put_IsGrouping(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsControl_IsGrouping, value));
@@ -109,7 +109,7 @@ _Check_return_ HRESULT DirectUI::ItemsControlGenerated::get_IsItemsHostInvalid(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ItemsControl_IsItemsHostInvalid, pValue));
 }
-_Check_return_ HRESULT DirectUI::ItemsControlGenerated::put_IsItemsHostInvalid(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ItemsControlGenerated::put_IsItemsHostInvalid(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ItemsControl_IsItemsHostInvalid, value));
 }
@@ -290,7 +290,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsControlGenerated::ContainerFromIndex(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
+IFACEMETHODIMP DirectUI::ItemsControlGenerated::ContainerFromIndex(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -429,7 +429,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsControlGenerated::HeaderFromIndex(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
+IFACEMETHODIMP DirectUI::ItemsControlGenerated::HeaderFromIndex(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -468,7 +468,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemsControlGenerated::IndexFromHeader(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeader, _In_ BOOLEAN excludeHiddenEmptyGroups, _Out_ INT* pReturnValue)
+IFACEMETHODIMP DirectUI::ItemsControlGenerated::IndexFromHeader(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pHeader, BOOLEAN excludeHiddenEmptyGroups, _Out_ INT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

@@ -37,19 +37,19 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_InRecycleQueue)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_InRecycleQueue(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_InRecycleQueue(BOOLEAN value);
         IFACEMETHOD(get_Item)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::ICalendarViewDayItem** ppValue) override;
         _Check_return_ HRESULT put_Item(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::ICalendarViewDayItem* pValue);
         IFACEMETHOD(get_Phase)(_Out_ UINT* pValue) override;
-        _Check_return_ HRESULT put_Phase(_In_ UINT value);
+        _Check_return_ HRESULT put_Phase(UINT value);
         _Check_return_ HRESULT get_WantsCallBack(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT put_WantsCallBack(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_WantsCallBack(BOOLEAN value);
         _Check_return_ HRESULT get_Callback(_Outptr_result_maybenull_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>** ppValue);
         _Check_return_ HRESULT put_Callback(_In_opt_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>* pValue);
 
         // Methods.
         IFACEMETHOD(RegisterUpdateCallback)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>* pCallback) override;
-        IFACEMETHOD(RegisterUpdateCallbackWithPhase)(_In_ UINT callbackPhase, _In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>* pCallback) override;
+        IFACEMETHOD(RegisterUpdateCallbackWithPhase)(UINT callbackPhase, _In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::CalendarView*, ABI::Microsoft::UI::Xaml::Controls::CalendarViewDayItemChangingEventArgs*>* pCallback) override;
         _Check_return_ HRESULT ResetLifetime();
 
     protected:

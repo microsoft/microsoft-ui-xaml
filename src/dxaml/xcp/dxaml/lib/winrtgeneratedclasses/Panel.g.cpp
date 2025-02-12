@@ -82,7 +82,7 @@ IFACEMETHODIMP DirectUI::PanelGenerated::get_BorderThicknessProtected(_Out_ ABI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Panel_BorderThicknessProtected, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelGenerated::put_BorderThicknessProtected(_In_ ABI::Microsoft::UI::Xaml::Thickness value)
+IFACEMETHODIMP DirectUI::PanelGenerated::put_BorderThicknessProtected(ABI::Microsoft::UI::Xaml::Thickness value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Panel_BorderThicknessProtected, value));
@@ -104,7 +104,7 @@ IFACEMETHODIMP DirectUI::PanelGenerated::get_CornerRadiusProtected(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Panel_CornerRadiusProtected, pValue));
 }
-IFACEMETHODIMP DirectUI::PanelGenerated::put_CornerRadiusProtected(_In_ ABI::Microsoft::UI::Xaml::CornerRadius value)
+IFACEMETHODIMP DirectUI::PanelGenerated::put_CornerRadiusProtected(ABI::Microsoft::UI::Xaml::CornerRadius value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Panel_CornerRadiusProtected, value));
@@ -113,7 +113,7 @@ _Check_return_ HRESULT DirectUI::PanelGenerated::get_IsIgnoringTransitions(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Panel_IsIgnoringTransitions, pValue));
 }
-_Check_return_ HRESULT DirectUI::PanelGenerated::put_IsIgnoringTransitions(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::PanelGenerated::put_IsIgnoringTransitions(BOOLEAN value)
 {
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Panel_IsIgnoringTransitions, value));
 }

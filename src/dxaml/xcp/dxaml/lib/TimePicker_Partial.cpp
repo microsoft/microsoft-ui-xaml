@@ -216,7 +216,7 @@ _Check_return_ HRESULT TimePicker::OnKeyDown(_In_ xaml_input::IKeyRoutedEventArg
 // Gives the default values for our properties.
 _Check_return_ HRESULT TimePicker::GetDefaultValue2(
     _In_ const CDependencyProperty* pDP,
-    _Outptr_ CValue* pValue)
+    _Out_ CValue* pValue)
 {
     IFCPTR_RETURN(pDP);
     IFCPTR_RETURN(pValue);

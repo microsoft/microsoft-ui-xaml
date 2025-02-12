@@ -1040,7 +1040,7 @@ CError::Create(::ErrorType eType,
         XUINT32 bRecoverable, 
         XUINT32 uLineNumber,
         XUINT32 uCharPosition, 
-        _In_reads_opt_(cParams) const xephemeral_string_ptr* pParams, 
+        _In_reads_(cParams) const xephemeral_string_ptr* pParams, 
         _In_ XUINT32 cParams,
         _Outptr_ IError** ppError,
         _In_opt_ IErrorService *pErrorService )
@@ -1291,7 +1291,7 @@ CError::Initialize(_In_ XUINT32 iErrorCode, _In_reads_opt_(cParams) const xephem
 //
 //-----------------------------------------------------------------------------
 
-void CError::SetErrorResult(HRESULT hrErr, _In_reads_opt_(cParams) const xephemeral_string_ptr* pParams, _In_ XUINT32 cParams)
+void CError::SetErrorResult(HRESULT hrErr, _In_reads_(cParams) const xephemeral_string_ptr* pParams, _In_ XUINT32 cParams)
 {
     auto lock = m_CSError.lock();
 

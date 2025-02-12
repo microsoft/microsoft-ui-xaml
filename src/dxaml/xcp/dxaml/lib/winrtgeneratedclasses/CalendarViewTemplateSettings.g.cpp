@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::CalendarViewTemplateSettings::get_CenterX(_Out_ DOUBLE*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_CenterX, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_CenterX(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_CenterX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_CenterX, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::CalendarViewTemplateSettings::get_CenterY(_Out_ DOUBLE*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_CenterY, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_CenterY(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_CenterY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_CenterY, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::CalendarViewTemplateSettings::get_ClipRect(_Out_ ABI::W
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_ClipRect, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_ClipRect(_In_ ABI::Windows::Foundation::Rect value)
+_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_ClipRect(ABI::Windows::Foundation::Rect value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_ClipRect, value));
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::CalendarViewTemplateSettings::get_HasMoreContentAfter(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_HasMoreContentAfter, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_HasMoreContentAfter(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_HasMoreContentAfter(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_HasMoreContentAfter, value));
@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::CalendarViewTemplateSettings::get_HasMoreContentBefore(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_HasMoreContentBefore, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_HasMoreContentBefore(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_HasMoreContentBefore(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_HasMoreContentBefore, value));
@@ -90,7 +90,7 @@ IFACEMETHODIMP DirectUI::CalendarViewTemplateSettings::get_HasMoreViews(_Out_ BO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_HasMoreViews, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_HasMoreViews(_In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_HasMoreViews(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_HasMoreViews, value));
@@ -108,7 +108,7 @@ IFACEMETHODIMP DirectUI::CalendarViewTemplateSettings::get_MinViewWidth(_Out_ DO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_MinViewWidth, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_MinViewWidth(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::CalendarViewTemplateSettings::put_MinViewWidth(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewTemplateSettings_MinViewWidth, value));

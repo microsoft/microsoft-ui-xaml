@@ -52,7 +52,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_CanHorizontallyScroll(_Out_ B
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxViewGenerated::put_CanHorizontallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxViewGenerated::put_CanHorizontallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -72,7 +72,7 @@ IFACEMETHODIMP DirectUI::TextBoxViewGenerated::get_CanVerticallyScroll(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxViewGenerated::put_CanVerticallyScroll(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TextBoxViewGenerated::put_CanVerticallyScroll(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     
@@ -258,7 +258,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxViewGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, _In_ ABI::Windows::Foundation::Rect rectangle, _In_ BOOLEAN useAnimation, _In_ DOUBLE horizontalAlignmentRatio, _In_ DOUBLE verticalAlignmentRatio, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
+IFACEMETHODIMP DirectUI::TextBoxViewGenerated::MakeVisible(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pVisual, ABI::Windows::Foundation::Rect rectangle, BOOLEAN useAnimation, DOUBLE horizontalAlignmentRatio, DOUBLE verticalAlignmentRatio, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Windows::Foundation::Rect* pResultRectangle, _Out_ DOUBLE* pAppliedOffsetX, _Out_ DOUBLE* pAppliedOffsetY)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -348,7 +348,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxViewGenerated::SetHorizontalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::TextBoxViewGenerated::SetHorizontalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -366,7 +366,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextBoxViewGenerated::SetVerticalOffset(_In_ DOUBLE offset)
+IFACEMETHODIMP DirectUI::TextBoxViewGenerated::SetVerticalOffset(DOUBLE offset)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

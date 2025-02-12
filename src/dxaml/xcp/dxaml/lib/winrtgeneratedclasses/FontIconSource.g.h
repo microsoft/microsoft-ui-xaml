@@ -26,17 +26,17 @@ namespace ctl
         IFACEMETHOD(get_FontFamily)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IFontFamily** ppValue) override { return This()->get_FontFamily(ppValue); }
         IFACEMETHOD(put_FontFamily)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IFontFamily* pValue) override { return This()->put_FontFamily(pValue); }
         IFACEMETHOD(get_FontSize)(_Out_ DOUBLE* pValue) override { return This()->get_FontSize(pValue); }
-        IFACEMETHOD(put_FontSize)(_In_ DOUBLE value) override { return This()->put_FontSize(value); }
+        IFACEMETHOD(put_FontSize)(DOUBLE value) override { return This()->put_FontSize(value); }
         IFACEMETHOD(get_FontStyle)(_Out_ ABI::Windows::UI::Text::FontStyle* pValue) override { return This()->get_FontStyle(pValue); }
-        IFACEMETHOD(put_FontStyle)(_In_ ABI::Windows::UI::Text::FontStyle value) override { return This()->put_FontStyle(value); }
+        IFACEMETHOD(put_FontStyle)(ABI::Windows::UI::Text::FontStyle value) override { return This()->put_FontStyle(value); }
         IFACEMETHOD(get_FontWeight)(_Out_ ABI::Windows::UI::Text::FontWeight* pValue) override { return This()->get_FontWeight(pValue); }
-        IFACEMETHOD(put_FontWeight)(_In_ ABI::Windows::UI::Text::FontWeight value) override { return This()->put_FontWeight(value); }
+        IFACEMETHOD(put_FontWeight)(ABI::Windows::UI::Text::FontWeight value) override { return This()->put_FontWeight(value); }
         IFACEMETHOD(get_Glyph)(_Out_ HSTRING* pValue) override { return This()->get_Glyph(pValue); }
         IFACEMETHOD(put_Glyph)(_In_opt_ HSTRING value) override { return This()->put_Glyph(value); }
         IFACEMETHOD(get_IsTextScaleFactorEnabled)(_Out_ BOOLEAN* pValue) override { return This()->get_IsTextScaleFactorEnabled(pValue); }
-        IFACEMETHOD(put_IsTextScaleFactorEnabled)(_In_ BOOLEAN value) override { return This()->put_IsTextScaleFactorEnabled(value); }
+        IFACEMETHOD(put_IsTextScaleFactorEnabled)(BOOLEAN value) override { return This()->put_IsTextScaleFactorEnabled(value); }
         IFACEMETHOD(get_MirroredWhenRightToLeft)(_Out_ BOOLEAN* pValue) override { return This()->get_MirroredWhenRightToLeft(pValue); }
-        IFACEMETHOD(put_MirroredWhenRightToLeft)(_In_ BOOLEAN value) override { return This()->put_MirroredWhenRightToLeft(value); }
+        IFACEMETHOD(put_MirroredWhenRightToLeft)(BOOLEAN value) override { return This()->put_MirroredWhenRightToLeft(value); }
     };
 }
 #pragma endregion
@@ -78,17 +78,17 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_FontFamily(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::IFontFamily** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_FontFamily(_In_opt_ ABI::Microsoft::UI::Xaml::Media::IFontFamily* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_FontSize(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_FontSize(_In_ DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_FontSize(DOUBLE value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_FontStyle(_Out_ ABI::Windows::UI::Text::FontStyle* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_FontStyle(_In_ ABI::Windows::UI::Text::FontStyle value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_FontStyle(ABI::Windows::UI::Text::FontStyle value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_FontWeight(_Out_ ABI::Windows::UI::Text::FontWeight* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_FontWeight(_In_ ABI::Windows::UI::Text::FontWeight value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_FontWeight(ABI::Windows::UI::Text::FontWeight value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Glyph(_Out_ HSTRING* pValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_Glyph(_In_opt_ HSTRING value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_IsTextScaleFactorEnabled(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsTextScaleFactorEnabled(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_IsTextScaleFactorEnabled(BOOLEAN value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_MirroredWhenRightToLeft(_Out_ BOOLEAN* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_MirroredWhenRightToLeft(_In_ BOOLEAN value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_MirroredWhenRightToLeft(BOOLEAN value);
 
         // Events.
 

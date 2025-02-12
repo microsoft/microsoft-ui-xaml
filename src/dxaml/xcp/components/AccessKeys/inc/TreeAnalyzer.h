@@ -251,7 +251,7 @@ namespace AccessKeys
 
         HRESULT ValidateScopeOwner(_In_opt_ Element* const scopeOwner)
         {
-            if (!IsRootScope(scopeOwner))
+            if (scopeOwner && !IsRootScope(scopeOwner))
             {
                 // Element must be a scope
                 IFCEXPECT_RETURN(m_treeLibrary.IsScope(scopeOwner));

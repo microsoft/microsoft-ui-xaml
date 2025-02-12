@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::GeneralTransform::get_InverseCore(_Outptr_result_mayben
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::GeneralTransform::TransformBounds(_In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::GeneralTransform::TransformBounds(ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Media::IGeneralTransformOverrides* pVirtuals = NULL;
@@ -98,12 +98,12 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DirectUI::GeneralTransform::TransformBoundsCore(_In_ ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::GeneralTransform::TransformBoundsCore(ABI::Windows::Foundation::Rect rect, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     // This method is abstract.
     RRETURN(E_NOTIMPL);
 }
-IFACEMETHODIMP DirectUI::GeneralTransform::TransformPoint(_In_ ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Point* pReturnValue)
+IFACEMETHODIMP DirectUI::GeneralTransform::TransformPoint(ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Point* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -122,7 +122,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::GeneralTransform::TransformXY(_In_ DOUBLE x, _In_ DOUBLE y, _Out_ ABI::Windows::Foundation::Point* pReturnValue)
+_Check_return_ HRESULT DirectUI::GeneralTransform::TransformXY(DOUBLE x, DOUBLE y, _Out_ ABI::Windows::Foundation::Point* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -140,7 +140,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::GeneralTransform::TryTransform(_In_ ABI::Windows::Foundation::Point inPoint, _Out_ ABI::Windows::Foundation::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::GeneralTransform::TryTransform(ABI::Windows::Foundation::Point inPoint, _Out_ ABI::Windows::Foundation::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     ABI::Microsoft::UI::Xaml::Media::IGeneralTransformOverrides* pVirtuals = NULL;
@@ -162,7 +162,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP DirectUI::GeneralTransform::TryTransformCore(_In_ ABI::Windows::Foundation::Point inPoint, _Out_ ABI::Windows::Foundation::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue)
+IFACEMETHODIMP DirectUI::GeneralTransform::TryTransformCore(ABI::Windows::Foundation::Point inPoint, _Out_ ABI::Windows::Foundation::Point* pOutPoint, _Out_ BOOLEAN* pReturnValue)
 {
     // This method is abstract.
     RRETURN(E_NOTIMPL);

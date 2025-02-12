@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Result)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult* pValue) override;
-        _Check_return_ HRESULT put_Result(_In_ ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult value);
+        _Check_return_ HRESULT put_Result(ABI::Microsoft::UI::Xaml::Controls::ContentDialogResult value);
 
         // Methods.
 

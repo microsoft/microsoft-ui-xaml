@@ -713,7 +713,7 @@ _Check_return_ HRESULT GroupItem::Recycle()
 // behavior.
 IFACEMETHODIMP GroupItem::ArrangeOverride(
     // The computed size that is used to arrange the content.
-    _In_ wf::Size arrangeSize,
+    wf::Size arrangeSize,
     // The size of the control.
     _Out_ wf::Size* returnValue)
 {

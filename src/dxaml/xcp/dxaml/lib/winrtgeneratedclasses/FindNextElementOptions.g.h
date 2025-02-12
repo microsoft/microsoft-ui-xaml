@@ -40,15 +40,15 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ExclusionRect)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        IFACEMETHOD(put_ExclusionRect)(_In_ ABI::Windows::Foundation::Rect value) override;
+        IFACEMETHOD(put_ExclusionRect)(ABI::Windows::Foundation::Rect value) override;
         IFACEMETHOD(get_HintRect)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        IFACEMETHOD(put_HintRect)(_In_ ABI::Windows::Foundation::Rect value) override;
+        IFACEMETHOD(put_HintRect)(ABI::Windows::Foundation::Rect value) override;
         IFACEMETHOD(get_IgnoreOcclusivity)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IgnoreOcclusivity)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IgnoreOcclusivity)(BOOLEAN value) override;
         IFACEMETHOD(get_SearchRoot)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppValue) override;
         IFACEMETHOD(put_SearchRoot)(_In_opt_ ABI::Microsoft::UI::Xaml::IDependencyObject* pValue) override;
         IFACEMETHOD(get_XYFocusNavigationStrategyOverride)(_Out_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategyOverride* pValue) override;
-        IFACEMETHOD(put_XYFocusNavigationStrategyOverride)(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategyOverride value) override;
+        IFACEMETHOD(put_XYFocusNavigationStrategyOverride)(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategyOverride value) override;
 
         // Events.
 

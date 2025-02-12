@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::TimelineGenerated::get_AutoReverse(_Out_ BOOLEAN* pValu
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Timeline_AutoReverse, pValue));
 }
-IFACEMETHODIMP DirectUI::TimelineGenerated::put_AutoReverse(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TimelineGenerated::put_AutoReverse(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Timeline_AutoReverse, value));
@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::TimelineGenerated::get_BeginTime(_Out_ ABI::Windows::Fo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Timeline_BeginTime, ppValue));
 }
-IFACEMETHODIMP DirectUI::TimelineGenerated::put_BeginTime(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue)
+IFACEMETHODIMP DirectUI::TimelineGenerated::put_BeginTime(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::TimeSpan>* pValue)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Timeline_BeginTime, pValue));
@@ -64,7 +64,7 @@ IFACEMETHODIMP DirectUI::TimelineGenerated::get_Duration(_Out_ ABI::Microsoft::U
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Timeline_Duration, pValue));
 }
-IFACEMETHODIMP DirectUI::TimelineGenerated::put_Duration(_In_ ABI::Microsoft::UI::Xaml::Duration value)
+IFACEMETHODIMP DirectUI::TimelineGenerated::put_Duration(ABI::Microsoft::UI::Xaml::Duration value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Timeline_Duration, value));
@@ -73,7 +73,7 @@ IFACEMETHODIMP DirectUI::TimelineGenerated::get_FillBehavior(_Out_ ABI::Microsof
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Timeline_FillBehavior, pValue));
 }
-IFACEMETHODIMP DirectUI::TimelineGenerated::put_FillBehavior(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::FillBehavior value)
+IFACEMETHODIMP DirectUI::TimelineGenerated::put_FillBehavior(ABI::Microsoft::UI::Xaml::Media::Animation::FillBehavior value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Timeline_FillBehavior, value));
@@ -82,7 +82,7 @@ IFACEMETHODIMP DirectUI::TimelineGenerated::get_RepeatBehavior(_Out_ ABI::Micros
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Timeline_RepeatBehavior, pValue));
 }
-IFACEMETHODIMP DirectUI::TimelineGenerated::put_RepeatBehavior(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior value)
+IFACEMETHODIMP DirectUI::TimelineGenerated::put_RepeatBehavior(ABI::Microsoft::UI::Xaml::Media::Animation::RepeatBehavior value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Timeline_RepeatBehavior, value));
@@ -91,7 +91,7 @@ IFACEMETHODIMP DirectUI::TimelineGenerated::get_SpeedRatio(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Timeline_SpeedRatio, pValue));
 }
-IFACEMETHODIMP DirectUI::TimelineGenerated::put_SpeedRatio(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::TimelineGenerated::put_SpeedRatio(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Timeline_SpeedRatio, value));
@@ -134,7 +134,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::TimelineGenerated::remove_Completed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::TimelineGenerated::remove_Completed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     CompletedEventSourceType* pEventSource = nullptr;
@@ -240,7 +240,7 @@ IFACEMETHODIMP DirectUI::TimelineFactory::get_AllowDependentAnimations(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TimelineFactory::put_AllowDependentAnimations(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::TimelineFactory::put_AllowDependentAnimations(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     

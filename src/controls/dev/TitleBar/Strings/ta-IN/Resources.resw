@@ -117,4 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="NavigationButtonToggleName" xml:space="preserve">
+    <value>வழிசெலுத்தலை நிலைமாற்றும்</value>
+    <comment>Automation name and tooltip caption for the hamburger button</comment>
+  </data>
 </root>

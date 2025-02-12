@@ -47,7 +47,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_KeyboardAcceleratorTextMinWidth)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_KeyboardAcceleratorTextMinWidth(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_KeyboardAcceleratorTextMinWidth(DOUBLE value);
 
         // Events.
 

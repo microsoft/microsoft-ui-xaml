@@ -415,14 +415,15 @@ namespace DirectUI
 
         BOOL CanPositionRelativeOnSide(
             _In_ const CConstraint &windowToTrack,
-            _In_ const RECT &rcWindow, xaml_primitives::PlacementMode nSide,
-            _In_ const CConstraint &constrain);
+            _In_ const RECT &rcWindow,
+            _In_ xaml_primitives::PlacementMode nSide,
+            _In_ const CConstraint &constraint);
 
         RECT PositionRelativeOnSide(
             _In_ const CConstraint &windowToTrack,
             _In_ const RECT &rcWindow,
             _In_ xaml_primitives::PlacementMode nSide,
-            _In_ const CConstraint &constrain);
+            _In_ const CConstraint &constraint);
 
         RECT QueryRelativePosition(
             _In_ const CConstraint &constraint,

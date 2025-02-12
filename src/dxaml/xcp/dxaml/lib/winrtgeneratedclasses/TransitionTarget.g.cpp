@@ -51,7 +51,7 @@ _Check_return_ HRESULT DirectUI::TransitionTarget::get_ClipTransformOrigin(_Out_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TransitionTarget_ClipTransformOrigin, pValue));
 }
-_Check_return_ HRESULT DirectUI::TransitionTarget::put_ClipTransformOrigin(_In_ ABI::Windows::Foundation::Point value)
+_Check_return_ HRESULT DirectUI::TransitionTarget::put_ClipTransformOrigin(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TransitionTarget_ClipTransformOrigin, value));
@@ -69,7 +69,7 @@ _Check_return_ HRESULT DirectUI::TransitionTarget::get_Opacity(_Out_ DOUBLE* pVa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TransitionTarget_Opacity, pValue));
 }
-_Check_return_ HRESULT DirectUI::TransitionTarget::put_Opacity(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::TransitionTarget::put_Opacity(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TransitionTarget_Opacity, value));
@@ -86,7 +86,7 @@ _Check_return_ HRESULT DirectUI::TransitionTarget::get_TransformOrigin(_Out_ ABI
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TransitionTarget_TransformOrigin, pValue));
 }
-_Check_return_ HRESULT DirectUI::TransitionTarget::put_TransformOrigin(_In_ ABI::Windows::Foundation::Point value)
+_Check_return_ HRESULT DirectUI::TransitionTarget::put_TransformOrigin(ABI::Windows::Foundation::Point value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TransitionTarget_TransformOrigin, value));

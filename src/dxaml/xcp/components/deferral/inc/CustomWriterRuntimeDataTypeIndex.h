@@ -47,4 +47,5 @@ enum class CustomWriterRuntimeDataTypeIndex : std::uint16_t
     Style_v2 = 8,                           // added in RS1; this was actually unnecessary, as the change that introduced it simply added a new flag to an existing bitfield which controls how to deserialize subsequent data
     DeferredElement_v3 = 9,                 // added in RS2
     ResourceDictionary_v3 = 10,             // added in RS2
+    Style_v3 = 11,                          // added in WinAppSDK 1.7
 };

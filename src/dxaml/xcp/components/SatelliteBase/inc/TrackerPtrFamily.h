@@ -475,7 +475,7 @@ namespace Private
             return m_registeredTrackerPtrs[index].TryGetSafeReference(ppValue);
         }
 
-        _Check_return_ HRESULT SetAt(_In_ UINT index, _In_ T* pValue)
+        _Check_return_ HRESULT SetAt(_In_ UINT index, _In_opt_ T* pValue)
         {
             ASSERT(index < m_registeredTrackerPtrs.size());
             // No need to take the lock since we're not really
@@ -485,7 +485,7 @@ namespace Private
             return S_OK;
         }
 
-        _Check_return_ HRESULT InsertAt(_In_ UINT index, _In_ T* pValue)
+        _Check_return_ HRESULT InsertAt(_In_ UINT index, _In_opt_ T* pValue)
         {
             ASSERT(index <= m_registeredTrackerPtrs.size());
 
@@ -495,7 +495,7 @@ namespace Private
             return S_OK;
         }
 
-        _Check_return_ HRESULT Append(_In_ T* pValue)
+        _Check_return_ HRESULT Append(_In_opt_ T* pValue)
         {
             TrackerPtr<T> ptr(this);
 

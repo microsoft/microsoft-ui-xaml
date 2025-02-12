@@ -48,9 +48,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Components)(_Out_ ABI::Microsoft::UI::Xaml::Vector3TransitionComponents* pValue) override;
-        IFACEMETHOD(put_Components)(_In_ ABI::Microsoft::UI::Xaml::Vector3TransitionComponents value) override;
+        IFACEMETHOD(put_Components)(ABI::Microsoft::UI::Xaml::Vector3TransitionComponents value) override;
         IFACEMETHOD(get_Duration)(_Out_ ABI::Windows::Foundation::TimeSpan* pValue) override;
-        IFACEMETHOD(put_Duration)(_In_ ABI::Windows::Foundation::TimeSpan value) override;
+        IFACEMETHOD(put_Duration)(ABI::Windows::Foundation::TimeSpan value) override;
 
         // Events.
 

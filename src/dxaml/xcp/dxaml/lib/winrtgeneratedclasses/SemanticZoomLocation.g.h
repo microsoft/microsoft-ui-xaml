@@ -39,13 +39,13 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Bounds)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        IFACEMETHOD(put_Bounds)(_In_ ABI::Windows::Foundation::Rect value) override;
+        IFACEMETHOD(put_Bounds)(ABI::Windows::Foundation::Rect value) override;
         IFACEMETHOD(get_Item)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Item)(_In_opt_ IInspectable* pValue) override;
         _Check_return_ HRESULT get_Remainder(_Out_ ABI::Windows::Foundation::Rect* pValue);
-        _Check_return_ HRESULT put_Remainder(_In_ ABI::Windows::Foundation::Rect value);
+        _Check_return_ HRESULT put_Remainder(ABI::Windows::Foundation::Rect value);
         _Check_return_ HRESULT get_ZoomPoint(_Out_ ABI::Windows::Foundation::Point* pValue);
-        _Check_return_ HRESULT put_ZoomPoint(_In_ ABI::Windows::Foundation::Point value);
+        _Check_return_ HRESULT put_ZoomPoint(ABI::Windows::Foundation::Point value);
 
         // Events.
 

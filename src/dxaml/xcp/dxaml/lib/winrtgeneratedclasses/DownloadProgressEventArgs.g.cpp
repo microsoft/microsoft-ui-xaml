@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::DownloadProgressEventArgs::get_Progress(_Out_ INT* pVal
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DownloadProgressEventArgs::put_Progress(_In_ INT value)
+IFACEMETHODIMP DirectUI::DownloadProgressEventArgs::put_Progress(INT value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

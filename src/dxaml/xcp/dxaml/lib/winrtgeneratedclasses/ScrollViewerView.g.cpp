@@ -50,7 +50,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerView::get_HorizontalOffset(_Out_ DOUBLE* pV
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerView::put_HorizontalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerView::put_HorizontalOffset(DOUBLE value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerView::get_VerticalOffset(_Out_ DOUBLE* pVal
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerView::put_VerticalOffset(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::ScrollViewerView::put_VerticalOffset(DOUBLE value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -84,7 +84,7 @@ IFACEMETHODIMP DirectUI::ScrollViewerView::get_ZoomFactor(_Out_ FLOAT* pValue)
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ScrollViewerView::put_ZoomFactor(_In_ FLOAT value)
+_Check_return_ HRESULT DirectUI::ScrollViewerView::put_ZoomFactor(FLOAT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

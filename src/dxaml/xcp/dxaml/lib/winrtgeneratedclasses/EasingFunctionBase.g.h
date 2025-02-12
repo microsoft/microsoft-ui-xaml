@@ -48,12 +48,12 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_EasingMode)(_Out_ ABI::Microsoft::UI::Xaml::Media::Animation::EasingMode* pValue) override;
-        IFACEMETHOD(put_EasingMode)(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::EasingMode value) override;
+        IFACEMETHOD(put_EasingMode)(ABI::Microsoft::UI::Xaml::Media::Animation::EasingMode value) override;
 
         // Events.
 
         // Methods.
-        IFACEMETHOD(Ease)(_In_ DOUBLE normalizedTime, _Out_ DOUBLE* pReturnValue) override;
+        IFACEMETHOD(Ease)(DOUBLE normalizedTime, _Out_ DOUBLE* pReturnValue) override;
 
 
     protected:

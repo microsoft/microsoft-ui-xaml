@@ -49,9 +49,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Date)(_Out_ ABI::Windows::Foundation::DateTime* pValue) override;
-        virtual _Check_return_ HRESULT put_Date(_In_ ABI::Windows::Foundation::DateTime value);
+        virtual _Check_return_ HRESULT put_Date(ABI::Windows::Foundation::DateTime value);
         IFACEMETHOD(get_IsBlackout)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsBlackout)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsBlackout)(BOOLEAN value) override;
 
         // Events.
 

@@ -71,7 +71,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::remove_ItemsChanged(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::remove_ItemsChanged(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ItemsChangedEventSourceType* pEventSource = nullptr;
@@ -87,7 +87,7 @@ Cleanup:
 }
 
 // Methods.
-IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::ContainerFromIndex(_In_ INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
+IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::ContainerFromIndex(INT index, _Outptr_ ABI::Microsoft::UI::Xaml::IDependencyObject** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -141,7 +141,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::GeneratorPositionFromIndex(_In_ INT itemIndex, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition* pReturnValue)
+IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::GeneratorPositionFromIndex(INT itemIndex, _Out_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -197,7 +197,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::IndexFromGeneratorPosition(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _Out_ INT* pReturnValue)
+IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::IndexFromGeneratorPosition(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _Out_ INT* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -251,7 +251,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::Recycle(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _In_ INT count)
+IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::Recycle(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, INT count)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -268,7 +268,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::Remove(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _In_ INT count)
+IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::Remove(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, INT count)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -302,7 +302,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::StartAt(_In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, _In_ ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorDirection direction, _In_ BOOLEAN allowStartAtRealizedItem)
+IFACEMETHODIMP DirectUI::ItemContainerGeneratorGenerated::StartAt(ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorPosition position, ABI::Microsoft::UI::Xaml::Controls::Primitives::GeneratorDirection direction, BOOLEAN allowStartAtRealizedItem)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -365,7 +365,7 @@ _Check_return_ HRESULT DirectUI::ItemContainerGeneratorFactory::GetIsRecycledCon
     RRETURN(DependencyObject::GetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::ItemContainerGenerator_IsRecycledContainer, pValue));
 }
 
-_Check_return_ HRESULT DirectUI::ItemContainerGeneratorFactory::SetIsRecycledContainerStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _In_ BOOLEAN value)
+_Check_return_ HRESULT DirectUI::ItemContainerGeneratorFactory::SetIsRecycledContainerStatic(_In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, BOOLEAN value)
 {
     RRETURN(DependencyObject::SetAttachedValueByKnownIndex(static_cast<DirectUI::UIElement*>(pElement), KnownPropertyIndex::ItemContainerGenerator_IsRecycledContainer, value));
 }

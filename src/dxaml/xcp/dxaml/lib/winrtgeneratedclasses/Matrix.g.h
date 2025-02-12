@@ -23,14 +23,14 @@ namespace DirectUI
 
     public:
         // Extension methods.
-        IFACEMETHOD(GetIsIdentity)(_In_ ABI::Microsoft::UI::Xaml::Media::Matrix target, _Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(Transform)(_In_ ABI::Microsoft::UI::Xaml::Media::Matrix target, _In_ ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Point* pReturnValue) override;
+        IFACEMETHOD(GetIsIdentity)(ABI::Microsoft::UI::Xaml::Media::Matrix target, _Out_ BOOLEAN* pValue) override;
+        IFACEMETHOD(Transform)(ABI::Microsoft::UI::Xaml::Media::Matrix target, ABI::Windows::Foundation::Point point, _Out_ ABI::Windows::Foundation::Point* pReturnValue) override;
 
         // Static properties.
         IFACEMETHOD(get_Identity)(_Out_ ABI::Microsoft::UI::Xaml::Media::Matrix* pValue) override;
 
         // Static methods.
-        IFACEMETHOD(FromElements)(_In_ DOUBLE m11, _In_ DOUBLE m12, _In_ DOUBLE m21, _In_ DOUBLE m22, _In_ DOUBLE offsetX, _In_ DOUBLE offsetY, _Out_ ABI::Microsoft::UI::Xaml::Media::Matrix* pReturnValue) override;
+        IFACEMETHOD(FromElements)(DOUBLE m11, DOUBLE m12, DOUBLE m21, DOUBLE m22, DOUBLE offsetX, DOUBLE offsetY, _Out_ ABI::Microsoft::UI::Xaml::Media::Matrix* pReturnValue) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

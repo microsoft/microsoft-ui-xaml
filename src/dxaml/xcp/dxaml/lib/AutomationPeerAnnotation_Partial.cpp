@@ -9,7 +9,7 @@ using namespace DirectUISynonyms;
 
 _Check_return_ HRESULT 
 AutomationPeerAnnotationFactory::CreateInstanceImpl(
-    _In_ xaml_automation::AnnotationType type,
+    xaml_automation::AnnotationType type,
     _Outptr_ xaml_automation_peers::IAutomationPeerAnnotation** ppInstance)
 {
     ctl::ComPtr<AutomationPeerAnnotation> spAnnotation;
@@ -25,7 +25,7 @@ AutomationPeerAnnotationFactory::CreateInstanceImpl(
 
 _Check_return_ HRESULT
 AutomationPeerAnnotationFactory::CreateWithPeerParameterImpl(
-    _In_ xaml_automation::AnnotationType type,
+    xaml_automation::AnnotationType type,
     _In_ xaml_automation_peers::IAutomationPeer* pPeer,
     _Outptr_ xaml_automation_peers::IAutomationPeerAnnotation** ppInstance)
 {

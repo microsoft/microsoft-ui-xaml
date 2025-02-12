@@ -338,9 +338,9 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT VirtualSurfaceImageSourceFactory::CreateInstanceWithDimensionsAndOpacityImpl(
-    _In_ INT pixelWidth,
-    _In_ INT pixelHeight,
-    _In_ BOOLEAN isOpaque,
+    INT pixelWidth,
+    INT pixelHeight,
+    BOOLEAN isOpaque,
     _Outptr_ xaml_imaging::IVirtualSurfaceImageSource** ppInstance)
 {
     HRESULT hr = S_OK;
@@ -379,8 +379,8 @@ Cleanup:
 //
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT VirtualSurfaceImageSourceFactory::CreateInstanceWithDimensionsImpl(
-    _In_ INT pixelWidth,
-    _In_ INT pixelHeight,
+    INT pixelWidth,
+    INT pixelHeight,
     _Outptr_ xaml_imaging::IVirtualSurfaceImageSource** ppInstance)
 {
     RRETURN(CreateInstanceWithDimensionsAndOpacity(pixelWidth, pixelHeight, FALSE, ppInstance));

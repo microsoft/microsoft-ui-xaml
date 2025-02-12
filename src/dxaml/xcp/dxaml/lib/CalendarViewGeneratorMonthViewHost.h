@@ -53,8 +53,8 @@ namespace DirectUI
         _Check_return_ IFACEMETHOD(SetupContainerContentChangingAfterPrepare)(
             _In_ xaml::IDependencyObject* pContainer,
             _In_ IInspectable* pItem,
-            _In_ INT itemIndex,
-            _In_ wf::Size measureSize) override;
+            INT itemIndex,
+            wf::Size measureSize) override;
 
         // the CCC version, for ListViewBase only
         _Check_return_ IFACEMETHOD(RegisterWorkFromArgs)(

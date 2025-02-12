@@ -22,7 +22,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
     // Bug 17377723: crash in CControlTemplate::CreateXBindConnector in RS5.
     [TestClass]
-    public class PhasingTests : ApiTestBase
+    public partial class PhasingTests : ApiTestBase
     {
         const int expectedLastRealizedIndex = 8;
 
@@ -161,7 +161,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
-        private class CustomElementFactory : ElementFactory
+        private partial class CustomElementFactory : ElementFactory
         {
             private int _numPhases;
             private RecyclePool _recyclePool = new RecyclePool();
@@ -192,7 +192,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
         }
 
-        private class ElementPhasingManager : IDataTemplateComponent
+        private partial class ElementPhasingManager : IDataTemplateComponent
         {
             private int _numPhases = 1; // Default is just phase 0
             private int _data = -1;

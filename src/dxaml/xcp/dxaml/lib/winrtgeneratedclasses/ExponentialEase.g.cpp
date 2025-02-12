@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ExponentialEase::get_Exponent(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ExponentialEase_Exponent, pValue));
 }
-IFACEMETHODIMP DirectUI::ExponentialEase::put_Exponent(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ExponentialEase::put_Exponent(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ExponentialEase_Exponent, value));

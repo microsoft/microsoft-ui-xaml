@@ -17,9 +17,9 @@ namespace DirectUI
         typedef CFrameworkEventSource<ICurrentChangingEventSource, xaml_data::ICurrentChangingEventHandler, IInspectable, xaml_data::ICurrentChangingEventArgs> CurrentChangingEventSourceType;
 
         IFACEMETHOD(add_CurrentChanged)(_In_ wf::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_CurrentChanged)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_CurrentChanged)(EventRegistrationToken tToken) override;
         IFACEMETHOD(add_CurrentChanging)(_In_ xaml_data::ICurrentChangingEventHandler* pValue, _Out_ EventRegistrationToken* ptToken) override;
-        IFACEMETHOD(remove_CurrentChanging)(_In_ EventRegistrationToken tToken) override;
+        IFACEMETHOD(remove_CurrentChanging)(EventRegistrationToken tToken) override;
 
     protected:
 
@@ -78,7 +78,7 @@ namespace DirectUI
             _Out_ EventRegistrationToken *token) override;
 
         IFACEMETHOD(remove_VectorChanged)(
-            _In_ EventRegistrationToken token) override;
+            EventRegistrationToken token) override;
 
         _Check_return_ HRESULT ProcessCollectionChange(_In_ wfc::IVectorChangedEventArgs *pArgs);
         _Check_return_ HRESULT RaisePropertyChanged(_In_reads_(nLength) const WCHAR* name, _In_ const XUINT32 nLength);

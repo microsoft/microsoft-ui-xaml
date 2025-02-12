@@ -4082,6 +4082,7 @@ namespace Windows { namespace Foundation { namespace Collections { namespace Int
 
                 // NOTE: The usage of this AbiReference under lock is presently safe because hash maps cannot have non-agile keys.
                 HRESULT hr;
+                *pfEquals = false;
                 AbiReference<K_abi, K_storage, KeyLifetime> abiElement1(element1, &hr);
                 if (SUCCEEDED(hr))
                 {

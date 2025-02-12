@@ -1,0 +1,14 @@
+<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="ForceNet6WebView2ProjectionReference">
+	<Target Name="ForceNet6WebView2ProjectionReference" BeforeTargets="ResolveAssemblyReferences">
+		<ItemGroup>
+			<WebView2ProjectionReference Include="@(Reference)" Condition="'%(Reference.Filename)%(Reference.Extension)'=='Microsoft.Web.WebView2.Core.Projection.dll'">
+				<Net6FullPath>$([System.String]::Copy('%(FullPath)').Replace('net8.0','net6.0'))</Net6FullPath>
+			</WebView2ProjectionReference>
+			<Reference Remove="@(WebView2ProjectionReference)" />
+			<Reference Include="@(WebView2ProjectionReference->'%(Net6FullPath)')" />
+		</ItemGroup>
+	</Target>
+</Project>

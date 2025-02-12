@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.Xaml.WidgetSpinner.Metadata;
+using Microsoft.Xaml.WidgetSpinner.Model;
 using Microsoft.Xaml.WidgetSpinner.Reader;
 using System;
 using System.Collections.Generic;
@@ -14,8 +15,10 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
         public List<Tuple<XamlProperty, object>> NonDeferredProperties { get; private set; }
         public bool Realize { get; private set; }
 
-        public DeferredElementCustomRuntimeData(CustomWriterRuntimeDataTypeIndex version)
-            : base(version)
+        public DeferredElementCustomRuntimeData(
+            CustomWriterRuntimeDataTypeIndex version, 
+            Dictionary<StreamOffsetToken, List<Model.XamlPredicateAndArgs>> conditionallyDeclaredObjects)
+            : base(version, conditionallyDeclaredObjects)
         {
         }
 
@@ -41,7 +44,7 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
                 }
             }
 
-            return new DeferredElementCustomRuntimeData(typeIndex)
+            return new DeferredElementCustomRuntimeData(typeIndex, new Dictionary<StreamOffsetToken, List<XamlPredicateAndArgs>>())
             {
                 Name = name,
                 NonDeferredProperties = nonDeferredProperties,

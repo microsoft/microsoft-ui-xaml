@@ -29,7 +29,7 @@ namespace DirectUI
             IFACEMETHOD(MeasureOverride)(
                 // Measurement constraints, a control cannot return a size
                 // larger than the constraint.
-                _In_ wf::Size availableSize,
+                wf::Size availableSize,
                 // The desired size of the control.
                 _Out_ wf::Size* returnValue) override;
 
@@ -38,7 +38,7 @@ namespace DirectUI
             // behavior.
             IFACEMETHOD(ArrangeOverride)(
                 // The computed size that is used to arrange the content.
-                _In_ wf::Size arrangeSize,
+                wf::Size arrangeSize,
                 // The size of the control.
                 _Out_ wf::Size* returnValue) override;
 
@@ -95,14 +95,14 @@ namespace DirectUI
 
             // Get the closest element information to the point.
             _Check_return_ IFACEMETHOD(GetClosestElementInfo)(
-                _In_ wf::Point position,
+                wf::Point position,
                 _Out_ xaml_primitives::ElementInfo* returnValue)
                 override;
 
             // Get the index where an item should be inserted if it were dropped at
             // the given position.  This will be used by live reordering.
             _Check_return_ IFACEMETHOD(GetInsertionIndex)(
-                _In_ wf::Point position,
+                wf::Point position,
                 _Out_ INT* returnValue)
                 override;
 

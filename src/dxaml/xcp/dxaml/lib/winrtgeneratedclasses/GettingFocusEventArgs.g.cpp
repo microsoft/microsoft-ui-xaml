@@ -151,7 +151,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_Handled(_Out_ BOOLEAN* pValu
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::GettingFocusEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::GettingFocusEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;
@@ -203,7 +203,7 @@ IFACEMETHODIMP DirectUI::GettingFocusEventArgs::get_Cancel(_Out_ BOOLEAN* pValue
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::GettingFocusEventArgs::put_Cancel(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::GettingFocusEventArgs::put_Cancel(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

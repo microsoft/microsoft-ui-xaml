@@ -110,7 +110,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP UWPWindowImpl::remove_Activated(_In_ EventRegistrationToken token)
+IFACEMETHODIMP UWPWindowImpl::remove_Activated(EventRegistrationToken token)
 {
     HRESULT hr = S_OK;
 
@@ -138,7 +138,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP UWPWindowImpl::remove_Closed(_In_ EventRegistrationToken token)
+IFACEMETHODIMP UWPWindowImpl::remove_Closed(EventRegistrationToken token)
 {
     HRESULT hr = S_OK;
 
@@ -167,7 +167,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP UWPWindowImpl::remove_SizeChanged(_In_ EventRegistrationToken token)
+IFACEMETHODIMP UWPWindowImpl::remove_SizeChanged(EventRegistrationToken token)
 {
     HRESULT hr = S_OK;
 
@@ -196,7 +196,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-IFACEMETHODIMP UWPWindowImpl::remove_VisibilityChanged(_In_ EventRegistrationToken token)
+IFACEMETHODIMP UWPWindowImpl::remove_VisibilityChanged(EventRegistrationToken token)
 {
     HRESULT hr = S_OK;
 

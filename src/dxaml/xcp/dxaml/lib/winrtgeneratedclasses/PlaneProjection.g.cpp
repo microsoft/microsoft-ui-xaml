@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_CenterOfRotationX(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_CenterOfRotationX, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_CenterOfRotationX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_CenterOfRotationX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_CenterOfRotationX, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_CenterOfRotationY(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_CenterOfRotationY, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_CenterOfRotationY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_CenterOfRotationY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_CenterOfRotationY, value));
@@ -79,7 +79,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_CenterOfRotationZ(_Out_ DOUBLE* pV
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_CenterOfRotationZ, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_CenterOfRotationZ(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_CenterOfRotationZ(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_CenterOfRotationZ, value));
@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_GlobalOffsetX(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_GlobalOffsetX, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_GlobalOffsetX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_GlobalOffsetX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_GlobalOffsetX, value));
@@ -113,7 +113,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_GlobalOffsetY(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_GlobalOffsetY, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_GlobalOffsetY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_GlobalOffsetY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_GlobalOffsetY, value));
@@ -130,7 +130,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_GlobalOffsetZ(_Out_ DOUBLE* pValue
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_GlobalOffsetZ, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_GlobalOffsetZ(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_GlobalOffsetZ(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_GlobalOffsetZ, value));
@@ -147,7 +147,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_LocalOffsetX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_LocalOffsetX, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_LocalOffsetX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_LocalOffsetX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_LocalOffsetX, value));
@@ -164,7 +164,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_LocalOffsetY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_LocalOffsetY, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_LocalOffsetY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_LocalOffsetY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_LocalOffsetY, value));
@@ -181,7 +181,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_LocalOffsetZ(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_LocalOffsetZ, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_LocalOffsetZ(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_LocalOffsetZ(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_LocalOffsetZ, value));
@@ -202,7 +202,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_RotationX(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_RotationX, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_RotationX(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_RotationX(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_RotationX, value));
@@ -219,7 +219,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_RotationY(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_RotationY, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_RotationY(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_RotationY(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_RotationY, value));
@@ -236,7 +236,7 @@ IFACEMETHODIMP DirectUI::PlaneProjection::get_RotationZ(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_RotationZ, pValue));
 }
-IFACEMETHODIMP DirectUI::PlaneProjection::put_RotationZ(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PlaneProjection::put_RotationZ(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PlaneProjection_RotationZ, value));

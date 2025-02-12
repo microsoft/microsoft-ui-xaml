@@ -89,7 +89,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ImageBrush::remove_ImageFailed(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ImageBrush::remove_ImageFailed(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ImageFailedEventSourceType* pEventSource = nullptr;
@@ -144,7 +144,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ImageBrush::remove_ImageOpened(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ImageBrush::remove_ImageOpened(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ImageOpenedEventSourceType* pEventSource = nullptr;

@@ -48,9 +48,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_KeyTime)(_Out_ ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime* pValue) override;
-        IFACEMETHOD(put_KeyTime)(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value) override;
+        IFACEMETHOD(put_KeyTime)(ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value) override;
         IFACEMETHOD(get_Value)(_Out_ ABI::Windows::UI::Color* pValue) override;
-        IFACEMETHOD(put_Value)(_In_ ABI::Windows::UI::Color value) override;
+        IFACEMETHOD(put_Value)(ABI::Windows::UI::Color value) override;
 
         // Events.
 

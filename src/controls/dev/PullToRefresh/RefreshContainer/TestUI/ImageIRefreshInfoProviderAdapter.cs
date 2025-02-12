@@ -16,7 +16,7 @@ using Microsoft.UI.Private.Controls;
 
 namespace MUXControlsTestApp
 {
-    class ImageIRefreshInfoProviderAdapter : IRefreshInfoProviderAdapter
+    partial class ImageIRefreshInfoProviderAdapter : IRefreshInfoProviderAdapter
     {
         RefreshPullDirection refreshPullDirection;
         InteractionTracker interactionTracker;
@@ -162,7 +162,7 @@ namespace MUXControlsTestApp
     }
 
 
-    public class RefreshInfoProviderImplementation : IRefreshInfoProvider, IInteractionTrackerOwner
+    public partial class RefreshInfoProviderImplementation : IRefreshInfoProvider, IInteractionTrackerOwner
     {
         double executionRatio = 0.8;
         RefreshPullDirection refreshPullDirection;

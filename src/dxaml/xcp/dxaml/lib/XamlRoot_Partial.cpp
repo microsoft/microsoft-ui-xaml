@@ -145,7 +145,7 @@ _Check_return_ HRESULT STDMETHODCALLTYPE XamlRoot::get_CoordinateConverterImpl(_
     return S_OK;
 }
 
-_Check_return_ HRESULT STDMETHODCALLTYPE XamlRoot::TryGetContentIslandImpl(_Outptr_result_maybenull_ ixp::IContentIsland** contentIsland)
+_Check_return_ HRESULT STDMETHODCALLTYPE XamlRoot::get_ContentIslandImpl(_Outptr_result_maybenull_ ixp::IContentIsland** contentIsland)
 {
     *contentIsland = nullptr;
 
@@ -253,7 +253,7 @@ _Check_return_ HRESULT XamlRoot::SetForElementStatic(
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlRoot::get_HostWindow(_Out_ HWND* pValue)
+_Check_return_ HRESULT XamlRoot::get_HostWindow(HWND* pValue)
 {
     *pValue = nullptr;
 

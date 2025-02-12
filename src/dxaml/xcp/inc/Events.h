@@ -36,11 +36,11 @@ typedef HRESULT(__stdcall *INTERNAL_EVENT_HANDLER)(_In_ CDependencyObject* pSend
 //TODO - Move to Host layer?
 // event call back mechanism, the parameter "pe" is the eventargs being sent
 typedef HRESULT(__stdcall *EVENTPFN)(_In_ void* pControl,
-    _In_ CDependencyObject *pListener,
+    _In_opt_ CDependencyObject *pListener,
     _In_ EventHandle hEvent,
-    _In_ CDependencyObject *pSender,
-    _In_ CEventArgs *pArgs,
+    _In_opt_ CDependencyObject *pSender,
+    _In_opt_ CEventArgs *pArgs,
     _In_ XINT32 flags,
-    _In_ IScriptObject* pScriptObject,
-    _In_ INTERNAL_EVENT_HANDLER pInternalHandler);
+    _In_opt_ IScriptObject* pScriptObject,
+    _In_opt_ INTERNAL_EVENT_HANDLER pInternalHandler);
 

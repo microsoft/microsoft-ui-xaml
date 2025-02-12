@@ -20,7 +20,7 @@ using Microsoft.UI;
 
 namespace MUXControlsTestApp
 {
-    public class FallbackGrid : Microsoft.UI.Xaml.Controls.Grid
+    public partial class FallbackGrid : Microsoft.UI.Xaml.Controls.Grid
     {
         internal const int RectangleWidth = 100;
         internal const int RectangleHeight = 100;

@@ -41,7 +41,7 @@ _Check_return_ HRESULT DirectUI::CalendarViewItemGenerated::get_Date(_Out_ ABI::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::CalendarViewItem_Date, pValue));
 }
-_Check_return_ HRESULT DirectUI::CalendarViewItemGenerated::put_Date(_In_ ABI::Windows::Foundation::DateTime value)
+_Check_return_ HRESULT DirectUI::CalendarViewItemGenerated::put_Date(ABI::Windows::Foundation::DateTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::CalendarViewItem_Date, value));

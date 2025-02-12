@@ -68,13 +68,13 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetCanExecuteChangedEventSourceNoRef(_Outptr_ CanExecuteChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_CanExecuteChanged)(_In_ ABI::Windows::Foundation::IEventHandler<IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_CanExecuteChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_CanExecuteChanged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetCanExecuteRequestedEventSourceNoRef(_Outptr_ CanExecuteRequestedEventSourceType** ppEventSource);
         IFACEMETHOD(add_CanExecuteRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Input::XamlUICommand*, ABI::Microsoft::UI::Xaml::Input::CanExecuteRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_CanExecuteRequested)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_CanExecuteRequested)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetExecuteRequestedEventSourceNoRef(_Outptr_ ExecuteRequestedEventSourceType** ppEventSource);
         IFACEMETHOD(add_ExecuteRequested)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Input::XamlUICommand*, ABI::Microsoft::UI::Xaml::Input::ExecuteRequestedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ExecuteRequested)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ExecuteRequested)(EventRegistrationToken token) override;
 
         // Methods.
         IFACEMETHOD(CanExecute)(_In_opt_ IInspectable* pParameter, _Out_ BOOLEAN* pReturnValue) override;

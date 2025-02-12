@@ -569,7 +569,7 @@ namespace DirectUI
 
             virtual _Check_return_ HRESULT get_ContainerAt(
                 _In_ UINT index,
-                _Outptr_ xaml::IDependencyObject** ppContainer)
+                _Outptr_result_maybenull_ xaml::IDependencyObject** ppContainer)
             {
                 HRESULT hr = S_OK;
                 IFCPTR(ppContainer);
@@ -581,7 +581,7 @@ namespace DirectUI
 
             virtual _Check_return_ HRESULT get_ItemAt(
                 _In_ UINT index,
-                _Outptr_ IInspectable** ppItem)
+                _Outptr_result_maybenull_ IInspectable** ppItem)
             {
                 HRESULT hr = S_OK;
                 IFCPTR(ppItem);

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::ColorKeyFrame::get_KeyTime(_Out_ ABI::Microsoft::UI::Xa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorKeyFrame_KeyTime, pValue));
 }
-IFACEMETHODIMP DirectUI::ColorKeyFrame::put_KeyTime(_In_ ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value)
+IFACEMETHODIMP DirectUI::ColorKeyFrame::put_KeyTime(ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorKeyFrame_KeyTime, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::ColorKeyFrame::get_Value(_Out_ ABI::Windows::UI::Color*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ColorKeyFrame_Value, pValue));
 }
-IFACEMETHODIMP DirectUI::ColorKeyFrame::put_Value(_In_ ABI::Windows::UI::Color value)
+IFACEMETHODIMP DirectUI::ColorKeyFrame::put_Value(ABI::Windows::UI::Color value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ColorKeyFrame_Value, value));

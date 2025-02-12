@@ -38,9 +38,9 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_WindowActivationState)(_Out_ ABI::Microsoft::UI::Xaml::WindowActivationState* pValue) override;
-        _Check_return_ HRESULT put_WindowActivationState(_In_ ABI::Microsoft::UI::Xaml::WindowActivationState value);
+        _Check_return_ HRESULT put_WindowActivationState(ABI::Microsoft::UI::Xaml::WindowActivationState value);
 
         // Events.
 

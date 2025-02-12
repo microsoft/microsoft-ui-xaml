@@ -52,7 +52,7 @@ namespace DirectUI
         IFACEMETHOD(get_From)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_From)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_GeneratedDuration)(_Out_ ABI::Microsoft::UI::Xaml::Duration* pValue) override;
-        IFACEMETHOD(put_GeneratedDuration)(_In_ ABI::Microsoft::UI::Xaml::Duration value) override;
+        IFACEMETHOD(put_GeneratedDuration)(ABI::Microsoft::UI::Xaml::Duration value) override;
         IFACEMETHOD(get_GeneratedEasingFunction)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::Animation::IEasingFunctionBase** ppValue) override;
         IFACEMETHOD(put_GeneratedEasingFunction)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::Animation::IEasingFunctionBase* pValue) override;
         IFACEMETHOD(get_Storyboard)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::Animation::IStoryboard** ppValue) override;

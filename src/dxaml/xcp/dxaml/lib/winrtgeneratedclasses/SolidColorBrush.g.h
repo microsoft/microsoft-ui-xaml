@@ -48,7 +48,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_Color)(_Out_ ABI::Windows::UI::Color* pValue) override;
-        IFACEMETHOD(put_Color)(_In_ ABI::Windows::UI::Color value) override;
+        IFACEMETHOD(put_Color)(ABI::Windows::UI::Color value) override;
         _Check_return_ HRESULT get_ColorAAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
         _Check_return_ HRESULT put_ColorAAnimation(_In_opt_ IInspectable* pValue);
         _Check_return_ HRESULT get_ColorAnimation(_Outptr_result_maybenull_ IInspectable** ppValue);
@@ -98,7 +98,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithColor)(_In_ ABI::Windows::UI::Color color, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush** ppInstance);
+        IFACEMETHOD(CreateInstanceWithColor)(ABI::Windows::UI::Color color, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush** ppInstance);
 
         // Static properties.
 
@@ -126,7 +126,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithColorImpl(_In_ ABI::Windows::UI::Color color, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithColorImpl(ABI::Windows::UI::Color color, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush** ppInstance);
 
         // Customized static properties.
 

@@ -221,6 +221,7 @@ void NavigationViewItem::OnSplitViewPropertyChanged(const winrt::DependencyObjec
     if (args == winrt::SplitView::CompactPaneLengthProperty())
     {
         UpdateCompactPaneLength();
+        UpdateVisualStateNoTransition();
     }
     else if (args == winrt::SplitView::IsPaneOpenProperty() ||
         args == winrt::SplitView::DisplayModeProperty())

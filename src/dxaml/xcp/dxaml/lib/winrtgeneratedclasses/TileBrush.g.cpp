@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::TileBrush::get_AlignmentX(_Out_ ABI::Microsoft::UI::Xam
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TileBrush_AlignmentX, pValue));
 }
-IFACEMETHODIMP DirectUI::TileBrush::put_AlignmentX(_In_ ABI::Microsoft::UI::Xaml::Media::AlignmentX value)
+IFACEMETHODIMP DirectUI::TileBrush::put_AlignmentX(ABI::Microsoft::UI::Xaml::Media::AlignmentX value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TileBrush_AlignmentX, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::TileBrush::get_AlignmentY(_Out_ ABI::Microsoft::UI::Xam
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TileBrush_AlignmentY, pValue));
 }
-IFACEMETHODIMP DirectUI::TileBrush::put_AlignmentY(_In_ ABI::Microsoft::UI::Xaml::Media::AlignmentY value)
+IFACEMETHODIMP DirectUI::TileBrush::put_AlignmentY(ABI::Microsoft::UI::Xaml::Media::AlignmentY value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TileBrush_AlignmentY, value));
@@ -63,7 +63,7 @@ IFACEMETHODIMP DirectUI::TileBrush::get_Stretch(_Out_ ABI::Microsoft::UI::Xaml::
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TileBrush_Stretch, pValue));
 }
-IFACEMETHODIMP DirectUI::TileBrush::put_Stretch(_In_ ABI::Microsoft::UI::Xaml::Media::Stretch value)
+IFACEMETHODIMP DirectUI::TileBrush::put_Stretch(ABI::Microsoft::UI::Xaml::Media::Stretch value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TileBrush_Stretch, value));

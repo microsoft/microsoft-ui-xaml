@@ -87,7 +87,7 @@ Cleanup:
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::TextPointerGenerated::GetCharacterRect(_In_ ABI::Microsoft::UI::Xaml::Documents::LogicalDirection direction, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
+IFACEMETHODIMP DirectUI::TextPointerGenerated::GetCharacterRect(ABI::Microsoft::UI::Xaml::Documents::LogicalDirection direction, _Out_ ABI::Windows::Foundation::Rect* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -105,7 +105,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::TextPointerGenerated::GetPositionAtOffset(_In_ INT offset, _In_ ABI::Microsoft::UI::Xaml::Documents::LogicalDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer** ppReturnValue)
+IFACEMETHODIMP DirectUI::TextPointerGenerated::GetPositionAtOffset(INT offset, ABI::Microsoft::UI::Xaml::Documents::LogicalDirection direction, _Outptr_ ABI::Microsoft::UI::Xaml::Documents::ITextPointer** ppReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

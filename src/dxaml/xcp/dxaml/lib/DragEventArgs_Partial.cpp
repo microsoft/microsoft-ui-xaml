@@ -28,7 +28,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT DirectUI::DragEventArgs::put_DataImpl(_In_ wadt::IDataPackage* value)
+_Check_return_ HRESULT DirectUI::DragEventArgs::put_DataImpl(_In_opt_ wadt::IDataPackage* value)
 {
     HRESULT hr = S_OK;
     xref_ptr<CDragEventArgs> spCoreDragEventArgs;

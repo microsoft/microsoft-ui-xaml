@@ -29,25 +29,25 @@ namespace ctl
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_CenterPoint)(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue) override { return This()->get_CenterPoint(pValue); }
-        IFACEMETHOD(put_CenterPoint)(_In_ ABI::Windows::Foundation::Numerics::Vector2 value) override { return This()->put_CenterPoint(value); }
+        IFACEMETHOD(put_CenterPoint)(ABI::Windows::Foundation::Numerics::Vector2 value) override { return This()->put_CenterPoint(value); }
         IFACEMETHOD(get_Rotation)(_Out_ DOUBLE* pValue) override { return This()->get_Rotation(pValue); }
-        IFACEMETHOD(put_Rotation)(_In_ DOUBLE value) override { return This()->put_Rotation(value); }
+        IFACEMETHOD(put_Rotation)(DOUBLE value) override { return This()->put_Rotation(value); }
         IFACEMETHOD(get_Scale)(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue) override { return This()->get_Scale(pValue); }
-        IFACEMETHOD(put_Scale)(_In_ ABI::Windows::Foundation::Numerics::Vector2 value) override { return This()->put_Scale(value); }
+        IFACEMETHOD(put_Scale)(ABI::Windows::Foundation::Numerics::Vector2 value) override { return This()->put_Scale(value); }
         IFACEMETHOD(get_TransformMatrix)(_Out_ ABI::Windows::Foundation::Numerics::Matrix3x2* pValue) override { return This()->get_TransformMatrix(pValue); }
-        IFACEMETHOD(put_TransformMatrix)(_In_ ABI::Windows::Foundation::Numerics::Matrix3x2 value) override { return This()->put_TransformMatrix(value); }
+        IFACEMETHOD(put_TransformMatrix)(ABI::Windows::Foundation::Numerics::Matrix3x2 value) override { return This()->put_TransformMatrix(value); }
         IFACEMETHOD(get_Translation)(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue) override { return This()->get_Translation(pValue); }
-        IFACEMETHOD(put_Translation)(_In_ ABI::Windows::Foundation::Numerics::Vector2 value) override { return This()->put_Translation(value); }
+        IFACEMETHOD(put_Translation)(ABI::Windows::Foundation::Numerics::Vector2 value) override { return This()->put_Translation(value); }
         IFACEMETHOD(add_CenterPointChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_CenterPointChanged(pValue, pToken); }
-        IFACEMETHOD(remove_CenterPointChanged)(_In_ EventRegistrationToken token) override { return This()->remove_CenterPointChanged(token); }
+        IFACEMETHOD(remove_CenterPointChanged)(EventRegistrationToken token) override { return This()->remove_CenterPointChanged(token); }
         IFACEMETHOD(add_RotationChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_RotationChanged(pValue, pToken); }
-        IFACEMETHOD(remove_RotationChanged)(_In_ EventRegistrationToken token) override { return This()->remove_RotationChanged(token); }
+        IFACEMETHOD(remove_RotationChanged)(EventRegistrationToken token) override { return This()->remove_RotationChanged(token); }
         IFACEMETHOD(add_ScaleChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_ScaleChanged(pValue, pToken); }
-        IFACEMETHOD(remove_ScaleChanged)(_In_ EventRegistrationToken token) override { return This()->remove_ScaleChanged(token); }
+        IFACEMETHOD(remove_ScaleChanged)(EventRegistrationToken token) override { return This()->remove_ScaleChanged(token); }
         IFACEMETHOD(add_TransformMatrixChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_TransformMatrixChanged(pValue, pToken); }
-        IFACEMETHOD(remove_TransformMatrixChanged)(_In_ EventRegistrationToken token) override { return This()->remove_TransformMatrixChanged(token); }
+        IFACEMETHOD(remove_TransformMatrixChanged)(EventRegistrationToken token) override { return This()->remove_TransformMatrixChanged(token); }
         IFACEMETHOD(add_TranslationChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken) override { return This()->add_TranslationChanged(pValue, pToken); }
-        IFACEMETHOD(remove_TranslationChanged)(_In_ EventRegistrationToken token) override { return This()->remove_TranslationChanged(token); }
+        IFACEMETHOD(remove_TranslationChanged)(EventRegistrationToken token) override { return This()->remove_TranslationChanged(token); }
     };
 }
 #pragma endregion
@@ -122,80 +122,80 @@ namespace DirectUI
 
         // Properties.
         _Check_return_ HRESULT get_AnimatedCenterPoint(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue);
-        _Check_return_ HRESULT put_AnimatedCenterPoint(_In_ ABI::Windows::Foundation::Numerics::Vector2 value);
+        _Check_return_ HRESULT put_AnimatedCenterPoint(ABI::Windows::Foundation::Numerics::Vector2 value);
         _Check_return_ HRESULT get_AnimatedRotation(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT put_AnimatedRotation(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_AnimatedRotation(DOUBLE value);
         _Check_return_ HRESULT get_AnimatedScale(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue);
-        _Check_return_ HRESULT put_AnimatedScale(_In_ ABI::Windows::Foundation::Numerics::Vector2 value);
+        _Check_return_ HRESULT put_AnimatedScale(ABI::Windows::Foundation::Numerics::Vector2 value);
         _Check_return_ HRESULT get_AnimatedTransformMatrix(_Out_ ABI::Windows::Foundation::Numerics::Matrix3x2* pValue);
-        _Check_return_ HRESULT put_AnimatedTransformMatrix(_In_ ABI::Windows::Foundation::Numerics::Matrix3x2 value);
+        _Check_return_ HRESULT put_AnimatedTransformMatrix(ABI::Windows::Foundation::Numerics::Matrix3x2 value);
         _Check_return_ HRESULT get_AnimatedTranslation(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue);
-        _Check_return_ HRESULT put_AnimatedTranslation(_In_ ABI::Windows::Foundation::Numerics::Vector2 value);
+        _Check_return_ HRESULT put_AnimatedTranslation(ABI::Windows::Foundation::Numerics::Vector2 value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_CenterPoint(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_CenterPoint(_In_ ABI::Windows::Foundation::Numerics::Vector2 value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_CenterPoint(ABI::Windows::Foundation::Numerics::Vector2 value);
         IFACEMETHOD(get_EndPoint)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_EndPoint)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_EndPoint)(ABI::Windows::Foundation::Point value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Rotation(_Out_ DOUBLE* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_Rotation(_In_ DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Rotation(DOUBLE value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Scale(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_Scale(_In_ ABI::Windows::Foundation::Numerics::Vector2 value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Scale(ABI::Windows::Foundation::Numerics::Vector2 value);
         IFACEMETHOD(get_StartPoint)(_Out_ ABI::Windows::Foundation::Point* pValue) override;
-        IFACEMETHOD(put_StartPoint)(_In_ ABI::Windows::Foundation::Point value) override;
+        IFACEMETHOD(put_StartPoint)(ABI::Windows::Foundation::Point value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_TransformMatrix(_Out_ ABI::Windows::Foundation::Numerics::Matrix3x2* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_TransformMatrix(_In_ ABI::Windows::Foundation::Numerics::Matrix3x2 value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_TransformMatrix(ABI::Windows::Foundation::Numerics::Matrix3x2 value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_Translation(_Out_ ABI::Windows::Foundation::Numerics::Vector2* pValue);
-        _Check_return_ HRESULT STDMETHODCALLTYPE put_Translation(_In_ ABI::Windows::Foundation::Numerics::Vector2 value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Translation(ABI::Windows::Foundation::Numerics::Vector2 value);
 
         // Events.
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetAnimatedCenterPointChangedEventSourceNoRef(_Outptr_ AnimatedCenterPointChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedCenterPointChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedCenterPointChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedCenterPointChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetAnimatedRotationChangedEventSourceNoRef(_Outptr_ AnimatedRotationChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedRotationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedRotationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedRotationChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetAnimatedScaleChangedEventSourceNoRef(_Outptr_ AnimatedScaleChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedScaleChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedScaleChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedScaleChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetAnimatedTransformMatrixChangedEventSourceNoRef(_Outptr_ AnimatedTransformMatrixChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedTransformMatrixChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedTransformMatrixChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedTransformMatrixChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetAnimatedTranslationChangedEventSourceNoRef(_Outptr_ AnimatedTranslationChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT add_AnimatedTranslationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT remove_AnimatedTranslationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT remove_AnimatedTranslationChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetCenterPointChangedEventSourceNoRef(_Outptr_ CenterPointChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_CenterPointChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_CenterPointChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_CenterPointChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetRotationChangedEventSourceNoRef(_Outptr_ RotationChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_RotationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_RotationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_RotationChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetScaleChangedEventSourceNoRef(_Outptr_ ScaleChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_ScaleChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_ScaleChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_ScaleChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetTransformMatrixChangedEventSourceNoRef(_Outptr_ TransformMatrixChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_TransformMatrixChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TransformMatrixChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TransformMatrixChanged(EventRegistrationToken token);
 #endif
 #if WI_IS_FEATURE_PRESENT(Feature_XamlMotionSystemHoldbacks)
         _Check_return_ HRESULT GetTranslationChangedEventSourceNoRef(_Outptr_ TranslationChangedEventSourceType** ppEventSource);
         _Check_return_ HRESULT STDMETHODCALLTYPE add_TranslationChanged(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Media::LinearGradientBrush*, IInspectable*>* pValue, _Out_ EventRegistrationToken* pToken);
-        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TranslationChanged(_In_ EventRegistrationToken token);
+        _Check_return_ HRESULT STDMETHODCALLTYPE remove_TranslationChanged(EventRegistrationToken token);
 #endif
 
         // Methods.
@@ -243,7 +243,7 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstanceWithGradientStopCollectionAndAngle)(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>* pGradientStopCollection, _In_ DOUBLE angle, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush** ppInstance);
+        IFACEMETHOD(CreateInstanceWithGradientStopCollectionAndAngle)(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>* pGradientStopCollection, DOUBLE angle, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush** ppInstance);
 
         // Static properties.
 
@@ -267,7 +267,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceWithGradientStopCollectionAndAngleImpl(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>* pGradientStopCollection, _In_ DOUBLE angle, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush** ppInstance);
+        _Check_return_ HRESULT CreateInstanceWithGradientStopCollectionAndAngleImpl(_In_ ABI::Windows::Foundation::Collections::IVector<ABI::Microsoft::UI::Xaml::Media::GradientStop*>* pGradientStopCollection, DOUBLE angle, _Outptr_ ABI::Microsoft::UI::Xaml::Media::ILinearGradientBrush** ppInstance);
 
         // Customized static properties.
 

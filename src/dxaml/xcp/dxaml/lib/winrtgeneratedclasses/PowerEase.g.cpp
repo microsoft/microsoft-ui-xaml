@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::PowerEase::get_Power(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PowerEase_Power, pValue));
 }
-IFACEMETHODIMP DirectUI::PowerEase::put_Power(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::PowerEase::put_Power(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PowerEase_Power, value));

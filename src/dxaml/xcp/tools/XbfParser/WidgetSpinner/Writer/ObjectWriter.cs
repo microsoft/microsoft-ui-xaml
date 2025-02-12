@@ -753,6 +753,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Writer
 
                 case CustomWriterRuntimeDataTypeIndex.Style_v1:
                 case CustomWriterRuntimeDataTypeIndex.Style_v2:
+                case CustomWriterRuntimeDataTypeIndex.Style_v3:
                     {
                         SetStyleCustomRuntimeData(setCustomRuntimeDataNode);
                     }

@@ -14,7 +14,7 @@ using System.ComponentModel;
 
 namespace MUXControlsTestApp.Samples.Selection
 {
-    public class TreeViewItem : ContentControl
+    public partial class TreeViewItem : ContentControl
     {
         public TreeViewItem()
         {

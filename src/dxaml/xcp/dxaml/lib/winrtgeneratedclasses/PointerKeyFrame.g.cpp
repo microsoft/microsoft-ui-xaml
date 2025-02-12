@@ -41,7 +41,7 @@ _Check_return_ HRESULT DirectUI::PointerKeyFrame::get_PointerValue(_Out_ DOUBLE*
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointerKeyFrame_PointerValue, pValue));
 }
-_Check_return_ HRESULT DirectUI::PointerKeyFrame::put_PointerValue(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::PointerKeyFrame::put_PointerValue(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointerKeyFrame_PointerValue, value));
@@ -50,7 +50,7 @@ _Check_return_ HRESULT DirectUI::PointerKeyFrame::get_TargetValue(_Out_ DOUBLE* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::PointerKeyFrame_TargetValue, pValue));
 }
-_Check_return_ HRESULT DirectUI::PointerKeyFrame::put_TargetValue(_In_ DOUBLE value)
+_Check_return_ HRESULT DirectUI::PointerKeyFrame::put_TargetValue(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::PointerKeyFrame_TargetValue, value));

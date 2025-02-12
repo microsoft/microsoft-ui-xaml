@@ -46,7 +46,7 @@ IFACEMETHODIMP DirectUI::Polygon::get_FillRule(_Out_ ABI::Microsoft::UI::Xaml::M
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Polygon_FillRule, pValue));
 }
-IFACEMETHODIMP DirectUI::Polygon::put_FillRule(_In_ ABI::Microsoft::UI::Xaml::Media::FillRule value)
+IFACEMETHODIMP DirectUI::Polygon::put_FillRule(ABI::Microsoft::UI::Xaml::Media::FillRule value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Polygon_FillRule, value));

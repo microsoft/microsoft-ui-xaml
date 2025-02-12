@@ -15,11 +15,16 @@ public:
     winrt::hstring LayoutId();
     void LayoutId(winrt::hstring const& state);
     // Invoked by LayoutsTestHooks only.
-    winrt::IndexBasedLayoutOrientation GetForcedIndexBasedLayoutOrientation();
-    void SetForcedIndexBasedLayoutOrientation(winrt::IndexBasedLayoutOrientation forcedIndexBasedLayoutOrientation);
-    void ResetForcedIndexBasedLayoutOrientation();
+    int LogItemIndexDbg() const;
+    void LogItemIndexDbg(
+        int logItemIndex);
+    int LayoutAnchorIndexDbg() const;
+    double LayoutAnchorOffsetDbg() const;
+    winrt::IndexBasedLayoutOrientation GetForcedIndexBasedLayoutOrientationDbg() const;
+    void SetForcedIndexBasedLayoutOrientationDbg(winrt::IndexBasedLayoutOrientation forcedIndexBasedLayoutOrientation);
+    void ResetForcedIndexBasedLayoutOrientationDbg();
 
-    winrt::IndexBasedLayoutOrientation IndexBasedLayoutOrientation();
+    winrt::IndexBasedLayoutOrientation IndexBasedLayoutOrientation() const;
 
     void InitializeForContext(winrt::LayoutContext const& context);
     void UninitializeForContext(winrt::LayoutContext const& context);
@@ -42,6 +47,12 @@ public:
     void SetIndexBasedLayoutOrientation(winrt::IndexBasedLayoutOrientation orientation);
 #pragma endregion
 
+protected:
+#ifdef DBG
+    // Used for LayoutsTestHooks only, for testing purposes.
+    void SetLayoutAnchorInfoDbg(int index, double offset);
+#endif // DBG
+
 private:
     event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_measureInvalidatedEventSource{ };
     event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_arrangeInvalidatedEventSource { };
@@ -53,6 +64,8 @@ private:
     winrt::IndexBasedLayoutOrientation m_indexBasedLayoutOrientation{ winrt::IndexBasedLayoutOrientation::None };
 
     // Used by LayoutsTestHooks only for testing purposes.
+    int m_logItemIndexDbg{ -1 };
+    winrt::FlowLayoutAnchorInfo m_layoutAnchorInfoDbg{ -1, -1.0 };
     winrt::IndexBasedLayoutOrientation m_forcedIndexBasedLayoutOrientationDbg{ winrt::IndexBasedLayoutOrientation::None };
     bool m_isForcedIndexBasedLayoutOrientationSetDbg{ false };
 };

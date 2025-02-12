@@ -81,7 +81,7 @@ IFACEMETHODIMP DirectUI::NoFocusCandidateFoundEventArgs::get_Handled(_Out_ BOOLE
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::NoFocusCandidateFoundEventArgs::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::NoFocusCandidateFoundEventArgs::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

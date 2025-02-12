@@ -45,6 +45,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string XamlShapes = Xaml + ".Shapes";
         public const string XamlThreading = Xaml + ".Threading";
         public const string XamlXamlTypeInfo = Xaml + ".XamlTypeInfo";
+        public const string WinRt = "WinRT";
     }
 
     internal static class KnownTypes
@@ -153,6 +154,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string XamlMarkupHelper = KnownNamespaces.XamlMarkup + ".XamlMarkupHelper";
         public const string XamlReader = KnownNamespaces.XamlMarkup + ".XamlReader";
         public const string XmlnsDefinition = KnownNamespaces.XamlMarkup + ".XmlnsDefinition";
+
+        // CsWinRT attributes
+        public const string GeneratedBindableCustomPropertyAttribute = KnownNamespaces.WinRt + ".GeneratedBindableCustomPropertyAttribute";
     }
 
     internal static class KnownStrings

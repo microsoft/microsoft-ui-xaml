@@ -27,7 +27,7 @@ namespace DirectUI
         // Static properties.
 
         // Static methods.
-        IFACEMETHOD(FromTimeSpan)(_In_ ABI::Windows::Foundation::TimeSpan timeSpan, _Out_ ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime* pReturnValue) override;
+        IFACEMETHOD(FromTimeSpan)(ABI::Windows::Foundation::TimeSpan timeSpan, _Out_ ABI::Microsoft::UI::Xaml::Media::Animation::KeyTime* pReturnValue) override;
 
     protected:
         HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;

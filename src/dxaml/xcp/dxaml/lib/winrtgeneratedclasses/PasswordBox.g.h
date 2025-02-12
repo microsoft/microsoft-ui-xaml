@@ -97,35 +97,35 @@ namespace DirectUI
         IFACEMETHOD(get_Header)(_Outptr_result_maybenull_ IInspectable** ppValue) override;
         IFACEMETHOD(put_Header)(_In_opt_ IInspectable* pValue) override;
         IFACEMETHOD(get_HeaderPlacement)(_Out_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement* pValue) FEATURE_HEADERPLACEMENT_OVERRIDE;
-        IFACEMETHOD(put_HeaderPlacement)(_In_ ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
+        IFACEMETHOD(put_HeaderPlacement)(ABI::Microsoft::UI::Xaml::Controls::ControlHeaderPlacement value) FEATURE_HEADERPLACEMENT_OVERRIDE;
         IFACEMETHOD(get_HeaderTemplate)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppValue) override;
         IFACEMETHOD(put_HeaderTemplate)(_In_opt_ ABI::Microsoft::UI::Xaml::IDataTemplate* pValue) override;
         IFACEMETHOD(get_InputScope)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Input::IInputScope** ppValue) override;
         IFACEMETHOD(put_InputScope)(_In_opt_ ABI::Microsoft::UI::Xaml::Input::IInputScope* pValue) override;
         IFACEMETHOD(get_InputValidationKind)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(put_InputValidationKind)(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(put_InputValidationKind)(ABI::Microsoft::UI::Xaml::Controls::InputValidationKind value) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_InputValidationMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(put_InputValidationMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(put_InputValidationMode)(ABI::Microsoft::UI::Xaml::Controls::InputValidationMode value) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_IsPasswordRevealButtonEnabled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_IsPasswordRevealButtonEnabled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_IsPasswordRevealButtonEnabled)(BOOLEAN value) override;
         IFACEMETHOD(get_MaxLength)(_Out_ INT* pValue) override;
-        IFACEMETHOD(put_MaxLength)(_In_ INT value) override;
+        IFACEMETHOD(put_MaxLength)(INT value) override;
         IFACEMETHOD(get_Password)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Password)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_PasswordChar)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_PasswordChar)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_PasswordRevealMode)(_Out_ ABI::Microsoft::UI::Xaml::Controls::PasswordRevealMode* pValue) override;
-        IFACEMETHOD(put_PasswordRevealMode)(_In_ ABI::Microsoft::UI::Xaml::Controls::PasswordRevealMode value) override;
+        IFACEMETHOD(put_PasswordRevealMode)(ABI::Microsoft::UI::Xaml::Controls::PasswordRevealMode value) override;
         IFACEMETHOD(get_PlaceholderText)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_PlaceholderText)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_PreventKeyboardDisplayOnProgrammaticFocus)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_PreventKeyboardDisplayOnProgrammaticFocus)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_PreventKeyboardDisplayOnProgrammaticFocus)(BOOLEAN value) override;
         IFACEMETHOD(get_SelectionFlyout)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutBase** ppValue) override;
         IFACEMETHOD(put_SelectionFlyout)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::Primitives::IFlyoutBase* pValue) override;
         IFACEMETHOD(get_SelectionHighlightColor)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush** ppValue) override;
         IFACEMETHOD(put_SelectionHighlightColor)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISolidColorBrush* pValue) override;
         IFACEMETHOD(get_TextReadingOrder)(_Out_ ABI::Microsoft::UI::Xaml::TextReadingOrder* pValue) override;
-        IFACEMETHOD(put_TextReadingOrder)(_In_ ABI::Microsoft::UI::Xaml::TextReadingOrder value) override;
+        IFACEMETHOD(put_TextReadingOrder)(ABI::Microsoft::UI::Xaml::TextReadingOrder value) override;
         IFACEMETHOD(get_ValidationCommand)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommand** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(put_ValidationCommand)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationCommand* pValue) FEATURE_INPUTVALIDATION_OVERRIDE;
         IFACEMETHOD(get_ValidationContext)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IInputValidationContext** ppValue) FEATURE_INPUTVALIDATION_OVERRIDE;
@@ -135,25 +135,25 @@ namespace DirectUI
         // Events.
         _Check_return_ HRESULT GetContextMenuOpeningEventSourceNoRef(_Outptr_ ContextMenuOpeningEventSourceType** ppEventSource);
         IFACEMETHOD(add_ContextMenuOpening)(_In_ ABI::Microsoft::UI::Xaml::Controls::IContextMenuOpeningEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_ContextMenuOpening)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_ContextMenuOpening)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
         _Check_return_ HRESULT GetHasValidationErrorsChangedEventSourceNoRef(_Outptr_ HasValidationErrorsChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_HasValidationErrorsChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl*, ABI::Microsoft::UI::Xaml::Controls::HasValidationErrorsChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(remove_HasValidationErrorsChanged)(_In_ EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(remove_HasValidationErrorsChanged)(EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
 #endif
         _Check_return_ HRESULT GetPasswordChangedEventSourceNoRef(_Outptr_ PasswordChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PasswordChanged)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PasswordChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PasswordChanged)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPasswordChangingEventSourceNoRef(_Outptr_ PasswordChangingEventSourceType** ppEventSource);
         IFACEMETHOD(add_PasswordChanging)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::PasswordBox*, ABI::Microsoft::UI::Xaml::Controls::PasswordBoxPasswordChangingEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PasswordChanging)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PasswordChanging)(EventRegistrationToken token) override;
         _Check_return_ HRESULT GetPasteEventSourceNoRef(_Outptr_ PasteEventSourceType** ppEventSource);
         IFACEMETHOD(add_Paste)(_In_ ABI::Microsoft::UI::Xaml::Controls::ITextControlPasteEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_Paste)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_Paste)(EventRegistrationToken token) override;
 #if WI_IS_FEATURE_PRESENT(Feature_InputValidation)
         _Check_return_ HRESULT GetValidationErrorEventSourceNoRef(_Outptr_ ValidationErrorEventSourceType** ppEventSource);
         IFACEMETHOD(add_ValidationError)(_In_ ABI::Windows::Foundation::ITypedEventHandler<ABI::Microsoft::UI::Xaml::Controls::IInputValidationControl*, ABI::Microsoft::UI::Xaml::Controls::InputValidationErrorEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) FEATURE_INPUTVALIDATION_OVERRIDE;
-        IFACEMETHOD(remove_ValidationError)(_In_ EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
+        IFACEMETHOD(remove_ValidationError)(EventRegistrationToken token) FEATURE_INPUTVALIDATION_OVERRIDE;
 #endif
 
         // Methods.

@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::TranslateTransform::get_X(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TranslateTransform_X, pValue));
 }
-IFACEMETHODIMP DirectUI::TranslateTransform::put_X(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::TranslateTransform::put_X(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TranslateTransform_X, value));
@@ -62,7 +62,7 @@ IFACEMETHODIMP DirectUI::TranslateTransform::get_Y(_Out_ DOUBLE* pValue)
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::TranslateTransform_Y, pValue));
 }
-IFACEMETHODIMP DirectUI::TranslateTransform::put_Y(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::TranslateTransform::put_Y(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::TranslateTransform_Y, value));

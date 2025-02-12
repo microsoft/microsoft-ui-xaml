@@ -2613,7 +2613,8 @@ void D2DTextDrawingContext::InvalidateRegion(
     {
         LineData * pLineData = &m_lines[i];
         pLineData->Transform.Transform(&origin, &transformedOrigin, 1);
-        XRECTF_RB lineRect = { transformedOrigin.x, transformedOrigin.y, pLineData->Width, pLineData->Thickness };
+
+        XRECTF_RB lineRect = { transformedOrigin.x, transformedOrigin.y, transformedOrigin.x + pLineData->Width, transformedOrigin.y + pLineData->Thickness };
         if (DoRectsIntersect(*pRegion, lineRect))
         {
             newSize--;

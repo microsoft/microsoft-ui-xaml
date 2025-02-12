@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::InertiaRotationBehavior::get_DesiredDeceleration(_Out_ 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InertiaRotationBehavior_DesiredDeceleration, pValue));
 }
-IFACEMETHODIMP DirectUI::InertiaRotationBehavior::put_DesiredDeceleration(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::InertiaRotationBehavior::put_DesiredDeceleration(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InertiaRotationBehavior_DesiredDeceleration, value));
@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::InertiaRotationBehavior::get_DesiredRotation(_Out_ DOUB
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InertiaRotationBehavior_DesiredRotation, pValue));
 }
-IFACEMETHODIMP DirectUI::InertiaRotationBehavior::put_DesiredRotation(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::InertiaRotationBehavior::put_DesiredRotation(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InertiaRotationBehavior_DesiredRotation, value));

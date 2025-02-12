@@ -16,7 +16,7 @@ using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 
 namespace MUXControlsTestApp
 {
-    public sealed class AnimatedIconHost : Button
+    public sealed partial class AnimatedIconHost : Button
     {
         Border m_iconPresenter;
         TextBlock m_transitionTextBlock;

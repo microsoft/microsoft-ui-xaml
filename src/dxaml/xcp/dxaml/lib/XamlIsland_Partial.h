@@ -21,6 +21,10 @@ namespace DirectUI
         XamlIsland();
         ~XamlIsland() override;
 
+    public:
+        _Check_return_ HRESULT Initialize() override;
+        _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+
         // IClosable
         IFACEMETHOD(Close)() override;
 
@@ -28,6 +32,9 @@ namespace DirectUI
         _Check_return_ HRESULT put_ContentImpl(_In_opt_ xaml::IUIElement* pValue);
 
         _Check_return_ HRESULT get_ContentIslandImpl(_Outptr_ ixp::IContentIsland **ppValue);
+
+        _Check_return_ HRESULT get_ShouldConstrainPopupsToWorkAreaImpl(_Out_ boolean * pValue);
+        _Check_return_ HRESULT put_ShouldConstrainPopupsToWorkAreaImpl(_In_opt_ boolean value);
 
         // Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop implementation
         IFACEMETHOD(get_SystemBackdrop)(_Outptr_result_maybenull_ ABI::Windows::UI::Composition::ICompositionBrush * *systemBackdropBrush) override;
@@ -38,17 +45,14 @@ namespace DirectUI
 
         _Check_return_ xaml_hosting::IXamlIslandRoot *GetXamlIslandRootNoRef();
         _Check_return_ HRESULT SetInputSite();
-
-    protected:
-        _Check_return_ HRESULT Initialize() override;
-        _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject) override;
+        void PrepareToClose();
 
     private:
         bool m_bClosed = false;
 
         ctl::ComPtr<WindowsXamlManager> m_spXamlCore;
         ctl::ComPtr<xaml_hosting::IXamlIslandRoot> m_spXamlIsland;
-        XamlIslandRoot * m_xamlIsland;
+        XamlIslandRoot * m_xamlIslandRoot;
         CXamlIslandRoot * m_pXamlIslandCore{};
         ctl::ComPtr<ABI::Microsoft::UI::Input::IInputFocusController2> m_inputFocusController2;
         EventRegistrationToken m_focusNavigationRequestedToken = {};

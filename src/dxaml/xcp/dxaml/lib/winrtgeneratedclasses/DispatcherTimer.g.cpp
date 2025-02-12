@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::DispatcherTimerGenerated::get_Interval(_Out_ ABI::Windo
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::DispatcherTimer_Interval, pValue));
 }
-IFACEMETHODIMP DirectUI::DispatcherTimerGenerated::put_Interval(_In_ ABI::Windows::Foundation::TimeSpan value)
+IFACEMETHODIMP DirectUI::DispatcherTimerGenerated::put_Interval(ABI::Windows::Foundation::TimeSpan value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::DispatcherTimer_Interval, value));
@@ -98,7 +98,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::DispatcherTimerGenerated::remove_Tick(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::DispatcherTimerGenerated::remove_Tick(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     TickEventSourceType* pEventSource = nullptr;

@@ -96,7 +96,7 @@ IFACEMETHODIMP DirectUI::BindingGenerated::get_Mode(_Out_ ABI::Microsoft::UI::Xa
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Binding_Mode, pValue));
 }
-IFACEMETHODIMP DirectUI::BindingGenerated::put_Mode(_In_ ABI::Microsoft::UI::Xaml::Data::BindingMode value)
+IFACEMETHODIMP DirectUI::BindingGenerated::put_Mode(ABI::Microsoft::UI::Xaml::Data::BindingMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Binding_Mode, value));
@@ -152,7 +152,7 @@ IFACEMETHODIMP DirectUI::BindingGenerated::get_UpdateSourceTrigger(_Out_ ABI::Mi
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::Binding_UpdateSourceTrigger, pValue));
 }
-IFACEMETHODIMP DirectUI::BindingGenerated::put_UpdateSourceTrigger(_In_ ABI::Microsoft::UI::Xaml::Data::UpdateSourceTrigger value)
+IFACEMETHODIMP DirectUI::BindingGenerated::put_UpdateSourceTrigger(ABI::Microsoft::UI::Xaml::Data::UpdateSourceTrigger value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::Binding_UpdateSourceTrigger, value));

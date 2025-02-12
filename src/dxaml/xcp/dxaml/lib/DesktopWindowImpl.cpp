@@ -18,6 +18,7 @@
 #include "FrameworkTheming.h"
 #include "WindowHelpers.h"
 #include "XamlIslandRoot_Partial.h"
+#include "XamlTelemetry.h"
 #include <Theme.h>
 #include <dwmapi.h>
 #include <windowing.h>
@@ -55,6 +56,8 @@ static const wchar_t s_defaultWindowTitle[] = L"WinUI Desktop";
 // called from a non-static Microsoft::UI::XAML::Window method.
 DesktopWindowImpl::DesktopWindowImpl(Window* parentWindow) : m_dxamlWindowInstance(parentWindow)
 {
+    XamlTelemetry::CreateDesktopWindow(true, reinterpret_cast<uint64_t>(this));
+
     // Cache DXamlCore instance for this thread
     m_dxamlCoreNoRef = DirectUI::DXamlCore::GetCurrent();
 
@@ -75,6 +78,9 @@ DesktopWindowImpl::DesktopWindowImpl(Window* parentWindow) : m_dxamlWindowInstan
         // is desired behavior. This initial SizeChanged notification is also where we cache the initial size of the
         // window to return if the app is minimized right away.
     }
+
+    // Note: no need for RAII for the end event - ctors can't fail
+    XamlTelemetry::CreateDesktopWindow(false, reinterpret_cast<uint64_t>(this));
 }
 
 void DesktopWindowImpl::OnCreate() noexcept
@@ -345,7 +351,7 @@ IFACEMETHODIMP DesktopWindowImpl::add_Activated(_In_ wf::ITypedEventHandler<IIns
     return S_OK;
 }
 
-IFACEMETHODIMP DesktopWindowImpl::remove_Activated(_In_ EventRegistrationToken token)
+IFACEMETHODIMP DesktopWindowImpl::remove_Activated(EventRegistrationToken token)
 {
     IFC_RETURN(m_activatedEventSource.Remove(token));
 
@@ -359,7 +365,7 @@ IFACEMETHODIMP DesktopWindowImpl::add_Closed(_In_ wf::ITypedEventHandler<IInspec
     return S_OK;
 }
 
-IFACEMETHODIMP DesktopWindowImpl::remove_Closed(_In_ EventRegistrationToken token)
+IFACEMETHODIMP DesktopWindowImpl::remove_Closed(EventRegistrationToken token)
 {
     IFC_RETURN(m_closedEventSource.Remove(token));
 
@@ -373,7 +379,7 @@ IFACEMETHODIMP DesktopWindowImpl::add_SizeChanged(_In_ wf::ITypedEventHandler<II
     return S_OK;
 }
 
-IFACEMETHODIMP DesktopWindowImpl::remove_SizeChanged(_In_ EventRegistrationToken token)
+IFACEMETHODIMP DesktopWindowImpl::remove_SizeChanged(EventRegistrationToken token)
 {
     IFC_RETURN(m_sizeChangedEventSource.Remove(token));
 
@@ -387,7 +393,7 @@ IFACEMETHODIMP DesktopWindowImpl::add_VisibilityChanged(_In_ wf::ITypedEventHand
     return S_OK;
 }
 
-IFACEMETHODIMP DesktopWindowImpl::remove_VisibilityChanged(_In_ EventRegistrationToken token)
+IFACEMETHODIMP DesktopWindowImpl::remove_VisibilityChanged(EventRegistrationToken token)
 {
     IFC_RETURN(m_visibilityChangedEventSource.Remove(token));
 
@@ -676,7 +682,7 @@ LRESULT DesktopWindowImpl::OnMessage(
     // When DispatcherShutdownMode is OnLastWindowClose, exit FrameworkApplication::ProcessMessage when the last WinUI
     // Desktop Window is destroyed.
     auto dxamlCore = DirectUI::DXamlCore::GetCurrent();
-    if ((WM_DESTROY == uMsg) 
+    if ((WM_DESTROY == uMsg)
         && dxamlCore->m_handleToDesktopWindowMap.empty()
         && dxamlCore->GetDispatcherShutdownMode() == xaml::DispatcherShutdownMode_OnLastWindowClose)
     {
@@ -763,7 +769,7 @@ _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lPara
     // https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-activate
     // higher bits mention if a window is minimized or not. non -zero value indicates that it is minimized.
     const bool isWindowMinimized = HIWORD(wParam) != 0;
-    
+
     // Fire the Window Activated event for Xaml listeners
     // Don't raise xaml activation events if window is minimized
     if (!isWindowMinimized && WA_ACTIVE == LOWORD(wParam))

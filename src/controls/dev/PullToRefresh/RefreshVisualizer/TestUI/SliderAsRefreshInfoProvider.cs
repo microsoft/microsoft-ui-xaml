@@ -33,7 +33,7 @@ namespace RefreshVizualizer_TestUI
         }
     }
 
-    public class RefreshInfoProviderImplementation : IRefreshInfoProvider
+    public partial class RefreshInfoProviderImplementation : IRefreshInfoProvider
     {
         private DispatcherTimer timer;
         private Slider slider;

@@ -17,11 +17,11 @@ namespace DirectUI
         IFACEMETHOD(OnApplyTemplate)() override;
 
         IFACEMETHOD(MeasureOverride)(
-            _In_ wf::Size availableSize,
+            wf::Size availableSize,
             _Out_ wf::Size* returnValue) override;
 
         IFACEMETHOD(ArrangeOverride)(
-            _In_ wf::Size arrangeSize,
+            wf::Size arrangeSize,
             _Out_ wf::Size* returnValue) override;
 
         void SetMode(AppBarMode mode) { m_Mode = mode; }
@@ -45,7 +45,7 @@ namespace DirectUI
             _In_opt_ DependencyObject* pCandidateTabStopElement,
             const bool isBackward,
             const bool didCycleFocusAtRootVisualScope,
-            _Outptr_ DependencyObject** ppNewTabStop,
+            _Outptr_result_maybenull_ DependencyObject** ppNewTabStop,
             _Out_ BOOLEAN* pIsTabStopOverridden
             ) override;
 

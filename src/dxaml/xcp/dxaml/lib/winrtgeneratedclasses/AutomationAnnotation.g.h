@@ -50,7 +50,7 @@ namespace DirectUI
         IFACEMETHOD(get_Element)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IUIElement** ppValue) override;
         IFACEMETHOD(put_Element)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pValue) override;
         IFACEMETHOD(get_Type)(_Out_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType* pValue) override;
-        IFACEMETHOD(put_Type)(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType value) override;
+        IFACEMETHOD(put_Type)(ABI::Microsoft::UI::Xaml::Automation::AnnotationType value) override;
 
         // Events.
 
@@ -90,8 +90,8 @@ namespace DirectUI
 
     public:
         // Factory methods.
-        IFACEMETHOD(CreateInstance)(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance);
-        IFACEMETHOD(CreateWithElementParameter)(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance);
+        IFACEMETHOD(CreateInstance)(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance);
+        IFACEMETHOD(CreateWithElementParameter)(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance);
 
         // Static properties.
 
@@ -115,8 +115,8 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance);
-        _Check_return_ HRESULT CreateWithElementParameterImpl(_In_ ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance);
+        _Check_return_ HRESULT CreateWithElementParameterImpl(ABI::Microsoft::UI::Xaml::Automation::AnnotationType type, _In_ ABI::Microsoft::UI::Xaml::IUIElement* pElement, _Outptr_ ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation** ppInstance);
 
         // Customized static properties.
 

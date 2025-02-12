@@ -45,7 +45,7 @@ IFACEMETHODIMP DirectUI::InputScopeName::get_NameValue(_Out_ ABI::Microsoft::UI:
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::InputScopeName_NameValue, pValue));
 }
-IFACEMETHODIMP DirectUI::InputScopeName::put_NameValue(_In_ ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue value)
+IFACEMETHODIMP DirectUI::InputScopeName::put_NameValue(ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::InputScopeName_NameValue, value));
@@ -72,7 +72,7 @@ HRESULT DirectUI::InputScopeNameFactory::QueryInterfaceImpl(_In_ REFIID iid, _Ou
 
 
 // Factory methods.
-IFACEMETHODIMP DirectUI::InputScopeNameFactory::CreateInstance(_In_ ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue nameValue, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IInputScopeName** ppInstance)
+IFACEMETHODIMP DirectUI::InputScopeNameFactory::CreateInstance(ABI::Microsoft::UI::Xaml::Input::InputScopeNameValue nameValue, _Outptr_ ABI::Microsoft::UI::Xaml::Input::IInputScopeName** ppInstance)
 {
     HRESULT hr = S_OK;
     

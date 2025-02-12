@@ -122,7 +122,7 @@ public:
     void GetPolygonClip(_Outptr_result_buffer_(*pPointsCount) XPOINTF **ppPoints, _Out_ XUINT32 *pPointsCount) const;
 
     _Check_return_ HRESULT ApplyTransformAndClip(
-        _In_opt_ const std::shared_ptr<const CMILMatrix4x4> p3DProjection,
+        const std::shared_ptr<const CMILMatrix4x4> p3DProjection,
         _In_ const CMILMatrix *p2DTransform,
         _In_ const HWClip *p2DClip,
         _Out_opt_ bool *pWasClipped
@@ -131,7 +131,7 @@ public:
     static _Check_return_ HRESULT ApplyTransformAndClip_DropZPreserveW(
         XUINT32 sourcePointCount,
         _Inout_updates_(sourcePointCount) XPOINTF4 *pSourcePoints,
-        _In_opt_ const std::shared_ptr<const CMILMatrix4x4> p3DProjection,
+        const std::shared_ptr<const CMILMatrix4x4> p3DProjection,
         _In_ const CMILMatrix *p2DTransform,
         _In_ const HWClip *p2DClip,
         _Out_ XUINT32 *pDestPointCount,
@@ -330,7 +330,7 @@ public:
         );
 
     _Check_return_ HRESULT PushTransformsAndClips(
-        _In_ const TransformAndClipStack *pOther
+        _In_opt_ const TransformAndClipStack *pOther
         );
 
     bool Equals(

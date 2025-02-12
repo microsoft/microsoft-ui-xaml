@@ -16,7 +16,7 @@ private:
     CThemeShadow(_In_ CCoreServices *pCore);
     ~CThemeShadow() override;
 
-    void SetDirtyFlagOnPopupChild(_In_ CDependencyObject* element);
+    void SetDirtyFlagOnPopupChild(_In_opt_ CDependencyObject* element);
 
 protected:
     CThemeShadow(_In_ const CThemeShadow& original, _Out_ HRESULT& hr);

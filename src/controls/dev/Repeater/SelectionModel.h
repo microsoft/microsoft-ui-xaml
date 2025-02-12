@@ -21,13 +21,13 @@ public:
     ~SelectionModel();
 
 #pragma region ISelectionModel
-    winrt::IInspectable Source();
+    winrt::IInspectable Source() const;
     void Source(winrt::IInspectable const& value);
 
-    bool SingleSelect();
+    bool SingleSelect() const;
     void SingleSelect(bool value);
 
-    winrt::IndexPath AnchorIndex();
+    winrt::IndexPath AnchorIndex() const;
     void AnchorIndex(winrt::IndexPath const& value);
 
     winrt::IndexPath SelectedIndex();
@@ -40,17 +40,17 @@ public:
     void SetAnchorIndex(int32_t index);
     void SetAnchorIndex(int groupIndex, int itemIndex);
 
-    void Select(int index);
+    void Select(int32_t index);
     void Select(int groupIndex, int itemIndex);
     void SelectAt(winrt::IndexPath const& index);
 
-    void Deselect(int index);
+    void Deselect(int32_t index);
     void Deselect(int groupIndex, int itemIndex);
     void DeselectAt(winrt::IndexPath const& index);
 
-    winrt::IReference<bool> IsSelected(int index);
-    winrt::IReference<bool> IsSelected(int groupIndex, int itemIndex);
-    winrt::IReference<bool> IsSelectedAt(winrt::IndexPath const& index);
+    winrt::IReference<bool> IsSelected(int index) const;
+    winrt::IReference<bool> IsSelected(int groupIndex, int itemIndex) const;
+    winrt::IReference<bool> IsSelectedAt(winrt::IndexPath const& index) const;
 
     void SelectRangeFromAnchor(int32_t index);
     void SelectRangeFromAnchor(int groupIndex, int itemIndex);

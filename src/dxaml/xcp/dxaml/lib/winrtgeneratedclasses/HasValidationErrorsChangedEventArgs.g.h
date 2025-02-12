@@ -35,7 +35,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_NewValue)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_NewValue(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_NewValue(BOOLEAN value);
 
         // Methods.
 
@@ -82,7 +82,7 @@ namespace DirectUI
 
 
     private:
-        _Check_return_ HRESULT CreateInstanceImpl(_In_ BOOLEAN newValue, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IHasValidationErrorsChangedEventArgs** ppInstance);
+        _Check_return_ HRESULT CreateInstanceImpl(BOOLEAN newValue, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::IHasValidationErrorsChangedEventArgs** ppInstance);
 
         // Customized static properties.
 

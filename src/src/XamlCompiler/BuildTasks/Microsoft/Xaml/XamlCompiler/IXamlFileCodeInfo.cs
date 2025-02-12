@@ -19,6 +19,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         List<StrippableMember> StrippableMembers {get; }
         List<StrippableObject> StrippableObjects {get; }
         List<StrippableNamespace> StrippableNamespaces { get; }
+        List<StrippableMember> SuppressXamlTrimWarningsBindingMembers { get; }
         xPropertyInfo XPropertyInfo { get; set; }
     }
 }

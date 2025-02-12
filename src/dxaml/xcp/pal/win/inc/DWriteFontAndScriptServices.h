@@ -185,7 +185,7 @@ private:
 
     HRESULT EnsureSystemFontCollection();
     
-    HRESULT CreateSystemFontCollection(bool includeDownloadedFOnts, PALText::IFontCollection** fontCollection);
+    _Check_return_ HRESULT CreateSystemFontCollection(bool includeDownloadedFOnts, PALText::IFontCollection** fontCollection);
 
     // Release resources associated with the DWriteFontAndScriptServices.
     ~DWriteFontAndScriptServices() override;

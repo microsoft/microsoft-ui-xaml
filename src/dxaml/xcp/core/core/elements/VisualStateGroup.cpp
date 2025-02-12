@@ -202,7 +202,7 @@ _Check_return_ HRESULT CVisualStateGroup::CleanupRunningStoryboardsOnLeave()
     return S_OK;
 }
 
-HRESULT _Check_return_ CVisualStateGroup::FindStateByName(_In_z_ const WCHAR *pStateName, _Inout_ CVisualState **ppVisualState)
+HRESULT _Check_return_ CVisualStateGroup::FindStateByName(_In_z_ const WCHAR *pStateName, _Outptr_result_maybenull_ CVisualState **ppVisualState)
 {
     HRESULT hr = S_OK;
     CVisualState *pState = NULL;

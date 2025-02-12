@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp.Samples
 {
-    public class VirtualizingUniformStackLayout : VirtualizingLayout
+    public partial class VirtualizingUniformStackLayout : VirtualizingLayout
     {
         public double ItemWidth { get; set; }
         public double ItemHeight { get; set; }

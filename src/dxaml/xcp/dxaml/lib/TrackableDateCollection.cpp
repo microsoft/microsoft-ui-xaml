@@ -89,7 +89,7 @@ IFACEMETHODIMP TrackableDateCollection::Clear()
 
 }
 
-IFACEMETHODIMP TrackableDateCollection::Append(_In_opt_  wf::DateTime item)
+IFACEMETHODIMP TrackableDateCollection::Append(_In_ wf::DateTime item)
 {
     IFC_RETURN(RaiseCollectionChanging(TrackableDateCollection_CollectionChanging::ItemInserting, item));
 
@@ -99,7 +99,7 @@ IFACEMETHODIMP TrackableDateCollection::Append(_In_opt_  wf::DateTime item)
     return S_OK;
 }
 
-IFACEMETHODIMP TrackableDateCollection::SetAt(UINT index, _In_opt_ wf::DateTime item)
+IFACEMETHODIMP TrackableDateCollection::SetAt(UINT index, _In_ wf::DateTime item)
 {
     IFC_RETURN(RaiseCollectionChanging(TrackableDateCollection_CollectionChanging::ItemChanging, item));
 
@@ -122,7 +122,7 @@ IFACEMETHODIMP TrackableDateCollection::SetAt(UINT index, _In_opt_ wf::DateTime 
     return S_OK;
 }
 
-IFACEMETHODIMP TrackableDateCollection::InsertAt(UINT index, _In_opt_ wf::DateTime item)
+IFACEMETHODIMP TrackableDateCollection::InsertAt(UINT index, _In_ wf::DateTime item)
 {
     IFC_RETURN(RaiseCollectionChanging(TrackableDateCollection_CollectionChanging::ItemInserting, item));
 
@@ -133,7 +133,7 @@ IFACEMETHODIMP TrackableDateCollection::InsertAt(UINT index, _In_opt_ wf::DateTi
     return S_OK;
 }
 
-IFACEMETHODIMP TrackableDateCollection::IndexOf(_In_opt_ wf::DateTime value, _Out_ UINT *index, _Out_ BOOLEAN *found)
+IFACEMETHODIMP TrackableDateCollection::IndexOf(_In_ wf::DateTime value, _Out_ UINT *index, _Out_ BOOLEAN *found)
 {
     *index = 0;
     *found = FALSE;

@@ -63,7 +63,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragUIGenerated::SetContentFromBitmapImageWithAnchorPoint(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage, _In_ ABI::Windows::Foundation::Point anchorPoint)
+IFACEMETHODIMP DirectUI::DragUIGenerated::SetContentFromBitmapImageWithAnchorPoint(_In_ ABI::Microsoft::UI::Xaml::Media::Imaging::IBitmapImage* pBitmapImage, ABI::Windows::Foundation::Point anchorPoint)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -114,7 +114,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::DragUIGenerated::SetContentFromSoftwareBitmapWithAnchorPoint(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap, _In_ ABI::Windows::Foundation::Point anchorPoint)
+IFACEMETHODIMP DirectUI::DragUIGenerated::SetContentFromSoftwareBitmapWithAnchorPoint(_In_ ABI::Windows::Graphics::Imaging::ISoftwareBitmap* pSoftwareBitmap, ABI::Windows::Foundation::Point anchorPoint)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())

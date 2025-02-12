@@ -42,7 +42,7 @@ namespace DirectUI
         IFACEMETHOD(get_Cumulative)(_Out_ ABI::Microsoft::UI::Input::ManipulationDelta* pValue) override;
         IFACEMETHOD(get_Velocities)(_Out_ ABI::Microsoft::UI::Input::ManipulationVelocities* pValue) override;
         IFACEMETHOD(get_Handled)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_Handled)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_Handled)(BOOLEAN value) override;
         IFACEMETHOD(get_PointerDeviceType)(_Out_ ABI::Microsoft::UI::Input::PointerDeviceType* pValue) override;
 
         // Methods.

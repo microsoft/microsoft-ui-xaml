@@ -79,34 +79,34 @@ namespace DirectUI
         IFACEMETHOD(get_Dispatcher)(_Outptr_result_maybenull_ ABI::Windows::UI::Core::ICoreDispatcher** ppValue) override;
         IFACEMETHOD(get_DispatcherQueue)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Dispatching::IDispatcherQueue** ppValue) override;
         IFACEMETHOD(get_ExtendsContentIntoTitleBar)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_ExtendsContentIntoTitleBar)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_ExtendsContentIntoTitleBar)(BOOLEAN value) override;
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
         IFACEMETHOD(get_Title)(_Out_ HSTRING* pValue) override;
         IFACEMETHOD(put_Title)(_In_opt_ HSTRING value) override;
         IFACEMETHOD(get_TransparentBackground)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_TransparentBackground)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_TransparentBackground)(BOOLEAN value) override;
         IFACEMETHOD(get_Visible)(_Out_ BOOLEAN* pValue) override;
 
         // Events.
         IFACEMETHOD(add_Activated)(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, ABI::Microsoft::UI::Xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_Activated)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_Activated)(EventRegistrationToken token) = 0;
         IFACEMETHOD(add_Closed)(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, ABI::Microsoft::UI::Xaml::WindowEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_Closed)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_Closed)(EventRegistrationToken token) = 0;
         IFACEMETHOD(add_SizeChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, ABI::Microsoft::UI::Xaml::WindowSizeChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_SizeChanged)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_SizeChanged)(EventRegistrationToken token) = 0;
         IFACEMETHOD(add_VisibilityChanged)(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, ABI::Microsoft::UI::Xaml::WindowVisibilityChangedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) = 0;
-        IFACEMETHOD(remove_VisibilityChanged)(_In_ EventRegistrationToken token) = 0;
+        IFACEMETHOD(remove_VisibilityChanged)(EventRegistrationToken token) = 0;
 
         // Methods.
         IFACEMETHOD(Activate)() override;
         IFACEMETHOD(Close)() override;
         IFACEMETHOD(GetWindowContentBoundsForElement)(_In_ ABI::Microsoft::UI::Xaml::IDependencyObject* pElement, _Out_ ABI::Windows::Foundation::Rect* pResult) override;
         IFACEMETHOD(Hide)() override;
-        IFACEMETHOD(MoveWindow)(_In_ INT x, _In_ INT y, _In_ INT width, _In_ INT height) override;
-        IFACEMETHOD(ReleaseGraphicsDeviceOnSuspend)(_In_ BOOLEAN enable) override;
+        IFACEMETHOD(MoveWindow)(INT x, INT y, INT width, INT height) override;
+        IFACEMETHOD(ReleaseGraphicsDeviceOnSuspend)(BOOLEAN enable) override;
         IFACEMETHOD(SetAtlasRequestCallback)(_In_opt_ ABI::Microsoft::UI::Xaml::IAtlasRequestCallback* pCallback) override;
-        IFACEMETHOD(SetAtlasSizeHint)(_In_ UINT width, _In_ UINT height) override;
+        IFACEMETHOD(SetAtlasSizeHint)(UINT width, UINT height) override;
         IFACEMETHOD(SetTitleBar)(_In_opt_ ABI::Microsoft::UI::Xaml::IUIElement* pTitleBar) override;
         IFACEMETHOD(Show)() override;
 

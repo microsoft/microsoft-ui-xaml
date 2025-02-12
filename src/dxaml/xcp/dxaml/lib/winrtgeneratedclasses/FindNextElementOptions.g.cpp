@@ -54,7 +54,7 @@ IFACEMETHODIMP DirectUI::FindNextElementOptions::get_ExclusionRect(_Out_ ABI::Wi
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FindNextElementOptions::put_ExclusionRect(_In_ ABI::Windows::Foundation::Rect value)
+IFACEMETHODIMP DirectUI::FindNextElementOptions::put_ExclusionRect(ABI::Windows::Foundation::Rect value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -71,7 +71,7 @@ IFACEMETHODIMP DirectUI::FindNextElementOptions::get_HintRect(_Out_ ABI::Windows
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FindNextElementOptions::put_HintRect(_In_ ABI::Windows::Foundation::Rect value)
+IFACEMETHODIMP DirectUI::FindNextElementOptions::put_HintRect(ABI::Windows::Foundation::Rect value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -88,7 +88,7 @@ IFACEMETHODIMP DirectUI::FindNextElementOptions::get_IgnoreOcclusivity(_Out_ BOO
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FindNextElementOptions::put_IgnoreOcclusivity(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::FindNextElementOptions::put_IgnoreOcclusivity(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -122,7 +122,7 @@ IFACEMETHODIMP DirectUI::FindNextElementOptions::get_XYFocusNavigationStrategyOv
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::FindNextElementOptions::put_XYFocusNavigationStrategyOverride(_In_ ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategyOverride value)
+IFACEMETHODIMP DirectUI::FindNextElementOptions::put_XYFocusNavigationStrategyOverride(ABI::Microsoft::UI::Xaml::Input::XYFocusNavigationStrategyOverride value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

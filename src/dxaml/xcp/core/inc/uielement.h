@@ -2059,14 +2059,6 @@ public:
         return m_fIsDirectManipulationContainer;
     }
 
-    // The DirectManipulationManager for a DMContainer can only occur after GetElementIslandInputSite returns a valid
-    // IslandInputSite since it is being used for DManip's initialization.
-    bool CanDMContainerInitialize()
-    {
-        wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSite = GetElementIslandInputSite();
-        return (nullptr != islandInputSite);
-    }
-
 public:
     void GetCumulativeTransform(
         _Inout_ CMILMatrix *pLocalTransform,

@@ -512,7 +512,7 @@ _Check_return_ HRESULT StandardUICommand::SetDescriptionIfUnset(int descriptionR
 }
 
 _Check_return_ HRESULT StandardUICommandFactory::CreateInstanceWithKindImpl(
-    _In_ xaml_input::StandardUICommandKind kind,
+    xaml_input::StandardUICommandKind kind,
     _In_opt_ IInspectable* outer,
     _Outptr_ IInspectable** inner,
     _Outptr_ IStandardUICommand** instance)

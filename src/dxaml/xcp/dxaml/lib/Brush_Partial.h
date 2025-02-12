@@ -13,9 +13,9 @@ namespace DirectUI
         _Check_return_ HRESULT StartAnimationImpl(_In_ WUComp::ICompositionAnimationBase* animation);
         _Check_return_ HRESULT StopAnimationImpl(_In_ WUComp::ICompositionAnimationBase* animation);
 
-        _Check_return_ HRESULT STDMETHODCALLTYPE PopulatePropertyInfo(
-            _In_ HSTRING propertyName,
-            _In_ WUComp::IAnimationPropertyInfo* animationPropertyInfo
+        HRESULT STDMETHODCALLTYPE PopulatePropertyInfo(
+            HSTRING propertyName,
+            WUComp::IAnimationPropertyInfo* animationPropertyInfo
             ) override;
 
         _Check_return_ HRESULT PopulatePropertyInfoOverrideImpl(

@@ -55,7 +55,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerDateChangedEventArgsGenerated::get_Ne
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::CalendarDatePickerDateChangedEventArgsGenerated::put_NewDate(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue)
+_Check_return_ HRESULT DirectUI::CalendarDatePickerDateChangedEventArgsGenerated::put_NewDate(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue)
 {
     HRESULT hr = S_OK;
     
@@ -74,7 +74,7 @@ IFACEMETHODIMP DirectUI::CalendarDatePickerDateChangedEventArgsGenerated::get_Ol
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::CalendarDatePickerDateChangedEventArgsGenerated::put_OldDate(_In_ ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue)
+_Check_return_ HRESULT DirectUI::CalendarDatePickerDateChangedEventArgsGenerated::put_OldDate(ABI::Windows::Foundation::IReference<ABI::Windows::Foundation::DateTime>* pValue)
 {
     HRESULT hr = S_OK;
     

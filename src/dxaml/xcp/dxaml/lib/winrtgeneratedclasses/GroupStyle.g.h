@@ -66,14 +66,14 @@ namespace DirectUI
         IFACEMETHOD(get_HeaderTemplateSelector)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IDataTemplateSelector** ppValue) override;
         IFACEMETHOD(put_HeaderTemplateSelector)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IDataTemplateSelector* pValue) override;
         IFACEMETHOD(get_HidesIfEmpty)(_Out_ BOOLEAN* pValue) override;
-        IFACEMETHOD(put_HidesIfEmpty)(_In_ BOOLEAN value) override;
+        IFACEMETHOD(put_HidesIfEmpty)(BOOLEAN value) override;
         IFACEMETHOD(get_Panel)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Controls::IItemsPanelTemplate** ppValue) override;
         IFACEMETHOD(put_Panel)(_In_opt_ ABI::Microsoft::UI::Xaml::Controls::IItemsPanelTemplate* pValue) override;
 
         // Events.
         _Check_return_ HRESULT GetPropertyChangedEventSourceNoRef(_Outptr_ PropertyChangedEventSourceType** ppEventSource);
         IFACEMETHOD(add_PropertyChanged)(_In_ ABI::Microsoft::UI::Xaml::Data::IPropertyChangedEventHandler* pValue, _Out_ EventRegistrationToken* pToken) override;
-        IFACEMETHOD(remove_PropertyChanged)(_In_ EventRegistrationToken token) override;
+        IFACEMETHOD(remove_PropertyChanged)(EventRegistrationToken token) override;
 
         // Methods.
 

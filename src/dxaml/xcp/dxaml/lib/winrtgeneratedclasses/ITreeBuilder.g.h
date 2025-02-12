@@ -17,7 +17,7 @@ namespace DirectUI
     {
         // Properties.
         IFACEMETHOD(get_IsRegisteredForCallbacks)(_Out_ BOOLEAN* pValue) = 0;
-        IFACEMETHOD(put_IsRegisteredForCallbacks)(_In_ BOOLEAN value) = 0;
+        IFACEMETHOD(put_IsRegisteredForCallbacks)(BOOLEAN value) = 0;
 
         // Events.
 

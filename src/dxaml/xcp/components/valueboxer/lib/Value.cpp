@@ -51,7 +51,7 @@ STDMETHODIMP DirectUI::ReferenceDetails::ReferenceTraits<wxaml_interop::TypeName
 }
 
 _Check_return_ HRESULT
-DirectUI::PropertyValue::AreEqual(_In_ IInspectable* oldValue, _In_ IInspectable* newValue, _Out_ bool* areEqual) noexcept
+DirectUI::PropertyValue::AreEqual(_In_opt_ IInspectable* oldValue, _In_opt_ IInspectable* newValue, _Out_ bool* areEqual) noexcept
 {
     wf::PropertyType oldValueType;
     wf::PropertyType newValueType;

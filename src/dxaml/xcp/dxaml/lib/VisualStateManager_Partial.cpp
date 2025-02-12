@@ -349,7 +349,7 @@ _Check_return_ HRESULT
 VisualStateManagerFactory::GoToStateImpl(
     _In_opt_ IControl* pControl,
     _In_opt_ HSTRING hStateName,
-    _In_ BOOLEAN bUseTransitions,
+    BOOLEAN bUseTransitions,
     _Out_ BOOLEAN* pbReturnValue)
 {
     return VisualStateManager::GoToStateImpl(

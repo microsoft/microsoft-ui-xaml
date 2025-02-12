@@ -117,7 +117,7 @@ IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::get_Handled(_Out_ BOOL
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::put_Handled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::PointerRoutedEventArgsGenerated::put_Handled(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     CEventArgs* pCoreEventArgsNoRef = nullptr;

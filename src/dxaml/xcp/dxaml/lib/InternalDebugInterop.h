@@ -180,7 +180,7 @@ public:
     #pragma region Feature Methods
 
     HRESULT GetAnimationSpeedFactor(
-        _In_ INT64* piAnimationSpeed) override;
+        _Out_ INT64* piAnimationSpeed) override;
 
     HRESULT GetShowingFrameCounter(
         _Out_ bool* pbFrameCounterEnabled) override;

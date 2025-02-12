@@ -1859,7 +1859,7 @@ Cleanup:
 IFACEMETHODIMP
 DefaultDisambiguationUIConverter::Convert(
     _In_ IInspectable *value,
-    _In_ wxaml_interop::TypeName targetType,
+    wxaml_interop::TypeName targetType,
     _In_opt_ IInspectable *parameter,
     _In_ HSTRING language,
     _Outptr_ IInspectable **returnValue)

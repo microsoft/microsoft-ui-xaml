@@ -47,21 +47,21 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_CenterX)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CenterX(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CenterX(DOUBLE value);
         IFACEMETHOD(get_CenterY)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_CenterY(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_CenterY(DOUBLE value);
         IFACEMETHOD(get_ClipRect)(_Out_ ABI::Windows::Foundation::Rect* pValue) override;
-        _Check_return_ HRESULT put_ClipRect(_In_ ABI::Windows::Foundation::Rect value);
+        _Check_return_ HRESULT put_ClipRect(ABI::Windows::Foundation::Rect value);
         IFACEMETHOD(get_HasMoreContentAfter)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_HasMoreContentAfter(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_HasMoreContentAfter(BOOLEAN value);
         IFACEMETHOD(get_HasMoreContentBefore)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_HasMoreContentBefore(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_HasMoreContentBefore(BOOLEAN value);
         IFACEMETHOD(get_HasMoreViews)(_Out_ BOOLEAN* pValue) override;
-        _Check_return_ HRESULT put_HasMoreViews(_In_ BOOLEAN value);
+        _Check_return_ HRESULT put_HasMoreViews(BOOLEAN value);
         IFACEMETHOD(get_HeaderText)(_Out_ HSTRING* pValue) override;
         _Check_return_ HRESULT put_HeaderText(_In_opt_ HSTRING value);
         IFACEMETHOD(get_MinViewWidth)(_Out_ DOUBLE* pValue) override;
-        _Check_return_ HRESULT put_MinViewWidth(_In_ DOUBLE value);
+        _Check_return_ HRESULT put_MinViewWidth(DOUBLE value);
         IFACEMETHOD(get_WeekDay1)(_Out_ HSTRING* pValue) override;
         _Check_return_ HRESULT put_WeekDay1(_In_opt_ HSTRING value);
         IFACEMETHOD(get_WeekDay2)(_Out_ HSTRING* pValue) override;

@@ -17,10 +17,12 @@
     <WindowsTargetPlatformVersion>$(MuxSdkVersion)</WindowsTargetPlatformVersion>
     <WindowsTargetPlatformMinVersion>10.0.17763.0</WindowsTargetPlatformMinVersion>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <WindowsPackageType>None</WindowsPackageType>
     <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);WMC1501</MSBuildWarningsAsMessages>
     <!-- This app is unpackaged, so we need to separate the intermediate output path from the output path
          so we can selectively only binplace the latter. -->
     <IntermediateOutputPathSubdirectory>Intermediate</IntermediateOutputPathSubdirectory>
+    <ProcessorArchitecture Condition="'$(Platform)'=='arm64ec'">amd64</ProcessorArchitecture>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.props')" />
@@ -29,6 +31,10 @@
     <ProjectConfiguration Include="Debug|ARM64">
       <Configuration>Debug</Configuration>
       <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64EC">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64EC</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -41,6 +47,10 @@
     <ProjectConfiguration Include="Release|ARM64">
       <Configuration>Release</Configuration>
       <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64EC">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64EC</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
@@ -177,7 +187,6 @@
         Note end-user WASDK apps get this implicitly via $(MicrosoftWindowsAppSDKPackageDir). -->
     <WebView2UseWinRT>true</WebView2UseWinRT>
   </PropertyGroup>
-
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets')" />
     <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />

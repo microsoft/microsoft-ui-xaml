@@ -1,0 +1,23 @@
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <!--
+    This file contains common targets related to the configuration of the build and projects
+  -->
+
+  <PropertyGroup>
+    <!-- Override VS 'defaulting' of PlatformTarget, even though already set in configuration.props  -->
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <!-- Disable "Error: We do not support building UWP AppContainer applications for ARM64EC", to allow
+      creation of package targeting x64 containing arm64ec binaries, for execution on arm64 VM. -->
+  <Target Name="_GetPackageArchitecture">
+    <PropertyGroup>
+      <PackageArchitecture>x64</PackageArchitecture>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Prevent wapproj from erroneously building x64 in addition to arm64ec -->
+  <Target Name="_GetOtherPlatformsToBundle" />
+
+</Project>

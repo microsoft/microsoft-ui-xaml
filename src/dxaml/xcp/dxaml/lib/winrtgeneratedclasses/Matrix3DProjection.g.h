@@ -49,7 +49,7 @@ namespace DirectUI
 
         // Properties.
         IFACEMETHOD(get_ProjectionMatrix)(_Out_ ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D* pValue) override;
-        IFACEMETHOD(put_ProjectionMatrix)(_In_ ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D value) override;
+        IFACEMETHOD(put_ProjectionMatrix)(ABI::Microsoft::UI::Xaml::Media::Media3D::Matrix3D value) override;
 
         // Events.
 

@@ -28,7 +28,7 @@ _Check_return_ HRESULT GravityConnectedAnimationConfiguration::put_IsShadowEnabl
     return S_OK;
 }
 
-_Check_return_ HRESULT GravityConnectedAnimationConfiguration::GetEffectPropertySet(_In_ wfn::Vector3 scaleFactors, _Out_ WUComp::ICompositionPropertySet** effectPropertySet)
+_Check_return_ HRESULT GravityConnectedAnimationConfiguration::GetEffectPropertySet(wfn::Vector3 scaleFactors, _Out_ WUComp::ICompositionPropertySet** effectPropertySet)
 {
     wf::TimeSpan ts;
     IFC_RETURN(GetEffectiveDuration(&ts));

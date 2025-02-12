@@ -139,7 +139,7 @@ _Check_return_ HRESULT ListViewBaseItemAutomationPeer::get_DropEffectImpl(_Out_ 
     RRETURN(DXamlCore::GetCurrentNoCreate()->GetLocalizedResourceString(UIA_DRAG_MOVE, pValue));
 }
 
-_Check_return_ HRESULT ListViewBaseItemAutomationPeer::get_DropEffectsImpl(_Out_ UINT* returnValueCount, _Out_ HSTRING** returnValue)
+_Check_return_ HRESULT ListViewBaseItemAutomationPeer::get_DropEffectsImpl(_Out_ UINT* returnValueCount, _Outptr_ HSTRING** returnValue)
 {
     // In the future the list of effect should be updated based on what is possible to do with this item.
     HRESULT hr = S_OK;

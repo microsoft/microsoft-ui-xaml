@@ -101,7 +101,7 @@ DependencyObjectCollection::Clear()
 
 IFACEMETHODIMP DependencyObjectCollection::add_VectorChanged(
     _In_ wfc::VectorChangedEventHandler<xaml::DependencyObject*> *pHandler,
-    _In_ EventRegistrationToken *token)
+    _Out_ EventRegistrationToken *token)
 {
     HRESULT hr = S_OK;
 
@@ -116,7 +116,7 @@ Cleanup:
 }
 
 IFACEMETHODIMP DependencyObjectCollection::remove_VectorChanged(
-    _In_ EventRegistrationToken token)
+    EventRegistrationToken token)
 {
     RRETURN(m_vectorChangedHandlers.RemoveHandler(token));
 }

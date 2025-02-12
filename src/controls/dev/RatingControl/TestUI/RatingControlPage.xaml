@@ -229,6 +229,54 @@
                         <x:Double x:Key="RatingControlItemSpacing">2</x:Double>
                     </muxcontrols:RatingControl.Resources>
                 </muxcontrols:RatingControl>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Border BorderBrush="Red" BorderThickness="1" Margin="5">
+                        <muxcontrols:RatingControl Value="3" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="5">
+                    <Border BorderBrush="Red" BorderThickness="1" VerticalAlignment="Center">
+                        <muxcontrols:RatingControl Value="3">
+                            <muxcontrols:RatingControl.Resources>
+                                <x:Double x:Key="RatingControlFontSizeForRendering">20</x:Double>
+                                <x:Double x:Key="RatingControlItemSpacing">20</x:Double>
+                            </muxcontrols:RatingControl.Resources>
+                        </muxcontrols:RatingControl>
+                    </Border>
+
+                    <Border BorderBrush="Red" BorderThickness="1">
+                        <muxcontrols:RatingControl Value="3" VerticalAlignment="Center">
+                            <muxcontrols:RatingControl.Resources>
+                                <x:Double x:Key="RatingControlFontSizeForRendering">48</x:Double>
+                                <x:Double x:Key="RatingControlItemSpacing">2</x:Double>
+                            </muxcontrols:RatingControl.Resources>
+                        </muxcontrols:RatingControl>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Border BorderBrush="Red" BorderThickness="1" VerticalAlignment="Center" Margin="5">
+                        <muxcontrols:RatingControl Value="3" Caption="RO3">
+                            <muxcontrols:RatingControl.Resources>
+                                <x:Double x:Key="RatingControlFontSizeForRendering">20</x:Double>
+                                <x:Double x:Key="RatingControlItemSpacing">20</x:Double>
+                            </muxcontrols:RatingControl.Resources>
+                        </muxcontrols:RatingControl>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Border BorderBrush="Red" BorderThickness="1" VerticalAlignment="Center" Margin="0,0,0,10">
+                        <muxcontrols:RatingControl Value="3" Caption="RO4">
+                            <muxcontrols:RatingControl.Resources>
+                                <x:Double x:Key="RatingControlFontSizeForRendering">48</x:Double>
+                                <x:Double x:Key="RatingControlItemSpacing">2</x:Double>
+                            </muxcontrols:RatingControl.Resources>
+                        </muxcontrols:RatingControl>
+                    </Border>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </StackPanel>

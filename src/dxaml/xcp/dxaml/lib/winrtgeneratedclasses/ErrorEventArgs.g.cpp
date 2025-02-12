@@ -67,7 +67,7 @@ _Check_return_ HRESULT DirectUI::ErrorEventArgs::get_ErrorCode(_Out_ INT* pValue
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ErrorEventArgs::put_ErrorCode(_In_ INT value)
+_Check_return_ HRESULT DirectUI::ErrorEventArgs::put_ErrorCode(INT value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -84,7 +84,7 @@ _Check_return_ HRESULT DirectUI::ErrorEventArgs::get_ErrorType(_Out_ DirectUI::E
 Cleanup:
     RRETURN(hr);
 }
-_Check_return_ HRESULT DirectUI::ErrorEventArgs::put_ErrorType(_In_ DirectUI::ErrorType value)
+_Check_return_ HRESULT DirectUI::ErrorEventArgs::put_ErrorType(DirectUI::ErrorType value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());

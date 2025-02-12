@@ -515,6 +515,15 @@ void TabView::OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPro
 void TabView::OnAddButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
     m_addTabButtonClickEventSource(*this, args);
+
+    if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+    {
+        peer.RaiseNotificationEvent(
+            winrt::AutomationNotificationKind::ItemAdded,
+            winrt::AutomationNotificationProcessing::MostRecent,
+            ResourceAccessor::GetLocalizedStringResource(SR_TabViewNewTabAddedNotification),
+            L"TabViewNewTabAddedNotificationActivityId");
+    }
 }
 
 winrt::AutomationPeer TabView::OnCreateAutomationPeer()

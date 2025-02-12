@@ -67,7 +67,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_CanDragItems(_Out_ BOOLEAN* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_CanDragItems, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_CanDragItems(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_CanDragItems(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_CanDragItems, value));
@@ -76,7 +76,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_CanReorderItems(_Out_ BOOLEA
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_CanReorderItems, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_CanReorderItems(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_CanReorderItems(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_CanReorderItems, value));
@@ -85,7 +85,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_DataFetchSize(_Out_ DOUBLE* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_DataFetchSize, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_DataFetchSize(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_DataFetchSize(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_DataFetchSize, value));
@@ -148,7 +148,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_IncrementalLoadingThreshold(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IncrementalLoadingThreshold, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IncrementalLoadingThreshold(_In_ DOUBLE value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IncrementalLoadingThreshold(DOUBLE value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IncrementalLoadingThreshold, value));
@@ -157,7 +157,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_IncrementalLoadingTrigger(_O
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IncrementalLoadingTrigger, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IncrementalLoadingTrigger(_In_ ABI::Microsoft::UI::Xaml::Controls::IncrementalLoadingTrigger value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IncrementalLoadingTrigger(ABI::Microsoft::UI::Xaml::Controls::IncrementalLoadingTrigger value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IncrementalLoadingTrigger, value));
@@ -166,7 +166,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_IsActiveView(_Out_ BOOLEAN* 
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsActiveView, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsActiveView(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsActiveView(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsActiveView, value));
@@ -175,7 +175,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_IsItemClickEnabled(_Out_ BOO
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsItemClickEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsItemClickEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsItemClickEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsItemClickEnabled, value));
@@ -184,7 +184,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_IsMultiSelectCheckBoxEnabled
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsMultiSelectCheckBoxEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsMultiSelectCheckBoxEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsMultiSelectCheckBoxEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsMultiSelectCheckBoxEnabled, value));
@@ -199,7 +199,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_IsRegisteredForCallbacks(_Ou
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsRegisteredForCallbacks(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsRegisteredForCallbacks(BOOLEAN value)
 {
     HRESULT hr = S_OK;
     IFC(CheckThread());
@@ -212,7 +212,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_IsSwipeEnabled(_Out_ BOOLEAN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsSwipeEnabled, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsSwipeEnabled(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsSwipeEnabled(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsSwipeEnabled, value));
@@ -221,7 +221,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_IsZoomedInView(_Out_ BOOLEAN
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsZoomedInView, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsZoomedInView(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_IsZoomedInView(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_IsZoomedInView, value));
@@ -230,7 +230,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_ReorderMode(_Out_ ABI::Micro
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_ReorderMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_ReorderMode(_In_ ABI::Microsoft::UI::Xaml::Controls::ListViewReorderMode value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_ReorderMode(ABI::Microsoft::UI::Xaml::Controls::ListViewReorderMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_ReorderMode, value));
@@ -259,7 +259,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_SelectionMode(_Out_ ABI::Mic
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_SelectionMode, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_SelectionMode(_In_ ABI::Microsoft::UI::Xaml::Controls::ListViewSelectionMode value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_SelectionMode(ABI::Microsoft::UI::Xaml::Controls::ListViewSelectionMode value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_SelectionMode, value));
@@ -277,7 +277,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_ShowsScrollingPlaceholders(_
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_ShowsScrollingPlaceholders, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_ShowsScrollingPlaceholders(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_ShowsScrollingPlaceholders(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_ShowsScrollingPlaceholders, value));
@@ -286,7 +286,7 @@ IFACEMETHODIMP DirectUI::ListViewBaseGenerated::get_SingleSelectionFollowsFocus(
 {
     RRETURN(GetValueByKnownIndex(KnownPropertyIndex::ListViewBase_SingleSelectionFollowsFocus, pValue));
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_SingleSelectionFollowsFocus(_In_ BOOLEAN value)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::put_SingleSelectionFollowsFocus(BOOLEAN value)
 {
     IFC_RETURN(DefaultStrictApiCheck(this));
     RRETURN(SetValueByKnownIndex(KnownPropertyIndex::ListViewBase_SingleSelectionFollowsFocus, value));
@@ -329,7 +329,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_ChoosingGroupHeaderContainer(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_ChoosingGroupHeaderContainer(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ChoosingGroupHeaderContainerEventSourceType* pEventSource = nullptr;
@@ -384,7 +384,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_ChoosingItemContainer(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_ChoosingItemContainer(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ChoosingItemContainerEventSourceType* pEventSource = nullptr;
@@ -439,7 +439,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_ContainerContentChanging(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_ContainerContentChanging(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ContainerContentChangingEventSourceType* pEventSource = nullptr;
@@ -494,7 +494,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_DragItemsCompleted(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_DragItemsCompleted(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragItemsCompletedEventSourceType* pEventSource = nullptr;
@@ -549,7 +549,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_DragItemsStarting(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_DragItemsStarting(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     DragItemsStartingEventSourceType* pEventSource = nullptr;
@@ -604,7 +604,7 @@ Cleanup:
     return hr;
 }
 
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_ItemClick(_In_ EventRegistrationToken tToken)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::remove_ItemClick(EventRegistrationToken tToken)
 {
     HRESULT hr = S_OK;
     ItemClickEventSourceType* pEventSource = nullptr;
@@ -889,7 +889,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::ScrollIntoViewWithAlignment(_In_ IInspectable* pItem, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollIntoViewAlignment alignment)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::ScrollIntoViewWithAlignment(_In_ IInspectable* pItem, ABI::Microsoft::UI::Xaml::Controls::ScrollIntoViewAlignment alignment)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -907,7 +907,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::ScrollIntoViewWithOptionalAnimation(_In_ IInspectable* pItem, _In_ ABI::Microsoft::UI::Xaml::Controls::ScrollIntoViewAlignment alignment, _In_ BOOLEAN disableAnimation)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::ScrollIntoViewWithOptionalAnimation(_In_ IInspectable* pItem, ABI::Microsoft::UI::Xaml::Controls::ScrollIntoViewAlignment alignment, BOOLEAN disableAnimation)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -961,7 +961,7 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::ListViewBaseGenerated::SetDesiredContainerUpdateDuration(_In_ ABI::Windows::Foundation::TimeSpan duration)
+IFACEMETHODIMP DirectUI::ListViewBaseGenerated::SetDesiredContainerUpdateDuration(ABI::Windows::Foundation::TimeSpan duration)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
