@@ -42,7 +42,7 @@
     <IxpTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage.*?Version="(.*?)"').Groups[1].Value)</IxpTransportPackageVersion>
     <IxpInternalPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.InteractiveExperiences.*?Version="(.*?)"').Groups[1].Value)</IxpInternalPackageVersion>
     <WinUIDetailsNugetVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.WinUIDetails.*?Version="(.*?)"').Groups[1].Value)</WinUIDetailsNugetVersion>
-    <MicrosoftBuildMsixVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Build.Msix.*?Version="(.*?)"').Groups[1].Value)</MicrosoftBuildMsixVersion>
+    <MicrosoftBuildMsixVersion>1.6.0-release.20250226.0</MicrosoftBuildMsixVersion>
     <!-- It is at this point that we might want our non-product code to be able to use a package version different than the primary configuration -->
     <!-- If so, this would probably be the point at which we would override the above version with what is configured for the app                 -->
     <!-- The package version identifies the targeted package version based on the configured packages. -->

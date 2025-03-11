@@ -28,10 +28,13 @@
 #include "ManipulationCompletedRoutedEventArgs.g.h"
 #include "ContextRequestedEventArgs.g.h"
 #include "TextBoxView.h"
+#include "FrameworkUdk/Containment.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
 using namespace std::placeholders;
+
+#define WINAPPSDK_CHANGEID_56242367 56242367 // For Bug - TextBox that got focus by clicking on the Clear Button location does not accept key input
 
 //---------------------------------------------------------------------------
 //
@@ -130,13 +133,29 @@ IFACEMETHODIMP TextBox::OnPointerExited(_In_ xaml_input::IPointerRoutedEventArgs
 IFACEMETHODIMP TextBox::OnPointerPressed(_In_ xaml_input::IPointerRoutedEventArgs* pArgs)
 {
     bool isValidEvent = false;
-
+    
     IFC_RETURN(TextBoxGenerated::OnPointerPressed(pArgs));
     IFC_RETURN(ValidateEvent(static_cast<PointerRoutedEventArgs*>(pArgs), &isValidEvent));
 
-    if (isValidEvent)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56242367>())
     {
-        IFC_RETURN(TextBox::RaiseNative(this, pArgs, KnownEventIndex::UIElement_PointerPressed));
+        if (isValidEvent)
+        {
+            // Keep track that we sent the down so we know we have to pair it with an up.
+            m_isPointerPressed = true;
+            IFC_RETURN(TextBox::RaiseNative(this, pArgs, KnownEventIndex::UIElement_PointerPressed));
+        }
+        else
+        {
+            m_isPointerPressed = false;
+        }
+    }
+    else
+    {
+        if (isValidEvent)
+        {
+            IFC_RETURN(TextBox::RaiseNative(this, pArgs, KnownEventIndex::UIElement_PointerPressed));
+        }
     }
 
     return S_OK;
@@ -173,8 +192,26 @@ IFACEMETHODIMP TextBox::OnPointerReleased(_In_ xaml_input::IPointerRoutedEventAr
 {
     bool isValidEvent = false;
 
-    IFC_RETURN(TextBoxGenerated::OnPointerReleased(pArgs));
-    IFC_RETURN(ValidateEvent(static_cast<PointerRoutedEventArgs*>(pArgs), &isValidEvent));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56242367>())
+    {
+        IFC_RETURN(TextBoxGenerated::OnPointerReleased(pArgs));
+
+        // ValidateEvent determines whether the pointer is over the delete button and if it is
+        // it won't raise the native event.  However, if the pointer is down and we get a 
+        // pointer up, then we need to pass that on because RichEdit needs the these events
+        // to be paired.
+        isValidEvent = m_isPointerPressed;
+        if (!m_isPointerPressed)
+        {
+            IFC_RETURN(ValidateEvent(static_cast<PointerRoutedEventArgs*>(pArgs), &isValidEvent));
+        }
+        m_isPointerPressed = false;
+    }
+    else
+    {
+        IFC_RETURN(TextBoxGenerated::OnPointerReleased(pArgs));
+        IFC_RETURN(ValidateEvent(static_cast<PointerRoutedEventArgs*>(pArgs), &isValidEvent));
+    }
 
     if (isValidEvent)
     {
@@ -201,6 +238,10 @@ IFACEMETHODIMP TextBox::OnPointerCaptureLost(_In_ xaml_input::IPointerRoutedEven
     {
         IFC_RETURN(TextBox::RaiseNative(this, pArgs, KnownEventIndex::UIElement_PointerCaptureLost));
     }
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56242367>())
+    {
+        m_isPointerPressed = false;
+    }
 
     return S_OK;
 }
@@ -221,6 +262,10 @@ IFACEMETHODIMP TextBox::OnPointerCanceled(_In_ xaml_input::IPointerRoutedEventAr
     if (isValidEvent)
     {
         IFC_RETURN(TextBox::RaiseNative(this, pArgs, KnownEventIndex::UIElement_PointerCanceled));
+    }
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56242367>())
+    {
+        m_isPointerPressed = false;
     }
 
     return S_OK;
