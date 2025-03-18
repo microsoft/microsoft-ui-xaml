@@ -1655,7 +1655,7 @@ void WebView2::TryCompleteInitialization()
 
 void WebView2::OnAppWindowPositionChanged(const winrt::Microsoft::UI::Windowing::AppWindow& sender, const winrt::Microsoft::UI::Windowing::AppWindowChangedEventArgs& args)
 {
-    if (args.DidPositionChange())
+    if (m_coreWebViewController && args.DidPositionChange())
     {
         m_coreWebViewController.NotifyParentWindowPositionChanged();
     }

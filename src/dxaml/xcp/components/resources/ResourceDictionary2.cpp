@@ -121,9 +121,9 @@ std::size_t CResourceDictionary2::GetInitialImplicitStyleKeyCount() const
     return m_spRuntimeData->GetImplicitResourceCount();
 }
 
-const std::vector<xstring_ptr>& CResourceDictionary2::GetInitialResourcesWithXNames() const
+const std::vector<xstring_ptr>& CResourceDictionary2::GetInitialResourcesToLoad() const
 {
-    return m_spRuntimeData->GetResourcesWithXNames();
+    return m_spRuntimeData->GetResourcesForAutoUndeferral();
 }
 
 std::size_t CResourceDictionary2::size() const

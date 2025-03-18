@@ -12,10 +12,8 @@
 
   <!-- Convert $(arch) to Nuget-compatible value -->
   <PropertyGroup>
-    <NugetArch Condition="'$(arch)' == 'amd64'">x64</NugetArch>
-    <NugetArch Condition="'$(arch)' != 'amd64'">$(arch.ToLowerInvariant())</NugetArch>
-    <IxpNuGetArch>$(NugetArch)</IxpNuGetArch>
-    <IxpNuGetArch Condition="'$(NugetArch)' == 'ARM64EC'">x64</IxpNuGetArch>
+    <NugetArch Condition="'$(Platform)' == 'Win32'">x86</NugetArch>
+    <NugetArch Condition="'$(NugetArch)' == ''">$(Platform.ToLowerInvariant())</NugetArch>
   </PropertyGroup>
 
   <!-- Source related paths-->
@@ -176,8 +174,8 @@
     <LiftedIXPInternalPackagePath>$(NugetPackageDirectory)\$(LiftedIXPInternalPackageName)\$(IxpInternalPackageVersion)</LiftedIXPInternalPackagePath>
     <LiftedIXPInternalIncludePath>$(LiftedIXPInternalPackagePath)\include</LiftedIXPInternalIncludePath>
     <LiftedIXPInternalBuildPath>$(LiftedIXPInternalPackagePath)\build\native</LiftedIXPInternalBuildPath>
-    <LiftedIXPInternalPGIRuntimePath>$(LiftedIXPInternalPackagePath)\runtimes\win10-$(IxpNuGetArch)\native\pgi</LiftedIXPInternalPGIRuntimePath>
-    <LiftedIXPInternalLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(IxpNuGetArch)</LiftedIXPInternalLibPath>
+    <LiftedIXPInternalPGIRuntimePath>$(LiftedIXPInternalPackagePath)\runtimes\win10-$(NugetArch)\native\pgi</LiftedIXPInternalPGIRuntimePath>
+    <LiftedIXPInternalLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(NugetArch)</LiftedIXPInternalLibPath>
 
     <LiftedIXPIncludePaths>$(LiftedIXPIncludePath);$(LiftedIXPInternalIncludePath);$(LiftedIXPGeneratedIncludePath)</LiftedIXPIncludePaths>
   </PropertyGroup>
@@ -206,12 +204,10 @@
 
   <!-- WinUIDetails paths -->
   <PropertyGroup>
-    <WinUIDetailsArch Condition="'$(Platform)' == 'Win32'">x86</WinUIDetailsArch>
-    <WinUIDetailsArch Condition="'$(WinUIDetailsArch)' == ''">$(Platform.ToLowerInvariant())</WinUIDetailsArch>
     <WinUIDetailsPackagePath Condition="'$(WinUIDetailsRepoLocation)' == ''">$(NugetPackageDirectory)\$(WinUIDetailsPackageName)\$(WinUIDetailsNugetVersion)</WinUIDetailsPackagePath>
     <WinUIDetailsPackagePath Condition="'$(WinUIDetailsRepoLocation)' != ''">$(WinUIDetailsRepoLocation)\Bin\NugetStaging\WinUIDetails</WinUIDetailsPackagePath>
     <WinUIDetailsLibPath>$(WinUIDetailsPackagePath)\lib\uap10.0</WinUIDetailsLibPath>
-    <WinUIDetailsRuntimesPath>$(WinUIDetailsPackagePath)\runtimes\win10-$(WinUIDetailsArch)\native</WinUIDetailsRuntimesPath>
+    <WinUIDetailsRuntimesPath>$(WinUIDetailsPackagePath)\runtimes\win10-$(NugetArch)\native</WinUIDetailsRuntimesPath>
     <WinUIDetailsIncludePath>$(WinUIDetailsPackagePath)\build\native\include</WinUIDetailsIncludePath>
   </PropertyGroup>
 

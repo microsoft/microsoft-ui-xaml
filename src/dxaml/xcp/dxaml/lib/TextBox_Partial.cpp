@@ -129,14 +129,20 @@ IFACEMETHODIMP TextBox::OnPointerExited(_In_ xaml_input::IPointerRoutedEventArgs
 //---------------------------------------------------------------------------
 IFACEMETHODIMP TextBox::OnPointerPressed(_In_ xaml_input::IPointerRoutedEventArgs* pArgs)
 {
-    bool isValidEvent = false;
-
+    bool isValidEvent = true;
+    
     IFC_RETURN(TextBoxGenerated::OnPointerPressed(pArgs));
     IFC_RETURN(ValidateEvent(static_cast<PointerRoutedEventArgs*>(pArgs), &isValidEvent));
 
     if (isValidEvent)
     {
+        // Keep track that we sent the down so we know we have to pair it with an up.
+        m_isPointerPressed = true;
         IFC_RETURN(TextBox::RaiseNative(this, pArgs, KnownEventIndex::UIElement_PointerPressed));
+    }
+    else
+    {
+        m_isPointerPressed = false;
     }
 
     return S_OK;
@@ -171,10 +177,18 @@ IFACEMETHODIMP TextBox::OnPointerMoved(_In_ xaml_input::IPointerRoutedEventArgs*
 //---------------------------------------------------------------------------
 IFACEMETHODIMP TextBox::OnPointerReleased(_In_ xaml_input::IPointerRoutedEventArgs* pArgs)
 {
-    bool isValidEvent = false;
-
     IFC_RETURN(TextBoxGenerated::OnPointerReleased(pArgs));
-    IFC_RETURN(ValidateEvent(static_cast<PointerRoutedEventArgs*>(pArgs), &isValidEvent));
+
+    // ValidateEvent determines whether the pointer is over the delete button and if it is
+    // it won't raise the native event.  However, if the pointer is down and we get a 
+    // pointer up, then we need to pass that on because RichEdit needs the these events
+    // to be paired.
+    bool isValidEvent = m_isPointerPressed;
+    if (!m_isPointerPressed)
+    {
+        IFC_RETURN(ValidateEvent(static_cast<PointerRoutedEventArgs*>(pArgs), &isValidEvent));
+    }
+    m_isPointerPressed = false;
 
     if (isValidEvent)
     {
@@ -201,6 +215,7 @@ IFACEMETHODIMP TextBox::OnPointerCaptureLost(_In_ xaml_input::IPointerRoutedEven
     {
         IFC_RETURN(TextBox::RaiseNative(this, pArgs, KnownEventIndex::UIElement_PointerCaptureLost));
     }
+    m_isPointerPressed = false;
 
     return S_OK;
 }
@@ -222,6 +237,7 @@ IFACEMETHODIMP TextBox::OnPointerCanceled(_In_ xaml_input::IPointerRoutedEventAr
     {
         IFC_RETURN(TextBox::RaiseNative(this, pArgs, KnownEventIndex::UIElement_PointerCanceled));
     }
+    m_isPointerPressed = false;
 
     return S_OK;
 }

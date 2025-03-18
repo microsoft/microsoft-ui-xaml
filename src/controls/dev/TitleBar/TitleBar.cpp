@@ -80,9 +80,9 @@ void TitleBar::OnApplyTemplate()
     UpdateTheme();
     UpdateTitle();
     UpdateSubtitle();
-    UpdateLeftContent();
-    UpdateCenterContent();
-    UpdateRightContent();
+    UpdateLeftHeader();
+    UpdateContent();
+    UpdateRightHeader();
     UpdateInteractableElementsList();
     UpdateDragRegion();
     UpdateIconRegion();
@@ -116,17 +116,17 @@ void TitleBar::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const
     {
         UpdateSubtitle();
     }
-    if (property == s_LeftContentProperty)
+    if (property == s_LeftHeaderProperty)
     {
-        UpdateLeftContent();
+        UpdateLeftHeader();
     }
-    else if (property == s_CenterContentProperty)
+    else if (property == s_ContentProperty)
     {
-        UpdateCenterContent();
+        UpdateContent();
     }
-    else if (property == s_RightContentProperty)
+    else if (property == s_RightHeaderProperty)
     {
-        UpdateRightContent();
+        UpdateRightHeader();
     }
 
     UpdateDragRegion();
@@ -144,14 +144,14 @@ void TitleBar::OnSizeChanged(const winrt::IInspectable& sender, const winrt::Siz
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (CenterContent() != nullptr)
+    if (Content() != nullptr)
     {
-        const auto centerContentArea = m_centerContentArea.get();
-        const auto centerContentAreaGrid = m_centerContentAreaGrid.get();
+        const auto contentArea = m_contentArea.get();
+        const auto contentAreaGrid = m_contentAreaGrid.get();
 
-        if (centerContentArea && centerContentAreaGrid)
+        if (contentArea && contentAreaGrid)
         {
-            if (!m_compactModeThresholdWidth && centerContentArea.DesiredSize().Width >= centerContentAreaGrid.ActualWidth())
+            if (!m_compactModeThresholdWidth && contentArea.DesiredSize().Width >= contentAreaGrid.ActualWidth())
             {
                 m_compactModeThresholdWidth = args.NewSize().Width;
                 m_isCompact = true;
@@ -216,19 +216,19 @@ void TitleBar::OnInputActivationChanged(const winrt::InputActivationListener& se
         }
     }
 
-    if (LeftContent() != nullptr)
+    if (LeftHeader() != nullptr)
     {
-        GoToState(isDeactivated ? s_leftContentDeactivatedVisualStateName : s_leftContentVisibleVisualStateName, false);
+        GoToState(isDeactivated ? s_leftHeaderDeactivatedVisualStateName : s_leftHeaderVisibleVisualStateName, false);
     }
 
-    if (CenterContent() != nullptr)
+    if (Content() != nullptr)
     {
-        GoToState(isDeactivated ? s_centerContentDeactivatedVisualStateName : s_centerContentVisibleVisualStateName, false);
+        GoToState(isDeactivated ? s_contentDeactivatedVisualStateName : s_contentVisibleVisualStateName, false);
     }
 
-    if (RightContent() != nullptr)
+    if (RightHeader() != nullptr)
     {
-        GoToState(isDeactivated ? s_rightContentDeactivatedVisualStateName : s_rightContentVisibleVisualStateName, false);
+        GoToState(isDeactivated ? s_rightHeaderDeactivatedVisualStateName : s_rightHeaderVisibleVisualStateName, false);
     }
 
     UpdateIconRegion();
@@ -336,7 +336,7 @@ void TitleBar::UpdateBackButton()
     }
     
     UpdateInteractableElementsList();
-    UpdateLeftContentSpacing();
+    UpdateLeftHeaderSpacing();
 }
 
 void TitleBar::UpdatePaneToggleButton()
@@ -358,14 +358,14 @@ void TitleBar::UpdatePaneToggleButton()
     }
 
     UpdateInteractableElementsList();
-    UpdateLeftContentSpacing();
+    UpdateLeftHeaderSpacing();
 }
 
 void TitleBar::UpdateHeight()
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    GoToState((CenterContent() == nullptr && LeftContent() == nullptr && RightContent() == nullptr) ?
+    GoToState((Content() == nullptr && LeftHeader() == nullptr && RightHeader() == nullptr) ?
         s_compactHeightVisualStateName : s_expandedHeightVisualStateName,
         false);
 }
@@ -487,67 +487,67 @@ void TitleBar::UpdateSubtitle()
     }
 }
 
-void TitleBar::UpdateLeftContent()
+void TitleBar::UpdateLeftHeader()
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (LeftContent() == nullptr)
+    if (LeftHeader() == nullptr)
     {
-        GoToState(s_leftContentCollapsedVisualStateName, false);
+        GoToState(s_leftHeaderCollapsedVisualStateName, false);
     }
     else
     {
-        if (!m_leftContentArea.get())
+        if (!m_leftHeaderArea.get())
         {
-            m_leftContentArea.set(GetTemplateChildT<winrt::FrameworkElement>(s_leftContentPresenterPartName, *this));
+            m_leftHeaderArea.set(GetTemplateChildT<winrt::FrameworkElement>(s_leftHeaderPresenterPartName, *this));
         }
-        GoToState(s_leftContentVisibleVisualStateName, false);
+        GoToState(s_leftHeaderVisibleVisualStateName, false);
     }
 
     UpdateHeight();
     UpdateInteractableElementsList();
 }
 
-void TitleBar::UpdateCenterContent()
+void TitleBar::UpdateContent()
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (CenterContent() == nullptr)
+    if (Content() == nullptr)
     {
-        GoToState(s_centerContentCollapsedVisualStateName, false);
+        GoToState(s_contentCollapsedVisualStateName, false);
     }
     else
     {
-        if (!m_centerContentArea.get())
+        if (!m_contentArea.get())
         {
             winrt::IControlProtected controlProtected{ *this };
 
-            m_centerContentAreaGrid.set(GetTemplateChildT<winrt::Grid>(s_centerContentPresenterGridPartName, controlProtected));
-            m_centerContentArea.set(GetTemplateChildT<winrt::FrameworkElement>(s_centerContentPresenterPartName, controlProtected));
+            m_contentAreaGrid.set(GetTemplateChildT<winrt::Grid>(s_contentPresenterGridPartName, controlProtected));
+            m_contentArea.set(GetTemplateChildT<winrt::FrameworkElement>(s_contentPresenterPartName, controlProtected));
         }
 
-        GoToState(s_centerContentVisibleVisualStateName, false);
+        GoToState(s_contentVisibleVisualStateName, false);
     }
 
     UpdateHeight();
     UpdateInteractableElementsList();
 }
 
-void TitleBar::UpdateRightContent()
+void TitleBar::UpdateRightHeader()
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (RightContent() == nullptr)
+    if (RightHeader() == nullptr)
     {
-        GoToState(s_rightContentCollapsedVisualStateName, false);
+        GoToState(s_rightHeaderCollapsedVisualStateName, false);
     }
     else
     {
-        if (!m_rightContentArea.get())
+        if (!m_rightHeaderArea.get())
         {
-            m_rightContentArea.set(GetTemplateChildT<winrt::FrameworkElement>(s_rightContentPresenterPartName, *this));
+            m_rightHeaderArea.set(GetTemplateChildT<winrt::FrameworkElement>(s_rightHeaderPresenterPartName, *this));
         }
-        GoToState(s_rightContentVisibleVisualStateName, false);
+        GoToState(s_rightHeaderVisibleVisualStateName, false);
     }
 
     UpdateHeight();
@@ -672,33 +672,33 @@ void TitleBar::UpdateInteractableElementsList()
         }
     }
 
-    if (LeftContent() != nullptr)
+    if (LeftHeader() != nullptr)
     {
-        if (const auto leftContentArea = m_leftContentArea.get())
+        if (const auto leftHeaderArea = m_leftHeaderArea.get())
         {
             TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Append headerArea to m_interactableElementsList");
 
-            m_interactableElementsList.push_back(leftContentArea);
+            m_interactableElementsList.push_back(leftHeaderArea);
         }
     }
 
-    if (CenterContent() != nullptr)
+    if (Content() != nullptr)
     {
-        if (const auto centerContentArea = m_centerContentArea.get())
+        if (const auto contentArea = m_contentArea.get())
         {
             TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Append contentArea to m_interactableElementsList");
 
-            m_interactableElementsList.push_back(centerContentArea);
+            m_interactableElementsList.push_back(contentArea);
         }
     }
 
-    if (RightContent() != nullptr)
+    if (RightHeader() != nullptr)
     {
-        if (const auto rightContentArea = m_rightContentArea.get())
+        if (const auto rightHeaderArea = m_rightHeaderArea.get())
         {
             TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Append footerArea to m_interactableElementsList");
 
-            m_interactableElementsList.push_back(rightContentArea);
+            m_interactableElementsList.push_back(rightHeaderArea);
         }
     }
 
@@ -707,7 +707,7 @@ void TitleBar::UpdateInteractableElementsList()
         m_interactableElementsList.size());
 }
 
-void TitleBar::UpdateLeftContentSpacing()
+void TitleBar::UpdateLeftHeaderSpacing()
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 

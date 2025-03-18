@@ -3,7 +3,7 @@
 
 [MUX_PUBLIC_V8]
 [webhosthidden]
-[contentproperty("CenterContent")]
+[contentproperty("Content")]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
@@ -15,9 +15,9 @@ unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
 
     Microsoft.UI.Xaml.Controls.IconSource IconSource{ get; set; };
 
-    Microsoft.UI.Xaml.UIElement LeftContent{ get; set; };
-    Microsoft.UI.Xaml.UIElement CenterContent{ get; set; };
-    Microsoft.UI.Xaml.UIElement RightContent{ get; set; };
+    Microsoft.UI.Xaml.UIElement LeftHeader{ get; set; };
+    Microsoft.UI.Xaml.UIElement Content{ get; set; };
+    Microsoft.UI.Xaml.UIElement RightHeader{ get; set; };
 
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsBackButtonVisible{ get; set; };
@@ -36,9 +36,9 @@ unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty TitleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty SubtitleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
-    static Microsoft.UI.Xaml.DependencyProperty LeftContentProperty{ get; };
-    static Microsoft.UI.Xaml.DependencyProperty CenterContentProperty{ get; };
-    static Microsoft.UI.Xaml.DependencyProperty RightContentProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty LeftHeaderProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ContentProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty RightHeaderProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IsBackButtonVisibleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IsBackButtonEnabledProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty IsPaneToggleButtonVisibleProperty{ get; };

@@ -125,6 +125,8 @@ namespace DirectUI
 
         BOOLEAN m_isAnimatingHeight;
 
+        BOOLEAN m_isPointerPressed = false;
+
         _Check_return_ HRESULT OnHeightAnimationCompleted(IInspectable* pSender, IFrameworkElement* pSenderAsFE);
 
         _Check_return_ HRESULT OnPropertyChanged2(_In_ const PropertyChangedParams& args) override;

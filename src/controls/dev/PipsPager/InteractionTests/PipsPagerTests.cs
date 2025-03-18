@@ -341,8 +341,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 TextBlock verticalOrientationPipsPagerButtonHeight = elements.GetVerticalOrientationPipsPagerButtonHeightTextBlock();
 
                 Verify.AreEqual("12", horizontalOrientationPipsPagerButtonWidth.DocumentText);
-                Verify.AreEqual("20", horizontalOrientationPipsPagerButtonHeight.DocumentText);
-                Verify.AreEqual("20", verticalOrientationPipsPagerButtonWidth.DocumentText);
+                Verify.AreEqual("24", horizontalOrientationPipsPagerButtonHeight.DocumentText);
+                Verify.AreEqual("24", verticalOrientationPipsPagerButtonWidth.DocumentText);
                 Verify.AreEqual("12", verticalOrientationPipsPagerButtonHeight.DocumentText);
             }
         }
@@ -360,14 +360,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 TextBlock horizontalOrientationPipsPagerButtonWidth = elements.GetHorizontalOrientationPipsPagerButtonWidthTextBlock();
                 TextBlock horizontalOrientationPipsPagerButtonHeight = elements.GetHorizontalOrientationPipsPagerButtonHeightTextBlock();
                 Verify.AreEqual("12", horizontalOrientationPipsPagerButtonWidth.DocumentText);
-                Verify.AreEqual("20", horizontalOrientationPipsPagerButtonHeight.DocumentText);
+                Verify.AreEqual("24", horizontalOrientationPipsPagerButtonHeight.DocumentText);
 
                 SetOrientation(Microsoft.Windows.Apps.Test.Automation.OrientationType.Vertical);
                 VerifyOrientationChanged(Microsoft.Windows.Apps.Test.Automation.OrientationType.Vertical);
 
                 getButtonSizesButton.InvokeAndWait();
 
-                Verify.AreEqual("20", horizontalOrientationPipsPagerButtonWidth.DocumentText);
+                Verify.AreEqual("24", horizontalOrientationPipsPagerButtonWidth.DocumentText);
                 Verify.AreEqual("12", horizontalOrientationPipsPagerButtonHeight.DocumentText);
             }
         }

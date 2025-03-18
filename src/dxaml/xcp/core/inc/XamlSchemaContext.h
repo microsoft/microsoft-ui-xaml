@@ -221,6 +221,10 @@ public:
         _Out_ std::shared_ptr<DirectiveProperty>& rspOut
         );
 
+    _Check_return_ HRESULT get_X_ConnectionIdProperty(
+        _Out_ std::shared_ptr<DirectiveProperty>& rspOut
+        );
+
     _Check_return_ HRESULT get_StringXamlType(
         _Out_ std::shared_ptr<XamlType>& spStringType
         );
@@ -329,6 +333,7 @@ private:
     std::shared_ptr<ImplicitProperty>   m_spItemsProperty;
     std::shared_ptr<DirectiveProperty>   m_spXKeyProperty;
     std::shared_ptr<DirectiveProperty>   m_spXNameProperty;
+    std::shared_ptr<DirectiveProperty>   m_spXConnectionIdProperty;
     std::shared_ptr<XamlQualifiedObject> m_spNullKeyedResourceXQO;
 
     std::stack < xstring_ptr, std::vector<xstring_ptr>> m_SourceAssemblies;

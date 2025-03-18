@@ -46,9 +46,9 @@
                     MinWidth="300" 
                     MaxWidth="500"
                     Margin="8"/>
-                <TitleBar.RightContent>
+                <TitleBar.RightHeader>
                     <PersonPicture Initials="JD" Width="30" Height="30"/>
-                </TitleBar.RightContent>
+                </TitleBar.RightHeader>
             </TitleBar>
 
             <Button Content="New Window with Custom TitleBar" Click="TitleBarWindowingButton_Click"/>

@@ -43,7 +43,7 @@ public:
         _Out_ std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& explicitResources);
 
     std::size_t GetInitialImplicitStyleKeyCount() const;
-    const std::vector<xstring_ptr>& GetInitialResourcesWithXNames() const;
+    const std::vector<xstring_ptr>& GetInitialResourcesToLoad() const;
 
     bool ContainsKey(_In_ const xstring_ptr& key, _In_ bool isImplicitKey) const;
 

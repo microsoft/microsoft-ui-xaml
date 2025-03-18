@@ -27,7 +27,7 @@ namespace CustomRuntimeDataSerializationHelpers
             case CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v1:
             {
                 IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_explicitKeyResourcesMap, writer, streamOffsetTokenTable));
-                IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_resourcesWithXNames, writer, streamOffsetTokenTable));
+                IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_resourcesForAutoUndeferral, writer, streamOffsetTokenTable));
                 IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_implicitKeyResourcesMap, writer, streamOffsetTokenTable));
                 // In ResourceDictionary_v1, we stored a vector containing the keys for all implicit data templates.
                 // However, XAML doesn't truly support implicit data templates (unlike SL5 and WPF) so we can just serialize an empty vector
@@ -49,7 +49,7 @@ namespace CustomRuntimeDataSerializationHelpers
             case CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v2:
             {
                 IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_explicitKeyResourcesMap, writer, streamOffsetTokenTable));
-                IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_resourcesWithXNames, writer, streamOffsetTokenTable));
+                IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_resourcesForAutoUndeferral, writer, streamOffsetTokenTable));
                 IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_implicitKeyResourcesMap, writer, streamOffsetTokenTable));
                 // Prior to ResourceDictionary_v3, we stored a vector containing the list of implicit style keys.
                 {
@@ -67,7 +67,7 @@ namespace CustomRuntimeDataSerializationHelpers
             case CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3:
             {
                 IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_explicitKeyResourcesMap, writer, streamOffsetTokenTable));
-                IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_resourcesWithXNames, writer, streamOffsetTokenTable));
+                IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_resourcesForAutoUndeferral, writer, streamOffsetTokenTable));
                 IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_implicitKeyResourcesMap, writer, streamOffsetTokenTable));
                 IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_conditionalExplicitKeyResources, writer, streamOffsetTokenTable));
                 IFC_RETURN(CustomRuntimeDataSerializationHelpers::Serialize(target.m_conditionalImplicitKeyResources, writer, streamOffsetTokenTable));
@@ -94,7 +94,7 @@ namespace CustomRuntimeDataSerializationHelpers
             case CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v1:
             {
                 data.m_explicitKeyResourcesMap = Deserialize<containers::vector_map<xstring_ptr, StreamOffsetToken>>(reader);
-                data.m_resourcesWithXNames = Deserialize<std::vector<xstring_ptr>>(reader);
+                data.m_resourcesForAutoUndeferral = Deserialize<std::vector<xstring_ptr>>(reader);
                 data.m_implicitKeyResourcesMap = Deserialize<containers::vector_map<xstring_ptr, StreamOffsetToken>>(reader);
                 // In ResourceDictionary_v1, we stored a vector containing the keys for all implicit data templates.
                 // However, XAML doesn't truly support implicit data templates (unlike SL5 and WPF) so for ResourceDictionary_v2,
@@ -112,7 +112,7 @@ namespace CustomRuntimeDataSerializationHelpers
             case CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v2:
             {
                 data.m_explicitKeyResourcesMap = Deserialize<containers::vector_map<xstring_ptr, StreamOffsetToken>>(reader);
-                data.m_resourcesWithXNames = Deserialize<std::vector<xstring_ptr>>(reader);
+                data.m_resourcesForAutoUndeferral = Deserialize<std::vector<xstring_ptr>>(reader);
                 data.m_implicitKeyResourcesMap = Deserialize<containers::vector_map<xstring_ptr, StreamOffsetToken>>(reader);
                 // Prior to ResourceDictionary_v3, we stored a vector containing the list of implicit style keys. This is actually
                 // redundant given the presence of m_implicitKeyResources (plus we only actually need the number of keys, not the
@@ -125,7 +125,7 @@ namespace CustomRuntimeDataSerializationHelpers
             case CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3:
             {
                 data.m_explicitKeyResourcesMap = Deserialize<containers::vector_map<xstring_ptr, StreamOffsetToken>>(reader);
-                data.m_resourcesWithXNames = Deserialize<std::vector<xstring_ptr>>(reader);
+                data.m_resourcesForAutoUndeferral = Deserialize<std::vector<xstring_ptr>>(reader);
                 data.m_implicitKeyResourcesMap = Deserialize<containers::vector_map<xstring_ptr, StreamOffsetToken>>(reader);
                 data.m_conditionalExplicitKeyResources = Deserialize<containers::vector_map<xstring_ptr, std::vector<StreamOffsetToken>>>(reader);
                 data.m_conditionalImplicitKeyResources = Deserialize<containers::vector_map<xstring_ptr, std::vector<StreamOffsetToken>>>(reader);

@@ -27,7 +27,7 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::AddResourceOffset(
     _In_ const xstring_ptr& key,
     _In_ const StreamOffsetToken& token,
     _In_ bool isImplicitKey,
-    _In_ bool hasXName)
+    _In_ bool shouldAutoUndefer)
 {
     // Check first if the key already exists in the conditional store
     auto& conditionalStore = (isImplicitKey) ? m_conditionalImplicitKeyResources : m_conditionalExplicitKeyResources;
@@ -64,9 +64,9 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::AddResourceOffset(
         }
     }
 
-    if (hasXName)
+    if (shouldAutoUndefer)
     {
-        m_resourcesWithXNames.emplace_back(key);
+        m_resourcesForAutoUndeferral.emplace_back(key);
     }
 
     return S_OK;

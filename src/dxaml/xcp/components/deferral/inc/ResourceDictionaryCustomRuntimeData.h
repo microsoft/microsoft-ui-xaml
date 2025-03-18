@@ -44,7 +44,7 @@ public:
         _In_ const xstring_ptr& key,
         _In_ const StreamOffsetToken& token,
         _In_ bool isImplicitKey,
-        _In_ bool hasXName);
+        _In_ bool shouldAutoUndefer);
 
     _Check_return_
     HRESULT PrepareStream(_In_ std::shared_ptr<SubObjectWriterResult>& customWriterStream) override;
@@ -74,7 +74,8 @@ public:
     const std::vector<xstring_ptr> GetExplicitKeys();
     const std::vector<xstring_ptr> GetImplicitKeys();
 
-    const std::vector<xstring_ptr>& GetResourcesWithXNames() const { return m_resourcesWithXNames; }
+    // Returns the list of resources that should be automatically undeferred (e.g. has x:Name or x:ConnectionId)
+    const std::vector<xstring_ptr>& GetResourcesForAutoUndeferral() const { return m_resourcesForAutoUndeferral; }
 
     // Resolves conditionally declared resources. Must be called when this object is associated with
     // a CResourceDictionary2.
@@ -100,7 +101,7 @@ private:
     containers::vector_map<xstring_ptr, std::vector<StreamOffsetToken>> m_conditionalExplicitKeyResources;
     containers::vector_map<xstring_ptr, std::vector<StreamOffsetToken>> m_conditionalImplicitKeyResources;
 
-    std::vector<xstring_ptr> m_resourcesWithXNames;
+    std::vector<xstring_ptr> m_resourcesForAutoUndeferral;
 
     bool m_conditionalResourcesResolved = false;
 };

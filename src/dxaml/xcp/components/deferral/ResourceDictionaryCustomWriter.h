@@ -141,6 +141,10 @@ private:
     // shouldn't create one when the StartObject node is encountered
     bool m_hasNamespace = false;
 
+    // A resource with an x:ConnectionId (e.g. it contains an x:Bind) or x:Name needs to be 
+    // automatically undeferred so that it can be accessed from code-behind
+    bool m_currentResourceNeedsAutoUndeferral = false;
+
     // Property information we need to store about the current resource in order to reason
     // about what its key is
     std::pair<std::shared_ptr<DirectiveProperty>, xstring_ptr> m_currentResourceXKey;
@@ -149,6 +153,7 @@ private:
 
     std::shared_ptr<DirectiveProperty> m_spXKeyProperty;
     std::shared_ptr<DirectiveProperty> m_spXNameProperty;
+    std::shared_ptr<DirectiveProperty> m_spXConnectionIdProperty;
 
     ICustomWriterCallbacks* m_customWriterCallbacks;
     std::unique_ptr<ResourceDictionaryCustomRuntimeData> m_runtimeData;
