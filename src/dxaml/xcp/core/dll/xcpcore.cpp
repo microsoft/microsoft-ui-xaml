@@ -319,21 +319,6 @@ HRESULT ActivationFactoryCache::GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::I
     return S_OK;
 }
 
-HRESULT ActivationFactoryCache::GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics)
-{
-    wil::cs_leave_scope_exit guard = m_lock.lock();
-
-    if (!m_desktopPopupSiteBridgeStatics)
-    {
-        IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopPopupSiteBridge).Get(),
-            &m_desktopPopupSiteBridgeStatics));
-    }
-
-    m_desktopPopupSiteBridgeStatics.CopyTo(statics);
-    return S_OK;
-}
-
 HRESULT ActivationFactoryCache::GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics)
 {
     wil::cs_leave_scope_exit guard = m_lock.lock();

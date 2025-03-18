@@ -36,6 +36,7 @@ _Check_return_ HRESULT ResourceDictionaryCustomWriter::Initialize()
 
     IFC_RETURN(m_context->get_X_KeyProperty(m_spXKeyProperty));
     IFC_RETURN(m_context->get_X_NameProperty(m_spXNameProperty));
+    IFC_RETURN(m_context->get_X_ConnectionIdProperty(m_spXConnectionIdProperty));
 
     RDLOG(L"[RDCW]: Created. Beginning custom writer actions for ResourceDictionary.");
     return S_OK;
@@ -100,6 +101,8 @@ _Check_return_ HRESULT ResourceDictionaryCustomWriter::WriteObject(
 
                     m_currentResourceXKey = std::make_pair(m_spXKeyProperty, xstring_ptr::NullString());
                     m_currentResourceXName = std::make_pair(m_spXNameProperty, xstring_ptr::NullString());
+
+                    m_currentResourceNeedsAutoUndeferral = false;
 
                     m_operationsStack.push_back(std::make_pair(m_stackDepth, Operation::WritingResource));
 
@@ -184,7 +187,7 @@ _Check_return_ HRESULT ResourceDictionaryCustomWriter::WriteEndObject(_Out_ bool
                     resourceKey,
                     m_currentResourceOffset,
                     bIsImplicitKey,
-                    !m_currentResourceXName.second.IsNull()));
+                    m_currentResourceNeedsAutoUndeferral));
 
                 ++m_resourceCount;
                 m_hasNamespace = false;
@@ -239,10 +242,15 @@ _Check_return_ HRESULT ResourceDictionaryCustomWriter::WriteMember(
             else if (XamlProperty::AreEqual(spProperty, m_currentResourceXName.first))
             {
                 operation = Operation::WritingResourceXName;
+                m_currentResourceNeedsAutoUndeferral = true;
             }
             else if (XamlProperty::AreEqual(spProperty, m_currentResourceImplicitKey.first))
             {
                 operation = Operation::WritingResourceImplicitKey;
+            }
+            else if (XamlProperty::AreEqual(spProperty, m_spXConnectionIdProperty))
+            {
+                m_currentResourceNeedsAutoUndeferral = true;
             }
 
             m_operationsStack.push_back(std::make_pair(m_stackDepth, operation));
@@ -306,12 +314,6 @@ _Check_return_ HRESULT ResourceDictionaryCustomWriter::WriteEndMember(_Out_ bool
                 // We have finished writing the implicit items collection
                 if (m_resourceCount > 0)
                 {
-                    // if we have only 1 element in the dictionary don't defer it
-                    if (m_resourceCount == 1)
-                    {
-                        m_runtimeData->SetShouldEncodeAsCustomData(false);
-                        RDLOG(L"[RDCW]: Only one value in dictionary, not saving CustomWriterRuntimeData.");
-                    }
                     IFC_RETURN(m_customWriterCallbacks->SetCustomWriterRuntimeData(
                         std::unique_ptr<CustomWriterRuntimeData>(m_runtimeData.release())));
 

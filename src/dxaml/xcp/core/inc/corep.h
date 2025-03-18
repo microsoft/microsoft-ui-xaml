@@ -579,7 +579,6 @@ public:
 
     HRESULT GetDispatcherQueueStatics(_Outptr_ msy::IDispatcherQueueStatics** statics);
     HRESULT GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::IDesktopChildSiteBridgeStatics** statics);
-    HRESULT GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics);
     HRESULT GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics);
 
     ixp::ICompositionEasingFunctionStatics* GetCompositionEasingFunctionStatics();
@@ -607,7 +606,6 @@ private:
     wrl::ComPtr<msy::IDispatcherQueueStatics> m_dispatcherQueueStatics;
     wrl::ComPtr<mui::DragDrop::IDragDropManagerStatics> m_dragDropManagerStatics;
     wrl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> m_desktopChildSiteBridgeStatics;
-    wrl::ComPtr<ixp::IDesktopPopupSiteBridgeStatics> m_desktopPopupSiteBridgeStatics;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_compositionEasingFunctionStatics;
     wrl::ComPtr<ixp::IInteropCompositorFactoryPartner> m_interopCompositorFactoryPartner;
     wrl::ComPtr<ixp::ICompositionPathFactory> m_compositionPathFactory;

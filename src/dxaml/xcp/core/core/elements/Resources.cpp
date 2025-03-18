@@ -1824,10 +1824,9 @@ CResourceDictionary::SetCustomWriterRuntimeData(
 
     m_nImplicitStylesCount += m_pDeferredResources->GetInitialImplicitStyleKeyCount();
 
-    // We need to load deferred resources with an x:Name in order to make sure FindName() can
-    // discover them. Some apps (like in-box Calculator) create named resources that are then accessed
-    // as via the code-genned fields in code-behind.
-    for (const auto& key : m_pDeferredResources->GetInitialResourcesWithXNames())
+    // We need to load deferred resources with an x:Name or x:ConnectionId to ensure that they can
+    // be accessed from code-behind.
+    for (const auto& key : m_pDeferredResources->GetInitialResourcesToLoad())
     {
         CDependencyObject* pResource = nullptr;
 
@@ -2342,6 +2341,34 @@ _Check_return_ HRESULT CColorPaletteResources::SetColor(
     colorValue.Wrap<valueObject>(color.get());
 
     IFC_RETURN(Add(overrideKey, &colorValue, nullptr, false));
+
+    // Record the override that's coming in via property so that we can appropriately
+    // raise an error if the same override is later applied via x:Key
+    m_overridesFromProperties.emplace_back(propertyIndex);
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+CColorPaletteResources::SetCustomWriterRuntimeData(
+    _In_ std::shared_ptr<CustomWriterRuntimeData> data,
+    _In_ std::unique_ptr<CustomWriterRuntimeContext> context)
+{
+    IFC_RETURN(CResourceDictionary::SetCustomWriterRuntimeData(data, std::move(context)));
+
+    // If an override has been set via one of the properties on ColorPaletteRessources,
+    // then it is an error to try to override the same brush through the corresponding x:Key
+    for (auto propertyIndex : m_overridesFromProperties)
+    {
+        xstring_ptr overrideKey = ScopedResources::GetOverrideKey(propertyIndex);
+        ASSERT(!overrideKey.IsNullOrEmpty());
+
+        StreamOffsetToken unused;
+        if (std::static_pointer_cast<ResourceDictionaryCustomRuntimeData>(data)->TryGetResourceOffset(overrideKey, false, unused))
+        {
+            IFC_RETURN(static_cast<HRESULT>(E_DO_RESOURCE_KEYCONFLICT));
+        }
+    }
 
     return S_OK;
 }

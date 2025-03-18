@@ -119,20 +119,20 @@
                         Click="SetSubtitleButton_Click" />
             </StackPanel>
 
-            <CheckBox x:Name="LeftContentCheckBox"
-                    Content="LeftContent"
-                    Checked="LeftContentCheckBox_CheckedChanged"
-                    Unchecked="LeftContentCheckBox_CheckedChanged" />
+            <CheckBox x:Name="LeftHeaderCheckBox"
+                    Content="LeftHeader"
+                    Checked="LeftHeaderCheckBox_CheckedChanged"
+                    Unchecked="LeftHeaderCheckBox_CheckedChanged" />
 
-            <CheckBox x:Name="CustomCenterContentCheckBox"
-                    Content="CustomCenterContent"
-                    Checked="CustomCenterContentCheckBox_CheckedChanged"
-                    Unchecked="CustomCenterContentCheckBox_CheckedChanged" />
+            <CheckBox x:Name="CustomContentCheckBox"
+                    Content="CustomContent"
+                    Checked="CustomContentCheckBox_CheckedChanged"
+                    Unchecked="CustomContentCheckBox_CheckedChanged" />
 
-            <CheckBox x:Name="RightContentCheckBox"
-                    Content="RightContent"
-                    Checked="RightContentCheckBox_CheckedChanged"
-                    Unchecked="RightContentCheckBox_CheckedChanged" />
+            <CheckBox x:Name="RightHeaderCheckBox"
+                    Content="RightHeader"
+                    Checked="RightHeaderCheckBox_CheckedChanged"
+                    Unchecked="RightHeaderCheckBox_CheckedChanged" />
 
         </StackPanel>
     </Grid>

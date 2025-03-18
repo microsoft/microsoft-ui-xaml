@@ -132,11 +132,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CustomCenterContentCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        private void CustomContentCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (WindowingTitleBar != null)
             {
-                if (CustomCenterContentCheckBox.IsChecked.Value)
+                if (CustomContentCheckBox.IsChecked.Value)
                 {
                     string xaml =
                     @"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
@@ -150,45 +150,45 @@ namespace MUXControlsTestApp
                     </Grid>";
 
                     var element = (Grid)XamlReader.Load(xaml);
-                    WindowingTitleBar.CenterContent = element;
+                    WindowingTitleBar.Content = element;
                 }
                 else
                 {
-                    WindowingTitleBar.CenterContent = null;
+                    WindowingTitleBar.Content = null;
                 }
             }
         }
 
-        private void LeftContentCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        private void LeftHeaderCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (WindowingTitleBar != null)
             {
-                if (LeftContentCheckBox.IsChecked.Value)
+                if (LeftHeaderCheckBox.IsChecked.Value)
                 {
                     var button = new Button();
-                    button.Content = "LeftContent";
-                    WindowingTitleBar.LeftContent = button;
+                    button.Content = "LeftHeader";
+                    WindowingTitleBar.LeftHeader = button;
                 }
                 else
                 {
-                    WindowingTitleBar.LeftContent = null;
+                    WindowingTitleBar.LeftHeader = null;
                 }
             }
         }
 
-        private void RightContentCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        private void RightHeaderCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
         {
             if (WindowingTitleBar != null)
             {
-                if (RightContentCheckBox.IsChecked.Value)
+                if (RightHeaderCheckBox.IsChecked.Value)
                 {
                     var button = new Button();
-                    button.Content = "RightContent";
-                    WindowingTitleBar.RightContent = button;
+                    button.Content = "RightHeader";
+                    WindowingTitleBar.RightHeader = button;
                 }
                 else
                 {
-                    WindowingTitleBar.RightContent = null;
+                    WindowingTitleBar.RightHeader = null;
                 }
             }
         }

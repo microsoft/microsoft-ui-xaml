@@ -660,4 +660,16 @@ public:
 
         return S_OK;
     }
+
+#pragma region ICustomWriterRuntimeDataReceiver
+
+    _Check_return_
+    HRESULT SetCustomWriterRuntimeData(
+        _In_ std::shared_ptr<CustomWriterRuntimeData> data,
+        _In_ std::unique_ptr<CustomWriterRuntimeContext> context) override;
+
+#pragma endregion
+
+private:
+    std::vector<KnownPropertyIndex> m_overridesFromProperties;
 };

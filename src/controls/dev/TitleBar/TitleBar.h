@@ -37,13 +37,13 @@ private:
     void UpdateTheme();
     void UpdateTitle();
     void UpdateSubtitle();
-    void UpdateLeftContent();
-    void UpdateCenterContent();
-    void UpdateRightContent();
+    void UpdateLeftHeader();
+    void UpdateContent();
+    void UpdateRightHeader();
     void UpdateDragRegion();
     void UpdateIconRegion();
     void UpdateInteractableElementsList();
-    void UpdateLeftContentSpacing();
+    void UpdateLeftHeaderSpacing();
 
     void OnInputActivationChanged(const winrt::InputActivationListener& sender, const winrt::InputActivationListenerActivationChangedEventArgs& args);
     void OnWindowRectChanged(const winrt::InputNonClientPointerSource& sender, const winrt::WindowRectChangedEventArgs& args);
@@ -79,10 +79,10 @@ private:
     tracker_ref<winrt::Button> m_backButton{ this };
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
     tracker_ref<winrt::FrameworkElement> m_iconViewbox{ this };
-    tracker_ref<winrt::Grid> m_centerContentAreaGrid{ this };
-    tracker_ref<winrt::FrameworkElement> m_leftContentArea{ this };
-    tracker_ref<winrt::FrameworkElement> m_centerContentArea{ this };
-    tracker_ref<winrt::FrameworkElement> m_rightContentArea{ this };
+    tracker_ref<winrt::Grid> m_contentAreaGrid{ this };
+    tracker_ref<winrt::FrameworkElement> m_leftHeaderArea{ this };
+    tracker_ref<winrt::FrameworkElement> m_contentArea{ this };
+    tracker_ref<winrt::FrameworkElement> m_rightHeaderArea{ this };
 
     double m_compactModeThresholdWidth{ 0.0 };
     bool m_isCompact{ false };
@@ -93,10 +93,10 @@ private:
     static constexpr std::wstring_view s_backButtonPartName{ L"PART_BackButton"sv };
     static constexpr std::wstring_view s_paneToggleButtonPartName{ L"PART_PaneToggleButton"sv };
     static constexpr std::wstring_view s_iconViewboxPartName{ L"PART_Icon"sv };
-    static constexpr std::wstring_view s_leftContentPresenterPartName{ L"PART_LeftContentPresenter"sv };
-    static constexpr std::wstring_view s_centerContentPresenterGridPartName{ L"PART_CenterContentPresenterGrid"sv };
-    static constexpr std::wstring_view s_centerContentPresenterPartName{ L"PART_CenterContentPresenter"sv };
-    static constexpr std::wstring_view s_rightContentPresenterPartName{ L"PART_RightContentPresenter"sv };
+    static constexpr std::wstring_view s_leftHeaderPresenterPartName{ L"PART_LeftHeaderPresenter"sv };
+    static constexpr std::wstring_view s_contentPresenterGridPartName{ L"PART_ContentPresenterGrid"sv };
+    static constexpr std::wstring_view s_contentPresenterPartName{ L"PART_ContentPresenter"sv };
+    static constexpr std::wstring_view s_rightHeaderPresenterPartName{ L"PART_RightHeaderPresenter"sv };
 
     static constexpr std::wstring_view s_compactVisualStateName{ L"Compact"sv };
     static constexpr std::wstring_view s_expandedVisualStateName{ L"Expanded"sv };
@@ -119,15 +119,15 @@ private:
     static constexpr std::wstring_view s_subtitleTextVisibleVisualStateName{ L"SubtitleTextVisible"sv };
     static constexpr std::wstring_view s_subtitleTextCollapsedVisualStateName{ L"SubtitleTextCollapsed"sv };
     static constexpr std::wstring_view s_subtitleTextDeactivatedVisualStateName{ L"SubtitleTextDeactivated"sv };
-    static constexpr std::wstring_view s_leftContentVisibleVisualStateName{ L"LeftContentVisible"sv };
-    static constexpr std::wstring_view s_leftContentCollapsedVisualStateName{ L"LeftContentCollapsed"sv };
-    static constexpr std::wstring_view s_leftContentDeactivatedVisualStateName{ L"LeftContentDeactivated"sv };
-    static constexpr std::wstring_view s_centerContentVisibleVisualStateName{ L"CenterContentVisible"sv };
-    static constexpr std::wstring_view s_centerContentCollapsedVisualStateName{ L"CenterContentCollapsed"sv };
-    static constexpr std::wstring_view s_centerContentDeactivatedVisualStateName{ L"CenterContentDeactivated"sv };
-    static constexpr std::wstring_view s_rightContentVisibleVisualStateName{ L"RightContentVisible"sv };
-    static constexpr std::wstring_view s_rightContentCollapsedVisualStateName{ L"RightContentCollapsed"sv };
-    static constexpr std::wstring_view s_rightContentDeactivatedVisualStateName{ L"RightContentDeactivated"sv };
+    static constexpr std::wstring_view s_leftHeaderVisibleVisualStateName{ L"LeftHeaderVisible"sv };
+    static constexpr std::wstring_view s_leftHeaderCollapsedVisualStateName{ L"LeftHeaderCollapsed"sv };
+    static constexpr std::wstring_view s_leftHeaderDeactivatedVisualStateName{ L"LeftHeaderDeactivated"sv };
+    static constexpr std::wstring_view s_contentVisibleVisualStateName{ L"ContentVisible"sv };
+    static constexpr std::wstring_view s_contentCollapsedVisualStateName{ L"ContentCollapsed"sv };
+    static constexpr std::wstring_view s_contentDeactivatedVisualStateName{ L"ContentDeactivated"sv };
+    static constexpr std::wstring_view s_rightHeaderVisibleVisualStateName{ L"RightHeaderVisible"sv };
+    static constexpr std::wstring_view s_rightHeaderCollapsedVisualStateName{ L"RightHeaderCollapsed"sv };
+    static constexpr std::wstring_view s_rightHeaderDeactivatedVisualStateName{ L"RightHeaderDeactivated"sv };
 
     static constexpr std::wstring_view s_titleBarCaptionButtonForegroundColorName{ L"TitleBarCaptionButtonForegroundColor"sv };
     static constexpr std::wstring_view s_titleBarCaptionButtonBackgroundColorName{ L"TitleBarCaptionButtonBackgroundColor"sv };

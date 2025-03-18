@@ -940,6 +940,26 @@ _Check_return_ HRESULT XamlSchemaContext::get_X_NameProperty(
     return S_OK;
 }
 
+// Get the x:ConnectionId property
+_Check_return_ HRESULT XamlSchemaContext::get_X_ConnectionIdProperty(
+    _Out_ std::shared_ptr<DirectiveProperty>& rspOut
+    )
+{
+    if (!m_spXConnectionIdProperty)
+    {
+        std::shared_ptr<XamlNamespace> spDirectiveNamespace;
+
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strName, L"ConnectionId");
+
+        IFC_RETURN(GetXamlXmlNamespace(c_strMarkupUri, spDirectiveNamespace));
+        IFC_RETURN(GetXamlDirective(spDirectiveNamespace, c_strName, m_spXConnectionIdProperty));
+    }
+
+    rspOut = m_spXConnectionIdProperty;
+
+    return S_OK;
+}
+
 // Get the XamlType corresponding to the Windows.Foundation.String type.
 _Check_return_ HRESULT XamlSchemaContext::get_StringXamlType(
     _Out_ std::shared_ptr<XamlType>& spStringType

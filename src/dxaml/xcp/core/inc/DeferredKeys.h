@@ -88,9 +88,6 @@ private:
     _Check_return_ 
     HRESULT RemoveObjectReferencesFromStack();
 
-    _Check_return_
-    HRESULT get_X_ConnectionIdProperty(_In_ const std::shared_ptr<XamlSchemaContext>& spSchemaContext, _Out_ std::shared_ptr<DirectiveProperty>& spConnectionIdProperty);
-
 private:
     std::shared_ptr<XamlOptimizedNodeList> m_spNodeList;
     std::shared_ptr< xvector< XUINT32 > > m_spNonDeferredKeys;

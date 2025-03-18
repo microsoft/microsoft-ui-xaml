@@ -105,22 +105,6 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT
-CDeferredKeys::get_X_ConnectionIdProperty(
-    _In_ const std::shared_ptr<XamlSchemaContext>& spSchemaContext,
-    _Out_ std::shared_ptr<DirectiveProperty>& spConnectionIdProperty)
-{
-    std::shared_ptr<XamlNamespace> spDirectiveNamespace;
-
-    DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strDirectiveNamespaceString, L"http://schemas.microsoft.com/winfx/2006/xaml");
-    DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strConnectionId, L"ConnectionId");
-
-    IFC_RETURN(spSchemaContext->GetXamlXmlNamespace(c_strDirectiveNamespaceString, spDirectiveNamespace));
-    IFC_RETURN(spSchemaContext->GetXamlDirective(spDirectiveNamespace, c_strConnectionId, spConnectionIdProperty));
-
-    return S_OK;
-}
-
 //---------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -164,8 +148,8 @@ CDeferredKeys::PreResolve(
         IFC(spReader->GetSchemaContext(spSchemaContext));
         IFC(spSchemaContext->get_X_KeyProperty(spKeyProperty));
         IFC(spSchemaContext->get_X_NameProperty(spNameProperty));
+        IFC(spSchemaContext->get_X_ConnectionIdProperty(spConnectionIdProperty));
 
-        IFC(get_X_ConnectionIdProperty(spSchemaContext, spConnectionIdProperty));
         m_spKeyMap.reset(new containers::vector_map<xstring_ptr, XUINT32>);
     }
 
