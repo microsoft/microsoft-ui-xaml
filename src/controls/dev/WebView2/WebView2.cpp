@@ -19,6 +19,10 @@
 #include "Windows.Globalization.h"
 #include <wrl\event.h>
 #include "MuxcTraceLogging.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 56852985: [1.7 Servicing][WASDK]Crash Caused by Re-Entrancy Due to Call to m_coreWebViewController.IsVisible(...)
+#define WINAPPSDK_CHANGEID_56852985 56852985, WinAppSDK_1_7_1
 
 using namespace Microsoft::WRL;
 
@@ -2165,7 +2169,16 @@ void WebView2::UpdateCoreWebViewVisibility()
             CoreWebView2RunIgnoreInvalidStateSync(
                 [&]()
                 {
-                    m_coreWebViewController.IsVisible(m_isVisible);
+                    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56852985>())
+                    {
+                        strongThis.as<winrt::IUIElementPrivate>().PauseNewDispatchIfAvailable();
+                        m_coreWebViewController.IsVisible(m_isVisible);
+                        strongThis.as<winrt::IUIElementPrivate>().ResumeNewDispatchIfAvailable();
+                    }
+                    else
+                    {
+                        m_coreWebViewController.IsVisible(m_isVisible);
+                    } 
                 });
         }
     }

@@ -44,6 +44,9 @@
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
 #include <Microsoft.UI.Content.Private.h>
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_56870998 56870998, WinAppSDK_1_7_1 // [1.7 Servicing] [Reentrancy] Pause Xaml dispatcher before Closing PopupWindowSiteBridge
 
 using namespace DirectUI;
 using namespace Focus;
@@ -158,7 +161,19 @@ void CPopup::EnsureBridgeClosed()
         {
             wrl::ComPtr<wf::IClosable> closable;
             IFCFAILFAST(m_popupWindowBridge.As(&closable));
-            IFCFAILFAST(closable->Close());
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56870998>())
+            {
+                // Closing Bridge here cleans up DragDropManager. DragDropManager releases COM objects,
+                // COM triggers a short term message pump, which process dispatcher timer and leading
+                // to reentrancy in Xaml. Disable Xaml dispatcher until Close is done.
+                PauseNewDispatch deferReentrancy(GetContext());
+                IFCFAILFAST(closable->Close());
+            }
+            else
+            {
+                IFCFAILFAST(closable->Close());
+            }
         }
 
         m_bridgeClosed = true;

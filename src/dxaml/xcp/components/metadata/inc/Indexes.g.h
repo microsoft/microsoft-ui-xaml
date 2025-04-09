@@ -3194,6 +3194,8 @@ enum class KnownMethodIndex: UINT16
     UIElement_InternalGetIsEnabled,
     UIElement_InternalPutIsEnabled,
     UIElement_FocusNoActivate,
+    UIElement_PauseNewDispatchIfAvailable,
+    UIElement_ResumeNewDispatchIfAvailable,
     VisualStateManager_GoToState,
     VisualStateManager_GoToStateCore,
     VisualStateManager_RaiseCurrentStateChanging,

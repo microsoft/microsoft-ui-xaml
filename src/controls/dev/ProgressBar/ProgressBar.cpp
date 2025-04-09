@@ -7,6 +7,9 @@
 #include "ProgressBarAutomationPeer.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_56779522 56779522, WinAppSDK_1_7_1 //[Watson Failure] caused by ACCESS_VIOLATION_c0000005_Microsoft.UI.Xaml.Controls.dll!ProgressBar::SetProgressBarIndicatorWidth
 
 ProgressBar::ProgressBar()
 {
@@ -142,7 +145,19 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
             // Round the border width, if necessary. Note that the Left and Right values of BorderThickness
             // should be individually rounded (see CBorder::GetLayoutRoundedThickness).
-            const double scaleFactor = progressBar.XamlRoot().RasterizationScale();
+            double scaleFactor;
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56779522>())
+            {
+                scaleFactor = 1.0;  // Assuming a 1.0 scale factor when no XamlRoot is available at the moment.
+                if (auto const& xamlRoot = progressBar.XamlRoot())
+                {
+                    scaleFactor = xamlRoot.RasterizationScale();
+                }
+            }
+            else
+            {
+                scaleFactor = progressBar.XamlRoot().RasterizationScale();
+            }
             const double roundedBorderWidth = progressBar.UseLayoutRounding() ?
                 (LayoutRound(borderThickness.Left, scaleFactor) + LayoutRound(borderThickness.Right, scaleFactor)) :
                 (borderThickness.Left + borderThickness.Right);

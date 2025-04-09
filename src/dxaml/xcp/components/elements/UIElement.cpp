@@ -53,6 +53,9 @@
 #include "ExternalObjectReference.g.h"
 #include "PropertyTransitions.h"
 #include <FxCallbacks.h>
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_56686624 56686624, WinAppSDK_1_7_1 //[Watson Failure] caused by ACCESS_VIOLATION_c0000005_Microsoft.UI.Xaml.dll!CUIElement::FlushPendingKeepVisibleOperations
 
 using namespace DirectUI;
 
@@ -1367,10 +1370,21 @@ void CUIElement::FlushPendingKeepVisibleOperations()
     if (parent)
     {
         CUIElementCollection* children = parent->GetChildren();
-        if (children->HasUnloadingStorage())
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56686624>())
         {
-            bool bWasUnloading = false;
-            IFCFAILFAST(parent->GetChildren()->RemoveUnloadedElement(this, UC_REFERENCE_ImplicitAnimation, &bWasUnloading));
+            if (children && children->HasUnloadingStorage())
+            {
+                bool bWasUnloading = false;
+                IFCFAILFAST(parent->GetChildren()->RemoveUnloadedElement(this, UC_REFERENCE_ImplicitAnimation, &bWasUnloading));
+            }
+        }
+        else
+        {
+            if (children->HasUnloadingStorage())
+            {
+                bool bWasUnloading = false;
+                IFCFAILFAST(parent->GetChildren()->RemoveUnloadedElement(this, UC_REFERENCE_ImplicitAnimation, &bWasUnloading));
+            } 
         }
     }
 
