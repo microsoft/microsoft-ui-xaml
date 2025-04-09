@@ -428,6 +428,78 @@ ixp::IInputFocusControllerStatics* ActivationFactoryCache::GetInputFocusControll
     return m_inputFocusControllerStatics.Get();
 }
 
+ixp::IInputKeyboardSourceStatics2* ActivationFactoryCache::GetInputKeyboardSourceStatics2()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputKeyboardSourceStatics2)
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
+            &m_inputKeyboardSourceStatics2));
+    }
+
+    return m_inputKeyboardSourceStatics2.Get();
+}
+
+ixp::IInputPreTranslateKeyboardSourceStatics* ActivationFactoryCache::GetInputPreTranslateKeyboardSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputPreTranslateKeyboardSourceStatics)
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPreTranslateKeyboardSource).Get(),
+            &m_inputPreTranslateKeyboardSourceStatics));
+    }
+
+    return m_inputPreTranslateKeyboardSourceStatics.Get();
+}
+
+ixp::IInputPointerSourceStatics* ActivationFactoryCache::GetInputPointerSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputPointerSourceStatics)
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPointerSource).Get(),
+            &m_inputPointerSourceStatics));
+    }
+
+    return m_inputPointerSourceStatics.Get();
+}
+
+ixp::IInputActivationListenerStatics2* ActivationFactoryCache::GetInputActivationListenerStatics2()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputActivationListenerStatics2)
+    {
+        wrl::ComPtr<ixp::IInputActivationListenerStatics> inputActivationListenerStatics;
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputActivationListener).Get(),
+            &inputActivationListenerStatics));
+        IFCFAILFAST(inputActivationListenerStatics.As(&m_inputActivationListenerStatics2));
+    }
+
+    return m_inputActivationListenerStatics2.Get();
+}
+
+ixp::IInputNonClientPointerSourceStatics* ActivationFactoryCache::GetInputNonClientPointerSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputNonClientPointerSourceStatics)
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputNonClientPointerSource).Get(),
+            &m_inputNonClientPointerSourceStatics));
+    }
+
+    return m_inputNonClientPointerSourceStatics.Get();
+}
+
 //------------------------------------------------------------------------
 //
 //  Synopsis:

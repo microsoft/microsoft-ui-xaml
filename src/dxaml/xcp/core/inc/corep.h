@@ -588,6 +588,12 @@ public:
     ixp::IContentIslandStatics* GetContentIslandStatics();
     ixp::IInputFocusControllerStatics* GetInputFocusControllerStatics();
 
+    ixp::IInputKeyboardSourceStatics2* GetInputKeyboardSourceStatics2();
+    ixp::IInputPreTranslateKeyboardSourceStatics* GetInputPreTranslateKeyboardSourceStatics();
+    ixp::IInputPointerSourceStatics* GetInputPointerSourceStatics();
+    ixp::IInputActivationListenerStatics2* GetInputActivationListenerStatics2();
+    ixp::IInputNonClientPointerSourceStatics* GetInputNonClientPointerSourceStatics();
+
 private:
     // Multiple threads can be accessing the activation factories stored here.
     wil::critical_section m_lock;
@@ -606,6 +612,12 @@ private:
     wrl::ComPtr<ixp::IInputSystemCursorStatics> m_inputSystemCursorStatics;
     wrl::ComPtr<ixp::IContentIslandStatics> m_contentIslandStatics;
     wrl::ComPtr<ixp::IInputFocusControllerStatics> m_inputFocusControllerStatics;
+
+    wrl::ComPtr<ixp::IInputKeyboardSourceStatics2> m_inputKeyboardSourceStatics2;
+    wrl::ComPtr<ixp::IInputPreTranslateKeyboardSourceStatics> m_inputPreTranslateKeyboardSourceStatics;
+    wrl::ComPtr<ixp::IInputPointerSourceStatics> m_inputPointerSourceStatics;
+    wrl::ComPtr<ixp::IInputActivationListenerStatics2> m_inputActivationListenerStatics2;
+    wrl::ComPtr<ixp::IInputNonClientPointerSourceStatics> m_inputNonClientPointerSourceStatics;
 };
 
 //------------------------------------------------------------------------

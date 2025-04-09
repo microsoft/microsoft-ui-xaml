@@ -39,6 +39,14 @@
     <ResourceCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MUXProjectRoot)dxaml\xcp\inc;$(TempDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
+  </ItemDefinitionGroup>  
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>
+        %(AdditionalDependencies);
+        $(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;
+      </AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.Controls.def" />

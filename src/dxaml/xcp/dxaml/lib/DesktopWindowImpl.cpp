@@ -23,9 +23,12 @@
 #include <windowing.h>
 #include "Microsoft.UI.Windowing.h"
 #include <FrameworkUdk/Theming.h>
+#include <FrameworkUdk/Containment.h>
 #include <Microsoft.UI.Interop.h>
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
+
+#define WINAPPSDK_CHANGEID_56870898 56870898 // [Watson Failure] caused by ACCESS_VIOLATION_c0000005_Microsoft.UI.Xaml.dll!ctl::WeakReferenceSource::CheckThread
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -793,11 +796,17 @@ _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lPara
 
         IFC_RETURN(RaiseWindowActivatedEvent(xaml::WindowActivationState_Deactivated));
     }
+
+    bool skip_focus{false};
+    if(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56870898>())
+    {
+        skip_focus = m_bIsClosed;
+    }
     //
     // If the window has been activated and is not minimized, set focus on the last child window
-    // that had focus.  If that child window is the composition island, restore focus.
+    // that had focus.  If that child window is the composition island, restore focus if window is not already closed.
     //
-    if (!isWindowMinimized && (WA_INACTIVE != LOWORD(wParam)))
+    if (!skip_focus && !isWindowMinimized && (WA_INACTIVE != LOWORD(wParam)))
     {
         // Set the focus to the child window that last had focus when this window was deactivated.
         // also enters when on such deactivation cases where m_lastFocusedWindowHandle didn't get set like in case of window minimize

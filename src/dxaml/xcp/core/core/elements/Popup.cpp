@@ -44,9 +44,13 @@
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
 #include <Microsoft.UI.Content.Private.h>
+#include <FrameworkUdk/Containment.h>
 
 using namespace DirectUI;
 using namespace Focus;
+
+// Bug 56802480: [1.6 Servicing] [Reentrancy] Pause CoreMessaging dispatcher before Closing PopupWindowSiteBridge
+#define WINAPPSDK_CHANGEID_56802480 56802480
 
 // Windowed popup's window class
 ATOM CPopup::s_windowedPopupWindowClass = 0;
@@ -158,7 +162,25 @@ void CPopup::EnsureBridgeClosed()
         {
             wrl::ComPtr<wf::IClosable> closable;
             IFCFAILFAST(m_popupWindowBridge.As(&closable));
-            IFCFAILFAST(closable->Close());
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56802480>())
+            {
+                // Closing Bridge here cleans up DragDropManager. DragDropManager releases COM objects,
+                // COM triggers a short term message pump, which process dispatcher timer and leading
+                // to reentrancy in Xaml. Disable CoreMessaging until Close is done.
+                CXcpDispatcher* dispatcher = nullptr;
+                auto hostSite = GetContext()->GetHostSite();
+                if (hostSite)
+                {
+                    dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+                }
+                PauseNewDispatch deferReentrancy(dispatcher ? dispatcher->GetMessageLoopExtensionsNoRef() : nullptr);
+                IFCFAILFAST(closable->Close());
+            }
+            else
+            {
+                IFCFAILFAST(closable->Close());
+            }
         }
 
         m_bridgeClosed = true;
