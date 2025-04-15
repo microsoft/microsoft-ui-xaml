@@ -25,6 +25,7 @@ class CContentRoot;
 class CoreWindowRootScale;
 class CUIAWrapper;
 struct IPALEvent;
+class PauseNewDispatchAtControl;
 class WindowsPresentTarget;
 
 namespace Parser
@@ -134,6 +135,9 @@ namespace DirectUI
         {
             return m_hCore;
         }
+
+        void PauseDispatchAtControl();
+        void ResumeDispatchAtControl();
 
         _Check_return_ HRESULT ActivatePeer(_In_ KnownTypeIndex nTypeIndex, _COM_Outptr_ DependencyObject** ppObject);
 
@@ -750,6 +754,8 @@ namespace DirectUI
         LONG m_cReferenceLockEnters {0};
 
         CCoreServices* m_hCore {nullptr};
+        PauseNewDispatchAtControl* m_deferReentrancy {nullptr};
+        
         CJupiterControl* m_pControl {nullptr};
         DefaultStyles* m_pDefaultStyles {nullptr};    // Cached default control styles
         ctl::ComPtr<xaml::IDataContextChangedEventArgs> m_spDataContextChangedEventArgs;

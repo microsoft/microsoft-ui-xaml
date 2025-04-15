@@ -1977,12 +1977,13 @@ _Check_return_ HRESULT
 CPathGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_result_maybenull_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;
     IPALAcceleratedPathGeometry *pPALGeometry = NULL;
     IPALGeometrySink *pPALGeometrySink = NULL;
+    *ppGeometry = nullptr;
 
     IFCEXPECT(m_pFigures);
     IFC(cp.GetFactory()->CreatePathGeometry(&pPALGeometry));
@@ -2259,11 +2260,12 @@ _Check_return_ HRESULT
 CGeometryGroup::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_result_maybenull_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;
     IPALAcceleratedGeometry *pPALGeometry = NULL;
+    *ppGeometry = nullptr;
 
     if (m_pChild)
     {
@@ -2460,6 +2462,7 @@ CGeometry::GetPrintGeometry(
 
     // Call the virtual to get the IPALAcceleratedGeometry for this geometry.
     IFC(GetPrintGeometryVirtual(cp, printParams, &pGeometry));
+    IFCPTRRC(pGeometry, E_POINTER);
 
     // If Geometry.Transform is present, create a transformed PAL geometry.
     if (m_pTransform)
@@ -2578,9 +2581,10 @@ _Check_return_ HRESULT
 CGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_result_maybenull_ IPALAcceleratedGeometry** ppGeometry
     )
 {
+    *ppGeometry = nullptr;
     ASSERT(FALSE);
     RRETURN(E_NOTIMPL);
 }

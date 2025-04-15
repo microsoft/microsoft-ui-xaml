@@ -235,10 +235,8 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     //  Start the main WinUI Desktop message loop
     FrameworkApplication::RunDesktopWindowMessageLoop();
 
-    // Note we hold a reference to windowsXamlManager here, and we don't close it, because we want Xaml to shut down
-    // during DispatcherQueue.ShutdownQueue (in the DispatcherQueue.FrameworkShutdownStarting event handler).  See
-    // xaml-shutdown.md for more detail about the shutdown process.
-    
+    // During this call, Xaml will synchronously shutdown on the thread in the
+    // DispatcherQueue.FrameworkShutdownStarting event handler.
     IFCFAILFAST(dispatcherQueueController2->ShutdownQueue());
 
     return S_OK;

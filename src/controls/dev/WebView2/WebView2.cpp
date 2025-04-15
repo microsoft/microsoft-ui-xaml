@@ -2165,7 +2165,9 @@ void WebView2::UpdateCoreWebViewVisibility()
             CoreWebView2RunIgnoreInvalidStateSync(
                 [&]()
                 {
+                    strongThis.as<winrt::IUIElementPrivate>().PauseNewDispatchIfAvailable();
                     m_coreWebViewController.IsVisible(m_isVisible);
+                    strongThis.as<winrt::IUIElementPrivate>().ResumeNewDispatchIfAvailable();
                 });
         }
     }

@@ -158,6 +158,11 @@ void CPopup::EnsureBridgeClosed()
         {
             wrl::ComPtr<wf::IClosable> closable;
             IFCFAILFAST(m_popupWindowBridge.As(&closable));
+
+            // Closing Bridge here cleans up DragDropManager. DragDropManager releases COM objects,
+            // COM triggers a short term message pump, which process dispatcher timer and leading
+            // to reentrancy in Xaml. Disable Xaml dispatcher until Close is done.
+            PauseNewDispatch deferReentrancy(GetContext());
             IFCFAILFAST(closable->Close());
         }
 

@@ -25,13 +25,6 @@ TitleBar::TitleBar()
 
     m_sizeChangedRevoker = SizeChanged(winrt::auto_revoke, { this, &TitleBar::OnSizeChanged });
     m_flowDirectionChangedRevoker = RegisterPropertyChanged(*this, winrt::FrameworkElement::FlowDirectionProperty(), { this, &TitleBar::OnFlowDirectionChanged });
-
-
-    if (const winrt::IFrameworkElement frameworkElement = *this)
-    {
-        m_actualThemeChangedRevoker = frameworkElement.ActualThemeChanged(winrt::auto_revoke,
-                [this](auto&&, auto&&) { UpdateTheme(); });
-    }
 }
 
 TitleBar::~TitleBar()
@@ -77,7 +70,6 @@ void TitleBar::OnApplyTemplate()
     UpdateIcon();
     UpdateBackButton();
     UpdatePaneToggleButton();
-    UpdateTheme();
     UpdateTitle();
     UpdateSubtitle();
     UpdateLeftHeader();
@@ -410,47 +402,6 @@ void TitleBar::UpdatePadding()
               
                 rightColumn.Width(winrt::GridLengthHelper::FromPixels(rightColumnInset));
             }
-        }
-    }
-}
-
-void TitleBar::UpdateTheme()
-{
-    auto appWindowId = GetAppWindowId();
-
-    if (appWindowId.Value != 0)
-    {
-        const winrt::AppWindow appWindow = winrt::AppWindow::GetFromWindowId(appWindowId);
-
-        // AppWindow TitleBar's caption buttons does not update colors with theme change.
-        // We need to set them here.
-        if (const auto appTitleBar = appWindow.TitleBar())
-        {
-            // Rest colors.
-            const auto buttonForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonForegroundColorName)).as<winrt::Color>();
-            appTitleBar.ButtonForegroundColor(buttonForegroundColor);
-
-            const auto buttonBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonBackgroundColorName)).as<winrt::Color>();
-            appTitleBar.ButtonBackgroundColor(buttonBackgroundColor);
-            appTitleBar.ButtonInactiveBackgroundColor(buttonBackgroundColor);
-
-            // Hover colors.
-            const auto buttonHoverForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonHoverForegroundColorName)).as<winrt::Color>();
-            appTitleBar.ButtonHoverForegroundColor(buttonHoverForegroundColor);
-
-            const auto buttonHoverBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonHoverBackgroundColorName)).as<winrt::Color>();
-            appTitleBar.ButtonHoverBackgroundColor(buttonHoverBackgroundColor);
-
-            // Pressed colors.
-            const auto buttonPressedForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonPressedForegroundColorName)).as<winrt::Color>();
-            appTitleBar.ButtonPressedForegroundColor(buttonPressedForegroundColor);
-
-            const auto buttonPressedBackgroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonPressedBackgroundColorName)).as<winrt::Color>();
-            appTitleBar.ButtonPressedBackgroundColor(buttonPressedBackgroundColor);
-
-            // Inactive foreground.
-            const auto buttonInactiveForegroundColor = ResourceAccessor::ResourceLookup(*this, box_value(s_titleBarCaptionButtonInactiveForegroundColorName)).as<winrt::Color>();
-            appTitleBar.ButtonInactiveForegroundColor(buttonInactiveForegroundColor);
         }
     }
 }

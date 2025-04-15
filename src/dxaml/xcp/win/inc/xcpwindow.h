@@ -80,6 +80,7 @@ class CXcpDispatcher final :
     public CXcpObjectBase<IXcpDispatcher>
 {
     friend class PauseNewDispatch;
+    friend class PauseNewDispatchAtControl;
 
 public:
 
@@ -147,6 +148,7 @@ private:
 
     void CheckReentrancy();
     void QueueReentrancyCheck();
+    void QueueReentrancyCheckAllowPaused();
     HRESULT CreateReentrancyGuardAndCheckReentrancy();
 
     static HRESULT CALLBACK MessageTimerCallbackStatic(void* myUserData);
@@ -229,4 +231,29 @@ public:
 private:
     // NoRef pointer. The dispatcher is expected to be on the call stack while this object is alive (also on the stack).
     CXcpDispatcher* m_dispatcherNoRef { nullptr };
+};
+
+class PauseNewDispatchAtControl
+{
+public:
+    PauseNewDispatchAtControl(_In_opt_ CCoreServices* coreServices);
+    PauseNewDispatchAtControl(_In_ CXcpDispatcher* dispatcher);
+
+    ~PauseNewDispatchAtControl();
+
+    // Disallow copying
+    PauseNewDispatchAtControl(const PauseNewDispatchAtControl&) = delete;
+    PauseNewDispatchAtControl(PauseNewDispatchAtControl&&) = delete;
+    PauseNewDispatchAtControl& operator=(const PauseNewDispatchAtControl&) = delete;
+    PauseNewDispatchAtControl& operator=(PauseNewDispatchAtControl&&) = delete;
+
+    void PauseNewDispatch();
+    void ResumeNewDispatch();
+
+private:
+    // NoRef pointer. The dispatcher is expected to be on the call stack while this object is alive (also on the stack).
+    CXcpDispatcher* m_dispatcherNoRef { nullptr };
+    // Reference count for pause requests
+    int m_pauseCount = 0; 
+
 };

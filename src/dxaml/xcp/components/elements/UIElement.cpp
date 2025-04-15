@@ -1367,7 +1367,7 @@ void CUIElement::FlushPendingKeepVisibleOperations()
     if (parent)
     {
         CUIElementCollection* children = parent->GetChildren();
-        if (children->HasUnloadingStorage())
+        if (children && children->HasUnloadingStorage())
         {
             bool bWasUnloading = false;
             IFCFAILFAST(parent->GetChildren()->RemoveUnloadedElement(this, UC_REFERENCE_ImplicitAnimation, &bWasUnloading));

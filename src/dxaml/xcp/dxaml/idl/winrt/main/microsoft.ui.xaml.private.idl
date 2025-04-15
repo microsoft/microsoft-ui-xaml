@@ -310,6 +310,8 @@ namespace Microsoft.UI.Xaml
     interface IUIElementPrivate 
     {
         Boolean FocusNoActivate(Microsoft.UI.Xaml.FocusState value);
+        void PauseNewDispatchIfAvailable();
+        void ResumeNewDispatchIfAvailable();
     };
 
     [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]

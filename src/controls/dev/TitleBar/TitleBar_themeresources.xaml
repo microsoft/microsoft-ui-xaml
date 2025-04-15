@@ -27,13 +27,6 @@
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
         <StaticResource x:Key="TitleBarPaneToggleForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-        <Color x:Key="TitleBarCaptionButtonForegroundColor">#FFFFFF</Color>
-        <Color x:Key="TitleBarCaptionButtonHoverForegroundColor">#FFFFFF</Color>
-        <Color x:Key="TitleBarCaptionButtonPressedForegroundColor">#CFCFCF</Color>
-        <Color x:Key="TitleBarCaptionButtonInactiveForegroundColor">#717171</Color>
-        <StaticResource x:Key="TitleBarCaptionButtonBackgroundColor" ResourceKey="SubtleFillColorTransparent" />
-        <StaticResource x:Key="TitleBarCaptionButtonHoverBackgroundColor" ResourceKey="SubtleFillColorSecondary" />
-        <StaticResource x:Key="TitleBarCaptionButtonPressedBackgroundColor" ResourceKey="SubtleFillColorTertiary" />
       </ResourceDictionary>
       <ResourceDictionary x:Key="Light">
         <StaticResource x:Key="TitleBarForegroundBrush" ResourceKey="TextFillColorPrimaryBrush" />
@@ -56,13 +49,6 @@
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
         <StaticResource x:Key="TitleBarPaneToggleForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-        <Color x:Key="TitleBarCaptionButtonForegroundColor">#191919</Color>
-        <Color x:Key="TitleBarCaptionButtonHoverForegroundColor">#191919</Color>
-        <Color x:Key="TitleBarCaptionButtonPressedForegroundColor">#606060</Color>
-        <Color x:Key="TitleBarCaptionButtonInactiveForegroundColor">#9b9b9b</Color>
-        <StaticResource x:Key="TitleBarCaptionButtonBackgroundColor" ResourceKey="SubtleFillColorTransparent" />
-        <StaticResource x:Key="TitleBarCaptionButtonHoverBackgroundColor" ResourceKey="SubtleFillColorSecondary" />
-        <StaticResource x:Key="TitleBarCaptionButtonPressedBackgroundColor" ResourceKey="SubtleFillColorTertiary" />
       </ResourceDictionary>
       <ResourceDictionary x:Key="HighContrast">
         <StaticResource x:Key="TitleBarForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
@@ -85,13 +71,6 @@
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
         <StaticResource x:Key="TitleBarPaneToggleForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-        <StaticResource x:Key="TitleBarCaptionButtonForegroundColor" ResourceKey="TextFillColorPrimary" />
-        <StaticResource x:Key="TitleBarCaptionButtonHoverForegroundColor" ResourceKey="TextFillColorPrimary" />
-        <StaticResource x:Key="TitleBarCaptionButtonPressedForegroundColor" ResourceKey="TextFillColorSecondary" />
-        <StaticResource x:Key="TitleBarCaptionButtonInactiveForegroundColor" ResourceKey="TextFillColorTertiary" />
-        <StaticResource x:Key="TitleBarCaptionButtonBackgroundColor" ResourceKey="SubtleFillColorTransparent" />
-        <StaticResource x:Key="TitleBarCaptionButtonHoverBackgroundColor" ResourceKey="SubtleFillColorSecondary" />
-        <StaticResource x:Key="TitleBarCaptionButtonPressedBackgroundColor" ResourceKey="SubtleFillColorTertiary" />
       </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

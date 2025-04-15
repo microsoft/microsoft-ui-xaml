@@ -112,6 +112,8 @@
 
 #include "DXamlCoreTipTests.h"
 
+#include "xcpwindow.h"
+
 using namespace WRLHelper;
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -2438,11 +2440,16 @@ DXamlCore::OnRenderedEvent(_In_ IRenderedEventArgs* pArgs)
 {
     HRESULT hr = S_OK;
 
+    // FUTURE: Switch to PauseNewDispatch to always pause. This will need testing for compatibility.
+    CCoreServices* pCoreHandle = this->GetHandle();
+    PauseNewDispatchAtControl deferReentrancy(pCoreHandle);
+    m_deferReentrancy = &deferReentrancy;
     CEventSource<wf::IEventHandler<xaml_media::RenderedEventArgs*>, IInspectable, xaml_media::IRenderedEventArgs>* pEventSource = NULL;
     IFC(GetRenderedEventSource(&pEventSource));
     IFC(pEventSource->Raise(NULL, pArgs));
 
 Cleanup:
+    m_deferReentrancy = nullptr;
     ctl::release_interface(pEventSource);
     return hr;
 }
@@ -4832,4 +4839,20 @@ _Check_return_ HRESULT DXamlCore::IsAnimationEnabled(_Out_ bool* result)
     *result = m_isAnimationEnabled;
 
     return S_OK;
+}
+
+void DXamlCore::PauseDispatchAtControl()
+{
+    if(m_deferReentrancy)
+    {
+        m_deferReentrancy->PauseNewDispatch();
+    }
+}
+
+void DXamlCore::ResumeDispatchAtControl()
+{
+    if(m_deferReentrancy)
+    {
+        m_deferReentrancy->ResumeNewDispatch();
+    }
 }
