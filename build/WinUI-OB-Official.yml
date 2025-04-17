@@ -321,10 +321,11 @@ extends:
             displayName: 'CodeSign (nupkg)'
             inputs:
               ConnectedServiceName: $(WinUI2SigningConnectedServiceName)
+              UseMSIAuthentication: true
               AppRegistrationClientId: $(WinUI2SigningAppRegistrationClientId)
               AppRegistrationTenantId: $(WinUI2SigningAppRegistrationTenantId)
+              EsrpClientId: $(WinUI2SigningEsrpClientId)
               AuthAKVName: $(WinUI2SigningAuthAKVName)
-              AuthCertName: $(WinUI2SigningAuthCertName)
               AuthSignCertName: $(WinUI2SigningAuthSignCertName)
               FolderPath: $(nupkgdir)
               Pattern: |

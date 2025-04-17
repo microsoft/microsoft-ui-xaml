@@ -32,10 +32,11 @@ steps:
       displayName: First Party StoreSign Framework Package
       inputs:
         ConnectedServiceName: $(WinUI2SigningConnectedServiceName)
+        UseMSIAuthentication: true
         AppRegistrationClientId: $(WinUI2SigningAppRegistrationClientId)
         AppRegistrationTenantId: $(WinUI2SigningAppRegistrationTenantId)
+        EsrpClientId: $(WinUI2SigningEsrpClientId)
         AuthAKVName: $(WinUI2SigningAuthAKVName)
-        AuthCertName: $(WinUI2SigningAuthCertName)
         AuthSignCertName: $(WinUI2SigningAuthSignCertName)
         FolderPath: '${{ parameters.buildOutputDir }}\$(buildConfiguration)\$(buildPlatform)\FrameworkPackage'
         Pattern: |
