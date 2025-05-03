@@ -1,0 +1,18 @@
+image: atlassian/default-image:4
+
+pipelines:
+  branches:
+    main:
+      - step:
+          name: Qodana
+          caches:
+            - qodana
+          image: jetbrains/qodana-jvm
+          script:
+            - export QODANA_TOKEN=$QODANA_TOKEN  # Export the environment variable
+            - qodana --results-dir=$BITBUCKET_CLONE_DIR/.qodana --report-dir=$BITBUCKET_CLONE_DIR/.qodana/report --cache-dir=~/.qodana/cache
+          artifacts:
+            - .qodana/report
+definitions:
+  caches:
+    qodana: ~/.qodana/cache
