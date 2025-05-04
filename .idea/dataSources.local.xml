@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal" created-in="IU-251.23774.435">
+    <data-source name="Snowflake" uuid="1afaa654-1c91-4350-a05a-45a6ff1fba15">
+      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="SNOWFLAKE" exact-version="4.0" />
+      <secret-storage>master_key</secret-storage>
+      <schema-mapping>
+        <introspection-scope>
+          <node kind="database" negative="1" />
+        </introspection-scope>
+      </schema-mapping>
+    </data-source>
+  </component>
+</project>
