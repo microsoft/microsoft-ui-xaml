@@ -3355,7 +3355,7 @@ CInputServices::InitializeDirectManipulationContainer(
     IPALDirectManipulationService* pNewDirectManipulationService = NULL;
     IPALDirectManipulationService* pDirectManipulationService = NULL;
 
-    ASSERT(CanDMContainerInitialize(pDMContainer));
+    ASSERT(CInputServices::CanDMContainerInitialize(pDMContainer));
 
     IFCPTR(pDMContainer);
 
@@ -3640,6 +3640,13 @@ CInputServices::InitializeDirectManipulationContainers()
         // and real viewport is instantiated.
         for (auto& islandInputSiteRegistration : m_islandInputSiteRegistrations)
         {
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56962652>())
+            {
+                if (!CInputServices::CanDMIslandInputSiteInitialize(islandInputSiteRegistration.IslandInputSite().Get()))
+                {
+                    continue;
+                }
+            }
             if (!islandInputSiteRegistration.DMCrossSlideService())
             {
                 // Pre-create a DM manager for potential cross-slide handling, using cross-slide viewports
@@ -3678,7 +3685,7 @@ CInputServices::InitializeDirectManipulationContainers()
         {
             // Only keep containers that are inactive or do not have a valid IslandInputSite.
             auto pDMContainer = elem.lock();
-            return pDMContainer && (!pDMContainer->IsActive() || !pDMContainer->CanDMContainerInitialize());
+            return pDMContainer && (!pDMContainer->IsActive() || !CInputServices::CanDMContainerInitialize(pDMContainer));
         });
 
         // Process all the remaining active containers

@@ -19,6 +19,10 @@
 #include "FrameworkInputViewHandler.h"
 #include "TextInputProducerHelper.h"
 #include <Microsoft.UI.Input.Partner.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 56962652: [1.6 Servicing] [FileExplorer] Fix crash due to activating DirectManipulationManager after HWND is destroyed
+#define WINAPPSDK_CHANGEID_56962652 56962652
 
 // Uncomment for DManip debug outputs.
 //#define DM_DEBUG
@@ -1081,14 +1085,56 @@ private:
         return status == XcpDMViewportRunning || status == XcpDMViewportInertia || status == XcpDMViewportSuspended || status == XcpDMViewportAutoRunning;
     }
 
+    // Checks if a window handle is valid the same way DirectManipulation's IDirectManipulationManager::Activate does.
+    static _Check_return_ HRESULT IsWindowHandleValid(_In_ HWND hWnd)
+    {
+        if (!IsWindow(hWnd))
+        {
+            return E_INVALIDARG;
+        }
+
+        DWORD hWndThreadId = ::GetWindowThreadProcessId(hWnd, NULL);
+        if (::GetCurrentThreadId() != hWndThreadId)
+        {
+            return HRESULT_FROM_WIN32(ERROR_WINDOW_OF_OTHER_THREAD);
+        }
+
+        return S_OK;
+    }
+
     bool CanDMContainerInitialize() const
     {
         return !m_islandInputSiteRegistrations.empty();
     }
 
-    bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer) const
+    static bool CanDMIslandInputSiteInitialize(_In_opt_ ixp::IIslandInputSitePartner* const islandInputSite)
     {
-        return dmContainer->CanDMContainerInitialize();
+        if (nullptr != islandInputSite)
+        {
+            HWND inputHwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(islandInputSite);
+ 
+            // Make sure the window handle is valid. The same code as DManip's IDirectManipulationManager::Activate
+            // is used. This ensures that Xaml will not attempt to activate a DManip manager with a handle that has
+            // already been destroyed with a WM_DESTROY message.
+            return SUCCEEDED(CInputServices::IsWindowHandleValid(inputHwnd));
+        }
+        return false;
+    }
+
+    // The DirectManipulationManager for a DMContainer can only occur after GetElementIslandInputSite returns a valid
+    // IslandInputSite since it is being used for DManip's initialization.
+    static bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer)
+    {
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56962652>())
+        {
+            wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSite = dmContainer->GetElementIslandInputSite();
+
+            return CInputServices::CanDMIslandInputSiteInitialize(islandInputSite.Get());
+        }
+        else
+        {
+            return dmContainer->CanDMContainerInitialize();
+        }
     }
 
     // Creates a CUIDMContainer and CUIDMContainerHandler instance for the provided element and sets them up for future usage.
