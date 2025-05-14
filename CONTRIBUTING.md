@@ -66,7 +66,7 @@ file in the repository, as needed.
 You can also read and contribute to the WinUI documentation here:  
 https://docs.microsoft.com/uwp/toolkits/winui
 
-You can find usage examples of the controls available in WinUI in the Xaml Controls Gallery app:  
+You can find usage examples of the controls available in WinUI in the WinUI Gallery app:  
  https://github.com/Microsoft/WinUI-Gallery/  
 
  Which can also be installed from the Microsoft Store:  
