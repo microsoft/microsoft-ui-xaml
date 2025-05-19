@@ -1,5 +1,14 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project>
+  <!-- 
+      NuGet will see both the latest package from the .NET SDK and
+      the one we are overriding to and thereby emit an warning.
+      Disabling that warning here.
+   -->
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <DisableCheckingDuplicateNuGetItems>true</DisableCheckingDuplicateNuGetItems>
+  </PropertyGroup>
+
   <!--
       Generally, the Microsoft.Windows.SDK.NET.Ref pack is bundled with the .NET SDK. Sometimes we need to override it, and it
       has to be done in after the Microsoft.NET.SDK has been imported, which means it needs to be in either the .csproj itself,
@@ -8,5 +17,14 @@
   <ItemGroup Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)'!=''">
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />
-  </ItemGroup>  
+  </ItemGroup>
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)'!='' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
+    <FrameworkReference Remove="Microsoft.Windows.SDK.NET.Ref.Windows" />
+    <FrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
+                        IsImplicitlyDefined="true"
+                        Pack="false"
+                        PrivateAssets="All"
+                        TargetingPackVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)"
+                        RuntimeFrameworkVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />
+  </ItemGroup>
 </Project>

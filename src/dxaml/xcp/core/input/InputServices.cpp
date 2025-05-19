@@ -3640,6 +3640,13 @@ CInputServices::InitializeDirectManipulationContainers()
         // and real viewport is instantiated.
         for (auto& islandInputSiteRegistration : m_islandInputSiteRegistrations)
         {
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56997009>())
+            {
+                if (!CInputServices::CanDMIslandInputSiteInitialize(islandInputSiteRegistration.IslandInputSite().Get()))
+                {
+                    continue;
+                }
+            }
             if (!islandInputSiteRegistration.DMCrossSlideService())
             {
                 // Pre-create a DM manager for potential cross-slide handling, using cross-slide viewports

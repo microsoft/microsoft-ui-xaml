@@ -10,6 +10,11 @@
 #pragma once
 
 #include <ComTemplates.h>
+
+#ifndef NTDDI_WIN11_GE
+#define NTDDI_WIN11_GE 0x0A000010
+#endif
+
 #include <dcompinternal.h>
 
 class DCompTreeHost;

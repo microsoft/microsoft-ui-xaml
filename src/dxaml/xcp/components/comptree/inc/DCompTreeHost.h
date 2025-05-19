@@ -38,6 +38,11 @@
 #include <microsoft.ui.composition.experimental.h>
 #include <microsoft.ui.composition.interop.h>
 #include "VisualDebugTags.h"
+
+#ifndef NTDDI_WIN11_GE
+#define NTDDI_WIN11_GE 0x0A000010
+#endif
+
 #include <dcompinternal.h>
 #include <dcompprivate.h>
 #include <microsoft.ui.input.experimental.h>

@@ -19,6 +19,10 @@
 #include "FrameworkInputViewHandler.h"
 #include "TextInputProducerHelper.h"
 #include <Microsoft.UI.Input.Partner.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 56997009: [1.7 Servicing] Fix crash due to activating DirectManipulationManager after HWND is destroyed
+#define WINAPPSDK_CHANGEID_56997009 56997009, WinAppSDK_1_7_2
 
 // Uncomment for DManip debug outputs.
 //#define DM_DEBUG
@@ -1103,23 +1107,44 @@ private:
         return !m_islandInputSiteRegistrations.empty();
     }
 
+    static bool CanDMIslandInputSiteInitialize(_In_opt_ ixp::IIslandInputSitePartner* const islandInputSite)
+    {
+        if (nullptr != islandInputSite)
+        {
+            HWND inputHwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(islandInputSite);
+ 
+            // Make sure the window handle is valid. The same code as DManip's IDirectManipulationManager::Activate
+            // is used. This ensures that Xaml will not attempt to activate a DManip manager with a handle that has
+            // already been destroyed with a WM_DESTROY message.
+            return SUCCEEDED(CInputServices::IsWindowHandleValid(inputHwnd));
+        }
+        return false;
+    }
+
     // The DirectManipulationManager for a DMContainer can only occur after GetElementIslandInputSite returns a valid
     // IslandInputSite since it is being used for DManip's initialization.
     static bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer)
     {
         wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSite = dmContainer->GetElementIslandInputSite();
 
-        if (nullptr != islandInputSite)
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_56997009>())
         {
-            HWND inputHwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(islandInputSite.Get());
-
-            // Make sure the window handle is valid. The same code as DManip's IDirectManipulationManager::Activate
-            // is used. This ensures that Xaml will not attempt to activate a DManip manager with a handle that has
-            // already been destroyed with a WM_DESTROY message.
-            return SUCCEEDED(CInputServices::IsWindowHandleValid(inputHwnd));
+            return CInputServices::CanDMIslandInputSiteInitialize(islandInputSite.Get());
         }
+        else
+        {
+            if (nullptr != islandInputSite)
+            {
+                HWND inputHwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(islandInputSite.Get());
 
-        return false;
+                // Make sure the window handle is valid. The same code as DManip's IDirectManipulationManager::Activate
+                // is used. This ensures that Xaml will not attempt to activate a DManip manager with a handle that has
+                // already been destroyed with a WM_DESTROY message.
+                return SUCCEEDED(CInputServices::IsWindowHandleValid(inputHwnd));
+            }
+
+            return false;
+        }
     }
 
     // Creates a CUIDMContainer and CUIDMContainerHandler instance for the provided element and sets them up for future usage.
