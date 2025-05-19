@@ -13,6 +13,10 @@
 #include "../ResourceHelper/Utils.h"
 #include <enum_array.h>
 
+#ifdef MUX_PRERELEASE
+#include "TeachingTipOpenedEventArgs.h"
+#endif
+
 static constexpr auto c_TitleTextBlockVisibleStateName = L"ShowTitleTextBlock"sv;
 static constexpr auto c_TitleTextBlockCollapsedStateName = L"CollapseTitleTextBlock"sv;
 static constexpr auto c_SubtitleTextBlockVisibleStateName = L"ShowSubtitleTextBlock"sv;
@@ -919,6 +923,11 @@ void TeachingTip::IsOpenChangedToOpen()
                 {
                     // We won't be playing an animation so we're immediately idle.
                     SetIsIdle(true);
+#ifdef MUX_PRERELEASE
+                    // Since we immediately opened, just immediately fire off the Opened event.
+                    auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
+                    m_openedEventSource(*this, *myArgs);
+#endif
                 }
             }
             else
@@ -1733,6 +1742,10 @@ void TeachingTip::StartExpandToOpen()
         if (!strongThis->m_isContractAnimationPlaying)
         {
             strongThis->SetIsIdle(true);
+#ifdef MUX_PRERELEASE
+            auto const myArgs = winrt::make_self<TeachingTipOpenedEventArgs>();
+            strongThis->m_openedEventSource(*strongThis, *myArgs);
+#endif
         }
     });
 

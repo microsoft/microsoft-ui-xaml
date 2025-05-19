@@ -3640,7 +3640,7 @@ CInputServices::InitializeDirectManipulationContainers()
         // and real viewport is instantiated.
         for (auto& islandInputSiteRegistration : m_islandInputSiteRegistrations)
         {
-            if (!islandInputSiteRegistration.DMCrossSlideService())
+            if (CInputServices::CanDMIslandInputSiteInitialize(islandInputSiteRegistration.IslandInputSite().Get()) && !islandInputSiteRegistration.DMCrossSlideService())
             {
                 // Pre-create a DM manager for potential cross-slide handling, using cross-slide viewports
                 wrl::ComPtr<IPALDirectManipulationService> cpDMCrossSlideService{ nullptr };

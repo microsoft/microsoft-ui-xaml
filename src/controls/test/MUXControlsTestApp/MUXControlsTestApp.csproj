@@ -398,7 +398,7 @@
   </Target>
 
   <!-- TODO: Remove this target once the fix for 45817705 is ingested into our WindowsAppSDKAggregator submodule. -->
-  <Target Name="AddExtraPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
+  <Target Name="AddExtraPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix">
     <ItemGroup>
       <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xaml"/>
       <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xbf"/>

@@ -124,11 +124,14 @@ public:
     void Closed(winrt::event_token const& token);
     winrt::event_token Closing(winrt::TypedEventHandler<winrt::TeachingTip, winrt::TeachingTipClosingEventArgs> const& value);
     void Closing(winrt::event_token const& token);
+    winrt::event_token Opened(winrt::TypedEventHandler<winrt::TeachingTip, winrt::TeachingTipOpenedEventArgs> const& value);
+    void Opened(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_actionButtonClickEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_closeButtonClickEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::TeachingTipClosedEventArgs>> m_closedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::TeachingTipClosingEventArgs>> m_closingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TeachingTip, winrt::TeachingTipOpenedEventArgs>> m_openedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

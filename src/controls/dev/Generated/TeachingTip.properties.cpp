@@ -40,6 +40,7 @@ TeachingTipProperties::TeachingTipProperties()
     , m_closeButtonClickEventSource{static_cast<TeachingTip*>(this)}
     , m_closedEventSource{static_cast<TeachingTip*>(this)}
     , m_closingEventSource{static_cast<TeachingTip*>(this)}
+    , m_openedEventSource{static_cast<TeachingTip*>(this)}
 {
     EnsureProperties();
 }
@@ -783,4 +784,14 @@ winrt::event_token TeachingTipProperties::Closing(winrt::TypedEventHandler<winrt
 void TeachingTipProperties::Closing(winrt::event_token const& token)
 {
     m_closingEventSource.remove(token);
+}
+
+winrt::event_token TeachingTipProperties::Opened(winrt::TypedEventHandler<winrt::TeachingTip, winrt::TeachingTipOpenedEventArgs> const& value)
+{
+    return m_openedEventSource.add(value);
+}
+
+void TeachingTipProperties::Opened(winrt::event_token const& token)
+{
+    m_openedEventSource.remove(token);
 }

@@ -9,8 +9,8 @@
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="CalendarDatePickerTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
@@ -59,8 +59,8 @@
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
-      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorSecondaryBrush" />
-      <StaticResource x:Key="CalendarDatePickerTextForegroundPointerOver" ResourceKey="TextFillColorSecondaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerTextForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />

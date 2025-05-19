@@ -1,6 +1,8 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <!-- Set this to some value so that a check for the file existing will fail and won't be imported -->
+    <MsAppxPackageTargets Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(UseUwpTools)' != 'true'">WinUI3-NET5-Projects-Dont-Use-MsAppxPackageTargets</MsAppxPackageTargets>
 
     <!-- Setting this property, WindowsKitsPath, makes the VS SDK targets selector "not find the right path"
          when including UWP tools. We want to use WinUI tools, not UWP. Note that for modern .NET projects, we're
@@ -14,12 +16,11 @@
     <WindowsKitsPath Condition="'$(UseWinUITools)' == 'true'">WinUI-Projects-Don-t-Use-SDK-Xaml-Tools</WindowsKitsPath>
   </PropertyGroup>
 
-  <!-- When building UWP XAML apps, we don't want the WinAppSDK references at all.
-       These property assignments have to be here because setting them from other
-       normal .targets is too late (which causes unwanted code to be generated). -->
+  <!-- When building UWP apps, self-contained mode is always disabled. All UWP apps
+       are packaged, so there is no reason not to use a framework package anyway. -->
   <PropertyGroup Condition="'$(UseUwpTools)' == 'true'">
     <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
-    <WindowsAppSDKFrameworkPackageReference>false</WindowsAppSDKFrameworkPackageReference>
+    <WindowsAppSDKFrameworkPackageReference>true</WindowsAppSDKFrameworkPackageReference>
   </PropertyGroup>
 
   <!-- Add a marker value to verify from a later .targets that this .targets has been correctly invoked -->

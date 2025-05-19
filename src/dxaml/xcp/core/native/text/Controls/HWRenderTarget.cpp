@@ -11,7 +11,8 @@
 #include "float.h"
 #include "ColorUtil.h"
 #include "KnownColors.h"
-
+#include <theming\inc\FrameworkTheming.h>
+#include <theming\inc\Theme.h>
 //---------------------------------------------------------------------------
 //
 //  Creates and initializes a new instance of the WinTextCore class.
@@ -764,8 +765,18 @@ void HWRenderTarget::DrawGlyphRun(
         // Draw the glyph run using TextDrawingContext.
         // foregroundBrush is from RichEdit, it does not support alpha mask so we apply the previously cached alpha value here.
         //
-        const UINT32 argb = (m_alpha << 24) | (static_cast<HWSolidColorBrush*>(foregroundBrush)->GetArgb() & 0xFFFFFF);
-
+        const UINT32 value = static_cast<HWSolidColorBrush*>(foregroundBrush)->GetArgb();
+        UINT32 argb;
+        auto theme = m_pCore->GetFrameworkTheming()->GetTheme();
+        // This check is added to achieve the color contrast ratio 4.5:1 during text selection when the foreground brush is White in Light mode.
+        if (value == 0xFFFFFFFF && theme == Theming::Theme::Light)
+        {
+            argb = 0xFFFFFFFF;
+        }
+        else
+        {
+            argb = (m_alpha << 24) | (value & 0xFFFFFF);
+        }
         IFC(m_pTextDrawingContext->DrawGlyphRun(
             pPALGlyphRun,
             &GetPointF(baselineOrigin),

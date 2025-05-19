@@ -4682,6 +4682,7 @@ _Check_return_ HRESULT CListViewBaseItemChrome::SetMultiSelectCheckBoxBorder()
 
     const bool isRoundedListViewBaseItemChromeEnabled = IsRoundedListViewBaseItemChromeEnabled();
     const XTHICKNESS zeroThickness = {};
+    XTHICKNESS multiSelectSquareThickness = s_multiSelectRoundedSquareThickness;
     CValue value;
     CBrush* checkBoxBorderBrush = nullptr;
 
@@ -4698,8 +4699,6 @@ _Check_return_ HRESULT CListViewBaseItemChrome::SetMultiSelectCheckBoxBorder()
         }
         else
         {
-            XTHICKNESS multiSelectSquareThickness = s_multiSelectRoundedSquareThickness;
-
             if (ShouldUseLayoutRounding())
             {
                 LayoutRoundHelper(&multiSelectSquareThickness);
