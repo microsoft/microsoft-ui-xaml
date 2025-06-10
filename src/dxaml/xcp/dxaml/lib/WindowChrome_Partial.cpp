@@ -12,7 +12,10 @@
 #include "windows.graphics.h"
 #include "WindowHelpers.h"
 #include "Microsoft.UI.Windowing.h"
+#include "FrameworkUdk/Containment.h"
 
+//Bug 57693475: [1.6 Servicing][WASDK][Watson Failure] caused by STOWED_EXCEPTION_80070032_Microsoft.UI.Xaml.dll!DirectUI::WindowChrome::SetTitleBar
+#define WINAPPSDK_CHANGEID_57693475 57693475
 
 using namespace DirectUI;
 namespace RectHelpers = WindowHelpers::RectHelpers;
@@ -94,16 +97,34 @@ _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titl
         ctl::ComPtr<ixp::IAppWindow> appWindow;
         IFC_RETURN(GetDesktopWindowNoRef()->get_AppWindowImpl(&appWindow));
         
-        if (!appWindow)
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_57693475>())
         {
-             // custom titlebar code is being run in a scenario where appwindow is null and thus
-             // it cannot continue to run. it is running in an unsupported scenario.
-             // one such scenario is where a top level window is reparented to become a child window of another window
-            IFCFAILFAST(E_NOTSUPPORTED);
+            // SetTitleBar gets called with titleBar as nullptr during window close operations
+            // If the window is not a top level window, we should not failfast here
+            if (!appWindow && titleBar)
+            {
+                // custom titlebar code is being run in a scenario where appwindow is null and thus
+                // it cannot continue to run. it is running in an unsupported scenario.
+                // one such scenario is where a top level window is reparented to become a child window of another window
+                IFCFAILFAST(E_NOTSUPPORTED);
+            }
         }
-        IFC_RETURN(appWindow->get_Id(&windowId));
-        
-        IFC_RETURN(inputNonClientPtrSrcStatics->GetForWindowId(windowId, &m_inputNonClientPtrSrc));
+        else
+        {
+            if (!appWindow)
+            {
+                // custom titlebar code is being run in a scenario where appwindow is null and thus
+                // it cannot continue to run. it is running in an unsupported scenario.
+                // one such scenario is where a top level window is reparented to become a child window of another window
+                IFCFAILFAST(E_NOTSUPPORTED);
+            } 
+        }
+        if (appWindow)
+        {
+            IFC_RETURN(appWindow->get_Id(&windowId));
+            
+            IFC_RETURN(inputNonClientPtrSrcStatics->GetForWindowId(windowId, &m_inputNonClientPtrSrc));
+        }
     }
     
     //detach everything from existing titlebar
