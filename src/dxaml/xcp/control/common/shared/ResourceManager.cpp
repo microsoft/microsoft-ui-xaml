@@ -3,6 +3,10 @@
 
 #include "precomp.h"
 #include "corep.h"
+#include "xcpwindow.h"
+
+// Bug 57688028: [1.7 Servicing][WASDK]Re-Entrancy in ApplicationDataProvider::GetStateFolderUris
+#define WINAPPSDK_CHANGEID_57688028 57688028, WinAppSDK_1_7_3
 
 _Check_return_
 HRESULT ResourceManager::Create(
@@ -53,7 +57,17 @@ HRESULT ResourceManager::GetAppDataProviderNoRef(_Outptr_ IPALApplicationDataPro
 {
     if (!m_pAppDataProvider)
     {
-        IFC_RETURN(gps->CreateApplicationDataProvider(&m_pAppDataProvider));
+        // To guard against reentrancy during the creation of the application data provider
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_57688028>())
+        {
+            PauseNewDispatch deferReentrancy(m_pCore);
+            IFC_RETURN(gps->CreateApplicationDataProvider(&m_pAppDataProvider));
+        }
+        else
+        {
+            IFC_RETURN(gps->CreateApplicationDataProvider(&m_pAppDataProvider));
+        }
+        
     }
 
     *provider = m_pAppDataProvider;
