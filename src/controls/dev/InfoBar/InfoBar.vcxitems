@@ -19,6 +19,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarClosedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarClosingEventArgs.h" />
+	  <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarOpenedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarPanel.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InfoBarTemplateSettings.h" />
   </ItemGroup>
@@ -30,7 +31,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarClosedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarClosingEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarPanel.cpp" />
+	<ClCompile Include="$(MSBuildThisFileDirectory)InfoBarOpenedEventArgs.cpp" />
+	<ClCompile Include="$(MSBuildThisFileDirectory)InfoBarPanel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InfoBarTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>

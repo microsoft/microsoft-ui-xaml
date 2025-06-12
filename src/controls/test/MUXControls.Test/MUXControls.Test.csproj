@@ -52,6 +52,7 @@
     <PackageReference Include="MUXCustomBuildTasks" Version="$(MuxCustomBuildTasksPackageVersion)" />
     <PackageReference Include="Microsoft.Web.WebView2" ExcludeAssets="All" Version="$(WebView2Version)" GeneratePathProperty="true" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="System.IO.Packaging" Version="6.0.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -34,6 +34,13 @@ unsealed runtimeclass InfoBarClosingEventArgs
     Boolean Cancel { get; set; };
 }
 
+[MUX_PREVIEW]
+[default_interface]
+[webhosthidden]
+unsealed runtimeclass InfoBarOpenedEventArgs
+{
+}
+
 [MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass InfoBarTemplateSettings : Microsoft.UI.Xaml.DependencyObject
@@ -93,6 +100,10 @@ unsealed runtimeclass InfoBar : Microsoft.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<InfoBar, InfoBarClosingEventArgs> Closing;
     event Windows.Foundation.TypedEventHandler<InfoBar, InfoBarClosedEventArgs> Closed;
 
+    [MUX_PREVIEW]
+    {
+        event Windows.Foundation.TypedEventHandler<InfoBar, InfoBarOpenedEventArgs> Opened;
+    }
     static Microsoft.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty TitleProperty{ get; };
     static Microsoft.UI.Xaml.DependencyProperty MessageProperty{ get; };
