@@ -610,7 +610,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Bad Value &apos;{0}&apos; found in Suppressed XAML Warnings list.  Values must be integers seperated with &apos;;&apos;.
+        ///   Looks up a localized string similar to Bad Value &apos;{0}&apos; found in Suppressed XAML Warnings list.  Values must be integers separated with &apos;;&apos;.
         /// </summary>
         internal static string XamlCompiler_BadValueInSupressWarningsList {
             get {

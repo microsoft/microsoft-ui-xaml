@@ -214,7 +214,9 @@
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
                             Grid.Column="3"
-                            Content="{TemplateBinding LeftHeader}" />
+                            Content="{TemplateBinding LeftHeader}"
+                            HorizontalAlignment="{ThemeResource TitleBarLeftHeaderHorizontalAlignment}"
+                            VerticalAlignment="{ThemeResource TitleBarLeftHeaderVerticalAlignment}" />
                             
                         <Viewbox
                             x:Name="PART_Icon"
@@ -265,7 +267,8 @@
                             <ContentPresenter
                                 x:Name="PART_ContentPresenter"
                                 Content="{TemplateBinding Content}"
-                                HorizontalAlignment="Center"/>
+                                HorizontalAlignment="{ThemeResource TitleBarContentHorizontalAlignment}"
+                                VerticalAlignment="{ThemeResource TitleBarContentVerticalAlignment}"/>
                         </Grid>
                            
                         <ContentPresenter
@@ -273,7 +276,9 @@
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
                             Grid.Column="9"
-                            Content="{TemplateBinding RightHeader}" />
+                            Content="{TemplateBinding RightHeader}"
+                            HorizontalAlignment="{ThemeResource TitleBarRightHeaderHorizontalAlignment}"
+                            VerticalAlignment="{ThemeResource TitleBarRightHeaderVerticalAlignment}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

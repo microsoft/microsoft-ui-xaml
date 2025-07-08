@@ -419,7 +419,7 @@
     <comment>{0} is a Type or Property.  Error Message {1} comes from the System.</comment>
   </data>
   <data name="XamlCompiler_BadValueInSupressWarningsList" xml:space="preserve">
-    <value>Bad Value '{0}' found in Suppressed XAML Warnings list.  Values must be integers seperated with ';'</value>
+    <value>Bad Value '{0}' found in Suppressed XAML Warnings list.  Values must be integers separated with ';'</value>
   </data>
   <data name="XbfGeneration_MissingXbfApi" xml:space="preserve">
     <value>XBF generation failure due to missing Windows 10 Support, Set property &lt;DisableXbfGeneration&gt;true&lt;/DisableXbfGeneration&gt; in your Project file and try again.</value>
