@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions about WinUI?
+    url: https://github.com/microsoft/microsoft-ui-xaml/discussions/categories/q-a
+    about: I have a question about how to use something in WinUI.
+  - name: New Idea?
+    url: https://github.com/microsoft/microsoft-ui-xaml/discussions/categories/ideas
+    about: Look to see if your idea has been suggested, up-vote it, or start a new conversation here.
+  - name: WindowsAppSDK
+    url: https://aka.ms/windowsappsdk
+    about: For bugs related to UWP, or the app models, please open a bug on the Windows App SDK repository.
