@@ -67,7 +67,6 @@ We also need to monitor:
 
 1. New and re-opened issues get `needs-triage` label added
 1. `needs-triage` label is added whenever `team-...` labels change so that the new team sees the status change on the issue.
-1. If `feature proposal` is added or removed it gets added/removed from the [feature tracking project board](https://github.com/microsoft/microsoft-ui-xaml/projects/4) accordingly.
 1. If `declined` is added, bot adds a friendly message and closes.
 1. Tags issues/PR with release announcement.
 1. When moving into `Front Burner` column, gets added to the `API review` board.
