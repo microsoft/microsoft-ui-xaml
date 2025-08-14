@@ -31,10 +31,9 @@ Please follow the [New Feature or API Process](docs/feature_proposal_process.md)
 All new public APIs, new UI, or breaking changes to existing features must go through that process before submitting code changes.
 
 ### Raising Feedback
-When experiencing a pain-point, it can be natural to focus on the negatives and resolving things from the perspective of the negative. However, telling the team what you'd like to *prevent* is less helpful and actionable than telling the team what you'd like to *achieve*. 
+When experiencing a pain-point, it can be natural to focus on the negatives. However, telling the team what you'd like to *prevent* is less helpful and actionable than telling the team what you'd like to *achieve*. 
 
 Your feedback is most effective when it is a constructive call to action on the team, and is clear and detailed – especially on the "why" so that we can make sure whatever it is that we arrive at together appropriately focuses on your goal and your intended outcome from start to finish. 
-
 
 **Examples of constructively phrased feedback:**
 
@@ -48,7 +47,7 @@ Try this:
     - High-confidence 5-year roadmap
     - Guaranteed support timeline
 
-    This feedback provides clear actionable items that the WinUI team can take into consideration and address. 
+This feedback provides clear actionable items that the WinUI team can take into consideration and address. 
 
 Here are some areas where your feedback can have a large impact:
 
@@ -174,4 +173,3 @@ In order to have PRs automatically merge once all checks have passed (including 
 Unlike the above checks these are not required for all PRs, but you may see them on some PRs: [WinUI-Public-MUX-CI](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20)
 
 This pipeline extends [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) to validate more platforms, adding Debug and ARM. It is run after your changes are merged to main.
-s
