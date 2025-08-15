@@ -1,12 +1,9 @@
 name: Bug report
 description: File a bug report
 title: "Bug title"
-labels: [bug]
+labels: ["bug", "needs-triage"]
+type: Bug
 body:
-  - type: markdown
-    attributes:
-      value: |
-        For bugs related to UWP or the app models, please open a bug on the [Windows App SDK repository](https://github.com/microsoft/WindowsAppSDK)
   - type: textarea
     validations:
       required: true
@@ -18,10 +15,14 @@ body:
       required: true
     attributes:
       label: Steps to reproduce the bug
-      description: Please provide any required setup and steps to reproduce the behavior.
+      description: Please provide any required setup and steps to reproduce the behavior. It's best if you can either reproduce the issue in the [WinUI Gallery](https://aka.ms/winuigallery) or create a new WinUI project that minimally reproduces the issue to attach here.
       placeholder: |
         1. Go to '...'
         2. Click on '....'
+  - type: textarea
+    attributes:
+      label: Actual behavior
+      description: Please provide a description of what does happen when you follow the repro steps above
   - type: textarea
     attributes:
       label: Expected behavior
@@ -35,10 +36,10 @@ body:
       label: NuGet package version
       description: If you are seeing your issue on older versions please try the latest release
       options:
+        - "WinUI 3 - Windows App SDK 1.8 Experimental 4: 1.8.250702007-experimental4"
         - "WinUI 3 - Windows App SDK 1.7.3: 1.7.250606001"
         - "WinUI 3 - Windows App SDK 1.7 Preview 1: 1.7.250208002-preview1"
-        - "WinUI 3 - Windows App SDK 1.8 Experimental 4: 1.8.250702007-experimental4"
-        - "WinUI 2 - Microsoft.UI.Xaml 2.8.2"
+        - "WinUI 2 - Microsoft.UI.Xaml 2.8.7"
   - type: dropdown
     attributes:
       label: Windows version
