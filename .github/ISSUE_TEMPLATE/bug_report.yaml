@@ -9,24 +9,35 @@ body:
       required: true
     attributes:
       label: Describe the bug
-      description: Please enter a short, clear description of the bug.
+      description: In a few sentences, please enter a short, clear description of the bug.
+      placeholder: E.g. When clicking on a togggle button, '...' happens instead of '...' when '...' is enabled.
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      label: Why is this important?
+      description: Please provide the impact/scenario of this issue to yourself or the end-user of an application. What is it that is trying to be accomplished that this bug prevents from happening? (For context, this helps us understand if this is the root issue of your problem. See https://xyproblem.info/ for more info.)
+      placeholder: E.g. My user needs to click on the toggle button to switch the state of our setting, but we're not seeing our ViewModel update in this scenario. Their environment needs to be '...' as they're in another locale.
   - type: textarea
     validations:
       required: true
     attributes:
       label: Steps to reproduce the bug
-      description: Please provide any required setup and steps to reproduce the behavior. It's best if you can either reproduce the issue in the [WinUI Gallery](https://aka.ms/winuigallery) or create a new WinUI project that minimally reproduces the issue to attach here.
+      description: Please provide any required setup and steps to reproduce the behavior. It is best if you can either reproduce the issue in the [WinUI Gallery](https://aka.ms/winuigallery) or create a new WinUI project that minimally reproduces the issue to attach here. (Providing a simple to follow reproduction with an example project, without extraneous code, makes it easier for anyone to quickly reproduce the issue and spend time investigating/fixing the issue over understanding how to reproduce it.)
       placeholder: |
         1. Go to '...'
         2. Click on '....'
+        3. See issue '...'
   - type: textarea
     attributes:
       label: Actual behavior
       description: Please provide a description of what does happen when you follow the repro steps above
+      placeholder: FooEvent doesn't fire.
   - type: textarea
     attributes:
       label: Expected behavior
       description: Please provide a description of what you expected to happen
+      placeholder: FooEvent should fire.
   - type: textarea
     attributes:
       label: Screenshots
