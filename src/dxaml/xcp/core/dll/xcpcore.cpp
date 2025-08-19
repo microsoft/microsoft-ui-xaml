@@ -319,6 +319,21 @@ HRESULT ActivationFactoryCache::GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::I
     return S_OK;
 }
 
+HRESULT ActivationFactoryCache::GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics)
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_desktopPopupSiteBridgeStatics)
+    {
+        IFC_RETURN(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopPopupSiteBridge).Get(),
+            &m_desktopPopupSiteBridgeStatics));
+    }
+
+    m_desktopPopupSiteBridgeStatics.CopyTo(statics);
+    return S_OK;
+}
+
 HRESULT ActivationFactoryCache::GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics)
 {
     wil::cs_leave_scope_exit guard = m_lock.lock();
@@ -9531,109 +9546,6 @@ CCoreServices::OnBackgroundResourceTimeout(
 //------------------------------------------------------------------------
 //
 //  Synopsis:
-//      Return if animation/touch tracking is enabled: defer to the DComp tree
-//      host since it provides the means for tracking.
-//
-//------------------------------------------------------------------------
-bool CCoreServices::IsAnimationTrackingEnabled()
-{
-    if (m_pNWWindowRenderTarget != NULL)
-    {
-        DCompTreeHost *pDCompTreeHostNoRef = m_pNWWindowRenderTarget->GetDCompTreeHost();
-        if (pDCompTreeHostNoRef != NULL)
-        {
-            return pDCompTreeHostNoRef->IsAnimationTrackingEnabled();
-        }
-    }
-    return false;
-}
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Signals the beginning of an animation scenario for animation tracking.
-//
-//------------------------------------------------------------------------
-void CCoreServices::AnimationTrackingScenarioBegin(_In_ AnimationTrackingScenarioInfo* pScenarioInfo)
-{
-    if (m_pNWWindowRenderTarget != NULL)
-    {
-        // It's possible that animations started during start-up might not be capture because the DComp
-        // device initialization happens in parallel on a background thread. This would be most likely
-        // to happen on a slow machine with a simple app that starts up very quickly. Since this case
-        // is expected to be rare, we are OK with not being able to miss those for animation tracking.
-        DCompTreeHost *pDCompTreeHostNoRef = m_pNWWindowRenderTarget->GetDCompTreeHost();
-        if (pDCompTreeHostNoRef != NULL)
-        {
-            // Fill in the QPC if one was not specified.
-            if (!pScenarioInfo->qpcInitiate)
-            {
-                // If we are processing a frame, use the start time for that frame.
-                if (m_qpcDrawMainTreeStart)
-                {
-                    pScenarioInfo->qpcInitiate = m_qpcDrawMainTreeStart;
-                }
-                else
-                {
-                    if (GetPALCoreServices())
-                    {
-                        XINT64_LARGE_INTEGER liQpc = {0};
-                        GetPALCoreServices()->PerformanceCounter(&liQpc);
-                        pScenarioInfo->qpcInitiate = liQpc.QuadPart;
-                    }
-                }
-            }
-
-            // Fill in the input QPC if the input manager has recorded one.
-            if (m_inputServices)
-            {
-                pScenarioInfo->qpcInput = m_inputServices->GetFirstPointerUpQPCSinceLastFrame();
-            }
-
-            IGNOREHR(pDCompTreeHostNoRef->AnimationTrackingScenarioBegin(pScenarioInfo));
-        }
-    }
-}
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Signals the beginning of a sub-animation for animation tracking.
-//
-//------------------------------------------------------------------------
-void CCoreServices::AnimationTrackingScenarioReference(XUINT64 uniqueKey)
-{
-    if (m_pNWWindowRenderTarget != NULL)
-    {
-        DCompTreeHost *pDCompTreeHostNoRef = m_pNWWindowRenderTarget->GetDCompTreeHost();
-        if (pDCompTreeHostNoRef != NULL)
-        {
-            IGNOREHR(pDCompTreeHostNoRef->AnimationTrackingScenarioReference(/*pScenarioGuid*/ nullptr, uniqueKey));
-        }
-    }
-}
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Signals the end of a sub-animation for animation tracking.
-//
-//------------------------------------------------------------------------
-void CCoreServices::AnimationTrackingScenarioUnreference(XUINT64 uniqueKey)
-{
-    if (m_pNWWindowRenderTarget != NULL)
-    {
-        DCompTreeHost *pDCompTreeHostNoRef = m_pNWWindowRenderTarget->GetDCompTreeHost();
-        if (pDCompTreeHostNoRef != NULL)
-        {
-            IGNOREHR(pDCompTreeHostNoRef->AnimationTrackingScenarioUnreference(/*pScenarioGuid*/ nullptr, uniqueKey));
-        }
-    }
-}
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
 //      Clear the image provider and surface caches.  Created so we can reset these
 //      caches when the designer resets its tree.
 //      TODO: Merge the hardware surface cache into the ImageProvider.
@@ -9952,22 +9864,6 @@ WUComp::ICompositor* CCoreServices::GetCompositor() const
     IFCFAILFAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->EnsureDCompDevice());
     return m_pNWWindowRenderTarget->GetDCompTreeHost()->GetCompositor();
 }
-
-void CCoreServices::EnsureCompositionIslandCreated(_In_ wuc::ICoreWindow* const coreWindow) const
-{
-    ASSERT(m_pNWWindowRenderTarget != nullptr);
-
-    m_pNWWindowRenderTarget->GetDCompTreeHost()->SetCoreWindow(coreWindow);
-    IFCFAILFAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->EnsureDCompDevice());
-}
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-UINT64 CCoreServices::GetCoreWindowCompositionIslandId()
-{
-    return GetDCompTreeHost()->GetCompositionIslandId();
-}
-#endif
 
 #pragma region IXamlTestHooks
 

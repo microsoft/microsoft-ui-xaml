@@ -86,7 +86,6 @@
 #include "bezierd.h"
 #include "bezierflattener.h"
 #include "figuretask.h"
-#include "shapedata.h"
 #include "cpen.h"
 #include "strokefigure.h"
 #include "application.h"

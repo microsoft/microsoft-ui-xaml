@@ -58,8 +58,6 @@ public:
 
     ixp::IContentIsland * GetContentIsland();
 
-    GUID GetCompositionIslandId();
-
     CPopupRoot* GetPopupRootNoRef();
     CTransitionRoot* GetTransitionRootNoRef();
 
@@ -115,11 +113,6 @@ public:
     {
         return m_contentRoot.get();
     }
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    UINT64 GetVisualIdentifier();
-#endif
 
     bool HasFocus() const;
 

@@ -32,7 +32,6 @@
 #include "RefreshRateInfo.h"
 
 #include <FxCallbacks.h>
-#include "CoreWindowIslandAdapter.h"
 
 // XamlIslandRoots
 #include <framework.h>
@@ -142,8 +141,6 @@ DCompTreeHost::Create(
 DCompTreeHost::DCompTreeHost(
     _In_ WindowsGraphicsDeviceManager *pGraphicsDeviceManager)
     : m_pGraphicsDeviceManagerNoRef(pGraphicsDeviceManager)
-    , m_strAnimationTrackingAppId()
-    , m_animationTrackingAppIdSetOnDevice(FALSE)
     , m_hasNative8BitSurfaceSupport(FALSE)
     , m_pFrameRateTextFormat(NULL)
     , m_pFrameRateScratchBrush(NULL)
@@ -284,14 +281,6 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
         m_spInteropCompositorPartner = nullptr;
     }
 
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    if (m_onecoreIslandAdapter.get() != nullptr)
-    {
-        ReleaseVisualTreeCompositionIslandAdapter();
-    }
-#endif
-
     //  Explicitly close the content bridge before closing the compositor.  If we close the compositor
     //  first then we lose some linkages that allow the bridge to be cleaned up properly.
     if (m_contentBridge != nullptr)
@@ -312,7 +301,6 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
     m_spMainSurfaceFactoryPartner2 = nullptr;
     m_spMainSurfaceFactoryPartner3 = nullptr;
     m_spMainDevice = nullptr;
-    m_spMainDeviceInternal = nullptr;
     m_spCompositor = nullptr;
     m_spCompositor2 = nullptr;
     m_spCompositor5 = nullptr;
@@ -330,7 +318,6 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
     m_targetHwnd = NULL;
     m_coreWindowContentIsland = nullptr;
     m_offerTracker->Reset();
-    m_animationTrackingAppIdSetOnDevice = FALSE;
 
     m_isInitialized = false;
     m_isCallbackThreadRegistered = false;
@@ -514,7 +501,6 @@ DCompTreeHost::EnsureDCompDevice() noexcept
     ASSERT(m_spMainSurfaceFactoryPartner == nullptr);
     ASSERT(m_spMainSurfaceFactoryPartner2 == nullptr);
     ASSERT(m_spMainSurfaceFactoryPartner3 == nullptr);
-    ASSERT(m_spMainDeviceInternal == nullptr);
     ASSERT(m_spInteropCompositorPartnerCallback == nullptr);
     ASSERT(m_spInteropCompositorPartner == nullptr);
     ASSERT(m_spCompositor == nullptr);
@@ -549,13 +535,6 @@ DCompTreeHost::EnsureDCompDevice() noexcept
     IFC_RETURN(m_spCompositor.As(&m_spCompositorPrivate));
     IFC_RETURN(m_spCompositor.As(&m_spCompositorInterop));
 
-    if (XamlOneCoreTransforms::IsEnabled() && !DirectUI::DXamlServices::IsInBackgroundTask())
-    {
-        // When running in a background task, the visualTreeCompositionIslandAdapter
-        // won't work correctly because the current CoreWindow does not have an HWND.
-        CreateVisualTreeCompositionIslandAdapter();
-    }
-
     auto coreServicesNoRef = GetCoreServicesNoRef();
     if ((coreServicesNoRef != nullptr) &&
         (coreServicesNoRef->GetInitializationType() == InitializationType::IslandsOnly))
@@ -573,9 +552,6 @@ DCompTreeHost::EnsureDCompDevice() noexcept
 
     // This should be kept in sync with the adjustment made in GetMaxTextureSize().
     m_spMainDevice->EnableWhitePixelOptimization(TRUE);
-
-    // Cache the internal device interfaces used for animation/touch tracking.
-    IFC_RETURN(m_spMainDevice.As(&m_spMainDeviceInternal));
 
     m_isInitialized = true;
     return S_OK;
@@ -969,27 +945,9 @@ _Check_return_ HRESULT DCompTreeHost::DisconnectRoot(UINT32 backgroundColor, _In
 }
 
 // Hooks up the visual as the root in the appropriate way:
-// - via the m_onecoreIslandAdapter (OneCoreTransforms enabled - WCOS?)
 // - via the inproc island
 _Check_return_ HRESULT DCompTreeHost::SetRootForCorrectContext(_In_ WUComp::IVisual *visual)
 {
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    if (XamlOneCoreTransforms::IsEnabled())
-    {
-        // Running in OneCore Transforms mode, set the root of the target obtained from
-        // calling Compositor->CreateTargetForCurrentView().
-        // This will work for both cases, running as Top-Level or Component. We want this method
-        // of connecting the host to the compoment to take precedence over the legacy
-        // put_RootLegacyVisual when we are running in XamlOneCoreTransforms mode.
-        // Note that when we're running as a background task we won't have a m_onecoreIslandAdapter
-        if (visual != nullptr && m_onecoreIslandAdapter)
-        {
-            IFCFAILFAST(m_onecoreIslandAdapter->GetCompositionTargetNoRef()->put_Root(visual));
-        }
-    }
-    else
-#endif
     ixp::IContentIsland* compositionContent = nullptr;
     if(auto contentRoot =
          DXamlServices::GetHandle()->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot())
@@ -1031,10 +989,6 @@ bool DCompTreeHost::HasDCompTarget()
     }
 
     return
-        // CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-        (m_onecoreIslandAdapter != nullptr) || // TODO: do we need to change this to XamlOneCoreTransforms::IsEnabled() ?
-#endif
         HasXamlIslandData()
         || (DesignerInterop::GetDesignerMode(DesignerMode::V2Only) && m_hwndVisual != nullptr)
         || compositionContent != nullptr;
@@ -1091,7 +1045,7 @@ _Check_return_ HRESULT DCompTreeHost::ConnectXamlIslandTargetRoots()
 
                 auto content = xamlIslandRoot->GetContentIsland();
 
-                // CONTENT-TODO: This assumes that only one Visual would be connected into the
+                // Note: This assumes that only one Visual would be connected into the
                 // Content.  If Xaml needs multiple Visuals, it would need to create its own
                 // ContainerVisual.
                 ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
@@ -2036,132 +1990,6 @@ DCompTreeHost::EnsureTextFormat()
     return S_OK;
 }
 
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Return if animation/touch tracking is enabled.
-//
-//------------------------------------------------------------------------
-bool DCompTreeHost::IsAnimationTrackingEnabled()
-{
-    // dcompi.dll gives us a local channel, which doesn't support animation tracking.
-    return false;
-}
-
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Signals the beginning of an animation scenario for animation tracking.
-//
-//------------------------------------------------------------------------------
-_Check_return_ HRESULT DCompTreeHost::AnimationTrackingScenarioBegin(_In_ const AnimationTrackingScenarioInfo* pScenarioInfo)
-{
-    return S_OK;
-
-    // Removing for change: https://microsoft.visualstudio.com/OS/_git/os.2020/pullrequest/5624071
-    // IFC_RETURN(EnsureAnimationTrackingAppId());
-
-    // IFCCHECK_RETURN(m_spMainDeviceInternal);
-
-    // DCOMPOSITION_TELEMETRY_ANIMATION_SCENARIO_INFO info;
-    // ZeroMemory(&info, sizeof(info));
-    // info.version = DCOMPOSITION_TELEMETRY_ANIMATION_SCENARIO_INFO_VERSION;
-    // info.scenarioPriority = pScenarioInfo->priority;
-    // info.qpcInitiate = pScenarioInfo->qpcInitiate;
-    // info.qpcInput = pScenarioInfo->qpcInput;
-    // info.msIntendedDuration = pScenarioInfo->msIntendedDuration;
-    // info.pszScenarioName = pScenarioInfo->scenarioName;
-    // info.pszScenarioDetails = pScenarioInfo->scenarioDetails;
-
-    // IFC_RETURN(m_spMainDeviceInternal->TelemetryAnimationScenarioBegin(&info));
-
-    // return S_OK;
-}
-
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Signals the begining of a sub-animation for animation tracking.
-//
-//------------------------------------------------------------------------------
-_Check_return_ HRESULT DCompTreeHost::AnimationTrackingScenarioReference(
-    _In_opt_ const GUID* pScenarioGuid,
-    XUINT64 uniqueKey)
-{
-    return S_OK;
-
-    // Removing for change: https://microsoft.visualstudio.com/OS/_git/os.2020/pullrequest/5624071
-    // IFC_RETURN(EnsureAnimationTrackingAppId());
-
-    // IFCCHECK_RETURN(m_spMainDeviceInternal);
-
-    // IFC_RETURN(m_spMainDeviceInternal->TelemetryAnimationScenarioReference(pScenarioGuid, uniqueKey));
-
-    // return S_OK;
-}
-
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Signals the end of an sub-animation for animation tracking.
-//
-//------------------------------------------------------------------------------
-_Check_return_ HRESULT DCompTreeHost::AnimationTrackingScenarioUnreference(
-    _In_opt_ const GUID* pScenarioGuid,
-    XUINT64 uniqueKey)
-{
-    return S_OK;
-
-    // Removing for change: https://microsoft.visualstudio.com/OS/_git/os.2020/pullrequest/5624071
-    // IFC_RETURN(EnsureAnimationTrackingAppId());
-
-    // IFCCHECK_RETURN(m_spMainDeviceInternal);
-
-    // IFC_RETURN(m_spMainDeviceInternal->TelemetryAnimationScenarioUnreference(pScenarioGuid, uniqueKey));
-
-    // return S_OK;
-}
-
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Ensures that we have captured the application ID string to be used for
-//      animation/touch tracking and it is set on the current DComp devices.
-//
-//------------------------------------------------------------------------------
-_Check_return_ HRESULT
-DCompTreeHost::EnsureAnimationTrackingAppId()
-{
-    // If Storyboard::Begin was called as part of app startup, we could end up here while the DComp device was still being created
-    // in the background. We need to call out to the DComp device, so wait for device creation first.
-    IFCFAILFAST(EnsureDCompDevice());
-
-    if (m_strAnimationTrackingAppId.IsNullOrEmpty())
-    {
-        // Try to get the modern app id. If it fails or succeeds without
-        // returning the app id (when we are not in a modern app) fallback
-        // to using the process image name with the patih stripped.
-        IGNOREHR(gps->GetProcessModernAppId(&m_strAnimationTrackingAppId));
-        if (m_strAnimationTrackingAppId.IsNullOrEmpty())
-        {
-            IFC_RETURN(gps->GetProcessImageName(&m_strAnimationTrackingAppId));
-            ASSERT(!m_strAnimationTrackingAppId.IsNullOrEmpty());
-        }
-    }
-
-    // Make sure that the internal device is available.
-    IFCCHECK_RETURN(m_spMainDeviceInternal);
-
-    if (!m_animationTrackingAppIdSetOnDevice)
-    {
-        XUINT16 cchAppId = static_cast<XUINT16>(std::min(static_cast<XUINT32>(XUINT16_MAX), m_strAnimationTrackingAppId.GetCount()));
-        IFC_RETURN(m_spMainDeviceInternal->TelemetrySetApplicationId(cchAppId, m_strAnimationTrackingAppId.GetBuffer()));
-        m_animationTrackingAppIdSetOnDevice = TRUE;
-    }
-
-    return S_OK;
-}
-
 DependencyObjectDCompRegistry* DCompTreeHost::GetDCompObjectRegistry()
 {
     return &m_dcompObjectRegistry;
@@ -2772,51 +2600,6 @@ void DCompTreeHost::ReleasePointerSourceForElement(_In_ CUIElement *element)
 {
     m_hoverPointerSourceMap.erase(element);
 }
-
-void DCompTreeHost::CreateVisualTreeCompositionIslandAdapter()
-{
-    FAIL_FAST_ASSERT(m_spCompositor.Get());
-
-    if (m_coreWindowNoRef == nullptr)
-    {
-        m_coreWindowNoRef = DirectUI::DXamlServices::GetCurrentCoreWindowNoRef();
-    }
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    m_onecoreIslandAdapter = std::make_unique<CoreWindowIslandAdapter>(m_coreWindowNoRef, m_spCompositor.Get());
-
-    WUComp::ICompositionIsland * island = m_visualTreeCompIslandAdapter->GetCompostionIslandNoRef();
-
-    // This results in XAML registering for IContentIsland::StateChanged event
-    IFCFAILFAST(FxCallbacks::DxamlCore_OnCompositionIslandCreated(content));
-#endif
-}
-
-void DCompTreeHost::ReleaseVisualTreeCompositionIslandAdapter()
-{
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    IFCFAILFAST(FxCallbacks::DxamlCore_OnCompositionIslandDestroyed());
-    m_onecoreIslandAdapter.reset();
-#endif
-}
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-UINT64 DCompTreeHost::GetCompositionIslandId()
-{
-    ASSERT(XamlOneCoreTransforms::IsEnabled());
-    ASSERT(m_onecoreIslandAdapter != nullptr);
-
-    auto content = m_onecoreIslandAdapter->GetCompostionCompositionIslandNoRef();
-    UINT64 id;
-    IFCFAILFAST(content->get_Id(&id));
-    id = 0;
-
-    return id;
-}
-#endif
 
 /* static */ void DCompTreeHost::SetTag(_In_ WUComp::IVisual* visual, _In_ const wchar_t* tag, float value)
 {

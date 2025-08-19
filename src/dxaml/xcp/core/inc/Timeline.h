@@ -118,13 +118,6 @@ public:
         _Out_ XFLOAT* pDurationValue
         );
 
-    virtual bool IsInterestingForAnimationTracking();
-
-    virtual void AnimationTrackingCollectInfoNoRef(
-        _Inout_ CDependencyObject** ppTarget,
-        _Inout_ CDependencyObject** ppDynamicTimeline
-        );
-
     virtual bool IsDurationForProgressDifferent() const { return false; }
 
     virtual void GetDurationForProgress(_Out_ DirectUI::DurationType *pDurationType, _Out_ XFLOAT *prDurationValue) { GetNaturalDuration(pDurationType, prDurationValue); }
@@ -281,8 +274,6 @@ public:
     bool IsWaitingForDCompAnimationCompleted() const;
     void SetIsWaitingForDCompAnimationCompleted(bool isWaiting);
     virtual void UpdateIsWaitingForDCompAnimationCompleted(bool childIsWaiting);
-
-    static xstring_ptr GetTargetPathForTracking(_In_ CDependencyObject* target, bool startFromParentOfTarget);
 
 protected:
 
@@ -552,10 +543,4 @@ protected: bool                                               m_shouldSynchroniz
 public:
     static bool s_allowDependentAnimations;
     static XFLOAT s_timeTolerance;  // The amount of tolerance (in seconds) allowed for floating point error when comparing times
-
-protected:
-    // Any animations that have a begin delay longer than this are not interesting for animation tracking.
-    // This value allows us to short-circuit out of the long tail of staggered animations for
-    // theme transitions too.
-    static const XUINT32 c_AnimationTrackingMaxBeginTimeInMs = 100;
 };

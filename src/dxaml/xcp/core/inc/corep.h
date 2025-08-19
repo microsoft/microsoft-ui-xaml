@@ -529,25 +529,6 @@ struct IGripper
     virtual _Check_return_ HRESULT UpdateVisibility() = 0;
 };
 
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Struct to hold the various parameters defining an animation scenario
-//      for power scenario, tracing & telemetry purposes . The structure is
-//      expected to be zero initialized and then filled in before being passed
-//      to tracking routines.
-//
-//------------------------------------------------------------------------------
-struct AnimationTrackingScenarioInfo
-{
-    XUINT64 qpcInitiate;
-    XUINT64 qpcInput;
-    XUINT32 msIntendedDuration;
-    XUINT16 priority;
-    const WCHAR* scenarioName;
-    const WCHAR* scenarioDetails;
-};
-
 enum class LayoutCompletedNeededReason
 {
     WindowSizeChanged = 0,
@@ -579,6 +560,7 @@ public:
 
     HRESULT GetDispatcherQueueStatics(_Outptr_ msy::IDispatcherQueueStatics** statics);
     HRESULT GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::IDesktopChildSiteBridgeStatics** statics);
+    HRESULT GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics);
     HRESULT GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics);
 
     ixp::ICompositionEasingFunctionStatics* GetCompositionEasingFunctionStatics();
@@ -606,6 +588,7 @@ private:
     wrl::ComPtr<msy::IDispatcherQueueStatics> m_dispatcherQueueStatics;
     wrl::ComPtr<mui::DragDrop::IDragDropManagerStatics> m_dragDropManagerStatics;
     wrl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> m_desktopChildSiteBridgeStatics;
+    wrl::ComPtr<ixp::IDesktopPopupSiteBridgeStatics> m_desktopPopupSiteBridgeStatics;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_compositionEasingFunctionStatics;
     wrl::ComPtr<ixp::IInteropCompositorFactoryPartner> m_interopCompositorFactoryPartner;
     wrl::ComPtr<ixp::ICompositionPathFactory> m_compositionPathFactory;
@@ -1406,14 +1389,6 @@ public:
 
     _Check_return_ HRESULT SetLayoutCompletedNeeded(const LayoutCompletedNeededReason reason);
 
-    bool IsAnimationTrackingEnabled();
-
-    void AnimationTrackingScenarioBegin(_In_ AnimationTrackingScenarioInfo* pScenarioInfo);
-
-    void AnimationTrackingScenarioReference(XUINT64 uniqueKey);
-
-    void AnimationTrackingScenarioUnreference(XUINT64 uniqueKey);
-
     void SetSizeChangedNotification(bool value, XDWORD applicationViewState);
 
     bool IsXamlVisible() const;
@@ -1447,12 +1422,6 @@ public:
     _Check_return_ HRESULT ReleaseDeviceResources(bool releaseDCompDevice, bool isDeviceLost);
 
     WUComp::ICompositor* GetCompositor() const;
-    void EnsureCompositionIslandCreated(_In_ wuc::ICoreWindow* const coreWindow) const;
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    UINT64 GetCoreWindowCompositionIslandId();
-#endif
 
     void AddXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot);
     void RemoveXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot);

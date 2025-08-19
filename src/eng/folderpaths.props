@@ -212,8 +212,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PkgMicrosoft_Build_Msix>$(NugetPackageDirectory)\Microsoft.Build.Msix\$(MicrosoftBuildMsixVersion)\</PkgMicrosoft_Build_Msix>
-
     <objtarget Condition="'$(arch)' == 'x86'">i386</objtarget>
     <objtarget Condition="'$(arch)' != 'x86'">$(arch)</objtarget>
 

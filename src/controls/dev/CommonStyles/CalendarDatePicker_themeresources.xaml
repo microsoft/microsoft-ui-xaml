@@ -14,6 +14,7 @@
       <StaticResource x:Key="CalendarDatePickerTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CalendarDatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="ControlFillColorDefaultBrush" />
       <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
@@ -38,6 +39,7 @@
       <StaticResource x:Key="CalendarDatePickerTextForegroundPressed" ResourceKey="SystemColorHighlightColorBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="SystemColorHighlightColorBrush" />
+      <StaticResource x:Key="CalendarDatePickerHeaderForeground" ResourceKey="SystemColorButtonTextColorBrush" />
       <StaticResource x:Key="CalendarDatePickerHeaderForegroundDisabled" ResourceKey="SystemColorGrayTextColorBrush" />
       <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="SystemColorButtonFaceColorBrush" />
       <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="SystemColorHighlightTextColorBrush" />
@@ -64,6 +66,7 @@
       <StaticResource x:Key="CalendarDatePickerTextForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="TextFillColorPrimaryBrush" />
+      <StaticResource x:Key="CalendarDatePickerHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
       <StaticResource x:Key="CalendarDatePickerHeaderForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
       <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="ControlFillColorDefaultBrush" />
       <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="ControlFillColorSecondaryBrush" />
@@ -208,9 +211,9 @@
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" />
               <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="32" />
+              <ColumnDefinition Width="32" MaxWidth="32"/>
             </Grid.ColumnDefinitions>
-            <ContentPresenter x:Name="HeaderContentPresenter" x:DeferLoadStrategy="Lazy" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" Margin="{StaticResource CalendarDatePickerTopHeaderMargin}" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Collapsed" />
+            <ContentPresenter x:Name="HeaderContentPresenter" x:DeferLoadStrategy="Lazy" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" Margin="{StaticResource CalendarDatePickerTopHeaderMargin}" Foreground="{ThemeResource CalendarDatePickerHeaderForeground}" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Collapsed" />
             <Border x:Name="Background" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Control.IsTemplateFocusTarget="True" MinHeight="32" />
             <TextBlock x:Name="DateText" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Foreground="{TemplateBinding Foreground}" Text="{TemplateBinding PlaceholderText}" Padding="12, 0, 0, 2" VerticalAlignment="Center" />
             <FontIcon x:Name="CalendarGlyph" Grid.Row="1" Grid.Column="2" Glyph="&#xE787;" FontFamily="{ThemeResource SymbolThemeFontFamily}" Foreground="{ThemeResource CalendarDatePickerCalendarGlyphForeground}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />

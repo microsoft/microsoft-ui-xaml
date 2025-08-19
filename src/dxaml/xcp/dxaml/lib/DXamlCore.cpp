@@ -474,7 +474,7 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
         // We allow this temporarily only for UWP because we're not supporting it for foward-compat yet.
         //  Task 29643834: Remove use of textinputproducerinternal.h before we open-source and before we fully-support UWP
         //                 (ITextInputConsumer, ITextInputProducer, ITextInputProducerInternal)
-        TextInputProducerHelper::SetAllowCallsToPrivateWindowsFunctions(true);
+        TextInputProducerHelper::EnableTemporaryUWPTestMode(true);
     }
 
     XamlOneCoreTransforms::EnsureInitialized(XamlOneCoreTransforms::InitMode::Normal);

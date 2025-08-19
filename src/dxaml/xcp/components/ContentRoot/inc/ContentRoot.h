@@ -147,11 +147,6 @@ public:
 
     wrl::ComPtr<ixp::IContentIslandEnvironment> GetContentIslandEnvironment() const;
 
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    UINT64 GetVisualIdentifier();
-#endif
-
 private:
     CContentRoot(_In_ CContentRoot::Type type, _In_ XUINT32 backgroundColor, _In_opt_ CUIElement* rootElement, _In_ CCoreServices& coreServices);
     ~CContentRoot();

@@ -13,7 +13,7 @@
     <Setter Property="UseSystemFocusVisuals" Value="True" />
     <Setter Property="FocusVisualMargin" Value="-1" />
     <Setter Property="IsTabStop" Value="True" />
-    <Setter Property="Padding" Value="{ThemeResource ButtonPadding}" />
+    <Setter Property="Padding" Value="{ThemeResource SplitButtonPadding}" />
     <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
     <Setter Property="Template">
       <Setter.Value>

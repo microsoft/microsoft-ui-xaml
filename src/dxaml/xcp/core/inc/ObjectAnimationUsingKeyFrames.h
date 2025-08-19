@@ -25,8 +25,6 @@ public:
 
     KnownTypeIndex GetTypeIndex() const override;
 
-    bool IsInterestingForAnimationTracking() override { return false; }
-
 protected:
     void InterpolateCurrentValue(XFLOAT rPercentEnd) final;
     void PostInterpolateValues() final;

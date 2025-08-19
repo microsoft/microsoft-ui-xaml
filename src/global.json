@@ -9,7 +9,7 @@
     "msbuild-sdks_EngCommon": "Used by Maestro for managing packages/dependencies"
   },
   "sdk": {
-    "version": "6.0.427",
+    "version": "8.0.411",
     "rollForward": "latestMajor",
     "allowPrerelease": true
   },

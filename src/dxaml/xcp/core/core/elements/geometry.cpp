@@ -2659,7 +2659,6 @@ CGeometry::WidenToSink(
     )
 {
     HRESULT hr = S_OK;
-    bool emptyPen = false;
     CWidenerSink* pWidener = NULL;
     TransformGeometrySink* pTransformSink = NULL;
     IPALGeometrySink* pTargetSink = NULL;
@@ -2683,7 +2682,7 @@ CGeometry::WidenToSink(
         pTargetSink = pWidener;
     }
 
-    IFC(pWidener->Set(pen, pSink, NULL, emptyPen));
+    IFC(pWidener->Set(pen, pSink));
 
     IFC(VisitSink(pTargetSink));
 

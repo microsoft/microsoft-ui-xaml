@@ -42,7 +42,6 @@
     <IxpTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage.*?Version="(.*?)"').Groups[1].Value)</IxpTransportPackageVersion>
     <IxpInternalPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.InteractiveExperiences.*?Version="(.*?)"').Groups[1].Value)</IxpInternalPackageVersion>
     <WinUIDetailsNugetVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.WinUIDetails.*?Version="(.*?)"').Groups[1].Value)</WinUIDetailsNugetVersion>
-    <MicrosoftBuildMsixVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Build.Msix.*?Version="(.*?)"').Groups[1].Value)</MicrosoftBuildMsixVersion>
     <!-- It is at this point that we might want our non-product code to be able to use a package version different than the primary configuration -->
     <!-- If so, this would probably be the point at which we would override the above version with what is configured for the app                 -->
     <!-- The package version identifies the targeted package version based on the configured packages. -->
@@ -69,7 +68,7 @@
     <MicrosoftCsWinRTPackageVersion>2.1.1</MicrosoftCsWinRTPackageVersion>
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>38</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
     <WebView2PackageVersion>1.0.3179.45</WebView2PackageVersion>
-    <dotNetSdkChannel>8.0.1xx</dotNetSdkChannel>
+    <dotNetSdkChannel>8.0.4xx</dotNetSdkChannel>
     <dotNetSdkVNextChannel>9.0.xx</dotNetSdkVNextChannel>
     <CppWinRTVersion>2.0.230706.1</CppWinRTVersion>
     <Win2DWinUIVersion>1.3.2</Win2DWinUIVersion>
@@ -84,7 +83,6 @@
   </PropertyGroup>
   <Target Name="ValidatePackageVersionRetrieval" BeforeTargets="Build;CoreCompile;Midl;ResolveAssemblyReferences">
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="Build Versions returned from package configurations" />
-    <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Build.Msix=$(MicrosoftBuildMsixVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Internal.WinUILocalizationResources=$(LocalizedMUIFilesPackageVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Windows.SDK.Contracts=$(MicrosoftWindowsSDKContractsVersion)" />
     <Message Condition="'$(DEBUG_BUILD)'!=''" Text="     Microsoft.Taef=$(TaefNugetPackageVersion)" />
@@ -100,7 +98,6 @@
     <Error Condition="'$(FoundationTransportPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.WindowsAppSDK.Foundation.TransportPackage" />
     <Error Condition="'$(IxpTransportPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" />
     <Error Condition="'$(IxpInternalPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Internal.InteractiveExperiences" />
-    <Error Condition="'$(MicrosoftBuildMsixVersion)' == ''" Text="Unable to determine version for package Microsoft.Build.Msix" />
     <Error Condition="'$(LocalizedMUIFilesPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Internal.WinUILocalizationResources" />
     <Error Condition="'$(MicrosoftWindowsSDKContractsVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.SDK.Contracts" />
     <Error Condition="'$(TaefNugetPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Taef" />

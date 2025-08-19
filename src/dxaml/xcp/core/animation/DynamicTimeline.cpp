@@ -111,12 +111,3 @@ _Check_return_ HRESULT CDynamicTimeline::FinalizeIteration()
     return S_OK;
 }
 
-void CDynamicTimeline::AnimationTrackingCollectInfoNoRef(
-    _Inout_ CDependencyObject** ppTarget,
-    _Inout_ CDependencyObject** ppDynamicTimeline)
-{
-    if (!*ppDynamicTimeline) *ppDynamicTimeline = this;
-    CParallelTimeline::AnimationTrackingCollectInfoNoRef(ppTarget, ppDynamicTimeline);
-}
-
-

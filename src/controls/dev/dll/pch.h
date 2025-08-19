@@ -86,6 +86,7 @@
 #include <strsafe.h>
 #include <robuffer.h>
 
+#include <TraceLoggingInterop.h>
 #include <wil/common.h>
 
 // STL

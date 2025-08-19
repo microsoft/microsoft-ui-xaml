@@ -528,7 +528,6 @@ public:
 
     _Check_return_ xstring_ptr GetClassName() const;
 
-    xstring_ptr GetUINameForTracing();
     xstring_ptr GetUIPathForTracing(bool followDOParentChain);
     template <typename T> T* GetNamedSelfOrParent();
 

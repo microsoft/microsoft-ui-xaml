@@ -1173,9 +1173,6 @@ CTransition::SetupTransition(
         pStoryboard->m_pLayoutTransitionCompletedData = pData;
         pData = NULL;
 
-        // for animation tracking, begin the scenario now with the additional transition information
-        pStoryboard->AnimationTrackingBeginScenario(pTransition, pTarget);
-
         IFC(pStoryboard->BeginPrivate(TRUE /* Top-level Storyboard */));
 
         ReleaseInterface(pDestinationElement);

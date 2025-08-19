@@ -57,6 +57,12 @@
         <Link Condition="'$(Configuration)'=='Debug'">
             <EnableCOMDATfolding>false</EnableCOMDATfolding>
         </Link>
+        <Link>
+          <AdditionalDependencies>
+            %(AdditionalDependencies);
+            $(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal2.lib;
+          </AdditionalDependencies>
+        </Link>
     </ItemDefinitionGroup>
 
     <!-- DEPRECATED. Do not use these in new files. Remove as time allows. -->
