@@ -125,7 +125,7 @@ We use and recommend the following workflow:
 1. Create a pull request (PR) against this repository's main branch. 
     - Push your changes to your fork on GitHub (if you haven't already).
     - Note: It is okay for your PR to include a large number of commits. Once your change is accepted, you will be asked to squash your commits into one or some appropriately small number of commits before your PR is merged.
-    - Note: It is okay to create your PR as "[WIP]" before the implementation is done. This can be useful if you'd like to start the feedback process while you're still working on the implementation. State that this is the case in the initial PR comment.
+    - Note: It is okay to create your PR as a draft PR before the implementation is done. This can be useful if you'd like to start the feedback process while you're still working on the implementation. When you're ready for deeper consideration, change the PR's state to ready to review (not draft).
 
 ### Contribution Bar
 The WinUI team accepts code changes that improve WinUI or fix bugs, as long as they follow the processes outlined below and broadly align with our [roadmap](docs/roadmap.md).
