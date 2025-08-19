@@ -76,7 +76,7 @@ Engagement includes feedback about learning materials and resources. It is alway
 - "`<`Resource`>` could be more inclusive and accessible if you considered `<`alternative`>` because `<`benefit`>`. Have you considered making these changes?"
    
 Many of the resources we provide are also open source themselves! It can sometimes be more effective to leave feedback on the more specific repo. This includes:
-- [documentation](https://github.com/MicrosoftDocs/windows-uwp)
+- [documentation](https://github.com/MicrosoftDocs/windows-dev-docs)
 - [website (`gh-pages` branch of this repo)](https://github.com/microsoft/microsoft-ui-xaml/tree/gh-pages)
 - [Xaml Controls Gallery (sample app)](https://github.com/microsoft/Xaml-Controls-Gallery/tree/master)
 
