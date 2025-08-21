@@ -26,7 +26,7 @@
         <StaticResource x:Key="TitleBarPaneToggleButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-        <StaticResource x:Key="TitleBarPaneToggleForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+        <StaticResource x:Key="TitleBarPaneToggleButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
         <Color x:Key="TitleBarCaptionButtonForegroundColor">#FFFFFF</Color>
         <Color x:Key="TitleBarCaptionButtonHoverForegroundColor">#FFFFFF</Color>
         <Color x:Key="TitleBarCaptionButtonPressedForegroundColor">#CFCFCF</Color>
@@ -55,7 +55,7 @@
         <StaticResource x:Key="TitleBarPaneToggleButtonForeground" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPressed" ResourceKey="TextFillColorSecondaryBrush" />
-        <StaticResource x:Key="TitleBarPaneToggleForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
+        <StaticResource x:Key="TitleBarPaneToggleButtonForegroundDisabled" ResourceKey="TextFillColorDisabledBrush" />
         <Color x:Key="TitleBarCaptionButtonForegroundColor">#191919</Color>
         <Color x:Key="TitleBarCaptionButtonHoverForegroundColor">#191919</Color>
         <Color x:Key="TitleBarCaptionButtonPressedForegroundColor">#606060</Color>
@@ -84,7 +84,7 @@
         <StaticResource x:Key="TitleBarPaneToggleButtonForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
         <StaticResource x:Key="TitleBarPaneToggleButtonForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-        <StaticResource x:Key="TitleBarPaneToggleForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+        <StaticResource x:Key="TitleBarPaneToggleButtonForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
         <StaticResource x:Key="TitleBarCaptionButtonForegroundColor" ResourceKey="TextFillColorPrimary" />
         <StaticResource x:Key="TitleBarCaptionButtonHoverForegroundColor" ResourceKey="TextFillColorPrimary" />
         <StaticResource x:Key="TitleBarCaptionButtonPressedForegroundColor" ResourceKey="TextFillColorSecondary" />
@@ -224,7 +224,7 @@
                                 </VisualState>
                                 <VisualState x:Name="Disabled">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Background">
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TitleBarPaneToggleButtonBackgroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Content" Storyboard.TargetProperty="Foreground">
