@@ -47,9 +47,9 @@ body:
       label: NuGet package version
       description: If you are seeing your issue on older versions please try the latest release
       options:
-        - "WinUI 3 - Windows App SDK 1.8 Experimental 4: 1.8.250702007-experimental4"
         - "WinUI 3 - Windows App SDK 1.8.0: 1.8.250907003"
         - "WinUI 3 - Windows App SDK 1.8 Preview 1: 1.8.250814004-preview1"
+        - "WinUI 3 - Windows App SDK 1.8 Experimental 4: 1.8.250702007-experimental4"
         - "WinUI 2 - Microsoft.UI.Xaml 2.8.7"
   - type: dropdown
     attributes:
