@@ -856,7 +856,7 @@ Page::UpdateWindowLayoutBoundsChangedEvent(
 {
     Window* currentWindow = nullptr;
 
-    if (SUCCEEDED(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &currentWindow)) && currentWindow)
+    if (SUCCEEDED(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, false /*onlyForDesktopWindowXamlSource*/, &currentWindow)) && currentWindow)
     {
         if (isLayoutBoundsApplied)
         {
@@ -909,7 +909,7 @@ Page::IsLaidOutToWindowBounds()
     // For testing purposes, return True when IXamlTestHooks::ShrinkApplicationViewVisibleBounds was called with True.
     Window* currentWindow = nullptr;
 
-    if (SUCCEEDED(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &currentWindow)) && currentWindow)
+    if (SUCCEEDED(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, false /*onlyForDesktopWindowXamlSource*/, &currentWindow)) && currentWindow)
     {
         layoutToWindowBounds = currentWindow->ShouldShrinkApplicationViewVisibleBounds();
     }

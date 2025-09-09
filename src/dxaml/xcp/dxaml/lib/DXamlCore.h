@@ -291,8 +291,14 @@ namespace DirectUI
         // NOTE: this function signature is written with MultiWindow support for both
         // desktop apps and UWP apps in mind. To that end, the 1st parameter is required
         // even though it _technically_ isn't needed for the existing UWP functionality.
+        //
+        // onlyForDesktopWindowXamlSource: if true, this function will only return a Window
+        // if the given UIElement is hosted in a DesktopWindowXamlSource.  See more info in
+        // the function definition.
+        // Set to "false" to match WinAppSDK 1.7 behavior.
         _Check_return_ HRESULT GetAssociatedWindowNoRef(
             _In_ UIElement* element,
+            bool onlyForDesktopWindowXamlSource,
             _Outptr_result_maybenull_  Window** windowNoRef);
 
         // Returns a VectorView of all Window instances known to DXamlCore

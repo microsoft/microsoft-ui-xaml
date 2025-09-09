@@ -784,7 +784,7 @@ _Check_return_ HRESULT Popup::RegisterForWindowActivatedEvents()
 
     // Determine the window that this UIElement belongs to and subscribe to Activated events if valid
     Window* window = nullptr;
-    IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &window));
+    IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, false /*onlyForDesktopWindowXamlSource*/, &window));
     if (!m_windowActivatedHandler && window)
     {
         ctl::WeakRefPtr weakThis;
@@ -812,7 +812,7 @@ _Check_return_ HRESULT Popup::RegisterForWindowActivatedEvents()
 _Check_return_ HRESULT Popup::UnregisterForWindowActivatedEvents()
 {
     Window* window = nullptr;
-    IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &window));
+    IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, false /*onlyForDesktopWindowXamlSource*/, &window));
     if (m_windowActivatedHandler && window)
     {
         IGNOREHR(m_windowActivatedHandler.DetachEventHandler(ctl::iinspectable_cast(window)));

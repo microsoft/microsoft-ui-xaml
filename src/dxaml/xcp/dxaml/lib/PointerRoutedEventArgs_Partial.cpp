@@ -61,24 +61,24 @@ _Check_return_ HRESULT DirectUI::PointerRoutedEventArgs::GetIntermediatePointsIm
         if (spArgs->m_pPointerEventArgs)
         {
             IFC(spArgs->m_pPointerEventArgs->GetIntermediateTransformedPoints(pPointerPointTransform, &pPointerPoints));
-        }
-    }
 
-    BOOLEAN isGenerated;
-    IFC(get_IsGenerated(&isGenerated));
-    if (isGenerated)
-    {
-        // We are in a generated event.  That means we are replaying a previous
-        // event so we can respond to scene changes.  For replays, we only want
-        // our intermediate points to contain the most current point.
-        UINT points = 0;
-        IFC(pPointerPoints->get_Size(&points));
-        if (points > 1)
-        {
-            ctl::ComPtr<ixp::IPointerPoint> lastPointerPoint;
-            IFC(pPointerPoints->GetAt(0, &lastPointerPoint));
-            IFC(pPointerPoints->Clear());
-            IFC(pPointerPoints->Append(lastPointerPoint.Get()));
+            BOOLEAN isGenerated;
+            IFC(get_IsGenerated(&isGenerated));
+            if (isGenerated)
+            {
+                // We are in a generated event.  That means we are replaying a previous
+                // event so we can respond to scene changes.  For replays, we only want
+                // our intermediate points to contain the most current point.
+                UINT points = 0;
+                IFC(pPointerPoints->get_Size(&points));
+                if (points > 1)
+                {
+                    ctl::ComPtr<ixp::IPointerPoint> lastPointerPoint;
+                    IFC(pPointerPoints->GetAt(0, &lastPointerPoint));
+                    IFC(pPointerPoints->Clear());
+                    IFC(pPointerPoints->Append(lastPointerPoint.Get()));
+                }
+            }
         }
     }
 
