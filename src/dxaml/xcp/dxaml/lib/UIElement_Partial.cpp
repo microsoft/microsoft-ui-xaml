@@ -2963,6 +2963,20 @@ _Check_return_ HRESULT UIElement::FocusWithDirection(
     return S_OK;
 }
 
+//To pause dispatch at the controls layer
+HRESULT UIElement::PauseNewDispatchIfAvailableImpl()
+{
+    DXamlCore::GetCurrent()->PauseDispatchAtControl();
+    return S_OK;
+}
+
+//To resume dispatch at the controls layer
+HRESULT UIElement::ResumeNewDispatchIfAvailableImpl()
+{
+    DXamlCore::GetCurrent()->ResumeDispatchAtControl();
+    return S_OK;
+}
+
 // Called when FocusManager is looking for the first focusable element from the specified search scope.
 _Check_return_ HRESULT
 UIElement::GetFirstFocusableElement(

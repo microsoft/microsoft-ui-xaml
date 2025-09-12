@@ -3,6 +3,11 @@
 
 #include "precomp.h"
 #include "OfferTracker.h"
+
+#ifndef NTDDI_WIN11_GE
+#define NTDDI_WIN11_GE 0x0A000010
+#endif
+
 #include <dcompinternal.h>
 #include <dcompprivate.h>
 

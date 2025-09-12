@@ -157,7 +157,7 @@
     </PackageReference>
     <PackageReference Include="MUXCustomBuildTasks" />
     <!-- When updating to the winui3 compatible win2d, remove the FixWUXReferences target -->
-    <PackageReference Include="Win2d.WinUI" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Graphics.Win2D" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Web.WebView2" />
     
     <Manifest Include="$(ApplicationManifest)" />
@@ -398,7 +398,7 @@
   </Target>
 
   <!-- TODO: Remove this target once the fix for 45817705 is ingested into our WindowsAppSDKAggregator submodule. -->
-  <Target Name="AddExtraPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
+  <Target Name="AddExtraPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix">
     <ItemGroup>
       <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xaml"/>
       <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xbf"/>

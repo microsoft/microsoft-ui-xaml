@@ -87,10 +87,13 @@ public:
     void Closed(winrt::event_token const& token);
     winrt::event_token Closing(winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosingEventArgs> const& value);
     void Closing(winrt::event_token const& token);
+    winrt::event_token Opened(winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarOpenedEventArgs> const& value);
+    void Opened(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::InfoBar, winrt::IInspectable>> m_closeButtonClickEventSource;
     event_source<winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosedEventArgs>> m_closedEventSource;
     event_source<winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarClosingEventArgs>> m_closingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarOpenedEventArgs>> m_openedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

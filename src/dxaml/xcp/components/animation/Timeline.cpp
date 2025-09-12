@@ -591,24 +591,3 @@ bool CTimeline::CanRequestTicksWhileActive()
     return !m_isExpiredWhileWaitingForDCompAnimationCompleted;
 }
 
-xstring_ptr CTimeline::GetTargetPathForTracking(_In_ CDependencyObject* target, bool startFromParentOfTarget)
-{
-    // Build the details from the UI element path.
-    CDependencyObject* parent = target;
-    if (startFromParentOfTarget)
-    {
-        parent = target->GetParentInternal(/*fPublic*/false);
-    }
-
-    if (parent != nullptr)
-    {
-        xstring_ptr path = parent->GetUIPathForTracing(false /* followDOParentChain */);
-        return path;
-    }
-    else
-    {
-        xstring_ptr blank;
-        IGNOREHR(xstring_ptr::CloneBuffer(L"", &blank));
-        return blank;
-    }
-}

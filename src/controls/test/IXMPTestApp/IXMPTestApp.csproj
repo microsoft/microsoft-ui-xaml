@@ -199,7 +199,7 @@
     This error originated because the WindowsAppSDK FWP takes 18362 version of the winmd instead of 17763. But the apps targets 17763 hence the difference.
     But we can use MicrosoftWindowsAppSDKFilesExcluded to exclude all the WinMDs from being unpacked preventing this issue. -->
   <Target Name="ExcludeMicrosoftWindowsAppSDKPayloadFiles"
-      BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFiles"
+      BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix"
       DependsOnTargets="ExtractMicrosoftWindowsAppSDKMsixFiles" >
     <ItemGroup>
       <MicrosoftWindowsAppSDKFilesExcluded Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.winmd"/>

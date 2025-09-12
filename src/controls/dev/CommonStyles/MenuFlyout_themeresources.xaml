@@ -380,7 +380,7 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Viewbox x:Name="IconRoot" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
-              <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" />
+              <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}"/>
             </Viewbox>
             <TextBlock x:Name="TextBlock" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
             <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,4,0,0" Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" TextAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
@@ -481,7 +481,7 @@
             </Grid.ColumnDefinitions>
             <FontIcon x:Name="CheckGlyph" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE73E;" FontSize="12" Foreground="{ThemeResource MenuFlyoutSubItemChevron}" Opacity="0" Margin="0,0,16,0" />
             <Viewbox x:Name="IconRoot" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
-              <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" />
+              <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" />
             </Viewbox>
             <TextBlock x:Name="TextBlock" Grid.Column="1" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
             <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="2" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,0,0,0" Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
@@ -579,7 +579,7 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <Viewbox x:Name="IconRoot" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
-                <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" />
+                <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}"/>
               </Viewbox>
               <TextBlock x:Name="TextBlock" Grid.Column="0" Foreground="{TemplateBinding Foreground}" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               <FontIcon x:Name="SubItemChevron" Grid.Column="1" Glyph="&#xE974;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12" AutomationProperties.AccessibilityView="Raw" Foreground="{ThemeResource MenuFlyoutSubItemChevron}" Margin="{StaticResource MenuFlyoutItemChevronMargin}" MirroredWhenRightToLeft="True" />
@@ -693,7 +693,7 @@
               <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Viewbox x:Name="IconRoot" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
-              <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" />
+              <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" />
             </Viewbox>
             <TextBlock x:Name="TextBlock" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
             <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,0,0,0" Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
@@ -799,7 +799,7 @@
             </Grid.ColumnDefinitions>
             <FontIcon x:Name="CheckGlyph" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE73E;" FontSize="12" Foreground="{ThemeResource ToggleMenuFlyoutItemCheckGlyphForeground}" Opacity="0" Margin="0,0,12,0" />
             <Viewbox x:Name="IconRoot" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
-              <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" />
+              <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" />
             </Viewbox>
             <TextBlock x:Name="TextBlock" Grid.Column="1" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
             <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="2" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,0,0,0" Foreground="{ThemeResource ToggleMenuFlyoutItemKeyboardAcceleratorTextForeground}" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
@@ -902,7 +902,7 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <Viewbox x:Name="IconRoot" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center" Width="16" Height="16" Visibility="Collapsed">
-                <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" />
+                <ContentPresenter x:Name="IconContent" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}"/>
               </Viewbox>
               <TextBlock x:Name="TextBlock" Grid.Column="0" Foreground="{TemplateBinding Foreground}" Text="{TemplateBinding Text}" TextTrimming="{ThemeResource MenuFlyoutItemTextTrimming}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
               <FontIcon x:Name="SubItemChevron" Grid.Column="1" Glyph="&#xE974;" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12" AutomationProperties.AccessibilityView="Raw" Foreground="{ThemeResource MenuFlyoutSubItemChevron}" Margin="{StaticResource MenuFlyoutItemChevronMargin}" MirroredWhenRightToLeft="True" />

@@ -11,7 +11,6 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
-#include "velocity.h"
 #include <algorithm>
 #include <Windowsx.h>
 #include <winuser.h>
@@ -1020,7 +1019,8 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTa
     // If the tab being closed is the currently focused tab, we'll move focus to the next tab
     // when the tab closes.
     bool tabIsFocused = false;
-    auto focusedElement{ winrt::FocusManager::GetFocusedElement() ? winrt::FocusManager::GetFocusedElement().try_as<winrt::DependencyObject>() : nullptr };
+    auto focusedObject = winrt::FocusManager::GetFocusedElement(XamlRoot());
+    auto focusedElement{ focusedObject ? focusedObject.try_as<winrt::DependencyObject>() : nullptr };
 
     while (focusedElement)
     {
@@ -1068,6 +1068,12 @@ void TabView::RequestCloseTab(winrt::TabViewItem const& container, bool updateTa
                                 break;
                             }
                         }
+                    }
+
+                    if (newFocusedElement == args.NewFocusedElement())
+                    {
+                        // No-op If the new focused element is the same as the one we're already trying to focus.
+                        return;
                     }
 
                     if (!newFocusedElement)
@@ -1420,7 +1426,7 @@ int TabView::GetItemCount()
 
 bool TabView::MoveFocus(bool moveForward)
 {
-    auto focusedControl = winrt::FocusManager::GetFocusedElement() ? winrt::FocusManager::GetFocusedElement().try_as<winrt::Control>() : nullptr;
+    auto focusedControl = winrt::FocusManager::GetFocusedElement(XamlRoot()).try_as<winrt::Control>();
 
     // If there's no focused control, then we have nothing to do.
     if (!focusedControl)

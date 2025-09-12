@@ -38,6 +38,11 @@
 #include <microsoft.ui.composition.experimental.h>
 #include <microsoft.ui.composition.interop.h>
 #include "VisualDebugTags.h"
+
+#ifndef NTDDI_WIN11_GE
+#define NTDDI_WIN11_GE 0x0A000010
+#endif
+
 #include <dcompinternal.h>
 #include <dcompprivate.h>
 #include <microsoft.ui.input.experimental.h>
@@ -65,7 +70,6 @@ class HWCompTreeNode;
 class HWCompTreeNodeWinRT;
 class CUIElement;
 class CXamlIslandRoot;
-class CoreWindowIslandAdapter;
 class ProjectedShadowManager;
 class RefreshRateInfo;
 
@@ -268,18 +272,6 @@ public:
         XUINT32 uiThreadFrameRate,
         XFLOAT uiThreadCPUTime);
 
-    _Check_return_ HRESULT AnimationTrackingScenarioBegin(_In_ const AnimationTrackingScenarioInfo* pScenarioInfo);
-
-    _Check_return_ HRESULT AnimationTrackingScenarioReference(
-        _In_opt_ const GUID* pScenarioGuid,
-        XUINT64 uniqueKey);
-
-    _Check_return_ HRESULT AnimationTrackingScenarioUnreference(
-        _In_opt_ const GUID* pScenarioGuid,
-        XUINT64 uniqueKey);
-
-    bool IsAnimationTrackingEnabled();
-
     _Check_return_ HRESULT RequestMainDCompDeviceCommit();
 
     DependencyObjectDCompRegistry* GetDCompObjectRegistry();
@@ -353,12 +345,6 @@ public:
     _Check_return_ HRESULT EnsureXamlIslandTargetRoots();
 
     XamlIslandRenderDataMap& GetXamlIslandRenderData() { return m_islandRenderData; };
-    void SetCoreWindow(_In_ wuc::ICoreWindow* const coreWindow) { m_coreWindowNoRef = coreWindow; }
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    UINT64 GetCompositionIslandId();
-#endif
 
     static void SetTag(_In_ WUComp::IVisual* visual, _In_ const wchar_t* debugTag, float value);
 
@@ -399,7 +385,6 @@ private:
         XUINT32 uiThreadFrameRate,
         XFLOAT uiThreadCPUTime,
         _Outptr_ DCompSurface** ppFrameRateSurface);
-    _Check_return_ HRESULT EnsureAnimationTrackingAppId();
 
     _Check_return_ HRESULT UpdateAtlasHint();
 
@@ -465,7 +450,6 @@ private:
 
     // DComp resources
     _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDesktopDevicePartner3> m_spMainDevice;
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDeviceInternal> m_spMainDeviceInternal;
     _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionSurfaceFactoryPartner> m_spMainSurfaceFactoryPartner;
     _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionSurfaceFactoryPartner2> m_spMainSurfaceFactoryPartner2;
     _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionSurfaceFactoryPartner3> m_spMainSurfaceFactoryPartner3;
@@ -490,9 +474,6 @@ private:
 
 #pragma endregion
 
-    // Application ID saved for animation/touch tracking.
-    xstring_ptr m_strAnimationTrackingAppId;
-    bool m_animationTrackingAppIdSetOnDevice;
     bool m_hasNative8BitSurfaceSupport;
 
     wrl::ComPtr<WUComp::IContainerVisual> m_hwndVisual;
@@ -546,13 +527,6 @@ private:
     // RegisterCallbackThread method on the UI thread, which we'll do when we commit the device. This flag marks
     // whether the call has been made.
     bool m_isCallbackThreadRegistered;
-
-    wuc::ICoreWindow* m_coreWindowNoRef = nullptr;
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    std::unique_ptr<CoreWindowIslandAdapter> m_onecoreIslandAdapter;
-#endif
 
     SharedTransitionAnimations m_sharedTransitionAnimations;
 

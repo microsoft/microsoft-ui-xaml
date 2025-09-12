@@ -58,8 +58,6 @@ public:
 
     ixp::IContentIsland * GetContentIsland();
 
-    GUID GetCompositionIslandId();
-
     CPopupRoot* GetPopupRootNoRef();
     CTransitionRoot* GetTransitionRootNoRef();
 
@@ -115,11 +113,6 @@ public:
     {
         return m_contentRoot.get();
     }
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    UINT64 GetVisualIdentifier();
-#endif
 
     bool HasFocus() const;
 
@@ -277,7 +270,7 @@ private:
     void UnsubscribeToInputEvents();
 
     typedef decltype(&CXamlIslandRoot::OnIslandNonClientPointerEntered) PointerHandlerFunction;
-    wrl::ComPtr<wf::ITypedEventHandler<ixp::InputNonClientPointerSource*, ixp::NonClientPointerEventArgs*>> GetNonClientPointerEventHandler(PointerHandlerFunction pointerHandler, std::optional<bool> newContactState = std::optional<bool>());
+    wrl::ComPtr<wf::ITypedEventHandler<ixp::InputNonClientPointerSource*, ixp::NonClientPointerEventArgs*>> GetNonClientPointerEventHandler(PointerHandlerFunction pointerHandler, UINT msg, std::optional<bool> newContactState = std::optional<bool>());
 
     _Check_return_ HRESULT ConvertNonClientPointToXamlCoordinates(wf::Point& point);
 

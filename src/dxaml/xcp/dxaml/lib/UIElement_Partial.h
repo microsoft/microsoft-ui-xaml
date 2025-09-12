@@ -453,6 +453,9 @@ namespace DirectUI
                 InputActivationBehavior inputActivationBehavior,
                 _Out_ BOOLEAN* returnValue);
 
+            HRESULT PauseNewDispatchIfAvailableImpl();
+            HRESULT ResumeNewDispatchIfAvailableImpl();
+
             void SetAnimateIfBringIntoView()
             {
                 ASSERT(!m_animateIfBringIntoView);

@@ -45,8 +45,8 @@ hstring ExpanderAutomationPeer::GetNameCore()
 
 winrt::AutomationControlType ExpanderAutomationPeer::GetAutomationControlTypeCore()
 {
-    // WPF uses "Group" as its control type core
-    return winrt::AutomationControlType::Group;
+    // Expander has "Button" as its default control type core
+    return winrt::AutomationControlType::Button;
 }
 
 winrt::AutomationPeer ExpanderAutomationPeer::GetExpanderToggleButtonPeer()

@@ -4626,6 +4626,24 @@ Cleanup:
     ReleaseInterfaceNoNULL(pVirtuals);
     RRETURN(hr);
 }
+IFACEMETHODIMP DirectUI::UIElementGenerated::PauseNewDispatchIfAvailable()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_PauseNewDispatchIfAvailable", 0);
+    }
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<UIElement*>(this)->PauseNewDispatchIfAvailableImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "UIElement_PauseNewDispatchIfAvailable", hr);
+    }
+    RRETURN(hr);
+}
 IFACEMETHODIMP DirectUI::UIElementGenerated::PopulatePropertyInfoOverride(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo)
 {
     HRESULT hr = S_OK;
@@ -4772,6 +4790,24 @@ Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
         XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "UIElement_ResetGlobalScaleFactor", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::UIElementGenerated::ResumeNewDispatchIfAvailable()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "UIElement_ResumeNewDispatchIfAvailable", 0);
+    }
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<UIElement*>(this)->ResumeNewDispatchIfAvailableImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "UIElement_ResumeNewDispatchIfAvailable", hr);
     }
     RRETURN(hr);
 }

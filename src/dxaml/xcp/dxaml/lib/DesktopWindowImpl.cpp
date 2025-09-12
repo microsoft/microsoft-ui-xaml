@@ -801,9 +801,9 @@ _Check_return_ HRESULT DesktopWindowImpl::OnActivate(WPARAM wParam, LPARAM lPara
     }
     //
     // If the window has been activated and is not minimized, set focus on the last child window
-    // that had focus.  If that child window is the composition island, restore focus.
+    // that had focus.  If that child window is the composition island, restore focus if window is not already closed.
     //
-    if (!isWindowMinimized && (WA_INACTIVE != LOWORD(wParam)))
+    if (!m_bIsClosed && !isWindowMinimized && (WA_INACTIVE != LOWORD(wParam)))
     {
         // Set the focus to the child window that last had focus when this window was deactivated.
         // also enters when on such deactivation cases where m_lastFocusedWindowHandle didn't get set like in case of window minimize

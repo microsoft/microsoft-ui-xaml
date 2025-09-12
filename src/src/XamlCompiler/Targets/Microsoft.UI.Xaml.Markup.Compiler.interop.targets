@@ -1114,18 +1114,20 @@ Licensed under the MIT License. See LICENSE in the project root for license info
 
     <!--
       Enable warning when referenced projects have higher version than the current project
-      for Windows Store projects
+      for Windows Store projects. If TargetPlatformVersion is not set, just skip this step
+      to let Microsoft.WindowsAppSDK.targets provide a clear error.
     -->
-    <PropertyGroup>
+    <PropertyGroup Condition="'$(TargetPlatformVersion)' != ''">
         <FindInvalidProjectReferences Condition="'$(TargetPlatformIdentifier)' == 'Windows' and
                                               '$(TargetPlatformVersion)' &gt;= '8.0'">true</FindInvalidProjectReferences>
     </PropertyGroup>
 
     <!--
-      Enable warning when referenced ESDKs do not have MaxPlatformVersion
-      specified for Windows Store projects
+      Enable warning when referenced ESDKs do not have MaxPlatformVersion specifed
+      for Windows Store projects. If TargetPlatformVersion is not set, just skip this step
+      to let Microsoft.WindowsAppSDK.targets provide a clear error.
     -->
-    <PropertyGroup>
+    <PropertyGroup Condition="'$(TargetPlatformVersion)' != ''">
         <SDKReferenceWarnOnMissingMaxPlatformVersion Condition="'$(SDKReferenceWarnOnMissingMaxPlatformVersion)' == '' and
                                                              '$(TargetPlatformIdentifier)' == 'Windows' and
                                                              '$(TargetPlatformVersion)' &gt;= '8.0'">true</SDKReferenceWarnOnMissingMaxPlatformVersion>

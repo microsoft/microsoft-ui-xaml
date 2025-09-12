@@ -159,14 +159,6 @@ _Check_return_ HRESULT CJupiterWindow::SetCoreWindow(_In_opt_ wuc::ICoreWindow* 
     const auto pDxamlCore = DirectUI::DXamlCore::GetCurrent();
     if (!pDxamlCore->IsInBackgroundTask())
     {
-        // CONTENT-TODO: OneCoreTransforms is not supported by lifted IXP at this time.
-        if (XamlOneCoreTransforms::IsEnabled())
-        {
-            // If the compositor is not already created, this will ensure that it gets created now. Creating the compositor
-            // will then create the composition island for the core window
-            m_pControl->GetCoreServices()->EnsureCompositionIslandCreated(coreWindow);
-        }
-
         IFC_RETURN(SetInitialCursor());
         if (m_pCoreWindow)
         {

@@ -311,9 +311,10 @@ public:
 
     _Check_return_ HRESULT Reposition();
 
+    ixp::IDesktopPopupSiteBridge* GetDesktopPopupSiteBridgeNoRef() { return m_desktopPopupSiteBridge.Get(); }
     ixp::IPopupWindowSiteBridge* GetPopupWindowBridgeNoRef() { return m_popupWindowBridge.Get(); }
-    ixp::IContentIsland* GetContentIslandNoRef() { return m_contentIsland.Get(); }
     ixp::IDesktopSiteBridge* GetDesktopBridgeNoRef() { return m_desktopBridge.Get(); }
+    ixp::IContentIsland* GetContentIslandNoRef() { return m_contentIsland.Get(); }
 
     bool ReplayPointerUpdate();
     void ClearLastPointerPointForReplay();
@@ -321,15 +322,6 @@ public:
 
     wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const;
     WindowedPopupInputSiteAdapter* GetInputSiteAdapter() { return m_inputSiteAdapter.get(); };
-
-    // https://task.ms/48749483
-    // TODO: Remove once XAML creates Windowed popups without a DesktopSiteBridge. This is a
-    // temporary workaround since we need a DesktopSiteBridge to create windowed popups.
-    // XamlIslands do not have access to a bridge, and may not be hosted in a DesktopSiteBridge
-    // at all, but to unblock the scenario we need a way to create popups. This method
-    // should not be used except to create windowed popups, and once we have another way to
-    // create them this should be removed.
-    wrl::ComPtr<ixp::IDesktopSiteBridge> GetDesktopSiteBridge();
 
     wf::Point GetTranslationFromMainWindow() { return m_offsetFromMainWindow; }
 
@@ -650,6 +642,7 @@ private:
     // between the associated FlyoutBase and Popup
     xref::weakref_ptr<CFlyoutBase> m_associatedFlyoutWeakRef;
 
+    wrl::ComPtr<ixp::IDesktopPopupSiteBridge> m_desktopPopupSiteBridge;
     wrl::ComPtr<ixp::IPopupWindowSiteBridge> m_popupWindowBridge;
     wrl::ComPtr<ixp::IDesktopSiteBridge> m_desktopBridge;
     wrl::ComPtr<ixp::IContentIsland> m_contentIsland;
@@ -658,7 +651,7 @@ private:
     EventRegistrationToken m_automationProviderRequestedToken = {};
     EventRegistrationToken m_bridgeClosedToken {};
 
-    // True if the m_popupWindowBridge/m_desktopBridge has been closed unexpectedly.
+    // True if the m_desktopPopupSiteBridge or m_popupWindowBridge have been closed unexpectedly.
     bool m_bridgeClosed {false};
 
     // This is temporary fix to ensure that a popup children leave the tree correctly.

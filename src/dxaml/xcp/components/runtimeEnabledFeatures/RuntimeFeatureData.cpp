@@ -81,5 +81,7 @@ namespace RuntimeFeatureBehavior
         // Until the feature is complete, we will default the typographic model back to the legacy one.
         { L"DisableDWriteTypographicModel", RuntimeEnabledFeature::DisableDWriteTypographicModel, false, 0, 0 },
         { L"ForceDWriteTypographicModel", RuntimeEnabledFeature::ForceDWriteTypographicModel, false, 0, 0 },
+        // If XAML dispatch is paused, then to allow process without creating the reentrancy guard, else to enable the reentrancy checks.
+        { L"EnableReentrancyChecksAllowPaused", RuntimeEnabledFeature::EnableReentrancyChecksAllowPaused, false, 0, 0 },
     };
 }

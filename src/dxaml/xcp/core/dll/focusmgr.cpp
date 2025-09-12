@@ -1107,7 +1107,7 @@ CFocusManager::GetPreviousTabStop(_In_opt_ CDependencyObject* pCurrentTabStop)
 
         while (pParent != NULL && !pParent->OfTypeByIndex<KnownTypeIndex::RootVisual>() && pNewTabStop == NULL)
         {
-            if (IsValidTabStopSearchCandidate(pCurrent) && GetTabNavigation(pCurrent) == DirectUI::KeyboardNavigationMode::Cycle)
+            if (pCurrent != NULL && IsValidTabStopSearchCandidate(pCurrent) && GetTabNavigation(pCurrent) == DirectUI::KeyboardNavigationMode::Cycle)
             {
                 pNewTabStop = GetLastFocusableElement(pCurrent, pCurrent);
                 break;

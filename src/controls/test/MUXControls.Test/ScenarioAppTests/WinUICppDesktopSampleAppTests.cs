@@ -699,6 +699,51 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [Description("This test tests that the closing of child WinUI3 window happens without crash")]
+        public void ChildWindowCloseTest()
+        {
+            SelectWindowUI();
+            ClearWindow();
+            WinUISampleAppTestsUtils.ClearErrorReport();
+            WinUISampleAppTestsUtils.ClearLogEvents();
+            int processID = TestEnvironment.Application.GetProcessIdFromAppWindow();
+            
+            WinUISampleAppTestsUtils.SelectRadioButton("radioButtonChildWindow");
+            WinUISampleAppTestsUtils.InvokeButton("buttonCreateWindow");
+            WinUISampleAppTestsUtils.VerifyNoErrorReport();
+            WinUISampleAppTestsUtils.InvokeButton("buttonActivateWindow");
+            WinUISampleAppTestsUtils.VerifyNoErrorReport();
+
+            UIObject WindowRoot = FindElement.GetDesktopTopLevelWindow("WinUI Desktop - Child Window Test");
+            Verify.IsNotNull(WindowRoot);
+
+            // Closes child window
+            WinUISampleAppTestsUtils.InvokeButtonForRoot(WindowRoot, "buttonCloseWindow");
+            Log.Comment("Closed child window");
+            Wait.ForIdle();
+
+            // Close Parent Window
+            WinUISampleAppTestsUtils.InvokeButton("buttonCloseWindow");
+            Log.Comment("Closed parent window");
+            Wait.ForIdle();
+
+            WinUISampleAppTestsUtils.InvokeButton("buttonExitAppFromWinUI", true /*Skip Wait*/);
+            bool isClosed = false;
+            Wait.RetryUntilEvalFuncSuccessOrTimeout(
+                () =>
+                {
+                    isClosed = TestHelpers.IsWindowClosed(processID);
+                    return isClosed;
+                },
+                retryTimoutByMilliseconds: 1000
+            );
+
+            Log.Comment("Verify that app has been exited successfully");
+            Verify.IsTrue(isClosed);
+            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
+        }
+
+        [TestMethod]
         [Description("This test tests the event order on minimize, restore, maximize for Main Window")]
         public void WindowChromeTestMainWindowEvents()
         {

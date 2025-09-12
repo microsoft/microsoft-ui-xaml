@@ -12,6 +12,10 @@
 #include "ResourceAccessor.h"
 #include "../ResourceHelper/Utils.h"
 
+#ifdef MUX_PRERELEASE
+#include "InfoBarOpenedEventArgs.h"
+#endif
+
 static constexpr wstring_view c_closeButtonName{ L"CloseButton"sv };
 static constexpr wstring_view c_iconTextBlockName{ L"StandardIcon"sv };
 static constexpr wstring_view c_contentRootName{ L"ContentRoot"sv };
@@ -108,14 +112,23 @@ void InfoBar::RaiseClosedEvent()
     m_closedEventSource(*this, *args);
 }
 
+void InfoBar::RaiseOpenedEvent()
+{
+#ifdef MUX_PRERELEASE
+    auto const openedEventArgs = winrt::make_self<InfoBarOpenedEventArgs>();
+    m_openedEventSource(*this, *openedEventArgs);
+#endif
+}
+
 void InfoBar::OnIsOpenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (IsOpen())
     {
         //Reset the close reason to the default value of programmatic.
         m_lastCloseReason = winrt::InfoBarCloseReason::Programmatic;
-
         UpdateVisibility();
+
+        RaiseOpenedEvent();
     }
     else
     {

@@ -418,36 +418,6 @@ IPALUri* CDependencyObject::GetPreferredBaseUri() const
     return m_sharedState->Value().GetBaseUri();
 }
 
-xstring_ptr CDependencyObject::GetUINameForTracing()
-{
-    XStringBuilder nameBuilder;
-
-    // Find the named UI and framework element parents (or self!)
-    CUIElement* pUIElement = GetNamedSelfOrParent<CUIElement>();
-    if (pUIElement != nullptr)
-    {
-        CFrameworkElement* pFMElement = pUIElement->GetNamedSelfOrParent<CFrameworkElement>();
-
-        // If they are not the same, first emit the UI element part.
-        if (pUIElement != pFMElement)
-        {
-            IGNOREHR(nameBuilder.Append(XSTRING_PTR_EPHEMERAL(L"+UI:")));
-            IGNOREHR(nameBuilder.Append(pUIElement->m_strName));
-        }
-
-        // Now emit the framework element name, if we got one.
-        if (pFMElement != nullptr)
-        {
-            IGNOREHR(nameBuilder.Append(XSTRING_PTR_EPHEMERAL(L"+FM:")));
-            IGNOREHR(nameBuilder.Append(pFMElement->m_strName));
-        }
-    }
-
-    xstring_ptr name;
-    IGNOREHR(nameBuilder.DetachString(&name));
-    return name;
-}
-
 xstring_ptr CDependencyObject::GetUIPathForTracing(bool followDOParentChain)
 {
     XStringBuilder pathBuilder;

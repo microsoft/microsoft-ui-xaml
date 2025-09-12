@@ -280,6 +280,56 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         }
 
         [TestMethod]
+        public void CanRemoveSelectionFromChildItemInCompactNavView()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("SelectedItemLabel"));
+
+                Log.Comment("Verify that menu item 15 is not expanded.");
+                var firstItem = FindElement.ByName("Menu Item 15");
+                var childItem = FindElement.ByName("Menu Item 16");
+                Verify.IsNull(childItem);
+                Verify.AreEqual(displayModeTextBox.DocumentText, "uninitialized");
+
+                InputHelper.LeftClick(firstItem);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that child item is now visible.");
+                childItem = FindElement.ByName("Menu Item 16");
+                Verify.IsNotNull(childItem, "Child item should be visible after expanding parent item.");
+
+                InputHelper.LeftClick(childItem);
+                Wait.ForIdle();
+
+                Log.Comment("Turn NavigationView into Compact Mode.");
+                Button closeButton = new Button(FindElement.ById("CollapseNavigationViewButton"));
+                Verify.IsNotNull(closeButton);
+                closeButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Remove selection from child item.");
+                Button removeSelectionButton = new Button(FindElement.ByName("RemoveSelectionButton"));
+                Verify.IsNotNull(removeSelectionButton);
+                removeSelectionButton.Click();
+                Wait.ForIdle();
+                Verify.AreEqual(displayModeTextBox.DocumentText, "No Item Selected");
+
+                Log.Comment("Add item to footer.");
+                Button addFooterItemButton = new Button(FindElement.ByName("AddItemToFooterButton"));
+                Verify.IsNotNull(addFooterItemButton);
+                addFooterItemButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify that we still do not have a selection.");
+                var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
+                getSelectItemButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(displayModeTextBox.DocumentText, "No Item Selected");
+            }
+        }
+
+        [TestMethod]
         public void SelectingNonTopLevelItemInOverflow()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))

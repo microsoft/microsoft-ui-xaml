@@ -34,7 +34,6 @@ private:
     void UpdateBackButton();
     void UpdatePaneToggleButton();
     void UpdateHeight();
-    void UpdateTheme();
     void UpdateTitle();
     void UpdateSubtitle();
     void UpdateLeftHeader();
@@ -64,7 +63,6 @@ private:
     winrt::event_token m_windowRectChangedToken{};
     winrt::Button::Click_revoker m_backButtonClickRevoker{};
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
-    winrt::FrameworkElement::ActualThemeChanged_revoker m_actualThemeChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_sizeChangedRevoker;
     winrt::FrameworkElement::LayoutUpdated_revoker m_iconLayoutUpdatedRevoker{};
     PropertyChanged_revoker m_flowDirectionChangedRevoker{};
@@ -128,12 +126,4 @@ private:
     static constexpr std::wstring_view s_rightHeaderVisibleVisualStateName{ L"RightHeaderVisible"sv };
     static constexpr std::wstring_view s_rightHeaderCollapsedVisualStateName{ L"RightHeaderCollapsed"sv };
     static constexpr std::wstring_view s_rightHeaderDeactivatedVisualStateName{ L"RightHeaderDeactivated"sv };
-
-    static constexpr std::wstring_view s_titleBarCaptionButtonForegroundColorName{ L"TitleBarCaptionButtonForegroundColor"sv };
-    static constexpr std::wstring_view s_titleBarCaptionButtonBackgroundColorName{ L"TitleBarCaptionButtonBackgroundColor"sv };
-    static constexpr std::wstring_view s_titleBarCaptionButtonHoverForegroundColorName{ L"TitleBarCaptionButtonHoverForegroundColor"sv };
-    static constexpr std::wstring_view s_titleBarCaptionButtonHoverBackgroundColorName{ L"TitleBarCaptionButtonHoverBackgroundColor"sv };
-    static constexpr std::wstring_view s_titleBarCaptionButtonPressedForegroundColorName{ L"TitleBarCaptionButtonPressedForegroundColor"sv };
-    static constexpr std::wstring_view s_titleBarCaptionButtonPressedBackgroundColorName{ L"TitleBarCaptionButtonPressedBackgroundColor"sv };
-    static constexpr std::wstring_view s_titleBarCaptionButtonInactiveForegroundColorName{ L"TitleBarCaptionButtonInactiveForegroundColor"sv };
 };

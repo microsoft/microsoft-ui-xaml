@@ -104,11 +104,6 @@ HRESULT GetRuntimeId(_Out_ SAFEARRAY ** pRetVal);
 HRESULT Navigate(NavigateDirection direction, _Out_ IRawElementProviderFragment ** pRetVal);
 HRESULT SetFocus();
 
-// IRawElementProviderVisualRelative methods 
-GetVisualRelativeBoundingRectangle(_Out_ UiaVisualRelativeRectangle* visualRelativeRect);
-GetVisualRelativeCenterPoint(_Out_ UiaVisualRelativePoint* visualRelativePoint);
-GetVisualRelativeClickablePoint(_Out_ UiaVisualRelativePoint* visualRelativePoint);
-
 // IRawElementProviderAdviseEvents methods 
 HRESULT AdviseEventAdded(_In_ EVENTID eventId, _Out_ SAFEARRAY *propertyIDs);
 HRESULT AdviseEventRemoved(_In_ EVENTID eventId, _Out_ SAFEARRAY *propertyIDs);

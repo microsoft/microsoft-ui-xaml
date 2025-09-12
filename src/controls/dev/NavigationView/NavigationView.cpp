@@ -950,9 +950,23 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             auto indexPath = GetIndexPathForContainer(nvi);
             auto indexPathFromModel = m_selectionModel.SelectedIndex();
 
-            if (indexPathFromModel && indexPath.CompareTo(indexPathFromModel) == 0)
+            if (indexPathFromModel)
             {
-                m_selectionModel.DeselectAt(indexPath);
+                if (indexPath.CompareTo(indexPathFromModel) ==  0)
+                {
+                    m_selectionModel.DeselectAt(indexPath);
+                }
+                else if (!IsPaneOpen() && indexPath.GetSize() == 0)
+                {
+                    UpdateIsChildSelected(indexPathFromModel, nullptr); // Update IsChildSelected Property of Parent Chain
+                    if (!m_prevIndicator && !m_nextIndicator && m_activeIndicator)
+                    {
+                        // Remove selection indication if we are not in the middle of an ongoing animation
+                        ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f);
+                        m_activeIndicator.set(nullptr);
+                    }
+                    m_selectionModel.DeselectAt(indexPathFromModel);
+                }
             }
         }
 

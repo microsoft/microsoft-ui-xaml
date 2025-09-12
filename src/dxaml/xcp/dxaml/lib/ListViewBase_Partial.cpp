@@ -517,7 +517,7 @@ IFACEMETHODIMP ListViewBase::OnPointerReleased(
             ctl::ComPtr<IUIElement> spVisualRootAsUIE;
             Window* currentWindow = nullptr;
 
-            IFC(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &currentWindow));
+            IFC(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, false /*onlyForDesktopWindowXamlSource*/, &currentWindow));
             if (currentWindow == nullptr)
             {
                 goto Cleanup;
@@ -575,7 +575,7 @@ IFACEMETHODIMP ListViewBase::OnPointerCaptureLost(
         ctl::ComPtr<IUIElement> spVisualRootAsUIE;
         Window* currentWindow = nullptr;
 
-        IFC(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &currentWindow));
+        IFC(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, false /*onlyForDesktopWindowXamlSource*/, &currentWindow));
         if (currentWindow == nullptr)
         {
             goto Cleanup;

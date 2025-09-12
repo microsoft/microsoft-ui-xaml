@@ -145,11 +145,3 @@ HWND UIAHostEnvironmentInfo::GetTransformWindow() const
     return m_transformWindow;
 }
 
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-GUID UIAHostEnvironmentInfo::GetXamlIslandEndpointId()
-{
-    auto islandRoot = m_weakXamlIslandRoot.lock();
-    return islandRoot->GetCompositionIslandId();
-}
-#endif

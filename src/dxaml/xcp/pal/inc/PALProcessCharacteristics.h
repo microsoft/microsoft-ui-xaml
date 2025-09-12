@@ -19,11 +19,6 @@
 struct IPALProcessCharacteristics
 {
     virtual bool IsProcessPackaged() = 0;
-    virtual bool IsProcessAppContainer() = 0;
-    virtual _Check_return_ HRESULT GetProcessPackagePath(_Out_ xstring_ptr* pstrPackagePath) = 0;
-    virtual _Check_return_ HRESULT GetProcessPackageFullName(_Out_ xstring_ptr* pstrPackageFullName) = 0;
-    virtual _Check_return_ HRESULT GetProcessModernAppId(_Out_ xstring_ptr* pstrAppId) = 0;
-    virtual _Check_return_ HRESULT GetProcessImageName(_Out_ xstring_ptr* pstrImageName) = 0;
 };
 
 

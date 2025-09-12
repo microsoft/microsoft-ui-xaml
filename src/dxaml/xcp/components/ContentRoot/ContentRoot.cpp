@@ -207,28 +207,6 @@ bool CContentRoot::ShouldUseVisualRelativePixels()
     return false;
 }
 
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-UINT64 CContentRoot::GetVisualIdentifier()
-{
-    UINT64 visualIdentifier = 0;
-
-    if (m_type == Type::XamlIslandRoot)
-    {
-        if (m_xamlIslandRoot)
-        {
-            visualIdentifier = m_xamlIslandRoot->GetVisualIdentifier();
-        }
-    }
-    else
-    {
-        visualIdentifier = m_coreServices.GetCoreWindowCompositionIslandId();
-    }
-
-    return visualIdentifier;
-}
-#endif
-
 CInputManager& CContentRoot::GetInputManager()
 {
     return m_inputManager;

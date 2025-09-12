@@ -129,7 +129,7 @@ namespace Microsoft.UI.Xaml.Controls
         Popup,
         InPlace,
         [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 8)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
         UnconstrainedPopup,
     };
 

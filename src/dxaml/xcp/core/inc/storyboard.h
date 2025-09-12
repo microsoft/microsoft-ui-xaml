@@ -28,7 +28,6 @@ private:
         , m_fIsSeeking(FALSE)
         , m_fInheritanceContextWalkForVsmProcessed(FALSE)
         , m_fAutoComplete(FALSE)
-        , m_fIsTrackedForAnimationTracking(FALSE)
     {}
 
 public:
@@ -120,11 +119,6 @@ public:
         return m_fInheritanceContextWalkForVsmProcessed;
     }
 
-    void AnimationTrackingBeginScenario(
-        _In_opt_ CTransition* pTransition,
-        _In_opt_ CDependencyObject* pTargetObject
-        );
-
     static void SetStoryboardStartedCallback(
         _In_ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)> callback)
     { s_storyboardStartedCallback = callback; }
@@ -149,18 +143,12 @@ private:
 
     bool IsTopLevelStoryboard();
 
-    bool IsAnimationTrackingAllowed();
-    void AnimationStartTracking();
-    void AnimationStopTracking();
-
     xstring_ptr GetNameForTracking(
         _In_opt_ CTransition* transition,
         _In_opt_ CUIElement* target,
         _In_opt_ CDependencyObject* dynamicTimeline,
         _Out_opt_ XUINT16* scenarioPriority);
     xstring_ptr GetDetailsForTracking(_In_ CUIElement* target);
-
-    void EnsureTelemetryName();
 
 public:
     std::unique_ptr<VisualTransitionCompletedData>  m_pVisualTransitionCompletedData;
@@ -189,9 +177,6 @@ private:
     // Flag which define the storyboard marked for autocompletion
     bool m_fAutoComplete: 1;
 
-    // Are we currently being tracked for animation tracking?
-    bool m_fIsTrackedForAnimationTracking: 1;
-
     // The parent timeline's time from the last tick while unpaused.
     XDOUBLE m_lastParentTime        = XDOUBLE_MAX;  // unset sentinel value
 
@@ -201,15 +186,6 @@ private:
     // The delta between the parent's time and the storyboard's local time.
     // This delta is negative, except in rare cases like seeking ahead of the time manager's clock.
     XDOUBLE m_rTimeDelta            = XDOUBLE_MAX;
-
-    // Used to tag the WUC animations created by this storyboard. WUC then uses this telemetry to look at power usage.
-    xstring_ptr m_storyboardTelemetryName = xstring_ptr::NullString();
-
-    // We are not interested in animations whose durations are longer than this for animation tracking.
-    static const XUINT32 c_AnimationTrackingMaxDurationInS = 5;
-    static const XUINT16 c_AnimationTrackingDefaultPriority = 100;
-    static const XUINT16 c_AnimationTrackingTransitionPriority = 200;
-    static const XUINT16 c_AnimationTrackingTransitionEntrancePriority = 250;
 
     // Callback we invoke to notify the test framework that we started a storyboard.
     static std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)> s_storyboardStartedCallback;

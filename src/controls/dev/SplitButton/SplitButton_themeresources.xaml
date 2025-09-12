@@ -100,6 +100,7 @@
   </ResourceDictionary.ThemeDictionaries>
   <x:Double x:Key="SplitButtonPrimaryButtonSize">35</x:Double>
   <x:Double x:Key="SplitButtonSecondaryButtonSize">35</x:Double>
+  <Thickness x:Key="SplitButtonPadding">11,6,11,7</Thickness>
   <Style x:Key="SplitButtonCommandBarStyle" TargetType="controls:SplitButton">
     <Setter Property="Background" Value="{ThemeResource AppBarButtonBackground}" />
     <Setter Property="Foreground" Value="{ThemeResource AppBarButtonForeground}" />

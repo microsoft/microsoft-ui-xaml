@@ -1576,7 +1576,7 @@ _Check_return_ HRESULT ScrollContentPresenter::GetFullScreenPageBottomAppBarHeig
     *bottomAppBarHeight = 0.0;
 
     Window* currentWindow = nullptr;
-    IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(page, &currentWindow));
+    IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(page, false /*onlyForDesktopWindowXamlSource*/, &currentWindow));
     if (nullptr == currentWindow)
     {
         return S_FALSE;

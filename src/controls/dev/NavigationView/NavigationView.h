@@ -86,7 +86,7 @@ public:
     winrt::ItemsRepeater LeftNavRepeater();
     winrt::NavigationViewItem GetSelectedContainer();
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
-    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib); 
+    winrt::ItemsRepeater GetParentRootItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
 
     // Hierarchical related functions

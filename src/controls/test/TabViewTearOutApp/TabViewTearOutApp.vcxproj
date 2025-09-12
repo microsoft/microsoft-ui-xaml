@@ -26,6 +26,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.props')" />
+  <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.props')" />
   <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM64">
@@ -189,6 +190,7 @@
   </PropertyGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets')" />
+    <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.targets')" />
     <Import Project="$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
@@ -198,11 +200,18 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.props'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.WindowsAppSDK.$(WindowsAppSdkPackageVersion)\build\native\Microsoft.WindowsAppSDK.targets'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.props'))" />
+    <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.SDK.BuildTools.MSIX.$(MicrosoftWindowsSDKBuildToolsMsixNugetPackageVersion)\build\Microsoft.Windows.SDK.BuildTools.MSIX.targets'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.targets'))" />
+    <!-- Detect addition of a props file to the WebView2 package (best practice is to always include both props and targets, even if empty, for future-proofing) -->
+    <PropertyGroup>
+      <ErrorText>This project does not import the newly added WebView2 NuGet package props file {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="Exists('$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NugetPackageDirectory)\Microsoft.Web.WebView2.$(WebView2PackageVersion)\build\native\Microsoft.Web.WebView2.props'))" />
   </Target>
-  <Target Name="AddExtraPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFiles">
+  <Target Name="AddExtraPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix">
     <ItemGroup>
       <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xaml" />
       <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xbf" />

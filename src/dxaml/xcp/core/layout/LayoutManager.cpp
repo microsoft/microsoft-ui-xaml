@@ -490,16 +490,36 @@ Cleanup:
     // Firing a UIAutomation automation properties change check
     if (m_bUIAClientsListeningToProperty)
     {
-        CUIElement* pVisualRoot = static_cast<CUIElement*>(m_pVisualTree ? m_pVisualTree->GetPublicRootVisual() : m_pCoreServices->getVisualRoot());
-        if (pVisualRoot)
+        hr = CheckUiaPropertyChanges();
+    }
+
+    RRETURN(hr);
+}
+
+_Check_return_ HRESULT CLayoutManager::CheckUiaPropertyChanges()
+{
+    HRESULT hr = S_OK;
+
+    // Prior implementation (m_pVisualTree->GetPublicRootVisual()) checked for UIA property changes in CoreWindow,
+    // missing contents of CXamlIslandRoot. Thus, iterate through public root visual of all visual trees and
+    // check for changes in UIAutomation properties
+    for (const xref_ptr<CContentRoot>& contentRoot : m_pCoreServices->GetContentRootCoordinator()->GetContentRoots())
+    {
+        if (!contentRoot) continue;
+
+        VisualTree* visualTree = contentRoot->GetVisualTreeNoRef();
+        if (!visualTree) continue;
+
+        CUIElement* rootVisual = visualTree->GetPublicRootVisual();
+        if (rootVisual)
         {
             TraceCheckAutomaticAutomationChangesBegin();
-            HRESULT hr2 = pVisualRoot->CheckAutomaticAutomationChanges();
+            HRESULT hr2 = rootVisual->CheckAutomaticAutomationChanges();
             TraceCheckAutomaticAutomationChangesEnd();
             hr = FAILED(hr) ? hr : hr2;
         }
 
-        CPopupRoot* pPopupRoot = m_pVisualTree->GetPopupRoot();
+        CPopupRoot* pPopupRoot = visualTree->GetPopupRoot();
         if (pPopupRoot)
         {
             TraceCheckAutomaticAutomationChangesPopupBegin();
@@ -508,8 +528,8 @@ Cleanup:
             hr = FAILED(hr) ? hr : hr2;
         }
     }
-
-    RRETURN(hr);
+    IFC_RETURN(hr);
+    return hr;
 }
 
 bool CLayoutManager::IsLayoutClean()

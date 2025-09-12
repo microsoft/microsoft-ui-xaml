@@ -112,6 +112,8 @@
 
 #include "DXamlCoreTipTests.h"
 
+#include "xcpwindow.h"
+
 using namespace WRLHelper;
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -295,6 +297,7 @@ DXamlCore::GetUwpWindowNoRef()
 _Check_return_ HRESULT
 DXamlCore::GetAssociatedWindowNoRef(
     _In_ UIElement* element,
+     bool onlyForDesktopWindowXamlSource,
     _Outptr_result_maybenull_  Window** windowNoRef)
 {
     IFCPTR_RETURN(windowNoRef);
@@ -322,6 +325,35 @@ DXamlCore::GetAssociatedWindowNoRef(
     if (!xamlRoot)
     {
         return S_FALSE;
+    }
+
+    // This is a change we made late in the 1.8, so it's scoped tightly to reduce risk.
+    // The main point of this function is to return the Window object for an element that's in the 
+    // content of the Window.  But we have a problem where the call to get_HostWindow can
+    // trigger a failfast when it calls get_TEMP_DesktopSiteBridge if the XamlIsland that contains
+    // the element is not backed by an HWND.  If we knew a way to check for that and avoid it,
+    // we would, but we don't.
+    // But we DO know that Xaml Window uses a DesktopWindowXamlSource to host its content.  So if we
+    // can detect that the element is in a XamlIsland that's NOT associated with a DesktopWindowXamlSource,
+    // we can bail out early and avoid the failfast.  We expect this to be very safe, but we're scoping
+    // it tightly to reduce risk.
+    // This is a temporary fix, we want to avoid the HWND dependency completely.
+    if (onlyForDesktopWindowXamlSource)
+    {
+        if (auto visualTree = xamlRoot->GetVisualTreeNoRef())
+        {
+            if (auto contentRoot = visualTree->GetContentRootNoRef())
+            {
+                if (auto xamlIsland = contentRoot->GetXamlIslandRootNoRef())
+                {
+                    if (!xamlIsland->GetDesktopContentBridgeNoRef())
+                    {
+                        // This is a XamlIsland that's not associated with a DesktopWindowXamlSource.
+                        return S_FALSE;
+                    }
+                }
+            }
+        }
     }
 
     // Retrieve the hosting HWND from the XamlRoot.
@@ -472,7 +504,7 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
         // We allow this temporarily only for UWP because we're not supporting it for foward-compat yet.
         //  Task 29643834: Remove use of textinputproducerinternal.h before we open-source and before we fully-support UWP
         //                 (ITextInputConsumer, ITextInputProducer, ITextInputProducerInternal)
-        TextInputProducerHelper::SetAllowCallsToPrivateWindowsFunctions(true);
+        TextInputProducerHelper::EnableTemporaryUWPTestMode(true);
     }
 
     XamlOneCoreTransforms::EnsureInitialized(XamlOneCoreTransforms::InitMode::Normal);
@@ -2438,11 +2470,16 @@ DXamlCore::OnRenderedEvent(_In_ IRenderedEventArgs* pArgs)
 {
     HRESULT hr = S_OK;
 
+    // FUTURE: Switch to PauseNewDispatch to always pause. This will need testing for compatibility.
+    CCoreServices* pCoreHandle = this->GetHandle();
+    PauseNewDispatchAtControl deferReentrancy(pCoreHandle);
+    m_deferReentrancy = &deferReentrancy;
     CEventSource<wf::IEventHandler<xaml_media::RenderedEventArgs*>, IInspectable, xaml_media::IRenderedEventArgs>* pEventSource = NULL;
     IFC(GetRenderedEventSource(&pEventSource));
     IFC(pEventSource->Raise(NULL, pArgs));
 
 Cleanup:
+    m_deferReentrancy = nullptr;
     ctl::release_interface(pEventSource);
     return hr;
 }
@@ -4832,4 +4869,20 @@ _Check_return_ HRESULT DXamlCore::IsAnimationEnabled(_Out_ bool* result)
     *result = m_isAnimationEnabled;
 
     return S_OK;
+}
+
+void DXamlCore::PauseDispatchAtControl()
+{
+    if(m_deferReentrancy)
+    {
+        m_deferReentrancy->PauseNewDispatch();
+    }
+}
+
+void DXamlCore::ResumeDispatchAtControl()
+{
+    if(m_deferReentrancy)
+    {
+        m_deferReentrancy->ResumeNewDispatch();
+    }
 }

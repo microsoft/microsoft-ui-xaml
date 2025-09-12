@@ -275,7 +275,7 @@
     <Import Project="$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" />
     <Import Project="$(ProjectRoot)\eng\WebView2Arm64EcWorkaround.targets" />
     <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.targets" />
-    <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets')" />
+    <Import Project="$(NuGetPackageRoot)\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('$(NuGetPackageRoot)\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
@@ -569,7 +569,7 @@
     <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Web.WebView2.$(WebView2Version)\build\native\Microsoft.Web.WebView2.targets'))" />
     <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.CppWinRT.$(CppWinRTVersion)\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.Wil.Internal.0.2.115\build\native\Microsoft.Windows.Wil.Internal.targets'))" />
+    <Error Condition="!Exists('$(NuGetPackageRoot)\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(NuGetPackageRoot)\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
   <!-- We want to generate SourceLink urls to GitHub even if we build against the AzDO repo -->
   <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"

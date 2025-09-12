@@ -151,7 +151,7 @@
                                         <Setter Target="PART_TitleText.Visibility" Value="Collapsed" />
                                         <Setter Target="PART_SubtitleText.Visibility" Value="Collapsed" />
                                         <Setter Target="PART_ContentPresenter.HorizontalAlignment" Value="Left" />
-                                        <Setter Target="PART_ContentPresenter.Margin" Value="16,0" />
+                                        <Setter Target="PART_ContentPresenter.Margin" Value="{ThemeResource TitleBarCompactContentMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -214,7 +214,9 @@
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
                             Grid.Column="3"
-                            Content="{TemplateBinding LeftHeader}" />
+                            Content="{TemplateBinding LeftHeader}"
+                            HorizontalAlignment="{ThemeResource TitleBarLeftHeaderHorizontalAlignment}"
+                            VerticalAlignment="{ThemeResource TitleBarLeftHeaderVerticalAlignment}" />
                             
                         <Viewbox
                             x:Name="PART_Icon"
@@ -222,9 +224,9 @@
                             Visibility="Collapsed"
                             Grid.Column="5"
                             VerticalAlignment="Center"
-                            MaxWidth="16"
-                            MaxHeight="16"
-                            Margin="0,0,16,0"
+                            MaxWidth="{ThemeResource TitleBarIconMaxWidth}"
+                            MaxHeight="{ThemeResource TitleBarIconMaxHeight}"
+                            Margin="{ThemeResource TitleBarIconMargin}"
                             Child="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IconElement}" />
                             
                         <TextBlock
@@ -235,12 +237,12 @@
                             Text="{TemplateBinding Title}"
                             Style="{StaticResource CaptionTextBlockStyle}"
                             Foreground="{TemplateBinding Foreground}"
-                            Margin="0,0,8,0"
+                            Margin="{ThemeResource TitleBarTitleMargin}"
                             TextTrimming="CharacterEllipsis"
                             TextWrapping="NoWrap"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            MinWidth="48" />
+                            MinWidth="{ThemeResource TitleBarTitleMinWidth}" />
                             
                         <TextBlock
                             x:Name="PART_SubtitleText"
@@ -250,12 +252,12 @@
                             Text="{TemplateBinding Subtitle}"
                             Style="{StaticResource CaptionTextBlockStyle}"
                             Foreground="{ThemeResource TitleBarSubtitleForegroundBrush}"
-                            Margin="0,0,16,0"
+                            Margin="{ThemeResource TitleBarSubtitleMargin}"
                             TextTrimming="CharacterEllipsis"
                             TextWrapping="NoWrap"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            MinWidth="48" />
+                            MinWidth="{ThemeResource TitleBarSubtitleMinWidth}" />
                             
                         <Grid
                             x:Name="PART_ContentPresenterGrid"
@@ -265,7 +267,8 @@
                             <ContentPresenter
                                 x:Name="PART_ContentPresenter"
                                 Content="{TemplateBinding Content}"
-                                HorizontalAlignment="Center"/>
+                                HorizontalAlignment="{ThemeResource TitleBarContentHorizontalAlignment}"
+                                VerticalAlignment="{ThemeResource TitleBarContentVerticalAlignment}"/>
                         </Grid>
                            
                         <ContentPresenter
@@ -273,7 +276,9 @@
                             x:DeferLoadStrategy="Lazy"
                             Visibility="Collapsed"
                             Grid.Column="9"
-                            Content="{TemplateBinding RightHeader}" />
+                            Content="{TemplateBinding RightHeader}"
+                            HorizontalAlignment="{ThemeResource TitleBarRightHeaderHorizontalAlignment}"
+                            VerticalAlignment="{ThemeResource TitleBarRightHeaderVerticalAlignment}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
