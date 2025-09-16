@@ -10,6 +10,10 @@
 #include "ScaleTransform.g.h"
 #include "RootScale.h"
 #include "Popup.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 58768401: [1.7 Servicing][WASDK][Watson Failure] caused by ACCESS_VIOLATION_c0000005_Microsoft.UI.Xaml.dll!DirectUI::PointerRoutedEventArgs::GetIntermediatePointsImpl
+#define WINAPPSDK_CHANGEID_58768401 58768401, WinAppSDK_1_7_4
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -61,24 +65,48 @@ _Check_return_ HRESULT DirectUI::PointerRoutedEventArgs::GetIntermediatePointsIm
         if (spArgs->m_pPointerEventArgs)
         {
             IFC(spArgs->m_pPointerEventArgs->GetIntermediateTransformedPoints(pPointerPointTransform, &pPointerPoints));
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_58768401>())
+            {
+                BOOLEAN isGenerated;
+                IFC(get_IsGenerated(&isGenerated));
+                if (isGenerated)
+                {
+                    // We are in a generated event.  That means we are replaying a previous
+                    // event so we can respond to scene changes.  For replays, we only want
+                    // our intermediate points to contain the most current point.
+                    UINT points = 0;
+                    IFC(pPointerPoints->get_Size(&points));
+                    if (points > 1)
+                    {
+                        ctl::ComPtr<ixp::IPointerPoint> lastPointerPoint;
+                        IFC(pPointerPoints->GetAt(0, &lastPointerPoint));
+                        IFC(pPointerPoints->Clear());
+                        IFC(pPointerPoints->Append(lastPointerPoint.Get()));
+                    }
+                }
+            }
         }
     }
 
-    BOOLEAN isGenerated;
-    IFC(get_IsGenerated(&isGenerated));
-    if (isGenerated)
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_58768401>())
     {
-        // We are in a generated event.  That means we are replaying a previous
-        // event so we can respond to scene changes.  For replays, we only want
-        // our intermediate points to contain the most current point.
-        UINT points = 0;
-        IFC(pPointerPoints->get_Size(&points));
-        if (points > 1)
+        BOOLEAN isGenerated;
+        IFC(get_IsGenerated(&isGenerated));
+        if (isGenerated)
         {
-            ctl::ComPtr<ixp::IPointerPoint> lastPointerPoint;
-            IFC(pPointerPoints->GetAt(0, &lastPointerPoint));
-            IFC(pPointerPoints->Clear());
-            IFC(pPointerPoints->Append(lastPointerPoint.Get()));
+            // We are in a generated event.  That means we are replaying a previous
+            // event so we can respond to scene changes.  For replays, we only want
+            // our intermediate points to contain the most current point.
+            UINT points = 0;
+            IFC(pPointerPoints->get_Size(&points));
+            if (points > 1)
+            {
+                ctl::ComPtr<ixp::IPointerPoint> lastPointerPoint;
+                IFC(pPointerPoints->GetAt(0, &lastPointerPoint));
+                IFC(pPointerPoints->Clear());
+                IFC(pPointerPoints->Append(lastPointerPoint.Get()));
+            }
         }
     }
 

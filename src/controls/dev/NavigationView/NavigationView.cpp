@@ -28,6 +28,10 @@
 #include "NavigationViewItemExpandingEventArgs.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
 #include "InspectingDataSource.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 58987595: [1.7 Servicing] NavigationView: Setting SelectedItem as null does not clear the selection state in collapsed mode for certain cases.
+#define WINAPPSDK_CHANGEID_58987595 58987595, WinAppSDK_1_7_4
 
 // General items
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
@@ -950,9 +954,33 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             auto indexPath = GetIndexPathForContainer(nvi);
             auto indexPathFromModel = m_selectionModel.SelectedIndex();
 
-            if (indexPathFromModel && indexPath.CompareTo(indexPathFromModel) == 0)
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_58987595>())
             {
-                m_selectionModel.DeselectAt(indexPath);
+                if (indexPathFromModel)
+                {
+                    if (indexPath.CompareTo(indexPathFromModel) ==  0)
+                    {
+                        m_selectionModel.DeselectAt(indexPath);
+                    }
+                    else if (!IsPaneOpen() && indexPath.GetSize() == 0)
+                    {
+                        UpdateIsChildSelected(indexPathFromModel, nullptr); // Update IsChildSelected Property of Parent Chain
+                        if (!m_prevIndicator && !m_nextIndicator && m_activeIndicator)
+                        {
+                            // Remove selection indication if we are not in the middle of an ongoing animation
+                            ResetElementAnimationProperties(m_activeIndicator.get(), 0.0f);
+                            m_activeIndicator.set(nullptr);
+                        }
+                        m_selectionModel.DeselectAt(indexPathFromModel);
+                    }
+                }
+            }
+            else
+            {
+                if (indexPathFromModel && indexPath.CompareTo(indexPathFromModel) == 0)
+                {
+                    m_selectionModel.DeselectAt(indexPath);
+                }
             }
         }
 
