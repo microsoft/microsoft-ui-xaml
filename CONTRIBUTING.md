@@ -107,7 +107,7 @@ Another great way to help is by up-voting and commenting on feature proposals:
 - [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature request)
 
 ### [WIP] Code Contribution Process
-Content will be added to this section once the reposority is ready for opem source contribution. 
+Content will be added to this section once the reposority is ready for open source contribution. 
 
 ### Contribution Bar
 The WinUI team accepts code changes that improve WinUI or fix bugs, as long as they follow the processes outlined below and broadly align with our [roadmap](docs/roadmap.md).
