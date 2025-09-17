@@ -1,21 +1,21 @@
 # Contributing to the Windows UI Library
 Welcome to the Windows UI Library (WinUI) repository. The WinUI repo is intended as a place for the WinUI team to gather community feedback, discuss issues with the community, and provide insight into bug fixes that the team is working on before updates are released. We welcome your input and contributions to all aspects of WinUI, including bug reports, doc updates, feature proposals, and API spec discussions.
 
-This document contains general guidance. More specific guidance is included in the documents linked below and within the repository’s [Wiki](https://github.com/microsoft/microsoft-ui-xaml/wiki) pages.
+This document contains general guidance. More specific guidance is included in the documents linked below and within the repository's [Wiki](https://github.com/microsoft/microsoft-ui-xaml/wiki) pages.
 
-Note this repository is not ready for open source collaboration at this time; this work is currently in progress. You can track the WinUI team’s progress towards open source collaboration in the [Phased Rollout to Open Source Collaboration](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) discussion.
+Note this repository is not ready for open source collaboration at this time; this work is currently in progress. You can track the WinUI team's progress towards open source collaboration in the [Phased Rollout to Open Source Collaboration](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) discussion.
 
 Note that all community interactions must abide by the [Code of Conduct](CODE_OF_CONDUCT.md). We strive to be respectful & empathetic toward each other, and we extend this to our community as well. Our conduct guidelines help to ensure that discourse and feedback follows this same pattern of respect & empathy, and they also make it clear that non-constructive or hostile feedback is unacceptable. By following these guidelines, we can all enjoy the mutual respect that each WinUI team member, and each community member, deserve.
 
 ## Documentation and Samples
 The [WinUI](https://aka.ms/winui3) documentation is a great resource for learning more about WinUI development. Within these docs, you can find information on how to create new WinUI applications, the full set of WinUI APIs and controls, and more.
 
-You’re welcome to propose changes to our documentation through the same link.
+You're welcome to propose changes to our documentation through the same link.
 
 You can find usage examples of the controls available in WinUI in the [WinUI 3 Gallery app](https://apps.microsoft.com/detail/9p3jfpwwdzrc). The source code for WinUI3 Gallery is available on GitHub at [microsoft/WinUI-Gallery]( https://github.com/Microsoft/WinUI-Gallery/).
 
 ## Filing New Issues
-If you have a general question on how to use WinUI and are not sure it’s a bug, ask in the [Q&A](https://github.com/microsoft/microsoft-ui-xaml/discussions/categories/q-a) discussion forum.
+If you have a general question on how to use WinUI and are not sure it's a bug, ask in the [Q&A](https://github.com/microsoft/microsoft-ui-xaml/discussions/categories/q-a) discussion forum.
 
 If you have an idea or feature request, post in the [Ideas](https://github.com/microsoft/microsoft-ui-xaml/discussions/categories/ideas) discussion forum.
 
@@ -85,15 +85,15 @@ Team process includes feedback about our repo and overall communication. Suggest
 - Ex: "`<`specific aspect of team process - e.g., response frequency, format`>` of the repo is making it hard for me to achieve `<`goal`>`. Please consider doing `<`alternative`>` instead because that would help `<`action`>`" 
 
 ## Code Contribution Guidelines
-Note this repository is not ready for open source collaboration at this time; this work is currently in progress. You can track the WinUI team’s progress towards open source collaboration in the [Phased Rollout to Open Source Collaboration](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) discussion.
+Note this repository is not ready for open source collaboration at this time; this work is currently in progress. You can track the WinUI team's progress towards open source collaboration in the [Phased Rollout to Open Source Collaboration](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) discussion.
 
 WinUI will be taking a phased approach to opening up the repo:
 **Phase 1: Increased Mirror Frequency**
-After the WASDK 1.8 release (end of August), we’ll begin more frequent mirroring of internal commits to GitHub to increase transparency and show progress.
+After the WASDK 1.8 release (end of August), we'll begin more frequent mirroring of internal commits to GitHub to increase transparency and show progress.
 **Phase 2: 3rd Party Devs Build Locally**
 External developers will be able to clone and build the repo locally, with documentation to guide setup and dependencies.
 **Phase 3: 3rd Party Devs Contribute & Run Tests**
-Contributors will be able to submit PRs and run tests locally. We’re working to untangle private dependencies and make test infrastructure publicly accessible.
+Contributors will be able to submit PRs and run tests locally. We're working to untangle private dependencies and make test infrastructure publicly accessible.
 **Phase 4: GitHub as Center of Gravity**
 GitHub becomes the primary place for development, issue tracking, and community engagement. Internal mirrors will be phased out.
 
@@ -107,25 +107,7 @@ Another great way to help is by up-voting and commenting on feature proposals:
 - [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature request)
 
 ### [WIP] Code Contribution Process
-We use and recommend the following workflow:
-1. Create an issue for your work. 
-    - You can skip this step for trivial changes or if there is an existing issue for the bug/feature.
-    - If your change adds or changes public APIs or UI, first follow the [New Feature or API Process](docs/feature_proposal_process.md).
-    - Clearly state that you are going to take on implementing it, if that's the case. You can request that the issue be assigned to you. Note: The issue filer and the implementer don't have to be the same person.
-1. Create a personal fork of the repository on GitHub (if you don't already have one).
-1. Create a branch off of main (git checkout -b mybranch). 
-    - Name the branch so that it clearly communicates your intentions (i.e. /user/janedoe/fix-datepicker).
-    - Branches are useful since they isolate your changes from incoming changes from upstream. They also enable you to create multiple PRs from the same fork.
-1. Make and commit your changes. 
-    - Please follow our [Commit Messages](#commit-messages) guidance.
-1. Add new tests corresponding to your change, if applicable.
-1. Build the repository with your changes. 
-    - Make sure that the builds are clean.
-    - Make sure that the tests are all passing, including your new tests.
-1. Create a pull request (PR) against this repository's main branch. 
-    - Push your changes to your fork on GitHub (if you haven't already).
-    - Note: It is okay for your PR to include a large number of commits. Once your change is accepted, you will be asked to squash your commits into one or some appropriately small number of commits before your PR is merged.
-    - Note: It is okay to create your PR as a draft PR before the implementation is done. This can be useful if you'd like to start the feedback process while you're still working on the implementation. When you're ready for deeper consideration, change the PR's state to ready to review (not draft).
+Content will be added to this section once the reposority is ready for opem source contribution. 
 
 ### Contribution Bar
 The WinUI team accepts code changes that improve WinUI or fix bugs, as long as they follow the processes outlined below and broadly align with our [roadmap](docs/roadmap.md).
@@ -159,17 +141,10 @@ Fix #42
 ```
 
 ## Checks
-Each pull request to main must pass the following checks: [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21)
+Each pull request to main must pass checks within Azure DevOps. This pipelines build your change and run automated tests. These tests should match what you're able to run with local automated testing using Test Explorer. They also create a NuGet package to match your change.
 
-This pipeline builds your change and runs automated tests. These tests should match what you're able to run with local automated testing using Test Explorer. It also creates a NuGet package to match your change.
+The license/CLA check confirms that you have completed the [CLA](https://cla.microsoft.com/).
 
-The license/cla check confirms that you have completed the [CLA](https://cla.microsoft.com/).
-
-Pull requests from a fork will not automatically trigger all of these checks. A member of the WinUI team can trigger the Azure Pipeline checks by commenting /azp run on the PR. The Azure Pipelines bot will then trigger the build.
+Pull requests from a fork will not automatically trigger all of these checks. A member of the WinUI team can trigger the Azure Pipeline checks by commenting `/azp run` on the PR. The Azure Pipelines bot will then trigger the build.
 
 In order to have PRs automatically merge once all checks have passed (including optional checks), maintainers can apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto merge) label. It will take effect after an 8 hour delay.
-
-### Other Pipelines
-Unlike the above checks these are not required for all PRs, but you may see them on some PRs: [WinUI-Public-MUX-CI](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20)
-
-This pipeline extends [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) to validate more platforms, adding Debug and ARM. It is run after your changes are merged to main.
