@@ -89,21 +89,13 @@ Note this repository is not ready for open source collaboration at this time; th
 
 WinUI will be taking a phased approach to opening up the repo:
 
-**Phase 1: Increased Mirror Frequency**
+**Phase 1: Increased Mirror Frequency:** After the WASDK 1.8 release (end of September), we'll begin more frequent mirroring of internal commits to GitHub to increase transparency and show progress.
 
-After the WASDK 1.8 release (end of September), we'll begin more frequent mirroring of internal commits to GitHub to increase transparency and show progress.
+**Phase 2: 3rd Party Devs Build Locally:** External developers will be able to clone and build the repo locally, with documentation to guide setup and dependencies.
 
-**Phase 2: 3rd Party Devs Build Locally**
+**Phase 3: 3rd Party Devs Contribute & Run Tests:** Contributors will be able to submit PRs and run tests locally. We're working to untangle private dependencies and make test infrastructure publicly accessible.
 
-External developers will be able to clone and build the repo locally, with documentation to guide setup and dependencies.
-
-**Phase 3: 3rd Party Devs Contribute & Run Tests**
-
-Contributors will be able to submit PRs and run tests locally. We're working to untangle private dependencies and make test infrastructure publicly accessible.
-
-**Phase 4: GitHub as Center of Gravity**
-
-GitHub becomes the primary place for development, issue tracking, and community engagement. Internal mirrors will be phased out.
+**Phase 4: GitHub as Center of Gravity:** GitHub becomes the primary place for development, issue tracking, and community engagement. Internal mirrors will be phased out.
 
 ### [WIP] New Contributors
 Contributions from the community are greatly appreciated. We mark the most straightforward issues with labels. These issues are the best place to start if you are interested in contributing but are new to the codebase.
@@ -112,7 +104,7 @@ Contributions from the community are greatly appreciated. We mark the most strai
 - [help wanted](https://github.com/orgs/microsoft/projects/1868/views/12)
 
 Another great way to help is by up-voting and commenting on feature proposals:
-- [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature request)
+- [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature%20request)
 
 ### [WIP] Code Contribution Process
 Content will be added to this section once the reposority is ready for open source contribution. 
