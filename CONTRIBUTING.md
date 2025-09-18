@@ -88,19 +88,27 @@ Team process includes feedback about our repo and overall communication. Suggest
 Note this repository is not ready for open source collaboration at this time; this work is currently in progress. You can track the WinUI team's progress towards open source collaboration in the [Phased Rollout to Open Source Collaboration](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) discussion.
 
 WinUI will be taking a phased approach to opening up the repo:
+
 **Phase 1: Increased Mirror Frequency**
-After the WASDK 1.8 release (end of August), we'll begin more frequent mirroring of internal commits to GitHub to increase transparency and show progress.
+
+After the WASDK 1.8 release (end of September), we'll begin more frequent mirroring of internal commits to GitHub to increase transparency and show progress.
+
 **Phase 2: 3rd Party Devs Build Locally**
+
 External developers will be able to clone and build the repo locally, with documentation to guide setup and dependencies.
+
 **Phase 3: 3rd Party Devs Contribute & Run Tests**
+
 Contributors will be able to submit PRs and run tests locally. We're working to untangle private dependencies and make test infrastructure publicly accessible.
+
 **Phase 4: GitHub as Center of Gravity**
+
 GitHub becomes the primary place for development, issue tracking, and community engagement. Internal mirrors will be phased out.
 
 ### [WIP] New Contributors
 Contributions from the community are greatly appreciated. We mark the most straightforward issues with labels. These issues are the best place to start if you are interested in contributing but are new to the codebase.
 
-- [good first issues](https://github.com/Microsoft/microsoft-ui-xaml/labels/good first issue)
+- [good first issues](https://github.com/Microsoft/microsoft-ui-xaml/issues?q=state%3Aopen%20label%3A%22good%20first%20issue%22)
 - [help wanted](https://github.com/orgs/microsoft/projects/1868/views/12)
 
 Another great way to help is by up-voting and commenting on feature proposals:
@@ -141,10 +149,10 @@ Fix #42
 ```
 
 ## Checks
-Each pull request to main must pass checks within Azure DevOps. This pipelines build your change and run automated tests. These tests should match what you're able to run with local automated testing using Test Explorer. They also create a NuGet package to match your change.
+Each pull request to main must pass checks within Azure DevOps. These pipelines build your change and run automated tests.
 
 The license/CLA check confirms that you have completed the [CLA](https://cla.microsoft.com/).
 
 Pull requests from a fork will not automatically trigger all of these checks. A member of the WinUI team can trigger the Azure Pipeline checks by commenting `/azp run` on the PR. The Azure Pipelines bot will then trigger the build.
 
-In order to have PRs automatically merge once all checks have passed (including optional checks), maintainers can apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto merge) label. It will take effect after an 8 hour delay.
+In order to have PRs automatically merge once all checks have passed (including optional checks), maintainers can apply the [auto merge](https://github.com/microsoft/microsoft-ui-xaml/labels/auto%20merge) label. It will take effect after an 8 hour delay.
