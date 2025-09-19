@@ -103,7 +103,7 @@ Contributions from the community are greatly appreciated. We mark the most strai
 - [help wanted](https://github.com/orgs/microsoft/projects/1868/views/12)
 
 Another great way to help is by up-voting and commenting on feature proposals:
-- [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature%20request)
+- [feature proposals](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature%20proposal)
 
 ### [WIP] Code Contribution Process
 Content will be added to this section once the reposority is ready for open source contribution. 
