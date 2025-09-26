@@ -123,5 +123,4 @@
 #define NTDDI_WIN11_GE 0x0A000010
 #endif
 
-#include <dcompinternal.h>
-#include <dcompprivate.h>
+#include <dcomp.h>

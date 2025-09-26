@@ -249,6 +249,7 @@
   <Import Project="$(MUXCProjectRoot)dev\CommandBarFlyout\APITests\CommandBarFlyout_APITests.projitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\IconSource\APITests\IconSource_APITests.projitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems" Label="Shared" Condition="$(FeatureLayoutPanelEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\WrapPanel\APITests\WrapPanel_APITests.projitems" Label="Shared" Condition="$(FeatureWrapPanelEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\Materials\Reveal\APITests\Reveal_APITests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />

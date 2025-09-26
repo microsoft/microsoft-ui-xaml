@@ -763,6 +763,22 @@ class __ErrorContextVisualizer
         return "0x" + unsignedHR.toString(16);
     }
 
+    get CaptureTime()
+    {
+        // The second line of a "dt <address> _FILETIME" command shows the human-readable time
+        var output = host.namespace.Debugger.Utility.Control.ExecuteCommand("dt 0x" + this.captureTime.targetLocation.address.toString(16) + " _FILETIME");
+        var time = output[1].trim();
+
+        // Get the portion which is less than a second
+        var secondTrim = 10000000; // 1 second in 100 nanoseconds
+        var subsecond = this.captureTime.dwLowDateTime % secondTrim;
+
+        // Append the subsecond time (all 7 digits) onto the seconds in the _FILETIME output
+        var subsecondStr = "." + subsecond.toString(10).padStart(7, '0');
+        var timeWithSubsecond = time.replace(/(:[0-9][0-9]) /, "$1" + subsecondStr + " ");
+        return timeWithSubsecond;
+    }
+
     get NestedException()
     {
         if (this.threadErrorInfo != undefined && !this.threadErrorInfo.ptr_.isNull)
@@ -3201,7 +3217,8 @@ class TriageData
             for (var frame of host.namespace.Debugger.State.DebuggerVariables.curstack.Frames)
             {
                 var frameName = frame.ToDisplayString();
-                if (frameName.indexOf("!_CxxThrowException") > 0 || frameName.startsWith("ucrtbase!__CxxFrameHandler2"))
+                if ((frameName.indexOf("!_CxxThrowException") > 0 || frameName.startsWith("ucrtbase!__CxxFrameHandler2")) &&
+                    host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > frameNum+1)
                 {
                     // TODO: Should we also check for "!winrt::throw_hresult" in the frame name?
                     // Get the module symbol name of the next frame.
@@ -3288,11 +3305,13 @@ class TriageData
             for (var frame of host.namespace.Debugger.State.DebuggerVariables.curstack.Frames)
             {
                 var frameName = frame.ToDisplayString();
-                if (frameName.startsWith("ucrtbase!__FrameHandler4::CxxCallCatchBlock"))
+                if (frameName.startsWith("ucrtbase!__FrameHandler4::CxxCallCatchBlock") &&
+                    host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > frameNum+1)
                 {
                     // Get the module symbol name of the next frame.
                     var nextFrameSymbol = host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[frameNum+1].ToDisplayString();
-                    if (nextFrameSymbol.indexOf("ntdll!") >= 0) // skip: ntdll!RcFrameConsolidation
+                    if (nextFrameSymbol.indexOf("ntdll!") >= 0 && // skip: ntdll!RcFrameConsolidation
+                        host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > frameNum+2)
                     {
                         nextFrameSymbol = host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[frameNum+2].ToDisplayString();
                     }
@@ -3366,7 +3385,8 @@ class TriageData
         }
 
         // wincorlib Platform::Exception
-        if (host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[2].ToDisplayString().startsWith("wincorlib!__abi_WinRTraise"))
+        if (host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > 2 &&
+            host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[2].ToDisplayString().startsWith("wincorlib!__abi_WinRTraise"))
         {
             var frameNum = 0;
             for (var frame of host.namespace.Debugger.State.DebuggerVariables.curstack.Frames)

@@ -696,6 +696,12 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SelectorBar_APITests", "dev
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TabViewTearOutApp", "test\TabViewTearOutApp\TabViewTearOutApp.vcxproj", "{86317243-45A8-4770-A4B2-768F721E5F9B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WrapPanel", "WrapPanel", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WrapPanel", "dev\WrapPanel\WrapPanel.vcxitems", "{EDAEAAD5-A295-49C0-8F51-C183B7CAE26B}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WrapPanel_APITests", "dev\WrapPanel\APITests\WrapPanel_APITests.shproj", "{1277DFD3-5C9E-4E19-AC50-38E89F2529C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_test|ARM64 = Debug_test|ARM64
@@ -1600,6 +1606,9 @@ Global
 		{1C950F53-542E-4CC4-9281-D9E36072A743} = {BC59C0F9-07AC-44B2-BDF1-6533A1371BB2}
 		{F778ACAE-150F-4D7D-83C1-5BF2E1ACB399} = {BC59C0F9-07AC-44B2-BDF1-6533A1371BB2}
 		{86317243-45A8-4770-A4B2-768F721E5F9B} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{EDAEAAD5-A295-49C0-8F51-C183B7CAE26B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{1277DFD3-5C9E-4E19-AC50-38E89F2529C5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
@@ -1618,6 +1627,7 @@ Global
 		dev\RatingControl\TestUI\RatingControl_TestUI.projitems*{10c52fd4-52fc-43b3-94af-895c9b5a014c}*SharedItemsImports = 13
 		dev\Interactions\ButtonInteraction\TestUI\ButtonInteraction_TestUI.projitems*{11b35f24-72b2-4228-9960-0d1ea283e1af}*SharedItemsImports = 13
 		dev\CommandBarFlyout\CommandBarFlyout.vcxitems*{11c085ff-8f68-48ee-9949-6eecbd0cbe6c}*SharedItemsImports = 9
+		dev\WrapPanel\APITests\WrapPanel_APITests.projitems*{1277dfd3-5c9e-4e19-ac50-38e89f2529c5}*SharedItemsImports = 13
 		dev\TwoPaneView\InteractionTests\TwoPaneView_InteractionTests.projitems*{1294409d-9bad-40cc-a74d-9ab29b343071}*SharedItemsImports = 13
 		dev\NumberBox\TestUI\NumberBox_TestUI.projitems*{13da8235-d04f-46d4-b5b4-f5ae774eeede}*SharedItemsImports = 13
 		dev\MenuBar\MenuBar_InteractionTests\MenuBar_InteractionTests.projitems*{1440a7b7-d3ca-4390-8c85-e1e9a7df8542}*SharedItemsImports = 13
@@ -1812,6 +1822,7 @@ Global
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\TwoPaneView\TestUI\TwoPaneView_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\WebView2\TestUI\WebView2_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
+		dev\WrapPanel\APITests\WrapPanel_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		test\TestAppUtils\TestAppUtils.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems*{4f64c819-664f-436a-bcdb-8ab3019b9dd5}*SharedItemsImports = 13
 		dev\Materials\Reveal\APITests\Reveal_APITests.projitems*{5049ea6c-88ce-4ed5-8692-947eec9e52bc}*SharedItemsImports = 13
@@ -1935,6 +1946,7 @@ Global
 		dev\Expander\Expander.vcxitems*{ec3b6f65-32c6-4bc8-8902-ee0b397e2787}*SharedItemsImports = 9
 		dev\AutoSuggestBox\InteractionTests\AutoSuggestBox_InteractionTests.projitems*{ed3e2182-d259-4dc0-b7bb-9b4219762f4c}*SharedItemsImports = 13
 		dev\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems*{ed7dba65-8f09-44f3-8d25-7bb5a7a89609}*SharedItemsImports = 9
+		dev\WrapPanel\WrapPanel.vcxitems*{edaeaad5-a295-49c0-8f51-c183b7cae26b}*SharedItemsImports = 9
 		dev\TreeView\TreeView.vcxitems*{eeb38379-3a5c-439f-bb5e-535d75f2b6c1}*SharedItemsImports = 9
 		dev\ImageIcon\InteractionTests\ImageIcon_InteractionTests.projitems*{f14fb632-e705-44bc-9415-75b539f483e1}*SharedItemsImports = 13
 		dev\AnimatedIcon\AnimatedIcon.vcxitems*{f1c8a5a1-b1b0-4095-8849-e550fcf2ebf6}*SharedItemsImports = 9

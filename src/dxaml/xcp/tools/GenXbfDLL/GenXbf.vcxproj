@@ -108,6 +108,7 @@
         xmllite.lib;
         dbghelp.lib;
         CoreMessaging.lib;
+        Shlwapi.lib;
       </AdditionalDependencies>
       <!-- GenXBF is required to run on Windows Server 2012 R2,     -->
       <!-- where some dlls do not exist. We need to delay load those. -->

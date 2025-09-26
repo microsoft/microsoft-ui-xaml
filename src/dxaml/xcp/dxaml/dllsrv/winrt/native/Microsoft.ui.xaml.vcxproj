@@ -92,8 +92,6 @@
         -->
       <PackageContent Include="@(ExternalWinMDs)" Exclude="@(IxpWinMds)" PackageLocation="$(WinMDPackageLocation)"/>
       <BinplaceItem Include="@(ExternalWinMDs)"  Exclude="@(IxpWinMds)"/> <!-- We exclude the ixp winmds because those are currently merged into our Microsoft.UI.winmd -->
-      <PackageContent Include="$(LiftedIXPInternalIncludePath)\winrtdirect3d11.h" PackageLocation="$(IncludesPackageLocation)"/>
-      <PackageContent Include="$(LiftedIXPInternalIncludePath)\winrtdirectxcommon.h" PackageLocation="$(IncludesPackageLocation)"/>
       <PackageContent Include="$(LocalizedMUIFilesPath)\**\*.mui" PackageLocation="$(NativeAssemblyPackageLocation)\%(RecursiveDir)"/>
       <BinplaceItem Include="$(LocalizedMUIFilesPath)\**\*.mui">
         <DestinationSubDirectory>%(RecursiveDir)</DestinationSubDirectory>

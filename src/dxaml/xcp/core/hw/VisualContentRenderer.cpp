@@ -7,7 +7,6 @@
 #include <WUCBrushManager.h>
 #include "XamlCompositionBrush.h"
 #include <XamlLight.h>
-#include <microsoft.ui.composition.private.h>
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;

@@ -428,7 +428,7 @@ bool BreadcrumbBar::MoveFocus(int indexIncrement)
 {
     if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
-        const auto& focusedElem = winrt::FocusManager::GetFocusedElement();
+        const auto& focusedElem = winrt::FocusManager::GetFocusedElement(XamlRoot());
 
         if (auto const& focusedElement = focusedElem.try_as<winrt::UIElement>())
         {

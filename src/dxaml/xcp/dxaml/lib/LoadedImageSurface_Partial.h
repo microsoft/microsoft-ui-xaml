@@ -4,7 +4,6 @@
 #pragma once
 #include "LoadedImageSurface.g.h"
 #include <fwd/windows.storage.h>
-#include <microsoft.ui.composition.private.h>
 
 namespace DirectUI
 {

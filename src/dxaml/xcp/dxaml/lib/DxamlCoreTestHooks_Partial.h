@@ -24,7 +24,7 @@ namespace DirectUI
 
         IFACEMETHOD_(bool, IsDragDropInProgress)() override;
 
-        IFACEMETHOD_(void, GetDCompDevice)(_Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice) const override;
+        IFACEMETHOD_(void, GetDCompDevice)(_Outptr_ IDCompositionDesktopDevice **ppDCompDevice) const override;
 
         IFACEMETHOD(MarkDeviceInstanceLost)() const override;
         IFACEMETHOD(GetD3D11GraphicsDeviceAddress)(_Out_ INT64* ppCD3D11Device) const override;

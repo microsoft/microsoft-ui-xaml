@@ -143,7 +143,6 @@ class CCompositorDirectManipulationViewport;
 class CWindowRenderTarget;
 class SurfaceCache;
 class CompositorTreeHost;
-struct IDCompositionDesktopDevicePartner;
 class CRenderTargetBitmapManager;
 class CWindowRenderTarget;
 class CImageReloadManager;
@@ -564,7 +563,6 @@ public:
     HRESULT GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics);
 
     ixp::ICompositionEasingFunctionStatics* GetCompositionEasingFunctionStatics();
-    ixp::IInteropCompositorFactoryPartner* GetInteropCompositorFactoryPartner();
     ixp::ICompositionPathFactory* GetPathFactory();
     ixp::IInputSystemCursorStatics* GetInputSystemCursorStatics();
     ixp::IContentIslandStatics* GetContentIslandStatics();
@@ -590,7 +588,6 @@ private:
     wrl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> m_desktopChildSiteBridgeStatics;
     wrl::ComPtr<ixp::IDesktopPopupSiteBridgeStatics> m_desktopPopupSiteBridgeStatics;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_compositionEasingFunctionStatics;
-    wrl::ComPtr<ixp::IInteropCompositorFactoryPartner> m_interopCompositorFactoryPartner;
     wrl::ComPtr<ixp::ICompositionPathFactory> m_compositionPathFactory;
     wrl::ComPtr<ixp::IInputSystemCursorStatics> m_inputSystemCursorStatics;
     wrl::ComPtr<ixp::IContentIslandStatics> m_contentIslandStatics;
@@ -1433,7 +1430,7 @@ public:
     void SetDCompDeviceLeakDetectionEnabled(bool enableLeakDetection) { m_isDCompLeakDetectionEnabled = enableLeakDetection; }
 
     void GetDCompDevice(
-        _Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice
+        _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
         ) const;
 
     _Check_return_ HRESULT SetWindowSizeOverride(
@@ -1460,6 +1457,9 @@ public:
     _Check_return_ HRESULT CheckMemoryUsage(bool simulateLowMemory);
     void ReleaseCachedTextFormatters() noexcept;
     DCompTreeHost* GetDCompTreeHost();
+
+    HRESULT GetLastConfirmedBatchId(_Out_ ULONG* lastConfirmedBatchId);
+    HRESULT GetCurrentBatchID(_Out_ ULONG* lastConfirmedBatchId);
 
     void SetThreadingAssertOverride(bool enable);
 

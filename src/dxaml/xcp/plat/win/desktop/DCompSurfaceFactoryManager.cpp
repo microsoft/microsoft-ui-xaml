@@ -127,7 +127,7 @@ DCompSurfaceFactoryManager::SurfaceFactoryMap* DCompSurfaceFactoryManager::GetSu
 //      is called in DCompTreeHost to acquire all secondary SFs
 //-------------------------------------------------------------------------
 void DCompSurfaceFactoryManager::GetSurfaceFactoriesForCurrentThread(
-    _Inout_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector
+    _Inout_ std::vector<IDCompositionSurfaceFactory*>* surfaceFactoryVector
 )
 {
     auto guard = m_Lock.lock();
@@ -140,7 +140,7 @@ void DCompSurfaceFactoryManager::GetSurfaceFactoriesForCurrentThread(
             it != pSurfaceFactoryMapNoRef->end();
             it++)
         {
-            surfaceFactoryVector->push_back(it->second->GetSurfaceFactoryPartner());
+            surfaceFactoryVector->push_back(it->second->GetRealSurfaceFactory());
         }
     }
 }
@@ -157,7 +157,7 @@ _Check_return_ HRESULT
 DCompSurfaceFactoryManager::ObtainSurfaceFactory(
     _In_ DCompTreeHost *pDCompTreeHost,
     _In_ IUnknown *pIUnk,
-    _In_ IDCompositionDesktopDevicePartner *pDCompDevice,
+    _In_ IDCompositionDesktopDevice *pDCompDevice,
     _Outptr_ DCompSurfaceFactory **ppSurfaceFactory
     )
 {

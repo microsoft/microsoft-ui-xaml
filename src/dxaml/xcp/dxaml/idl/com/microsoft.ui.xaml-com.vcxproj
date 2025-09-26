@@ -13,10 +13,6 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
     <Import Project="$(XamlSourcePath)\msbuild\buildsettings\MIDLOle.props"/>
 
-    <PropertyGroup>
-        <XamlUsePublicSdk>false</XamlUsePublicSdk>    <!-- IDL generation with public SDK does not work yet -->
-    </PropertyGroup>
-
     <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
 
     <!-- midl sources lines -->

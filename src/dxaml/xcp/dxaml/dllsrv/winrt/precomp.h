@@ -67,7 +67,6 @@
 #include <windows.applicationmodel.background.h>
 #include <Microsoft.UI.Xaml.hosting.referencetracker.h>
 #include <windows.globalization.h>
-#include <corewindow.h> // ICoreWindowInterop
 #include <windows.ui.core.corewindowfactory.h> // ICoreWindowFactory
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreAPI.h>

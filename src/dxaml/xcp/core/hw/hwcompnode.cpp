@@ -9,7 +9,6 @@
 #include "InputServices.h"
 #include "ManipulationTransform.h"
 #include "ScrollViewer.h"
-#include <microsoft.ui.composition.experimental.interop.h>
 
 using namespace Microsoft::WRL::Wrappers;
 
@@ -1196,10 +1195,7 @@ HWCompSwapChainNode::SetSwapChain(
     // in the event the SwapChainBackgroundPanel is deleted.
     if (pSwapChain != nullptr)
     {
-        ComPtr<ixp::IExpCompositorInterop> expCompositorInterop;
-
-        IFC_RETURN(compositorNoRef->QueryInterface(IID_PPV_ARGS(expCompositorInterop.ReleaseAndGetAddressOf())));
-        IFC_RETURN(expCompositorInterop->CreateCompositionSurfaceForSwapChain(pSwapChain, surface.ReleaseAndGetAddressOf()));
+        IFC_RETURN(pVisualTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForSwapChain(pSwapChain, surface.ReleaseAndGetAddressOf()));
     }
     else if (pSwapChainSurface != nullptr)
     {

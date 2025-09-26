@@ -5,7 +5,6 @@
 #include <d3d11device.h>
 #include <ImageReloadManager.h>
 #include <InputServices.h>
-#include <isapipresent.h>
 #include "JupiterControl.h"
 #include "JupiterWindow.h"
 #include <KeyboardUtility.h>
@@ -545,28 +544,11 @@ void CJupiterControl::Paint()
         return;
     }
 
-    //
-    // Note: the painting and drawing NTUSER APIs are not present on all OS
-    // images. Instead of performing a target SKU check, we will instead rely
-    // on the ext-ms-win-ntuser-draw-l1 API set extension to preserve the
-    // client core behavior while enabling code sharing with non-client SKUs.
-    //
-    if (IsBeginPaintPresent())
-    {
-        BeginPaint(m_pWindow->GetWindowHandle(), &ps);
-    }
-    else
-    {
-        // Need to tell USER that we've handled the WM_PAINT request.
-        ::RedrawWindow(m_pWindow->GetWindowHandle(), nullptr, nullptr, RDW_NOINTERNALPAINT);
-    }
+    BeginPaint(m_pWindow->GetWindowHandle(), &ps);
 
     IGNOREHR(OnPaint());
 
-    if (IsEndPaintPresent())
-    {
-        EndPaint(m_pWindow->GetWindowHandle(), &ps);
-    }
+    EndPaint(m_pWindow->GetWindowHandle(), &ps);
 }
 
 bool CJupiterControl::HandlePointerMessage(

@@ -79,11 +79,7 @@
   </ItemGroup>
 
   <ItemGroup>
-     <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal.dll" />
-
-<!-- Temporarily moving the Lifted UDK in to the MUX repo (LUDK_IN_MUX)
-    <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\Microsoft.Internal.XamlUDK.dll" />
--->
+    <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal.dll" />
     <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\WinUIEdit.dll" />
 
     <MuxBinaries Include="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.dll"/>

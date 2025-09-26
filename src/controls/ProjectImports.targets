@@ -35,6 +35,7 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\PullToRefresh\PTRTracing\PTRTracing.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\SplitButton\SplitButton.vcxitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true' Or $(FeatureSplitButtonEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" Condition="$(FeatureLayoutPanelEnabled) == 'true' Or $(FeatureLayoutPanelEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\WrapPanel\WrapPanel.vcxitems" Label="Shared" Condition="$(FeatureWrapPanelEnabled) == 'true' Or $(FeatureWrapPanelEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(FeatureDropDownButtonEnabled) == 'true' Or $(FeatureDropDownButtonEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true' Or $(FeatureRadioButtonsEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\IconSource\IconSource.vcxitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true' Or $(FeatureIconSourceEnabled) == 'productOnly'" />

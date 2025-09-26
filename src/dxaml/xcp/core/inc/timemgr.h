@@ -19,7 +19,8 @@ class CAnimation;
 class CCoreServices;
 class RefreshAlignedClock;
 struct IFrameScheduler;
-struct IDCompositionDesktopDevicePartner3;
+struct IDCompositionDesktopDevice;
+struct ICompositionAnimationController;
 class CTranslateTransform;
 class AnimationTelemetry;
 
@@ -117,7 +118,7 @@ public:
     _Check_return_ HRESULT Tick(
         bool newTimelinesOnly,
         bool processIATargets,
-        _In_opt_ IDCompositionDesktopDevicePartner3* pDCompDevice,
+        _In_opt_ IDCompositionDesktopDevice* pDCompDevice,
         _In_opt_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
         _In_opt_ WUComp::ICompositor* wucCompositor,
         _In_ IFrameScheduler *pFrameScheduler,
@@ -213,7 +214,7 @@ public:
         _In_ CDependencyObject* targetObject,
         _In_ KnownPropertyIndex targetPropertyIndex,
         _In_ WUComp::ICompositionScopedBatch* scopedBatch,
-        _In_ WUComp::ICompositionAnimatorPartner* animator);
+        _In_ ICompositionAnimationController* animator);
 
     // WUC::CompositionScopedBatch::Completed handler. Do a lookup to find the corresponding Xaml animation and notify it.
     HRESULT OnWUCAnimationCompleted(
@@ -230,7 +231,7 @@ public:
 
     static void StartWUCAnimation(
         _In_ WUComp::ICompositor* compositor,
-        _In_ WUComp::ICompositionObjectPartner* animatingObject,
+        _In_ WUComp::ICompositionObject* animatingObject,
         _In_ LPCWSTR propertyName,
         _In_ WUComp::ICompositionAnimation* animation,
         _In_ CDependencyObject* targetObject,

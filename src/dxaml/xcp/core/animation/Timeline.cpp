@@ -8,6 +8,7 @@
 #include "PointerAnimationUsingKeyFrames.h"
 #include <GraphicsUtility.h>
 #include <UIThreadScheduler.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 #include "TimeSpan.h"
 
 using namespace DirectUI;
@@ -58,7 +59,8 @@ CTimeline::~CTimeline()
         // Manually call Stop() on the WUC animator to unbind it from the target property. Otherwise, WUC's binding manager
         // could keep the WUC animation alive and playing until someone else sets a different value on the target property.
         // This can lead to infinite animations looping forever even after they've been released by Xaml.
-        IGNOREHR(m_wucAnimator->Stop());
+        CompositionAnimationHelper helper;
+        IGNOREHR(helper.Stop(m_wucAnimator.Get()));
     }
 
     ReleaseTarget();

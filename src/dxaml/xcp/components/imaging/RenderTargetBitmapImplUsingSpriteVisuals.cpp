@@ -27,9 +27,7 @@
 #include "D3D11.h"
 #include "D3D11Device.h"
 #include "D3D11SharedDeviceGuard.h"
-#include <microsoft.ui.composition.internal.h>
-#include <microsoft.ui.composition.internal.interop.h>
-#include <microsoft.ui.composition.private.interop.h>
+#include <CompHelper/RenderTargetBitmapHelper.h>
 
 class CaptureAsyncCompletionState
 {
@@ -126,9 +124,6 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     auto primaryCompositionVisual2 = elementCompNodeNoRef->GetHandOffVisual();
     ASSERT(primaryCompositionVisual2 != nullptr);
 
-    ctl::ComPtr<WUComp::Internal::IVisualInternal> primaryVisualInternal;
-    IFCFAILFAST(ctl::do_query_interface(primaryVisualInternal, primaryCompositionVisual2));
-
     // Get the properties on the primary visual so they can be inverted for the property visual.
     ctl::ComPtr<WUComp::IVisual> primaryVisual;
     IFCFAILFAST(ctl::do_query_interface(primaryVisual, primaryCompositionVisual2));
@@ -151,7 +146,8 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     IFCFAILFAST(propertyVisual->put_TransformMatrix(wfnParentTransform));
 
     // Execute CaptureAsync which won't actually run until Commit is executed on the main device.
-    IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(primaryVisualInternal->CaptureAsync(
+    RenderTargetBitmapHelper helper;
+    IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(helper.CaptureAsync(primaryVisual.Get(),
         propertyVisual.Get(),
         compositionDevice,
         m_renderTargetElementData->GetPixelWidth(),
@@ -269,7 +265,7 @@ RenderTargetBitmapImplUsingSpriteVisuals::ProcessCaptureThreaded(
     _In_ HWTexture* outputHwTexture,
     _In_ CD3D11Device* graphicsDevice)
 {
-    // Task 25523452: Stop calling IVisualInternal, ICompositionDrawingSurfaceInteropInternalDebug, and ICompositionDrawingSurfaceInteropPrivate - RTB doesn't work this way in lifted
+    // Task 25523452: Switch to a public CaptureAsync() API from Composition (such as from ICompositionGraphicsDevice4 or similar)
 
     // Asynchronous code for handling CaptureAsync.  Everything used should be thread-safe.
     // Note that RenderTargetBitmap does not support source or destination content larger than max texture size
@@ -288,11 +284,10 @@ RenderTargetBitmapImplUsingSpriteVisuals::ProcessCaptureThreaded(
     // error back to the application.
     // To test this code path, the following code must be added after setting put_Completed in PreCommit (for debug purposes).
     //    IFCFAILFAST(dcompTreeHost->OfferResources());
-    ctl::ComPtr<WUComp::Internal::ICompositionDrawingSurfaceInteropPrivate> compPartner;
-    IFCFAILFAST(do_query_interface(compPartner, inputCompSurface));
+    RenderTargetBitmapHelper helper;
 
     BOOL isValid = TRUE;
-    IFCFAILFAST(compPartner->HasValidPixels(&isValid));
+    IFCFAILFAST(helper.HasValidPixels(inputCompSurface, &isValid));
 
     if (!isValid)
     {
@@ -301,11 +296,8 @@ RenderTargetBitmapImplUsingSpriteVisuals::ProcessCaptureThreaded(
     }
 
     // Get the DXGI surface
-    ctl::ComPtr<WUComp::Internal::ICompositionDrawingSurfaceInteropInternalDebug> inputCompSurfaceDebug;
-    IFCFAILFAST(do_query_interface(inputCompSurfaceDebug, inputCompSurface));
-
     ctl::ComPtr<IDXGISurface> dxgiSurface;
-    IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(inputCompSurfaceDebug->CopySurface(nullptr, &dxgiSurface));
+    IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(helper.CopySurface(inputCompSurface, &dxgiSurface));
 
     // Map the source
     DXGI_SURFACE_DESC srcDesc;
