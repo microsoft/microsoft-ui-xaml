@@ -495,7 +495,7 @@ private:
     // A flag to track that the selectionchange is caused by selection a item in topnav overflow menu
     bool m_selectionChangeFromOverflowMenu{ false };
     // Flag indicating whether selection change should raise item invoked. This is needed to be able to raise ItemInvoked before SelectionChanged while SelectedItem should point to the clicked item
-    bool m_shouldRaiseItemInvokedAfterSelection{ false };
+    bool m_shouldRaiseItemInvokedAfterSelection{ true };
 
     TopNavigationViewLayoutState m_topNavigationMode{ TopNavigationViewLayoutState::Uninitialized };
 
