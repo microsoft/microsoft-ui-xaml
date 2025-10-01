@@ -195,9 +195,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <FrameworkUdkIncPath>$(LiftedIXPInternalIncludePath)\FrameworkUdk</FrameworkUdkIncPath>
-    <FrameworkUdkNativePath>$(LiftedIXPPackagePath)\runtimes\win10-$(NugetArch)\native</FrameworkUdkNativePath>
-    <FrameworkUdkLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(NugetArch)</FrameworkUdkLibPath>
+    <FrameworkUdkPackagePath>$(NugetPackageDirectory)\$(FrameworkUdkPackageName)\$(FrameworkUdkPackageVersion)</FrameworkUdkPackagePath>
+    <FrameworkUdkBuildPath>$(FrameworkUdkPackagePath)\build\native</FrameworkUdkBuildPath>
+    <FrameworkUdkIncPath>$(FrameworkUdkPackagePath)\include\FrameworkUdk</FrameworkUdkIncPath>
+    <FrameworkUdkNativePath>$(FrameworkUdkPackagePath)\runtimes\win10-$(NugetArch)\native</FrameworkUdkNativePath>
+    <FrameworkUdkLibPath>$(FrameworkUdkPackagePath)\lib\native\win10-$(NugetArch)</FrameworkUdkLibPath>
   </PropertyGroup>
 
   <!-- WinUIDetails paths -->

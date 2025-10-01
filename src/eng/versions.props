@@ -4,6 +4,7 @@
     <!-- Package names -->
     <WindowsSdkNugetPackageName>Microsoft.Windows.SDK</WindowsSdkNugetPackageName>
     <WinUIDetailsPackageName>Microsoft.Internal.WinUIDetails</WinUIDetailsPackageName>
+    <FrameworkUdkPackageName>Microsoft.FrameworkUdk</FrameworkUdkPackageName>
     <LiftedIXPTransportPackageName>Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage</LiftedIXPTransportPackageName>
     <LiftedIXPInternalPackageName>Microsoft.Internal.InteractiveExperiences</LiftedIXPInternalPackageName>
     <ProjectReunionFoundationTransportPackageName>Microsoft.WindowsAppSDK.Foundation.TransportPackage</ProjectReunionFoundationTransportPackageName>
@@ -39,6 +40,7 @@
     <VersionDetailsFile>$(MSBuildThisFileDirectory)Version.Details.xml</VersionDetailsFile>
     <VersionDetailsFileContents>$([System.IO.File]::ReadAllText("$(VersionDetailsFile)"))</VersionDetailsFileContents>
     <FoundationTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.WindowsAppSDK.Foundation.TransportPackage.*?Version="(.*?)"').Groups[1].Value)</FoundationTransportPackageVersion>
+    <FrameworkUdkPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.FrameworkUdk.*?Version="(.*?)"').Groups[1].Value)</FrameworkUdkPackageVersion>
     <IxpTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage.*?Version="(.*?)"').Groups[1].Value)</IxpTransportPackageVersion>
     <IxpInternalPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.InteractiveExperiences.*?Version="(.*?)"').Groups[1].Value)</IxpInternalPackageVersion>
     <WinUIDetailsNugetVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.WinUIDetails.*?Version="(.*?)"').Groups[1].Value)</WinUIDetailsNugetVersion>

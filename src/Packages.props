@@ -18,6 +18,7 @@
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Update="Microsoft.TestPlatform.TestHost" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Update="Microsoft.Windows.SDK.BuildTools" Version="$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)" />
+    <PackageReference Update="Microsoft.FrameworkUdk" Version="$(FrameworkUdkPackageVersion)" />
     <PackageReference Update="Microsoft.Internal.WinUIDetails" Version="$(WinUIDetailsNugetVersion)" GeneratePathProperty="true"/>
     <PackageReference Update="Microsoft.Internal.InteractiveExperiences" Version="$(IxpInternalPackageVersion)"/>
     <PackageReference Update="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="$(IxpTransportPackageVersion)"/>

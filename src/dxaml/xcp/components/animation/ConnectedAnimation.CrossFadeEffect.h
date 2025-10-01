@@ -17,17 +17,17 @@ namespace ConnectedAnimationHelpers
     template<typename TEffectInterface>
     class EffectBase abstract : public ::Microsoft::WRL::RuntimeClass<
         ::Microsoft::WRL::RuntimeClassFlags<::Microsoft::WRL::WinRtClassicComMix>,
-        ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffect),
-        ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource),
-        ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectD2D1Interop),
+        XAML_ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffect),
+        XAML_ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource),
+        XAML_ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectD2D1Interop),
         TEffectInterface>
     {
     protected:
-        using IPropertyValue = ABI_PARAMETER(Windows::Foundation::IPropertyValue);
-        using IPropertyValueStatics = ABI_PARAMETER(Windows::Foundation::IPropertyValueStatics);
-        using GRAPHICS_EFFECT_PROPERTY_MAPPING = ABI_PARAMETER(Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING);
-        using PropertyMapping = ABI_PARAMETER(Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING);
-        using IGraphicsEffectSource = ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource);
+        using IPropertyValue = XAML_ABI_PARAMETER(Windows::Foundation::IPropertyValue);
+        using IPropertyValueStatics = XAML_ABI_PARAMETER(Windows::Foundation::IPropertyValueStatics);
+        using GRAPHICS_EFFECT_PROPERTY_MAPPING = XAML_ABI_PARAMETER(Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING);
+        using PropertyMapping = XAML_ABI_PARAMETER(Windows::Graphics::Effects::GRAPHICS_EFFECT_PROPERTY_MAPPING);
+        using IGraphicsEffectSource = XAML_ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource);
 
     public:
         // IGraphicsEffect
@@ -76,10 +76,10 @@ namespace ConnectedAnimationHelpers
     public:
         virtual HRESULT STDMETHODCALLTYPE get_Weight(float * value) = 0;
         virtual HRESULT STDMETHODCALLTYPE put_Weight(float value) = 0;
-        virtual HRESULT STDMETHODCALLTYPE get_Source1(ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource) **source) = 0;
-        virtual HRESULT STDMETHODCALLTYPE put_Source1(ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource) *source) = 0;
-        virtual HRESULT STDMETHODCALLTYPE get_Source2(ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource) **source) = 0;
-        virtual HRESULT STDMETHODCALLTYPE put_Source2(ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource) *source) = 0;
+        virtual HRESULT STDMETHODCALLTYPE get_Source1(XAML_ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource) **source) = 0;
+        virtual HRESULT STDMETHODCALLTYPE put_Source1(XAML_ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource) *source) = 0;
+        virtual HRESULT STDMETHODCALLTYPE get_Source2(XAML_ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource) **source) = 0;
+        virtual HRESULT STDMETHODCALLTYPE put_Source2(XAML_ABI_PARAMETER(Windows::Graphics::Effects::IGraphicsEffectSource) *source) = 0;
     };
     
     class CrossFadeEffect WrlFinal : public EffectBase<ICrossFadeEffect>
