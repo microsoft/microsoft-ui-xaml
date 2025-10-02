@@ -99,7 +99,6 @@
     <UnmergedWinmdOutputLocation>$(Outdir)</UnmergedWinmdOutputLocation>
 
     <InfraTestObjPath>$(TestObjPath)\infra</InfraTestObjPath>
-    <MockDCompTestObjPath>$(TestObjPath)\dcomp</MockDCompTestObjPath>
 
     <PrivateInfrastructureWin32HostingObjPath>$(InfraTestObjPath)\Win32Hosting</PrivateInfrastructureWin32HostingObjPath>
   </PropertyGroup>
@@ -136,7 +135,6 @@
     <PublicMergedWinMDDir>$(XamlBuildOutputRoot)MergedWinMD\$(MergedWinMDOutputDir)</PublicMergedWinMDDir>
     <PrivateMergedWinMDDir>$(XamlBuildOutputRoot)MergedWinMD\private\$(MergedWinMDOutputDir)</PrivateMergedWinMDDir>
     <PrivateInfrastructureMergedWinMdPath>$(InfraTestObjPath)\client\idl\$(MergedWinMDOutputDir)</PrivateInfrastructureMergedWinMdPath>
-    <MockDCompMergedWinMdPath>$(MockDCompTestObjPath)\idl\$(MergedWinMDOutputDir)</MockDCompMergedWinMdPath>
     <PrivateInfrastructureWin32HostingMergedWinMdPath>$(PrivateInfrastructureWin32HostingObjPath)\idl\$(MergedWinMDOutputDir)</PrivateInfrastructureWin32HostingMergedWinMdPath>
     <PrivateInfrastructureHostingHelpersGeneratedWinMdPath>$(PrivateInfrastructureWin32HostingObjPath)\WPF\HostingHelpers\</PrivateInfrastructureHostingHelpersGeneratedWinMdPath>
   </PropertyGroup>

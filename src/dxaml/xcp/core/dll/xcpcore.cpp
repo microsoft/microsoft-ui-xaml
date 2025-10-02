@@ -40,7 +40,6 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DeferredMapping.h>
 #include <ImageDecodeBoundsFinder.h>
-#include <isapipresent.h>
 #include <algorithm>
 #include <wrlhelper.h>
 #include <DeferredAnimationOperation.h>
@@ -283,7 +282,6 @@ void ActivationFactoryCache::ResetCache()
     m_dragDropManagerStatics.Reset();
     m_desktopChildSiteBridgeStatics.Reset();
     m_compositionEasingFunctionStatics.Reset();
-    m_interopCompositorFactoryPartner.Reset();
     m_compositionPathFactory.Reset();
     m_inputSystemCursorStatics.Reset();
     m_contentIslandStatics.Reset();
@@ -361,20 +359,6 @@ ixp::ICompositionEasingFunctionStatics* ActivationFactoryCache::GetCompositionEa
     }
 
     return m_compositionEasingFunctionStatics.Get();
-}
-
-ixp::IInteropCompositorFactoryPartner* ActivationFactoryCache::GetInteropCompositorFactoryPartner()
-{
-    wil::cs_leave_scope_exit guard = m_lock.lock();
-
-    if (!m_interopCompositorFactoryPartner)
-    {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_Compositor).Get(),
-            &m_interopCompositorFactoryPartner));
-    }
-
-    return m_interopCompositorFactoryPartner.Get();
 }
 
 ixp::ICompositionPathFactory* ActivationFactoryCache::GetPathFactory()
@@ -9909,7 +9893,7 @@ CCoreServices::SimulateDeviceLost(bool resetVisuals, bool resetDManip)
 //------------------------------------------------------------------------------
 void
 CCoreServices::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice
+    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
     ) const
 {
     ASSERT(m_pNWWindowRenderTarget != nullptr);
@@ -10489,7 +10473,7 @@ void CCoreServices::SetCanTickWithNoContent(bool canTickWithNoContent)
 
 void CCoreServices::EnsureOleIntialized()
 {
-    if (!m_calledOleInitialize && IsOleInitializePresent())
+    if (!m_calledOleInitialize)
     {
         if (SUCCEEDED(OleInitialize(NULL)))
         {
@@ -11233,6 +11217,30 @@ _Check_return_ CConnectedAnimationService* CCoreServices::GetConnectedAnimationS
 DCompTreeHost* CCoreServices::GetDCompTreeHost()
 {
     return m_pNWWindowRenderTarget->GetDCompTreeHost();
+}
+
+HRESULT CCoreServices::GetLastConfirmedBatchId(_Out_ ULONG* lastConfirmedBatchId)
+{
+    ASSERT(m_pNWWindowRenderTarget != nullptr);
+
+    // WaitForD3DDependentResourceCreation is called to match old behavior. It isn't clear if that is needed,
+    // beyond ensuring DCompTreeHost is created and initialized.
+    IFCFAILFAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
+
+    IFC_RETURN(GetDCompTreeHost()->GetCompositionHelper()->GetLastConfirmedBatchId(lastConfirmedBatchId));
+    return S_OK;
+}
+
+HRESULT CCoreServices::GetCurrentBatchID(_Out_ ULONG* currentBatchId)
+{
+    ASSERT(m_pNWWindowRenderTarget != nullptr);
+
+    // WaitForD3DDependentResourceCreation is called to match old behavior. It isn't clear if that is needed,
+    // beyond ensuring DCompTreeHost is created and initialized.
+    IFCFAILFAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
+
+    IFC_RETURN(GetDCompTreeHost()->GetCompositionHelper()->GetCurrentBatchID(currentBatchId));
+    return S_OK;
 }
 
 CDeferredMapping* CCoreServices::GetDeferredMapping()

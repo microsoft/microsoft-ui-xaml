@@ -6,7 +6,7 @@
 //  Abstract:
 //      Implement top level control model
 
-#include <coremessaging.h>
+
 
 class CompositorScheduler;
 class CCoreServices;
@@ -193,8 +193,7 @@ private:
 
     EventRegistrationToken m_messageTimerCallbackToken = {};
 
-    xref_ptr<IMessageSession> m_messageSession;
-    xref_ptr<IMessageLoopExtensions> m_messageLoopExtensions;
+
 
     std::shared_ptr<WeakPtr> m_weakPtrToThis;
 

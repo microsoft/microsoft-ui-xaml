@@ -9,8 +9,7 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include "Microsoft.UI.Dispatching.h"
-#include <coremessaging.h>
-#include "microsoft.ui.coremessaging.h"
+
 #include "GraphicsTelemetry.h"
 #include "DXamlCoreTipTests.h"
 
@@ -331,15 +330,6 @@ CXcpDispatcher::Init(_In_ IXcpHostSite *pSite)
         IFCFAILFAST(m_dispatcherQueueTimer->add_Tick(messageTimerCallback.Get(), &m_messageTimerCallbackToken));
     }
 
-    if (!m_messageSession)
-    {
-        IFCFAILFAST(CoreMsgCreateSession(MsgCreateFlags::MsgCreateFlags_Default, m_messageSession.ReleaseAndGetAddressOf()));
-    }
-
-    if (!m_messageLoopExtensions)
-    {
-        IFCFAILFAST(m_messageSession->GetMessageLoopExtensions(m_messageLoopExtensions.ReleaseAndGetAddressOf()));
-    }
 
     m_bInit = TRUE;
 

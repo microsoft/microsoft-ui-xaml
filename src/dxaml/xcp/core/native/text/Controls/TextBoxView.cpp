@@ -10,7 +10,6 @@
 #include "Real.h"
 #include "TextSelectionSettings.h"
 #include "UcdProperties.h"
-#include "isapipresent.h"
 #include "Storyboard.h"
 #include "Timer.h"
 #include "TimeSpan.h"
@@ -63,7 +62,7 @@ void DPtoHIMETRIC(
     )
 {
     const XINT32 HIMETRIC_PER_INCH = 2540;
-    XINT32 nMapMode = IsGetMapModePresent() ? ::GetMapMode(hdc) : MM_TEXT;
+    XINT32 nMapMode = ::GetMapMode(hdc);
     if (nMapMode < MM_ISOTROPIC && nMapMode != MM_TEXT)
     {
         XamlOneCoreTransforms::FailFastIfEnabled();

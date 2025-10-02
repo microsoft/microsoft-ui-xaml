@@ -24,6 +24,7 @@
 #include <DCompTreeHost.h>
 #include <FloatUtil.h>
 #include <DoubleUtil.h>
+#include <CompositionAnimationHelper.h>
 
 CDoubleAnimation::CDoubleAnimation()
     : CAnimation(nullptr)
@@ -706,17 +707,18 @@ void CDoubleAnimation::ResolvePendingDCompAnimationOperations()
             m_hasPendingSeekForDComp = false;
         }
 
+        CompositionAnimationHelper helper;
         if (m_hasPendingPauseForDComp)
         {
             FAIL_FAST_ASSERT(!m_hasPendingResumeForDComp);
-            IFCFAILFAST(m_wucAnimator->Pause());
+            IFCFAILFAST(helper.Pause(m_wucAnimator.Get()));
             m_hasPendingPauseForDComp = false;
         }
 
         if (m_hasPendingResumeForDComp)
         {
             FAIL_FAST_ASSERT(!m_hasPendingPauseForDComp);
-            IFCFAILFAST(m_wucAnimator->Start());    // Start is the resume API for WUC.
+            IFCFAILFAST(helper.Start(m_wucAnimator.Get()));    // Start is the resume API for WUC.
             m_hasPendingResumeForDComp = false;
         }
     }
@@ -732,15 +734,16 @@ void CDoubleAnimation::SeekDCompAnimationInstances(double globalSeekTime)
         // which then means the WUC animation stops progressing and ticks forever.
         //
         // WUC limits its animations to a maximum length of 24 days, so we'll clamp the seek offset to 24 days.
+        CompositionAnimationHelper helper;
         if (DirectUI::DoubleUtil::IsInfinity(globalSeekTime)
             || globalSeekTime > CAnimation::s_maxWUCKeyFrameAnimationDurationInSeconds)
         {
-            m_wucAnimator->Seek(CAnimation::s_maxWUCKeyFrameAnimationDurationInTicks);
+            helper.Seek(m_wucAnimator.Get(), CAnimation::s_maxWUCKeyFrameAnimationDurationInTicks);
         }
         else
         {
             UINT64 offset100ns = static_cast<UINT64>(globalSeekTime * 10000000);
-            m_wucAnimator->Seek(offset100ns);
+            helper.Seek(m_wucAnimator.Get(), offset100ns);
         }
     }
 
@@ -754,7 +757,8 @@ void CDoubleAnimation::PauseDCompAnimationsOnSuspend()
 
     if (m_wucAnimator)
     {
-        IFCFAILFAST(m_wucAnimator->Pause());
+        CompositionAnimationHelper helper;
+        IFCFAILFAST(helper.Pause(m_wucAnimator.Get()));
     }
 }
 
@@ -765,7 +769,8 @@ void CDoubleAnimation::ResumeDCompAnimationsOnResume()
 
     if (m_wucAnimator)
     {
-        IFCFAILFAST(m_wucAnimator->Start());    // Start is the resume API for WUC.
+        CompositionAnimationHelper helper;
+        IFCFAILFAST(helper.Start(m_wucAnimator.Get()));    // Start is the resume API for WUC.
         m_shouldSynchronizeDCompAnimationAfterResume = true;
     }
 }

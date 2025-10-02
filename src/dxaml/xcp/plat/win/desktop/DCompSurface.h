@@ -21,6 +21,15 @@ struct IDCompositionSurfaceFactory;
 struct IDCompositionSurfacePartner;
 struct IDXGISurface;
 
+#pragma warning(push)
+#pragma warning(disable: 4464)  // relative include path contains '..'
+// TODO: Remove disabling the warning when switching to header provided by WinUIDetails.
+//       This header is included in many places, and adding the temporary comphelper
+//       include path to all of the affected projects is more annoying than temporarily
+//       disabling this warning.
+#include "../../../components/comphelper/inc/CompositionSurfaceHelper.h"
+#pragma warning(pop)
+
 class DCompSurface : public CXcpObjectBase<>
 {
 public:
@@ -261,7 +270,7 @@ private:
 
     IDCompositionSurface *m_pCompositionSurface;
     IDCompositionVirtualSurface *m_pVirtualCompositionSurface;
-    IDCompositionSurfacePartner *m_pCompositionSurfacePrivate; // For gutter copy API
+    CompositionSurfaceHelper m_compositionSurfaceHelper; // For gutter copy API
 
     // WinRT composition objects
     wrl::ComPtr<WUComp::ICompositionSurface> m_spWinRTSurface;

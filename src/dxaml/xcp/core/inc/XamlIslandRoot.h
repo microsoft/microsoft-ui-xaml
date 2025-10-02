@@ -8,8 +8,6 @@
 #include <fwd/windows.ui.composition.h>
 #include <fwd/windows.ui.core.h>
 #include <fwd/Microsoft.UI.Xaml.hosting.h>
-#include <microsoft.ui.composition.private.h>
-#include <microsoft.ui.composition.internal.h>
 #include <microsoft.ui.input.h>
 #include <microsoft.ui.input.inputkeyboardsource.interop.h>
 #include <microsoft.ui.input.inputpretranslatesource.interop.h>
@@ -297,24 +295,6 @@ private:
     wf::Point m_screenOffsetOverride = {};
 
     Microsoft::WRL::ComPtr<xaml_hosting::IFocusController> m_xamlFocusController;
-
-    //
-    //  TODO: The input site should be retained by a composition component, ideally the
-    //        CompositionIsland root visual, rather that by the UI framework or the application.
-    //
-    //  For the following XamlIslandRoot factories, the InputSite is presently retained by the
-    //  indicated components:
-    //
-    //  IFrameworkApplicationPrivate::CreateIslandRootWithContentBridge(): DesktopWindowContentBridge
-    //  IFrameworkApplicationPrivate::CreateIslandRoot() (TabShell suppport): XAML, as
-    //      CXamlIslandRoot::m_inputSiteForTabShell.
-    //
-    //  Note: if the InputSite is retained by the CompositionIsland root visual, the three
-    //  factories can be folded into one and CXamlIslandRoot need no longer
-    //  be coupled to type DesktopWindowContentBridge
-    //
-    Microsoft::WRL::ComPtr<ixp::IExpInputSite> m_inputSiteForTabShell;
-    Microsoft::WRL::ComPtr<ixp::IExpInputSite> m_inputSite;
 
     //  Send telemetry event when new area max is established.
     void InstrumentationNewAreaMax(_In_ float width, _In_ float height);

@@ -15,8 +15,6 @@
 #include <NodeStreamCache.h>
 
 #include <microsoft.ui.composition.h>
-#include <microsoft.ui.composition.experimental.h>
-#include <microsoft.ui.composition.internal.h>
 
 XamlIslandRootScale::XamlIslandRootScale(
     CCoreServices* pCoreServices,

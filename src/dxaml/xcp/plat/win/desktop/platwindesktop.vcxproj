@@ -33,7 +33,6 @@
         <ClInclude Include="d3d11device.h"/>
         <ClInclude Include="D3D11DeviceInstance.h"/>
         <ClInclude Include="d3D11SharedDeviceGuard.h"/>
-        <ClInclude Include="DCompInteropCompositorPartnerCallback.h"/>
         <ClInclude Include="DCompSurface.h"/>
         <ClInclude Include="DCompSurfaceFactoryManager.h"/>
         <ClInclude Include="DCompSurfaceMonitor.h"/>
@@ -53,7 +52,6 @@
         <ClCompile Include="d2dprintingdata.cpp"/>
         <ClCompile Include="ImageSharingEngineHost.cpp"/>
         <ClCompile Include="SystemMemoryBits.cpp"/>
-        <ClCompile Include="DCompInteropCompositorPartnerCallback.cpp"/>
         <ClCompile Include="DCompSurface.cpp"/>
         <ClCompile Include="DCompSurfaceMonitor.cpp"/>
         <ClCompile Include="windowsgraphicsdevicemanager.cpp"/>
@@ -74,6 +72,7 @@
           $(XcpPath)\core\native\inc;
           $(ProjectIncludeDirectories);
           $(XcpPath)\components\collection\inc;
+          $(XcpPath)\components\comphelper\inc;
           $(XcpPath)\components\comptree\inc;
           $(XcpPath)\components\brushes\inc;
           $(XcpPath)\components\transforms\inc;

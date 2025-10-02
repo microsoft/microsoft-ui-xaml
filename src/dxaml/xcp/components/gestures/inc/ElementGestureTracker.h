@@ -40,6 +40,7 @@
 
 #include "UIElementStructs.h"
 #include "GestureRecognizerAdapter.h"
+#include <microsoft.ui.input.experimental.h> // For IExpPointerPointStatics
 
 class CTouchInteractionElement;
 

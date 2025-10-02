@@ -6,7 +6,6 @@
 #include <fwd/windows.ui.viewmanagement.h>
 #include <fwd/windows.ui.core.h>
 #include <fwd/microsoft.ui.xaml.h>
-#include <microsoft.ui.input.experimental.h>
 #include <microsoft.ui.input.inputkeyboardsource.interop.h>
 #include <microsoft.ui.input.inputpretranslatesource.interop.h>
 #include <FrameworkUdk/CoreWindowIntegrationInterface.h>

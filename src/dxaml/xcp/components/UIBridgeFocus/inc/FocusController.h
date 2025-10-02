@@ -4,7 +4,6 @@
 #pragma once
 
 #include "IFocusController.h"
-#include <microsoft.ui.input.experimental.h>
 #include "NavigationFocusEventArgs.h"
 
 class __declspec(uuid("078216f2-d1b8-4395-bc8d-da6699be028a")) FocusController : public Microsoft::WRL::RuntimeClass<

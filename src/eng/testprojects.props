@@ -56,7 +56,7 @@
     <ClCompile>
         <ForcedUsingFiles>
           %(ForcedUsingFiles);
-          $(MockDCompMergedWinMdPath)\MockDComp.winmd;
+          $(WinUIDetailsLibPath)\MockDComp.winmd;
         </ForcedUsingFiles>
     </ClCompile>
   </ItemDefinitionGroup>

@@ -15,7 +15,6 @@
 #include "DependencyObject.h"
 #include "UIElement.g.h"
 #include "StickyHeaderWrapper.h"
-#include <microsoft.ui.composition.private.h>
 
 // TODO: Give codegen the ability to map non-codegen types to filenames
 //       so it can add the proper #include directives.

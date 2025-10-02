@@ -13,6 +13,8 @@
 #include <Microsoft.UI.Input.Partner.h>
 #include "XcpDirectManipulationViewportEventHandler.h"
 #include "XcpAutoLock.h"
+#include <microsoft.ui.input.experimental.h> // For IExpPointerPointStatics
+#include "DirectManipulationHelper.h"
 
 // Uncomment for DManip debug outputs.
 //#define DM_DEBUG
@@ -286,7 +288,9 @@ public:
     }
 
     // Creates a lifted IExpDirectManipulationManager. Fails fast.
-    static wrl::ComPtr<IExpDirectManipulationManager> CreateDirectManipulationManager();
+    static wrl::ComPtr<IDirectManipulationManager3> CreateDirectManipulationManager();
+
+    DirectManipulationHelper* GetDirectManipulationHelper() const;
 
 // Private Methods
 private:
@@ -498,37 +502,6 @@ private:
         _In_ RECT viewportBounds,
         _In_ RECT contentBounds);
 
-    // Turns off built-in DM overpan behavior, a necessary first step before adding custom overpan behavior.
-    _Check_return_ HRESULT ApplyOverpanDefaultOverrideCurves(
-        _In_ IExpDirectManipulationParametricMotionBehavior* pDefaultOverrideBehavior,
-        _In_ DWORD targetPropertyType,
-        _In_ DWORD sourcePropertyType);
-
-    // Prevents content from overpanning.
-    // This is necessary when the default DM overpan behavior is turned off; otherwise, the
-    // content will be allowed to freely pan to infinity with no notion of pannable limits.
-    // Part of the secondary reflex.
-    _Check_return_ HRESULT ApplyOverpanTranslationSuppressionCurves(
-        _In_ IExpDirectManipulationParametricMotionBehavior* pOverpanTranslationSuppressionBehavior,
-        _In_ XFLOAT viewportExtent,
-        _In_ XFLOAT contentExtent,
-        _In_ XFLOAT contentOffset,
-        _In_ XDMOverpanMode overpanMode,
-        _In_ DWORD targetPropertyType,
-        _In_ DWORD sourcePropertyType);
-
-    _Check_return_ HRESULT ApplyConstantCurve(
-        _In_ IExpDirectManipulationParametricMotionBehavior* pBehavior,
-        _In_ XFLOAT constantValue,
-        _In_ DWORD targetPropertyType,
-        _In_ DWORD sourcePropertyType);
-
-    _Check_return_ HRESULT ApplyLinearCurve(
-        _In_ IExpDirectManipulationParametricMotionBehavior* pBehavior,
-        _In_ XFLOAT slope,
-        _In_ DWORD targetPropertyType,
-        _In_ DWORD sourcePropertyType);
-
     _Check_return_ HRESULT GetDMTransform(
         _In_ IDirectManipulationContent* pDMContent,
         _In_ IObject* pViewport,
@@ -589,7 +562,11 @@ private:
     IXcpDirectManipulationViewportEventHandler* m_pViewportEventHandler;
 
     // DM manager owned by this service
-    IExpDirectManipulationManager* m_pDMManager;
+    IDirectManipulationManager3* m_pDMManager;
+
+    // DM Helper provides convenient access and management of some core DM resources,
+    // with the Holder here as a smart manager of its lifetime.
+    DirectManipulationHelperHolder m_pDMHelper;
 
     // Update manager used to retrieve latest content transforms
     IDirectManipulationUpdateManager* m_pDMUpdateManager;
@@ -685,7 +662,7 @@ private:
         XDMOverpanMode m_horizontalOverpanMode;
         XDMOverpanMode m_verticalOverpanMode;
 
-        Microsoft::WRL::ComPtr<IExpDirectManipulationParametricMotionBehavior> m_spViewportBehavior;
+        Microsoft::WRL::ComPtr<IUnknown> m_spViewportBehavior;
         Microsoft::WRL::ComPtr<IDirectManipulationContent> m_spContentPrimaryReflex;
         Microsoft::WRL::ComPtr<IDirectManipulationContent> m_spContentSecondaryReflex;
         Microsoft::WRL::ComPtr<IDirectManipulationContent> m_spLeftHeaderPrimaryReflex;

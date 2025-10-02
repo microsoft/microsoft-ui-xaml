@@ -1235,7 +1235,11 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
-        IFC_RETURN(contentStatics->Create(visual.Get(), &m_contentIsland));
+        {
+            // The Create call is causing re-entrancy, hence using PauseNewDispatch here.
+            PauseNewDispatch deferReentrancy(core);
+            IFC_RETURN(contentStatics->Create(visual.Get(), &m_contentIsland));
+        }
 
         IFC_RETURN(m_contentIsland->add_AutomationProviderRequested(WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<
             ixp::ContentIsland*,

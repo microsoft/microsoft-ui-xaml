@@ -5,8 +5,7 @@
 #include "PointerSourceWrapper.h"
 #include "DXamlCore.h"
 #include "Window_Partial.h"
-
-#include <dcomprestricted.h>
+#include <HoverPointerSourceHelper.h>
 
 _Check_return_ HRESULT PointerSourceWrapper::Initialize(_In_ CUIElement* hoverPointerSourceElement)
 {
@@ -24,14 +23,8 @@ _Check_return_ HRESULT PointerSourceWrapper::Initialize(_In_ CUIElement* hoverPo
     }
 
     // m_realPointerSourceCO
-    {
-        wrl::ComPtr<WUComp::ICompositorRestricted> compositorRestricted;
-        IFC_RETURN(compositor.As(&compositorRestricted));
-
-        wrl::ComPtr<WUComp::IHoverPointerSourcePartner> hoverPointerSourcePartner;
-        IFC_RETURN(compositorRestricted->CreateHoverPointerSource(visual.Get(), &hoverPointerSourcePartner));
-        IFC_RETURN(hoverPointerSourcePartner.As(&m_realPointerSourceCO));
-    }
+    HoverPointerSourceHelper helper;
+    IFC_RETURN(helper.CreateHoverPointerSource(visual.Get(), &m_realPointerSourceCO));
 
     // m_realPointerPointAnimation
     {

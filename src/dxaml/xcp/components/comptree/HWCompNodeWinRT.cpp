@@ -45,11 +45,11 @@
 #include <ColorUtil.h>
 #include <LayoutTransitionElement.h>
 #include <SimplePropertiesHelpers.h>
-#include <microsoft.ui.composition.private.h>
 #include <Microsoft.UI.Content.h>
 #include "D2DAcceleratedPrimitives.h"
 #include "DropShadowRecipe.h"
 #include <FxCallbacks.h>
+#include <comphelper/inc/CompositionImplicitAnimationHelper.h>
 
 using namespace DirectUI;
 using namespace RuntimeFeatureBehavior;
@@ -112,7 +112,8 @@ HWCompTreeNodeWinRT::ImplicitAnimationDisabler::ImplicitAnimationDisabler(_In_ I
     if (m_disableIA)
     {
         VERIFYHR(visualUnk->QueryInterface(IID_PPV_ARGS(&m_visualAsCO)));
-        IFCFAILFAST(m_visualAsCO->EnableImplicitAnimations(FALSE));
+        CompositionImplicitAnimationHelper helper;
+        IFCFAILFAST(helper.EnableImplicitAnimations(m_visualAsCO.Get(), FALSE));
     }
 }
 
@@ -120,7 +121,8 @@ HWCompTreeNodeWinRT::ImplicitAnimationDisabler::~ImplicitAnimationDisabler()
 {
     if (m_disableIA)
     {
-        IFCFAILFAST(m_visualAsCO->EnableImplicitAnimations(TRUE));
+        CompositionImplicitAnimationHelper helper;
+        IFCFAILFAST(helper.EnableImplicitAnimations(m_visualAsCO.Get(), TRUE));
     }
 }
 
@@ -1445,10 +1447,8 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
         dropShadowVisual->get_Size(&shadowVisualSize);
         dropShadowVS->put_SourceSize(shadowVisualSize);
 
-        wrl::ComPtr<ixp::ICompositionVisualSurfacePartner> visualSurfacePartner;
-        IFCFAILFAST(dropShadowVS.As(&visualSurfacePartner));
         // TODO: Make sure to test in high DPI
-        visualSurfacePartner->put_RealizationSize(shadowVisualSize); // Required to avoid dwm.exe picking an arbitrary size that will cause bluriness.
+        dcompTreeHost->GetCompositionHelper()->SetSurfaceRealizationSize(dropShadowVS.Get(), shadowVisualSize); // Required to avoid dwm.exe picking an arbitrary size that will cause bluriness.
 
         wrl::ComPtr<ixp::ICompositionSurfaceBrush> dropShadowSurfaceBrush;
         wrl::ComPtr<ixp::ICompositionSurface> dropShadowSurface;

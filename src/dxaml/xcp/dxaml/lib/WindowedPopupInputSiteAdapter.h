@@ -6,7 +6,6 @@
 #include <fwd/windows.ui.viewmanagement.h>
 #include <fwd/windows.ui.core.h>
 #include <fwd/microsoft.ui.xaml.h>
-#include <microsoft.ui.input.experimental.h>
 #include "NamespaceAliases.h"
 #include "InputSiteAdapter.h"
 

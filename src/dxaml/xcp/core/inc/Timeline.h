@@ -16,13 +16,17 @@
 #define NTDDI_WIN11_GE 0x0A000010
 #endif
 
-#include <dcompinternal.h>
-#include <dcompprivate.h>
+// Future: These includes should be moved to a more appropriate place
+#include <d2d1p.h>
+#include <dwrite_1.h>
+
+#include <dcomp.h>
 
 class CTimeSpan;
 class CTimelineGroup;
 class CREATEPARAMETERS;
 struct IFrameScheduler;
+struct ICompositionAnimationController;
 enum class CompositionAnimationConversionResult : byte;
 class CompositionAnimationConversionContext;
 class CTimeManager;
@@ -267,7 +271,7 @@ public:
     // The WUC animator for a WUC animation is created when the animation is started, not when the animation is created.
     // The time manager then notifies the Xaml animation of the animator that was created for it. The animator is used for
     // pause/seek/resume scenarios.
-    void SetWUCAnimator(_In_ WUComp::ICompositionAnimatorPartner* animator);
+    void SetWUCAnimator(_In_ ICompositionAnimationController* animator);
 
     EventRegistrationToken* GetWUCAnimationCompletedToken();
 
@@ -414,7 +418,7 @@ protected: const CDependencyProperty*                         m_pTargetDependenc
 protected: wrl::ComPtr<WUComp::ICompositionScopedBatch>       m_wucScopedBatch;
 
 // Used for pause/seek/resume
-protected: wrl::ComPtr<WUComp::ICompositionAnimatorPartner>   m_wucAnimator;
+protected: wrl::ComPtr<ICompositionAnimationController>       m_wucAnimator;
 
 // DynamicTimelineParent is the parent that generated this timeline. This is needed to resolve names correctly, especially if the
 // timeline has been removed from its parent (the dynamic timline) and been put somewhere else (for instance a storyboard

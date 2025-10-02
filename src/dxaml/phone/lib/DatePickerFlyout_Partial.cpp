@@ -3,11 +3,14 @@
 
 #include "precomp.h"
 #include <RuntimeProfiler.h>
+#include <wil\resource.h>
 
 XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { namespace Controls
 {
 
 wrl::ComPtr<wg::ICalendar> DatePickerFlyout::s_spCalendar;
+SRWLOCK DatePickerFlyout::s_calendarLock = SRWLOCK_INIT;
+INIT_ONCE DatePickerFlyout::s_calendarInitOnce = INIT_ONCE_STATIC_INIT;
 
 DatePickerFlyout::DatePickerFlyout() :
     _asyncOperationManager(FlyoutAsyncOperationManager<wf::IReference<wf::DateTime>*, DatePickerFlyout, DatePickerFlyoutShowAtAsyncOperationName>(Private::ReferenceTrackerHelper<DatePickerFlyout>(this)))
@@ -442,8 +445,13 @@ _Check_return_ HRESULT DatePickerFlyout::GetDefaultDate(_Outptr_ IInspectable** 
     wf::DateTime currentDate = {};
 
     IFC(EnsureCalendar());
-    IFC(s_spCalendar->SetToNow());
-    IFC(s_spCalendar->GetDateTime(&currentDate));
+
+    {
+        auto guard = wil::AcquireSRWLockExclusive(&s_calendarLock);
+        IFC(s_spCalendar->SetToNow());
+        IFC(s_spCalendar->GetDateTime(&currentDate));
+    }
+
     IFC(Private::ValueBoxer::CreateDateTime(currentDate, ppDefaultDateValue));
 
 Cleanup:
@@ -456,9 +464,14 @@ _Check_return_ HRESULT DatePickerFlyout::GetDefaultMinYear(_Outptr_ IInspectable
     wf::DateTime minDate = {};
 
     IFC(EnsureCalendar());
-    IFC(s_spCalendar->SetToNow());
-    IFC(s_spCalendar->AddYears(-_deltaYears));
-    IFC(s_spCalendar->GetDateTime(&minDate));
+
+    {
+        auto guard = wil::AcquireSRWLockExclusive(&s_calendarLock);
+        IFC(s_spCalendar->SetToNow());
+        IFC(s_spCalendar->AddYears(-_deltaYears));
+        IFC(s_spCalendar->GetDateTime(&minDate));
+    }
+
     IFC(Private::ValueBoxer::CreateDateTime(minDate, ppDefaultMinYearValue));
 
 Cleanup:
@@ -471,9 +484,14 @@ _Check_return_ HRESULT DatePickerFlyout::GetDefaultMaxYear(_Outptr_ IInspectable
     wf::DateTime maxDate = {};
 
     IFC(EnsureCalendar());
-    IFC(s_spCalendar->SetToNow());
-    IFC(s_spCalendar->AddYears(_deltaYears));
-    IFC(s_spCalendar->GetDateTime(&maxDate));
+
+    {
+        auto guard = wil::AcquireSRWLockExclusive(&s_calendarLock);
+        IFC(s_spCalendar->SetToNow());
+        IFC(s_spCalendar->AddYears(_deltaYears));
+        IFC(s_spCalendar->GetDateTime(&maxDate));
+    }
+
     IFC(Private::ValueBoxer::CreateDateTime(maxDate, ppDefaultMaxYearValue));
 
 Cleanup:
@@ -498,38 +516,65 @@ _Check_return_ HRESULT DatePickerFlyout::GetDefaultYearFormat(_Outptr_ IInspecta
 _Check_return_ HRESULT DatePickerFlyout::EnsureCalendar()
 {
     HRESULT hr = S_OK;
+    PVOID pContext = nullptr;
+    BOOL initResult = InitOnceExecuteOnce(
+        &s_calendarInitOnce,
+        InitializeCalendarOnce,
+        nullptr,
+        &pContext);
 
-    if (!s_spCalendar)
+    if (!initResult)
     {
-        wrl::ComPtr<wg::ICalendarFactory> spCalendarFactory;
-        wrl::ComPtr<wg::ICalendar> spCalendar;
-        wrl::ComPtr<wfc::IVectorView<HSTRING>> spLanguages;
-        wrl::ComPtr<wfc::IIterable<HSTRING>> spLanguagesAsIterable;
-        wrl_wrappers::HString strClock;
-
-        IFC(wf::ActivateInstance(
-            wrl_wrappers::HStringReference(RuntimeClass_Windows_Globalization_Calendar).Get(),
-            &spCalendar));
-        IFC(spCalendar->get_Languages(&spLanguages));
-        IFC(spLanguages.As(&spLanguagesAsIterable));
-
-        IFC(spCalendar->GetClock(strClock.GetAddressOf()));
-
-        IFC(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Windows_Globalization_Calendar).Get(),
-            &spCalendarFactory));
-
-        IFC(spCalendarFactory->CreateCalendar(
-            spLanguagesAsIterable.Get(),
-            wrl_wrappers::HStringReference(L"GregorianCalendar").Get(),
-            strClock,
-            spCalendar.ReleaseAndGetAddressOf()));
-
-        IFC(spCalendar.CopyTo(&s_spCalendar));
+        hr = pContext ? static_cast<HRESULT>(reinterpret_cast<ULONG_PTR>(pContext)) : E_FAIL;
+    }
+    else if (!s_spCalendar)
+    {
+        hr = E_UNEXPECTED;
     }
 
-Cleanup:
     RRETURN(hr);
+}
+
+/*static*/ BOOL CALLBACK DatePickerFlyout::InitializeCalendarOnce(
+    _In_ PINIT_ONCE /* initOnce */,
+    _In_ PVOID /* parameter */,
+    _Outptr_ PVOID* context)
+{
+    HRESULT hr = S_OK;
+    wrl::ComPtr<wg::ICalendarFactory> spCalendarFactory;
+    wrl::ComPtr<wg::ICalendar> spCalendar;
+    wrl::ComPtr<wfc::IVectorView<HSTRING>> spLanguages;
+    wrl::ComPtr<wfc::IIterable<HSTRING>> spLanguagesAsIterable;
+    wrl_wrappers::HString strClock;
+
+    IFC(wf::ActivateInstance(
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_Globalization_Calendar).Get(),
+        &spCalendar));
+    IFC(spCalendar->get_Languages(&spLanguages));
+    IFC(spLanguages.As(&spLanguagesAsIterable));
+
+    IFC(spCalendar->GetClock(strClock.GetAddressOf()));
+
+    IFC(wf::GetActivationFactory(
+        wrl_wrappers::HStringReference(RuntimeClass_Windows_Globalization_Calendar).Get(),
+        &spCalendarFactory));
+
+    IFC(spCalendarFactory->CreateCalendar(
+        spLanguagesAsIterable.Get(),
+        wrl_wrappers::HStringReference(L"GregorianCalendar").Get(),
+        strClock,
+        spCalendar.ReleaseAndGetAddressOf()));
+
+    // Store in the static member - this is thread-safe because INIT_ONCE guarantees
+    // this callback runs exactly once
+    IFC(spCalendar.CopyTo(&s_spCalendar));
+
+Cleanup:
+    if (FAILED(hr) && context)
+    {
+        *context = reinterpret_cast<PVOID>(static_cast<ULONG_PTR>(hr));
+    }
+    return SUCCEEDED(hr) ? TRUE : FALSE;
 }
 
 } } } } XAML_ABI_NAMESPACE_END

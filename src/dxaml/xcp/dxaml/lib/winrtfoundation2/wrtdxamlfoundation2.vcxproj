@@ -21,6 +21,7 @@
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);
             $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\comphelper\inc;
             $(XcpPath)\components\comptree\inc;
             $(XcpPath)\components\transforms\inc;
         </ProjectIncludeDirectories>

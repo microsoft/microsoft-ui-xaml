@@ -121,6 +121,7 @@
         <Complibs Condition="'$(ProjectGuid)'!='{425451f3-e2fe-49a1-a7f5-a3776e963b5e}'" Include="$(XcpPath)\components\elements\lib\Microsoft.UI.Xaml.Elements.vcxproj" Project="{425451f3-e2fe-49a1-a7f5-a3776e963b5e}"/>
         <Complibs Condition="'$(ProjectGuid)'!='{b79375fb-fe8f-4b96-b48e-52548bae6141}'" Include="$(XcpPath)\components\eventArgs\lib\Microsoft.UI.Xaml.EventArgs.vcxproj" Project="{b79375fb-fe8f-4b96-b48e-52548bae6141}"/>
         <Complibs Condition="'$(ProjectGuid)'!='{be2a3cdf-01e2-4600-8e77-305065c1fcc0}'" Include="$(XcpPath)\components\comptree\lib\Microsoft.UI.Xaml.CompTree.vcxproj" Project="{be2a3cdf-01e2-4600-8e77-305065c1fcc0}"/>
+        <Complibs Condition="'$(ProjectGuid)'!='{51A73FED-30CF-44C1-B527-8B4A1C59B420}'" Include="$(XcpPath)\components\comphelper\Microsoft.UI.Xaml.CompHelper.vcxproj" Project="{51A73FED-30CF-44C1-B527-8B4A1C59B420}"/>
         <Complibs Condition="'$(ProjectGuid)'!='{056bdedc-7099-4b6a-a170-f59b55ffd8d8}'" Include="$(XcpPath)\components\moco\lib\Microsoft.UI.Xaml.Components.Moco.vcxproj" Project="{056bdedc-7099-4b6a-a170-f59b55ffd8d8}"/>
         <Complibs Condition="'$(ProjectGuid)'!='{073bb1fb-9ce9-4b52-becb-47bd8a77c6ca}'" Include="$(XcpPath)\components\Telemetry\Microsoft.UI.Xaml.Instrumentation.vcxproj" Project="{073bb1fb-9ce9-4b52-becb-47bd8a77c6ca}"/>
         <Complibs Condition="'$(ProjectGuid)'!='{f7139209-4407-43f4-b04b-cddfcbfd5a65}'" Include="$(XcpPath)\components\dependencyObject\lib\Microsoft.UI.Xaml.DependencyObject.vcxproj" Project="{f7139209-4407-43f4-b04b-cddfcbfd5a65}"/>

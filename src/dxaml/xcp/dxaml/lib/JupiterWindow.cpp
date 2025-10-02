@@ -7,7 +7,6 @@
 #include <CoreWindow.h>
 #include "CoreWindowWrapper.h"
 #include "DragDropInternal.h"
-#include <DragDropInterop.h>
 #include "DropOperationTarget.h"
 #include <FeatureFlags.h>
 #include "focusmgr.h"
@@ -15,7 +14,6 @@
 #include <FrameworkUdk/DebugTool.h>
 #include <IHwndComponentHost.h>
 #include "InternalDebugInteropModel.h"
-#include <isapipresent.h>
 #include "JupiterWindow.h"
 #include "JupiterControl.h"
 #include "TouchHitTestingHandler.h"
@@ -105,7 +103,6 @@ _Check_return_ HRESULT CJupiterWindow::ConfigureJupiterWindow(
 
         IFC(pCoreWindowInterop->get_WindowHandle(&hwnd));
 
-        //TODO: Task# 28854849 Update Create function from CJupiterWindow to always use ExpCompositionContent.
         IFC(Create(hwnd, WindowType::CoreWindow, pControl, &pJupiterWindow));
 
         IFC(pJupiterWindow->SetCoreWindow(pCoreWindow));

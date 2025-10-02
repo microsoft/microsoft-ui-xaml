@@ -1,1 +1,0 @@
-This directory is for anything in Jupiter that is deprecated, but is needed as a stop-gap for other reasons. New code should NOT take dependencies on anything in this component, but work-in-progress refactoring can to stay productive.

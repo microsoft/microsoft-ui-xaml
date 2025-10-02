@@ -31,9 +31,10 @@ namespace Microsoft.UI.Xaml
     [ContractVersion(7)] // WinAppSDK 1.6
     [ContractVersion(8)] // WinAppSDK 1.7
     [ContractVersion(9)] // WinAppSDK 1.8
+    [ContractVersion(10)] // WinAppSDK 2.0
     public class WinUIContract : Contract
     {
-        public const int LatestVersion = 9;
+        public const int LatestVersion = 10;
     };
 
     [ContractVersion(1)]
@@ -45,5 +46,6 @@ namespace Microsoft.UI.Xaml
     [ContractVersion(7)]
     [ContractVersion(8)]
     [ContractVersion(9)]
+    [ContractVersion(10)]
     public class XamlContract : Contract { };
 }

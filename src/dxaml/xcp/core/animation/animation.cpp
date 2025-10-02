@@ -605,7 +605,7 @@ _Check_return_ HRESULT CAnimation::OnBegin()
         DCompTreeHost* pDCompTreeHostNoRef = pRenderTargetNoRef->GetDCompTreeHost();
         ASSERT(pDCompTreeHostNoRef != nullptr);
 
-        if (pDCompTreeHostNoRef->GetMainDevice() != nullptr)
+        if (pDCompTreeHostNoRef->HasDCompDevice())
         {
             AttachDCompAnimationInstancesToTarget();
         }
