@@ -286,8 +286,6 @@ public:
 
     virtual IPALWindowlessHost* CreateWindowlessHost(_In_ IXcpHostSite* pHostSite, _In_ CDependencyObject* pParentEditBox, _In_ XUINT32 uRuntimeId) = 0;
 
-    virtual void SetFullScreen(bool fIsFullScreen) = 0;
-
     virtual _Check_return_ HRESULT SetWindowSize(XSIZE size, _In_opt_ XHANDLE hwnd) = 0;
 
     virtual _Check_return_ HRESULT SetWindowSizeOverride(

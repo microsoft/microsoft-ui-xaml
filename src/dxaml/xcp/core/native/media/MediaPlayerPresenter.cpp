@@ -13,8 +13,6 @@
 #include "AgileCallback.h"
 #include "MediaPlayerExtensions.h"
 
-#pragma warning(disable:4996) // use of apis marked as [[deprecated("PrivateAPI")]]
-
 _Check_return_ HRESULT CMediaPlayerPresenter::OnPropertyChanged(_In_ const PropertyChangedParams& args)
 {
     if ( args.m_pDP->GetIndex() == KnownPropertyIndex::MediaPlayerPresenter_MediaPlayer )
@@ -663,11 +661,14 @@ _Check_return_ HRESULT CMediaPlayerPresenter::UpdatePowerSettings()
 
     if (m_spMediaPlayer.Get())
     {
+#pragma warning(push)
+#pragma warning(disable:4996) // MediaPlayer.CurrentState is deprecated, with MediaPlayer.PlaybackSession.PlaybackState recommended instead
         wmp::MediaPlayerState mediaState = {};
         IFC_RETURN(m_spMediaPlayer->get_CurrentState(&mediaState));
         mediaPlaying =
             (mediaState == wmp::MediaPlayerState_Playing ||
              mediaState == wmp::MediaPlayerState_Buffering);
+#pragma warning(pop)
         if (mediaPlaying)
         {
             IFC_RETURN(MediaPlayerExtension_GetMediaPlayerCastingRenderLocation(m_spMediaPlayer.Get(), &castingRenderLocation));
