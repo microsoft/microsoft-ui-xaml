@@ -1,0 +1,224 @@
+# GitHub Actions Workflow for Automated Releases
+# This workflow automates the release process for microsoft-ui-xaml
+# 
+# Features:
+# - Triggers on successful builds of the main branch
+# - Auto-increments version using semantic versioning
+# - Generates changelog from commit history
+# - Creates GitHub releases with build artifacts
+# - Publishes NuGet packages
+# - Uploads installer artifacts to the release
+
+name: Automated Release
+
+on:
+  workflow_run:
+    workflows: ["MSBuild"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  create-release:
+    name: Create Automated Release
+    runs-on: windows-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    permissions:
+      contents: write
+      packages: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+          
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+          
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+        
+      - name: Restore NuGet packages
+        run: nuget restore microsoft-ui-xaml.sln
+        
+      - name: Get latest tag
+        id: get_latest_tag
+        shell: pwsh
+        run: |
+          $tags = git tag --sort=-v:refname
+          if ($tags) {
+            $latestTag = $tags[0]
+            Write-Output "latest_tag=$latestTag" >> $env:GITHUB_OUTPUT
+            Write-Output "Found latest tag: $latestTag"
+          } else {
+            Write-Output "latest_tag=v0.0.0" >> $env:GITHUB_OUTPUT
+            Write-Output "No tags found, starting from v0.0.0"
+          }
+          
+      - name: Calculate next version
+        id: calc_version
+        shell: pwsh
+        run: |
+          $latestTag = "${{ steps.get_latest_tag.outputs.latest_tag }}"
+          $version = $latestTag -replace '^v', ''
+          $parts = $version -split '\.',3
+          
+          if ($parts.Count -ge 3) {
+            $major = [int]$parts[0]
+            $minor = [int]$parts[1]
+            $patch = [int]$parts[2]
+            $patch++
+          } else {
+            $major = 0
+            $minor = 1
+            $patch = 0
+          }
+          
+          $newVersion = "$major.$minor.$patch"
+          $newTag = "v$newVersion"
+          
+          Write-Output "new_version=$newVersion" >> $env:GITHUB_OUTPUT
+          Write-Output "new_tag=$newTag" >> $env:GITHUB_OUTPUT
+          Write-Output "New version will be: $newTag"
+          
+      - name: Generate changelog
+        id: changelog
+        shell: pwsh
+        run: |
+          $latestTag = "${{ steps.get_latest_tag.outputs.latest_tag }}"
+          
+          if ($latestTag -ne "v0.0.0") {
+            $commits = git log "$latestTag..HEAD" --pretty=format:"- %s (%h)" --no-merges
+          } else {
+            $commits = git log --pretty=format:"- %s (%h)" --no-merges -n 20
+          }
+          
+          $changelog = @"
+          ## What's Changed
+          
+          $commits
+          
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/$latestTag...${{ steps.calc_version.outputs.new_tag }}
+          "@
+          
+          # Save changelog to file
+          $changelog | Out-File -FilePath changelog.md -Encoding UTF8
+          
+          # Also output for GitHub Actions (escape special characters)
+          $changelogEscaped = $changelog -replace '%', '%25' -replace '\r', '%0D' -replace '\n', '%0A'
+          Write-Output "changelog<<EOF" >> $env:GITHUB_OUTPUT
+          Write-Output "$changelog" >> $env:GITHUB_OUTPUT
+          Write-Output "EOF" >> $env:GITHUB_OUTPUT
+          
+      - name: Build solution
+        run: msbuild microsoft-ui-xaml.sln /p:Configuration=Release /p:Platform=x64 /m /verbosity:minimal
+        
+      - name: Build NuGet packages
+        shell: pwsh
+        run: |
+          # Find all .nuspec files and pack them
+          $nuspecFiles = Get-ChildItem -Path . -Filter *.nuspec -Recurse
+          
+          foreach ($nuspec in $nuspecFiles) {
+            Write-Host "Packing $($nuspec.FullName)"
+            nuget pack $nuspec.FullName -OutputDirectory ./nuget-packages -Version ${{ steps.calc_version.outputs.new_version }} -Properties Configuration=Release
+          }
+          
+      - name: Collect build artifacts
+        shell: pwsh
+        run: |
+          # Create artifacts directory
+          New-Item -ItemType Directory -Force -Path ./release-artifacts
+          
+          # Collect DLL files
+          Get-ChildItem -Path . -Filter *.dll -Recurse | Where-Object {
+            $_.FullName -like '*\bin\Release\*' -or $_.FullName -like '*\x64\Release\*'
+          } | ForEach-Object {
+            Copy-Item $_.FullName -Destination ./release-artifacts/ -Force
+            Write-Host "Collected: $($_.Name)"
+          }
+          
+          # Collect EXE/MSI installer files
+          Get-ChildItem -Path . -Filter *.exe -Recurse | Where-Object {
+            $_.FullName -like '*\bin\Release\*' -or $_.FullName -like '*\x64\Release\*'
+          } | ForEach-Object {
+            Copy-Item $_.FullName -Destination ./release-artifacts/ -Force
+            Write-Host "Collected: $($_.Name)"
+          }
+          
+          Get-ChildItem -Path . -Filter *.msi -Recurse | Where-Object {
+            $_.FullName -like '*\bin\Release\*' -or $_.FullName -like '*\x64\Release\*'
+          } | ForEach-Object {
+            Copy-Item $_.FullName -Destination ./release-artifacts/ -Force
+            Write-Host "Collected: $($_.Name)"
+          }
+          
+          # Collect NuGet packages
+          if (Test-Path ./nuget-packages) {
+            Copy-Item ./nuget-packages/*.nupkg -Destination ./release-artifacts/ -Force
+          }
+          
+          # List all collected artifacts
+          Write-Host "`nCollected artifacts:"
+          Get-ChildItem ./release-artifacts/ | ForEach-Object { Write-Host "  - $($_.Name)" }
+          
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.calc_version.outputs.new_tag }}
+          name: Release ${{ steps.calc_version.outputs.new_tag }}
+          body_path: changelog.md
+          draft: false
+          prerelease: false
+          files: |
+            release-artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Publish NuGet packages to GitHub Packages
+        shell: pwsh
+        run: |
+          if (Test-Path ./nuget-packages/*.nupkg) {
+            Get-ChildItem ./nuget-packages/*.nupkg | ForEach-Object {
+              Write-Host "Publishing $($_.Name) to GitHub Packages"
+              dotnet nuget push $_.FullName --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --skip-duplicate
+            }
+          } else {
+            Write-Host "No NuGet packages found to publish"
+          }
+        continue-on-error: true
+        
+      - name: Publish NuGet packages to NuGet.org (optional)
+        if: ${{ secrets.NUGET_API_KEY != '' }}
+        shell: pwsh
+        run: |
+          if (Test-Path ./nuget-packages/*.nupkg) {
+            Get-ChildItem ./nuget-packages/*.nupkg | ForEach-Object {
+              Write-Host "Publishing $($_.Name) to NuGet.org"
+              dotnet nuget push $_.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+            }
+          } else {
+            Write-Host "No NuGet packages found to publish"
+          }
+        continue-on-error: true
+        
+      - name: Release Summary
+        shell: pwsh
+        run: |
+          Write-Host "============================================"
+          Write-Host "Release ${{ steps.calc_version.outputs.new_tag }} created successfully!"
+          Write-Host "============================================"
+          Write-Host "Release URL: ${{ steps.create_release.outputs.url }}"
+          Write-Host ""
+          Write-Host "Artifacts uploaded:"
+          Get-ChildItem ./release-artifacts/ | ForEach-Object { Write-Host "  ✓ $($_.Name)" }
