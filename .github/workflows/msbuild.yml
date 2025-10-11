@@ -1,0 +1,49 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: MSBuild WinUI CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: ./src/Microsoft.UI.Xaml-Product.sln
+  # Configuration type to build.
+  BUILD_CONFIGURATION: Release
+  BUILD_PLATFORM: x64
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Setup NuGet
+      uses: nuget/setup-nuget@v1
+
+    - name: Restore NuGet packages
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Build
+      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=${{env.BUILD_PLATFORM}} ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: WinUI-Build-Artifacts
+        path: |
+          src/**/bin/${{env.BUILD_CONFIGURATION}}/
+          !src/**/bin/${{env.BUILD_CONFIGURATION}}/**/*.pdb
