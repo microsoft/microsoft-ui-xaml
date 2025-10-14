@@ -76,6 +76,7 @@ You can place the host behind header content while keeping the rest of the page 
 
 The same pattern works from code:
 
+* C#:
 ```csharp
 var host = new SystemBackdropHost
 {
@@ -85,6 +86,7 @@ var host = new SystemBackdropHost
 rootGrid.Children.Add(host);
 ```
 
+* C++:
 ```cpp
 winrt::Microsoft::UI::Xaml::Controls::SystemBackdropHost host;
 host.SystemBackdrop(winrt::Microsoft::UI::Xaml::Media::MicaBackdrop());
@@ -96,17 +98,15 @@ In both snippets, `rootGrid` represents the panel that hosts the backdrop surfac
 
 ### Remarks
 
-* _Spec note: This type is currently marked `[MUX_PREVIEW]`; the API surface may still change before it is finalized._
-* The host creates a `ContentExternalBackdropLink` when it is loaded and a `SystemBackdrop` is assigned. When you
-    remove the backdrop or the element unloads, the host releases the composition resources.
-* The element does not render visuals of its own. Place it behind other content (for example as the first child inside a
-    panel) to expose the backdrop surface.
+* _Spec note: This API is currently `experimental`; the API surface may still change before it is finalized._
+* The element have to be placed as first element in the container (for example as the first child inside a
+    panel) for having the backdrop below the contents.
 * The host only connects to a backdrop while it has a `XamlRoot`. If the element is not in the live tree, the backdrop
     remains disconnected until it is loaded again.
 
 ## SystemBackdropHost.SystemBackdrop property
 
-Gets or sets the `SystemBackdrop` instance that renders within this host. The default value is `null`.
+Gets or sets the `SystemBackdrop` instance that renders in the host area. The default value is `null`.
 
 * When you assign a non-null backdrop and the host is loaded, it calls `SystemBackdrop.OnTargetConnected` with a
     `ContentExternalBackdropLink` that matches the element's arranged size. If the host is not yet loaded, the connection
