@@ -3,48 +3,49 @@ SystemBackdropHost
 
 # Background
 
-System backdrop materials such as Mica, Acrylic, and future platform-provided surfaces are delivered through the
-`Microsoft.UI.Xaml.Media.SystemBackdrop` API surface. When apps want to expose these surfaces inside specific areas in the UI (as opposed to applying them to the full window), they need a XAML element that can connect the backdrop to the
-visual tree, manage its lifetime, and clip it to the intended layout bounds. Today, the only supported way to host a
-system backdrop is at the window level, which makes it awkward to layer the effect behind individual sections of UI or
-inside islands.
+System backdrop materials such as Mica, Acrylic etc are delivered through
+`Microsoft.UI.Xaml.Media.SystemBackdrop`. When you want to expose those materials inside a specific region of your UI
+rather than across an entire window, you need an element that can connect the backdrop to the visual tree, manage its
+lifetime, and clip it to the layout bounds. Today, you can only host a system backdrop at the window level, which makes
+it awkward to layer the effect behind individual sections of content or inside islands. There is no public stable API available
+in composition layer as well which allow apps to add backdrops in a specific area.
 
 `SystemBackdropHost` is a lightweight `FrameworkElement` that bridges between the XAML tree and the composition
-infrastructure required by `SystemBackdrop`. It automatically creates the composition link that a backdrop needs,
-maintains the placement visual at the arranged size of the element, and translates the element's `CornerRadius` to the
-backdrop clip so that rounded surfaces are respected as required.
+infrastructure required by `SystemBackdrop`. It creates the composition link a backdrop needs, keeps the placement
+visual sized to the arranged bounds, and applies the element's `CornerRadius` to the backdrop clip so rounded corners
+appear as expected.
 
 ## Goals
 
-* Provide an intuitive, XAML-friendly way to place a system backdrop anywhere inside an app's visual tree.
-* Ensure the host handles connection, disconnection, and sizing so that apps only need to set a backdrop and place the
-  element.
-* Allow apps to round the hosted backdrop without writing custom composition code.
+* Provide an intuitive, XAML-friendly way to place a system backdrop anywhere inside application's visual tree.
+* Handle connection, disconnection, and sizing so application only have to set a backdrop and position the element.
+* Allow to round the hosted backdrop without writing custom composition code.
 
 ## Non-goals
 
-* Replace the window-level backdrop APIs on `Window` or `AppWindow`.
+* Supporting backdrop independently on all controls.
 * Provide a content container; `SystemBackdropHost` is purely a visual effect surface and does not host child content.
+
+# Conceptual pages (How To)
+
+The guidance in the below examples can be followed by developers for adopting
+`SystemBackdropHost`.
 
 # API Pages
 
+_(Each level-two section below maps to a docs.microsoft.com API page.)_
+
 ## SystemBackdropHost class
+
+Use `SystemBackdropHost` to place a system-provided material anywhere within your XAML layout.
 
 ```csharp
 public sealed class SystemBackdropHost : FrameworkElement
 ```
 
-### Remarks
+### Examples
 
-* The control is marked `[MUX_PREVIEW]`; the API may change before it is finalized.
-* When the element is loaded, it creates a `ContentExternalBackdropLink` and connects it to the assigned
-  `SystemBackdrop`. When unloaded, or when the backdrop is removed, it releases composition resources and disconnects the backdrop.
-* The control does not render any visuals of its own. Place it behind content (for example as the first child in a `Grid`) to expose the backdrop surface.
-* The host only connects to a backdrop while it has a `XamlRoot`. If the element is not in the live tree, the backdrop will remain disconnected until it is loaded again.
-
-### Example
-
-XAML markup that layers a Acrylic material behind a page header with rounded corners and animation:
+You can place the host behind header content while keeping the rest of the page unchanged:
 
 ```xml
 <Grid x:Name="AnimatedGrid" Height="100" Width="100"> 
@@ -52,7 +53,7 @@ XAML markup that layers a Acrylic material behind a page header with rounded cor
         <Storyboard x:Name="SizeAnimation" RepeatBehavior="Forever"> 
             <DoubleAnimation Storyboard.TargetName="AnimatedGrid"  
                            Storyboard.TargetProperty="Width" 
-                           From="100" To="200" Duration="0:0:2"
+                           From="100" To="200" Duration="0:0:2"  
                            RepeatBehavior="Forever" 
                            EnableDependentAnimation="True" 
                            AutoReverse="True"/> 
@@ -73,44 +74,61 @@ XAML markup that layers a Acrylic material behind a page header with rounded cor
 </Grid> 
 ```
 
+![Example of SystemBackdropHost with animation](images/Acrylic.gif)
 
-The control can be configured in code behind as well like below:
+The same pattern works from code:
 
-C#
 ```csharp
-var backdropHost = new SystemBackdropHost
+var host = new SystemBackdropHost
 {
-    SystemBackdrop = new DesktopAcrylicBackdrop(),
-    CornerRadius = new CornerRadius(4),
+    SystemBackdrop = new MicaBackdrop(),
+    CornerRadius = new CornerRadius(12)
 };
-MainGrid.Children.Add(backdropHost);
+rootGrid.Children.Add(host);
 ```
 
-C++
 ```cpp
-auto backdrop = winrt::Microsoft::UI::Xaml::Controls::SystemBackdropHost();
-backdrop.SystemBackdrop(winrt::Microsoft::UI::Xaml::Media::DesktopAcrylicBackdrop());
-backdrop.CornerRadius(winrt::Microsoft::UI::Xaml::CornerRadius({4}));
-AnimatedGrid().Children().Append(backdrop);
+winrt::Microsoft::UI::Xaml::Controls::SystemBackdropHost host;
+host.SystemBackdrop(winrt::Microsoft::UI::Xaml::Media::MicaBackdrop());
+host.CornerRadius(winrt::CornerRadius{ 12, 12, 12, 12 });
+rootGrid().Children().Append(host);
 ```
+
+In both snippets, `rootGrid` represents the panel that hosts the backdrop surface just behind your content.
+
+### Remarks
+
+* _Spec note: This type is currently marked `[MUX_PREVIEW]`; the API surface may still change before it is finalized._
+* The host creates a `ContentExternalBackdropLink` when it is loaded and a `SystemBackdrop` is assigned. When you
+    remove the backdrop or the element unloads, the host releases the composition resources.
+* The element does not render visuals of its own. Place it behind other content (for example as the first child inside a
+    panel) to expose the backdrop surface.
+* The host only connects to a backdrop while it has a `XamlRoot`. If the element is not in the live tree, the backdrop
+    remains disconnected until it is loaded again.
 
 ## SystemBackdropHost.SystemBackdrop property
 
-Gets or sets the `SystemBackdrop` instance that should render within this host. The default value is `null`.
+Gets or sets the `SystemBackdrop` instance that renders within this host. The default value is `null`.
 
-* When set to a non-null systembackdrop and the host is loaded, the host invokes `SystemBackdrop.OnTargetConnected` with a `ContentExternalBackdropLink` that matches the arranged size of the element. The connection occurs lazily the next time the element is loaded if it is not already in the live tree.
-* Changing the property disconnects the previously assigned backdrop (via `OnTargetDisconnected`) before connecting the new value. Setting the property back to `null` releases the composition resources and removes the child visual from the element.
-* The property supports data binding and can be animated. Applications typically assign platform-provided backdrop types such as `MicaBackdrop`, `DesktopAcrylicBackdrop`, or custom subclasses of `SystemBackdrop`.
-* If the element does not yet have a `XamlRoot`, the connection is postponed until one becomes available.
+* When you assign a non-null backdrop and the host is loaded, it calls `SystemBackdrop.OnTargetConnected` with a
+    `ContentExternalBackdropLink` that matches the element's arranged size. If the host is not yet loaded, the connection
+    happens the next time it loads.
+* Changing the property disconnects the previous backdrop (through `OnTargetDisconnected`) before connecting the new
+    value. Setting the property to `null` releases the composition resources and removes the child visual from the
+    element.
+* You can data bind or animate this property. Typical values include `MicaBackdrop`, `DesktopAcrylicBackdrop`, or a
+    custom subclass of `SystemBackdrop`.
+* If the host does not yet have a `XamlRoot`, the connection is postponed until one becomes available.
 
 ## SystemBackdropHost.CornerRadius property
 
-Gets or sets the `CornerRadius` that should be applied to the hosted backdrop surface. The default value is
-`CornerRadius(0)`.
+Gets or sets the `CornerRadius` applied to the hosted backdrop surface. The default value is `CornerRadius(0)`.
 
-* The host uses a `RectangleClip` applied to the backdrop's placement visual so that the rounded corner can be applied on all four edges.
-* Setting the property while the element is loaded immediately updates the clip. Setting it to `null` (from markup or a binding) clears the corner radius and restores square corners.
-* This property only affects the clip applied to the backdrop; it does not change layout or apply corner rounding to other child elements that may be layered on top.
+* The host applies a `RectangleClip` on the placement visual to achieve the rounded corners.
+* Updating the property while the element is loaded immediately refreshes the clip. Setting the property to `null` (for
+    example through a binding) clears the stored corner radius and restores square corners.
+* This property only affects the backdrop clip. It does not change layout or round other content layered above the
+    host.
 
 # API Details
 
@@ -131,3 +149,7 @@ namespace Microsoft.UI.Xaml.Controls
     }
 }
 ```
+
+# Appendix
+
+Additional property for `SystemBackdropHost` to hold a child content can be considered at a later point based on requirement.
