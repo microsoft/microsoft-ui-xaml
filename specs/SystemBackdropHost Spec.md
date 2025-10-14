@@ -3,17 +3,15 @@ SystemBackdropHost
 
 # Background
 
-System backdrop materials such as Mica, Acrylic etc are delivered through
-`Microsoft.UI.Xaml.Media.SystemBackdrop`. When you want to expose those materials inside a specific region of your UI
-rather than across an entire window, you need an element that can connect the backdrop to the visual tree, manage its
-lifetime, and clip it to the layout bounds. Today, you can only host a system backdrop at the window level, which makes
-it awkward to layer the effect behind individual sections of content or inside islands. There is no public stable API available
-in composition layer as well which allow apps to add backdrops in a specific area.
+There are some System backdrop materials such as Mica, Acrylic etc that are available in
+`Microsoft.UI.Xaml.Media.SystemBackdrop`. Today, its possible to host a system backdrop only at the window level and only for flyouts which makes
+it awkward to layer the effect behind individual containers / controls. This have been a major limitation on WinUI3 compared to WinUI2 in achieving the acrylic / mica effects.
 
 `SystemBackdropHost` is a lightweight `FrameworkElement` that bridges between the XAML tree and the composition
 infrastructure required by `SystemBackdrop`. It creates the composition link a backdrop needs, keeps the placement
 visual sized to the arranged bounds, and applies the element's `CornerRadius` to the backdrop clip so rounded corners
-appear as expected.
+appear as expected. This control abstracts lot of details for the composition layer and hence make it easy
+for WinUI3 developers to implement the acrylic effect in the applications.
 
 ## Goals
 
