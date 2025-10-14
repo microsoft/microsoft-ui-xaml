@@ -1122,7 +1122,7 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCr
             // Turn on anchoring for the popup so that it follows the top level window.
             wrl::ComPtr<ixp::IDesktopPopupSiteBridge2> bridgeForAnchoring;
             IFCFAILFAST(m_desktopPopupSiteBridge.As(&bridgeForAnchoring));
-            IFC_RETURN(bridgeForAnchoring->put_AnchoringBehavior(ixp::PopupAnchoringOptions_ParentIsland));
+            IFC_RETURN(bridgeForAnchoring->put_AnchoringBehavior(ixp::PopupAnchor_ParentIsland));
 
             // Check if the island is already closed.
             wrl::ComPtr<mu::IClosableNotifier> contentIslandAsClosable;
