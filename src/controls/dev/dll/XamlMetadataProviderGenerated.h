@@ -5701,6 +5701,33 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.SystemBackdropHost",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.SystemBackdropHost",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.FrameworkElement",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISystemBackdropHostFactory>(L"Microsoft.UI.Xaml.Controls.SystemBackdropHost"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::ISystemBackdropHostStatics statics = GetFactory<winrt::ISystemBackdropHostStatics>(L"Microsoft.UI.Xaml.Controls.SystemBackdropHost");
+                    {
+                        xamlType.AddDPMember(L"CornerRadius", L"Microsoft.UI.Xaml.CornerRadius", statics.CornerRadiusProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"SystemBackdrop", L"Microsoft.UI.Xaml.Media.SystemBackdrop", statics.SystemBackdropProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.TabView",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -7997,6 +8024,7 @@ hstring c_knownNamespacePrefixes[] =
 #include "SwipeControl.properties.h"
 #include "SwipeItem.properties.h"
 #include "SwipeItems.properties.h"
+#include "SystemBackdropHost.properties.h"
 #include "TabView.properties.h"
 #include "TabViewItem.properties.h"
 #include "TabViewItemTemplateSettings.properties.h"
@@ -8095,6 +8123,7 @@ void ClearTypeProperties()
     SwipeControlProperties::ClearProperties();
     SwipeItemProperties::ClearProperties();
     SwipeItemsProperties::ClearProperties();
+    SystemBackdropHostProperties::ClearProperties();
     TabViewProperties::ClearProperties();
     TabViewItemProperties::ClearProperties();
     TabViewItemTemplateSettingsProperties::ClearProperties();

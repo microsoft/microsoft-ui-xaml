@@ -287,6 +287,7 @@
     <FeatureSelectorBarEnabled>true</FeatureSelectorBarEnabled>
     <FeatureInkCanvasEnabled>true</FeatureInkCanvasEnabled>
     <FeatureInkToolBarEnabled>false</FeatureInkToolBarEnabled>
+    <FeatureSystemBackdropHostEnabled>true</FeatureSystemBackdropHostEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>
