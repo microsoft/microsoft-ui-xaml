@@ -44,7 +44,6 @@ namespace DirectUI
         _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop * iSystemBackdrop);
 
         _Check_return_ xaml_hosting::IXamlIslandRoot *GetXamlIslandRootNoRef();
-        _Check_return_ HRESULT SetInputSite();
         void PrepareToClose();
 
     private:

@@ -10,7 +10,6 @@
 #pragma once
 
 #include <Microsoft.DirectManipulation.h>
-#include <Microsoft.UI.Input.Partner.h>
 #include "XcpDirectManipulationViewportEventHandler.h"
 #include "XcpAutoLock.h"
 #include <microsoft.ui.input.experimental.h> // For IExpPointerPointStatics
@@ -45,7 +44,7 @@ class CDirectManipulationService final :
         // IPALDirectManipulationService interface
 
         // Creates a DirectManipulation manager for the IslandInputSite if it was not created already.
-        _Check_return_ HRESULT EnsureDirectManipulationManager(_In_ IUnknown* pIslandInputSite, _In_ bool fIsForCrossSlideViewports) override;
+        _Check_return_ HRESULT EnsureDirectManipulationManager(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite, _In_ bool fIsForCrossSlideViewports) override;
 
         // Provides an IXcpDirectManipulationViewportEventHandler implementation that this service can use to provide DM feedback to
         // the input manager.
@@ -59,7 +58,7 @@ class CDirectManipulationService final :
 
         // Ensure we're associated with the correct IslandInputSite for a particular UIElement.
         // UIElements can switch between IslandInputSites if ScrollViewers move between islands or windowed popups.
-        _Check_return_ HRESULT EnsureElementIslandInputSite(_In_ IUnknown* pIslandInputSite) override;
+        _Check_return_ HRESULT EnsureElementIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite) override;
 
         // Removes the viewport from our internal m_mapViewports storage,
         // unhooks the two event listeners and releases the viewport DM interface.
@@ -549,7 +548,7 @@ private:
     bool m_fManagerActive;
 
     // Island input site associated with this service
-    wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite;
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> m_islandInputSite;
 
     // Cached for teardown scenarios where the m_islandInputSite's hwnd has already been cleared out
     // Potentially removable after this IXP bug is resolved:

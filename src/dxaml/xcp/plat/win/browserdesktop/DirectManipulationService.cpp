@@ -163,7 +163,7 @@ CDirectManipulationService::~CDirectManipulationService()
 //-------------------------------------------------------------------------
 _Check_return_ HRESULT
 CDirectManipulationService::EnsureDirectManipulationManager(
-    _In_ IUnknown* pIslandInputSite,
+    _In_ InputSiteHelper::IIslandInputSite* pIslandInputSite,
     _In_ bool fIsForCrossSlideViewports)
 {
 #ifdef DM_DEBUG
@@ -183,8 +183,7 @@ CDirectManipulationService::EnsureDirectManipulationManager(
 
         m_pDMManager = spDMManager.Detach();
 
-        wrl::ComPtr<IUnknown> islandInputSiteAsIUnknown{ pIslandInputSite };
-        IFCFAILFAST(islandInputSiteAsIUnknown.As(&m_islandInputSite));
+        m_islandInputSite = pIslandInputSite;
 
         IFC_RETURN(m_sharedState->GetSharedDCompManipulationCompositor(&m_pDMCompositor));
         ASSERT(m_pDMCompositor);
@@ -215,19 +214,11 @@ CDirectManipulationService::EnsureDirectManipulationManager(
 // scrolling offsets/viewports/extents that we've calculated that are stored in ScrollViewer and ScrollContentPresenter)
 // when we detect the IslandInputSite changed. That's a much more involved change and is tracked by Bug 43760760: Xaml's DManip
 // viewports need a way to reset their input hwnd.
-_Check_return_ HRESULT CDirectManipulationService::EnsureElementIslandInputSite(_In_ IUnknown* pIslandInputSite)
+_Check_return_ HRESULT CDirectManipulationService::EnsureElementIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite)
 {
     ASSERT(m_pDMManager);
 
-    wrl::ComPtr<IUnknown> previousIslandInputSiteAsIUnknown{ nullptr };
-    if (nullptr != m_islandInputSite)
-    {
-        FAIL_FAST_IF_FAILED(m_islandInputSite.As(&previousIslandInputSiteAsIUnknown));
-    }
-
-    wrl::ComPtr<IUnknown> newIslandInputSiteAsIUnknown{ pIslandInputSite };
-
-    if (previousIslandInputSiteAsIUnknown.Get() != newIslandInputSiteAsIUnknown.Get())
+    if (m_islandInputSite.Get() != pIslandInputSite)
     {
         // If the IDirectManipulationManager is active, deactivate it and reactivate for the new input hwnd.
         if (m_fManagerActive)
@@ -239,9 +230,9 @@ _Check_return_ HRESULT CDirectManipulationService::EnsureElementIslandInputSite(
             m_activeInputHwnd = nullptr;
         }
 
-        if (nullptr != newIslandInputSiteAsIUnknown.Get())
+        if (nullptr != pIslandInputSite)
         {
-            IFCFAILFAST(newIslandInputSiteAsIUnknown.As(&m_islandInputSite));
+            m_islandInputSite = pIslandInputSite;
         }
         else
         {

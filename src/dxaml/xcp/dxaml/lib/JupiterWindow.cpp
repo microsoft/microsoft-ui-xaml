@@ -20,6 +20,7 @@
 #include "Window.g.h"
 #include <windows.ui.viewmanagement.h>
 #include <winpal.h>
+#include <InputHelpers.h>
 
 
 #include <XamlTraceLogging.h>
@@ -42,7 +43,6 @@
 #include "InputSiteAdapter.h"
 
 #include <FrameworkUdk/CoreWindowIntegration.h>
-#include <Microsoft.UI.Input.Partner.h>
 #include <WindowingCoreContentApi.h>
 
 #include "WrlHelper.h"
@@ -499,7 +499,7 @@ Cleanup:
 _Check_return_ HRESULT CJupiterWindow::PreTranslateMessage(
     _In_opt_ CContentRoot* contentRoot,
     _In_ mui::IInputPreTranslateKeyboardSourceInterop* source,
-    _In_ mui::IInputKeyboardSourceInterop* keyboardSource,
+    _In_ mui::IInputKeyboardSource2* keyboardSource,
     _In_ const MSG* msg,
     _In_ UINT keyboardModifiers,
     _In_ bool focusPass,
@@ -568,7 +568,7 @@ _Check_return_ HRESULT CJupiterWindow::PreTranslateMessage(
 
         // Accelerator key not handled, so send the message to the keyboard input source to raise the
         // normal keyboard input events instead.
-        IFC_RETURN(keyboardSource->SendKeyboardMessage(msg, handled));
+        IFC_RETURN(InputHelpers::SendKeyboardMessage(keyboardSource, msg, handled));
 
         if (!(*handled))
         {

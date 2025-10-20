@@ -19,7 +19,6 @@
 #include <CoreWindow.h>
 #include <FeatureFlags.h>
 #include <DXamlServices.h>
-#include <Microsoft.UI.Content.Private.h>
 
 #include <XamlTraceLogging.h>
 
@@ -116,10 +115,7 @@ void InputSiteAdapter::InitInputObjects(_In_ ixp::IContentIsland* const contentI
     // IIslandInputSitePartner
     {
         // DManip initialization requires the ContentIsland's IslandInputSite.
-        ComPtr<ixp::IContentIsland> island{ contentIsland };
-        ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
-        IFCFAILFAST(island.As(&contentIslandPartner));
-        IFCFAILFAST(contentIslandPartner->get_IslandInputSite(&m_islandInputSite));
+        IFCFAILFAST(InputSiteHelper::GetIslandInputSite(contentIsland, &m_islandInputSite));
     }
 
     // InputFocusController
@@ -233,13 +229,10 @@ HRESULT InputSiteAdapter::PreTranslateMessage(
 {
     xref_ptr<CContentRoot> contentRootStrongRef { GetContentRoot() };
 
-    wrl::ComPtr<mui::IInputKeyboardSourceInterop> inputKeyboardSourceInterop;
-    IFCFAILFAST(m_inputKeyboardSource2.As(&inputKeyboardSourceInterop));
-
     return DirectUI::DXamlCore::GetCurrent()->GetControl()->GetJupiterWindow()->PreTranslateMessage(
         contentRootStrongRef.get(),
         source,
-        inputKeyboardSourceInterop.Get(),
+        m_inputKeyboardSource2.Get(),
         msg,
         keyboardModifiers,
         focusPass,

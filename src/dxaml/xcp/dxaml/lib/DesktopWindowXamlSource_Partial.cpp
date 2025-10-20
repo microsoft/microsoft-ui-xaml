@@ -27,7 +27,6 @@
 #include <WindowingCoreContentApi.h>
 #include <WRLHelper.h>
 #include <NavigateFocusResult.h>
-#include <Microsoft.UI.Content.Private.h>
 #include "XamlTelemetry.h"
 
 using namespace DirectUI;

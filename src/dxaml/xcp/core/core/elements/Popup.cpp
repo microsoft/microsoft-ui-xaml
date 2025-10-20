@@ -43,7 +43,6 @@
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
-#include <Microsoft.UI.Content.Private.h>
 
 using namespace DirectUI;
 using namespace Focus;
@@ -1194,7 +1193,7 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCr
     return S_OK;
 }
 
-wrl::ComPtr<ixp::IIslandInputSitePartner> CPopup::GetIslandInputSite() const
+wrl::ComPtr<InputSiteHelper::IIslandInputSite> CPopup::GetIslandInputSite() const
 {
     if (IsWindowed())
     {

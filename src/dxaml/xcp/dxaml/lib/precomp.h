@@ -66,8 +66,6 @@
 #include <windows.globalization.h>
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreAPI.h>
-#include <windows.ui.composition.interop.h>
-#include <Microsoft.UI.Input.InputKeyboardSource.Interop.h>
 
 // Required by generated headers (SplitView.g.h, AppBar.g.h, etc.)
 #include <FrameworkUdk/BackButtonIntegration.h>
