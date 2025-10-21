@@ -12,7 +12,6 @@
     <PackageDownload Include="Microsoft.FrameworkUdk" Version="[$(FrameworkUdkPackageVersion)]"/>
     <PackageReference Include="Microsoft.WindowsAppSDK.Foundation.TransportPackage" version="$(FoundationTransportPackageVersion)"/>
     <PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" version="$(IxpTransportPackageVersion)"/>
-    <PackageReference Include="Microsoft.Internal.InteractiveExperiences" version="$(IxpInternalPackageVersion)"/>
     <PackageReference Include="Microsoft.Internal.WinUIDetails" Version="$(WinUIDetailsNugetVersion)"/>
   </ItemGroup>
 </Project>
