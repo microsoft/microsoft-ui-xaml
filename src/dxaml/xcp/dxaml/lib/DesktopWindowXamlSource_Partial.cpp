@@ -24,7 +24,6 @@
 #include "SystemBackdrop.g.h"
 #include <windowing.h>
 #include <Windows.UI.Composition.h>
-#include <WindowingCoreContentApi.h>
 #include <WRLHelper.h>
 #include <NavigateFocusResult.h>
 #include "XamlTelemetry.h"

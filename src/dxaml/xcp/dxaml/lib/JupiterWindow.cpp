@@ -43,7 +43,6 @@
 #include "InputSiteAdapter.h"
 
 #include <FrameworkUdk/CoreWindowIntegration.h>
-#include <WindowingCoreContentApi.h>
 
 #include "WrlHelper.h"
 
