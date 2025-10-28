@@ -3,8 +3,8 @@ SystemBackdropHost
 
 # Background
 
-There are some System backdrop materials such as Mica, Acrylic etc that are available in
-`Microsoft.UI.Xaml.Media.SystemBackdrop`. Today, its possible to host a system backdrop only at the window level and only for flyouts, not in a specific container / control level. This have been a major limitation on WinUI3 compared to WinUI2 in achieving the acrylic / mica effects.
+There are backdrop materials provided in WinUI such as Mica, Acrylic that are subclass of 
+[Microsoft.UI.Xaml.Media.SystemBackdrop](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop). Currently, it is possible to host a system backdrop only at the window level or on flyouts, but not in a specific area in the visual tree. This have been a major limitation on WinUI3 compared to WinUI2 in achieving the acrylic / mica effects, especially for achieving various animations.
 
 `SystemBackdropHost` is a lightweight `FrameworkElement` that bridges between the XAML tree and the composition
 infrastructure required by `SystemBackdrop`. It creates the required composition components to host the systembackdrop on a specific container, keeps the placement
@@ -20,7 +20,7 @@ for WinUI3 developers to implement the acrylic effect in the applications.
 
 ## Non-goals
 
-* Supporting backdrop independently on all controls.
+* Adding a SystemBackdrop property independently on all controls.
 * Provide a content container; `SystemBackdropHost` is purely a visual effect surface and does not host child content.
 
 # Conceptual pages (How To)
@@ -34,7 +34,7 @@ _(Each level-two section below maps to a docs.microsoft.com API page.)_
 
 ## SystemBackdropHost class
 
-Use `SystemBackdropHost` to place a system-provided material anywhere within your XAML layout.
+Use `SystemBackdropHost` to place a SystemBackdrop](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop) anywhere within the XAML layout.
 
 ```csharp
 public sealed class SystemBackdropHost : FrameworkElement
@@ -42,7 +42,7 @@ public sealed class SystemBackdropHost : FrameworkElement
 
 ### Examples
 
-You can place the host behind header content while keeping the rest of the page unchanged:
+Keep the `SystemBackdropHost` in the bottom of the stack below other contents to achieve the backdrop effect:
 
 ```xml
 <Grid x:Name="AnimatedGrid" Height="100" Width="100"> 
@@ -94,6 +94,7 @@ rootGrid().Children().Append(host);
 ```
 
 In both snippets, `rootGrid` represents the panel that hosts the backdrop surface just behind your content.
+If a `CornerRadius` is applied on the parent `rootGrid`, that would clip the `SystemBackdropHost` as well.
 
 ### Remarks
 
@@ -125,7 +126,8 @@ Gets or sets the `CornerRadius` applied to the hosted backdrop surface. The defa
 * Updating the property while the element is loaded immediately refreshes the clip. Setting the property to `null` (for
     example through a binding) clears the stored corner radius and restores square corners.
 * This property only affects the backdrop clip. It does not change layout or round other content layered above the
-    host.
+    `SystemBackdropHost`.
+* `SystemBackdropHost` would get clipped to the container as well, So the `CornerRadius` on the parent container also would be having same behavior.
 
 # API Details
 
