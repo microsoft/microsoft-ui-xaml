@@ -3,7 +3,5 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <PrivateDependencyPackagePath>$(NugetPackageDirectory)\$(PrivateDependencyPackageName).$(CurrentPrivateDependencyPackageVersion)</PrivateDependencyPackagePath>
-        <ExternalDependenciesPath>$(PrivateDependencyPackagePath)\dxaml\external</ExternalDependenciesPath>
-        <TraceWPPIncludePath>$(ExternalDependenciesPath)\WppConfig</TraceWPPIncludePath>
     </PropertyGroup>
 </Project>

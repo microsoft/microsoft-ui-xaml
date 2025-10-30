@@ -20,6 +20,14 @@
 
     <Import Project="$(XcpPath)\core\common.props"/>
 
+    <!-- TODO: Remove this PropertyGroup with completion of task 59459850 -->
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(PrivateDependencyPackagePath)\dxaml\external\min;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+    
     <ItemGroup>
         <ClInclude Include="HWRenderTarget.h"/>
         <ClInclude Include="HWSolidColorBrush.h"/>

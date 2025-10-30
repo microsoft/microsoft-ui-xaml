@@ -120,7 +120,6 @@
     </PropertyGroup>
 
     <Import Project="$(XamlSourcePath)\use-public-sdk.props"/>
-    <Import Condition="'$(ExternalDependenciesPropsImported)'!='true'" Project="$(XamlSourcePath)\external\external-dependencies.props"/>
 
     <ItemGroup>
         <IDLReference Include="$(XamlSourcePath)\xcp\dxaml\idl\winrt\merged\Microsoft.ui.xaml.vcxproj" Project="{869EA267-A81A-49ED-8404-812C2A03E25A}"/>

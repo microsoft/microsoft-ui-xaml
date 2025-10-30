@@ -50,6 +50,7 @@
 #include "DropShadowRecipe.h"
 #include <FxCallbacks.h>
 #include <CompHelper/CompositionImplicitAnimationHelper.h>
+#include <DirectManipulationHelper.h>
 
 using namespace DirectUI;
 using namespace RuntimeFeatureBehavior;
@@ -2516,9 +2517,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualViewportInteraction(_In_ DCompTreeH
             wrl::ComPtr<IInspectable> interaction;
             m_pUIElementNoRef->GetViewportInteraction(dcompTreeHost, &interaction);
 
-            wrl::ComPtr<ixp::IExpVisual> expVisual;
-            VERIFYHR(m_primaryVisual.As(&expVisual));
-            IFCFAILFAST(expVisual->SetInteraction(interaction.Get()));
+            IFCFAILFAST(DirectManipulationHelper::SetInteraction(m_primaryVisual.Get(), interaction.Get()));
 
             m_isViewportInteractionAssigned = true;
             TraceSetViewportInteraction(m_pUIElementNoRef, interaction.Get());
@@ -2526,9 +2525,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualViewportInteraction(_In_ DCompTreeH
     }
     else if (m_isViewportInteractionAssigned)
     {
-        wrl::ComPtr<ixp::IExpVisual> expVisual;
-        VERIFYHR(m_primaryVisual.As(&expVisual));
-        IFCFAILFAST(expVisual->SetInteraction(nullptr));
+        IFCFAILFAST(DirectManipulationHelper::SetInteraction(m_primaryVisual.Get(), nullptr));
 
         m_isViewportInteractionAssigned = false;
         TraceSetViewportInteraction(m_pUIElementNoRef, nullptr);
