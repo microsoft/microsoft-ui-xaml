@@ -2176,6 +2176,21 @@ namespace Microsoft.UI.Xaml.Controls
         Microsoft.UI.Xaml.Controls.Primitives.ListViewItemTemplateSettings TemplateSettings{ get; };
     };
 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    [contentproperty("Items")]
+    unsealed runtimeclass SplitMenuFlyoutItem
+        : Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+    {
+        [method_name("CreateInstance")] SplitMenuFlyoutItem();
+        Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase> Items{ get; };
+        Microsoft.UI.Xaml.Style SubMenuPresenterStyle;
+        Microsoft.UI.Xaml.Style SubMenuItemStyle;
+        static Microsoft.UI.Xaml.DependencyProperty SubMenuPresenterStyleProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty SubMenuItemStyleProperty{ get; };
+    };
+
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     unsealed runtimeclass ToggleMenuFlyoutItem
@@ -2711,6 +2726,22 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         Microsoft.UI.Xaml.Automation.Provider.IScrollProvider
     {
         [method_name("CreateInstanceWithOwner")] ScrollViewerAutomationPeer(Microsoft.UI.Xaml.Controls.ScrollViewer owner);
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+    [feature(Feature_ExperimentalApi)]
+    [webhosthidden]
+    [default_interface]
+    unsealed runtimeclass SplitMenuFlyoutItemAutomationPeer
+        : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+        , [feature(Feature_ExperimentalApi)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
+        , [feature(Feature_ExperimentalApi)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
+    {
+        [method_name("CreateInstanceWithOwner")] SplitMenuFlyoutItemAutomationPeer(Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem owner);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

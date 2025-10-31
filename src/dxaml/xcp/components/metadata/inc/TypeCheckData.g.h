@@ -1232,6 +1232,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 1048575, 170031 },
     // Microsoft.UI.Xaml.Media.Animation.SplitCloseThemeAnimation
     { 140737488359479, 140737488359479 },
+    // Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer
+    { 140737488355891, 140737488355891 },
     // Microsoft.UI.Xaml.Media.Animation.SplitOpenThemeAnimation
     { 140737488359479, 140737488359479 },
     // Microsoft.UI.Xaml.Automation.Peers.SplitViewLightDismissAutomationPeer
@@ -1612,6 +1614,8 @@ extern __declspec(selectany) constexpr TypeCheckData c_aTypeCheckData[KnownTypeC
     { 140737523026019, 140737523026019 },
     // Microsoft.UI.Xaml.Controls.ScrollViewer
     { 4294967295, 2920351843 },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem
+    { 140737772587107, 140737772587107 },
     // Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
     { 4294967295, 1108412515 },
     // Microsoft.UI.Xaml.Controls.ToggleMenuFlyoutItem
