@@ -45,7 +45,10 @@ void SystemBackdropHost::OnPropertyChanged(const winrt::DependencyPropertyChange
 
             if (oldSystemBackdrop)
             {
-                oldSystemBackdrop.OnTargetDisconnected(m_backdropLink);
+                if (m_backdropLink)
+                {
+                    oldSystemBackdrop.OnTargetDisconnected(m_backdropLink);
+                }
                 m_registeredWithSystemBackdrop = false;
             }
 
@@ -57,6 +60,7 @@ void SystemBackdropHost::OnPropertyChanged(const winrt::DependencyPropertyChange
             }
             else
             {
+                // Clean up composition resources when backdrop is set to null
                 if (m_backdropLink)
                 {
                     winrt::Microsoft::UI::Xaml::Hosting::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
@@ -197,7 +201,7 @@ void SystemBackdropHost::TryConnectSystemBackdrop()
 
 void SystemBackdropHost::ReleaseCompositionResources()
 {
-    if (m_systemBackdrop)
+    if (m_systemBackdrop && m_backdropLink)
     {
         m_systemBackdrop.OnTargetDisconnected(m_backdropLink);
     }
