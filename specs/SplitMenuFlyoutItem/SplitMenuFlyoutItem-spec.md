@@ -7,7 +7,7 @@ The `SplitMenuFlyoutItem` control is a new addition to the WinUI library, design
 a split button experience within a menu flyout. This control derives from `MenuFlyoutItem` and 
 introduces a dual-button interface consisting of a primary button and a flyout button.
 
-![General look of SplitMenuFlyoutItem](./splitmenuflyoutitem-openwith.png)
+![General look of SplitMenuFlyoutItem - Dark](./splitmenuflyoutitem-normal-dark.png)
 
 The primary button behaves like a standard `MenuFlyoutItem`, raising a click event and 
 executing a command when clicked. The flyout button operates similarly to `MenuFlyoutSubItem` 
@@ -17,7 +17,9 @@ This control addresses scenarios where you need to provide both a default action
 additional options in a submenu, offering a more efficient use of menu space while 
 maintaining discoverability of related actions.
 
-![Flyout open state](./splitmenuflyoutitem-flyout-open.png)
+![Flyout open state - Dark Mode](./splitmenuflyoutitem-flyoutopen-dark.png)
+
+![Flyout open state - Light Mode](./splitmenuflyoutitem-flyoutopen-normal.png)
 
 # Conceptual pages (How To)
 
@@ -120,6 +122,44 @@ You can customize the appearance of the submenu using the styling properties:
 Here is one example of a customized submenu (this is a reference from the SplitButton control).
 
 ![Customizable SubMenu Scarnario](./customizable-submenu-sample.png)
+
+
+### Using SplitMenuFlyoutItem in C# \ C++
+
+```csharp
+    var splitItem = new SplitMenuFlyoutItem { Text = "Open With" };
+    splitItem.Items.Add(new MenuFlyoutItem { Text = "Notepad" });
+    splitItem.Items.Add(new MenuFlyoutItem { Text = "VS Code" });
+    splitItem.Items.Add(new MenuFlyoutItem { Text = "Visual Studio" });
+
+    var menuFlyout = new MenuFlyout();
+    menuFlyout.Items.Add(splitItem);
+```
+
+```cpp
+    using namespace Microsoft::UI::Xaml::Controls;
+
+
+    // Create a SplitMenuFlyoutItem programmatically
+    auto splitItem = SplitMenuFlyoutItem();
+    splitItem.Text(L"Open With");
+
+    auto notepadItem = MenuFlyoutItem();
+    notepadItem.Text(L"Notepad");
+    splitItem.Items().Append(notepadItem);
+
+    auto vscodeItem = MenuFlyoutItem();
+    vscodeItem.Text(L"VS Code");
+    splitItem.Items().Append(vscodeItem);
+
+    auto vsItem = MenuFlyoutItem();
+    vsItem.Text(L"Visual Studio");
+    splitItem.Items().Append(vsItem);
+
+    // Add to MenuFlyout
+    auto menuFlyout = MenuFlyout();
+    menuFlyout.Items().Append(splitItem);
+```
 
 # API Pages
 
