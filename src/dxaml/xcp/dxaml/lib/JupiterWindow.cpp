@@ -47,15 +47,11 @@
 
 #include "WrlHelper.h"
 
-#pragma warning(disable:4996) // use of apis marked as [[deprecated("PrivateAPI")]]
-
 #define VK_COPY     VK_F16
 #define VK_PASTE    VK_F17
 
 // copied from WindowServer.h
 const UINT WNDPROC_STATUS_OFFSET = (3 * sizeof(LONG_PTR));   // ULONG size return status from Jupiter WndProc
-
-Microsoft::WRL::ComPtr<wuv::IApplicationViewStatics> CJupiterWindow::s_spApplicationViewStatics;
 
 // msinkaut.h (which is already included) and peninputpanel.h (which contains the
 // definition of MICROSOFT_TIP_OPENING_MSG) are incompatible and so we explicitly
@@ -831,28 +827,6 @@ wrl::ComPtr<ixp::IPointerPoint> CJupiterWindow::GetInputSiteAdapterPointerPoint(
 
 _Check_return_ HRESULT CJupiterWindow::OnSizeChanged()
 {
-    if (WindowType::CoreWindow == m_windowType)
-    {
-        // In the CoreWindow case, we do some extra work to process the ApplicationViewState.
-        wuv::ApplicationViewState applicationViewState {};
-
-        if (!s_spApplicationViewStatics)
-        {
-            IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Windows_UI_ViewManagement_ApplicationView).Get(), &s_spApplicationViewStatics));
-        }
-
-        IFC_RETURN(s_spApplicationViewStatics->get_Value(&applicationViewState));
-
-        bool fIsFullScreen =    ((applicationViewState == wuv::ApplicationViewState_FullScreenLandscape)
-                              ||  (applicationViewState == wuv::ApplicationViewState_FullScreenPortrait));
-
-        IXcpBrowserHost* pBrowserHost = m_pControl->GetBrowserHost();
-        pBrowserHost->SetFullScreen(fIsFullScreen);
-
-        TraceCoreWindowResizeFiredInfo(static_cast<XUINT32>(applicationViewState));
-    }
-
     IFC_RETURN(m_pControl->OnJupiterWindowSizeChanged(*this, m_hwnd));
 
     // Now that we opt in to the new WinBlue LayoutCompleted mechanism (see SetShouldWaitForLayoutCompletion),

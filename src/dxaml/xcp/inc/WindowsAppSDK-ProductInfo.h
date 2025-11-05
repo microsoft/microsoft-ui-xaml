@@ -5,6 +5,10 @@
 // Everything should be kept in sync with the exception of potentially the major/minor
 // release versions if WInUI3 has forked prior to WinAppSDK.
 
+// WARNING: the values in the AssemblyInfo file are defaults for use in dev-loop.
+// This file is meant to be overwritten by GenerateVersionInfo.ps1
+// Please modify the generation script in GenerateVersionInfo.ps1 to change any fields or values.
+
 #ifndef __WINDOWSAPPSDK_PRODUCTINFO_H__
 #define __WINDOWSAPPSDK_PRODUCTINFO_H__
 
@@ -14,7 +18,7 @@
 #define STR2(a,b)     STR1(a) VERSION_DELIMIMITER STR1(b)
 #endif
 
-#define WINDOWSAPPSDK_RELEASE_MAJOR                         2
+#define WINDOWSAPPSDK_RELEASE_MAJOR                         0
 #define WINDOWSAPPSDK_RELEASE_MINOR                         0
 
 #define WINDOWSAPPSDK_PRODUCT_VERSION    WINDOWSAPPSDK_RELEASE_MAJOR, WINDOWSAPPSDK_RELEASE_MINOR

@@ -175,16 +175,6 @@ public:
     void ReplayPreviousPointerUpdate(UINT32 previousPointerUpdateMsgId) override;
 
 private:
-    void SetFullScreen(bool fIsFullScreen) override
-    {
-        m_fIsFullScreen = fIsFullScreen;
-    }
-
-    bool IsFullScreen()
-    {
-        return m_fIsFullScreen;
-    }
-
     // Silverlight and Jupiter use different satellite DLL unloading APIs. Each
     // has a separate implementation of this function.
     void UnloadSatelliteDll(_In_ HINSTANCE dll);
@@ -236,8 +226,6 @@ private:
         _In_ XUINT32                                eUnsecureDownloadAction);
 
 private:
-    bool m_fIsFullScreen;
-
     //
     // Used by the test framework. Overrides the size of the window to produce consistent results
     // when rendering on different platforms.

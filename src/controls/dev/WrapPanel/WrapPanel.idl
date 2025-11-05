@@ -1,0 +1,37 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+enum StretchChild
+{
+    None = 0,
+    Last = 1,
+};
+
+[MUX_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass WrapPanel : Microsoft.UI.Xaml.Controls.Panel
+{
+    WrapPanel();
+
+    Microsoft.UI.Xaml.Thickness Padding{ get; set; };
+    static Microsoft.UI.Xaml.DependencyProperty PaddingProperty{ get; };
+
+    Double HorizontalSpacing;
+    static Microsoft.UI.Xaml.DependencyProperty HorizontalSpacingProperty{ get; };
+
+    Double VerticalSpacing;
+    static Microsoft.UI.Xaml.DependencyProperty VerticalSpacingProperty{ get; };
+
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
+    Microsoft.UI.Xaml.Controls.Orientation Orientation;
+    static Microsoft.UI.Xaml.DependencyProperty OrientationProperty{ get; };
+
+    StretchChild StretchChild;
+    static Microsoft.UI.Xaml.DependencyProperty StretchChildProperty{ get; };
+}
+
+}

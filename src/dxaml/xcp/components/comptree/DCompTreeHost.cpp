@@ -646,7 +646,20 @@ HRESULT DCompTreeHost::CreateCompositionSurfaceForHandle(
 
     IFC_RETURN(EnsureDCompDevice());
     
-    IFC_RETURN(m_pCompositionHelper->CreateCompositionSurfaceForHandle(swapChainHandle, compositionSurface));
+    IFC_RETURN(m_spCompositorInterop->CreateCompositionSurfaceForHandle(swapChainHandle, compositionSurface));
+    return S_OK;
+}
+
+_Check_return_
+HRESULT DCompTreeHost::CreateCompositionSurfaceForSwapChain(
+    _In_ IUnknown* swapChain,
+    _Outptr_ WUComp::ICompositionSurface** compositionSurface)
+{
+    *compositionSurface = nullptr;
+
+    IFC_RETURN(EnsureDCompDevice());
+    
+    IFC_RETURN(m_spCompositorInterop->CreateCompositionSurfaceForSwapChain(swapChain, compositionSurface));
     return S_OK;
 }
 

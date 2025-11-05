@@ -42,9 +42,9 @@
             <StaticResource x:Key="SelectorBarItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="SelectorBarItemBorderBrushPressed" ResourceKey="SystemControlTransparentBrush"/>
             <StaticResource x:Key="SelectorBarItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush"/>
-            <StaticResource x:Key="SelectorBarItemForeground" ResourceKey="SystemColorButtonTextColor"/>
+            <StaticResource x:Key="SelectorBarItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="SelectorBarItemForegroundPointerOver" ResourceKey="SystemColorGrayTextColor"/>
-            <StaticResource x:Key="SelectorBarItemForegroundSelected" ResourceKey="SystemColorHighlightTextColor"/>
+            <StaticResource x:Key="SelectorBarItemForegroundSelected" ResourceKey="SystemControlForegroundBaseHighBrush"/>
             <StaticResource x:Key="SelectorBarItemForegroundPressed" ResourceKey="SystemColorGrayTextColor"/>
             <StaticResource x:Key="SelectorBarItemForegroundDisabled" ResourceKey="SystemColorGrayTextColor"/>
             <StaticResource x:Key="SelectorBarItemBackground" ResourceKey="SystemControlTransparentBrush"/>

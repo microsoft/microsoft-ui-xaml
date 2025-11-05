@@ -13,7 +13,6 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
 
     <PropertyGroup>
-        <XamlUsePublicSdk>false</XamlUsePublicSdk>    <!-- IDL generation with public SDK does not work yet -->
         <DisableMidlVersionChecks>1</DisableMidlVersionChecks>  <!-- MIDL version checks do not work with [experimental] (which is used in lifted IXP idl files) -->
     </PropertyGroup>
 

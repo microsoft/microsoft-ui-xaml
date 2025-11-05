@@ -14,7 +14,7 @@
 #include <FeatureFlags.h>
 #include <DesignMode.h>
 #include "RefreshAlignedClock.h"
-#include <CompositionAnimationHelper.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 
 bool CTimeManager::s_slowDownAnimations = false;
 bool CTimeManager::s_slowDownAnimationsLoaded = false;

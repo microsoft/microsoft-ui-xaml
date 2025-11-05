@@ -8,7 +8,7 @@
 #include "PointerAnimationUsingKeyFrames.h"
 #include <GraphicsUtility.h>
 #include <UIThreadScheduler.h>
-#include <CompositionAnimationHelper.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 #include "TimeSpan.h"
 
 using namespace DirectUI;

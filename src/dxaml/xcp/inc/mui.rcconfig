@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Info about the format of this file: https://learn.microsoft.com/windows/win32/intl/preparing-a-resource-configuration-file -->
+<localization>
+  <resources>
+    <win32Resources fileType="System">
+      <neutralResources>
+        <resourceType
+            typeNameId="#16"
+        />
+      </neutralResources>
+    
+      <localizedResources> 
+        <resourceType
+            typeNameId="#4"
+        />
+        <resourceType
+            typeNameId="#5"
+        />
+        <resourceType
+            typeNameId="#6"
+        />
+        <resourceType
+            typeNameId="#9"
+        />
+        <resourceType
+            typeNameId="#11"
+        />
+        <resourceType
+            typeNameId="#16"
+        />
+        <resourceType
+            typeNameId="HTML"
+        />
+        <resourceType
+            typeNameId="#23"
+        />
+        <resourceType
+            typeNameId="#240"
+        />
+        <resourceType
+            typeNameId="#1024"
+        />
+      </localizedResources>
+    </win32Resources>
+  </resources>
+</localization>

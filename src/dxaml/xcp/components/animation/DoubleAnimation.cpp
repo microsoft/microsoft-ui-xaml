@@ -24,7 +24,7 @@
 #include <DCompTreeHost.h>
 #include <FloatUtil.h>
 #include <DoubleUtil.h>
-#include <CompositionAnimationHelper.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 
 CDoubleAnimation::CDoubleAnimation()
     : CAnimation(nullptr)

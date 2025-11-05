@@ -1,0 +1,17 @@
+namespace MU_XC_NAMESPACE
+{
+
+[MUX_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass SystemBackdropHost : Microsoft.UI.Xaml.FrameworkElement
+{
+    SystemBackdropHost();
+    Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
+    static Microsoft.UI.Xaml.DependencyProperty SystemBackdropProperty{ get; };
+    Microsoft.UI.Xaml.CornerRadius CornerRadius;
+    static Microsoft.UI.Xaml.DependencyProperty CornerRadiusProperty{ get; };
+}
+
+}

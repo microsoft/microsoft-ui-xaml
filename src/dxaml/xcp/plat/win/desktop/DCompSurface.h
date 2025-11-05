@@ -11,6 +11,7 @@
 #include <HWTextureMgr.h>
 #include <Rendertypes.h>
 #include <fwd/windows.ui.composition.h>
+#include <CompHelper/CompositionSurfaceHelper.h>
 
 class CD3D11Device;
 class DCompTreeHost;
@@ -20,15 +21,6 @@ struct IDCompositionVirtualSurface;
 struct IDCompositionSurfaceFactory;
 struct IDCompositionSurfacePartner;
 struct IDXGISurface;
-
-#pragma warning(push)
-#pragma warning(disable: 4464)  // relative include path contains '..'
-// TODO: Remove disabling the warning when switching to header provided by WinUIDetails.
-//       This header is included in many places, and adding the temporary comphelper
-//       include path to all of the affected projects is more annoying than temporarily
-//       disabling this warning.
-#include "../../../components/comphelper/inc/CompositionSurfaceHelper.h"
-#pragma warning(pop)
 
 class DCompSurface : public CXcpObjectBase<>
 {

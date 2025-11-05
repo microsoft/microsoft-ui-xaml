@@ -73,29 +73,6 @@ CXcpBrowserHost::HandlePointerMessage(_In_ XUINT32 uMsg, _In_ MsgPacket *pMsgPac
             pMsgPack->m_pPointerPointNoRef,
             &pMsg->m_pointerInfo));
 
-        // Disable touch down visualization in the full screen case, in an attempt to keep DirectFlip enabled as much as possible.
-        if (IsFullScreen() && (uMsg == WM_POINTERDOWN))
-        {
-            DWM_SHOWCONTACT showContacts = DWMSC_ALL;
-
-            if (m_pcs && m_pcs->HasActiveAnimations())
-            {
-                showContacts = DWMSC_NONE;
-            }
-            else
-            {
-                showContacts &= ~(DWMSC_DOWN | DWMSC_HOLD);
-            }
-
-            // Show everything except the down and hold visualizations.
-
-            // Temporarily ignoring the return value because it returns
-            // an error on OneCore and prevents us from handling PointerDowns
-            // MSFT: Bug 813019 is tracking a proper solution (for e.g. an APISet extension)
-            IGNOREHR(DwmShowContact(pointerId,
-                                showContacts));
-        }
-
         pMsg->m_pPointerPointNoRef = pMsgPack->m_pPointerPointNoRef;
         pMsg->m_pPointerEventArgsNoRef = pMsgPack->m_pPointerEventArgsNoRef;
         pMsg->m_isNonClientPointerMessage = pMsgPack->m_isNonClientPointerMessage;

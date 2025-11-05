@@ -7694,17 +7694,6 @@
             channel="DefaultChannel"
             keywords="Rendering"
             level="win:Verbose"
-            opcode="win:Info"
-            symbol="CoreWindowResizeFiredInfo"
-            task="CoreWindowResizeFired"
-            template="NotifyWindowLayoutCompleteData"
-            value="259"
-            version="0"
-            />
-        <event
-            channel="DefaultChannel"
-            keywords="Rendering"
-            level="win:Verbose"
             notLogged="true"
             opcode="win:Info"
             symbol="SubmitNotifyWindowResizedInfo"

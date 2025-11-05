@@ -18,7 +18,6 @@
             $(XcpPath)\components\collection\inc;
             $(XcpPath)\components\brushes\inc;
             $(XcpPath)\components\common\inc;
-            $(XcpPath)\components\comphelper\inc;
             $(XcpPath)\components\comptree\inc;
             $(XcpPath)\components\criticalsection\inc;
             $(XcpPath)\components\graphics\inc;

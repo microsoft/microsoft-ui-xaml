@@ -297,9 +297,4 @@ private:
 
     wrl::ComPtr<ixp::IContentIsland> m_contentIsland{nullptr};
     EventRegistrationToken m_automationProviderRequestedToken = {};
-
-#pragma warning(push)
-#pragma warning(disable:4996) // IApplicationViewStatics is marked as [[deprecated]]
-    static Microsoft::WRL::ComPtr<wuv::IApplicationViewStatics> s_spApplicationViewStatics;
-#pragma warning(pop)
 };

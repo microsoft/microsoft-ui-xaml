@@ -123,7 +123,6 @@
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);
             $(XcpPath)\components\collection\inc;
-            $(XcpPath)\components\comphelper\inc;
             $(XcpPath)\components\comptree\inc;
             $(XcpPath)\components\brushes\inc;
             $(XcpPath)\components\math\inc;

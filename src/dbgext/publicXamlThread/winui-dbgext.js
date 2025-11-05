@@ -43,7 +43,8 @@ function GetWinUI3MUXModule()
 {
     var modules = host.currentProcess.Modules.Where(function(m)
         {
-            if (m.Name.toLowerCase().endsWith("microsoft.ui.xaml.dll"))
+            var name = m.Name.substring(m.Name.lastIndexOf('\\')+1);
+            if (name.toLowerCase() == "microsoft.ui.xaml.dll")
             {
                 try
                 {
@@ -77,7 +78,8 @@ function GetSystemWUXModule()
 {
     var modules = host.currentProcess.Modules.Where(function(m)
         {
-            return m.Name.toLowerCase().endsWith("windows.ui.xaml.dll");
+            var name = m.Name.substring(m.Name.lastIndexOf('\\')+1);
+            return name.toLowerCase() == "windows.ui.xaml.dll";
         });
     if (modules.Count() == 0)
     {
@@ -3712,24 +3714,22 @@ function xamlclass(index, useWinUI3)
         host.diagnostics.debugLog("Usage: !xamlclass <class index>\n");
         return null;
     }
-    var modules = host.currentProcess.Modules.Where(function(m)
-        {
-            return (m.Name.toLowerCase().endsWith("microsoft.ui.xaml.dll") && !m.Contents.Version.VersionInfo.FileVersion.startsWith("2.")) ||
-                    m.Name.toLowerCase().endsWith("windows.ui.xaml.dll")
-        });
-    var module = modules.First();
-    if (modules.Count() == 2)
+    var module = null;
+    if (useWinUI3 != undefined)
     {
-        if (useWinUI3 == undefined)
+        module = useWinUI3 ? GetWinUI3MUXModule() : GetSystemWUXModule();
+    }
+    else
+    {
+        var winui3Module = GetWinUI3MUXModule();
+        var systemWUXModule = GetSystemWUXModule();
+        if (winui3Module != null && systemWUXModule != null)
         {
             host.diagnostics.debugLog("Both system XAML and WinUI3 are loaded. Specify 0 (system XAML) or 1 (useWinUI3)\n");
             host.diagnostics.debugLog("Usage: !xamlclass <class index>,<useWinUI3>\n");
             return null;
         }
-        else
-        {
-            module = useWinUI3 ? GetWinUI3MUXModule() : GetSystemWUXModule();
-        }
+        module = (winui3Module != null) ? winui3Module : systemWUXModule;
     }
 
     var knownTypesArray = host.getModuleSymbol(module, "c_aTypes");

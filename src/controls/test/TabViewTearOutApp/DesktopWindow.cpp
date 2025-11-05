@@ -3,6 +3,7 @@
 #include "DesktopWindow.h"
 #include "resource.h"
 #include <inspectable.h>
+#include <Microsoft.UI.Dispatching.Interop.h> // For ContentPreTranslateMessage
 
 using namespace winrt;
 using namespace winrt::Microsoft::UI;
@@ -144,23 +145,13 @@ bool DesktopWindow::NavigateFocus(MSG* msg)
     }
 }
 
-// ContentPreTranslateMessage is currently in the private/internal IXP package.  For now we just LoadLibrary/GetProcAddress for it,
-// but let's call it directly when it's available.
-typedef BOOL (__stdcall *ContentPreTranslateMessageFuncPtr)(const MSG *pmsg);
-
 int DesktopWindow::MessageLoop(HACCEL hAccelTable)
 {
-    HMODULE windowingDll = ::LoadLibrary(L"Microsoft.UI.Windowing.Core.dll");
-    WINRT_VERIFY(windowingDll != nullptr);
-
-    auto contentPreTranslateMessagePtr = reinterpret_cast<ContentPreTranslateMessageFuncPtr>(
-            ::GetProcAddress(windowingDll, "ContentPreTranslateMessage"));
-    
     MSG msg = {};
     
     while (GetMessage(&msg, nullptr, 0, 0))
     {        
-        if (!contentPreTranslateMessagePtr(&msg) && !TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        if (!ContentPreTranslateMessage(&msg) && !TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
             if (!NavigateFocus(&msg))
             {
@@ -169,8 +160,6 @@ int DesktopWindow::MessageLoop(HACCEL hAccelTable)
             }
         }
     }
-
-    FreeLibrary(windowingDll);
 
     return (int)msg.wParam;
 }

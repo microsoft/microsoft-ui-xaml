@@ -30,8 +30,6 @@
 #include "AutomationProperties.h"
 #include "localizedResource.h"
 
-#pragma warning(disable:4996) // use of apis marked as [[deprecated("PrivateAPI")]]
-
 using namespace ctl;
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -309,9 +307,12 @@ MediaTransportControls::OnPlayPauseFromMPE()
 
     if (m_spMediaPlayer)
     {
+#pragma warning(push)
+#pragma warning(disable:4996) // MediaPlayer.CurrentState is deprecated, with MediaPlayer.PlaybackSession.PlaybackState recommended instead
         wmp::MediaPlayerState currentState = wmp::MediaPlayerState_Closed;
         IFC(m_spMediaPlayer->get_CurrentState(&currentState));
         if (currentState == wmp::MediaPlayerState_Closed)
+#pragma warning(pop)
         {
             if (m_hasError)
             {
@@ -736,6 +737,8 @@ MediaTransportControls::SubscribeMediaPlayerEvents() noexcept
             return S_OK;
         }).Get(), &m_mediaPlayerVolumeChangeToken));
 
+#pragma warning(push)
+#pragma warning(disable:4996) // MediaPlayer.SeekCompleted is deprecated, with MediaPlayer.PlaybackSession.SeekCompleted recommended instead
         IFC_RETURN(m_spMediaPlayer->add_SeekCompleted(
             wrl::Callback< Microsoft::WRL::Implements<
             Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
@@ -752,6 +755,7 @@ MediaTransportControls::SubscribeMediaPlayerEvents() noexcept
             }
             return S_OK;
         }).Get(), &m_mediaPlayerSeekCompletedToken));
+#pragma warning(pop)
 
         IFC_RETURN(spPlaybackSession->add_DownloadProgressChanged(
             wrl::Callback< Microsoft::WRL::Implements<
@@ -1167,11 +1171,14 @@ MediaTransportControls::UnSubscribeMediaPlayerEvents() noexcept
             m_mediaPlayerVolumeChangeToken.value = 0;
         }
 
+#pragma warning(push)
+#pragma warning(disable:4996) // MediaPlayer.SeekCompleted is deprecated, with MediaPlayer.PlaybackSession.SeekCompleted recommended instead
         if (m_mediaPlayerSeekCompletedToken.value > 0)
         {
             IFC_RETURN(m_spMediaPlayer->remove_SeekCompleted(m_mediaPlayerSeekCompletedToken));
             m_mediaPlayerSeekCompletedToken.value = 0;
         }
+#pragma warning(pop)
 
         ctl::ComPtr<wmp::IMediaPlayer3> spMediaPlayerExt;
         IFC_RETURN(m_spMediaPlayer.As(&spMediaPlayerExt));

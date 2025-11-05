@@ -49,7 +49,7 @@
 #include "D2DAcceleratedPrimitives.h"
 #include "DropShadowRecipe.h"
 #include <FxCallbacks.h>
-#include <comphelper/inc/CompositionImplicitAnimationHelper.h>
+#include <CompHelper/CompositionImplicitAnimationHelper.h>
 
 using namespace DirectUI;
 using namespace RuntimeFeatureBehavior;

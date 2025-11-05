@@ -38,7 +38,7 @@
 #include <microsoft.ui.composition.experimental.h>
 #include <microsoft.ui.composition.interop.h>
 #include "VisualDebugTags.h"
-#include "comphelper/inc/CompHelper.h"
+#include "CompHelper/CompositionHelper.h"
 
 #ifndef NTDDI_WIN11_GE
 #define NTDDI_WIN11_GE 0x0A000010
@@ -163,6 +163,7 @@ public:
 
     _Check_return_ HRESULT EnsureLegacyDeviceSurface(_In_ DCompSurface* dcompSurface, unsigned int width, unsigned int height);
     _Check_return_ HRESULT CreateCompositionSurfaceForHandle(_In_ HANDLE swapChainHandle, _Outptr_ WUComp::ICompositionSurface** compositionSurface);
+    _Check_return_ HRESULT CreateCompositionSurfaceForSwapChain(_In_ IUnknown* swapChain, _Outptr_ WUComp::ICompositionSurface** compositionSurface);
 
     _Check_return_ HRESULT ObtainSurfaceFactory(
         _In_ IUnknown *pIUnk,
@@ -441,7 +442,7 @@ private:
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor2> m_spCompositor2;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor5> m_spCompositor5;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor6> m_spCompositor6;
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorInterop> m_spCompositorInterop;
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorSwapChainInterop> m_spCompositorInterop;
     _Maybenull_ Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionBrush> m_systemBackdropBrush; // Note: This is a system compositor brush!
     wrl::ComPtr<ixp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;

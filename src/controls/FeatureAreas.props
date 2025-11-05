@@ -20,6 +20,7 @@
     <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
     <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
     <FeatureSplitButtonEnabled>productOnly</FeatureSplitButtonEnabled>
+    <FeatureWrapPanelEnabled>productOnly</FeatureWrapPanelEnabled>
   </PropertyGroup>
   <!-- Import this after inner loop features are declared so that it overrides those properties -->
   <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'" />
@@ -78,6 +79,9 @@
   <!-- Dependencies for LayoutPanel -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureLayoutPanelEnabled) == 'true'">
     <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
+  </PropertyGroup>
+  <!-- Dependencies for WrapPanel -->
+  <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureWrapPanelEnabled) == 'true'">
   </PropertyGroup>
   <!-- Dependencies for Lights -->
   <PropertyGroup Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop' And $(FeatureLightsEnabled) == 'true'">
@@ -234,6 +238,7 @@
     <FeatureFlipViewEnabled>true</FeatureFlipViewEnabled>
     <FeatureInteractionsEnabled>true</FeatureInteractionsEnabled>
     <FeatureLayoutPanelEnabled>true</FeatureLayoutPanelEnabled>
+    <FeatureWrapPanelEnabled>true</FeatureWrapPanelEnabled>
     <FeatureLightsEnabled>true</FeatureLightsEnabled>
     <FeatureMaterialsEnabled>true</FeatureMaterialsEnabled>
     <FeatureMenuBarEnabled>true</FeatureMenuBarEnabled>
@@ -282,6 +287,7 @@
     <FeatureSelectorBarEnabled>true</FeatureSelectorBarEnabled>
     <FeatureInkCanvasEnabled>true</FeatureInkCanvasEnabled>
     <FeatureInkToolBarEnabled>false</FeatureInkToolBarEnabled>
+    <FeatureSystemBackdropHostEnabled>true</FeatureSystemBackdropHostEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLPRESENTER_ENABLED</DefineConstants>

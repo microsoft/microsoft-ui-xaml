@@ -17,10 +17,8 @@ private:
     ~FocusController() override;
 
 public:
-    FocusController(_In_ wuc::ICoreComponentFocusable* pFocusable);
     FocusController(_In_ ixp::IInputFocusController* pFocusable);
 
-    static _Check_return_ HRESULT Create(_In_ wuc::ICoreComponentFocusable* pFocusable, _Outptr_ FocusController** pValue);
     static _Check_return_ HRESULT Create(_In_ ixp::IInputFocusController* pFocusable, _Outptr_ FocusController** pValue);
 
     // IFocusController
@@ -57,7 +55,6 @@ private:
     Microsoft::WRL::EventSource<xaml_hosting::FocusDepartingEventHandler> m_focusDepartingEvent;
     Microsoft::WRL::EventSource<xaml_hosting::FocusNavigatedEventHandler> m_gotFocusEvent;
 
-    Microsoft::WRL::ComPtr<wuc::ICoreComponentFocusable>   m_coreComponentFocusable;
     Microsoft::WRL::ComPtr<ixp::IInputFocusController> m_inputObjectFocusable;
 
     EventRegistrationToken m_gotFocusToken = {};

@@ -72,7 +72,6 @@
           $(XcpPath)\core\native\inc;
           $(ProjectIncludeDirectories);
           $(XcpPath)\components\collection\inc;
-          $(XcpPath)\components\comphelper\inc;
           $(XcpPath)\components\comptree\inc;
           $(XcpPath)\components\brushes\inc;
           $(XcpPath)\components\transforms\inc;

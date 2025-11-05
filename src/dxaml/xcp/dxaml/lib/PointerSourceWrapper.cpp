@@ -5,7 +5,7 @@
 #include "PointerSourceWrapper.h"
 #include "DXamlCore.h"
 #include "Window_Partial.h"
-#include <HoverPointerSourceHelper.h>
+#include <CompHelper/HoverPointerSourceHelper.h>
 
 _Check_return_ HRESULT PointerSourceWrapper::Initialize(_In_ CUIElement* hoverPointerSourceElement)
 {

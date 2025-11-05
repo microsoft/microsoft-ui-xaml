@@ -7,7 +7,7 @@
 #include "RepeatBehavior.h"
 #include <TimeMgr.h>
 #include <DCompTreeHost.h>
-#include <CompositionAnimationHelper.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 #include "TimeSpan.h"
 
 CTimeline::CTimeline(_In_opt_ CCoreServices *pCore)

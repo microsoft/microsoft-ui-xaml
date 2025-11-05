@@ -67,9 +67,14 @@
     <ProjectReference Include="$(XcpPath)\dxaml\manifest\manifest.vcxproj" Project="{439d8d30-7118-4da6-956b-ee0c5b92d6a9}" />
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <!-- TODO: BEGIN HACK: Remove this WindowsAppSDKAggregatePackage hack when the file path bug is fixed in the Microsoft.InteractiveExperiences package -->
+  <PropertyGroup>
+    <WindowsAppSDKAggregatePackage>true</WindowsAppSDKAggregatePackage>
+  </PropertyGroup>
+  <!-- TODO: END HACK -->
   <!-- These are needed to properly link against static libs that come from IXP -->
   <Import Project="$(LiftedIXPBuildPath)\Microsoft.InteractiveExperiences.targets" />
-  <Import Project="$(LiftedIXPInternalBuildPath)\Microsoft.Internal.InteractiveExperiences.targets" />
+  <Import Project="$(FrameworkUdkBuildPath)\Microsoft.FrameworkUdk.targets" />
   <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.targets" />
   <Target Name="MUXExternalBinaries" DependsOnTargets="ChooseExternalBinaries" BeforeTargets="Binplace">
     <ItemGroup>
@@ -92,8 +97,6 @@
         -->
       <PackageContent Include="@(ExternalWinMDs)" Exclude="@(IxpWinMds)" PackageLocation="$(WinMDPackageLocation)"/>
       <BinplaceItem Include="@(ExternalWinMDs)"  Exclude="@(IxpWinMds)"/> <!-- We exclude the ixp winmds because those are currently merged into our Microsoft.UI.winmd -->
-      <PackageContent Include="$(LiftedIXPInternalIncludePath)\winrtdirect3d11.h" PackageLocation="$(IncludesPackageLocation)"/>
-      <PackageContent Include="$(LiftedIXPInternalIncludePath)\winrtdirectxcommon.h" PackageLocation="$(IncludesPackageLocation)"/>
       <PackageContent Include="$(LocalizedMUIFilesPath)\**\*.mui" PackageLocation="$(NativeAssemblyPackageLocation)\%(RecursiveDir)"/>
       <BinplaceItem Include="$(LocalizedMUIFilesPath)\**\*.mui">
         <DestinationSubDirectory>%(RecursiveDir)</DestinationSubDirectory>

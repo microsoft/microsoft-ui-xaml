@@ -27,7 +27,7 @@
 #include "D3D11.h"
 #include "D3D11Device.h"
 #include "D3D11SharedDeviceGuard.h"
-#include <RenderTargetBitmapHelper.h>
+#include <CompHelper/RenderTargetBitmapHelper.h>
 
 class CaptureAsyncCompletionState
 {

@@ -1195,7 +1195,7 @@ HWCompSwapChainNode::SetSwapChain(
     // in the event the SwapChainBackgroundPanel is deleted.
     if (pSwapChain != nullptr)
     {
-        IFC_RETURN(pVisualTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForSwapChain(pSwapChain, surface.ReleaseAndGetAddressOf()));
+        IFC_RETURN(pVisualTreeHost->CreateCompositionSurfaceForSwapChain(pSwapChain, surface.ReleaseAndGetAddressOf()));
     }
     else if (pSwapChainSurface != nullptr)
     {

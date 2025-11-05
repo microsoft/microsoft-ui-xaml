@@ -92,8 +92,6 @@ CXcpBrowserHost::CXcpBrowserHost()
     m_bReentrancyGuard = false;
 
     m_fForceRedraw = false;
-
-    m_fIsFullScreen = TRUE;
 }
 
 //-------------------------------------------------------------------------

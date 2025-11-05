@@ -29,17 +29,7 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 
-#pragma warning(push)
-#pragma warning(disable:4996)
-// Contains interfaces marked as [[deprecated("PrivateAPI")]]
-
-#if !defined(abstract) && defined(EXP_CLANG)
-  #define abstract
-#endif
-
-#include <Microsoft.UI.Composition.Effects_Impl.h>
-
-#pragma warning(pop)
+#include "ConnectedAnimation.CrossFadeEffect.h"
 
 #include <minmax.h>
 #include <windowscollections.h>
@@ -1004,8 +994,8 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
 
     // Effect brushes are created by creating a "property bag" which is used to define the type of effect
     // and parameters for that effect and then creating an effect factory for that type of effect brush.
-    Microsoft::WRL::ComPtr<XAML_ABI_PARAMETER(Microsoft::UI::Composition::Effects::CrossFadeEffect)> effect;
-    IFC_RETURN(Microsoft::WRL::MakeAndInitialize<XAML_ABI_PARAMETER(Microsoft::UI::Composition::Effects::CrossFadeEffect)>(&effect));
+    Microsoft::WRL::ComPtr<ConnectedAnimationHelpers::CrossFadeEffect> effect;
+    IFC_RETURN(Microsoft::WRL::MakeAndInitialize<ConnectedAnimationHelpers::CrossFadeEffect>(&effect));
 
     IFC_RETURN(effect->put_Weight(0));
     effect->put_Name(wrl_wrappers::HStringReference(L"Crossfade").Get());

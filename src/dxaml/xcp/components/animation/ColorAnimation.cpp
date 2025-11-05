@@ -18,7 +18,7 @@
 #include "DCompAnimationConversionContext.h"
 #include <DCompTreeHost.h>
 #include <DoubleUtil.h>
-#include <CompositionAnimationHelper.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 
 CColorAnimation::~CColorAnimation()
 {
