@@ -121,7 +121,9 @@ LSERR LSAPI LineServicesEmbeddedObjectLineContext::FormatSimple(
 {
     Result::Enum txhr = Result::Success;
     ObjectRunMetrics metrics;
+    PDOBJ pSimpleObject = NULL;
     LineServicesEmbeddedObject *pObject = NULL; 
+    bool free_pObject = true;
     XFLOAT rightMargin = 0;
     XFLOAT remainingWidth = 0;
     LsRun *pLsRun = NULL;
@@ -192,23 +194,32 @@ LSERR LSAPI LineServicesEmbeddedObjectLineContext::FormatSimple(
         pObject->objdim.dur += TextDpi::ToTextDpi(extraSpace);
     }
 
+    pSimpleObject = CreateSimpleLsObject(pObjectContext->plsc, pObject);
+    IFC_EXPECT_RTS(pSimpleObject);
+    free_pObject = false; // pSimpleObject owns pObject now
+
     // Call LsdnFinishRegular to create dnode.
     // NOTE: ls will assume that an object run has length 1.
     IFCTEXT(ResultFromLSErr(LsdnFinishWordRegular(fmtinput.plsdnTop,
                                             pObjectRun->GetLength(),
                                             fmtinput.lsfrun.plsrun,
                                             fmtinput.lsfrun.plschp,
-                                            static_cast<PDOBJ>(pObject),
-                                        &pObject->objdim,
+                                            pSimpleObject,
+                                            &pObject->objdim,
                                             FALSE, // fStopped
                                             FALSE, // fFillLine
                                             pObject->isPenPositionUsed ? 1 : 0
                                             )));
 
-    pObject = NULL;
+    pSimpleObject = NULL;
 
 Cleanup:
-    if (pObject != NULL)
+    if (pSimpleObject != NULL)
+    {
+        LsHelpers::DestroySimpleLsObject(pSimpleObject);
+        pSimpleObject = NULL;
+    }
+    if (pObject != NULL && free_pObject)
     {
         LsDestroyMemory(pObject->pObjectContext->plsc, pObject);
         delete pObject;

@@ -82,9 +82,7 @@ typedef unsigned char BYTE;
 #include <host.h>
 
 // RichTextServices
-#include "LSBRK.H"
-#include "BRKCOND.H"
-#include "BRKCLS.H"
+#include <Ptls-min.h>
 
 // RichTextServices/TextFormatter
 #include "Ls.h"
