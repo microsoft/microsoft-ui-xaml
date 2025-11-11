@@ -29,12 +29,13 @@ The `SplitMenuFlyoutItem` control enables you to create menu items that combine 
 actions and additional options. The control consists of two distinct interactive areas: 
 a primary button for the main action and a flyout button for accessing additional options.
 
-### Basic Usage
+### Standard Usage (Default behavior)
 
 ***Invocation without Selection*** 
 You can use `SplitMenuFlyoutItem` in any `MenuFlyout` to provide both a default action and 
 additional choices:
 
+**Selection means updating the deafult/primary action with submenu item's action**
 ```xaml
 <Button Content="File">
     <Button.Flyout>
@@ -55,9 +56,12 @@ additional choices:
 In this example, clicking the primary button executes the `SaveCommand`, while hovering over 
 the flyout button reveals additional save-related options.
 
-### Reflecting Current Selection
+![Save Scarnario](./save-scenario.png)
 
-***Selection (with and without Invocation)***
+
+### Advanced Usage
+
+#### Selection (with and without Invocation)
 Selection and reflection of the selected submenu item can be implemented by attaching Click handlers 
 to the submenu items. Once, a submenu item will be clicked, the click handler will be called, 
 which will then update the main control's text, icon, etc.
@@ -95,27 +99,57 @@ sub menu items as well, which will get invoked when the submenu item is clikced.
     }
 ```
 
-### Styling the Submenu
+![Paste Scarnario](./paste-scenario.png)
+![Paste Selection Changed Scarnario](./paste-selection-changed.png)
+
+#### Styling the Submenu
 
 You can customize the appearance of the submenu using the styling properties:
 
 ```xaml
-<SplitMenuFlyoutItem Text="Format">
+<SplitMenuFlyoutItem Text="SplitItem A">
     <SplitMenuFlyoutItem.SubMenuPresenterStyle>
-        <Style TargetType="FlyoutPresenter">
-            <Setter Property="Background" Value="LightGray" />
-        </Style>
+    <Style BasedOn="{StaticResource DefaultMenuFlyoutPresenterStyle}" TargetType="MenuFlyoutPresenter">
+        <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="MenuFlyoutPresenter">
+                <Border>
+                    <ScrollViewer x:Name="MenuFlyoutPresenterScrollViewer">
+                        <GridView ItemsSource="{TemplateBinding ItemsSource}">
+                            <GridView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsWrapGrid MaximumRowsOrColumns="3" Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </GridView.ItemsPanel>
+                        </GridView>
+                    </ScrollViewer>
+                </Border>
+            </ControlTemplate>
+        </Setter.Value>
+        </Setter>
+    </Style>
     </SplitMenuFlyoutItem.SubMenuPresenterStyle>
+
     <SplitMenuFlyoutItem.SubMenuItemStyle>
-        <Style TargetType="MenuFlyoutItem">
-            <Setter Property="FontWeight" Value="Bold" />
+        <Style BasedOn="{StaticResource DefaultMenuFlyoutItemStyle}" TargetType="MenuFlyoutItem">
+            <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuFlyoutItem">
+                <Grid x:Name="LayoutRoot">
+                    <Rectangle Fill="{TemplateBinding Foreground}"
+                            Height="16" Width="16" RadiusX="8" RadiusY="8" />
+                </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+            </Setter>
         </Style>
     </SplitMenuFlyoutItem.SubMenuItemStyle>
-    <SplitMenuFlyoutItem.Items>
-        <MenuFlyoutItem Text="Bold" />
-        <MenuFlyoutItem Text="Italic" />
-        <MenuFlyoutItem Text="Underline" />
-    </SplitMenuFlyoutItem.Items>
+
+    <MenuFlyoutItem Text="Red" Foreground="Red" />
+    <MenuFlyoutItem Text="Yellow" Foreground="Yellow" />
+    <MenuFlyoutItem Text="Green" Foreground="Green" />
+    <MenuFlyoutItem Text="Blue" Foreground="Blue" />
+    <MenuFlyoutItem Text="Orange" Foreground="Orange" />
 </SplitMenuFlyoutItem>
 ```
 
@@ -123,6 +157,25 @@ Here is one example of a customized submenu (this is a reference from the SplitB
 
 ![Customizable SubMenu Scarnario](./customizable-submenu-sample.png)
 
+#### Nesting of SplitMenuFlyoutItem
+
+We can also support nesting of menu items in this control:
+
+```xaml
+<SplitMenuFlyoutItem Text="Edit with Photos">
+    <MenuFlyoutItem Text="Rotate Left" />
+    <MenuFlyoutItem Text="Rotate Right" />
+    <MenuFlyoutItem Text="Crop" />
+    <SplitMenuFlyoutItem Text="Resize" >
+        <MenuFlyoutItem Text="Small" />
+        <MenuFlyoutItem Text="Medium" />
+        <MenuFlyoutItem Text="Large" />
+        <MenuFlyoutItem Text="Phone" />
+    </SplitMenuFlyoutItem>
+</SplitMenuFlyoutItem>
+```
+
+![Nested SubMenu Scarnario](./nested-submenu.png)
 
 ### Using SplitMenuFlyoutItem in C# \ C++
 
@@ -287,9 +340,9 @@ namespace Microsoft.UI.Xaml.Automation.Peers
 }
 ```
 
-# Appendix
+## Appendix
 
-## Keyboard Behavior
+### Keyboard Behavior
 
 The `SplitMenuFlyoutItem` provides comprehensive keyboard navigation support to ensure 
 accessibility and ease of use:
@@ -325,3 +378,12 @@ accessibility and ease of use:
 This keyboard behavior ensures that users can efficiently navigate and interact with the 
 `SplitMenuFlyoutItem` using only the keyboard, maintaining accessibility standards and providing 
 a consistent user experience across the application.
+
+### Automation Behavior
+
+Accessibility tools like screen readers ( Narrator, NVDA ) use the UI Automation Framework. These UI automation clients, communicate with applications through the automation peer classes. In this case the defined behavior is as follows: 
+1. Focus on primary button: When the UI Automation clients focus moves to the primary button, the screen reader announces information similar other menu items in the menu flyout: <menu-item-name> menu item, 3 of 5, collapsed 
+2. Focus on secondary button: When the UI Automation clients focus moves to the secondary button, the screen reader announces the following information: More options for <menu-item-name> menu item, button 
+
+**Other requirements** 
+Depending on the focus, the bounding box for the control should be around the primary or secondary button and not over the whole control 
