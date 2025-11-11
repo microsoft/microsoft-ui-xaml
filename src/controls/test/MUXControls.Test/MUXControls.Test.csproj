@@ -132,6 +132,7 @@
     <BinplaceItem Include="$(OutDir)MUXTestInfra.dll" />
     <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.Apps.Test\1.0.181205002\lib\netcoreapp2.1\*.dll" />
     <BinplaceItem Include="$(PkgMicrosoft_Web_WebView2)\build\native\$(Webview2Arch)\WebView2Loader.dll">
+      <!-- WebView2Loader.dll is used in tests for GetAvailableCoreWebView2BrowserVersionString() -->
       <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
     </BinplaceItem>
     <BinplaceItem Include="$(PkgAxe_Windows)\lib\netstandard20\*.dll">

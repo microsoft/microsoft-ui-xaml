@@ -32,13 +32,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" PrivateAssets="All" />
+    <PackageReference Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="Microsoft.SourceLink.AzureRepos.Git" PrivateAssets="All" />
     <ProjectReference Include="..\..\MergedWinMD\MergedWinMD.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgMicrosoft_Internal_WinUIDetails)\lib\uap10.0\Microsoft.UI.Text.winmd" />
-    <CsWinRTInputs Include="$(LiftedMRTLibPath)\uap10.0\Microsoft.Windows.ApplicationModel.Resources.winmd" />
+    <CsWinRTInputs Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd" />
   </ItemGroup>
 
   <!-- Add the generated cswinrt interop assembly to the nuget -->

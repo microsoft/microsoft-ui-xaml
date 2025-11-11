@@ -31,12 +31,20 @@
     </ItemGroup>
   </Target>
 
+  <PropertyGroup>
+    <LiftedIXPAppxManifest>$(LiftedIXPPackagePath)\runtimes-framework\package.appxfragment</LiftedIXPAppxManifest>
+    <LiftedIXPAppxManifest Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedIXPPackagePath)\appxmanifest.xml</LiftedIXPAppxManifest>
+    <LiftedIXPManifestQuery>/ns:Fragment/ns:Extensions/ns:Extension</LiftedIXPManifestQuery>
+    <LiftedIXPManifestQuery Condition="'$(IsInternalWinUIBuild)' == 'true'">/ns:Package/ns:Extensions/ns:Extension</LiftedIXPManifestQuery>
+  </PropertyGroup>
+
   <Target Name="_GenerateWinRTClassRegistrations"
           BeforeTargets="_CreateWinUIPackageLayout;KillCreatedMSBuildInstances;Binplace"
           AfterTargets="Build"
           DependsOnTargets="_GetClassRegistrationWinMDs"
-          Inputs="@(WinMdsForClassRegistration);@(WindowsSdkWinmds);$(LiftedIXPPackagePath)\appxmanifest.xml"
+          Inputs="@(WinMdsForClassRegistration);@(WindowsSdkWinmds);$(LiftedIXPAppxManifest)"
           Outputs="$(OutDir)LiftedWinRTClassRegistrations.xml;$(OutDir)TestExtensions.xml">
+
     <GenerateWinRTClassRegistrations
       WinMDs="@(WinMdsForClassRegistration)"
       DefaultImplementationDll="Microsoft.UI.Xaml.dll"
@@ -46,8 +54,8 @@
     </GenerateWinRTClassRegistrations>
 
     <!--Copy IXP transport package appx manifest activatable class elements-->
-    <XmlPeek XmlInputPath="$(LiftedIXPPackagePath)\appxmanifest.xml"
-        Query="/ns:Package/ns:Extensions/ns:Extension"
+    <XmlPeek XmlInputPath="$(LiftedIXPAppxManifest)"
+        Query="$(LiftedIXPManifestQuery)"
         Namespaces="&lt;Namespace Prefix='ns' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;"
         Condition="'$(IncludeIxpExtensions)' == 'true'">
         <Output TaskParameter="Result" ItemName="IXPTransportPackageExtensions" />

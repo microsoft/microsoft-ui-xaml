@@ -68,7 +68,7 @@
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
   <!-- TODO: BEGIN HACK: Remove this WindowsAppSDKAggregatePackage hack when the file path bug is fixed in the Microsoft.InteractiveExperiences package -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(IsInternalWinUIBuild)' == 'true'">
     <WindowsAppSDKAggregatePackage>true</WindowsAppSDKAggregatePackage>
   </PropertyGroup>
   <!-- TODO: END HACK -->
