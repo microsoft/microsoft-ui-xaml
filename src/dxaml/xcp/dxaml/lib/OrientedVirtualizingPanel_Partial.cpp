@@ -24,6 +24,10 @@
 #include "ItemContainerGenerator.g.h"
 #include <math.h>
 #include "VisualTreeHelper.h"
+#include "FrameworkUdk/Containment.h"
+
+//Bug 59890418: [1.7 Servicing][WASDK][Watson Failure] caused by STOWED_EXCEPTION_80070057_Microsoft.UI.Xaml.dll!CDirectManipulationService::SetContentBounds
+#define WINAPPSDK_CHANGEID_59890418 59890418, WinAppSDK_1_7_6
 
 //#define OVP_DEBUG
 
@@ -4130,7 +4134,26 @@ OrientedVirtualizingPanel::ComputePixelExtent(
 
     if (nLineCount > 0)
     {
-        extent = (DOUBLE) (cumulatedChildDim + cumulatedChildDim / nLineCount * (m_lineCount - nLineCount));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_59890418>())
+        {
+            // safeguard for subtraction underflow as both m_lineCount & nLineCount are UINT
+            if (m_lineCount >= nLineCount)
+            {
+                extent = (DOUBLE) (cumulatedChildDim + cumulatedChildDim / nLineCount * (m_lineCount - nLineCount));
+            }
+            else
+            {
+                // If measure have not happened at this point after adding / removing items,
+                // m_lineCount can go lesser than nLineCount as m_lineCount only gets set during measure,
+                // We only need to consider cumulatedChildDim in that case. A measure would be happening at a later point
+                // which should give the correct extent value.
+                extent = cumulatedChildDim;
+            }
+        }
+        else
+        {
+            extent = (DOUBLE) (cumulatedChildDim + cumulatedChildDim / nLineCount * (m_lineCount - nLineCount));
+        }
         extent = extent * zoomFactor;
     }
 
