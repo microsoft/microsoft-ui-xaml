@@ -10,7 +10,6 @@
 #include "WindowChrome_Partial.h"
 #include "ContentDialogMetadata.h"
 #include "RootScrollViewer.g.h"
-#include <Microsoft.UI.Content.Private.h>
 #include <windowing.h>
 
 using namespace DirectUI;

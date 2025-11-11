@@ -5,7 +5,7 @@
 
 #include <NamespaceAliases.h>
 #include <microsoft.ui.composition.h>
-#include <microsoft.ui.composition.experimental.h>
+#include "ExpCompositionPropertyChanged.h"
 
 class CUIElement;
 
@@ -13,7 +13,7 @@ class CUIElement;
 // the DComp properties using WUComp::IVisual, the corresponding hit-test
 // transforms are changed.
 class DCompPropertyChangedListener :
-      public wrl::RuntimeClass<ixp::IExpCompositionPropertyChangedListener>
+      public wrl::RuntimeClass<ExpComp::IExpCompositionPropertyChangedListener>
 {
     InspectableClass(nullptr /* this class is internal */, BaseTrust);
 
@@ -31,46 +31,46 @@ public:
     // IExpCompositionPropertyChangedListener
     IFACEMETHOD(NotifyColorPropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId,
+        ExpComp::ExpExpressionNotificationProperty propertyId,
         wu::Color value);
 
     IFACEMETHOD(NotifyMatrix3x2PropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId,
+        ExpComp::ExpExpressionNotificationProperty propertyId,
         wfn::Matrix3x2 value);
 
     IFACEMETHOD(NotifyMatrix4x4PropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId,
+        ExpComp::ExpExpressionNotificationProperty propertyId,
         wfn::Matrix4x4 value);
 
     IFACEMETHOD(NotifyReferencePropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId);
+        ExpComp::ExpExpressionNotificationProperty propertyId);
 
     IFACEMETHOD(NotifySinglePropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId,
+        ExpComp::ExpExpressionNotificationProperty propertyId,
         float value);
 
     IFACEMETHOD(NotifyVector2PropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId,
+        ExpComp::ExpExpressionNotificationProperty propertyId,
         wfn::Vector2 value);
 
     IFACEMETHOD(NotifyVector3PropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId,
+        ExpComp::ExpExpressionNotificationProperty propertyId,
         wfn::Vector3 value);
 
     IFACEMETHOD(NotifyVector4PropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId,
+        ExpComp::ExpExpressionNotificationProperty propertyId,
         wfn::Vector4 value);
 
     IFACEMETHOD(NotifyBooleanPropertyChanged)(
         ixp::ICompositionObject* pTarget,
-        ixp::ExpExpressionNotificationProperty propertyId,
+        ExpComp::ExpExpressionNotificationProperty propertyId,
         boolean value);
 
     void ForceUpdateFromLayoutOffset();

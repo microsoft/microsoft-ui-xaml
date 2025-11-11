@@ -17,7 +17,7 @@
 #endif
 
 // Future: These includes should be moved to a more appropriate place
-#include <d2d1p.h>
+#include <d2d1_3.h>
 #include <dwrite_1.h>
 
 #include <dcomp.h>

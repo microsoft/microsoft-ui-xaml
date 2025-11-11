@@ -65,7 +65,6 @@
 #include "DesktopWindowXamlSource_Partial.h"
 #include "XamlIslandRoot_Partial.h"
 #include "HWWalk.h"
-#include <Microsoft.UI.Input.Partner.h>
 #include "LoadLibraryAbs.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data

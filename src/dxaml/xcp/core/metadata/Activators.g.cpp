@@ -1039,6 +1039,11 @@ HRESULT OnCoreCreateSemanticZoom(_Outptr_ CDependencyObject **ppObject, _In_ CRE
     __RP_Marker_ClassById(Parser::StableXbfTypeIndex::SemanticZoom);
     RRETURN(CSemanticZoom::Create(ppObject, pCreate));
 }
+HRESULT OnCoreCreateSplitMenuFlyoutItem(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    __RP_Marker_ClassById(Parser::StableXbfTypeIndex::SplitMenuFlyoutItem);
+    RRETURN(CSplitMenuFlyoutItem::Create(ppObject, pCreate));
+}
 HRESULT OnCoreCreateSplitView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     __RP_Marker_ClassById(Parser::StableXbfTypeIndex::SplitView);

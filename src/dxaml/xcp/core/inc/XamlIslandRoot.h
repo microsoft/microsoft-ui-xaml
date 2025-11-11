@@ -9,12 +9,10 @@
 #include <fwd/windows.ui.core.h>
 #include <fwd/Microsoft.UI.Xaml.hosting.h>
 #include <microsoft.ui.input.h>
-#include <microsoft.ui.input.inputkeyboardsource.interop.h>
 #include <microsoft.ui.input.inputpretranslatesource.interop.h>
-#include <Microsoft.UI.Input.Partner.h>
 #include <Microsoft.UI.Content.h>
 #include "microsoft.ui.input.dragdrop.h"
-#include <Microsoft.UI.Input.Partner.h>
+#include <InputHelpers.h>
 #include <optional>
 
 class CContentRoot;
@@ -69,7 +67,7 @@ public:
 
     void NWPropagateDirtyFlag(DirtyFlags flags) override;
 
-    wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const { return m_islandInputSite; }
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> GetIslandInputSite() const { return m_islandInputSite; }
     HWND GetBridgeHostingHWND() const { return m_contentBridgeWindow; }
 
     wrl::ComPtr<ixp::IPointerPoint> GetPreviousPointerPoint();
@@ -103,7 +101,8 @@ public:
 
     _Check_return_ HRESULT NotifyThemeChangedCore(_In_ Theming::Theme theme, _In_ bool fForceRefresh = false) final;
 
-    void SetIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner *islandInputSite);
+    void OnContentIslandConnected();
+    void OnContentIslandDisconnected();
 
     _Check_return_ HRESULT get_DragDropManager(_COM_Outptr_result_maybenull_ mui::DragDrop::IDragDropManager** manager);
 
@@ -266,6 +265,7 @@ private:
     void SubscribeToInputPointerSourceEvents();
     void SubscribeToInputNonClientPointerSourceEvents();
     void UnsubscribeToInputEvents();
+    void HandleContentIslandConnectionChange(bool isConnected);
 
     typedef decltype(&CXamlIslandRoot::OnIslandNonClientPointerEntered) PointerHandlerFunction;
     wrl::ComPtr<wf::ITypedEventHandler<ixp::InputNonClientPointerSource*, ixp::NonClientPointerEventArgs*>> GetNonClientPointerEventHandler(PointerHandlerFunction pointerHandler, UINT msg, std::optional<bool> newContactState = std::optional<bool>());
@@ -304,7 +304,7 @@ private:
     ABI::Microsoft::UI::WindowId m_contentBridgeWindowId{};
     HWND m_contentBridgeWindow = nullptr;
 
-    wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite;
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> m_islandInputSite;
     wrl::ComPtr<ixp::IInputFocusController> m_inputFocusController;
     wrl::ComPtr<ixp::IInputKeyboardSource2> m_inputKeyboardSource2;
     wrl::ComPtr<ixp::IInputPointerSource> m_inputPointerSource;
@@ -376,7 +376,7 @@ private:
     bool m_previousPointerPointIsNonClient{ false };
     bool m_isNonClientPointerDown{ false };
     
-    wrl::ComPtr<ixp::IPartnerPointerPointStatics> m_partnerPointerPointStatics;
+    InputHelpers::PointerPointHelper m_pointerPointHelper;
 
     _Check_return_ HRESULT EnsurePartnerPointerPointStatics();
 };

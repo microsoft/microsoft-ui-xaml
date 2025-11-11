@@ -27,7 +27,6 @@
 #include "AutomationEventsHelper.h"
 #include <fwd/windows.foundation.h>
 #include "xcpmath.h"
-#include <Microsoft.UI.Input.Partner.h>
 
 #undef GetFirstChild
 

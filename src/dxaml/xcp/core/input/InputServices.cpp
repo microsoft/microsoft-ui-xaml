@@ -145,7 +145,7 @@ void CInputServices::ResetAllCrossSlideServices()
     }
 }
 
-void CInputServices::RegisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite)
+void CInputServices::RegisterIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite)
 {
     auto iter = std::find_if(
         m_islandInputSiteRegistrations.cbegin(),
@@ -166,7 +166,7 @@ void CInputServices::RegisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* 
     }
 }
 
-void CInputServices::UnregisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite)
+void CInputServices::UnregisterIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite)
 {
     auto iter = std::find_if(
         m_islandInputSiteRegistrations.begin(),
@@ -188,7 +188,7 @@ void CInputServices::UnregisterIslandInputSite(_In_ ixp::IIslandInputSitePartner
     }
 }
 
-wrl::ComPtr<ixp::IIslandInputSitePartner> CInputServices::GetPrimaryRegisteredIslandInputSite() const
+wrl::ComPtr<InputSiteHelper::IIslandInputSite> CInputServices::GetPrimaryRegisteredIslandInputSite() const
 {
     if (m_islandInputSiteRegistrations.empty())
     {
@@ -3078,12 +3078,12 @@ CInputServices::IsTextEditableControl(_In_ const CDependencyObject* const pObjec
 }
 
 // static
-HWND CInputServices::GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner* pIslandInputSite)
+HWND CInputServices::GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ InputSiteHelper::IIslandInputSite* pIslandInputSite)
 {
     if (nullptr != pIslandInputSite)
     {
         ABI::Microsoft::UI::WindowId inputWindowId;
-        if (S_OK == pIslandInputSite->get_UnderlyingInputWindowId(&inputWindowId))
+        if (GetUnderlyingInputWindowId(pIslandInputSite, &inputWindowId))
         {
             // The IslandInputSite might already be closed, in which case we should just return nullptr since there is no valid HWND.
             HWND inputHwnd;

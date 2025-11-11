@@ -7,6 +7,7 @@
 #include "ItemCollection.g.h"
 #include "MenuFlyoutItem.g.h"
 #include "MenuFlyoutSubItem.g.h"
+#include "SplitMenuFlyoutItem.g.h"
 #include "ToggleMenuFlyoutItem.g.h"
 #include "MenuFlyout.g.h"
 #include "MenuFlyoutPresenterAutomationPeer.g.h"
@@ -164,16 +165,27 @@ MenuFlyoutPresenter::CycleFocus(
 
         bool isFocusable = false;
 
-        // We determine whether the item is a focusable MenuFlyoutItem or MenuFlyoutSubItem because we want to exclude MenuSeparators here.
+        // We determine whether the item is a focusable MenuFlyoutItem, MenuFlyoutSubItem, or SplitMenuFlyoutItem because we want to exclude MenuSeparators here.
         ctl::ComPtr<MenuFlyoutItem> spItem = NULL;
+        ctl::ComPtr<MenuFlyoutSubItem> spSubItem;
+        ctl::ComPtr<SplitMenuFlyoutItem> spSplitItem;
+        
         spItem = spItemAsIInspectable.AsOrNull<IMenuFlyoutItem>().Cast<MenuFlyoutItem>();
         if (spItem)
         {
-            IFC_RETURN(CoreImports::UIElement_IsFocusable(static_cast<CUIElement *>(spItem.Cast<MenuFlyoutItem>()->GetHandle()), &isFocusable));
+            ctl::ComPtr<ISplitMenuFlyoutItem> spItemAsSplitMenuFlyoutItem = spItemAsIInspectable.AsOrNull<ISplitMenuFlyoutItem>();
+            if (spItemAsSplitMenuFlyoutItem)
+            {
+                spItemAsSplitMenuFlyoutItem.As(&spSplitItem);
+                IFC_RETURN(CoreImports::UIElement_IsFocusable(static_cast<CUIElement *>(spSplitItem.Cast<SplitMenuFlyoutItem>()->GetHandle()), &isFocusable));
+            }
+            else
+            {
+                IFC_RETURN(CoreImports::UIElement_IsFocusable(static_cast<CUIElement *>(spItem.Cast<MenuFlyoutItem>()->GetHandle()), &isFocusable));
+            }
         }
         else
         {
-            ctl::ComPtr<MenuFlyoutSubItem> spSubItem;
             spSubItem = spItemAsIInspectable.AsOrNull<IMenuFlyoutSubItem>().Cast<MenuFlyoutSubItem>();
             if (spSubItem)
             {
@@ -187,6 +199,12 @@ MenuFlyoutPresenter::CycleFocus(
             auto spSubItemAsUIE = spItemAsIInspectable.AsOrNull<IUIElement>();
             if (spSubItemAsUIE)
             {
+                // If this is a SplitMenuFlyoutItem and we're navigating upward, set the flag
+                if (spSplitItem && deltaIndex == -1)
+                {
+                    spSplitItem->SetFocusComingFromUpwardNavigation();
+                }
+                
                 BOOLEAN wasFocused = FALSE;
                 IFC_RETURN(spSubItemAsUIE->Focus(focusState, &wasFocused));
 

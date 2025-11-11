@@ -10,7 +10,6 @@
 #include <XYFocus.h>
 #include <fwd/windows.ui.composition.h>
 #include <Microsoft.UI.Content.h>
-#include <Microsoft.UI.Input.Partner.h>
 
 class HitTestPolygon;
 class CKeyEventArgs;
@@ -320,7 +319,7 @@ public:
     void ClearLastPointerPointForReplay();
     wrl::ComPtr<ixp::IPointerPoint> GetPreviousPointerPoint();
 
-    wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const;
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> GetIslandInputSite() const;
     WindowedPopupInputSiteAdapter* GetInputSiteAdapter() { return m_inputSiteAdapter.get(); };
 
     wf::Point GetTranslationFromMainWindow() { return m_offsetFromMainWindow; }

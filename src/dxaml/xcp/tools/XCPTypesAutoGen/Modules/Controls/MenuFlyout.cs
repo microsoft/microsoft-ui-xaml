@@ -223,6 +223,42 @@ namespace Microsoft.UI.Xaml.Controls
         }
     }
 
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [CodeGen(partial: true)]
+    [ContentProperty("Items")]
+    [DXamlIdlGroup("Controls2")]
+    [NativeName("CSplitMenuFlyoutItem")]
+    [FrameworkTypePattern]
+    [InstanceCountTelemetry]
+    [Implements(typeof(Microsoft.UI.Xaml.Controls.ISubMenuOwner))]
+    [Guids(ClassGuid = "f3e4d2a1-8b7c-4e9f-a1b2-c3d4e5f6789a")]
+    public class SplitMenuFlyoutItem
+     : Microsoft.UI.Xaml.Controls.MenuFlyoutItem
+    {
+        public SplitMenuFlyoutItem() { }
+
+        [CollectionType(CollectionKind.Vector)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Microsoft.UI.Xaml.Controls.MenuFlyoutItemBaseCollection Items
+        {
+            get;
+            internal set;
+        }
+
+        public Microsoft.UI.Xaml.Style SubMenuPresenterStyle
+        {
+            get;
+            set;
+        }
+
+        public Microsoft.UI.Xaml.Style SubMenuItemStyle
+        {
+            get;
+            set;
+        }
+    }
+
     [CodeGen(partial: true)]
     [ClassFlags(IsHiddenFromIdl = true)]
     [NativeName("CMenuFlyoutItemBaseCollection")]
@@ -362,6 +398,24 @@ namespace Microsoft.UI.Xaml.Automation.Peers
     {
         [FactoryMethodName("CreateInstanceWithOwner")]
         public ToggleMenuFlyoutItemAutomationPeer(Microsoft.UI.Xaml.Controls.ToggleMenuFlyoutItem owner)
+            : base(owner) { }
+    }
+
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [VelocityFeature("Feature_ExperimentalApi")]
+    [CodeGen(partial: true)]
+    [TypeFlags(IsCreateableFromXAML = false)]
+    [DXamlIdlGroup("Controls2")]
+    [TypeTable(IsExcludedFromCore = true)]
+    [ClassFlags(CanConvertFromString = true)]
+    [Implements(typeof(Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider))]
+    [Implements(typeof(Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider))]
+    [Guids(ClassGuid = "2c98dfdf-824c-5f27-b882-eb3031b9889b")]
+    public class SplitMenuFlyoutItemAutomationPeer
+     : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+    {
+        [FactoryMethodName("CreateInstanceWithOwner")]
+        public SplitMenuFlyoutItemAutomationPeer(Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem owner)
             : base(owner) { }
     }
 }

@@ -6,7 +6,6 @@
 #include <fwd/windows.ui.viewmanagement.h>
 #include <fwd/windows.ui.core.h>
 #include <fwd/microsoft.ui.xaml.h>
-#include <microsoft.ui.input.inputkeyboardsource.interop.h>
 #include <microsoft.ui.input.inputpretranslatesource.interop.h>
 #include <FrameworkUdk/CoreWindowIntegrationInterface.h>
 
@@ -162,7 +161,7 @@ public:
     _Check_return_ HRESULT PreTranslateMessage(
         _In_opt_ CContentRoot* contentRoot,
         _In_ mui::IInputPreTranslateKeyboardSourceInterop* source,
-        _In_ mui::IInputKeyboardSourceInterop* keyboardSource,
+        _In_ mui::IInputKeyboardSource2* keyboardSource,
         _In_ const MSG* msg,
         _In_ UINT keyboardModifiers,
         _In_ bool focusPass,

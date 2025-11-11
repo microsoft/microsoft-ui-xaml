@@ -24,10 +24,8 @@
 #include "SystemBackdrop.g.h"
 #include <windowing.h>
 #include <Windows.UI.Composition.h>
-#include <WindowingCoreContentApi.h>
 #include <WRLHelper.h>
 #include <NavigateFocusResult.h>
-#include <Microsoft.UI.Content.Private.h>
 #include "XamlTelemetry.h"
 
 using namespace DirectUI;

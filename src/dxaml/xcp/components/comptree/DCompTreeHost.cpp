@@ -3,7 +3,6 @@
 
 #include "precomp.h"
 #include "DCompTreeHost.h"
-#include <touchtelemetry.h>
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <windows.applicationmodel.core.h>

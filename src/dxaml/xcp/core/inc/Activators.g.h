@@ -357,6 +357,7 @@ HRESULT OnCoreCreateScrollContentPresenter(_Outptr_ CDependencyObject **ppObject
 HRESULT OnCoreCreateScrollViewer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSemanticZoom(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSlider(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateSplitMenuFlyoutItem(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSplitView(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateStackPanel(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSwapChainBackgroundPanel(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
@@ -518,6 +519,7 @@ HRESULT OnCoreCreateSelectorAutomationPeer(_Outptr_ CDependencyObject **ppObject
 HRESULT OnCoreCreateSelectorItemAutomationPeer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSemanticZoomAutomationPeer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSliderAutomationPeer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
+HRESULT OnCoreCreateSplitMenuFlyoutItemAutomationPeer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSplitViewLightDismissAutomationPeer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateSplitViewPaneAutomationPeer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);
 HRESULT OnCoreCreateTextAdapter(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate);

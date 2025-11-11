@@ -15,7 +15,7 @@
 #include <XcpAllocation.h>
 
 #include <d3d11_1.h>
-#include <dxgi1_2.h>
+#include <dxgi1_6.h>
 
 #include "D2DAccelerated.h"
 #include "D2DAcceleratedBrushes.h"

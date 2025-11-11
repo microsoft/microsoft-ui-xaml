@@ -324,5 +324,6 @@
 #include "PropertyTransitions.h"
 #include "ValidationCommand.h"
 #include "MenuFlyoutSubItem.h"
+#include "SplitMenuFlyoutItem.h"
 
 #include "CWindowChrome.h"
