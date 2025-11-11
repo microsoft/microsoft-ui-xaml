@@ -576,6 +576,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        [TestProperty("Ignore", "True")] // Task 59972452: [WinUI] Reenable - WebView2Tests.MouseWheelScrollTest Test in pipeline
         public void MouseWheelScrollTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
