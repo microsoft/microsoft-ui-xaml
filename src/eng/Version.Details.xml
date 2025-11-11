@@ -6,7 +6,7 @@
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>7c6aabdecdc2b713ad2eebc28f89f7768b9cadfe</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="2.0.0-20251107.0.nightly.internal">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="2.0.0-20251109.0.nightly.internal">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
       <Sha>bd8e2c16f1e15185ff31beb15cdadd550883f27e</Sha>
     </Dependency>
@@ -23,7 +23,7 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
       <Sha>cded54728f171b97e5805d7e9924f7d683dc1a38</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="2.0.251107000-experimental">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="2.0.251109000-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
       <Sha>bd8e2c16f1e15185ff31beb15cdadd550883f27e</Sha>
     </Dependency>
