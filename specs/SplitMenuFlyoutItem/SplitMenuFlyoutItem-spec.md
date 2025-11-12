@@ -29,13 +29,13 @@ The `SplitMenuFlyoutItem` control enables you to create menu items that combine 
 actions and additional options. The control consists of two distinct interactive areas: 
 a primary button for the main action and a flyout button for accessing additional options.
 
-### Standard Usage (Default behavior)
+### Standard Usage (Default behaviour)
 
 ***Invocation without Selection*** 
 You can use `SplitMenuFlyoutItem` in any `MenuFlyout` to provide both a default action and 
 additional choices:
 
-**Selection means updating the deafult/primary action with submenu item's action**
+**Selection means updating the default/primary action with submenu item's action**
 ```xaml
 <Button Content="File">
     <Button.Flyout>
@@ -56,8 +56,7 @@ additional choices:
 In this example, clicking the primary button executes the `SaveCommand`, while hovering over 
 the flyout button reveals additional save-related options.
 
-![Save Scarnario](./save-scenario.png)
-
+![Save Scenario](./save-scenario.png)
 
 ### Advanced Usage
 
@@ -67,7 +66,7 @@ to the submenu items. Once, a submenu item will be clicked, the click handler wi
 which will then update the main control's text, icon, etc.
 
 In case, if you want invocation along with selection we will set the `Command` property on the 
-sub menu items as well, which will get invoked when the submenu item is clikced.
+sub menu items as well, which will get invoked when the submenu item is clicked.
 
 ```xaml
 <SplitMenuFlyoutItem x:Name="PasteMenuItem"
@@ -89,7 +88,7 @@ sub menu items as well, which will get invoked when the submenu item is clikced.
             PasteMenuItem.Text = item.Text;
             PasteMenuItem.Icon = item.Icon;
 
-            // The method wil set the command based on the item,
+            // The method will set the command based on the item,
             // which allows selection without invocation.
             // If Command property is already set on the submenu
             // item, we can directly set that here, but it will
@@ -99,8 +98,8 @@ sub menu items as well, which will get invoked when the submenu item is clikced.
     }
 ```
 
-![Paste Scarnario](./paste-scenario.png)
-![Paste Selection Changed Scarnario](./paste-selection-changed.png)
+![Paste Scenario](./paste-scenario.png)
+![Paste Selection Changed Scenario](./paste-selection-changed.png)
 
 #### Styling the Submenu
 
@@ -155,7 +154,7 @@ You can customize the appearance of the submenu using the styling properties:
 
 Here is one example of a customized submenu (this is a reference from the SplitButton control).
 
-![Customizable SubMenu Scarnario](./customizable-submenu-sample.png)
+![Customizable Sub Menu Scenario](./customizable-submenu-sample.png)
 
 #### Nesting of SplitMenuFlyoutItem
 
@@ -175,9 +174,9 @@ We can also support nesting of menu items in this control:
 </SplitMenuFlyoutItem>
 ```
 
-![Nested SubMenu Scarnario](./nested-submenu.png)
+![Nested Submenu Scenario](./nested-submenu.png)
 
-### Using SplitMenuFlyoutItem in C# \ C++
+### Using SplitMenuFlyoutItem in C# and C++
 
 ```csharp
     var splitItem = new SplitMenuFlyoutItem { Text = "Open With" };
@@ -191,7 +190,6 @@ We can also support nesting of menu items in this control:
 
 ```cpp
     using namespace Microsoft::UI::Xaml::Controls;
-
 
     // Create a SplitMenuFlyoutItem programmatically
     auto splitItem = SplitMenuFlyoutItem();
@@ -264,13 +262,12 @@ type of menu flyout item, including separators and sub-items.
 </SplitMenuFlyoutItem>
 ```
 
-
 ## SplitMenuFlyoutItem.SubMenuPresenterStyle property
 
 Gets or sets the style applied to the submenu's flyout presenter.
 
-This property allows you to customize the appearance of the submenu container 
-itself, such as background color, border, and padding.
+This property allows you to customize the appearance of the submenu container. 
+itself, such as background colour, border, and padding.
 
 ```xaml
 <SplitMenuFlyoutItem.SubMenuPresenterStyle>
@@ -308,7 +305,6 @@ The `SplitMenuFlyoutItemAutomationPeer` class derives from `FrameworkElementAuto
 
 This class is used internally by the automation framework and is not instantiable from XAML. It comes into play when assistive technologies query the control for its state, properties, and available actions.
 
-
 # API Details
 
 ```c# (but really MIDL3)
@@ -342,7 +338,7 @@ namespace Microsoft.UI.Xaml.Automation.Peers
 
 ## Appendix
 
-### Keyboard Behavior
+### Keyboard Behaviour
 
 The `SplitMenuFlyoutItem` provides comprehensive keyboard navigation support to ensure 
 accessibility and ease of use:
@@ -352,14 +348,14 @@ accessibility and ease of use:
 - **Arrow Key Navigation**: 
   - Within a menu, the Up/Down arrow keys can navigate between menu items, 
     including the `SplitMenuFlyoutItem`.
-  - When focus is coming from a menu item above the current menu item i.e. focus is coming as a result of Down Arrow Key,
+  - When focus is coming from a menu item above the current menu item i.e. focus is coming because of Down Arrow Key,
     the focus will move to primary button. Similarly, when the focus is coming from below, 
-    i.e. focus is coming to this control as a result of Up Arrow Key, focus first moves to secondary button.
+    i.e. focus is coming to this control because of Up Arrow Key, focus first moves to secondary button.
 
 ### Primary Button Interaction
 *When focus is on primary button*
-- **Right\Down Arrow Key**: Moves the focus to secondary button.
-- **Enter\Space Key**: When the focus is on the primary button, pressing `Enter` executes the 
+- **Right or Down Arrow Key**: Moves the focus to secondary button.
+- **Enter or Space Key**: When the focus is on the primary button, pressing `Enter` executes the 
     primary action.
 - **Up Arrow Key**: Moves the focus to previous menu item.
 
@@ -368,22 +364,23 @@ accessibility and ease of use:
     and shifts the focus to the first item in the submenu.
 - **Right Arrow Key**: Pressing the right arrow key when focused on the flyout button also 
     opens the submenu and moves focus to the first submenu item.
-- **Up\Left Arrow Key**: Moves the focus to primary button.
+- **Up/Left Arrow Key**: Moves the focus to primary button.
 - **Down Arrow Key**: Moves the focus to next menu item.
 
 ### Submenu Navigation
 - **Up/Down Arrow Keys**: Navigate between items within the opened submenu.
-- **Escape\Left Key**: Closes the submenu and returns focus to the flyout\secondary button.
+- **Escape/Left Key**: Closes the submenu and returns focus to the flyout/secondary button.
 
-This keyboard behavior ensures that users can efficiently navigate and interact with the 
+This keyboard behaviour ensures that users can efficiently navigate and interact with the 
 `SplitMenuFlyoutItem` using only the keyboard, maintaining accessibility standards and providing 
 a consistent user experience across the application.
 
-### Automation Behavior
+### Automation Behaviour
 
-Accessibility tools like screen readers ( Narrator, NVDA ) use the UI Automation Framework. These UI automation clients, communicate with applications through the automation peer classes. In this case the defined behavior is as follows: 
+Accessibility tools like screen readers (Narrator, NVDA) use the UI Automation Framework. These UI automation clients, communicate with applications through the automation peer classes. In this case the defined behaviour is as follows: 
 1. Focus on primary button: When the UI Automation clients focus moves to the primary button, the screen reader announces information similar other menu items in the menu flyout: <menu-item-name> menu item, 3 of 5, collapsed 
 2. Focus on secondary button: When the UI Automation clients focus moves to the secondary button, the screen reader announces the following information: More options for <menu-item-name> menu item, button 
 
 **Other requirements** 
-Depending on the focus, the bounding box for the control should be around the primary or secondary button and not over the whole control 
+Depending on the focus, the bounding box for the control should be around the primary or secondary button and not over the whole control. 
+
