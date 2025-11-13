@@ -261,6 +261,9 @@ type of menu flyout item, including separators and sub-items.
 </SplitMenuFlyoutItem>
 ```
 
+> [!NOTE] 
+> When the Items is empty, the flyout\submenu is disabled.
+
 ## SplitMenuFlyoutItem.SubMenuPresenterStyle property
 
 Gets or sets the style applied to the submenu's flyout presenter.
@@ -342,7 +345,7 @@ namespace Microsoft.UI.Xaml.Automation.Peers
 The `SplitMenuFlyoutItem` provides comprehensive keyboard navigation support to ensure 
 accessibility and ease of use:
 
-### Navigation Flow
+#### Navigation Flow
 - **Tab Navigation**: Tab navigation is not supported within the MenuFlyout by default. The same behaviour will continue.
 - **Arrow Key Navigation**: 
   - Within a menu, the Up/Down arrow keys can navigate between menu items, 
@@ -351,14 +354,14 @@ accessibility and ease of use:
     the focus will move to primary button. Similarly, when the focus is coming from below, 
     i.e. focus is coming to this control because of Up Arrow Key, focus first moves to secondary button.
 
-### Primary Button Interaction
+#### Primary Button Interaction
 *When focus is on primary button*
 - **Right or Down Arrow Key**: Moves the focus to secondary button.
 - **Enter or Space Key**: When the focus is on the primary button, pressing `Enter` executes the 
     primary action.
 - **Up Arrow Key**: Moves the focus to previous menu item.
 
-### Secondary Button Interaction  
+#### Secondary Button Interaction  
 - **Enter Key**: When the focus is on the flyout button, pressing `Enter` opens the submenu 
     and shifts the focus to the first item in the submenu.
 - **Right Arrow Key**: Pressing the right arrow key when focused on the flyout button also 
@@ -366,7 +369,7 @@ accessibility and ease of use:
 - **Up/Left Arrow Key**: Moves the focus to primary button.
 - **Down Arrow Key**: Moves the focus to next menu item.
 
-### Submenu Navigation
+#### Submenu Navigation
 - **Up/Down Arrow Keys**: Navigate between items within the opened submenu.
 - **Escape/Left Key**: Closes the submenu and returns focus to the flyout/secondary button.
 
@@ -384,3 +387,6 @@ Accessibility tools like screen readers (Narrator, NVDA) use the UI Automation F
 1. In case of SplitMenuFlyoutItem, the focus of the automation clients will move to individual parts instead of the whole control.
 2. Depending on the focus, the bounding box for the control will be around the primary or secondary button and not over the whole control.
 
+### Other Behaviour
+
+1. When `Items` property is an empty collection, the secondary button will be disabled. 
