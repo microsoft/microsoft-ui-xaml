@@ -31,11 +31,9 @@ a primary button for the main action and a flyout button for accessing additiona
 
 ### Standard Usage (Default behaviour)
 
-***Invocation without Selection*** 
 You can use `SplitMenuFlyoutItem` in any `MenuFlyout` to provide both a default action and 
 additional choices:
 
-**Selection means updating the default/primary action with submenu item's action**
 ```xaml
 <Button Content="File">
     <Button.Flyout>
@@ -160,7 +158,7 @@ As any control can be instantiated using either XANL, C# or C++, here is a table
     &lt;/SplitMenuFlyoutItem&gt;
 &lt;/MenuFlyout&gt;</pre>
     </td>
-    <td><img src="./openwith-cross-language.png" alt="Rendered control" width="250"/></td>
+    <td><img src="./openwith-xaml-example.png" alt="Rendered control" width="250"/></td>
   </tr>
   <tr>
     <td><b>C#</b></td>
@@ -178,7 +176,7 @@ splitItem.Items.Add(
 var menuFlyout = new MenuFlyout();
 menuFlyout.Items.Add(splitItem);</pre>
     </td>
-    <td><img src="./openwith-cross-language.png" alt="Rendered control" width="250"/></td>
+    <td><img src="./openwith-csharp-example.png" alt="Rendered control" width="250"/></td>
   </tr>
   <tr>
     <td><b>C++/WinRT</b></td>
@@ -205,7 +203,7 @@ splitItem.Items().Append(vsItem);
 auto menuFlyout = MenuFlyout();
 menuFlyout.Items().Append(splitItem);</pre>
     </td>
-    <td><img src="./openwith-cross-language.png" alt="Rendered control" width="250"/></td>
+    <td><img src="./openwith-cpp-example.png" alt="Rendered control" width="250"/></td>
   </tr>
 </table>
 
