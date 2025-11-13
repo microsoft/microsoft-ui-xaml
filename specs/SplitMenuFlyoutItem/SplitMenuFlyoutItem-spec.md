@@ -60,47 +60,6 @@ the flyout button reveals additional save-related options.
 
 ### Advanced Usage
 
-#### Selection (with and without Invocation)
-Selection and reflection of the selected submenu item can be implemented by attaching Click handlers 
-to the submenu items. Once, a submenu item will be clicked, the click handler will be called, 
-which will then update the main control's text, icon, etc.
-
-In case, if you want invocation along with selection we will set the `Command` property on the 
-sub menu items as well, which will get invoked when the submenu item is clicked.
-
-```xaml
-<SplitMenuFlyoutItem x:Name="PasteMenuItem"
-                     Text="Paste" 
-                     Command="{Binding PasteCommand}"
-                     CommandParameter="{Binding PasteCommandParameter}">
-    <SplitMenuFlyoutItem.Items>
-        <MenuFlyoutItem Text="Paste (Merge Formatting)" Click="PasteSubMenuClickHandler"/>
-        <MenuFlyoutItem Text="Paste (Only Text)" Click="PasteSubMenuClickHandler"/>
-    </SplitMenuFlyoutItem.Items>
-</SplitMenuFlyoutItem>
-```
-
-```c#
-    private void PasteSubMenuClickHandler(object sender, RoutedEventArgs e)
-    {
-        if(sender is MenuFlyoutItem item)
-        {
-            PasteMenuItem.Text = item.Text;
-            PasteMenuItem.Icon = item.Icon;
-
-            // The method will set the command based on the item,
-            // which allows selection without invocation.
-            // If Command property is already set on the submenu
-            // item, we can directly set that here, but it will
-            // invoke the command as well.
-            PasteMenuItem.Command = SetSelectedCommand(item)
-        }
-    }
-```
-
-![Paste Scenario](./paste-scenario.png)
-![Paste Selection Changed Scenario](./paste-selection-changed.png)
-
 #### Styling the Submenu
 
 You can customize the appearance of the submenu using the styling properties:
@@ -108,47 +67,49 @@ You can customize the appearance of the submenu using the styling properties:
 ```xaml
 <SplitMenuFlyoutItem Text="SplitItem A">
     <SplitMenuFlyoutItem.SubMenuPresenterStyle>
-    <Style BasedOn="{StaticResource DefaultMenuFlyoutPresenterStyle}" TargetType="MenuFlyoutPresenter">
-        <Setter Property="Template">
-        <Setter.Value>
-            <ControlTemplate TargetType="MenuFlyoutPresenter">
-                <Border>
-                    <ScrollViewer x:Name="MenuFlyoutPresenterScrollViewer">
-                        <GridView ItemsSource="{TemplateBinding ItemsSource}">
-                            <GridView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <ItemsWrapGrid MaximumRowsOrColumns="3" Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </GridView.ItemsPanel>
-                        </GridView>
-                    </ScrollViewer>
-                </Border>
-            </ControlTemplate>
-        </Setter.Value>
-        </Setter>
-    </Style>
+        <Style BasedOn="{StaticResource DefaultMenuFlyoutPresenterStyle}" TargetType="MenuFlyoutPresenter">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuFlyoutPresenter">
+                        <Border>
+                            <ScrollViewer x:Name="MenuFlyoutPresenterScrollViewer">
+                                <GridView ItemsSource="{TemplateBinding ItemsSource}">
+                                    <GridView.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <ItemsWrapGrid MaximumRowsOrColumns="3" Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </GridView.ItemsPanel>
+                                </GridView>
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </SplitMenuFlyoutItem.SubMenuPresenterStyle>
 
     <SplitMenuFlyoutItem.SubMenuItemStyle>
-        <Style BasedOn="{StaticResource DefaultMenuFlyoutItemStyle}" TargetType="MenuFlyoutItem">
+        <Style BasedOn="{StaticResource DefaultMenuFlyoutItemStyle}"
+                TargetType="MenuFlyoutItem">
             <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="MenuFlyoutItem">
-                <Grid x:Name="LayoutRoot">
-                    <Rectangle Fill="{TemplateBinding Foreground}"
-                            Height="16" Width="16" RadiusX="8" RadiusY="8" />
-                </Grid>
-                </ControlTemplate>
-            </Setter.Value>
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuFlyoutItem">
+                        <StackPanel Orientation="Vertical" Width="70" Margin="5">
+                            <FontIcon Glyph="{TemplateBinding Tag}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{TemplateBinding Text}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </ControlTemplate>
+                </Setter.Value>
             </Setter>
         </Style>
     </SplitMenuFlyoutItem.SubMenuItemStyle>
 
-    <MenuFlyoutItem Text="Red" Foreground="Red" />
-    <MenuFlyoutItem Text="Yellow" Foreground="Yellow" />
-    <MenuFlyoutItem Text="Green" Foreground="Green" />
-    <MenuFlyoutItem Text="Blue" Foreground="Blue" />
-    <MenuFlyoutItem Text="Orange" Foreground="Orange" />
+    <SplitMenuFlyoutItem.Items>
+        <MenuFlyoutItem Text="Formal" Tag="&#xE8A5;" />
+        <MenuFlyoutItem Text="Friendly" Tag="&#xE899;" />
+        <MenuFlyoutItem Text="Compact" Tag="&#xE8F3;" />
+        <MenuFlyoutItem Text="Elaborate" Tag="&#xE8F2;" />
+    </SplitMenuFlyoutItem.Items>
 </SplitMenuFlyoutItem>
 ```
 
@@ -176,41 +137,79 @@ We can also support nesting of menu items in this control:
 
 ![Nested Submenu Scenario](./nested-submenu.png)
 
-### Using SplitMenuFlyoutItem in C# and C++
+### Using SplitMenuFlyoutItem in XAML, C#, and C++
 
-```csharp
-    var splitItem = new SplitMenuFlyoutItem { Text = "Open With" };
-    splitItem.Items.Add(new MenuFlyoutItem { Text = "Notepad" });
-    splitItem.Items.Add(new MenuFlyoutItem { Text = "VS Code" });
-    splitItem.Items.Add(new MenuFlyoutItem { Text = "Visual Studio" });
+As any control can be instantiated using either XANL, C# or C++, here is a table showing how to achieve the same UI with either of the options.
 
-    var menuFlyout = new MenuFlyout();
-    menuFlyout.Items.Add(splitItem);
-```
+<table>
+  <tr>
+    <th>Language</th>
+    <th>Code Sample</th>
+    <th>Rendered Output</th>
+  </tr>
+  <tr>
+    <td><b>XAML</b></td>
+    <td>
+<pre lang="xml">&lt;MenuFlyout&gt;
+    &lt;SplitMenuFlyoutItem Text="Open With Photos"&gt;
+        &lt;SplitMenuFlyoutItem.Items&gt;
+            &lt;MenuFlyoutItem Text="Paint" /&gt;
+            &lt;MenuFlyoutItem Text="Paint 3D" /&gt;
+            &lt;MenuFlyoutItem Text="Snipping Tool" /&gt;
+        &lt;/SplitMenuFlyoutItem.Items&gt;
+    &lt;/SplitMenuFlyoutItem&gt;
+&lt;/MenuFlyout&gt;</pre>
+    </td>
+    <td><img src="./openwith-cross-language.png" alt="Rendered control" width="250"/></td>
+  </tr>
+  <tr>
+    <td><b>C#</b></td>
+    <td>
+<pre lang="csharp">var splitItem = new SplitMenuFlyoutItem { 
+    Text = "Open With Photos" 
+};
+splitItem.Items.Add(
+    new MenuFlyoutItem { Text = "Paint" });
+splitItem.Items.Add(
+    new MenuFlyoutItem { Text = "Paint 3D" });
+splitItem.Items.Add(
+    new MenuFlyoutItem { Text = "Snipping Tool" });
 
-```cpp
-    using namespace Microsoft::UI::Xaml::Controls;
+var menuFlyout = new MenuFlyout();
+menuFlyout.Items.Add(splitItem);</pre>
+    </td>
+    <td><img src="./openwith-cross-language.png" alt="Rendered control" width="250"/></td>
+  </tr>
+  <tr>
+    <td><b>C++/WinRT</b></td>
+    <td>
+<pre lang="cpp">
+#include &lt;winrt/Microsoft.UI.Xaml.Controls.h&gt;
+using namespace Microsoft::UI::Xaml::Controls;<br>
 
-    // Create a SplitMenuFlyoutItem programmatically
-    auto splitItem = SplitMenuFlyoutItem();
-    splitItem.Text(L"Open With");
+auto splitItem = SplitMenuFlyoutItem();
+splitItem.Text(L"Open With Photos");
 
-    auto notepadItem = MenuFlyoutItem();
-    notepadItem.Text(L"Notepad");
-    splitItem.Items().Append(notepadItem);
+auto notepadItem = MenuFlyoutItem();
+notepadItem.Text(L"Paint");
+splitItem.Items().Append(notepadItem);
 
-    auto vscodeItem = MenuFlyoutItem();
-    vscodeItem.Text(L"VS Code");
-    splitItem.Items().Append(vscodeItem);
+auto vscodeItem = MenuFlyoutItem();
+vscodeItem.Text(L"Paint 3D");
+splitItem.Items().Append(vscodeItem);
 
-    auto vsItem = MenuFlyoutItem();
-    vsItem.Text(L"Visual Studio");
-    splitItem.Items().Append(vsItem);
+auto vsItem = MenuFlyoutItem();
+vsItem.Text(L"Snipping Tool");
+splitItem.Items().Append(vsItem);
 
-    // Add to MenuFlyout
-    auto menuFlyout = MenuFlyout();
-    menuFlyout.Items().Append(splitItem);
-```
+auto menuFlyout = MenuFlyout();
+menuFlyout.Items().Append(splitItem);</pre>
+    </td>
+    <td><img src="./openwith-cross-language.png" alt="Rendered control" width="250"/></td>
+  </tr>
+</table>
+
+This table demonstrates that regardless of whether you use XAML, C#, or C++/WinRT, the SplitMenuFlyoutItem control is rendered identically in the UI.
 
 # API Pages
 
@@ -378,9 +377,10 @@ a consistent user experience across the application.
 ### Automation Behaviour
 
 Accessibility tools like screen readers (Narrator, NVDA) use the UI Automation Framework. These UI automation clients, communicate with applications through the automation peer classes. In this case the defined behaviour is as follows: 
-1. Focus on primary button: When the UI Automation clients focus moves to the primary button, the screen reader announces information similar other menu items in the menu flyout: <menu-item-name> menu item, 3 of 5, collapsed 
-2. Focus on secondary button: When the UI Automation clients focus moves to the secondary button, the screen reader announces the following information: More options for <menu-item-name> menu item, button 
+1. **Focus on primary button**: When the UI Automation clients focus moves to the primary button, the screen reader announces information similar other menu items in the menu flyout: ***<menu-item-name> menu item, 3 of 5, collapsed*** 
+2. **Focus on secondary button**: When the UI Automation clients focus moves to the secondary button, the screen reader announces the following information: ***More options for <menu-item-name> menu item, button*** 
 
-**Other requirements** 
-Depending on the focus, the bounding box for the control should be around the primary or secondary button and not over the whole control. 
+#### Differences in behaviour when compared to MenuFlyoutItem and MenuFlyoutSubItem 
+1. In case of SplitMenuFlyoutItem, the focus of the automation clients will move to individual parts instead of the whole control.
+2. Depending on the focus, the bounding box for the control will be around the primary or secondary button and not over the whole control.
 
