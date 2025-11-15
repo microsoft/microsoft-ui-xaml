@@ -13,178 +13,79 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="20">
         <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
-   <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
-    <!-- Backdrop Type Control Panel -->
+
+        <!-- Backdrop Type Control Panel -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" Padding="0,0,0,20">
-            <TextBlock Text="Backdrop Type:" VerticalAlignment="Center" Style="{ThemeResource BodyTextBlockStyle}"/>
-          <Button x:Name="MicaButton" 
-                Content="Mica" 
-       Click="MicaButton_Click"
-        AutomationProperties.Name="MicaButton"/>
-      <Button x:Name="AcrylicButton" 
-      Content="Acrylic" 
-                Click="AcrylicButton_Click"
-   AutomationProperties.Name="AcrylicButton"/>
-   <TextBlock x:Name="StatusTextBlock" 
-   Text="Current: Mica" 
-                VerticalAlignment="Center" 
-        Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
- </StackPanel>
-        
-  <!-- Corner Radius Control Panel -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="15" Padding="0,0,0,20" VerticalAlignment="Center">
-  <TextBlock Text="Corner Radius:" VerticalAlignment="Center" Style="{ThemeResource BodyTextBlockStyle}"/>
-            <Slider x:Name="CornerRadiusSlider"
-  Width="300"
-   Minimum="0"
-           Maximum="100"
-        Value="8"
-                ValueChanged="CornerRadiusSlider_ValueChanged"
-       AutomationProperties.Name="CornerRadiusSlider"
-       VerticalAlignment="Center"/>
-        <TextBlock x:Name="CornerRadiusValueTextBlock" 
-        Text="8 px" 
-     VerticalAlignment="Center" 
-           Width="50"
-Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+            <TextBlock Text="Backdrop Type:" VerticalAlignment="Center" Style="{ThemeResource BodyTextBlockStyle}" />
+            <Button x:Name="MicaButton" Content="Mica" Click="MicaButton_Click" AutomationProperties.Name="MicaButton" />
+            <Button x:Name="AcrylicButton" Content="Acrylic" Click="AcrylicButton_Click" AutomationProperties.Name="AcrylicButton" />
+            <TextBlock x:Name="StatusTextBlock" Text="Current: Mica" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" AutomationProperties.Name="StatusTextBlock" />
         </StackPanel>
-        
+
+        <!-- Corner Radius Control Panel -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="15" Padding="0,0,0,20" VerticalAlignment="Center">
+            <TextBlock Text="Corner Radius:" VerticalAlignment="Center" Style="{ThemeResource BodyTextBlockStyle}" />
+            <Slider x:Name="CornerRadiusSlider" Width="300" Minimum="0" Maximum="100" Value="8" ValueChanged="CornerRadiusSlider_ValueChanged" AutomationProperties.Name="CornerRadiusSlider" VerticalAlignment="Center" />
+        </StackPanel>
+
         <!-- Opacity Control Panel -->
-    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="15" Padding="0,0,0,20" VerticalAlignment="Center">
-<TextBlock Text="Opacity:" VerticalAlignment="Center" Style="{ThemeResource BodyTextBlockStyle}"/>
-            <Slider x:Name="OpacitySlider"
- Width="300"
-                Minimum="0"
-            Maximum="1"
-             Value="1"
-           StepFrequency="0.1"
-      ValueChanged="OpacitySlider_ValueChanged"
-      AutomationProperties.Name="OpacitySlider"
-      VerticalAlignment="Center"/>
-            <TextBlock x:Name="OpacityValueTextBlock" 
-           Text="100 %" 
-         VerticalAlignment="Center" 
-   Width="50"
-    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-      </StackPanel>
-        
-        <!-- Display Area -->
-     <Grid Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center">
-    
-            <!-- Mica Backdrop Panel -->
-     <StackPanel x:Name="MicaPanel" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Visible">
-      <TextBlock Text="Mica Backdrop" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
-         
-     <!-- Container Grid for backdrop and overlay content -->
-       <Grid Width="400" Height="400" CornerRadius="8">
-        <!-- Backdrop Layer -->
-   <controls:SystemBackdropHost x:Name="MicaBackdropHost"
-         CornerRadius="8"
-   Opacity="1"
-     HorizontalAlignment="Stretch"
-   VerticalAlignment="Stretch"
-            AutomationProperties.Name="MicaBackdropHost">
-         <controls:SystemBackdropHost.SystemBackdrop>
-         <media:MicaBackdrop />
-          </controls:SystemBackdropHost.SystemBackdrop>
-        </controls:SystemBackdropHost>
-              
-    <!-- Content Overlay Layer -->
-      <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="15">
-       <TextBlock Text="Interactive Controls" 
-        TextAlignment="Center"
-         Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-       Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-   
-    <Button Content="Button 1" 
-              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-          AutomationProperties.Name="Button1"
-       HorizontalAlignment="Center">
-          <Button.Background>
-      <SolidColorBrush Color="Transparent"/>
-     </Button.Background>
-             </Button>
- 
-              <Button Content="Button 2" 
-             Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-       AutomationProperties.Name="Button2"
-         HorizontalAlignment="Center">
-          <Button.Background>
-   <SolidColorBrush Color="Transparent"/>
-   </Button.Background>
-          </Button>
-     
-  <Button Content="Button 3" 
-          Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-           AutomationProperties.Name="Button3"
-              HorizontalAlignment="Center">
-       <Button.Background>
-      <SolidColorBrush Color="Transparent"/>
-     </Button.Background>
-        </Button>
-</StackPanel>
-     </Grid>
-    </StackPanel>
-            
-            <!-- Acrylic Backdrop Panel -->
-   <StackPanel x:Name="AcrylicPanel" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
-    <TextBlock Text="Desktop Acrylic Backdrop" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center"/>
-                
-      <!-- Container Grid for backdrop and overlay content -->
-             <Grid Width="400" Height="400" CornerRadius="8">
-             <!-- Backdrop Layer -->
-         <controls:SystemBackdropHost x:Name="AcrylicBackdropHost"
-                CornerRadius="8"
-      Opacity="1"
-       HorizontalAlignment="Stretch"
-               VerticalAlignment="Stretch"
-        AutomationProperties.Name="AcrylicBackdropHost">
-    <controls:SystemBackdropHost.SystemBackdrop>
-   <media:DesktopAcrylicBackdrop />
-        </controls:SystemBackdropHost.SystemBackdrop>
-      </controls:SystemBackdropHost>
-    
-         <!-- Content Overlay Layer -->
-          <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="15">
-  <TextBlock Text="Interactive Controls" 
- TextAlignment="Center"
-              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-             Style="{ThemeResource BodyStrongTextBlockStyle}"/>
-       
-  <Button Content="Button 1" 
-              Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-      AutomationProperties.Name="Button1"
-     HorizontalAlignment="Center">
-<Button.Background>
-            <SolidColorBrush Color="Transparent"/>
-     </Button.Background>
- </Button>
-  
-           <Button Content="Button 2" 
-        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-    AutomationProperties.Name="Button2"
-             HorizontalAlignment="Center">
-        <Button.Background>
-           <SolidColorBrush Color="Transparent"/>
-     </Button.Background>
-         </Button>
-            
-  <Button Content="Button 3" 
-     Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-       AutomationProperties.Name="Button3"
-              HorizontalAlignment="Center">
-    <Button.Background>
-            <SolidColorBrush Color="Transparent"/>
-                 </Button.Background>
-      </Button>
-             </StackPanel>
-             </Grid>
-     </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="15" Padding="0,0,0,20" VerticalAlignment="Center">
+            <TextBlock Text="Opacity:" VerticalAlignment="Center" Style="{ThemeResource BodyTextBlockStyle}" />
+            <Slider x:Name="OpacitySlider" Width="300" Minimum="0" Maximum="1" Value="1" StepFrequency="0.1" ValueChanged="OpacitySlider_ValueChanged" AutomationProperties.Name="OpacitySlider" VerticalAlignment="Center" />
+            <TextBlock x:Name="OpacityValueTextBlock" Text="100 %" VerticalAlignment="Center" Width="50" Foreground="{ThemeResource TextFillColorSecondaryBrush}" AutomationProperties.Name="OpacityValueTextBlock" />
+        </StackPanel>
+
+        <!-- Test Automation Controls (Height=0 so not visible but accessible to UI Automation) -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="5" Height="0" Opacity="0">
+            <Button x:Name="StoreCornerRadiusButton" Content="Store CornerRadius" Click="StoreCornerRadiusForTest_Click" AutomationProperties.Name="StoreCornerRadiusForTest" />
+            <Button x:Name="StoreBackdropTypeButton" Content="Store BackdropType" Click="StoreBackdropTypeForTest_Click" AutomationProperties.Name="StoreBackdropTypeForTest" />
+            <TextBlock x:Name="Results" Text="" VerticalAlignment="Center" AutomationProperties.Name="Results" />
+        </StackPanel>
+
+        <!-- Display Area with Single SystemBackdropHost -->
+        <Grid Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock x:Name="BackdropTitleTextBlock" Text="Mica Backdrop" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" />
+
+                <!-- Container Grid for backdrop and overlay content -->
+                <Grid Width="400" Height="400" CornerRadius="8">
+                    <!-- Single SystemBackdropHost with dynamically changing SystemBackdrop -->
+                    <controls:SystemBackdropHost x:Name="TestBackdropHost" CornerRadius="8" Opacity="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutomationProperties.Name="TestBackdropHost" AutomationProperties.AutomationId="TestBackdropHost">
+                        <controls:SystemBackdropHost.SystemBackdrop>
+                            <media:MicaBackdrop x:Name="MicaBackdrop" />
+                        </controls:SystemBackdropHost.SystemBackdrop>
+                    </controls:SystemBackdropHost>
+
+                    <!-- Content Overlay Layer -->
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="15">
+                        <TextBlock Text="Interactive Controls" TextAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Style="{ThemeResource BodyStrongTextBlockStyle}" />
+
+                        <Button Content="Button 1" Foreground="{ThemeResource TextFillColorPrimaryBrush}" AutomationProperties.Name="Button1" HorizontalAlignment="Center">
+                            <Button.Background>
+                                <SolidColorBrush Color="Transparent" />
+                            </Button.Background>
+                        </Button>
+
+                        <Button Content="Button 2" Foreground="{ThemeResource TextFillColorPrimaryBrush}" AutomationProperties.Name="Button2" HorizontalAlignment="Center">
+                            <Button.Background>
+                                <SolidColorBrush Color="Transparent" />
+                            </Button.Background>
+                        </Button>
+
+                        <Button Content="Button 3" Foreground="{ThemeResource TextFillColorPrimaryBrush}" AutomationProperties.Name="Button3" HorizontalAlignment="Center">
+                            <Button.Background>
+                                <SolidColorBrush Color="Transparent" />
+                            </Button.Background>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
         </Grid>
     </Grid>
 </local:TestPage>
