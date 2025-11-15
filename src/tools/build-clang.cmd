@@ -1,0 +1,1 @@
+msbuild /p:CLToolPath="C:\Program Files\LLVM\bin" /p:CLToolExe=clang-cl.exe /p:ExperimentalClang=true /bl /fl /verbosity:minimal /m %*

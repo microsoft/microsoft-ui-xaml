@@ -1,0 +1,92 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
+    <ComponentNuGetLicensePath>..\WindowsAppSDKConfig\NuGetLicense\preview\license.txt</ComponentNuGetLicensePath>
+    <ComponentNuGetLicensePath Condition="'$(ProductPrereleaseTag)'=='stable'">..\WindowsAppSDKConfig\NuGetLicense\release\license.txt</ComponentNuGetLicensePath>
+    <!-- Fallback for local builds which don't have WindowsAppSDKConfig. -->
+    <ComponentNuGetLicensePath Condition="!Exists('$(ComponentNuGetLicensePath)')">license.txt</ComponentNuGetLicensePath>
+    <IntellisenseFolder>..\WindowsAppSDKAggregator\docs\Intellisense\generated</IntellisenseFolder>
+  </PropertyGroup>
+
+  <!--
+    This project just copies static packaging content to the output location
+  -->
+  <ItemGroup>
+    <PackageContent Include="license.txt" PackageLocation="$(PackageOutputLocation)" />
+    <PackageContent Include="$(ComponentNuGetLicensePath)" PackageLocation="$(PackageOutputLocation)\ComponentNuGet\" />
+    <PackageContent Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="..\build\nuspecs\NOTICE.txt" PackageLocation="$(PackageOutputLocation)\ComponentNuGet\" />
+    <PackageContent Include="$(OutDir)AppxManifest.xml" PackageLocation="$(PackageOutputLocation)"/>
+    <PackageContent Include="$(OutDir)package.appxfragment" PackageLocation="$(PackageOutputLocation)"/>
+    <PackageContent Include="build\*" PackageLocation="$(BuildTargetsPackageLocation)" />
+    <PackageContent Include="build\native\*" PackageLocation="$(BuildTargetsPackageLocation)\native" />
+    <PackageContent Include="$(LiftedMRTBuildPath)\*.targets" PackageLocation="$(BuildTargetsPackageLocation)" />
+    <PackageContent Include="$(LiftedMRTLibPath)\net6.0-windows*\*.dll" PackageLocation="$(CSWinRTInteropAssemblyPackageLocation)" />
+
+    <!-- TODO: Move the Intellisense files for WinUI into this repo. https://task.ms/60148778 -->
+    <PackageContent Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="$(IntellisenseFolder)\Microsoft.WinUI.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
+    <PackageContent Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="$(IntellisenseFolder)\Microsoft.UI.Text.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
+    <PackageContent Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="$(IntellisenseFolder)\Microsoft.UI.Xaml.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
+  </ItemGroup>
+  
+  <Import Project="$(MSBuildThisFileDirectory)\update-project-capability-version.targets" />
+
+  <!-- Building in Visual Studio causes it to call targets on dependent projects that may not exist.
+       Adding dummy targets to those projects makes Visual Studio happy. -->
+  <Target Name="CreateManifestResourceNames" />
+  <Target Name="GetMrtPackagingOutputs" />
+  
+  <Target Name="FillExtensions" BeforeTargets="_CreateWinUIPackageLayout" Inputs="AppxManifest.xml;$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml" Outputs="$(OutDir)AppxManifest.xml">
+    <PropertyGroup>
+      <Namespaces>
+        <Namespace Prefix="ns" Uri="http://schemas.microsoft.com/appx/manifest/foundation/windows10" />
+        <Namespace Prefix="uap" Uri="http://schemas.microsoft.com/appx/manifest/uap/windows10" />
+        <Namespace Prefix="rescap" Uri="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" />
+        <Namespace Prefix="build" Uri="http://schemas.microsoft.com/developer/appx/2015/build" />
+      </Namespaces>
+    </PropertyGroup>
+    
+    <!-- Read XAML extensions. -->
+    <XmlPeek XmlInputPath="$(ArtifactsObjDir)MergedWinMD\LiftedWinRTClassRegistrations.xml"
+        Query="/ns:Data/ns:Extension"
+        Namespaces="$(Namespaces)">
+        <Output TaskParameter="Result" ItemName="LiftedWinRTExtensions" />
+    </XmlPeek>
+    
+    <PropertyGroup>
+      <LiftedExtensions>@(LiftedWinRTExtensions->'%(Identity)','&#x0d;&#x0a;')</LiftedExtensions>
+      <LiftedExtensions>$(LiftedExtensions.Replace(" xmlns=%22http://schemas.microsoft.com/appx/manifest/foundation/windows10%22", ""))</LiftedExtensions>
+    </PropertyGroup>
+    
+    <!-- Copy AppxManifest.xml to the output directory. -->
+    <Copy SourceFiles="AppxManifest.xml" DestinationFiles="$(OutDir)AppxManifest.xml" />
+
+    <!-- Insert the extensions into the AppxManifest.xml copy. -->
+    <XmlPoke XmlInputPath="$(OutDir)AppxManifest.xml"
+        Query="/ns:Package/ns:Extensions"
+        Namespaces="$(Namespaces)"
+        Value="$(LiftedExtensions)"/>
+  </Target>
+  
+  <Target Name="GenerateAppxFragmentFromAppxManifest" BeforeTargets="_CreateWinUIPackageLayout" DependsOnTargets="FillExtensions" Inputs="$(OutDir)AppxManifest.xml" Outputs="$(OutDir)package.appxfragment">
+    <PropertyGroup>
+      <AppxFragment>
+        %3C?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?%3E
+        %3CFragment xmlns=&quot;http://schemas.microsoft.com/appx/manifest/foundation/windows10&quot;%3E
+        %3CExtensions%3E
+          $(LiftedExtensions)
+        %3C/Extensions%3E
+        %3C/Fragment%3E
+      </AppxFragment>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(OutDir)package.appxfragment" Lines="$(AppxFragment)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+  
+  <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)\MergedWinMD\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+  </ItemGroup>
+</Project>

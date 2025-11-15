@@ -1,0 +1,117 @@
+﻿<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- PlatformTarget takes precedence over the Platform specified and indicates which platform will actually be targeted -->
+    <_WinUIPlatformTarget Condition="'$(_WinUIPlatformTarget)'=='' and '$(PlatformTarget)'!=''">$(PlatformTarget)</_WinUIPlatformTarget>
+    <_WinUIPlatformTarget Condition="'$(_WinUIPlatformTarget)'=='' and '$(Platform)'=='Win32'">x86</_WinUIPlatformTarget>
+    <_WinUIPlatformTarget Condition="'$(_WinUIPlatformTarget)'==''">$(Platform)</_WinUIPlatformTarget>
+
+    <!--
+      Default to blocking use of .NET BinaryFormatter API since it is being deprecated
+      (https://github.com/dotnet/designs/blob/main/accepted/2020/better-obsoletion/binaryformatter-obsoletion.md).
+    -->
+    <EnableUnsafeBinaryFormatterSerialization Condition="'$(EnableUnsafeBinaryFormatterSerialization)' ==''">false</EnableUnsafeBinaryFormatterSerialization>
+
+    <!-- By default, disallow mixing Windows.UI.Xaml.* and Microsoft.UI.Xaml* unless explicitly opted-in -->
+    <EnableUnsafeMixedMicrosoftWindowsUIXamlProjections Condition="'$(EnableUnsafeMixedMicrosoftWindowsUIXamlProjections)' == ''">false</EnableUnsafeMixedMicrosoftWindowsUIXamlProjections>
+  </PropertyGroup>
+
+  <Target Name="ValidateWinUIPlatform"
+          Condition="'$(_WinUIPlatformTarget)' == 'ARM'"
+          BeforeTargets="PrepareForBuild">
+    <Error Text="This version of WinUI does not support $(_WinUIPlatformTarget). Set either 'Platform' or 'PlatformTarget' to one of the following: AnyCPU, x86, x64, or ARM64." />
+  </Target>
+
+  <PropertyGroup>
+    <!-- These are needed to pass the correct inputs to the compilexaml tasks -->
+    <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(TargetPlatformVersion)</TargetPlatformMinVersion>
+    <WindowsSdkPath Condition="'$(WindowsSdkPath)' == ''">$([Microsoft.Build.Utilities.ToolLocationHelper]::GetPlatformSdkLocation("Windows", "10.0"))</WindowsSdkPath>
+
+    <WinUITargetsDirectory Condition="'$(WinUITargetsDirectory)'==''">$(MSBuildThisFileDirectory)</WinUITargetsDirectory>
+    <PriGenTargetsDirectory Condition="'$(PriGenTargetsDirectory)'==''">$(WinUITargetsDirectory)</PriGenTargetsDirectory>
+
+    <EnablePriGenTooling Condition="'$(EnablePriGenTooling)'=='' and '$(MSBuildProjectExtension)'!='.wapproj' and '$(WindowsAppContainer)'!='true'">true</EnablePriGenTooling>
+    <EnablePriGenTooling Condition="'$(EnablePriGenTooling)'=='' and '$(WindowsAppContainer)'=='true' and '$(UsingMicrosoftNETSdk)'=='true'">true</EnablePriGenTooling>
+      
+    <DefaultXamlRuntime Condition="'$(UseUwpTools)' != 'true' and '$(UseWpf)'!='true' and '$(DefaultXamlRuntime)'==''">WinUI</DefaultXamlRuntime>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)'=='true'">
+    <!-- Workaround for https://github.com/microsoft/msbuild/issues/5341 -->
+    <MarkPackageReferencesAsExternallyResolved Condition="'$(MarkPackageReferencesAsExternallyResolved)'==''">false</MarkPackageReferencesAsExternallyResolved>
+
+    <EnableDefaultPageItems Condition="'$(EnableDefaultPageItems)' == ''">true</EnableDefaultPageItems>
+    <EnableDefaultApplicationDefinition Condition="'$(EnableDefaultApplicationDefinition)' == ''">true</EnableDefaultApplicationDefinition>
+    <EnableDefaultAssets Condition="'$(EnableDefaultAssets)' == ''">true</EnableDefaultAssets>
+  </PropertyGroup>
+
+  <!--
+    Generate error if there are duplicate page items.  The task comes from the .NET SDK, and this
+    target follows the pattern in the CheckForDuplicateItems task, where the .NET SDK checks for
+    duplicate items for the item types it knows about.
+  -->
+  <Target Name="CheckForDuplicatePageItems"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CoreCompile"
+          DependsOnTargets="CheckForDuplicateItems"
+          Condition="'$(UsingMicrosoftNETSdk)' == 'true'">
+
+    <CheckForDuplicateItems
+      Items="@(Page)"
+      ItemName="Page"
+      DefaultItemsEnabled="$(EnableDefaultItems)"
+      DefaultItemsOfThisTypeEnabled="$(EnableDefaultPageItems)"
+      PropertyNameToDisableDefaultItems="EnableDefaultPageItems"
+      MoreInformationLink="$(DefaultItemsMoreInformationLink)"
+      ContinueOnError="$(ContinueOnError)">
+      <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedPageItems" />
+    </CheckForDuplicateItems>
+
+    <ItemGroup Condition="'$(DesignTimeBuild)' == 'true' And '@(DeduplicatedPageItems)' != ''">
+      <Page Remove="@(Page)" />
+      <Page Include="@(DeduplicatedPageItems)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Emit additional messages for invalid configurations when referencing the WinUI runtime library -->
+  <Target Name="CheckForInvalidWinUIReferenceInMixedScenarios"
+          DependsOnTargets="ResolveAssemblyReferences"
+          BeforeTargets="CoreCompile"
+          Condition="'$(UsingMicrosoftNETSdk)'=='true'">
+    <ItemGroup>
+      <_MicrosoftWinUIReferencePath Include="@(ReferencePath)" Condition="'%(Filename)%(Extension)' == 'Microsoft.WinUI.dll'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_IsMicrosoftWinUIAssemblyReferenced>false</_IsMicrosoftWinUIAssemblyReferenced>
+      <_IsMicrosoftWinUIAssemblyReferenced Condition="@(_MicrosoftWinUIReferencePath->Count()) != 0">true</_IsMicrosoftWinUIAssemblyReferenced>
+    </PropertyGroup>
+
+    <!--
+      We validate two scenarios:
+        - WinUI assemblies are referenced, UWP XAML projections are used (this doesn't imply the app is actually UWP, it could also be a Win32 app), and
+          'EnableUnsafeMixedMicrosoftWindowsUIXamlProjections' is not set. This is an error: 'EnableUnsafeMixedMicrosoftWindowsUIXamlProjections' needs
+          to be set explicitly in this case so that it's clear for developers that this scenario is advanced and requires additional setup to work.
+        - WinUI assemblies are not referenced, and 'EnableUnsafeMixedMicrosoftWindowsUIXamlProjections' is set. This is useless, so we emit a warning.
+          This condition being true would most likely indicate some kind of build or configuration issue, so we might as well let the user know.
+    -->
+    <Error Condition="'$(_IsMicrosoftWinUIAssemblyReferenced)' == 'true' and '$(UseUwp)' == 'true' and '$(EnableUnsafeMixedMicrosoftWindowsUIXamlProjections)' != 'true'"
+           Text="This project is referencing the full Windows SDK projections, including Windows.UI.Xaml.* types, which are not compatible with WinUI types (i.e., Microsoft.UI.Xaml.* types). The projections can only work correctly for either class of XAML types at a time. You can opt into this scenario by setting the EnableUnsafeMixedMicrosoftWindowsUIXamlProjections property. If you do, make sure to set the CsWinRTUseWindowsUIXamlProjections property correctly depending on which projection mode you intend to use in your project.  Note that when this property is set, some marshalled objects will not work correctly with Microsoft.UI.Xaml.* types, and vice versa: when the property is not set, some marshalled objects will not work correctly with Windows.UI.Xaml.* types." />
+    <Warning Condition="'$(_IsMicrosoftWinUIAssemblyReferenced)' != 'true' and '$(EnableUnsafeMixedMicrosoftWindowsUIXamlProjections)' == 'true'"
+             Text="The EnableUnsafeMixedMicrosoftWindowsUIXamlProjections property should only be used when referencing the Windows App SDK runtime libraries, as it explicitly allows combining the use of Windows.UI.Xaml.* and Microsoft.UI.Xaml.* types. This project is not referencing any WinUI types, so setting this property is having no effect." />
+  </Target>
+
+  <!-- Emit an error if our custom 'BeforeCommon' .targets file has not been invoked. Skip this
+       check for .wapproj projects, because those do not import any of those .props at all. -->
+  <Target Name="CheckForInvalidCustomBeforeMicrosoftCommonTargets"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CoreCompile"
+          Condition="'$(MSBuildProjectExtension)'!='.wapproj'">
+    <Error Condition ="'$(_IsWinUICustomBeforeMicrosoftCommonTargetsChainValid)' != 'true'"
+           Text="The Windows App SDK uses the 'CustomBeforeMicrosoftCommonTargets' MSBuild property to wire up a custom .targets file that sets some necessary properties. This .targets file does not appear to have been imported correctly. This likely means that someone has also overridden 'CustomBeforeMicrosoftCommonTargets', without ensuring to also chain the import of the previously assigned .targets set to that property. You can use a binlog to learn more about where that assignment was done (set the verbosity to diagnostics, and search for 'reassignment: $(CustomBeforeMicrosoftCommonTargets')."/>
+  </Target>
+
+  <Import Project="$(WinUITargetsDirectory)Microsoft.WinUI.References.targets" Condition="'$(UseWPF)'!='true' and '$(UseUwpTools)' != 'true'"/>
+  <Import Project="$(WinUITargetsDirectory)Microsoft.WinUI.AppX.targets" Condition="'$(UseWPF)'!='true' and '$(UseUwpTools)' != 'true'"/>
+  <Import Project="$(XamlCompilerPropsAndTargetsDirectory)Microsoft.WinUI.NET.Markup.Compiler.targets" Condition="'$(UsingMicrosoftNETSdk)'=='true' and '$(UseWPF)'!='true' and '$(UseUwpTools)' != 'true'" />
+  <Import Project="$(XamlCompilerPropsAndTargetsDirectory)Microsoft.UI.Xaml.Markup.Compiler.targets" Condition="Exists('$(XamlCompilerPropsAndTargetsDirectory)Microsoft.UI.Xaml.Markup.Compiler.targets') and '$(MSBuildProjectExtension)'!='.wapproj' and '$(UseWPF)'!='true' and '$(UseUwpTools)' != 'true'"/>
+</Project>
