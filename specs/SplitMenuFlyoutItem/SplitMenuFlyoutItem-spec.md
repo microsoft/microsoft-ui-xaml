@@ -41,8 +41,6 @@ additional choices:
             <SplitMenuFlyoutItem Text="Save" Command="{Binding SaveCommand}">
                 <SplitMenuFlyoutItem.Items>
                     <MenuFlyoutItem Text="Save As..." Command="{Binding SaveAsCommand}" />
-                    <MenuFlyoutItem Text="Save All" Command="{Binding SaveAllCommand}" />
-                    <MenuFlyoutSeparator />
                     <MenuFlyoutItem Text="Export..." Command="{Binding ExportCommand}" />
                 </SplitMenuFlyoutItem.Items>
             </SplitMenuFlyoutItem>
@@ -63,7 +61,7 @@ the flyout button reveals additional save-related options.
 You can customize the appearance of the submenu using the styling properties:
 
 ```xaml
-<SplitMenuFlyoutItem Text="SplitItem A">
+<SplitMenuFlyoutItem Text="Rewrite with CoPilot">
     <SplitMenuFlyoutItem.SubMenuPresenterStyle>
         <Style BasedOn="{StaticResource DefaultMenuFlyoutPresenterStyle}" TargetType="MenuFlyoutPresenter">
             <Setter Property="Template">
