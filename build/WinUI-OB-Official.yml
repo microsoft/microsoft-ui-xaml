@@ -41,6 +41,9 @@ resources:
 extends:
   template: v2/Microsoft.Official.yml@templates # https://aka.ms/obpipelines/templates
   parameters:
+    featureFlags:
+      WindowsHostVersion:
+        Network: KS3
     platform:
       name: 'windows_undocked'
     

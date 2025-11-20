@@ -1,0 +1,150 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+# Enable triggers for all branches
+trigger:
+  branches:
+    include:
+      - '*'
+
+# Parameters for flexibility
+parameters:
+  - name: 'debug'
+    displayName: 'Enable debug output'
+    type: boolean
+    default: true
+
+# Variables
+variables:
+  system.debug: ${{ parameters.debug }}  # Enable verbose logging for testing
+  ROOT: $(Build.SourcesDirectory)
+  REPOROOT: $(Build.SourcesDirectory)
+  OUTPUTROOT: $(REPOROOT)\out
+  NUGET_XMLDOC_MODE: none
+
+  # Docker image which is used to build the project https://aka.ms/obpipelines/containers
+  WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2019/vse2022:latest' 
+
+  Codeql.Enabled: true #  CodeQL once every 3 days on the default branch for all languages its applicable to in that pipeline.
+
+resources:
+  repositories: 
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      WindowsHostVersion:
+        Network: KS3
+    platform:
+      name: 'windows_undocked'
+    
+    globalSdl: # Refer the wiki for more options in this parameter: https://aka.ms/obpipelines/sdl
+      tsa:
+        enabled: true 
+
+    stages:
+    - stage: build
+      jobs:
+      - job: main
+        pool:
+          type: windows  
+
+        strategy:
+          maxParallel: 10
+          matrix:
+            Release_x86:
+              buildPlatform: 'x86'
+              buildConfiguration: 'Release'
+              PGOBuildMode: 'Optimize'
+            Release_x64:
+              buildPlatform: 'x64'
+              buildConfiguration: 'Release'
+              PGOBuildMode: 'Optimize'
+            Release_Arm:
+              buildPlatform: 'arm'
+              buildConfiguration: 'Release'
+            Release_Arm64:
+              buildPlatform: 'arm64'
+              buildConfiguration: 'Release'
+        
+        variables:
+          appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+          buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+          ob_outputDirectory: $(build.artifactStagingDirectory)
+          ob_artifactSuffix: _$(buildPlatform)_$(buildConfiguration)
+          ob_git_fetchDepth: 0 # This disables shallow git fetch. This is required for the restore-pgodb.ps1 script to work correctly.
+
+        steps:
+
+          - template: build\AzurePipelinesTemplates\MUX-PopulateBuildDateAndRevision-Steps.yml@self
+
+          - template: build\AzurePipelinesTemplates\MUX-InstallNuget-Steps.yml@self
+
+          - template: build\AzurePipelinesTemplates\MUX-InstallDotNetSDK-Steps.yml@self
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8 SDK'
+            inputs:
+              packageType: sdk
+              version: '8.x'
+
+          - powershell: |
+              ls env:
+            displayName: 'display env vars'
+            continueOnError: true
+
+          - powershell: |
+              ls "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows Kits\Installed Roots"
+            displayName: 'List SDKS'
+            continueOnError: true
+
+          # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
+          - task: DownloadPackage@1
+            displayName: 'Download Microsoft.Telemetry.Inbox.Native'
+            inputs:
+              feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
+              view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
+              definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
+              version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
+              downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
+
+          # Replace the stubbed MicrosoftTelemetry.h with the real one
+          # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+          - script: |
+              del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+              move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+            failOnStderr: true
+            displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+
+          - template: build\AzurePipelinesTemplates\MUX-RestorePgo-Steps.yml@self
+
+          - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+            displayName: 'NuGet restore MUXControls.sln'
+            inputs:
+              restoreSolution: $(Build.SourcesDirectory)\MUXControls.sln
+              feedsToUse: config
+              nugetConfigPath: nuget.config
+
+          - task: VSBuild@1
+            displayName: 'Build solution MUXControls.sln'
+            inputs:
+              solution: '$(Build.SourcesDirectory)\MUXControls.sln'
+              vsVersion: 17.0
+              platform: $(buildPlatform)
+              configuration: $(buildConfiguration)
+              msbuildArgs: '/restore /p:AppxPackageDir=$(appxPackageDir) /p:AppxBundle=Never /p:AppxSymbolPackageEnabled=false /binaryLogger:$(Build.ArtifactStagingDirectory)/MUXControls.$(buildPlatform).$(buildConfiguration).binlog /p:MUXVersionBuild=$(builddate_yymm) /p:MUXVersionRevision=$(builddate_dd)$(buildrevision) /p:VCToolsInstallDir="$(VCToolsInstallDir)\" /p:PGOBuildMode=$(PGOBuildMode)'
+
+          - powershell: |
+              Get-ChildItem -Recurse $(Build.SourcesDirectory)\BuildOutput
+            displayName: 'list contents of BuildOutput'
+            continueOnError: true
+
+         
