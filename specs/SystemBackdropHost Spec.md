@@ -12,6 +12,8 @@ visual sized to the arranged bounds, and applies the element's `CornerRadius` to
 appear as expected. This control abstracts lot of details for the composition layer and hence make it easy
 for WinUI3 developers to implement the acrylic effect in the applications.
 
+In WinUI2, it was possible to achieve the backdrop using `BackgroundSource` property of [`AcrylicBrush`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.acrylicbrush?view=winrt-26100), However in WinUI3 [`AcrylicBrush`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush?view=windows-app-sdk-1.8) don't provide `BackgroundSource` property leaving it capable of achieving only in-app acrylic. This is due to the limitation of Lifted Compositor used by WinUI3 which is running in-proc, and so can't fetch buffers outside the application window. The current solution is to leverage the [ContentExternalBackdropLink](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentexternalbackdroplink?view=windows-app-sdk-2.0-experimental) API, It provides `PlacementVisual` that would be used for rendering the backdrop in the lifted visual tree. `SystemBackdropHost` control takes care of resizing and positioning this `PlacementVisual` as per the position, size and Z-order of the control.
+
 ## Goals
 
 * Provide an intuitive, XAML-friendly way to place a system backdrop anywhere inside application's visual tree.
@@ -100,7 +102,7 @@ If a `CornerRadius` is applied on the parent `rootGrid`, that would clip the `Sy
 
 * _Spec note: This API is currently `experimental`; the API surface may still change before it is finalized._
 * The element have to be placed as first element in the container (for example as the first child inside a
-    panel) for having the backdrop below the contents.
+    panel) for having the backdrop below the contents. (First element added to tree gets rendered first and goes in the bottom of stack)
 * The host only connects to a backdrop while it has a `XamlRoot`. If the element is not in the live tree, the backdrop
     remains disconnected until it is loaded again.
 
@@ -120,7 +122,7 @@ Gets or sets the `SystemBackdrop` instance that renders in the host area. The de
 
 ## SystemBackdropHost.CornerRadius property
 
-Gets or sets the `CornerRadius` applied to the hosted backdrop surface. The default value is `CornerRadius(0)`.
+Gets or sets the `CornerRadius` applied to the hosted backdrop surface. The default value of `CornerRadius` is 0.
 
 * The host applies a `RectangleClip` on the placement visual to achieve the rounded corners.
 * Updating the property while the element is loaded immediately refreshes the clip. Setting the property to `null` (for
@@ -128,6 +130,7 @@ Gets or sets the `CornerRadius` applied to the hosted backdrop surface. The defa
 * This property only affects the backdrop clip. It does not change layout or round other content layered above the
     `SystemBackdropHost`.
 * `SystemBackdropHost` would get clipped to the container as well, So the `CornerRadius` on the parent container also would be having same behavior.
+* In cases where the `SystemBackropHost` is not occupying the parent container fully, this property can be used to set the `CornerRadius` on the backdrop.
 
 # API Details
 
