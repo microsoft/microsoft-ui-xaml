@@ -3599,14 +3599,23 @@ void NavigationView::ClearAllNavigationViewItemBaseRevokers() noexcept
     {
         // ClearAllNavigationViewItemBaseRevokers is only called in the destructor, where exceptions cannot be thrown.
         // If the associated NV has not yet been cleaned up, we must detach these revokers or risk a call into freed
-        // memory being made.  However if they have been cleaned up these calls will throw. In this case we can ignore
-        // those exceptions.
+        // memory being made. However if dxaml peer is disconnected from core element then a direct GetValue call on nvib will throw
+        // in c++/winrt layer. The exception thrown can cause noise when debugger is attached. To avoid the noise, we will use
+        // TryGetDependencyPropertyValue helper that will safely call GetValue at ABI level.
         if (nvib)
         {
             try
             {
-                RevokeNavigationViewItemBaseRevokers(nvib);
-                nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
+                winrt::IInspectable value = nullptr;
+                if (TryGetDependencyPropertyValue(nvib, s_NavigationViewItemBaseRevokersProperty, value) && value)
+                {
+                    // inline RevokeNavigationViewItemBaseRevokers to avoid calling to GetValue through C++/winrt
+                    if (auto const revokersAsNVIBR = value.try_as<NavigationViewItemBaseRevokers>())
+                    {
+                        revokersAsNVIBR->RevokeAll();
+                    }
+                    nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
+                }
             }
             catch (...) {}
         }
