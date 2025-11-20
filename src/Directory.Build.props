@@ -43,7 +43,6 @@
   <Import Project="eng\configuration.props" />
   <Import Project="eng\versions.props" />
   <Import Project="eng\sdkconfig.props" Condition = "'$(UseLocalSDK)' != 'true'" />
-  <Import Project="eng\privatedependencies.props" />
   <Import Project="eng\folderpaths.props" />
   <Import Project="eng\tempfolder.props"/>
   <Import Project="eng\midl.props" Condition="'$(IsWinmdProject)' == 'true'" />
