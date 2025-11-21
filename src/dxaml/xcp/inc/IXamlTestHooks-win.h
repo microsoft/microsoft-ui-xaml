@@ -353,4 +353,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     IFACEMETHOD(GetAllContentIslands)(_In_ xaml_hosting::IDesktopWindowXamlSource* desktopWindowXamlSource, _In_ wfc::IVector<IInspectable*>* contentIslands) = 0;
 
     IFACEMETHOD(GetElementsRenderedCount)(_Out_ int* elementsRendered) = 0;
+
+    IFACEMETHOD(PauseNewDispatchForTest)() = 0;
+    IFACEMETHOD(ResumeNewDispatchForTest)() = 0;
 };

@@ -66,6 +66,7 @@
 #include "XamlIslandRoot_Partial.h"
 #include "HWWalk.h"
 #include "LoadLibraryAbs.h"
+#include "xcpwindow.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -2034,5 +2035,19 @@ IFACEMETHODIMP DxamlCoreTestHooks::GetElementsRenderedCount(_Out_ int* elementsR
     CCoreServices* coreServices = static_cast<CCoreServices*>(dxamlCore->GetHandle());
     HWWalk* hwWalk = coreServices->GetHWWalk();
     *elementsRendered = hwWalk->GetElementsRenderedCount();
+    return S_OK;
+}
+
+IFACEMETHODIMP DxamlCoreTestHooks::PauseNewDispatchForTest()
+{
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    PauseNewDispatchForTest::Pause(dxamlCore->GetHandle());
+    return S_OK;
+}
+
+IFACEMETHODIMP DxamlCoreTestHooks::ResumeNewDispatchForTest()
+{
+    DXamlCore* dxamlCore = DXamlCore::GetCurrent();
+    PauseNewDispatchForTest::Resume(dxamlCore->GetHandle());
     return S_OK;
 }

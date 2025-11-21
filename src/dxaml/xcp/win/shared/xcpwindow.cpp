@@ -1525,3 +1525,25 @@ void PauseNewDispatchAtControl::ResumeNewDispatch()
         }
     }
 }
+
+void PauseNewDispatchForTest::Pause(CCoreServices *coreServices)
+{
+    auto hostSite = coreServices->GetHostSite();
+    auto dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+
+    // The current state should be be Running. If it is in a different state,
+    // something likely needs to change to ensure m_state isn't incorrectly
+    // stomped either here in Pause or later in Resume.
+    FAIL_FAST_ASSERT(dispatcher->m_state == CXcpDispatcher::State::Running);
+    static_cast<CXcpDispatcher*>(dispatcher)->PauseDispatch();
+}
+
+void PauseNewDispatchForTest::Resume(CCoreServices *coreServices)
+{
+    auto hostSite = coreServices->GetHostSite();
+    auto dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+
+    // It should still be suspended. If it isn't, something resumed too early.
+    FAIL_FAST_ASSERT(dispatcher->m_state == CXcpDispatcher::State::Suspended);
+    static_cast<CXcpDispatcher*>(dispatcher)->ResumeDispatch();
+}
