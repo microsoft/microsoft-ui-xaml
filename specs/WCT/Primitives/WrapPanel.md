@@ -171,15 +171,26 @@ The result looks like this:
 # API Details
 
 ```c# (but really MIDL3)
+[contract(Microsoft.UI.Xaml.WinUIContract, )]
+[webhosthidden]
 namespace Microsoft.UI.Xaml.Controls
 {
-  runtimeclass WrapPanel
+  unsealed runtimeclass WrapPanel
+      : Microsoft.UI.Xaml.Controls.Panel
   {
-      double HorizontalSpacing { get; set; }
-      Orientation Orientation { get; set; }
-      Thickness Padding { get; set; }
-      StretchChild StretchChild { get; set; }
-      double VerticalSpacing { get; set; }      
+      [method_name("CreateInstance")] WrapPanel();
+
+      Double HorizontalSpacing;
+      Orientation Orientation;
+      Thickness Padding;
+      StretchChild StretchChild;
+      Double VerticalSpacing;
+
+      static Microsoft.UI.Xaml.DependencyProperty HorizontalSpacingProperty { get; };
+      static Microsoft.UI.Xaml.DependencyProperty OrientationProperty { get; };
+      static Microsoft.UI.Xaml.DependencyProperty PaddingProperty { get; };
+      static Microsoft.UI.Xaml.DependencyProperty StretchChildProperty { get; };
+      static Microsoft.UI.Xaml.DependencyProperty VerticalSpacingProperty { get; };
   }
 
   enum StretchChild
