@@ -162,7 +162,8 @@ The result looks like this:
 
 ![WrapPanel StretchChild example](images/WrapPanelStretchChild.png)
 
-## Other MyExample members
+
+## Other WrapPanel members
 
 | Name | Description |
 |-|-|
