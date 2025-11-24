@@ -19,9 +19,9 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKClosed</Uri>
       <Sha>53484e771b932c69de686307f7ad3934aa4de04f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Base" Version="2.0.251001001-experimental">
+    <Dependency Name="Microsoft.WindowsAppSDK.Base" Version="2.0.251120001-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
-      <Sha>cded54728f171b97e5805d7e9924f7d683dc1a38</Sha>
+      <Sha>eb0d76a0f021a5acb7768c3f69fe9aab6d064a4c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="2.0.251123000-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
