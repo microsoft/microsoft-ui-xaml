@@ -4,15 +4,14 @@ SystemBackdropHost
 # Background
 
 There are backdrop materials provided in WinUI such as Mica, Acrylic that are subclass of 
-[Microsoft.UI.Xaml.Media.SystemBackdrop](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop). Currently, it is possible to host a system backdrop only at the window level or on flyouts, but not in a specific area in the visual tree. This have been a major limitation on WinUI3 compared to WinUI2 in achieving the acrylic / mica effects, especially for achieving various animations.
+[Microsoft.UI.Xaml.Media.SystemBackdrop](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop). Currently, it is possible to host a system backdrop only at the window level or on flyouts, but not in a specific area in the visual tree. This has been a major limitation on WinUI3 compared to WinUI2 in achieving the acrylic / mica effects, especially for achieving various animations.
 
 `SystemBackdropHost` is a lightweight `FrameworkElement` that bridges between the XAML tree and the composition
-infrastructure required by `SystemBackdrop`. It creates the required composition components to host the systembackdrop on a specific container, keeps the placement
-visual sized to the arranged bounds, and applies the element's `CornerRadius` to the backdrop clip so rounded corners
+infrastructure required by `SystemBackdrop`. It creates the required composition components to host the systembackdrop on a specific area, resizes the systembackdrop to fill the given area, and applies the clip on the backdrop visual based on `CornerRadius` values applied on `SystemBackdropHost` which helps for rounded corners
 appear as expected. This control abstracts lot of details for the composition layer and hence make it easy
 for WinUI3 developers to implement the acrylic effect in the applications.
 
-In WinUI2, it was possible to achieve the backdrop using `BackgroundSource` property of [`AcrylicBrush`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.acrylicbrush?view=winrt-26100), However in WinUI3 [`AcrylicBrush`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush?view=windows-app-sdk-1.8) don't provide `BackgroundSource` property leaving it capable of achieving only in-app acrylic. This is due to the limitation of Lifted Compositor used by WinUI3 which is running in-proc, and so can't fetch buffers outside the application window. The current solution is to leverage the [ContentExternalBackdropLink](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentexternalbackdroplink?view=windows-app-sdk-2.0-experimental) API, It provides `PlacementVisual` that would be used for rendering the backdrop in the lifted visual tree. `SystemBackdropHost` control takes care of resizing and positioning this `PlacementVisual` as per the position, size and Z-order of the control.
+In WinUI2, it was possible to achieve the backdrop using `BackgroundSource` property of [`AcrylicBrush`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.acrylicbrush?view=winrt-26100), However in WinUI3, [`AcrylicBrush`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush) doesn't provide `BackgroundSource` property leaving it capable of achieving only in-app acrylic. This is due to the limitation of WinUI3 compositor which is running in-proc, and so can't fetch buffers outside the application window. In this design, the solution is to leverage the [ContentExternalBackdropLink](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentexternalbackdroplink) API, It provides `PlacementVisual` that would be used for rendering the backdrop in the WinUI3 visual tree. `SystemBackdropHost` control takes care of resizing and positioning this `PlacementVisual` as per the position, size and Z-order of the control.
 
 ## Goals
 
@@ -36,7 +35,7 @@ _(Each level-two section below maps to a docs.microsoft.com API page.)_
 
 ## SystemBackdropHost class
 
-Use `SystemBackdropHost` to place a SystemBackdrop](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop) anywhere within the XAML layout.
+Use `SystemBackdropHost` to place a [SystemBackdrop](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop) anywhere within the XAML layout.
 
 ```csharp
 public sealed class SystemBackdropHost : FrameworkElement
@@ -124,13 +123,10 @@ Gets or sets the `SystemBackdrop` instance that renders in the host area. The de
 
 Gets or sets the `CornerRadius` applied to the hosted backdrop surface. The default value of `CornerRadius` is 0.
 
-* The host applies a `RectangleClip` on the placement visual to achieve the rounded corners.
-* Updating the property while the element is loaded immediately refreshes the clip. Setting the property to `null` (for
-    example through a binding) clears the stored corner radius and restores square corners.
+* The host applies a `RectangleClip` on the `PlacementVisual` to achieve the rounded corners.
 * This property only affects the backdrop clip. It does not change layout or round other content layered above the
     `SystemBackdropHost`.
-* `SystemBackdropHost` would get clipped to the container as well, So the `CornerRadius` on the parent container also would be having same behavior.
-* In cases where the `SystemBackropHost` is not occupying the parent container fully, this property can be used to set the `CornerRadius` on the backdrop.
+* Default `CornerRadius` value will be 0 aligning with [control templates](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.control.cornerradius#remarks)
 
 # API Details
 
