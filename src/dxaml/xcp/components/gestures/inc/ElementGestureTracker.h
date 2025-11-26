@@ -40,7 +40,6 @@
 
 #include "UIElementStructs.h"
 #include "GestureRecognizerAdapter.h"
-#include <microsoft.ui.input.experimental.h> // For IExpPointerPointStatics
 
 class CTouchInteractionElement;
 
@@ -143,5 +142,4 @@ private:
 
     GestureRecognizerAdapter m_gestureRecognizerAdapter;
     GestureOutputMapper* m_gestureOutputMapper;
-    wrl::ComPtr<ixp::IExpPointerPointStatics> m_expPointerPointStatics;
 };
