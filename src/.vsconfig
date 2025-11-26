@@ -17,6 +17,7 @@
     "Microsoft.VisualStudio.Component.VC.ATL",
     "Microsoft.Component.NetFX.Native",
     "Microsoft.VisualStudio.Component.TextTemplating",
+    "Microsoft.VisualStudio.ComponentGroup.UWP.BuildTools",
     "Microsoft.VisualStudio.Component.UWP.VC.ARM64",
     "Microsoft.VisualStudio.Component.NuGet.BuildTools",
     "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
