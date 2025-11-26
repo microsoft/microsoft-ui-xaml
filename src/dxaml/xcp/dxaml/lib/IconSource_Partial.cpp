@@ -17,7 +17,12 @@ IFACEMETHODIMP IconSource::CreateIconElement(_Outptr_ ABI::Microsoft::UI::Xaml::
     {
         ctl::ComPtr<IBrush> foreground;
         IFC_RETURN(get_Foreground(&foreground));
-        IFC_RETURN(element->put_Foreground(foreground.Get()));
+        
+        // This check ensures that we are not forcing developers to provide a foreground, if no foreground is set, it picks the default foreground based on theme.
+        if (foreground)
+        {
+            IFC_RETURN(element->put_Foreground(foreground.Get()));
+        }
     }
     
     ctl::WeakRefPtr weakElement;
