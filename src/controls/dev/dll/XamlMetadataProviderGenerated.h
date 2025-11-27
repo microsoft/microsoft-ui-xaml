@@ -5701,21 +5701,21 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.SystemBackdropHost",
+        L"Microsoft.UI.Xaml.Controls.SystemBackdropElement",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
         {
             auto xamlType = winrt::make_self<XamlType>(
                 /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.SystemBackdropHost",
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.SystemBackdropElement",
                 /* Arg 2 - BaseTypeName */ 
                 (PCWSTR)L"Microsoft.UI.Xaml.FrameworkElement",
                 /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISystemBackdropHostFactory>(L"Microsoft.UI.Xaml.Controls.SystemBackdropHost"); },
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISystemBackdropElementFactory>(L"Microsoft.UI.Xaml.Controls.SystemBackdropElement"); },
                 /* Arg 4 - Populate properties func */ 
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
-                    winrt::ISystemBackdropHostStatics statics = GetFactory<winrt::ISystemBackdropHostStatics>(L"Microsoft.UI.Xaml.Controls.SystemBackdropHost");
+                    winrt::ISystemBackdropElementStatics statics = GetFactory<winrt::ISystemBackdropElementStatics>(L"Microsoft.UI.Xaml.Controls.SystemBackdropElement");
                     {
                         xamlType.AddDPMember(L"CornerRadius", L"Microsoft.UI.Xaml.CornerRadius", statics.CornerRadiusProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SystemBackdrop", L"Microsoft.UI.Xaml.Media.SystemBackdrop", statics.SystemBackdropProperty(), false /* isContent */);
@@ -8024,7 +8024,7 @@ hstring c_knownNamespacePrefixes[] =
 #include "SwipeControl.properties.h"
 #include "SwipeItem.properties.h"
 #include "SwipeItems.properties.h"
-#include "SystemBackdropHost.properties.h"
+#include "SystemBackdropElement.properties.h"
 #include "TabView.properties.h"
 #include "TabViewItem.properties.h"
 #include "TabViewItemTemplateSettings.properties.h"
@@ -8123,7 +8123,7 @@ void ClearTypeProperties()
     SwipeControlProperties::ClearProperties();
     SwipeItemProperties::ClearProperties();
     SwipeItemsProperties::ClearProperties();
-    SystemBackdropHostProperties::ClearProperties();
+    SystemBackdropElementProperties::ClearProperties();
     TabViewProperties::ClearProperties();
     TabViewItemProperties::ClearProperties();
     TabViewItemTemplateSettingsProperties::ClearProperties();

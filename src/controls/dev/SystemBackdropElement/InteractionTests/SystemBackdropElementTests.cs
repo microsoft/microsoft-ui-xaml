@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    public class SystemBackdropHostTests
+    public class SystemBackdropElementTests
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
@@ -35,24 +35,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void CanNavigateToSystemBackdropHostPage()
+        public void CanNavigateToSystemBackdropElementPage()
         {
-            using (var setup = new TestSetupHelper("SystemBackdropHost Tests"))
+            using (var setup = new TestSetupHelper("SystemBackdropElement Tests"))
             {
-                Log.Comment("Navigate to SystemBackdropHost test page");
-                // Verify we're on the correct page by checking for SystemBackdropHost-specific elements
+                Log.Comment("Navigate to SystemBackdropElement test page");
+                // Verify we're on the correct page by checking for SystemBackdropElement-specific elements
                 var testBackdropHost = FindElement.ById("TestBackdropHost");
-                Verify.IsNotNull(testBackdropHost, "TestBackdropHost should be found on the SystemBackdropHost page");
+                Verify.IsNotNull(testBackdropHost, "TestBackdropHost should be found on the SystemBackdropElement page");
 
                 var cornerRadiusSlider = FindElement.ByName("CornerRadiusSlider");
-                Verify.IsNotNull(cornerRadiusSlider, "CornerRadiusSlider should be found on the SystemBackdropHost page");
+                Verify.IsNotNull(cornerRadiusSlider, "CornerRadiusSlider should be found on the SystemBackdropElement page");
             }
         }
 
         [TestMethod]
         public void Switch_ToAcrylic_Backdrop_UpdatesUI()
         {
-            using (var setup = new TestSetupHelper("SystemBackdropHost Tests"))
+            using (var setup = new TestSetupHelper("SystemBackdropElement Tests"))
             {
                 Log.Comment("Click Acrylic button to switch backdrop");
 
@@ -115,7 +115,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void Adjust_CornerRadius_UpdatesUI()
         {
-            using (var setup = new TestSetupHelper("SystemBackdropHost Tests"))
+            using (var setup = new TestSetupHelper("SystemBackdropElement Tests"))
             {
                 Log.Comment("Test corner radius slider adjustment");
 
@@ -130,10 +130,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 double initialSliderValue = slider.Value;
                 Log.Comment($"Initial corner radius slider value: {initialSliderValue}");
 
-                // Get initial CornerRadius property value from SystemBackdropHost
+                // Get initial CornerRadius property value from SystemBackdropElement
                 ClickButton("StoreCornerRadiusForTest");
                 string initialResult = ReadResult();
-                Log.Comment($"Initial CornerRadius from SystemBackdropHost: {initialResult}");
+                Log.Comment($"Initial CornerRadius from SystemBackdropElement: {initialResult}");
 
                 // Get the backdrop host
                 var testBackdropHost = FindElement.ById("TestBackdropHost");
@@ -152,17 +152,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment($"New corner radius slider value: {newSliderValue}");
                 Verify.IsTrue(newSliderValue > 0, "Corner radius slider value should be greater than 0 after adjustment");
 
-                // Verify the actual CornerRadius property on SystemBackdropHost changed
+                // Verify the actual CornerRadius property on SystemBackdropElement changed
                 ClickButton("StoreCornerRadiusForTest");
                 string newResult = ReadResult();
-                Log.Comment($"New CornerRadius from SystemBackdropHost: {newResult}");
+                Log.Comment($"New CornerRadius from SystemBackdropElement: {newResult}");
 
                 // Validate that the CornerRadius property actually changed to 25
-                Verify.IsTrue(newResult.Contains("25"), "SystemBackdropHost.CornerRadius should be 25 after slider adjustment (validates actual property changed)");
+                Verify.IsTrue(newResult.Contains("25"), "SystemBackdropElement.CornerRadius should be 25 after slider adjustment (validates actual property changed)");
                 Verify.AreNotEqual(initialResult, newResult, "CornerRadius property should change after slider adjustment");
 
-                // Verify the SystemBackdropHost control is still accessible after adjustment
-                Log.Comment("Verifying SystemBackdropHost is still accessible after CornerRadius change");
+                // Verify the SystemBackdropElement control is still accessible after adjustment
+                Log.Comment("Verifying SystemBackdropElement is still accessible after CornerRadius change");
                 var updatedBackdropHost = FindElement.ById("TestBackdropHost");
                 Verify.IsNotNull(updatedBackdropHost, "TestBackdropHost should still be found after adjustment");
 
@@ -170,24 +170,24 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 var newBounds = updatedBackdropHost.BoundingRectangle;
                 Log.Comment($"TestBackdropHost bounds after corner radius adjustment: {newBounds.Width}x{newBounds.Height}");
 
-                Log.Comment("Test passed: Corner radius slider updates SystemBackdropHost.CornerRadius property (validated via code-behind)");
+                Log.Comment("Test passed: Corner radius slider updates SystemBackdropElement.CornerRadius property (validated via code-behind)");
             }
         }
 
         [TestMethod]
         public void Verify_Buttons_AreClickable_WithBackdrop()
         {
-            using (var setup = new TestSetupHelper("SystemBackdropHost Tests"))
+            using (var setup = new TestSetupHelper("SystemBackdropElement Tests"))
             {
-                Log.Comment("Test that buttons overlaid on SystemBackdropHost are clickable");
+                Log.Comment("Test that buttons overlaid on SystemBackdropElement are clickable");
 
-                // Verify the SystemBackdropHost is visible
+                // Verify the SystemBackdropElement is visible
                 var testBackdropHost = FindElement.ById("TestBackdropHost");
                 Verify.IsNotNull(testBackdropHost, "TestBackdropHost should be found");
 
-                // Find Button1 which is overlaid on the SystemBackdropHost
+                // Find Button1 which is overlaid on the SystemBackdropElement
                 var button1 = FindElement.ByName("Button1");
-                Verify.IsNotNull(button1, "Button1 should be found on the SystemBackdropHost");
+                Verify.IsNotNull(button1, "Button1 should be found on the SystemBackdropElement");
 
                 Log.Comment("Clicking Button1 to verify backdrop doesn't block interaction");
                 var clickableButton = new Button(button1);
@@ -203,10 +203,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Find Button2 and Button3 to verify all buttons are accessible
                 var button2 = FindElement.ByName("Button2");
-                Verify.IsNotNull(button2, "Button2 should be found and accessible on the SystemBackdropHost");
+                Verify.IsNotNull(button2, "Button2 should be found and accessible on the SystemBackdropElement");
 
                 var button3 = FindElement.ByName("Button3");
-                Verify.IsNotNull(button3, "Button3 should be found and accessible on the SystemBackdropHost");
+                Verify.IsNotNull(button3, "Button3 should be found and accessible on the SystemBackdropElement");
 
                 Log.Comment("All buttons are accessible and clickable");
 

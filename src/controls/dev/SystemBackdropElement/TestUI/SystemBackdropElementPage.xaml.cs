@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information.
+// Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -7,13 +7,13 @@ using Microsoft.UI.Xaml.Media;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "SystemBackdropHost")]
-    public sealed partial class SystemBackdropHostPage : TestPage
+    [TopLevelTestPage(Name = "SystemBackdropElement")]
+    public sealed partial class SystemBackdropElementPage : TestPage
     {
         private MicaBackdrop micaBackdrop;
         private DesktopAcrylicBackdrop acrylicBackdrop;
 
-        public SystemBackdropHostPage()
+        public SystemBackdropElementPage()
         {
             this.InitializeComponent();
 
@@ -78,7 +78,7 @@ namespace MUXControlsTestApp
             StoreBackdropTypeForTest();
         }
 
-        // Helper method to get the SystemBackdrop type name for a given SystemBackdropHost
+        // Helper method to get the SystemBackdrop type name for a given SystemBackdropElement
         // This can be called from automation tests to verify the correct backdrop is set
         public string GetBackdropTypeName()
         {
@@ -89,7 +89,7 @@ namespace MUXControlsTestApp
             return "None";
         }
 
-        // Helper method to get the actual CornerRadius value from SystemBackdropHost
+        // Helper method to get the actual CornerRadius value from SystemBackdropElement
         // This can be called from automation tests to verify the CornerRadius property
         public double GetCornerRadiusValue()
         {

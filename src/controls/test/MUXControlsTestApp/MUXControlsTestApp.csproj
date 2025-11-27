@@ -310,8 +310,8 @@
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\TestUI\SelectorBar_TestUI.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\APITests\SelectorBar_APITests.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TitleBar\TestUI\TitleBar_TestUI.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
-  <Import Project="$(MUXCProjectRoot)dev\SystemBackdropHost\TestUI\SystemBackdropHost_TestUI.projitems" Label="Shared" Condition="$(FeatureSystemBackdropHostEnabled) == 'true'" />
-  <Import Project="$(MUXCProjectRoot)dev\SystemBackdropHost\APITests\SystemBackdropHost_APITests.projitems" Label="Shared" Condition="$(FeatureSystemBackdropHostEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\TestUI\SystemBackdropElement_TestUI.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\APITests\SystemBackdropElement_APITests.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
 
   <!-- For some reason, TAEF binplaces the wrong version of Wex.Logger.Interop.dll - we need to fix that.
        Removing the version from the binaries directory to allow us to use the version from the lib directory is sufficient here.-->

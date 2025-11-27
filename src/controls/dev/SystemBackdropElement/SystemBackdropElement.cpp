@@ -4,11 +4,11 @@
 #include "pch.h"
 #include "common.h"
 #include "RuntimeProfiler.h"
-#include "SystemBackdropHost.h"
+#include "SystemBackdropElement.h"
 
-SystemBackdropHost::SystemBackdropHost()
+SystemBackdropElement::SystemBackdropElement()
 {
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_SystemBackdropHost);
+    __RP_Marker_ClassById(RuntimeProfiler::ProfId_SystemBackdropElement);
     Loaded({
         [this](auto const&, auto const&)
         {
@@ -28,12 +28,12 @@ SystemBackdropHost::SystemBackdropHost()
     });
 }
 
-SystemBackdropHost::~SystemBackdropHost()
+SystemBackdropElement::~SystemBackdropElement()
 {
     ReleaseCompositionResources();
 }
 
-void SystemBackdropHost::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void SystemBackdropElement::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
     if (property == s_SystemBackdropProperty)
@@ -90,7 +90,7 @@ void SystemBackdropHost::OnPropertyChanged(const winrt::DependencyPropertyChange
     }
 }
 
-winrt::Size SystemBackdropHost::ArrangeOverride(winrt::Size const& finalSize)
+winrt::Size SystemBackdropElement::ArrangeOverride(winrt::Size const& finalSize)
 {
     winrt::Size arrangedSize = __super::ArrangeOverride(finalSize);
     
@@ -101,7 +101,7 @@ winrt::Size SystemBackdropHost::ArrangeOverride(winrt::Size const& finalSize)
     return arrangedSize;
 }
 
-void SystemBackdropHost::UpdatePlacementVisual()
+void SystemBackdropElement::UpdatePlacementVisual()
 {
     if (!IsLoaded())
     {
@@ -116,7 +116,7 @@ void SystemBackdropHost::UpdatePlacementVisual()
     }
 }
 
-void SystemBackdropHost::UpdatePlacementVisualSize()
+void SystemBackdropElement::UpdatePlacementVisualSize()
 {
     if (!m_backdropLink)
     {
@@ -128,7 +128,7 @@ void SystemBackdropHost::UpdatePlacementVisualSize()
     m_backdropLink.PlacementVisual().Offset(winrt::float3{ 0.0f, 0.0f, 0.0f });
 }
 
-void SystemBackdropHost::UpdatePlacementVisualClip()
+void SystemBackdropElement::UpdatePlacementVisualClip()
 {
     if (!m_backdropLink || !m_compositor)
     {
@@ -157,7 +157,7 @@ void SystemBackdropHost::UpdatePlacementVisualClip()
     m_backdropLink.PlacementVisual().Clip(m_clip);
 }
 
-void SystemBackdropHost::EnsureCompositionResources()
+void SystemBackdropElement::EnsureCompositionResources()
 {
     if (!m_compositor)
     {
@@ -179,7 +179,7 @@ void SystemBackdropHost::EnsureCompositionResources()
     }
 }
 
-void SystemBackdropHost::TryConnectSystemBackdrop()
+void SystemBackdropElement::TryConnectSystemBackdrop()
 {
     if (!m_registeredWithSystemBackdrop)
     {
@@ -199,7 +199,7 @@ void SystemBackdropHost::TryConnectSystemBackdrop()
     }
 }
 
-void SystemBackdropHost::ReleaseCompositionResources()
+void SystemBackdropElement::ReleaseCompositionResources()
 {
     if (m_systemBackdrop && m_backdropLink)
     {

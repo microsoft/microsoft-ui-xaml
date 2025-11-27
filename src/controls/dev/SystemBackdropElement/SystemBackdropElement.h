@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include "SystemBackdropHost.g.h"
-#include "SystemBackdropHost.properties.h"
+#include "SystemBackdropElement.g.h"
+#include "SystemBackdropElement.properties.h"
 
-class SystemBackdropHost :
-    public ReferenceTracker<SystemBackdropHost, winrt::implementation::SystemBackdropHostT>,
-    public SystemBackdropHostProperties
+class SystemBackdropElement :
+    public ReferenceTracker<SystemBackdropElement, winrt::implementation::SystemBackdropElementT>,
+    public SystemBackdropElementProperties
 {
 public:
-    SystemBackdropHost();
-    ~SystemBackdropHost();
+    SystemBackdropElement();
+    ~SystemBackdropElement();
 
     // Framework overrides
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);

@@ -4,12 +4,20 @@
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>d5c4f8a9-e3b2-4c1a-9d7e-8f5a3c2b1d0e</SharedGUID>
+    <SharedGUID>A8F7E9C3-1D4B-4E2F-B6A5-9C7D8E4F3A2B</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>SystemBackdropHost_InteractionTests</Import_RootNamespace>
+    <Import_RootNamespace>SystemBackdropElement_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)SystemBackdropHostTests.cs" />
+    <Page Include="$(MSBuildThisFileDirectory)SystemBackdropElementPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)SystemBackdropElementPage.xaml.cs">
+      <DependentUpon>SystemBackdropElementPage.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>
