@@ -78,11 +78,11 @@ The result looks like this:
 
 ![WrapPanel example layout](images/layout-panel-wrap-panel.png)
 
-In a WrapPanel, if a child element's size is not set explicitly, it will be given the minimal amount 
-of space for layout. In this example, the size of the rectangles are explicitly set, if the 
-**Width** or **Height** were not provided, the rectangle would not appear (as it would be given a 
-**0** size in either dimension). This is a key contrast to a standard `StackPanel` control in terms 
-of default behavior.
+In a WrapPanel, if a child element's size is not set explicitly, it will be given the minimal/natural 
+amount of space for layout, like the "Auto" size of a Grid's Row or ColumnDefinition. In the example 
+above, the size of the rectangles are explicitly set, if the **Width** or **Height** were not provided, 
+the rectangle would not appear (as it would be given a **0** size in either dimension). This is a key 
+contrast to a standard `StackPanel` control in terms of default behavior.
 
 # API Pages
 
