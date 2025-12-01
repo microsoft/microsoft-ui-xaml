@@ -138,7 +138,7 @@ a new column is added. Default is **Horizontal**.
 
 Gets or sets the distance between the border and its child object.
 
-## WrapPanel.StretchChild property
+## WrapPanel.StretchChildren property
 
 Gets or sets how the last child item in the WrapPanel is laid out. When set to **Last**, the final child 
 can stretch and be given all the rest of the available space for the row (when Orientation is 
@@ -147,10 +147,10 @@ default behavior layout are provided.
 
 In the following example, the last Orange rectangle will be constrained and pushed to the 2nd row. 
 Normally if given the same Width/Height as the others, it'd sit just below the Red rectangle to the left. 
-Instead, we can remove it's Width and have it fill the rest of the row by setting `StretchChild` to **Last**:
+Instead, we can remove it's Width and have it fill the rest of the row by setting `StretchChildren` to **Last**:
 
 ```xml
-    <controls:WrapPanel Width="132" StretchChild="Last">
+    <controls:WrapPanel Width="132" StretchChildren="Last">
         <Rectangle Fill="Red" Width="44" Height="44"/>
         <Rectangle Fill="Blue" Width="44" Height="44"/>
         <Rectangle Fill="Green" Width="44" Height="44"/>
@@ -160,7 +160,7 @@ Instead, we can remove it's Width and have it fill the rest of the row by settin
 
 The result looks like this:
 
-![WrapPanel StretchChild example](images/WrapPanelStretchChild.png)
+![WrapPanel StretchChildren example](images/WrapPanelStretchChildren.png)
 
 
 ## Other WrapPanel members
@@ -184,17 +184,17 @@ namespace Microsoft.UI.Xaml.Controls
       Double HorizontalSpacing;
       Orientation Orientation;
       Thickness Padding;
-      StretchChild StretchChild;
+      StretchChildren StretchChildren;
       Double VerticalSpacing;
 
       static Microsoft.UI.Xaml.DependencyProperty HorizontalSpacingProperty { get; };
       static Microsoft.UI.Xaml.DependencyProperty OrientationProperty { get; };
       static Microsoft.UI.Xaml.DependencyProperty PaddingProperty { get; };
-      static Microsoft.UI.Xaml.DependencyProperty StretchChildProperty { get; };
+      static Microsoft.UI.Xaml.DependencyProperty StretchChildrenProperty { get; };
       static Microsoft.UI.Xaml.DependencyProperty VerticalSpacingProperty { get; };
   }
 
-  enum StretchChild
+  enum StretchChildren
   {
     None = 0,
     Last
@@ -211,3 +211,6 @@ namespace Microsoft.UI.Xaml.Controls
   This or the Background section are a good place to describe alternative designs
   and why they were rejected.
 -->
+
+API Review Note: Renamed `StretchChild` to `StretchChildren` to better describe action on items (children) of
+panel, as well as leave more room for additional flags/modes in the future (Equal, Proportional, etc...).
