@@ -73,6 +73,9 @@ limitations, see [Getting started with building WinUI](src/GettingStarted.md). S
 [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) to check the
 latest status.
 
+For the latest code and updates, use the [`winui3/main`](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/main)
+branch.
+
 </br>
 
 ## 🛣️ Roadmap
