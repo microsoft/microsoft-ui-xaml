@@ -66,6 +66,13 @@ The WinUI team welcomes your feedback! To understand how we handle incoming feat
 
 For information on how to contribute, please see [Contributing to WinUI](CONTRIBUTING.md).
 
+We're not yet ready to accept code contributions, but we are working towards that goal. It is now
+possible to build the WinUI product binaries, with work in progress to share test code and enabling
+locally running tests. To get started building WinUI from source and see more details on current
+limitations, see [Getting started with building WinUI](src/GettingStarted.md). See the
+[WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) to check the
+latest status.
+
 </br>
 
 ## 🛣️ Roadmap
