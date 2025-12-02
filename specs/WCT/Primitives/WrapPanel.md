@@ -106,6 +106,10 @@ between each individual item, and `VerticalSpacing` adds uniform spacing between
 When the `Orientation` is **Vertical**, `HorizontalSpacing` adds uniform spacing between each column of 
 items, and `VerticalSpacing` adds uniform vertical spacing between individual items.
 
+The following example image shows another example of `WrapPanel` usage where elements may be of varying sizes:
+
+![WrapPanel alternate example layout](images/WrapPanelVaryingSizesExample.png)
+
 ## WrapPanel.HorizontalSpacing property
 
 Gets or sets a uniform Horizontal distance (in pixels) between items when Orientation is set to 
