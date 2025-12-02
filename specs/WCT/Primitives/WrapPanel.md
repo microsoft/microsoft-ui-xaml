@@ -49,6 +49,9 @@ Reference Docs:
 - [WPF WrapPanel Conceptual](https://learn.microsoft.com/dotnet/desktop/wpf/controls/wrappanel)
 - [WPF WrapPanel API](https://learn.microsoft.com/dotnet/api/system.windows.controls.wrappanel)
 - [WPF StackPanel API Comparison](https://learn.microsoft.com/dotnet/api/system.windows.controls.stackpanel)
+- Item/LineSpacing Naming:
+  - [LinedFlowLayout Class API](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.linedflowlayout)
+  - [Avalonia WrapPanel PR](https://github.com/AvaloniaUI/Avalonia/pull/18079)
 
 
 # Conceptual pages (How To)
@@ -99,27 +102,27 @@ By default, WrapPanel stacks items from left to right in the order they are decl
 `Orientation` property to **Vertical** to stack items from top to bottom instead, overflowing to the 
 right.
 
-Spacing can be automatically added between items using the `HorizontalSpacing` and `VerticalSpacing` 
-properties. When the `Orientation` is **Horizontal**, `HorizontalSpacing` adds uniform horizontal spacing 
-between each individual item, and `VerticalSpacing` adds uniform spacing between each row of items.
+Spacing can be automatically added between items using the `ItemSpacing` and `LineSpacing` 
+properties. When the `Orientation` is **Horizontal**, `ItemSpacing` adds uniform horizontal spacing 
+between each individual item, and `LineSpacing` adds uniform spacing between each row of items.
 
-When the `Orientation` is **Vertical**, `HorizontalSpacing` adds uniform spacing between each column of 
-items, and `VerticalSpacing` adds uniform vertical spacing between individual items.
+When the `Orientation` is **Vertical**, `LineSpacing` adds uniform spacing between each column of 
+items, and `ItemSpacing` adds uniform vertical spacing between individual items.
 
 The following example image shows another example of `WrapPanel` usage where elements may be of varying sizes:
 
 ![WrapPanel alternate example layout](images/WrapPanelVaryingSizesExample.png)
 
-## WrapPanel.HorizontalSpacing property
+## WrapPanel.ItemSpacing property
 
 Gets or sets a uniform Horizontal distance (in pixels) between items when Orientation is set to 
 Horizontal, or between columns of items when Orientation is set to Vertical.
 
-In the following example, HorizontalSpacing has been added to space out items, though in this case that 
+In the following example, ItemSpacing has been added to space out items, though in this case that 
 then wraps the Green box around to the next line due to the Width constraint on the WrapPanel:
 
 ```xml
-    <controls:WrapPanel Width="132" HorizontalSpacing="16">
+    <controls:WrapPanel Width="132" ItemSpacing="16">
         <Rectangle Fill="Red" Width="44" Height="44"/>
         <Rectangle Fill="Blue" Width="44" Height="44"/>
         <Rectangle Fill="Green" Width="44" Height="44"/>
@@ -129,7 +132,7 @@ then wraps the Green box around to the next line due to the Width constraint on 
 
 The result looks like this:
 
-![WrapPanel HorizontalSpacing example](images/WrapPanelHorizontalSpacing.png)
+![WrapPanel ItemSpacing example](images/WrapPanelItemSpacing.png)
 
 ## WrapPanel.Orientation property
 
@@ -171,7 +174,7 @@ The result looks like this:
 
 | Name | Description |
 |-|-|
-| VerticalSpacing | Gets or sets a uniform Vertical distance (in pixels) between items when Orientation is set to Vertical, or between rows of items when Orientation is set to Horizontal. (defaults to 0) |
+| LineSpacing | Gets or sets a uniform Vertical distance (in pixels) between items when Orientation is set to Vertical, or between rows of items when Orientation is set to Horizontal. (defaults to 0) |
 
 # API Details
 
@@ -185,17 +188,17 @@ namespace Microsoft.UI.Xaml.Controls
   {
       [method_name("CreateInstance")] WrapPanel();
 
-      Double HorizontalSpacing;
+      Double ItemSpacing;
+      Double LineSpacing;
       Orientation Orientation;
       Thickness Padding;
       StretchChildren StretchChildren;
-      Double VerticalSpacing;
 
-      static Microsoft.UI.Xaml.DependencyProperty HorizontalSpacingProperty { get; };
+      static Microsoft.UI.Xaml.DependencyProperty ItemSpacingProperty { get; };
+      static Microsoft.UI.Xaml.DependencyProperty LineSpacingProperty { get; };
       static Microsoft.UI.Xaml.DependencyProperty OrientationProperty { get; };
       static Microsoft.UI.Xaml.DependencyProperty PaddingProperty { get; };
       static Microsoft.UI.Xaml.DependencyProperty StretchChildrenProperty { get; };
-      static Microsoft.UI.Xaml.DependencyProperty VerticalSpacingProperty { get; };
   }
 
   enum StretchChildren
@@ -218,3 +221,8 @@ namespace Microsoft.UI.Xaml.Controls
 
 API Review Note: Renamed `StretchChild` to `StretchChildren` to better describe action on items (children) of
 panel, as well as leave more room for additional flags/modes in the future (Equal, Proportional, etc...).
+
+API Review Note: Aligned to `ItemSpacing` and `LineSpacing` for better clarity across
+`Orientation` changed based on discussion from Avalonia review and new precedence in
+Windows App SDK from `LinedFlowLayout`. Discussed that experimental [`FlowLayout`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.flowlayout) class
+should also be updated to align.
