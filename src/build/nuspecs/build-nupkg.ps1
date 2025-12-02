@@ -119,7 +119,10 @@ if ($IXP_Version -eq '' -or $BASE_COMPONENT_VERSION -eq '' -or $FOUNDATION_COMPO
 
 if (!(Test-Path $OutputDir)) { mkdir $OutputDir }
 
-$CommonNugetArgs = "-properties `"PackageRoot=$PackageRoot``;Version=$version``;IXP_Version=$IXP_Version``;CsWinRT_Version=$CsWinRT_Version``;WEBVIEW2_Version=$WEBVIEW2_Version``;BASE_COMPONENT_VERSION=$BASE_COMPONENT_VERSION``;FOUNDATION_COMPONENT_VERSION=$FOUNDATION_COMPONENT_VERSION``;IXP_COMPONENT_VERSION=$IXP_COMPONENT_VERSION`""
+# Pass NoWarn=NU5100 to silence warnings for all the native binaries being put
+# into the "runtime-framework\" folder rather than "lib\" or "runtime\".
+$CommonNugetArgs = "-properties `"PackageRoot=$PackageRoot``;Version=$version``;IXP_Version=$IXP_Version``;CsWinRT_Version=$CsWinRT_Version``;WEBVIEW2_Version=$WEBVIEW2_Version``;BASE_COMPONENT_VERSION=$BASE_COMPONENT_VERSION``;FOUNDATION_COMPONENT_VERSION=$FOUNDATION_COMPONENT_VERSION``;IXP_COMPONENT_VERSION=$IXP_COMPONENT_VERSION;NoWarn=NU5100`""
+
 $NugetArgs = "$CommonNugetArgs -OutputDirectory $(Resolve-Path $OutputDir)"
 
 if ($NoPackageAnalysis)

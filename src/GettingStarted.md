@@ -1,7 +1,7 @@
 # Getting started with building WinUI from GitHub
 
 > [!IMPORTANT]  
-> The final changes to make WinUI buildable may still be in progress. See the [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) to check if Phase 2 is complete and these steps are ready to use.
+> The WinUI OSS effort is still in progress. See the [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) to check the latest status. Also see [Current limitations](#current-limitations).
 
 ## Preparing your environment
 
@@ -95,8 +95,14 @@ Microsoft.ui.xaml.dll
 
 ### Using the built WinUI binaries in your own project
 
-To use the built WinUI binaries in your own project, the ugly hack which is currently recommended
-is to create an app which is both
+To use the built WinUI binaries in your own project, you can either copy the built binaries into
+your project's output folder after building your project, or you can build against the component
+package built as part of the WinUI build.
+
+#### Option 1: Copying built binaries into your project output folder
+
+In this option, you would copy the built WinUI binaries from the output packaging folder to your
+project's output folder after building your project. To do this, start with an app which is both
 [unpackaged](https://learn.microsoft.com/windows/apps/windows-app-sdk/deploy-unpackaged-apps#use-the-windows-app-sdk-runtime)
 and
 [self-contained](https://learn.microsoft.com/windows/apps/package-and-deploy/self-contained-deploy/deploy-self-contained-apps).
@@ -108,20 +114,85 @@ This can be done by setting the following properties in your app's project file:
   </PropertyGroup>
 ```
 
-Build a project using [WindowsAppSDK 2.0-experimental3](https://www.nuget.org/packages/Microsoft.WindowsAppSDK/2.0.0-experimental3),
+Build the project using [WindowsAppSDK 2.0-experimental3](https://www.nuget.org/packages/Microsoft.WindowsAppSDK/2.0.0-experimental3),
 then replace the WinUI binaries in the output folder of your app with the ones you built from source.
 You can then just run your app as normal to use the WinUI binaries you built.
 
-This will improve as the OSS effort continues, including by having a local build of a
-`Microsoft.WindowsAppSDK.WinUI` NuGet package which you can reference directly from your app.
+You could also set up a post-build step in your app project to do this copy automatically. For
+example, you could add a target to your project file that runs after the build completes:
+
+```xml
+  <Target Name="CopyWinUIBinaries" AfterTargets="Build">
+    <ItemGroup>
+      <WinUIBinaries Include="C:\winui3\src\BuildOutput\packaging\Debug\runtimes\win10-$(Platform)\native\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(WinUIBinaries)" DestinationFolder="$(OutputPath)" />
+  </Target>
+```
+
+Update the path in the `Include` attribute to point to your WinUI build output folder.
+
+#### Option 2: Referencing the built `Microsoft.WindowsAppSDK.WinUI` package
+
+In this option, you would reference the `Microsoft.WindowsAppSDK.WinUI` NuGet package built as part
+of the WinUI build process. To do this, start with any app (either packaged or unpackaged), and add
+this `nuget.config` file to the root of your app project (next to your `.csproj` or `.vcxproj` file):
+```xml
+<configuration>
+  <config>
+    <clear />
+    <add key="globalPackagesFolder" value="$\..\packages" />
+    <add key="repositoryPath" value="$\..\packages" />
+  </config>
+  <packageSources>
+    <add key="packagestore" value="C:\winui3\src\PackageStore" />
+  </packageSources>
+</configuration>
+```
+
+Update the path in the `packagestore` value to point to the PackageStore folder in your WinUI repo.
+
+Adding this config does two things. First, it adds the location of the 'PackageStore' directory from
+your local WinUI repo to the list of locations that nuget.exe will search for packages. This will
+allow the Visual Studio project to target this local build.
+
+Second, it updates nuget to cache all its packages in the app folder instead of using the global
+package cache from the machine (e.g. `C:\Users\alias\.nuget\packages`). This makes it easier to
+update the package and avoids caching it globally where it may affect other projects.
+
+##### Update the Package References
+
+In Visual Studio, use Tools -> Nuget Package Manager -> Manage Nuget Packages for Solution.
+Make sure you have the `Include prerelease` checkbox checked to ensure that the local package shows
+up. Select and uninstall all `Microsoft.WindowsAppSDK.*` packages other than `Base`, `Foundation`,
+`InteractiveExperiences`, and `WinUI`. Select `Microsoft.WindowsAppSDK.WinUI` and install
+your local package, which should be version `3.0.0-dev`.
+
+If you prefer, instead of using the UI, you can also do this by modifying the .csproj to remove
+any `<PackageReference>` element for the full `Microsoft.WindowsAppSDK` package and then add or
+update a `<PackageReference>` element for `Microsoft.WindowsAppSDK.WinUI`, like this:
+
+```xml
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="3.0.0-dev" />
+  </ItemGroup>
+```
+
+Rebuild and launch your app with F5. 
+
+##### Picking up new WinUI builds
+
+Each time you do a new build of WinUI from source, you will need to delete the
+`packages\microsoft.windowsappsdk.winui` folder from your app project folder to force NuGet to
+restore the updated package.
 
 ## Current limitations
 
-The WinUI OSS effort is still in progress, just completing Phase 2 of the plan outlined in the
-[WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700). Current
-limitations include:
-* Only the product binaries can be built. No tests or samples can be built yet, including the
-  test code already in the repo in the `controls\` subtree.
+The WinUI OSS effort is still in progress. Phase 2 of the plan outlined in the
+[WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) is now
+complete and Phase 3 is underway. Current limitations include:
+* Only the product binaries[^1] can be built. No tests or samples can be built yet, including
+  the test code already in the repo in the `controls\` subtree.
 * Related to the previous, various sln files and project files in the repo cannot yet be built,
   including `Microsoft.UI.Xaml.sln` (`Microsoft.UI.Xaml.OSS.sln` is available instead) and
   `MUXControls.sln`.
@@ -132,18 +203,21 @@ limitations include:
 * Most unittest and integration test code is not yet open sourced, so cannot be built or run.
 * There is no support yet to run any builds/tests in a CI system.
 
+[^1]: The product binaries built by this repo are the `Microsoft.UI.Xaml.*.dll` files,
+excluding `Microsoft.UI.Xaml.Internal.dll` (which will not be OSS).
+ 
 ## Additional Info
 
 ### Initialize CMD or PowerShell with support for VS build tools
 
-At the CMD prompt, in the root of the repo, run (for an x64chk build):
+At the CMD prompt, in the `src\` folder off the root of the repo, run (for an x64chk build):
 ```
 init.cmd
 ```
 
 Or in PowerShell, run:
 ```
-init.ps1
+.\init.ps1
 ```
 
 > Note:  If you get an error saying it can't find msbuild, this is likely due to a pending Visual Studio update. To see
