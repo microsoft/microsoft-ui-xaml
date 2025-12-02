@@ -41,6 +41,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <PackageContent Include="$(MSBuildThisFileDirectory)Assets\NoiseAsset_256x256_PNG.png" PackageLocation="$(NativeAssemblyPackageLocationOld)\Microsoft.UI.Xaml\Assets" />
     <PackageContent Include="$(MSBuildThisFileDirectory)Assets\NoiseAsset_256x256_PNG.png" PackageLocation="$(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\Assets" />
   </ItemGroup>
 </Project>

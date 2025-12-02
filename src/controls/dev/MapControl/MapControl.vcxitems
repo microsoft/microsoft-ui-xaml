@@ -48,6 +48,7 @@
     <Midl Include="$(MSBuildThisFileDirectory)MapControl.idl" />
   </ItemGroup>
   <ItemGroup>
+    <PackageContent Include="$(MSBuildThisFileDirectory)map.html" PackageLocation="$(NativeAssemblyPackageLocationOld)\Microsoft.UI.Xaml\Assets" />
     <PackageContent Include="$(MSBuildThisFileDirectory)map.html" PackageLocation="$(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\Assets" />
   </ItemGroup>
 </Project>

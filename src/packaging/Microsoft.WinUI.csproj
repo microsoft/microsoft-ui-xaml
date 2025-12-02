@@ -18,7 +18,7 @@
   <ItemGroup>
     <PackageContent Include="license.txt" PackageLocation="$(PackageOutputLocation)" />
     <PackageContent Include="$(ComponentNuGetLicensePath)" PackageLocation="$(PackageOutputLocation)\ComponentNuGet\" />
-    <PackageContent Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="..\build\nuspecs\NOTICE.txt" PackageLocation="$(PackageOutputLocation)\ComponentNuGet\" />
+    <PackageContent Include="..\build\nuspecs\NOTICE.txt" PackageLocation="$(PackageOutputLocation)\ComponentNuGet\" />
     <PackageContent Include="$(OutDir)AppxManifest.xml" PackageLocation="$(PackageOutputLocation)"/>
     <PackageContent Include="$(OutDir)package.appxfragment" PackageLocation="$(PackageOutputLocation)"/>
     <PackageContent Include="build\*" PackageLocation="$(BuildTargetsPackageLocation)" />

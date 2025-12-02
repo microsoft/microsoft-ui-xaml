@@ -621,6 +621,9 @@
   </Target>
   <Target Name="AddPackageContentsAndBinplaceItems" AfterTargets="CompilePageRequiringCustomCompilation" DependsOnTargets="GetXbfItems">
     <ItemGroup>
+      <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocationOld)"/>
+      <PackageContent Include="$(OutDir)$(TargetName).pri" PackageLocation="$(NativeAssemblyPackageLocationOld)"/>
+      <PackageContent Include="@(XbfItem)" PackageLocation="$(NativeAssemblyPackageLocationOld)\Microsoft.UI.Xaml\%(RecursiveDir)" Condition="'$(DisableEmbeddedXbf)' != 'false'" />
       <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)"/>
       <PackageContent Include="$(OutDir)$(TargetName).pri" PackageLocation="$(NativeAssemblyPackageLocation)"/>
       <PackageContent Include="@(XbfItem)" PackageLocation="$(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\%(RecursiveDir)" Condition="'$(DisableEmbeddedXbf)' != 'false'" />

@@ -161,6 +161,7 @@ if "%_targetMux%" == "1" (
       rem Build the smaller solution
       call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.OSS.sln
       if ERRORLEVEL 1 goto:showDurationAndExit
+      call :buildMockPackage
       rem Can't yet build the test projects in MUXControls.sln
       rem No samples yet in OSS
       set _targetSamples=0
@@ -289,11 +290,19 @@ goto :eof
 
 
 :buildMockPackage
-if "%_fake%"=="1" (
-    echo COMMAND: call %RepoRoot%\pack.cmd /version %_version%
-    goto :eof
+if EXIST "%RepoRoot%\pack.cmd" (
+    if "%_fake%"=="1" (
+        echo COMMAND: call %RepoRoot%\pack.cmd /version %_version%
+        goto :eof
+    )
+    call %RepoRoot%\pack.cmd /version %_version%
+) else (
+    if "%_fake%"=="1" (
+        echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
+        goto :eof
+    )
+    call %RepoRoot%\pack.component.cmd /version %_version%
 )
-call %RepoRoot%\pack.cmd /version %_version%
 if ERRORLEVEL 1 goto :showDurationAndExit
 goto :eof
 
