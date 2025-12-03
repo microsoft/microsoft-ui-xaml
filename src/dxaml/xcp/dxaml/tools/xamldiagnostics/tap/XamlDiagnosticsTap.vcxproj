@@ -10,7 +10,6 @@
 
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
     <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
-    <Import Project="$(XamlSourcePath)\test\external-dependencies-lift.props"/>
 
     <!-- TAEF.targets always sets INLINE_TEST_METHOD_MARKUP.  We don't want that defined so capture the value before the import and override it
          back to the starting value afterwards. -->
@@ -65,6 +64,7 @@
             $(ProjectIncludeDirectories)
             $(LiftedIXPIncludePaths);
             $(ExternalDependencies);
+            $(XamlSourcePath)\xcp\inc;
             $(XamlSourcePath)\xcp\components\base\inc;
             $(XamlDiagPath)\inc;
             $(XamlDiagObjPath)\idl;

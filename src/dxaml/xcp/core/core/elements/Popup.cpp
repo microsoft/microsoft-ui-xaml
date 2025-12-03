@@ -43,7 +43,6 @@
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
-#include <Microsoft.UI.Content.Private.h>
 
 using namespace DirectUI;
 using namespace Focus;
@@ -1122,7 +1121,7 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCr
             // Turn on anchoring for the popup so that it follows the top level window.
             wrl::ComPtr<ixp::IDesktopPopupSiteBridge2> bridgeForAnchoring;
             IFCFAILFAST(m_desktopPopupSiteBridge.As(&bridgeForAnchoring));
-            IFC_RETURN(bridgeForAnchoring->put_AnchoringBehavior(ixp::PopupAnchoringOptions_ParentIsland));
+            IFC_RETURN(bridgeForAnchoring->put_AnchoringBehavior(ixp::PopupAnchor_ParentIsland));
 
             // Check if the island is already closed.
             wrl::ComPtr<mu::IClosableNotifier> contentIslandAsClosable;
@@ -1194,7 +1193,7 @@ _Check_return_ HRESULT CPopup::EnsureWindowForWindowedPopup(_Out_ bool* windowCr
     return S_OK;
 }
 
-wrl::ComPtr<ixp::IIslandInputSitePartner> CPopup::GetIslandInputSite() const
+wrl::ComPtr<InputSiteHelper::IIslandInputSite> CPopup::GetIslandInputSite() const
 {
     if (IsWindowed())
     {
@@ -1235,7 +1234,11 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
-        IFC_RETURN(contentStatics->Create(visual.Get(), &m_contentIsland));
+        {
+            // The Create call is causing re-entrancy, hence using PauseNewDispatch here.
+            PauseNewDispatch deferReentrancy(core);
+            IFC_RETURN(contentStatics->Create(visual.Get(), &m_contentIsland));
+        }
 
         IFC_RETURN(m_contentIsland->add_AutomationProviderRequested(WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<
             ixp::ContentIsland*,

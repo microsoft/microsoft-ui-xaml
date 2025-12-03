@@ -7701,17 +7701,6 @@
               channel="DefaultChannel"
               keywords="Rendering"
               level="win:Verbose"
-              opcode="win:Info"
-              symbol="CoreWindowResizeFiredInfo"
-              task="CoreWindowResizeFired"
-              template="NotifyWindowLayoutCompleteData"
-              value="259"
-              version="0"
-              />
-          <event
-              channel="DefaultChannel"
-              keywords="Rendering"
-              level="win:Verbose"
               notLogged="true"
               opcode="win:Info"
               symbol="SubmitNotifyWindowResizedInfo"
@@ -11310,6 +11299,7 @@
           </valueMap>
         </maps>
       </provider>
+  
       <provider
           guid="{59E7A714-73A4-4147-B47E-0957048C75C4}"
           message="$(string.EventProviderName)"

@@ -137,7 +137,7 @@
     <value>Ausgewählten Text fett formatieren</value>
   </data>
   <data name="TextCommandDescriptionCopy" xml:space="preserve">
-    <value>Ausgewählten Inhalt in Zwischenablage</value>
+    <value>Ausgewählten Inhalt in die Zwischenablage kopieren</value>
   </data>
   <data name="TextCommandDescriptionCut" xml:space="preserve">
     <value>Ausgewählten Inhalt entfernen und in der Zwischenablage ablegen</value>

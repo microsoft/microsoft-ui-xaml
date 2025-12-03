@@ -5,6 +5,7 @@
 #include "MenuFlyoutItemBaseCollection.g.h"
 #include "MenuFlyout.g.h"
 #include "MenuFlyoutSubItem.g.h"
+#include "SplitMenuFlyoutItem.g.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -153,12 +154,20 @@ MenuFlyoutItemBaseCollection::NotifyMenuFlyoutOfCollectionChange()
     else
     {
         auto ownerAsMenuFlyoutSubItem = ownerAsDO.AsOrNull<IMenuFlyoutSubItem>();
+        auto ownerAsSplitMenuFlyoutItem = ownerAsDO.AsOrNull<SplitMenuFlyoutItem>();
 
-        // MenuFlyoutItemBaseCollection is only used by MenuFlyout and MenuFlyoutSubItem.
+        // MenuFlyoutItemBaseCollection is used by MenuFlyout, MenuFlyoutSubItem and SplitMenuFlyoutItem.
         // If another type is added, this will need to change.
-        IFCEXPECT_RETURN(ownerAsMenuFlyoutSubItem != nullptr);
+        IFCEXPECT_RETURN(ownerAsMenuFlyoutSubItem != nullptr || ownerAsSplitMenuFlyoutItem != nullptr);
 
-        IFC_RETURN(ownerAsMenuFlyoutSubItem.Cast<MenuFlyoutSubItem>()->QueueRefreshItemsSource());
+        if(ownerAsMenuFlyoutSubItem != nullptr)
+        {
+            IFC_RETURN(ownerAsMenuFlyoutSubItem.Cast<MenuFlyoutSubItem>()->QueueRefreshItemsSource());
+        }
+        else
+        {
+            IFC_RETURN(ownerAsSplitMenuFlyoutItem->QueueRefreshItemsSource());
+        }
     }
 
     return S_OK;

@@ -5548,6 +5548,26 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.StretchChild",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.StretchChild",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"None") return box_value(winrt::StretchChild::None);
+                    if (fromString == L"Last") return box_value(winrt::StretchChild::Last);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -5677,6 +5697,33 @@ Entry c_typeEntries[] =
                 });
 
             return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.SystemBackdropElement",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.SystemBackdropElement",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.FrameworkElement",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISystemBackdropElementFactory>(L"Microsoft.UI.Xaml.Controls.SystemBackdropElement"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::ISystemBackdropElementStatics statics = GetFactory<winrt::ISystemBackdropElementStatics>(L"Microsoft.UI.Xaml.Controls.SystemBackdropElement");
+                    {
+                        xamlType.AddDPMember(L"CornerRadius", L"Microsoft.UI.Xaml.CornerRadius", statics.CornerRadiusProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"SystemBackdrop", L"Microsoft.UI.Xaml.Media.SystemBackdrop", statics.SystemBackdropProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
         }
     },
     {
@@ -6649,6 +6696,36 @@ Entry c_typeEntries[] =
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.WrapPanel",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.WrapPanel",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Panel",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IWrapPanelFactory>(L"Microsoft.UI.Xaml.Controls.WrapPanel"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IWrapPanelStatics statics = GetFactory<winrt::IWrapPanelStatics>(L"Microsoft.UI.Xaml.Controls.WrapPanel");
+                    {
+                        xamlType.AddDPMember(L"HorizontalSpacing", L"Double", statics.HorizontalSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Orientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.OrientationProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"Padding", L"Microsoft.UI.Xaml.Thickness", statics.PaddingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"StretchChild", L"Microsoft.UI.Xaml.Controls.StretchChild", statics.StretchChildProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"VerticalSpacing", L"Double", statics.VerticalSpacingProperty(), false /* isContent */);
+                    }
+
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -7947,6 +8024,7 @@ hstring c_knownNamespacePrefixes[] =
 #include "SwipeControl.properties.h"
 #include "SwipeItem.properties.h"
 #include "SwipeItems.properties.h"
+#include "SystemBackdropElement.properties.h"
 #include "TabView.properties.h"
 #include "TabViewItem.properties.h"
 #include "TabViewItemTemplateSettings.properties.h"
@@ -7962,6 +8040,7 @@ hstring c_knownNamespacePrefixes[] =
 #include "TwoPaneView.properties.h"
 #include "UniformGridLayout.properties.h"
 #include "WebView2.properties.h"
+#include "WrapPanel.properties.h"
 #include "XamlControlsResources.properties.h"
 #include "AutoSuggestBoxHelper.h"
 #include "ComboBoxHelper.h"
@@ -8044,6 +8123,7 @@ void ClearTypeProperties()
     SwipeControlProperties::ClearProperties();
     SwipeItemProperties::ClearProperties();
     SwipeItemsProperties::ClearProperties();
+    SystemBackdropElementProperties::ClearProperties();
     TabViewProperties::ClearProperties();
     TabViewItemProperties::ClearProperties();
     TabViewItemTemplateSettingsProperties::ClearProperties();
@@ -8059,6 +8139,7 @@ void ClearTypeProperties()
     TwoPaneViewProperties::ClearProperties();
     UniformGridLayoutProperties::ClearProperties();
     WebView2Properties::ClearProperties();
+    WrapPanelProperties::ClearProperties();
     XamlControlsResourcesProperties::ClearProperties();
     AutoSuggestBoxHelper::ClearProperties();
     ComboBoxHelper::ClearProperties();

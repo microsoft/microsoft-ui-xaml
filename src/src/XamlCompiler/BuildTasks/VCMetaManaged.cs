@@ -17,7 +17,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Utilities
     {
         public static Guid HashForWinMD(string path)
         {
-            using (var md5 = MD5.Create())
+            // MD5 is used here for content fingerprinting, not cryptographic security.
+            // MD5 is the optimal choice because:
+            // 1. Perfect size match: MD5 = 16 bytes = GUID size (no truncation needed)
+            // 2. Performance: Faster than SHA256 for frequent build operations
+            // 3. Collision resistance: Sufficient for structured metadata content identification
+            // 4. Use case: Build system optimization, not security protection
+            using (var md5 = MD5.Create()) // CodeQL [SM02196] MD5 used for content fingerprinting not cryptographic security
             using (var pe = new PEReader(File.OpenRead(path)))
             {
                 var reader = pe.GetMetadataReader();

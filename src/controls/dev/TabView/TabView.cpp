@@ -1509,8 +1509,9 @@ bool TabView::MoveFocus(bool moveForward)
     control.IsTabStop(true);
 
     // We checked focusability above, so we should never be in a situation where Focus() returns false.
-    MUX_ASSERT(control.Focus(winrt::FocusState::Keyboard));
-    return true;
+    bool focusResult = control.Focus(winrt::FocusState::Keyboard);
+    MUX_ASSERT(focusResult);
+    return focusResult;
 }
 
 bool TabView::MoveSelection(bool moveForward)

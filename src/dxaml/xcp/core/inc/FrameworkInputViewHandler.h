@@ -5,7 +5,6 @@
 
 #include <fwd/windows.ui.viewmanagement.h>
 
-#include <frameworkinputview_min.h>
 #include <FrameworkUdk/FrameworkInputView.h> //IFrameworkInputViewOcculusionsChangedListener
 
 class CFocusManager;

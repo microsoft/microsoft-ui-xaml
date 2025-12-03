@@ -34,7 +34,7 @@ class HWCompTreeNodeWinRT : public HWCompTreeNode
         virtual ~ImplicitAnimationDisabler();
 
     private:
-        wrl::ComPtr<WUComp::ICompositionObjectPartner> m_visualAsCO;    // The Visual we're working with
+        wrl::ComPtr<WUComp::ICompositionObject> m_visualAsCO;           // The Visual we're working with
         bool m_disableIA;                                               // If true, do the actual work of disabling/re-enabling
     };
 

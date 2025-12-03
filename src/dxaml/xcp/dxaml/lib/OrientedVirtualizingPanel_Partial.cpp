@@ -4130,7 +4130,19 @@ OrientedVirtualizingPanel::ComputePixelExtent(
 
     if (nLineCount > 0)
     {
-        extent = (DOUBLE) (cumulatedChildDim + cumulatedChildDim / nLineCount * (m_lineCount - nLineCount));
+        // safeguard for subtraction underflow as both m_lineCount & nLineCount are UINT
+        if (m_lineCount >= nLineCount)
+        {
+            extent = (DOUBLE) (cumulatedChildDim + cumulatedChildDim / nLineCount * (m_lineCount - nLineCount));
+        }
+        else
+        {
+            // If measure have not happened at this point after adding / removing items,
+            // m_lineCount can go lesser than nLineCount as m_lineCount only gets set during measure,
+            // We only need to consider cumulatedChildDim in that case. A measure would be happening at a later point
+            // which should give the correct extent value.
+            extent = cumulatedChildDim;
+        }
         extent = extent * zoomFactor;
     }
 

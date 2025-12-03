@@ -39,9 +39,9 @@ cpp_quote("#undef GetCurrentTime")
 
 namespace Microsoft.UI.Xaml
 {
-    [contractversion(9)]
+    [contractversion(10)]
     apicontract WinUIContract{};
-    [contractversion(9)]
+    [contractversion(10)]
     apicontract XamlContract{};
 }
 
@@ -884,7 +884,7 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         TextEditTextChanged,
         LayoutInvalidated,
         [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
         Notification,
     };
 
@@ -1907,7 +1907,7 @@ namespace Microsoft.UI.Xaml
         Microsoft.UI.Content.ContentIsland ContentIsland{ get; };
         Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
         [feature(Feature_ExperimentalApi)]
         [interface_name("Microsoft.UI.Xaml.IXamlIslandFeature_ExperimentalApi")]
         {

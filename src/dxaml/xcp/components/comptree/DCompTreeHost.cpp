@@ -3,7 +3,6 @@
 
 #include "precomp.h"
 #include "DCompTreeHost.h"
-#include <touchtelemetry.h>
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <windows.applicationmodel.core.h>
@@ -18,11 +17,9 @@
 #include <windows.foundation.h>
 #include <microsoft.ui.composition.h>
 #include <microsoft.ui.composition.experimental.h>
-#include <microsoft.ui.composition.experimental.interop.h>
 #include <WindowsGraphicsDeviceManager.h>
 #include <corep.h>
 #include <d2dutils.h>
-#include <DCompInteropCompositorPartnerCallback.h>
 #include <DoubleUtil.h>
 #include <HWCompNode.h>
 #include <UIElement.h>
@@ -46,7 +43,6 @@
 #include <windows.ui.core.h>
 
 #include <dwmapi.h>
-#include <isapipresent.h>  // IsDwmSetWindowAttributePresent
 
 #include <XamlOneCoreTransforms.h>
 
@@ -158,7 +154,7 @@ DCompTreeHost::DCompTreeHost(
     XCP_WEAK(&m_pGraphicsDeviceManagerNoRef);
     ComputeAndCachePrimaryMonitorSize();
     EmptyRectF(&m_backgroundRect);
-    m_offerTracker = make_xref<OfferTracker>();
+    m_offerTracker = make_xref<OfferTracker>(this);
     m_projectedShadowManager = std::make_shared<ProjectedShadowManager>(this);
     m_refreshRateInfo = m_pGraphicsDeviceManagerNoRef->GetRefreshRateInfo();
 }
@@ -179,18 +175,13 @@ DCompTreeHost::~DCompTreeHost()
 void
 DCompTreeHost::CloseAndReleaseInteropCompositor()
 {
-    if (m_spInteropCompositorPartner != nullptr)
+    if (m_pCompositionHelper.IsInitialized())
     {
-        IFCFAILFAST(m_spInteropCompositorPartner->ClearCallback());
-        IFCFAILFAST(m_spInteropCompositorPartner->RealClose());
+        m_pCompositionHelper->CloseAndReleaseInteropCompositor();
+        m_pCompositionHelper.Uninitialize();
+        ASSERT(!m_pCompositionHelper.IsInitialized());
     }
 
-    if (m_spInteropCompositorPartnerCallback != nullptr)
-    {
-        m_spInteropCompositorPartnerCallback->Disconnect();
-        m_spInteropCompositorPartnerCallback = nullptr;
-    }
-    m_spInteropCompositorPartner = nullptr;
     m_frameRateVisual = nullptr;
 }
 
@@ -228,12 +219,12 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
 
     m_projectedShadowManager->ReleaseResources();
 
-    if (m_spMainSurfaceFactoryPartner3)
+    if (m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->GetSurfaceFactory() != nullptr)
     {
         //we store the pointers of offered surfacefactories in a list
         //in OfferTracker, so we need to inform OfferTracker this SurfaceFactory
         //is being released
-        m_offerTracker->DeleteReleasedSurfaceFactoryFromList(m_spMainSurfaceFactoryPartner3.Get());
+        m_offerTracker->DeleteReleasedSurfaceFactoryFromList(m_pCompositionHelper->GetSurfaceFactory());
     }
 
     DCompSurfaceFactoryManager* instance = DCompSurfaceFactoryManager::Instance();
@@ -277,8 +268,10 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
     {
         // If the device has already been closed, release these objects so we don't try to use them later
         // (e.g. in CloseAndReleaseInteropCompositor).  They're not useful to us anymore anyway.
-        m_spInteropCompositorPartnerCallback = nullptr;
-        m_spInteropCompositorPartner = nullptr;
+        if (m_pCompositionHelper.IsInitialized())
+        {
+            m_pCompositionHelper->ReleaseObjectsForClosedDevice();
+        }
     }
 
     //  Explicitly close the content bridge before closing the compositor.  If we close the compositor
@@ -297,17 +290,18 @@ DCompTreeHost::ReleaseResources(bool shouldDeferClosingInteropCompostior)
         CloseAndReleaseInteropCompositor();
     }
 
-    m_spMainSurfaceFactoryPartner = nullptr;
-    m_spMainSurfaceFactoryPartner2 = nullptr;
-    m_spMainSurfaceFactoryPartner3 = nullptr;
     m_spMainDevice = nullptr;
     m_spCompositor = nullptr;
     m_spCompositor2 = nullptr;
     m_spCompositor5 = nullptr;
     m_spCompositor6 = nullptr;
-    m_spCompositorPrivate = nullptr;
     m_spCompositorInterop = nullptr;
     m_dcompDevice = nullptr;
+    if (m_pCompositionHelper.IsInitialized())
+    {
+        ASSERT(shouldDeferClosingInteropCompostior, "Should only still have m_pCompositionHelper if we deferred closing.");
+        m_pCompositionHelper->ReleaseResources(shouldDeferClosingInteropCompostior);
+    }
 
     m_contentBridgeCW = nullptr;
     m_inprocIslandRootVisual = nullptr;
@@ -347,18 +341,15 @@ void DCompTreeHost::AbandonDCompObjectRegistry()
 _Check_return_ HRESULT
 DCompTreeHost::FreezeDWMSnapshot()
 {
-    if (IsDwmSetWindowAttributePresent_PD_Replacement())
+    if (m_targetHwnd != NULL)
     {
-        if (m_targetHwnd != NULL)
-        {
-            BOOL fFreeze = TRUE;
-            IFC_RETURN(DwmSetWindowAttribute(m_targetHwnd, DWMWA_FREEZE_REPRESENTATION, &fFreeze, sizeof(fFreeze)));
-            m_thumbnailState = DwmThumbnailState::Frozen;
-        }
-
-        // Note: This needs to happen after DWM snapshots are frozen, otherwise the snapshot will be blank.
-        IFC_RETURN(CommitMainDevice());
+        BOOL fFreeze = TRUE;
+        IFC_RETURN(DwmSetWindowAttribute(m_targetHwnd, DWMWA_FREEZE_REPRESENTATION, &fFreeze, sizeof(fFreeze)));
+        m_thumbnailState = DwmThumbnailState::Frozen;
     }
+
+    // Note: This needs to happen after DWM snapshots are frozen, otherwise the snapshot will be blank.
+    IFC_RETURN(CommitMainDevice());
 
     return S_OK;
 }
@@ -376,20 +367,13 @@ DCompTreeHost::UnfreezeDWMSnapshotIfFrozen()
     // TODO: JCOMP: Do we need to wait for anything? GPU work? DWM notification?
     // TODO: JCOMP: Should this happen on the UI thread?
 
-    if (IsDwmSetWindowAttributePresent_PD_Replacement())
+    // A suspend some time ago triggered this unfreeze. Check the freeze count to make sure a second
+    // freeze hasn't happened since then.
+    if (m_targetHwnd != NULL && m_thumbnailState == DwmThumbnailState::Frozen)
     {
-        // A suspend some time ago triggered this unfreeze. Check the freeze count to make sure a second
-        // freeze hasn't happened since then.
-        if (m_targetHwnd != NULL && m_thumbnailState == DwmThumbnailState::Frozen)
-        {
-            BOOL fFreeze = FALSE;
-            IFC_RETURN(DwmSetWindowAttribute(m_targetHwnd, DWMWA_FREEZE_REPRESENTATION, &fFreeze, sizeof(fFreeze)));
-            m_thumbnailState = DwmThumbnailState::Unfrozen;
-        }
-    }
-    else
-    {
-        ASSERT(m_thumbnailState != DwmThumbnailState::Frozen);
+        BOOL fFreeze = FALSE;
+        IFC_RETURN(DwmSetWindowAttribute(m_targetHwnd, DWMWA_FREEZE_REPRESENTATION, &fFreeze, sizeof(fFreeze)));
+        m_thumbnailState = DwmThumbnailState::Unfrozen;
     }
 
     return S_OK;
@@ -404,7 +388,7 @@ DCompTreeHost::UnfreezeDWMSnapshotIfFrozen()
 _Check_return_ HRESULT
 DCompTreeHost::OfferResources()
 {
-    std::vector<IDCompositionSurfaceFactoryPartner3*> surfaceFactoryVector;
+    std::vector<IDCompositionSurfaceFactory*> surfaceFactoryVector;
     //Acquire all the surfaceFactories, including the main SF and secondary SFs
     GetSurfaceFactoriesForCurrentThread(&surfaceFactoryVector);
 
@@ -447,11 +431,11 @@ DCompTreeHost::ReclaimResources(_Out_ bool *pDiscarded)
 //    Get the main and secondary SFs of the current thread, put them into the
 //    vector, which will consumed by Offer and Reclaim
 //-------------------------------------------------------------------------------
-void DCompTreeHost::GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector)
+void DCompTreeHost::GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactory*>* surfaceFactoryVector)
 {
     //First, we put the main SurfaceFactory into the vector
-    if (m_spMainSurfaceFactoryPartner3 != NULL) {
-        surfaceFactoryVector->push_back(m_spMainSurfaceFactoryPartner3.Get());
+    if (m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->GetSurfaceFactory() != nullptr) {
+        surfaceFactoryVector->push_back(m_pCompositionHelper->GetSurfaceFactory());
     }
 
     //We also need to put secondary SFs into the vector
@@ -498,16 +482,11 @@ DCompTreeHost::EnsureDCompDevice() noexcept
     // We should not be holding onto any DComp resources.
     ASSERT(m_targetHwnd == NULL);
     ASSERT(!m_isInitialized);
-    ASSERT(m_spMainSurfaceFactoryPartner == nullptr);
-    ASSERT(m_spMainSurfaceFactoryPartner2 == nullptr);
-    ASSERT(m_spMainSurfaceFactoryPartner3 == nullptr);
-    ASSERT(m_spInteropCompositorPartnerCallback == nullptr);
-    ASSERT(m_spInteropCompositorPartner == nullptr);
+    ASSERT(!m_pCompositionHelper.IsInitialized());
     ASSERT(m_spCompositor == nullptr);
     ASSERT(m_spCompositor2 == nullptr);
     ASSERT(m_spCompositor5 == nullptr);
     ASSERT(m_spCompositor6 == nullptr);
-    ASSERT(m_spCompositorPrivate == nullptr);
     ASSERT(m_spCompositorInterop == nullptr);
     ASSERT(m_systemBackdropBrush == nullptr);
 
@@ -521,37 +500,24 @@ DCompTreeHost::EnsureDCompDevice() noexcept
         m_easingFunctionStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetCompositionEasingFunctionStatics();
     }
 
-    IFC_RETURN(CreateWinRTInteropCompositionDevice(
-        __uuidof(IDCompositionDesktopDevicePartner),
-        reinterpret_cast<void**>(m_spMainDevice.GetAddressOf())));
+    IFC_RETURN(m_pCompositionHelper.Initialize(this));
 
-    // Cache the WUComp::IInteropCompositorPartner implementation for
-    // the ability to mark the interop compositor dirty during commit deferrals.
-    IFC_RETURN(m_spMainDevice.As(&m_spInteropCompositorPartner));
+    m_spMainDevice = m_pCompositionHelper->GetMainDevice();
+
     IFC_RETURN(m_spMainDevice.As(&m_spCompositor));
     IFC_RETURN(m_spCompositor.As(&m_spCompositor2));
     IFC_RETURN(m_spCompositor.As(&m_spCompositor5));
     IFC_RETURN(m_spCompositor.As(&m_spCompositor6));
-    IFC_RETURN(m_spCompositor.As(&m_spCompositorPrivate));
     IFC_RETURN(m_spCompositor.As(&m_spCompositorInterop));
 
     auto coreServicesNoRef = GetCoreServicesNoRef();
     if ((coreServicesNoRef != nullptr) &&
         (coreServicesNoRef->GetInitializationType() == InitializationType::IslandsOnly))
     {
-        wrl::ComPtr<ixp::ICompositorInternal> compositorInternal;
-        if (SUCCEEDED(m_spMainDevice.As(&compositorInternal)))
-        {
-            // If we are being hosted by XAML islands we auto enable completion of
-            // keyframe animations on screen occluded to prevent animation leaks.
-            compositorInternal->put_AutoCompleteKeyFrameAnimationsOnScreenOccluded(true);
-        }
+        // If we are being hosted by XAML islands we auto enable completion of
+        // keyframe animations on screen occluded to prevent animation leaks.
+        GetCompositionHelper()->SetAutoCompleteKeyFrameAnimationsOnScreenOccluded(true);
     }
-
-    m_spMainDevice->DisableD2DStatePreservation();
-
-    // This should be kept in sync with the adjustment made in GetMaxTextureSize().
-    m_spMainDevice->EnableWhitePixelOptimization(TRUE);
 
     m_isInitialized = true;
     return S_OK;
@@ -584,7 +550,7 @@ DCompTreeHost::EnsureResources() noexcept
         m_wucBrushManager.EnsureResources(&m_sharedTransitionAnimations, m_easingFunctionStatics.Get(), m_spCompositor.Get(), m_compositionGraphicsDevice.Get());
     }
 
-    if (m_spMainSurfaceFactoryPartner == nullptr)
+    if (m_pCompositionHelper->GetSurfaceFactory() == nullptr)
     {
         // The surface factory is created with the DComposition device, but can also be recreated
         // if we had a Graphics device lost situation.
@@ -605,18 +571,12 @@ DCompTreeHost::EnsureResources() noexcept
             Microsoft::WRL::ComPtr<IDCompositionSurfaceFactory> pMainSurfaceFactory;
             if (nullptr != pD2DDevice)
             {
-                IFC_RETURN(m_spMainDevice->CreateSurfaceFactory(static_cast<IUnknown*>(pD2DDevice), &pMainSurfaceFactory));
+                IFC_RETURN(m_pCompositionHelper->CreateSurfaceFactory(static_cast<IUnknown*>(pD2DDevice)));
             }
             else
             {
-                IFC_RETURN(m_spMainDevice->CreateSurfaceFactory(pD3D11DeviceInternal->GetDevice(&guard), &pMainSurfaceFactory));
+                IFC_RETURN(m_pCompositionHelper->CreateSurfaceFactory(pD3D11DeviceInternal->GetDevice(&guard)));
             }
-            VERIFYHR(pMainSurfaceFactory.As(&m_spMainSurfaceFactoryPartner));
-            VERIFYHR(pMainSurfaceFactory.As(&m_spMainSurfaceFactoryPartner2));
-
-            // XAML_DIM_DOWN: What do we lose here?
-            // m_spMainSurfaceFactoryPartner3 not available on RS4
-            IGNOREHR(pMainSurfaceFactory.As(&m_spMainSurfaceFactoryPartner3));
         }
 
         // Test for 8-bit DCompSurface support.
@@ -630,7 +590,7 @@ DCompTreeHost::EnsureResources() noexcept
         if (pD3D11DeviceInternal->ShouldAttemptToUseA8Textures())
         {
             IDCompositionSurface *p8BitSupportCheckSurface = NULL;
-            HRESULT createTextureHR = m_spMainSurfaceFactoryPartner->CreateSurface(
+            HRESULT createTextureHR = m_pCompositionHelper->GetSurfaceFactory()->CreateSurface(
                 1, // width
                 1, // height
                 DXGI_FORMAT_A8_UNORM, // 8-bit
@@ -662,13 +622,14 @@ DCompTreeHost::EnsureResources() noexcept
 //----------------------------------------------------------------------------
 void DCompTreeHost::ReleaseGraphicsResources()
 {
-    //we store the pointers of offered surfacefactories in a list
-    //in OfferTracker
-    m_offerTracker->DeleteReleasedSurfaceFactoryFromList(m_spMainSurfaceFactoryPartner3.Get());
+    if (m_pCompositionHelper.IsInitialized())
+    {
+        //we store the pointers of offered surfacefactories in a list
+        //in OfferTracker
+        m_offerTracker->DeleteReleasedSurfaceFactoryFromList(m_pCompositionHelper->GetSurfaceFactory());
 
-    m_spMainSurfaceFactoryPartner = nullptr;
-    m_spMainSurfaceFactoryPartner2 = nullptr;
-    m_spMainSurfaceFactoryPartner3 = nullptr;
+        m_pCompositionHelper->ReleaseGraphicsResources();
+    }
     ReleaseInterface(m_pFrameRateScratchBrush);
 
     m_compositionGraphicsDevice.Reset();
@@ -683,27 +644,21 @@ HRESULT DCompTreeHost::CreateCompositionSurfaceForHandle(
     *compositionSurface = nullptr;
 
     IFC_RETURN(EnsureDCompDevice());
-
-    ComPtr<ixp::IExpCompositorInterop> expCompositorInterop;
-    IFC_RETURN(m_spCompositorInterop->QueryInterface(IID_PPV_ARGS(expCompositorInterop.ReleaseAndGetAddressOf())));
-    IFC_RETURN(expCompositorInterop->CreateCompositionSurfaceForHandle(swapChainHandle, compositionSurface));
-
+    
+    IFC_RETURN(m_spCompositorInterop->CreateCompositionSurfaceForHandle(swapChainHandle, compositionSurface));
     return S_OK;
 }
 
-// Creates a WinRT Composition compositor and returns its underlying legacy COM interop device.
 _Check_return_
-HRESULT DCompTreeHost::CreateWinRTInteropCompositionDevice(
-    _In_ REFIID iid,
-    _Out_ void **ppDevice)
+HRESULT DCompTreeHost::CreateCompositionSurfaceForSwapChain(
+    _In_ IUnknown* swapChain,
+    _Outptr_ WUComp::ICompositionSurface** compositionSurface)
 {
-    ixp::IInteropCompositorFactoryPartner* factoryPartnerNoRef = ActivationFactoryCache::GetActivationFactoryCache()->GetInteropCompositorFactoryPartner();
+    *compositionSurface = nullptr;
 
-    ASSERT(m_spInteropCompositorPartnerCallback == nullptr);
-    IFCFAILFAST(DCompInteropCompositorPartnerCallback::Create(this, reinterpret_cast<DCompInteropCompositorPartnerCallback**>(&m_spInteropCompositorPartnerCallback)));
-
-    IFCFAILFAST(factoryPartnerNoRef->CreateInteropCompositor(nullptr /*pRenderingDevice*/, m_spInteropCompositorPartnerCallback, iid, ppDevice));
-
+    IFC_RETURN(EnsureDCompDevice());
+    
+    IFC_RETURN(m_spCompositorInterop->CreateCompositionSurfaceForSwapChain(swapChain, compositionSurface));
     return S_OK;
 }
 
@@ -1095,7 +1050,7 @@ void DCompTreeHost::RegisterDCompAnimationCompletedCallbackThread()
 {
     if (m_isInitialized && !m_isCallbackThreadRegistered)
     {
-        IFCFAILFAST(m_spMainDevice->RegisterCallbackThread());
+        IFCFAILFAST(m_pCompositionHelper->RegisterCallbackThread());
         m_isCallbackThreadRegistered = true;
     }
 }
@@ -1109,9 +1064,9 @@ void DCompTreeHost::RegisterDCompAnimationCompletedCallbackThread()
 _Check_return_ HRESULT
 DCompTreeHost::PreCommitMainDevice()
 {
-    if (m_spMainDevice)
+    if (m_pCompositionHelper.IsInitialized())
     {
-        IFC_RETURN(m_spMainDevice->Flush());
+        IFC_RETURN(m_pCompositionHelper->Flush());
     }
 
     return S_OK;
@@ -1139,6 +1094,11 @@ _Check_return_ HRESULT DCompTreeHost::CommitMainDevice()
     }
 
     return S_OK;
+}
+
+HRESULT DCompTreeHost::NotifyCompositionDirty()
+{
+    return RequestMainDCompDeviceCommit();
 }
 
 void DCompTreeHost::UpdateRefreshRate()
@@ -1176,7 +1136,7 @@ uint32_t DCompTreeHost::GetMaxTextureSize() const
 {
     // Pad all allocations with 2 pixels for gutters, and 1 pixel for the "white pixel".
     const uint32_t padding = 3;
-    return GetMainDevice()->GetMaxTextureSize() - padding;
+    return GetCompositionHelper()->GetMaxTextureSize() - padding;
 }
 
 // Requests a new render frame by calling CCoreServices::RequestMainDCompDeviceCommit()
@@ -1278,9 +1238,9 @@ DCompTreeHost::CreateSurface(
 
     // The device may be in offered state. In this case, we temporarily reclaim so that we can allocate a surface without error.
     std::unique_ptr<OfferTracker::UnofferRevoker> unofferRevoker;
-    if (m_offerTracker->IsOffered() && m_spMainSurfaceFactoryPartner3)
+    if (m_offerTracker->IsOffered() && m_pCompositionHelper->GetSurfaceFactory() != nullptr)
     {
-        IFC_RETURN(m_offerTracker->Unoffer(m_spMainSurfaceFactoryPartner3.Get(), &unofferRevoker));
+        IFC_RETURN(m_offerTracker->Unoffer(m_pCompositionHelper->GetSurfaceFactory(), &unofferRevoker));
     }
 
     IFC_RETURN(DCompSurface::Create(
@@ -1310,9 +1270,9 @@ _Check_return_ HRESULT DCompTreeHost::EnsureLegacyDeviceSurface(_In_ DCompSurfac
 {
     // The device may be in offered state.  In this case, we temporarily reclaim so that we can allocate a surface without error.
     std::unique_ptr<OfferTracker::UnofferRevoker> unofferRevoker;
-    if (m_offerTracker->IsOffered() && m_spMainSurfaceFactoryPartner3)
+    if (m_offerTracker->IsOffered() && m_pCompositionHelper->GetSurfaceFactory() != nullptr)
     {
-        IFC_RETURN(m_offerTracker->Unoffer(m_spMainSurfaceFactoryPartner3.Get(), &unofferRevoker));
+        IFC_RETURN(m_offerTracker->Unoffer(m_pCompositionHelper->GetSurfaceFactory(), &unofferRevoker));
     }
 
     if (dcompSurface->GetIDCompSurface() == nullptr)
@@ -1363,7 +1323,7 @@ DCompTreeHost::OnSurfaceFactoryCreated(_In_ DCompSurfaceFactory* newSurfaceFacto
     //if the SurfaceFactory is a new one, we offer it if we are in the offered state
     if (m_offerTracker->IsOffered())
     {
-        IFC_RETURN(m_offerTracker->OfferSurfaceFactory(newSurfaceFactory->GetSurfaceFactoryPartner()));
+        IFC_RETURN(m_offerTracker->OfferSurfaceFactory(newSurfaceFactory->GetRealSurfaceFactory()));
     }
 
     return S_OK;
@@ -1565,9 +1525,7 @@ DCompTreeHost::UpdateAtlasHint()
             atlasSizeHintHeight = 0;
         }
 
-        Microsoft::WRL::ComPtr<IDCompositionDeviceInternal> pDeviceInternal;
-        IFC_RETURN(m_spMainDevice.As(&pDeviceInternal));
-        IFC_RETURN(pDeviceInternal->HintSize(atlasSizeHintWidth, atlasSizeHintHeight));
+        IFC_RETURN(GetCompositionHelper()->HintSize(atlasSizeHintWidth, atlasSizeHintHeight));
     }
 
     return S_OK;
@@ -2015,9 +1973,9 @@ DCompTreeHost::WaitForCommitCompletion()
     return S_OK;
 }
 
-bool DCompTreeHost::HasInteropCompositorPartner() const
+bool DCompTreeHost::HasInteropCompositor() const
 {
-    return m_spInteropCompositorPartner != nullptr;
+    return m_pCompositionHelper.IsInitialized() && m_pCompositionHelper->HasInteropCompositor();
 }
 
 // Start/Stop tracking the effective visibility of this element.
@@ -2647,7 +2605,6 @@ DCompSurfaceFactory::DCompSurfaceFactory(
     , m_SurfaceFactory(pSurfaceFactory)
 {
     m_SurfaceFactory->AddRef();
-    m_SurfaceFactory->QueryInterface(IID_PPV_ARGS(&m_SurfaceFactoryPartner));
 }
 
 //----------------------------------------------------------------------------
@@ -2666,7 +2623,7 @@ DCompSurfaceFactory::~DCompSurfaceFactory()
     OfferTracker* pOfferTrackerNoRef = m_DCompTreeHostNoRef->GetOfferTrackerNoRef();
     if (pOfferTrackerNoRef != nullptr)
     {
-        pOfferTrackerNoRef->DeleteReleasedSurfaceFactoryFromList(m_SurfaceFactoryPartner.Get());
+        pOfferTrackerNoRef->DeleteReleasedSurfaceFactoryFromList(m_SurfaceFactory);
     }
 
     ReleaseInterface(m_SurfaceFactory);
@@ -2681,7 +2638,7 @@ DCompSurfaceFactory::~DCompSurfaceFactory()
 /*static*/ _Check_return_ HRESULT
 DCompSurfaceFactory::Create(
     _In_ DCompTreeHost *pDCompTreeHost,
-    _In_ IDCompositionDesktopDevicePartner *pMainDevice,
+    _In_ IDCompositionDesktopDevice *pMainDevice,
     _In_ IUnknown *pIUnknownDevice,
     _Outptr_ DCompSurfaceFactory **ppSurfaceFactoryWrapper
     )
@@ -2772,18 +2729,8 @@ Cleanup:
 _Check_return_ HRESULT
 DCompSurfaceFactory::Flush()
 {
-    HRESULT hr = S_OK;
-
-    IDCompositionSurfaceFactoryPartner *pSurfaceFactoryPartner = NULL;
-
-    IFC(m_SurfaceFactory->QueryInterface(&pSurfaceFactoryPartner));
-
-    IFC(pSurfaceFactoryPartner->Flush());
-
-Cleanup:
-    ReleaseInterfaceNoNULL(pSurfaceFactoryPartner);
-
-    RRETURN(hr);
+    IFC_RETURN(m_DCompTreeHostNoRef->GetCompositionHelper()->FlushSurfaceFactory(m_SurfaceFactory));
+    return S_OK;
 }
 
 namespace DCompHelpers

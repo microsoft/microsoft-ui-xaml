@@ -66,6 +66,7 @@
                 4706;
                 4710;
                 4711;
+                4714;
                 4738;
                 4743;
                 4746;
@@ -120,7 +121,6 @@
     </PropertyGroup>
 
     <Import Project="$(XamlSourcePath)\use-public-sdk.props"/>
-    <Import Condition="'$(ExternalDependenciesPropsImported)'!='true'" Project="$(XamlSourcePath)\external\external-dependencies.props"/>
 
     <ItemGroup>
         <IDLReference Include="$(XamlSourcePath)\xcp\dxaml\idl\winrt\merged\Microsoft.ui.xaml.vcxproj" Project="{869EA267-A81A-49ED-8404-812C2A03E25A}"/>

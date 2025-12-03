@@ -31,7 +31,7 @@ bool FacadePropertyMapper::EstablishMappingForFacadeID(KnownPropertyIndex facade
 }
 
 // Maps a DComp propertyID to a facadeID
-KnownPropertyIndex FacadePropertyMapper::GetFacadeID(ixp::ExpExpressionNotificationProperty propertyID) const
+KnownPropertyIndex FacadePropertyMapper::GetFacadeID(ExpComp::ExpExpressionNotificationProperty propertyID) const
 {
     ASSERT(propertyID < static_cast<int>(m_facadeIDs.size()));
 
@@ -88,9 +88,9 @@ void PropertySetListener::OnAnimationStarted(
         // There is a delay before we hear back about the initial value.  Pre-populate our shadow property with current value now.
         PopulateAnimatedPropertyWithCurrentValue(facadeID);
 
-        wrl::ComPtr<ixp::IExpCompositionPropertyChanged> notifier;
+        wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> notifier;
         VERIFYHR(backingPropertySet->QueryInterface(IID_PPV_ARGS(&notifier)));
-        IFCFAILFAST(notifier->SetPropertyChangedListener(static_cast<ixp::ExpExpressionNotificationProperty>(m_propertyMapper.GetPropertyID(facadeID)), this));
+        IFCFAILFAST(notifier->SetPropertyChangedListener(static_cast<ExpComp::ExpExpressionNotificationProperty>(m_propertyMapper.GetPropertyID(facadeID)), this));
     }
 }
 
@@ -101,9 +101,9 @@ void PropertySetListener::OnAnimationCompleted(
 {
     if (ShouldTrackFacadeProperty(facadeID))
     {
-        wrl::ComPtr<ixp::IExpCompositionPropertyChanged> notifier;
+        wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> notifier;
         VERIFYHR(backingPropertySet->QueryInterface(IID_PPV_ARGS(&notifier)));
-        IFCFAILFAST(notifier->SetPropertyChangedListener(static_cast<ixp::ExpExpressionNotificationProperty>(m_propertyMapper.GetPropertyID(facadeID)), nullptr));
+        IFCFAILFAST(notifier->SetPropertyChangedListener(static_cast<ExpComp::ExpExpressionNotificationProperty>(m_propertyMapper.GetPropertyID(facadeID)), nullptr));
     }
 }
 
@@ -147,7 +147,7 @@ void PropertySetListener::PopulateAnimatedPropertyWithCurrentValue(KnownProperty
 
 IFACEMETHODIMP PropertySetListener::NotifySinglePropertyChanged(
     ixp::ICompositionObject* target,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     float value)
 {
     KnownPropertyIndex facadeID = m_propertyMapper.GetFacadeID(propertyId);
@@ -169,7 +169,7 @@ IFACEMETHODIMP PropertySetListener::NotifySinglePropertyChanged(
 
 IFACEMETHODIMP PropertySetListener::NotifyVector2PropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector2 value)
 {
     return S_OK;
@@ -177,7 +177,7 @@ IFACEMETHODIMP PropertySetListener::NotifyVector2PropertyChanged(
 
 IFACEMETHODIMP PropertySetListener::NotifyVector3PropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector3 value)
 {
     KnownPropertyIndex facadeID = m_propertyMapper.GetFacadeID(propertyId);
@@ -208,7 +208,7 @@ IFACEMETHODIMP PropertySetListener::NotifyVector3PropertyChanged(
 
 IFACEMETHODIMP PropertySetListener::NotifyVector4PropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector4 value)
 {
     return S_OK;
@@ -216,7 +216,7 @@ IFACEMETHODIMP PropertySetListener::NotifyVector4PropertyChanged(
 
 IFACEMETHODIMP PropertySetListener::NotifyColorPropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wu::Color value)
 {
     return S_OK;
@@ -224,7 +224,7 @@ IFACEMETHODIMP PropertySetListener::NotifyColorPropertyChanged(
 
 IFACEMETHODIMP PropertySetListener::NotifyMatrix3x2PropertyChanged(
     ixp::ICompositionObject* target,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Matrix3x2 value)
 {
     return S_OK;
@@ -232,7 +232,7 @@ IFACEMETHODIMP PropertySetListener::NotifyMatrix3x2PropertyChanged(
 
 IFACEMETHODIMP PropertySetListener::NotifyMatrix4x4PropertyChanged(
     ixp::ICompositionObject *pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Matrix4x4 value)
 {
     wfn::Matrix4x4 valueMatrix4x4 = *reinterpret_cast<wfn::Matrix4x4*>(&value);
@@ -256,7 +256,7 @@ IFACEMETHODIMP PropertySetListener::NotifyMatrix4x4PropertyChanged(
 
 IFACEMETHODIMP PropertySetListener::NotifyBooleanPropertyChanged(
     ixp::ICompositionObject* target,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     boolean value)
 {
     return S_OK;
@@ -264,7 +264,7 @@ IFACEMETHODIMP PropertySetListener::NotifyBooleanPropertyChanged(
 
 IFACEMETHODIMP PropertySetListener::NotifyReferencePropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId)
+    ExpComp::ExpExpressionNotificationProperty propertyId)
 {
     return S_OK;
 }

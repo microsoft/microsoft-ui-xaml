@@ -394,7 +394,7 @@ _Check_return_ HRESULT WindowsGraphicsDeviceManager::CreateFinalReleaseAsserter(
     DebugDeviceFinalReleaseAsserter *pAsserter = NULL;
     ID3D11Device *pD3D11DeviceNoRef = NULL;
     ID2D1Device *pD2DDeviceNoRef = NULL;
-    IDCompositionDesktopDevicePartner *pDCompDeviceNoRef = NULL;
+    IDCompositionDesktopDevice *pDCompDeviceNoRef = NULL;
     bool hasInteropCompositor = false;
 
     // We're breaking our own rules here about not holding on to the D3D device. We'll allow it here because
@@ -412,7 +412,7 @@ _Check_return_ HRESULT WindowsGraphicsDeviceManager::CreateFinalReleaseAsserter(
     if (m_pDCompTreeHost != NULL)
     {
         pDCompDeviceNoRef = m_pDCompTreeHost->GetMainDevice();
-        hasInteropCompositor = m_pDCompTreeHost->HasInteropCompositorPartner();
+        hasInteropCompositor = m_pDCompTreeHost->HasInteropCompositor();
     }
 
     pAsserter = new DebugDeviceFinalReleaseAsserter(
@@ -435,7 +435,7 @@ DebugDeviceFinalReleaseAsserter::DebugDeviceFinalReleaseAsserter(
     bool hasInteropCompositor,
     _In_opt_ ID3D11Device *pD3D11Device,
     _In_opt_ ID2D1Device *pD2DDevice,
-    _In_opt_ IDCompositionDesktopDevicePartner *pDCompDevice)
+    _In_opt_ IDCompositionDesktopDevice *pDCompDevice)
 {
     SetInterface(m_pD3D11Device, pD3D11Device);
     SetInterface(m_pD2DDevice, pD2DDevice);

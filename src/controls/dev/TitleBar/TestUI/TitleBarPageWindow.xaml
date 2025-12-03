@@ -84,8 +84,10 @@
                     Checked="IsPaneToggleButtonVisibleCheckbox_CheckedChanged"
                     Unchecked="IsPaneToggleButtonVisibleCheckbox_CheckedChanged" />
 
+            <Button IsEnabled="False" Style="{ThemeResource TitleBarPaneToggleButtonStyle}" />
+
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="PaneToggleButton Requested:" />
+                <TextBlock Text="PaneToggle Requested:" />
                 <TextBlock x:Name="PaneToggleButtonRequestedCountTextBox"
                         Margin="8,0,0,0"
                         Foreground="Red" />

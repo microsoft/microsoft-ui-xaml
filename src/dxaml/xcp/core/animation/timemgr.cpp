@@ -221,7 +221,7 @@ _Check_return_ HRESULT
 CTimeManager::Tick(
     bool newTimelinesOnly,
     bool processIATargets,
-    _In_opt_ IDCompositionDesktopDevicePartner3* pDCompDevice,
+    _In_opt_ IDCompositionDesktopDevice* pDCompDevice,
     _In_opt_ ixp::ICompositionEasingFunctionStatics* easingFunctionStatics,
     _In_opt_ WUComp::ICompositor* wucCompositor,
     _In_ IFrameScheduler *pFrameScheduler,

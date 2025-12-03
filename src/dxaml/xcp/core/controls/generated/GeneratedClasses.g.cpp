@@ -965,6 +965,11 @@ HRESULT OnCoreCreateSliderAutomationPeer(_Outptr_ CDependencyObject **ppObject, 
     RRETURN(CSliderAutomationPeer::Create(ppObject, pCreate));
 }
 
+HRESULT OnCoreCreateSplitMenuFlyoutItemAutomationPeer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
+{
+    RRETURN(CSplitMenuFlyoutItemAutomationPeer::Create(ppObject, pCreate));
+}
+
 HRESULT OnCoreCreateSplitViewLightDismissAutomationPeer(_Outptr_ CDependencyObject **ppObject, _In_ CREATEPARAMETERS *pCreate)
 {
     RRETURN(CSplitViewLightDismissAutomationPeer::Create(ppObject, pCreate));

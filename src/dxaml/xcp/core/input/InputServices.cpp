@@ -44,7 +44,6 @@
 #include "RootScale.h"
 
 #include "DirectManipulationService.h"
-#include "isapipresent.h"
 
 #include <ReentrancyGuard.h>
 #include <Windowing.h>
@@ -146,7 +145,7 @@ void CInputServices::ResetAllCrossSlideServices()
     }
 }
 
-void CInputServices::RegisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite)
+void CInputServices::RegisterIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite)
 {
     auto iter = std::find_if(
         m_islandInputSiteRegistrations.cbegin(),
@@ -167,7 +166,7 @@ void CInputServices::RegisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* 
     }
 }
 
-void CInputServices::UnregisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite)
+void CInputServices::UnregisterIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite)
 {
     auto iter = std::find_if(
         m_islandInputSiteRegistrations.begin(),
@@ -189,7 +188,7 @@ void CInputServices::UnregisterIslandInputSite(_In_ ixp::IIslandInputSitePartner
     }
 }
 
-wrl::ComPtr<ixp::IIslandInputSitePartner> CInputServices::GetPrimaryRegisteredIslandInputSite() const
+wrl::ComPtr<InputSiteHelper::IIslandInputSite> CInputServices::GetPrimaryRegisteredIslandInputSite() const
 {
     if (m_islandInputSiteRegistrations.empty())
     {
@@ -3079,12 +3078,12 @@ CInputServices::IsTextEditableControl(_In_ const CDependencyObject* const pObjec
 }
 
 // static
-HWND CInputServices::GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner* pIslandInputSite)
+HWND CInputServices::GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ InputSiteHelper::IIslandInputSite* pIslandInputSite)
 {
     if (nullptr != pIslandInputSite)
     {
         ABI::Microsoft::UI::WindowId inputWindowId;
-        if (S_OK == pIslandInputSite->get_UnderlyingInputWindowId(&inputWindowId))
+        if (GetUnderlyingInputWindowId(pIslandInputSite, &inputWindowId))
         {
             // The IslandInputSite might already be closed, in which case we should just return nullptr since there is no valid HWND.
             HWND inputHwnd;
@@ -10721,8 +10720,7 @@ CInputServices::PrepareSecondaryContentRelationshipForCurveUpdate(
         xref_ptr<CDMViewport> spViewport;
         xref_ptr<CDMContent> spContent;
         xref_ptr<IPALDirectManipulationService> spDMService;
-        xref_ptr<IDCompositionDesktopDevicePartner> spDCompDevice;
-        xref_ptr<IDCompositionDesktopDevicePartner3> spDCompDevice3;
+        xref_ptr<IDCompositionDesktopDevice> spDCompDevice;
         DMDeferredRelease deferredRelease;
 
         IFC_RETURN(FxCallbacks::UIElement_GetDManipElement(spDMContainer, spDManipElement.ReleaseAndGetAddressOf()));
@@ -10766,10 +10764,8 @@ CInputServices::PrepareSecondaryContentRelationshipForCurveUpdate(
 
         // Record the current DComp batch ID in our deferral object.  We'll track this batch ID as we continue
         // to tick the UI thread, and release the content/transform only after the new one is live.
-        m_pCoreService->GetDCompDevice(spDCompDevice.ReleaseAndGetAddressOf());
-        IFC_RETURN(spDCompDevice->QueryInterface(IID_PPV_ARGS(spDCompDevice3.ReleaseAndGetAddressOf())));
         ULONG batchId = 0;
-        IFC_RETURN(spDCompDevice3->GetCurrentBatchID(&batchId));
+        IFC_RETURN(m_pCoreService->GetCurrentBatchID(&batchId));
         deferredRelease.SetBatchId(batchId);
 
         // Finally, add our deferral object to a collection of deferral objects to process on the next tick.
@@ -10792,12 +10788,7 @@ CInputServices::ProcessDeferredReleaseQueue(_In_opt_ IDirectManipulationViewport
         if (pViewport == nullptr)
         {
             // Ask the DComp device for the batch ID of the last batch it's picked up and processed.
-            xref_ptr<IDCompositionDesktopDevicePartner> spDCompDevice;
-            xref_ptr<IDCompositionDesktopDevicePartner3> spDCompDevice3;
-
-            m_pCoreService->GetDCompDevice(spDCompDevice.ReleaseAndGetAddressOf());
-            IFC_RETURN(spDCompDevice->QueryInterface(IID_PPV_ARGS(spDCompDevice3.ReleaseAndGetAddressOf())));
-            IFC_RETURN(spDCompDevice3->GetLastConfirmedBatchId(&lastConfirmedBatchId));
+            IFC_RETURN(m_pCoreService->GetLastConfirmedBatchId(&lastConfirmedBatchId));
         }
 
         std::vector<DMDeferredRelease>::iterator it = m_vecDeferredRelease.begin();

@@ -30,7 +30,6 @@
 #include <XamlOneCoreTransforms.h>
 
 #include <host.h>
-#include <corewindow.h> // ICoreWindowComponentInterop
 #include "RootScale.h"
 #include <WRLHelper.h>
 #include <XamlIslandRootScale.h>

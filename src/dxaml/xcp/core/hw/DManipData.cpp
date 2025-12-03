@@ -200,12 +200,6 @@ _Check_return_ HRESULT DManipDataWinRT::SetSharedContentTransforms(
     // Create and store CompositionObject wrapping shared primary content.
     if (primaryContentTransformChanged || secondaryContentTransformChanged)
     {
-        Microsoft::WRL::ComPtr<WUComp::IInteropCompositorPartner> interopCompositorPartner;
-        if (pCompositor != nullptr)
-        {
-            IFC_RETURN(pCompositor->QueryInterface(IID_PPV_ARGS(&interopCompositorPartner)));
-        }
-
         if (sharedPrimaryContentTransform != nullptr)
         {
             IFC_RETURN(m_spSharedPrimaryContentTransform->QueryInterface(IID_PPV_ARGS(m_spSharedPrimaryContentTransformCO.ReleaseAndGetAddressOf())));

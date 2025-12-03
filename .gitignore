@@ -270,3 +270,7 @@ HelixPayload/
 /test/MUXControlsTestApp/MSTest/MUXControlsTestApp_Test
 /test/MUXControlsTestApp/TAEF/MUXControlsTestApp_Test
 UnreliableTestReport.csv
+
+# tools
+src/.dotnet/
+src/.tools/

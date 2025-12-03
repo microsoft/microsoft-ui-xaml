@@ -304,7 +304,7 @@ void CDependencyObject::SetHasUsageName(XUINT32 fHasUsageName)
     m_bitFields.fHasUsageName = fHasUsageName;
 }
 
-wrl::ComPtr<ixp::IIslandInputSitePartner> CDependencyObject::GetElementIslandInputSite()
+wrl::ComPtr<InputSiteHelper::IIslandInputSite> CDependencyObject::GetElementIslandInputSite()
 {
     xref_ptr<CPopup> spPopup;
     CUIElement *pUIElementNoRef = do_pointer_cast<CUIElement>(this);

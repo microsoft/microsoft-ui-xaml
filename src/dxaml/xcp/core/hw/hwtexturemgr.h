@@ -181,7 +181,7 @@ public:
 //  direction. There are actually 3 different rects that are needed:
 //
 //   1. The rect for the DComp surface is LTRB = { 0, 0, 10, 10 }. This is what
-//      we use to call into IDCompositionSurfacePartner::BeginDrawWithGutters.
+//      we use to call into BeginDrawWithGutters.
 //      This is also what we use when calculating the texture transform.
 //
 //   2. The rect in our staging texture is LTRB = { 1, 1, 11, 11 }. This is what

@@ -3,7 +3,6 @@
 
 #include "precomp.h"
 #include "TouchHitTestingHandler.h"
-#include <isapipresent.h>
 #include "VisualTreeHelper.h"
 #include <XamlOneCoreTransforms.h>
 #include <InputServices.h>

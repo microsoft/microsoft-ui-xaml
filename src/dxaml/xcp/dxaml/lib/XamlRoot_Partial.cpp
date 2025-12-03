@@ -10,7 +10,6 @@
 #include "WindowChrome_Partial.h"
 #include "ContentDialogMetadata.h"
 #include "RootScrollViewer.g.h"
-#include <Microsoft.UI.Content.Private.h>
 #include <windowing.h>
 
 using namespace DirectUI;
@@ -272,27 +271,20 @@ _Check_return_ HRESULT XamlRoot::get_HostWindow(HWND* pValue)
 
             // Bug https://task.ms/48685229: For now, there are still calls to this method that cannot be
             // easily replaced with a ContentIsland API, specifically in WebView2.cpp. This means that we
-            // have to return a hosting HWND even in the XamlIsland scenario. We've added a temporary
-            // partner interface on the ContentIsland to retrieve this bridge/HWND. This is only a
-            // workaround, and new calls to this method and the partner method on the island should
-            // not be added. Once work is completed to make it so that there is full functionality
-            // without an HWND, this call should be removed.
+            // have to return a hosting HWND even in the XamlIsland scenario. Return the
+            // ContentIsland.Environment.AppWindowId, in hopes that provides an adequate HWND. This may
+            // need improvements in the future, and ideally any uses should be moved directly into
+            // the callers to avoid other code incorrectly using get_HostWindow().
     
             if (auto xamlIsland = GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef())
             {
-                // Get the partner interface for the ContentIsland.
-                ctl::ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
                 ctl::ComPtr<ixp::IContentIsland> contentIsland = xamlIsland->GetContentIsland();
-                IFCFAILFAST(contentIsland.As(&contentIslandPartner));
 
-                // Use the partner interface to retrieve the DesktopSiteBridge, then use that to get
-                // to the WindowId.
-                ctl::ComPtr<ixp::IDesktopSiteBridge> desktopSiteBridge;
-                IFC_RETURN(contentIslandPartner->get_TEMP_DesktopSiteBridge(&desktopSiteBridge));
+                ctl::ComPtr<ixp::IContentIslandEnvironment> contentIslandEnvironment;
+                IFC_RETURN(contentIsland->get_Environment(&contentIslandEnvironment));
 
-                // Translate the WindowId to an HWND.
                 ABI::Microsoft::UI::WindowId windowId;
-                IFC_RETURN(desktopSiteBridge->get_WindowId(&windowId));
+                IFC_RETURN(contentIslandEnvironment->get_AppWindowId(&windowId));
                 IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &hwnd));
             }
         }

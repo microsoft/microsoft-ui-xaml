@@ -24,9 +24,6 @@
 #include <ContentRoot.h>
 #include <ContentRootCoordinator.h>
 
-#include <microsoft.ui.composition.internal.h>
-#include <microsoft.ui.composition.private.h>
-
 const float ProjectedShadowManager::sc_ambientOpacityMin = 0.11f;
 const float ProjectedShadowManager::sc_ambientOpacityMax = 0.18f;
 const float ProjectedShadowManager::sc_ambientOpacityFalloff = 192.0f;

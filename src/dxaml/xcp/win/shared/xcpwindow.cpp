@@ -9,10 +9,11 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include "Microsoft.UI.Dispatching.h"
-#include <coremessaging.h>
-#include "microsoft.ui.coremessaging.h"
+
 #include "GraphicsTelemetry.h"
+#if __has_include("DXamlCoreTipTests.h")
 #include "DXamlCoreTipTests.h"
+#endif
 
 //------------------------------------------------------------------------
 //
@@ -331,15 +332,6 @@ CXcpDispatcher::Init(_In_ IXcpHostSite *pSite)
         IFCFAILFAST(m_dispatcherQueueTimer->add_Tick(messageTimerCallback.Get(), &m_messageTimerCallbackToken));
     }
 
-    if (!m_messageSession)
-    {
-        IFCFAILFAST(CoreMsgCreateSession(MsgCreateFlags::MsgCreateFlags_Default, m_messageSession.ReleaseAndGetAddressOf()));
-    }
-
-    if (!m_messageLoopExtensions)
-    {
-        IFCFAILFAST(m_messageSession->GetMessageLoopExtensions(m_messageLoopExtensions.ReleaseAndGetAddressOf()));
-    }
 
     m_bInit = TRUE;
 
@@ -480,10 +472,12 @@ CXcpDispatcher::Create(
 
     IFC(pWindow->Init(pSite));
 
+#if __has_include("DXamlCoreTipTests.h")
     // DXamlCore.cpp - Tip Test
     // Init is called once
     // DispatcherQueue created
     tip::open<DXamlInitializeCoreTest>().set_flag(TIP_reason(DXamlInitializeCoreTest::reason::created_dispatcher_xcpwindow));
+#endif
 
     *ppInterface = static_cast<IXcpDispatcher *>(pWindow);
     pWindow = NULL;
@@ -1530,4 +1524,26 @@ void PauseNewDispatchAtControl::ResumeNewDispatch()
             m_dispatcherNoRef->ResumeDispatch();
         }
     }
+}
+
+void PauseNewDispatchForTest::Pause(CCoreServices *coreServices)
+{
+    auto hostSite = coreServices->GetHostSite();
+    auto dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+
+    // The current state should be be Running. If it is in a different state,
+    // something likely needs to change to ensure m_state isn't incorrectly
+    // stomped either here in Pause or later in Resume.
+    FAIL_FAST_ASSERT(dispatcher->m_state == CXcpDispatcher::State::Running);
+    static_cast<CXcpDispatcher*>(dispatcher)->PauseDispatch();
+}
+
+void PauseNewDispatchForTest::Resume(CCoreServices *coreServices)
+{
+    auto hostSite = coreServices->GetHostSite();
+    auto dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+
+    // It should still be suspended. If it isn't, something resumed too early.
+    FAIL_FAST_ASSERT(dispatcher->m_state == CXcpDispatcher::State::Suspended);
+    static_cast<CXcpDispatcher*>(dispatcher)->ResumeDispatch();
 }

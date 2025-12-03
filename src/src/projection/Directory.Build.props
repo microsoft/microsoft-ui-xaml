@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.CsWinRT"/>
-    <PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage"/>
+    <PackageReference Include="$(LiftedIXPTransportPackageName)"/>
     <PackageReference Include="Microsoft.Internal.WinUIDetails" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.Web.WebView2"/>
   </ItemGroup>

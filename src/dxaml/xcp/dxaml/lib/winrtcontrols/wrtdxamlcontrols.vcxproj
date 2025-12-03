@@ -57,6 +57,7 @@
         <ClCompile Include="..\MenuFlyoutItemBaseCollection_Partial.cpp"/>
         <ClCompile Include="..\MenuFlyoutPresenter_Partial.cpp"/>
         <ClCompile Include="..\ToggleMenuFlyoutItem_Partial.cpp"/>
+        <ClCompile Include="..\SplitMenuFlyoutItem_Partial.cpp"/>
         <ClCompile Include="..\MenuFlyoutSubItem_Partial.cpp"/>
         <ClCompile Include="..\ContentControl_Partial.cpp"/>
         <ClCompile Include="..\Control_Partial.cpp"/>

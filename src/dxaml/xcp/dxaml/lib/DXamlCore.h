@@ -572,7 +572,7 @@ namespace DirectUI
         _Check_return_ HRESULT SimulateDeviceLost(bool resetVisuals, bool resetDManip);
 
         void GetDCompDevice(
-            _Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice
+            _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
             ) const;
 
         _Check_return_ HRESULT SetWindowSizeOverride(

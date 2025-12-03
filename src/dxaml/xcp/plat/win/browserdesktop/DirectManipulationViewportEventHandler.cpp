@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
+#include "DirectManipulationService.h"
+#include "DirectManipulationViewportEventHandler.h"
 
 // Define as 1 (i.e. XCP_TRACE_OUTPUT_MSG) to get debug outputs, and 0 otherwise
 #define DMVEH_DBG 0

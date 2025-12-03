@@ -249,6 +249,7 @@
   <Import Project="$(MUXCProjectRoot)dev\CommandBarFlyout\APITests\CommandBarFlyout_APITests.projitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\IconSource\APITests\IconSource_APITests.projitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\LayoutPanel\APITests\LayoutPanel_APITests.projitems" Label="Shared" Condition="$(FeatureLayoutPanelEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\WrapPanel\APITests\WrapPanel_APITests.projitems" Label="Shared" Condition="$(FeatureWrapPanelEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\Materials\Acrylic\APITests\AcrylicBrush_ApiTests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\Materials\Reveal\APITests\Reveal_APITests.projitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\NavigationView\NavigationView_ApiTests\NavigationView_ApiTests.projitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
@@ -309,6 +310,8 @@
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\TestUI\SelectorBar_TestUI.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\SelectorBar\APITests\SelectorBar_APITests.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="$(MUXCProjectRoot)dev\TitleBar\TestUI\TitleBar_TestUI.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\TestUI\SystemBackdropElement_TestUI.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
+  <Import Project="$(MUXCProjectRoot)dev\SystemBackdropElement\APITests\SystemBackdropElement_APITests.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
 
   <!-- For some reason, TAEF binplaces the wrong version of Wex.Logger.Interop.dll - we need to fix that.
        Removing the version from the binaries directory to allow us to use the version from the lib directory is sufficient here.-->

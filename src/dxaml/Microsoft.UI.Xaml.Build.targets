@@ -19,27 +19,6 @@
         <Message Text="%(XamlConfigurationMessage.Identity)"/>
     </Target>
 
-    <PropertyGroup>
-        <MIDLWrapperExePath>$(XamlBinaryPath)\tools\midlwrapper\midlwrapper.exe</MIDLWrapperExePath>
-    </PropertyGroup>
-
-    <!-- MIDLToolExe and MIDLToolPath are special properties picked up by the MIDL target,
-         so they have to be specified for MSBuild to pick up our MIDL wrapper. -->
-    <PropertyGroup Condition="'$(UseMidlWrapper)'=='true' and Exists('$(MIDLWrapperExePath)')">
-        <MIDLToolExe>$([System.IO.Path]::GetFileName('$(MIDLWrapperExePath)'))</MIDLToolExe>
-        <MIDLToolPath>$([System.IO.Path]::GetDirectoryName('$(MIDLWrapperExePath)'))</MIDLToolPath>
-    </PropertyGroup>
-
-    <Target Name="BuildMidlWrapper" BeforeTargets="MIDL" Condition="'$(UseMidlWrapper)'=='true' and !Exists('$(MIDLWrapperExePath)')">
-        <Message Text="Build MIDL wrapper"/>
-        <MSBuild Projects="$(RepoRoot)\tools\midlwrapper\midlwrapper.sln"/>
-        <Warning Condition="!Exists('$(MIDLWrapperExePath)')" Text="Error building MIDLWrapper"/>
-        <PropertyGroup Condition="Exists('$(MIDLWrapperExePath)')">
-            <MIDLToolExe>$([System.IO.Path]::GetFileName('$(MIDLWrapperExePath)'))</MIDLToolExe>
-            <MIDLToolPath>$([System.IO.Path]::GetDirectoryName('$(MIDLWrapperExePath)'))</MIDLToolPath>
-        </PropertyGroup>
-    </Target>
-
     <Target Name="RemoveTaefRedistBinaries" BeforeTargets="_CopyFilesMarkedCopyLocal">
         <ItemGroup>
             <ReferenceCopyLocalPaths Remove="$(TaefPkgDirectory)\build\Binaries\$(PlatformTarget)\**\*.*"/>

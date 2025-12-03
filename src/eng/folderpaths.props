@@ -99,7 +99,6 @@
     <UnmergedWinmdOutputLocation>$(Outdir)</UnmergedWinmdOutputLocation>
 
     <InfraTestObjPath>$(TestObjPath)\infra</InfraTestObjPath>
-    <MockDCompTestObjPath>$(TestObjPath)\dcomp</MockDCompTestObjPath>
 
     <PrivateInfrastructureWin32HostingObjPath>$(InfraTestObjPath)\Win32Hosting</PrivateInfrastructureWin32HostingObjPath>
   </PropertyGroup>
@@ -136,7 +135,6 @@
     <PublicMergedWinMDDir>$(XamlBuildOutputRoot)MergedWinMD\$(MergedWinMDOutputDir)</PublicMergedWinMDDir>
     <PrivateMergedWinMDDir>$(XamlBuildOutputRoot)MergedWinMD\private\$(MergedWinMDOutputDir)</PrivateMergedWinMDDir>
     <PrivateInfrastructureMergedWinMdPath>$(InfraTestObjPath)\client\idl\$(MergedWinMDOutputDir)</PrivateInfrastructureMergedWinMdPath>
-    <MockDCompMergedWinMdPath>$(MockDCompTestObjPath)\idl\$(MergedWinMDOutputDir)</MockDCompMergedWinMdPath>
     <PrivateInfrastructureWin32HostingMergedWinMdPath>$(PrivateInfrastructureWin32HostingObjPath)\idl\$(MergedWinMDOutputDir)</PrivateInfrastructureWin32HostingMergedWinMdPath>
     <PrivateInfrastructureHostingHelpersGeneratedWinMdPath>$(PrivateInfrastructureWin32HostingObjPath)\WPF\HostingHelpers\</PrivateInfrastructureHostingHelpersGeneratedWinMdPath>
   </PropertyGroup>
@@ -161,23 +159,38 @@
     <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
   </PropertyGroup>
 
+  <!-- WinUIDetails paths -->
+  <PropertyGroup>
+    <WinUIDetailsPackagePath Condition="'$(WinUIDetailsRepoLocation)' == ''">$(NugetPackageDirectory)\$(WinUIDetailsPackageName)\$(WinUIDetailsNugetVersion)</WinUIDetailsPackagePath>
+    <WinUIDetailsPackagePath Condition="'$(WinUIDetailsRepoLocation)' != ''">$(WinUIDetailsRepoLocation)\Bin\NugetStaging\WinUIDetails</WinUIDetailsPackagePath>
+    <WinUIDetailsLibPath>$(WinUIDetailsPackagePath)\lib\uap10.0</WinUIDetailsLibPath>
+    <WinUIDetailsRuntimesPath>$(WinUIDetailsPackagePath)\runtimes\win10-$(NugetArch)\native</WinUIDetailsRuntimesPath>
+    <WinUIDetailsIncludePath>$(WinUIDetailsPackagePath)\build\native\include</WinUIDetailsIncludePath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <FrameworkUdkPackagePath>$(NugetPackageDirectory)\$(FrameworkUdkPackageName)\$(FrameworkUdkPackageVersion)</FrameworkUdkPackagePath>
+    <FrameworkUdkBuildPath>$(FrameworkUdkPackagePath)\build\native</FrameworkUdkBuildPath>
+    <FrameworkUdkIncPath>$(FrameworkUdkPackagePath)\include\FrameworkUdk</FrameworkUdkIncPath>
+    <FrameworkUdkNativePath>$(FrameworkUdkPackagePath)\runtimes\win10-$(NugetArch)\native</FrameworkUdkNativePath>
+    <FrameworkUdkLibPath>$(FrameworkUdkPackagePath)\lib\native\win10-$(NugetArch)</FrameworkUdkLibPath>
+  </PropertyGroup>
+
   <!-- Lifted IXP paths -->
   <PropertyGroup>
     <LiftedIXPPackagePath>$(NugetPackageDirectory)\$(LiftedIXPTransportPackageName)\$(IxpTransportPackageVersion)</LiftedIXPPackagePath>
     <LiftedIXPBuildPath>$(LiftedIXPPackagePath)\build\native</LiftedIXPBuildPath>
     <LiftedIXPRuntimePath>$(LiftedIXPPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedIXPRuntimePath>
-    <LiftedIXPWinmdPath>$(LiftedIXPPackagePath)\lib\uap$(CurrentLiftedIXPTargetPlatformVersion.Substring(0,10))</LiftedIXPWinmdPath>
+    <LiftedIXPWinmdPath>$(LiftedIXPPackagePath)\metadata\$(CurrentLiftedIXPTargetPlatformVersion)</LiftedIXPWinmdPath>
+    <LiftedIXPWinmdPath Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedIXPPackagePath)\lib\uap$(CurrentLiftedIXPTargetPlatformVersion.Substring(0,10))</LiftedIXPWinmdPath>
     <LiftedIXPGeneratedIncludePath>$(ArtifactsObjDir)liftedixp-$(IxpTransportPackageVersion)\generated\inc</LiftedIXPGeneratedIncludePath>
     <LiftedIXPGeneratedIdlPath>$(ArtifactsObjDir)liftedixp-$(IxpTransportPackageVersion)\generated\idl</LiftedIXPGeneratedIdlPath>
     <LiftedIXPIncludePath>$(LiftedIXPPackagePath)\include</LiftedIXPIncludePath>
 
     <LiftedIXPInternalPackagePath>$(NugetPackageDirectory)\$(LiftedIXPInternalPackageName)\$(IxpInternalPackageVersion)</LiftedIXPInternalPackagePath>
-    <LiftedIXPInternalIncludePath>$(LiftedIXPInternalPackagePath)\include</LiftedIXPInternalIncludePath>
-    <LiftedIXPInternalBuildPath>$(LiftedIXPInternalPackagePath)\build\native</LiftedIXPInternalBuildPath>
     <LiftedIXPInternalPGIRuntimePath>$(LiftedIXPInternalPackagePath)\runtimes\win10-$(NugetArch)\native\pgi</LiftedIXPInternalPGIRuntimePath>
-    <LiftedIXPInternalLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(NugetArch)</LiftedIXPInternalLibPath>
 
-    <LiftedIXPIncludePaths>$(LiftedIXPIncludePath);$(LiftedIXPInternalIncludePath);$(LiftedIXPGeneratedIncludePath)</LiftedIXPIncludePaths>
+    <LiftedIXPIncludePaths>$(LiftedIXPIncludePath);$(WinUIDetailsIncludePath)\LiftedIXP;$(FrameworkUdkPackagePath)\include\;$(LiftedIXPGeneratedIncludePath)</LiftedIXPIncludePaths>
   </PropertyGroup>
 
   <!-- Lifted MRT paths -->
@@ -185,7 +198,10 @@
     <LiftedMRTPackagePath>$(NugetPackageDirectory)\$(ProjectReunionFoundationTransportPackageName)\$(FoundationTransportPackageVersion)</LiftedMRTPackagePath>
     <LiftedMRTBuildPath>$(LiftedMRTPackagePath)\build</LiftedMRTBuildPath>
     <LiftedMRTLibPath>$(LiftedMRTPackagePath)\lib</LiftedMRTLibPath>
-    <LiftedMRTRuntimesPath>$(LiftedMRTPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedMRTRuntimesPath>
+    <LiftedMRTWinmdPath>$(LiftedMRTPackagePath)\metadata</LiftedMRTWinmdPath>
+    <LiftedMRTWinmdPath Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedMRTLibPath)\uap10.0</LiftedMRTWinmdPath>
+    <LiftedMRTRuntimesPath>$(LiftedMRTPackagePath)\runtimes-framework\win-$(NugetArch)\native</LiftedMRTRuntimesPath>
+    <LiftedMRTRuntimesPath Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedMRTPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedMRTRuntimesPath>
     <LiftedMRTGeneratedIncludePath>$(ArtifactsObjDir)liftedmrt-$(FoundationTransportPackageVersion)\generated\inc</LiftedMRTGeneratedIncludePath>
     <LiftedMRTGeneratedIdlPath>$(ArtifactsObjDir)liftedmrt-$(FoundationTransportPackageVersion)\generated\idl</LiftedMRTGeneratedIdlPath>
     <LiftedMRTIncludePaths>$(LiftedMRTGeneratedIncludePath)</LiftedMRTIncludePaths>
@@ -194,21 +210,6 @@
   <!-- Localized Resources paths -->
   <PropertyGroup>
     <LocalizedMUIFilesPath>$(NugetPackageDirectory)\$(LocalizedMUIFilesPackageName).$(LocalizedMUIFilesPackageVersion)\LocalizedResources\BuildOutput\Temp\localizationResources</LocalizedMUIFilesPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <FrameworkUdkIncPath>$(LiftedIXPInternalIncludePath)\FrameworkUdk</FrameworkUdkIncPath>
-    <FrameworkUdkNativePath>$(LiftedIXPPackagePath)\runtimes\win10-$(NugetArch)\native</FrameworkUdkNativePath>
-    <FrameworkUdkLibPath>$(LiftedIXPInternalPackagePath)\lib\native\win10-$(NugetArch)</FrameworkUdkLibPath>
-  </PropertyGroup>
-
-  <!-- WinUIDetails paths -->
-  <PropertyGroup>
-    <WinUIDetailsPackagePath Condition="'$(WinUIDetailsRepoLocation)' == ''">$(NugetPackageDirectory)\$(WinUIDetailsPackageName)\$(WinUIDetailsNugetVersion)</WinUIDetailsPackagePath>
-    <WinUIDetailsPackagePath Condition="'$(WinUIDetailsRepoLocation)' != ''">$(WinUIDetailsRepoLocation)\Bin\NugetStaging\WinUIDetails</WinUIDetailsPackagePath>
-    <WinUIDetailsLibPath>$(WinUIDetailsPackagePath)\lib\uap10.0</WinUIDetailsLibPath>
-    <WinUIDetailsRuntimesPath>$(WinUIDetailsPackagePath)\runtimes\win10-$(NugetArch)\native</WinUIDetailsRuntimesPath>
-    <WinUIDetailsIncludePath>$(WinUIDetailsPackagePath)\build\native\include</WinUIDetailsIncludePath>
   </PropertyGroup>
 
   <PropertyGroup>

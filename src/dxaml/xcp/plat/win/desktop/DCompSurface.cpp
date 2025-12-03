@@ -119,7 +119,7 @@ DCompSurface::CreateWithNoHardware(
         true    // requestAtlas
         ));
 
-    IFCFAILFAST(dcompTreeHost->GetCompositorPrivate()->CreateCompositionSurfaceForDCompositionSurface(
+    IFCFAILFAST(dcompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
         nullptr, &dcompSurface->m_spWinRTSurface));
 
     dcompSurface->m_isVirtual = isVirtual;
@@ -162,7 +162,7 @@ DCompSurface::InitializeSurface(
     if (m_isVirtual)
     {
         ASSERT(m_requestAtlas);
-        IFCFAILFAST(pDCompTreeHost->GetMainSurfaceFactory()->CreateVirtualSurface(
+        IFCFAILFAST(pDCompTreeHost->GetCompositionHelper()->CreateVirtualSurface(
             GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
             GetHeightWithoutGutters(),
             compositionSurfaceFormat,
@@ -174,7 +174,7 @@ DCompSurface::InitializeSurface(
     }
     else
     {
-        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(pDCompTreeHost->GetMainSurfaceFactory2()->CreateSurface(
+        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(pDCompTreeHost->GetCompositionHelper()->CreateSurface(
             GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
             GetHeightWithoutGutters(),
             compositionSurfaceFormat,
@@ -190,17 +190,16 @@ DCompSurface::InitializeSurface(
     if (m_spWinRTSurface == nullptr)
     {
         // Wrap with an ICompositionSurface
-        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(pDCompTreeHost->GetCompositorPrivate()->CreateCompositionSurfaceForDCompositionSurface(
+        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
             m_pCompositionSurface, &m_spWinRTSurface));
     }
     else
     {
-        wrl::ComPtr<WUComp::ICompositionSurfaceWrapperPartner> winRTSurfacePartner;
-        IFC_RETURN(m_spWinRTSurface.As(&winRTSurfacePartner));
-        IFC_RETURN(winRTSurfacePartner->Reset(m_pCompositionSurface));
+        IFC_RETURN(m_compositionSurfaceHelper.ResetWinRTSurface(m_spWinRTSurface.Get(), m_pCompositionSurface));
+
     }
 
-    IFCFAILFAST(m_pCompositionSurface->QueryInterface(&m_pCompositionSurfacePrivate));
+    IFCFAILFAST(m_compositionSurfaceHelper.Initialize(m_pCompositionSurface));
 
     // Since it's possible to reuse a DCompSurface across discards, reset m_discarded after re-initializing.
     m_discarded = FALSE;
@@ -243,7 +242,7 @@ DCompSurface::InitializeSurface(
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
         // Wrap with an ICompositionSurface
-        auto hr = pDCompTreeHost->GetCompositorPrivate()->CreateCompositionSurfaceForDCompositionSurface(
+        auto hr = pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
             m_pVirtualCompositionSurface, &m_spWinRTSurface);
 
         // TODO_WinRTSprites: Handle not implemented on DComp.  Don't fail hard, just ignore for now.
@@ -257,9 +256,7 @@ DCompSurface::InitializeSurface(
     }
     else
     {
-        wrl::ComPtr<IDCompositionSurfaceFactoryPartner2> surfaceFactory2;
-        VERIFYHR(pSurfaceFactory->QueryInterface(IID_PPV_ARGS(&surfaceFactory2)));
-        IFC_RETURN(surfaceFactory2->CreateSurface(
+        IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateSurface(pSurfaceFactory,
             GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
             GetHeightWithoutGutters(),
             DXGI_FORMAT_B8G8R8A8_UNORM, //GetDxgiFormat()
@@ -271,11 +268,11 @@ DCompSurface::InitializeSurface(
         UpdateMemoryFootprint(TRUE);
 
         // Wrap with an ICompositionSurface
-        IFC_RETURN(pDCompTreeHost->GetCompositorPrivate()->CreateCompositionSurfaceForDCompositionSurface(
+        IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
             m_pCompositionSurface, &m_spWinRTSurface));
     }
 
-    IFC_RETURN(m_pCompositionSurface->QueryInterface(&m_pCompositionSurfacePrivate));
+    IFCFAILFAST(m_compositionSurfaceHelper.Initialize(m_pCompositionSurface));
 
     return S_OK;
 }
@@ -296,7 +293,6 @@ DCompSurface::DCompSurface(
     , m_pSystemMemoryBitsForUIThread(NULL)
     , m_pCompositionSurface(NULL)
     , m_pVirtualCompositionSurface(NULL)
-    , m_pCompositionSurfacePrivate(NULL)
     , m_fIsOpaque(isOpaque)
     , m_fAlphaMask(fAlphaMask)
     , m_hasNative8BitSurfaceSupport(hasNative8BitSupport)
@@ -327,7 +323,7 @@ DCompSurface::~DCompSurface()
 // order to preserve the object across device-loss scenarios.  This is optional and only done by certain features
 // (currently, only LoadedImageSurface uses this capability).
 // For consumers of this capability, a DCompSurface will re-create a new legacy surface after device recovery and attach it
-// to the persistent WUC surface via a call to ICompositionSurfaceWrapperPartner::Reset(surface), see InitializeSurface().
+// to the persistent WUC surface via a call to CompositionSurfaceHelper::ResetWinRTSurface(), see InitializeSurface().
 //
 // When called in a context not related to LIS device lost handling - specifically from DCompSurface destructor -
 // we should not call ICompositionSurfaceWrapperPartner::Reset. This breaks the "set it and forget it" usages of
@@ -343,9 +339,7 @@ void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
     // Keep m_spWinRTSurface so it can be reattached later
     if (m_spWinRTSurface != nullptr && resetWucSurface)
     {
-        wrl::ComPtr<WUComp::ICompositionSurfaceWrapperPartner> winRTSurfacePartner;
-        IFCFAILFAST(m_spWinRTSurface.As(&winRTSurfacePartner));
-        HRESULT hrReset = winRTSurfacePartner->Reset(nullptr);
+        HRESULT hrReset = m_compositionSurfaceHelper.ResetWinRTSurface(m_spWinRTSurface.Get(), nullptr);
 
         // It's possible the app closed the surface out from under us.  Ignore RO_E_CLOSED in this situation.
         if (hrReset != RO_E_CLOSED)
@@ -369,7 +363,7 @@ void DCompSurface::ReleaseLegacyDCompResources(bool resetWucSurface)
 
     ReleaseInterface(m_pCompositionSurface);
     ReleaseInterface(m_pVirtualCompositionSurface);
-    ReleaseInterface(m_pCompositionSurfacePrivate);
+    m_compositionSurfaceHelper.ReleaseSurface();
 }
 
 //-------------------------------------------------------------------------
@@ -713,14 +707,14 @@ DCompSurface::CopySubresource(
         // be prevented during allocation time by setting includesGutters to false if the surface is virtual.
         ASSERT(!IsVirtual());
 
-        // The private interface exposes gutters. This allows XAML to fill them along with this single
+        // The helper exposes gutters. This allows XAML to fill them along with this single
         // CopySubresourceRegion, which avoids overhead of having DComp call CopySubresourceRegion an additional time
         // internally for each gutter it needs.
-        ASSERT(m_pCompositionSurfacePrivate != NULL);
+        ASSERT(m_compositionSurfaceHelper.HasSurface());
 
-        DCOMPOSITION_GUTTERS gutters = {0};
+        COMPOSITION_HELPER_GUTTERS gutters = {0};
 
-        IFC(m_pCompositionSurfacePrivate->BeginDrawWithGutters(
+        IFC(m_compositionSurfaceHelper.BeginDrawWithGutters(
             &dstRectNoGutters,
             __uuidof(IDXGISurface),
             reinterpret_cast<void**>(&pDestDXGISurface),
@@ -855,14 +849,7 @@ DCompSurface::CopySubresource(
     // Mark this flag before calling EndDraw. If the EndDraw call itself returns a device lost error, we don't want to
     // call it a second time during cleanup.
     endDrawCalled = true;
-    if (includesGutters)
-    {
-        IFC(m_pCompositionSurfacePrivate->EndDraw());
-    }
-    else
-    {
-        IFC(m_pCompositionSurface->EndDraw());
-    }
+    IFC(m_pCompositionSurface->EndDraw());
 
     m_hasDrawnAtleastOnce = TRUE;
 
@@ -879,14 +866,7 @@ Cleanup:
     // correct state and avoids calling BeginDraw again later while we're in the middle of drawing.
     if (beginDrawCalled && !endDrawCalled && GraphicsUtility::IsDeviceLostError(hr))
     {
-        if (includesGutters)
-        {
-            IGNOREHR(m_pCompositionSurfacePrivate->EndDraw());
-        }
-        else
-        {
-            IGNOREHR(m_pCompositionSurface->EndDraw());
-        }
+        IGNOREHR(m_pCompositionSurface->EndDraw());
     }
 
     ReleaseInterfaceNoNULL(pDestDXGISurface);
@@ -970,9 +950,9 @@ DCompSurface::BeginDrawWithGutters(
     rect.bottom = pUpdateRect->Y + pUpdateRect->Height;
 
     POINT offset;
-    DCOMPOSITION_GUTTERS gutters;
+    COMPOSITION_HELPER_GUTTERS gutters;
 
-    IFC(m_pCompositionSurfacePrivate->BeginDrawWithGutters(
+    IFC(m_compositionSurfaceHelper.BeginDrawWithGutters(
         &rect,
         iid,
         reinterpret_cast<void**>(ppSurface),
@@ -1070,7 +1050,7 @@ DCompSurface::IsDiscarded()
 {
     if (!m_discarded &&
         m_hasDrawnAtleastOnce &&
-        m_pCompositionSurfacePrivate != nullptr)
+        m_compositionSurfaceHelper.HasSurface())
     {
         BOOL hasValidPixels = FALSE;
 
@@ -1078,7 +1058,7 @@ DCompSurface::IsDiscarded()
         // Hence for simplicity, we do not propagate it.
         // In case the implementation changes in future, the failfast
         // should indicate it.
-        HRESULT hasValidPixelsHR = m_pCompositionSurfacePrivate->HasValidPixels(&hasValidPixels);
+        HRESULT hasValidPixelsHR = m_compositionSurfaceHelper.HasValidPixels(&hasValidPixels);
         XCP_FAULT_ON_FAILURE(SUCCEEDED(hasValidPixelsHR));
 
         m_discarded = !hasValidPixels;
@@ -1106,14 +1086,14 @@ DCompSurface::Resize(
 {
     HRESULT hr = S_OK;
 
-    ASSERT(m_pCompositionSurfacePrivate);
+    ASSERT(m_compositionSurfaceHelper.HasSurface());
 
     if (!IsVirtual())
     {
         UpdateMemoryFootprint(FALSE);
     }
 
-    IFC(m_pCompositionSurfacePrivate->Resize(width, height));
+    IFC(m_compositionSurfaceHelper.Resize(width, height));
 
     // If the surface size changed, then we clear out the pending update list. If the surface became smaller,
     // the existing surface updates can draw to a part of the surface that exceeds the new smaller bounds. If
@@ -1181,10 +1161,6 @@ Cleanup:
 //
 //  Synopsis:
 //     Copies the surface contents to a staging texture.
-//  Note:
-//      Uses IDCompositionSurfaceDebug. DComp team allowed us
-//      to use if for the time being, but we would like an api with no
-//      debug in it.
 //
 //------------------------------------------------------------------------------
 _Check_return_ HRESULT
@@ -1194,14 +1170,10 @@ DCompSurface::CopyToSurface(
 {
     HRESULT hr = S_OK;
     ASSERT(m_pCompositionSurface != NULL);
-    IDCompositionSurfaceDebug *pDCompositionSurfaceDebug = NULL;
     IDXGISurface *pDXGISurface = NULL;
     ByteAccessDxgiSurface *pByteAccessSurface = NULL;
 
-    IFC(m_pCompositionSurface->QueryInterface(__uuidof(IDCompositionSurfaceDebug), reinterpret_cast<void**>(&pDCompositionSurfaceDebug)));
-    IFC(pDCompositionSurfaceDebug->CopySurface(
-        NULL,
-        &pDXGISurface));
+    IFC(m_compositionSurfaceHelper.CopySurface(&pDXGISurface));
 
 #if DBG
     DXGI_SURFACE_DESC desc;
@@ -1217,7 +1189,6 @@ DCompSurface::CopyToSurface(
 Cleanup:
     ReleaseInterface(pDXGISurface);
     ReleaseInterface(pByteAccessSurface);
-    ReleaseInterface(pDCompositionSurfaceDebug);
     RRETURN(hr);
 }
 
@@ -1405,13 +1376,11 @@ DCompSurface::DumpDCompSurface(XUINT32 frameNumber, _In_opt_ RECT* pRect)
 {
     HRESULT hr = S_OK;
     bool mapped = false;
-    IDCompositionSurfaceDebug *pSurfaceDebug = NULL;
     IDXGISurface *pDXGISurface = NULL;
     IWICImagingFactory *pWICFactory = NULL;
     IWICBitmap *pWICBitmap = NULL;
 
-    IFC(m_pCompositionSurface->QueryInterface(&pSurfaceDebug));
-    IFC(pSurfaceDebug->CopySurface(pRect, &pDXGISurface));
+    IFC(m_compositionSurfaceHelper.CopySurface(&pDXGISurface));
 
     DXGI_SURFACE_DESC desc;
     IFC(pDXGISurface->GetDesc(&desc));
@@ -1483,7 +1452,6 @@ Cleanup:
         pDXGISurface->Unmap();
     }
     ReleaseInterfaceNoNULL(pDXGISurface);
-    ReleaseInterfaceNoNULL(pSurfaceDebug);
 
     RRETURN(hr);
 }

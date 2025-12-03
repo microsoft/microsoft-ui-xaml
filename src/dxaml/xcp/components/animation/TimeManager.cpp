@@ -14,6 +14,7 @@
 #include <FeatureFlags.h>
 #include <DesignMode.h>
 #include "RefreshAlignedClock.h"
+#include <CompHelper/CompositionAnimationHelper.h>
 
 bool CTimeManager::s_slowDownAnimations = false;
 bool CTimeManager::s_slowDownAnimationsLoaded = false;
@@ -218,7 +219,7 @@ bool CTimeManager::AddActiveWUCAnimation(
     _In_ CDependencyObject* targetObject,
     _In_ KnownPropertyIndex targetPropertyIndex,
     _In_ WUComp::ICompositionScopedBatch* scopedBatch,
-    _In_ WUComp::ICompositionAnimatorPartner* animator)
+    _In_ ICompositionAnimationController* animator)
 {
     const auto& weakRef = xref::get_weakref(targetObject);
 
@@ -287,7 +288,7 @@ void CTimeManager::DetachWUCCompletedHandler(_In_ WUComp::ICompositionScopedBatc
 
 void CTimeManager::StartWUCAnimation(
     _In_ WUComp::ICompositor* compositor,
-    _In_ WUComp::ICompositionObjectPartner* animatingObject,
+    _In_ WUComp::ICompositionObject* animatingObject,
     _In_ LPCWSTR propertyName,
     _In_ WUComp::ICompositionAnimation* animation,
     _In_ CDependencyObject* targetObject,
@@ -296,9 +297,9 @@ void CTimeManager::StartWUCAnimation(
 {
     bool xamlAnimationFound = true;
 
-    // A WUC::ICompositionAnimatorPartner is returned when we start an animation and has APIs on it for pause/seek/resume.
+    // A ICompositionAnimationController is returned when we start an animation and CompositionAnimationHelper has APIs on it for pause/seek/resume.
     // We need to notify the Xaml animation of its animator after starting the WUC animation.
-    wrl::ComPtr<WUComp::ICompositionAnimatorPartner> animator;
+    wrl::ComPtr<ICompositionAnimationController> animator;
 
     // A WUC::CompositionScopedBatch delivers animation completed notifications. We'll put each Xaml animation in its own
     // scoped batch. There's no explicit way to add an animation to a scoped batch, instead a scoped batch will implicitly
@@ -308,8 +309,9 @@ void CTimeManager::StartWUCAnimation(
     // look up a scoped batch until its DComp animation is about to start.
     wrl::ComPtr<WUComp::ICompositionScopedBatch> scopedBatch;
     IFCFAILFAST(compositor->CreateScopedBatch(WUComp::CompositionBatchTypes_Animation, &scopedBatch));
-    IFCFAILFAST(animatingObject->ConnectAnimation(propertyName, animation, &animator));
-    IFCFAILFAST(animator->Start());
+    CompositionAnimationHelper helper;
+    IFCFAILFAST(helper.ConnectAnimation(animatingObject, propertyName, animation, &animator));
+    IFCFAILFAST(helper.Start(animator.Get()));
     scopedBatch->End();
 
     // TODO_WinRT : Need a way to mock CTimeManager to allow below call to complete.
@@ -324,7 +326,7 @@ void CTimeManager::StartWUCAnimation(
     {
         // The Xaml animation corresponding to this WUC animation couldn't be found (e.g. the Xaml target has been released,
         // so the Xaml animation is no longer registered as active). Stop the WUC animation.
-        IFCFAILFAST(animator->Stop());
+        IFCFAILFAST(helper.Stop(animator.Get()));
     }
 }
 

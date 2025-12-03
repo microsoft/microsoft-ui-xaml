@@ -2,45 +2,36 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="1.8.0-20250906.2.release">
+    <Dependency Name="Microsoft.FrameworkUdk" Version="2.0.0-experimental-27200.1835.251029-1735.1">
+      <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
+      <Sha>7c6aabdecdc2b713ad2eebc28f89f7768b9cadfe</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="2.0.0-20251201.1.nightly.internal">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>79d1cfc26537a731ed0683d02fcea17eb2a00230</Sha>
+      <Sha>5fdc9d66252e73296892bcc34bbef070e3005331</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="1.8.0-stable-27108.1004.250905-1130.6">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="2.0.0-experimental-27200.1835.251029-1735.1">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>7c259ec8cfff11d1082ac93517b01f745de66460</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Internal.InteractiveExperiences" Version="1.8.0-stable-27108.1004.250905-1130.6">
-      <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>7c259ec8cfff11d1082ac93517b01f745de66460</Sha>
-    </Dependency>
-    <!-- Microsoft-WinUI-SDK subdirectory in WindowsAppSDKClosed (MSBuild and Visual Studio extensions for building, deploying, and debugging packaged applications.)  -->
-    <Dependency Name="Microsoft.Build.Msix" Version="1.7.0-release.20241114.0">
-      <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKClosed</Uri>
-      <Sha>bebdf37da96fd9d4c4a6588a8000ceee880cd373</Sha>
+      <Sha>7c6aabdecdc2b713ad2eebc28f89f7768b9cadfe</Sha>
     </Dependency>
     <!-- Closed source binary (ex PTLS and WinUIEdit) -->
-    <Dependency Name="Microsoft.Internal.WinUIDetails" Version="1.810.0-stable.20250906.0">
+    <Dependency Name="Microsoft.Internal.WinUIDetails" Version="2.10.0-experimental.20251117.0">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKClosed</Uri>
-      <Sha>50f523b11c6749c792c6d081c217b5da2ac6683a</Sha>
+      <Sha>53484e771b932c69de686307f7ad3934aa4de04f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Base" Version="1.8.250831001">
+    <Dependency Name="Microsoft.WindowsAppSDK.Base" Version="2.0.251128001-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
-      <Sha>094e50346aa0f06f3cb5e8fc0299849db6d00709</Sha>
+      <Sha>eda4bbdc05ddd6d1bc197ff930af59b4e50d891d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="1.8.250906002">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="2.0.251201001-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>79d1cfc26537a731ed0683d02fcea17eb2a00230</Sha>
+      <Sha>5fdc9d66252e73296892bcc34bbef070e3005331</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="1.8.250906004">
+    <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.0.3-experimental">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>7c259ec8cfff11d1082ac93517b01f745de66460</Sha>
+      <Sha>7c6aabdecdc2b713ad2eebc28f89f7768b9cadfe</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.WinAppSDK.EngCommon" Version="1.7.240708">
-      <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
-      <Sha>5a0d328fd3345f3b709d8614e01dd07b8c4b3d09</Sha>
-    </Dependency>
   </ToolsetDependencies>
 </Dependencies>

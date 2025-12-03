@@ -44,7 +44,7 @@
 #include <MetadataAPI.h>
 #include <FeatureFlags.h>
 #include <fwd/windows.ui.composition.h>
-#include <Microsoft.UI.Input.Partner.h>
+#include "InputSiteHelpers.h"
 
 // Handy macro to compute the offset from the beginning of a structure to the
 // the specified member.  Similar to the macro 'offsetof' in stddef.h but its
@@ -1266,7 +1266,7 @@ public:
     bool GetCanParserOverwriteBaseUri() const { return m_canParserOverwriteBaseUri; }
     void SetCanParserOverwriteBaseUri(bool value) { m_canParserOverwriteBaseUri = value; }
 
-    wrl::ComPtr<ixp::IIslandInputSitePartner> GetElementIslandInputSite();
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> GetElementIslandInputSite();
 
     HWND GetElementPositioningWindow();
 

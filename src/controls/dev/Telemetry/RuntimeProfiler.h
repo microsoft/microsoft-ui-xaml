@@ -68,6 +68,7 @@ namespace RuntimeProfiler
         ProfId_SelectorBar,
         ProfId_TitleBar,
         ProfId_InkCanvas,
+        ProfId_SystemBackdropElement,
         ProfId_Size // ProfId_Size is the last always. 
     } ProfilerClassId;
 

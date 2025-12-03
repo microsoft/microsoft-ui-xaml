@@ -67,6 +67,13 @@ XAML_ABI_NAMESPACE_BEGIN namespace Microsoft { namespace UI { namespace Xaml { n
         // be set from the current year.
         static const INT32 _deltaYears = 50;
         static wrl::ComPtr<wg::ICalendar> s_spCalendar;
+        static SRWLOCK s_calendarLock;
+        static INIT_ONCE s_calendarInitOnce;
+
+        static BOOL CALLBACK InitializeCalendarOnce(
+            _In_ PINIT_ONCE InitOnce,
+            _In_ PVOID Parameter,
+            _Outptr_ PVOID* Context);
 
         Private::TrackerPtr<IDatePickerFlyoutPresenter> _tpPresenter;
         Private::TrackerPtr<IFrameworkElement> _tpTarget;

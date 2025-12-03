@@ -31,17 +31,17 @@ void DCompPropertyChangedListener::AttachToHandOffVisual(_In_ IInspectable* hand
         // We don't expect any scenarios where the visual on the element changes.
         ASSERT(m_handOffVisual == nullptr);
 
-        wrl::ComPtr<ixp::IExpCompositionPropertyChanged> visual;
+        wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> visual;
         IFCFAILFAST(handOffVisual->QueryInterface(IID_PPV_ARGS(&visual)));
 
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Size, this));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Offset, this));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Scale, this));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_RotationAngle, this));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_CenterPoint, this));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_AnchorPoint, this));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_TransformMatrix, this));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Clip, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Size, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Offset, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Scale, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_RotationAngle, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_CenterPoint, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_AnchorPoint, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_TransformMatrix, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Clip, this));
 
         m_handOffVisual = handOffVisual;
     }
@@ -59,9 +59,9 @@ void DCompPropertyChangedListener::AttachToPrependVisual(_In_ IInspectable* prep
     {
         ASSERT(m_prependVisual == nullptr);
 
-        wrl::ComPtr<ixp::IExpCompositionPropertyChanged> visual;
+        wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> visual;
         IFCFAILFAST(prependVisual->QueryInterface(IID_PPV_ARGS(&visual)));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Offset, this));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Offset, this));
 
         m_prependVisual = prependVisual;
     }
@@ -71,9 +71,9 @@ void DCompPropertyChangedListener::DetachFromPrependVisual()
 {
     if (m_prependVisual)
     {
-        wrl::ComPtr<ixp::IExpCompositionPropertyChanged> visual;
+        wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> visual;
         VERIFYHR(m_prependVisual->QueryInterface(IID_PPV_ARGS(&visual)));
-        VERIFYHR(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Offset, nullptr));
+        VERIFYHR(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Offset, nullptr));
 
         m_prependVisual = nullptr;
         m_translation = {0.0f, 0.0f, 0.0f};
@@ -93,16 +93,16 @@ void DCompPropertyChangedListener::AttachToWUCClip(_In_ IInspectable* wucInsetCl
         // requested a hand off visual) to non-null (when the app sets a Xaml clip afterwards).
         ASSERT(m_wucInsetClip == nullptr);
 
-        wrl::ComPtr<ixp::IExpCompositionPropertyChanged> insetClip;
+        wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> insetClip;
         IFCFAILFAST(wucInsetClip->QueryInterface(IID_PPV_ARGS(&insetClip)));
 
         // Note: There's also anchor/center/offset/rotation/scale on the base clip which Xaml should also care about.
 
-        IFCFAILFAST(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_TransformMatrix, this));
-        IFCFAILFAST(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_LeftInset, this));
-        IFCFAILFAST(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_TopInset, this));
-        IFCFAILFAST(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_RightInset, this));
-        IFCFAILFAST(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_BottomInset, this));
+        IFCFAILFAST(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_TransformMatrix, this));
+        IFCFAILFAST(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_LeftInset, this));
+        IFCFAILFAST(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_TopInset, this));
+        IFCFAILFAST(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_RightInset, this));
+        IFCFAILFAST(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_BottomInset, this));
 
         m_wucInsetClip = wucInsetClip;
     }
@@ -114,17 +114,17 @@ void DCompPropertyChangedListener::DetachFromHandOffVisual()
 
     if (m_handOffVisual)
     {
-        wrl::ComPtr<ixp::IExpCompositionPropertyChanged> visual;
+        wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> visual;
         VERIFYHR(m_handOffVisual->QueryInterface(IID_PPV_ARGS(&visual)));
 
-        VERIFYHR(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Size, nullptr));
-        VERIFYHR(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Offset, nullptr));
-        VERIFYHR(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Scale, nullptr));
-        VERIFYHR(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_RotationAngle, nullptr));
-        VERIFYHR(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_CenterPoint, nullptr));
-        VERIFYHR(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_AnchorPoint, nullptr));
-        VERIFYHR(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_TransformMatrix, nullptr));
-        IFCFAILFAST(visual->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_Clip, nullptr));
+        VERIFYHR(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Size, nullptr));
+        VERIFYHR(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Offset, nullptr));
+        VERIFYHR(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Scale, nullptr));
+        VERIFYHR(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_RotationAngle, nullptr));
+        VERIFYHR(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_CenterPoint, nullptr));
+        VERIFYHR(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_AnchorPoint, nullptr));
+        VERIFYHR(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_TransformMatrix, nullptr));
+        IFCFAILFAST(visual->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_Clip, nullptr));
 
         m_handOffVisual = nullptr;
     }
@@ -134,16 +134,16 @@ void DCompPropertyChangedListener::DetachFromWUCClip()
 {
     if (m_wucInsetClip)
     {
-        wrl::ComPtr<ixp::IExpCompositionPropertyChanged> insetClip;
+        wrl::ComPtr<ExpComp::IExpCompositionPropertyChanged> insetClip;
         VERIFYHR(m_wucInsetClip->QueryInterface(IID_PPV_ARGS(&insetClip)));
 
         // Note: There's also anchor/center/offset/rotation/scale on the base clip which Xaml should also care about.
 
-        VERIFYHR(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_TransformMatrix, nullptr));
-        VERIFYHR(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_LeftInset, nullptr));
-        VERIFYHR(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_TopInset, nullptr));
-        VERIFYHR(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_RightInset, nullptr));
-        VERIFYHR(insetClip->SetPropertyChangedListener(ixp::ExpExpressionNotificationProperty_BottomInset, nullptr));
+        VERIFYHR(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_TransformMatrix, nullptr));
+        VERIFYHR(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_LeftInset, nullptr));
+        VERIFYHR(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_TopInset, nullptr));
+        VERIFYHR(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_RightInset, nullptr));
+        VERIFYHR(insetClip->SetPropertyChangedListener(ExpComp::ExpExpressionNotificationProperty_BottomInset, nullptr));
 
         m_wucInsetClip = nullptr;
     }
@@ -151,7 +151,7 @@ void DCompPropertyChangedListener::DetachFromWUCClip()
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifySinglePropertyChanged(
     ixp::ICompositionObject* target,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     float value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
@@ -164,7 +164,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifySinglePropertyChanged(
         {
             switch (propertyId)
             {
-                case ixp::ExpExpressionNotificationProperty_RotationAngle:
+                case ExpComp::ExpExpressionNotificationProperty_RotationAngle:
                     // RotationAngle is provided in radians, but CRotateTransform uses degrees
                     IFC_RETURN(uiElement->SetHandOffVisualRotationAngle(180.0f / float(M_PI) * value));
                     break;
@@ -174,19 +174,19 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifySinglePropertyChanged(
         {
             switch (propertyId)
             {
-                case ixp::ExpExpressionNotificationProperty_LeftInset:
+                case ExpComp::ExpExpressionNotificationProperty_LeftInset:
                     m_clipInsets.left = value;
                     break;
 
-                case ixp::ExpExpressionNotificationProperty_TopInset:
+                case ExpComp::ExpExpressionNotificationProperty_TopInset:
                     m_clipInsets.top = value;
                     break;
 
-                case ixp::ExpExpressionNotificationProperty_RightInset:
+                case ExpComp::ExpExpressionNotificationProperty_RightInset:
                     m_clipInsets.right = value;
                     break;
 
-                case ixp::ExpExpressionNotificationProperty_BottomInset:
+                case ExpComp::ExpExpressionNotificationProperty_BottomInset:
                     m_clipInsets.bottom = value;
                     break;
             }
@@ -200,7 +200,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifySinglePropertyChanged(
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector2PropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector2 value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
@@ -208,7 +208,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector2PropertyChanged(
     {
         switch (propertyId)
         {
-        case ixp::ExpExpressionNotificationProperty_Size:
+        case ExpComp::ExpExpressionNotificationProperty_Size:
             // Size affects both the overall offset and center-point due to AnchorPoint.
             m_size = value;
             IFC_RETURN(UpdateOverallOffset(uiElement));
@@ -216,7 +216,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector2PropertyChanged(
             UpdateClip(uiElement);
             break;
 
-        case ixp::ExpExpressionNotificationProperty_AnchorPoint:
+        case ExpComp::ExpExpressionNotificationProperty_AnchorPoint:
             // AnchorPoint affects both the overall offset and center-point.
             m_anchorPoint = value;
             IFC_RETURN(UpdateOverallOffset(uiElement));
@@ -230,7 +230,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector2PropertyChanged(
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector3PropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector3 value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
@@ -238,7 +238,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector3PropertyChanged(
     {
         switch (propertyId)
         {
-            case ixp::ExpExpressionNotificationProperty_Offset:
+            case ExpComp::ExpExpressionNotificationProperty_Offset:
             {
                 wrl::ComPtr<IInspectable> targetInspectable;
                 IFCFAILFAST(pTarget->QueryInterface(IID_PPV_ARGS(targetInspectable.ReleaseAndGetAddressOf())));
@@ -261,11 +261,11 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector3PropertyChanged(
                 break;
             }
 
-            case ixp::ExpExpressionNotificationProperty_Scale:
+            case ExpComp::ExpExpressionNotificationProperty_Scale:
                 IFC_RETURN(uiElement->SetHandOffVisualScale(value.X, value.Y));
                 break;
 
-            case ixp::ExpExpressionNotificationProperty_CenterPoint:
+            case ExpComp::ExpExpressionNotificationProperty_CenterPoint:
                 // The overall center-point is a function of AnchorPoint.
                 m_centerPoint = value;
                 IFC_RETURN(UpdateOverallCenterPoint(uiElement));
@@ -278,7 +278,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector3PropertyChanged(
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector4PropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Vector4 value)
 {
     return S_OK;
@@ -286,7 +286,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyVector4PropertyChanged(
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyColorPropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wu::Color value)
 {
     return S_OK;
@@ -294,7 +294,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyColorPropertyChanged(
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix3x2PropertyChanged(
     ixp::ICompositionObject* target,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Matrix3x2 value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
@@ -306,7 +306,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix3x2PropertyChanged(
 
         switch (propertyId)
         {
-            case ixp::ExpExpressionNotificationProperty_TransformMatrix:
+            case ExpComp::ExpExpressionNotificationProperty_TransformMatrix:
                 uiElement->SetHandOffVisualClipTransform(value);
                 break;
         }
@@ -317,7 +317,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix3x2PropertyChanged(
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix4x4PropertyChanged(
     ixp::ICompositionObject *pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     wfn::Matrix4x4 value)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
@@ -325,7 +325,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix4x4PropertyChanged(
     {
         switch (propertyId)
         {
-            case ixp::ExpExpressionNotificationProperty_TransformMatrix:
+            case ExpComp::ExpExpressionNotificationProperty_TransformMatrix:
                 uiElement->SetHandOffVisualTransformMatrix(value);
                 break;
         }
@@ -336,7 +336,7 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyMatrix4x4PropertyChanged(
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyBooleanPropertyChanged(
     ixp::ICompositionObject *pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId,
+    ExpComp::ExpExpressionNotificationProperty propertyId,
     boolean value)
 {
     return S_OK;
@@ -344,14 +344,14 @@ IFACEMETHODIMP DCompPropertyChangedListener::NotifyBooleanPropertyChanged(
 
 IFACEMETHODIMP DCompPropertyChangedListener::NotifyReferencePropertyChanged(
     ixp::ICompositionObject* pTarget,
-    ixp::ExpExpressionNotificationProperty propertyId)
+    ExpComp::ExpExpressionNotificationProperty propertyId)
 {
     const auto& uiElement = m_uiElementWeakRef.lock();
     if (uiElement != nullptr)
     {
         switch (propertyId)
         {
-            case ixp::ExpExpressionNotificationProperty_Clip:
+            case ExpComp::ExpExpressionNotificationProperty_Clip:
                 OnVisualClipChanged(pTarget, uiElement);
                 break;
         }
@@ -473,3 +473,28 @@ void DCompPropertyChangedListener::UpdateClip(_In_ CUIElement* uiElement)
         uiElement->ClearHandOffVisualClip();
     }
 }
+
+//--------------------------------------------------------------------
+#if __has_include("microsoft.ui.composition.experimental.h")
+// The experimental Composition interface is available, so do a few checks to ensure the copied
+// property changed enum/interfaces are still valid. This validation is done here instead of in
+// ExpCompositionPropertyChanged.h to avoid including the experimental header for all code using
+// that header.
+#include "microsoft.ui.composition.experimental.h"
+constexpr bool sameguid(const GUID guidA, const GUID guidB)
+{
+    return (guidA.Data1 == guidB.Data1)    && (guidA.Data2    == guidB.Data2)    && (guidA.Data3    == guidB.Data3)    &&
+        (guidA.Data4[0] == guidB.Data4[0]) && (guidA.Data4[1] == guidB.Data4[1]) && (guidA.Data4[2] == guidB.Data4[2]) &&
+        (guidA.Data4[3] == guidB.Data4[3]) && (guidA.Data4[4] == guidB.Data4[4]) && (guidA.Data4[5] == guidB.Data4[5]) &&
+        (guidA.Data4[6] == guidB.Data4[6]) && (guidA.Data4[7] == guidB.Data4[7]);
+
+}
+// Check the interface guids
+static_assert(sameguid(__uuidof(ExpComp::IExpCompositionPropertyChanged), __uuidof(ixp::IExpCompositionPropertyChanged)), "IExpCompositionPropertyChanged GUID changed!");
+static_assert(sameguid(__uuidof(ExpComp::IExpCompositionPropertyChangedListener), __uuidof(ixp::IExpCompositionPropertyChangedListener)), "IExpCompositionPropertyChangedListener GUID changed!");
+// Check just a couple enum values, including the last one (TopRightRadiusY)
+static_assert(ExpComp::ExpExpressionNotificationProperty_Clip == ixp::ExpExpressionNotificationProperty_Clip, "ExpExpressionNotificationProperty_Clip value changed!");
+static_assert(ExpComp::ExpExpressionNotificationProperty_TopRightRadiusY == ixp::ExpExpressionNotificationProperty_TopRightRadiusY, "ExpExpressionNotificationProperty_TopRightRadiusY value changed!");
+#endif // #if __has_include("microsoft.ui.composition.experimental.h")
+//--------------------------------------------------------------------
+

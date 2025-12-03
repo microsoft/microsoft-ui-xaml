@@ -204,7 +204,7 @@
       </PreprocessorDefinitions>
     </ResourceCompile>
     <ResourceCompile Condition="'$(Mui)'=='true'">
-      <RCConfigFile>$(ExternalDependenciesPath)\min\mui.rcconfig</RCConfigFile>
+      <RCConfigFile>$(XamlSourcePath)\xcp\inc\mui.rcconfig</RCConfigFile>
       <AdditionalOptions> %(AdditionalOptions) -fm $(OutputPath)\%(Filename).muires -q %(RCConfigFile) -r </AdditionalOptions>
     </ResourceCompile>
 

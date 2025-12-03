@@ -7,6 +7,7 @@
 #include "RepeatBehavior.h"
 #include <TimeMgr.h>
 #include <DCompTreeHost.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 #include "TimeSpan.h"
 
 CTimeline::CTimeline(_In_opt_ CCoreServices *pCore)
@@ -467,7 +468,7 @@ void CTimeline::SetWUCScopedBatch(_In_opt_ WUComp::ICompositionScopedBatch* scop
     SetIsWaitingForDCompAnimationCompleted(scopedBatch != nullptr);
 }
 
-void CTimeline::SetWUCAnimator(_In_ WUComp::ICompositionAnimatorPartner* animator)
+void CTimeline::SetWUCAnimator(_In_ ICompositionAnimationController* animator)
 {
     m_wucAnimator = animator;
 

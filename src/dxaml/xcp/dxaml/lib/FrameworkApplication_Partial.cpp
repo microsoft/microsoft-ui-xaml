@@ -23,7 +23,6 @@
 #include <WindowsXamlManager_Partial.h>
 #include <DesktopWindowXamlSource.g.h>
 #include <DesktopWindowImpl.h>
-#include <WindowingCoreContentApi.h>
 #include <Microsoft.UI.Dispatching.Interop.h>
 #include <Microsoft.Windows.ApplicationModel.Resources.h>
 

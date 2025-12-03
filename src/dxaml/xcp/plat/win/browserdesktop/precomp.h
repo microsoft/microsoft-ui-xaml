@@ -126,10 +126,6 @@
 #include "xmap.h"
 #include "xref_ptr.h"
 #include "COMObjectWrapper.h"
-#include <Microsoft.DirectManipulation.h>
-#include "DirectManipulationViewportEventHandler.h"
-#include "DirectManipulationFrameInfoProvider.h"
-#include "DirectManipulationService.h"
 #include "PalDirectManipulationCompositorService.h"
 #include "PalDirectManipulationService.h"
 #include "PalInputPaneInteraction.h"

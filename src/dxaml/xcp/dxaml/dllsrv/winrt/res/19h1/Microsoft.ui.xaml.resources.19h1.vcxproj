@@ -52,6 +52,7 @@
         <ResourceCompile Include="Microsoft.UI.Xaml.19h1.rc"/>
     </ItemGroup>
     <ItemGroup>
+        <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocationOld)"/>
         <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)"/>
     </ItemGroup>
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />

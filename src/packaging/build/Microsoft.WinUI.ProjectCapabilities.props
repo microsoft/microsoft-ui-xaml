@@ -1,0 +1,10 @@
+<!--
+Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ProjectCapability Id="VersionGeneral" Include="WinUI" />
+    <!-- The Include value below will be modified by update-project-capability-version.targets before being imported by Microsoft.WinUI.props. -->
+    <ProjectCapability Id="VersionSpecific" Include="WinUI.3.0.0-dev" />
+  </ItemGroup>
+</Project>

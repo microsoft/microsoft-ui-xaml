@@ -7,7 +7,6 @@
 #include <CoreWindow.h>
 #include "CoreWindowWrapper.h"
 #include "DragDropInternal.h"
-#include <DragDropInterop.h>
 #include "DropOperationTarget.h"
 #include <FeatureFlags.h>
 #include "focusmgr.h"
@@ -15,13 +14,13 @@
 #include <FrameworkUdk/DebugTool.h>
 #include <IHwndComponentHost.h>
 #include "InternalDebugInteropModel.h"
-#include <isapipresent.h>
 #include "JupiterWindow.h"
 #include "JupiterControl.h"
 #include "TouchHitTestingHandler.h"
 #include "Window.g.h"
 #include <windows.ui.viewmanagement.h>
 #include <winpal.h>
+#include <InputHelpers.h>
 
 
 #include <XamlTraceLogging.h>
@@ -44,20 +43,14 @@
 #include "InputSiteAdapter.h"
 
 #include <FrameworkUdk/CoreWindowIntegration.h>
-#include <Microsoft.UI.Input.Partner.h>
-#include <WindowingCoreContentApi.h>
 
 #include "WrlHelper.h"
-
-#pragma warning(disable:4996) // use of apis marked as [[deprecated("PrivateAPI")]]
 
 #define VK_COPY     VK_F16
 #define VK_PASTE    VK_F17
 
 // copied from WindowServer.h
 const UINT WNDPROC_STATUS_OFFSET = (3 * sizeof(LONG_PTR));   // ULONG size return status from Jupiter WndProc
-
-Microsoft::WRL::ComPtr<wuv::IApplicationViewStatics> CJupiterWindow::s_spApplicationViewStatics;
 
 // msinkaut.h (which is already included) and peninputpanel.h (which contains the
 // definition of MICROSOFT_TIP_OPENING_MSG) are incompatible and so we explicitly
@@ -105,7 +98,6 @@ _Check_return_ HRESULT CJupiterWindow::ConfigureJupiterWindow(
 
         IFC(pCoreWindowInterop->get_WindowHandle(&hwnd));
 
-        //TODO: Task# 28854849 Update Create function from CJupiterWindow to always use ExpCompositionContent.
         IFC(Create(hwnd, WindowType::CoreWindow, pControl, &pJupiterWindow));
 
         IFC(pJupiterWindow->SetCoreWindow(pCoreWindow));
@@ -506,7 +498,7 @@ Cleanup:
 _Check_return_ HRESULT CJupiterWindow::PreTranslateMessage(
     _In_opt_ CContentRoot* contentRoot,
     _In_ mui::IInputPreTranslateKeyboardSourceInterop* source,
-    _In_ mui::IInputKeyboardSourceInterop* keyboardSource,
+    _In_ mui::IInputKeyboardSource2* keyboardSource,
     _In_ const MSG* msg,
     _In_ UINT keyboardModifiers,
     _In_ bool focusPass,
@@ -575,7 +567,7 @@ _Check_return_ HRESULT CJupiterWindow::PreTranslateMessage(
 
         // Accelerator key not handled, so send the message to the keyboard input source to raise the
         // normal keyboard input events instead.
-        IFC_RETURN(keyboardSource->SendKeyboardMessage(msg, handled));
+        IFC_RETURN(InputHelpers::SendKeyboardMessage(keyboardSource, msg, handled));
 
         if (!(*handled))
         {
@@ -834,28 +826,6 @@ wrl::ComPtr<ixp::IPointerPoint> CJupiterWindow::GetInputSiteAdapterPointerPoint(
 
 _Check_return_ HRESULT CJupiterWindow::OnSizeChanged()
 {
-    if (WindowType::CoreWindow == m_windowType)
-    {
-        // In the CoreWindow case, we do some extra work to process the ApplicationViewState.
-        wuv::ApplicationViewState applicationViewState {};
-
-        if (!s_spApplicationViewStatics)
-        {
-            IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Windows_UI_ViewManagement_ApplicationView).Get(), &s_spApplicationViewStatics));
-        }
-
-        IFC_RETURN(s_spApplicationViewStatics->get_Value(&applicationViewState));
-
-        bool fIsFullScreen =    ((applicationViewState == wuv::ApplicationViewState_FullScreenLandscape)
-                              ||  (applicationViewState == wuv::ApplicationViewState_FullScreenPortrait));
-
-        IXcpBrowserHost* pBrowserHost = m_pControl->GetBrowserHost();
-        pBrowserHost->SetFullScreen(fIsFullScreen);
-
-        TraceCoreWindowResizeFiredInfo(static_cast<XUINT32>(applicationViewState));
-    }
-
     IFC_RETURN(m_pControl->OnJupiterWindowSizeChanged(*this, m_hwnd));
 
     // Now that we opt in to the new WinBlue LayoutCompleted mechanism (see SetShouldWaitForLayoutCompletion),

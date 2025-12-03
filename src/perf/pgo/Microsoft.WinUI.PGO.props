@@ -1,0 +1,84 @@
+<Project>
+  <PropertyGroup>
+    <_PackagesConfigFile>$(MSBuildThisFileDirectory)..\packages.config</_PackagesConfigFile>
+    <_PackagesConfigFile Condition="!exists('$(_PackagesConfigfile)')">$(MSBuildThisFileDirectory)..\packages.OSS.config</_PackagesConfigFile>
+    <_PackagesConfigContents>$([System.IO.File]::ReadAllText("$(_PackagesConfigFile)"))</_PackagesConfigContents>
+    <PGOHelpersVersion>$([System.Text.RegularExpressions.Regex]::Match($(_PackagesConfigContents), 'id\s*=\s*"Microsoft\.Internal\.PGO-Helpers\.Cpp"\s+version\s*=\s*"(.*?)"').Groups[1].Value)</PGOHelpersVersion>
+    <NuGetPackageDirectory>$(MSBuildThisFileDirectory)..\..\packages</NuGetPackageDirectory>
+    <PkgMicrosoft_PGO_Helpers_Cpp>$(NuGetPackageDirectory)\Microsoft.Internal.PGO-Helpers.Cpp.$(PGOHelpersVersion)</PkgMicrosoft_PGO_Helpers_Cpp>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\eng\winui-version.props" Condition="'$(ProductMajorVersion)' == ''"/>
+
+  <PropertyGroup>
+    <PGOBranch>main</PGOBranch>
+    <PGOPackageName>Microsoft.WinUI.PGO</PGOPackageName>
+    <PGOPackageVersionMajor>$(ProductMajorVersion)</PGOPackageVersionMajor>
+    <PGOPackageVersionMinor>$(ProductMinorVersion)</PGOPackageVersionMinor>
+    <PGOPackageVersionPatch>$(ProductPatchVersion)</PGOPackageVersionPatch>
+    <PGOPackageVersionPrerelease></PGOPackageVersionPrerelease>
+    <PGONuGetConfigPath>$(ProjectRoot)nuget.config</PGONuGetConfigPath>
+    <PGONuspecPath>$(MSBuildThisFileDirectory)\Microsoft.WinUI.PGO.nuspec</PGONuspecPath>
+    <PGOUseDefaultPGDFileInfo>false</PGOUseDefaultPGDFileInfo>
+  </PropertyGroup>
+
+  <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.props" />
+
+  <!--
+      The PGO instrumentation reserves over half of the 2GB address space available on x86
+      by default for these 2 modules alone, which leads to VM allocation failures in the
+      .NetCore HelloWorldApp. We're dropping that reservation to 10% of the default to avoid
+      issues. pgomgr.exe /merge reports the following for the highest usage:
+      * MUX/ScrollingApp: Used  1.9% (15194160 / 783585280) of total space reserved.
+      * MUXC/ControlsApp: Used  2.8% ( 8562952 / 310964224) of total space reserved.
+  -->
+  <ItemDefinitionGroup Condition="'$(PGOBuildMode)' == 'Instrument' and '$(PGOPlatformShortName)' == 'x86'">
+    <Link Condition="'$(TargetFileName)' == 'Microsoft.UI.XAML.dll'">
+      <AdditionalOptions>%(Link.AdditionalOptions) /GENPROFILE:MEMMAX=78360576</AdditionalOptions>
+    </Link>
+    <Link Condition="'$(TargetFileName)' == 'Microsoft.UI.XAML.Controls.dll'">
+      <AdditionalOptions>%(Link.AdditionalOptions) /GENPROFILE:MEMMAX=31096576</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup>
+    <PGDFile>
+      <PGCFiles>XamlPGO.HelloWorld.Cs.pgc;SimpleIslandApp.pgc;XamlPGO.CommonControls1.pgc</PGCFiles>
+      <PGCFiles Condition="'$(PGOPlatformShortName)' == 'x64'">%(PGDFile.PGCFiles);explorer.pgc</PGCFiles>
+    </PGDFile>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <PGDFile Include="Microsoft.UI.Xaml.pgd" >
+      <PGCPath>$(PGCRootPath)\Microsoft.UI.Xaml.dll</PGCPath>
+    </PGDFile>
+
+    <PGDFile Include="Microsoft.UI.Xaml.Controls.pgd">
+      <PGCFiles>XamlPGO.HelloWorld.Cs.pgc;XamlPGO.CommonControls1.pgc</PGCFiles>
+      <PGCFiles Condition="'$(PGOPlatformShortName)' == 'x64'">%(PGDFile.PGCFiles);explorer.pgc</PGCFiles>
+      <PGCPath>$(PGCRootPath)\Microsoft.UI.Xaml.Controls.dll</PGCPath>
+    </PGDFile>
+
+    <PGDFile Include="Microsoft.UI.Xaml.Phone.pgd">
+      <PGCFiles>XamlPGO.CommonControls1.pgc</PGCFiles>
+      <PGCPath>$(PGCRootPath)\Microsoft.UI.Xaml.Phone.dll</PGCPath>
+    </PGDFile>
+
+
+  </ItemGroup> 
+
+  <ItemGroup>
+    <!-- TODO: Training used to fail in these modules. PGO was fixed for them via https://task.ms/47553990 so
+         this could be re-evaluated now. -->
+    <!-- <_PGDFile Include="dwmcorei.dll.pgd" />
+    <_PGDFile Include="dcompi.dll.pgd" />
+    <_PGDFile Include="marshal.dll.pgd" />
+    <_PGDFile Include="Microsoft.DirectManipulation.dll.pgd" />
+    <_PGDFile Include="Microsoft.InputStateManager.dll.pgd" />
+    <_PGDFile Include="Microsoft.UI.Input.dll.pgd" /> -->
+
+    <PGDFile Include="@(_PGDFile)">
+      <PGCPath>$(PGCRootPath)\%(Filename)</PGCPath>
+    </PGDFile>
+  </ItemGroup>
+</Project>

@@ -203,6 +203,7 @@
 #include <CSelectorItemAutomationPeer.g.h>
 #include <CSemanticZoomAutomationPeer.g.h>
 #include <CSliderAutomationPeer.g.h>
+#include <CSplitMenuFlyoutItemAutomationPeer.g.h>
 #include <CSplitViewLightDismissAutomationPeer.g.h>
 #include <CSplitViewPaneAutomationPeer.g.h>
 #include <CThumbAutomationPeer.g.h>

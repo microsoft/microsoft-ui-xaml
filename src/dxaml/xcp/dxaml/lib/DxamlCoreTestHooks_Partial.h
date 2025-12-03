@@ -24,7 +24,7 @@ namespace DirectUI
 
         IFACEMETHOD_(bool, IsDragDropInProgress)() override;
 
-        IFACEMETHOD_(void, GetDCompDevice)(_Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice) const override;
+        IFACEMETHOD_(void, GetDCompDevice)(_Outptr_ IDCompositionDesktopDevice **ppDCompDevice) const override;
 
         IFACEMETHOD(MarkDeviceInstanceLost)() const override;
         IFACEMETHOD(GetD3D11GraphicsDeviceAddress)(_Out_ INT64* ppCD3D11Device) const override;
@@ -295,6 +295,9 @@ namespace DirectUI
         IFACEMETHOD(GetAllContentIslands)(_In_ xaml_hosting::IDesktopWindowXamlSource* desktopWindowXamlSource, _In_ wfc::IVector<IInspectable*>* contentIslands) override;
 
         IFACEMETHOD(GetElementsRenderedCount)(_Out_ int* elementsRendered) override;
+
+        IFACEMETHOD(PauseNewDispatchForTest)() override;
+        IFACEMETHOD(ResumeNewDispatchForTest)() override;
 
     protected:
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void **ppvObject) override;

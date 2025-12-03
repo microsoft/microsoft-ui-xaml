@@ -2726,15 +2726,6 @@ CDependencyObject* CFocusManager::GetFocusTarget()
         return nullptr;
     }
 
-    // don't draw focus rect for disabled FE(Got focus because of AllowFocusWhenDisabled is set)
-    CFrameworkElement* candidateAsFE = do_pointer_cast<CFrameworkElement>(candidate);
-    if (candidateAsFE
-        && candidateAsFE->AllowFocusWhenDisabled()
-        && !candidateAsFE->IsEnabled())
-    {
-        return nullptr;
-    }
-
     // Test for if the element doesn't have a child to draw to.
     CUIElement* candidateAsElement = do_pointer_cast<CUIElement>(candidate);
     if (candidateAsElement

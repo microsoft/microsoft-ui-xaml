@@ -33,6 +33,7 @@
 #include "RuntimeElement.h"
 #include "RuntimeApplication.h"
 #include "XcpAllocationDebug.h"
+#include "LoadLibraryAbs.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -124,7 +125,7 @@ XamlDiagnostics::Launch(
 
     spThis.Attach(this);
 
-    auto dllName = XamlDiagnosticsHelpers::GetEnv(L"XAML_DM_PATH", m_env, L"XamlDiagnosticsTap.dll");
+    auto dllName = XamlDiagnosticsHelpers::GetEnv(L"XAML_DM_PATH", m_env, GetMuxAbsPath(L"XamlDiagnosticsTap.dll"));
     auto clsIdStr = XamlDiagnosticsHelpers::GetEnv(L"XAML_DM_CLSID", m_env, L"{28cb4df8-85eb-46ee-8d71-c614c2305f74}");
 
     hTap = GetModuleHandle(dllName.c_str());

@@ -43,7 +43,8 @@ function GetWinUI3MUXModule()
 {
     var modules = host.currentProcess.Modules.Where(function(m)
         {
-            if (m.Name.toLowerCase().endsWith("microsoft.ui.xaml.dll"))
+            var name = m.Name.substring(m.Name.lastIndexOf('\\')+1);
+            if (name.toLowerCase() == "microsoft.ui.xaml.dll")
             {
                 try
                 {
@@ -77,7 +78,8 @@ function GetSystemWUXModule()
 {
     var modules = host.currentProcess.Modules.Where(function(m)
         {
-            return m.Name.toLowerCase().endsWith("windows.ui.xaml.dll");
+            var name = m.Name.substring(m.Name.lastIndexOf('\\')+1);
+            return name.toLowerCase() == "windows.ui.xaml.dll";
         });
     if (modules.Count() == 0)
     {
@@ -761,6 +763,22 @@ class __ErrorContextVisualizer
         var hr = this.frameHRs[0];
         var unsignedHR = host.evaluateExpression("(unsigned int)" + hr);
         return "0x" + unsignedHR.toString(16);
+    }
+
+    get CaptureTime()
+    {
+        // The second line of a "dt <address> _FILETIME" command shows the human-readable time
+        var output = host.namespace.Debugger.Utility.Control.ExecuteCommand("dt 0x" + this.captureTime.targetLocation.address.toString(16) + " _FILETIME");
+        var time = output[1].trim();
+
+        // Get the portion which is less than a second
+        var secondTrim = 10000000; // 1 second in 100 nanoseconds
+        var subsecond = this.captureTime.dwLowDateTime % secondTrim;
+
+        // Append the subsecond time (all 7 digits) onto the seconds in the _FILETIME output
+        var subsecondStr = "." + subsecond.toString(10).padStart(7, '0');
+        var timeWithSubsecond = time.replace(/(:[0-9][0-9]) /, "$1" + subsecondStr + " ");
+        return timeWithSubsecond;
     }
 
     get NestedException()
@@ -3201,7 +3219,8 @@ class TriageData
             for (var frame of host.namespace.Debugger.State.DebuggerVariables.curstack.Frames)
             {
                 var frameName = frame.ToDisplayString();
-                if (frameName.indexOf("!_CxxThrowException") > 0 || frameName.startsWith("ucrtbase!__CxxFrameHandler2"))
+                if ((frameName.indexOf("!_CxxThrowException") > 0 || frameName.startsWith("ucrtbase!__CxxFrameHandler2")) &&
+                    host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > frameNum+1)
                 {
                     // TODO: Should we also check for "!winrt::throw_hresult" in the frame name?
                     // Get the module symbol name of the next frame.
@@ -3288,11 +3307,13 @@ class TriageData
             for (var frame of host.namespace.Debugger.State.DebuggerVariables.curstack.Frames)
             {
                 var frameName = frame.ToDisplayString();
-                if (frameName.startsWith("ucrtbase!__FrameHandler4::CxxCallCatchBlock"))
+                if (frameName.startsWith("ucrtbase!__FrameHandler4::CxxCallCatchBlock") &&
+                    host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > frameNum+1)
                 {
                     // Get the module symbol name of the next frame.
                     var nextFrameSymbol = host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[frameNum+1].ToDisplayString();
-                    if (nextFrameSymbol.indexOf("ntdll!") >= 0) // skip: ntdll!RcFrameConsolidation
+                    if (nextFrameSymbol.indexOf("ntdll!") >= 0 && // skip: ntdll!RcFrameConsolidation
+                        host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > frameNum+2)
                     {
                         nextFrameSymbol = host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[frameNum+2].ToDisplayString();
                     }
@@ -3366,7 +3387,8 @@ class TriageData
         }
 
         // wincorlib Platform::Exception
-        if (host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[2].ToDisplayString().startsWith("wincorlib!__abi_WinRTraise"))
+        if (host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > 2 &&
+            host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[2].ToDisplayString().startsWith("wincorlib!__abi_WinRTraise"))
         {
             var frameNum = 0;
             for (var frame of host.namespace.Debugger.State.DebuggerVariables.curstack.Frames)
@@ -3692,24 +3714,22 @@ function xamlclass(index, useWinUI3)
         host.diagnostics.debugLog("Usage: !xamlclass <class index>\n");
         return null;
     }
-    var modules = host.currentProcess.Modules.Where(function(m)
-        {
-            return (m.Name.toLowerCase().endsWith("microsoft.ui.xaml.dll") && !m.Contents.Version.VersionInfo.FileVersion.startsWith("2.")) ||
-                    m.Name.toLowerCase().endsWith("windows.ui.xaml.dll")
-        });
-    var module = modules.First();
-    if (modules.Count() == 2)
+    var module = null;
+    if (useWinUI3 != undefined)
     {
-        if (useWinUI3 == undefined)
+        module = useWinUI3 ? GetWinUI3MUXModule() : GetSystemWUXModule();
+    }
+    else
+    {
+        var winui3Module = GetWinUI3MUXModule();
+        var systemWUXModule = GetSystemWUXModule();
+        if (winui3Module != null && systemWUXModule != null)
         {
             host.diagnostics.debugLog("Both system XAML and WinUI3 are loaded. Specify 0 (system XAML) or 1 (useWinUI3)\n");
             host.diagnostics.debugLog("Usage: !xamlclass <class index>,<useWinUI3>\n");
             return null;
         }
-        else
-        {
-            module = useWinUI3 ? GetWinUI3MUXModule() : GetSystemWUXModule();
-        }
+        module = (winui3Module != null) ? winui3Module : systemWUXModule;
     }
 
     var knownTypesArray = host.getModuleSymbol(module, "c_aTypes");

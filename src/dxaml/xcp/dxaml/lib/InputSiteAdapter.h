@@ -7,8 +7,6 @@
 #include <fwd/windows.ui.core.h>
 #include <fwd/microsoft.ui.xaml.h>
 #include <microsoft.ui.input.h>
-#include <microsoft.ui.input.partner.h>
-#include <microsoft.ui.input.inputkeyboardsource.interop.h>
 #include <microsoft.ui.input.inputpretranslatesource.interop.h>
 #include "NamespaceAliases.h"
 
@@ -23,7 +21,7 @@ public:
 
     void Initialize(_In_ ixp::IContentIsland* contentIsland, _In_ CContentRoot* contentRoot, _In_ CJupiterWindow* jupiterWindow, bool connectActivationListener = true);
 
-    wrl::ComPtr<ixp::IIslandInputSitePartner> GetIslandInputSite() const { return m_islandInputSite; }
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> GetIslandInputSite() const { return m_islandInputSite; }
 
     _Check_return_ HRESULT SetFocus();
     _Check_return_ HRESULT SetPointerCapture();
@@ -100,7 +98,7 @@ private:
     bool m_hasCapture = false;
     bool m_isIslandInputSiteRegisteredWithInputServicesForDManip = false;
 
-    wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite{ nullptr };
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> m_islandInputSite{ nullptr };
     wrl::ComPtr<ixp::IInputFocusController> m_inputFocusController;
     wrl::ComPtr<ixp::IInputKeyboardSource2> m_inputKeyboardSource2;
     wrl::ComPtr<ixp::IInputPointerSource> m_inputPointerSource;

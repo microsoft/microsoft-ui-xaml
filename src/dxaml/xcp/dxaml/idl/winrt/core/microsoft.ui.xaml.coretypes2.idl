@@ -1701,6 +1701,7 @@ namespace Microsoft.UI.Xaml.Input
         [method_name("FindNextFocusableElement")] static Microsoft.UI.Xaml.UIElement FindNextFocusableElement(Microsoft.UI.Xaml.Input.FocusNavigationDirection focusNavigationDirection);
         [method_name("FindNextFocusableElementWithHint")] static Microsoft.UI.Xaml.UIElement FindNextFocusableElement(Microsoft.UI.Xaml.Input.FocusNavigationDirection focusNavigationDirection, Windows.Foundation.Rect hintRect);
         [method_name("TryMoveFocus")] static Boolean TryMoveFocus(Microsoft.UI.Xaml.Input.FocusNavigationDirection focusNavigationDirection);
+        [deprecated("GetFocusedElement() is deprecated. Use GetFocusedElement(XamlRoot) instead to ensure correct behavior in multi-window scenarios.", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         static Object GetFocusedElement();
         [method_name("GetFocusedElementWithRoot")] static Object GetFocusedElement(Microsoft.UI.Xaml.XamlRoot xamlRoot);
     };
