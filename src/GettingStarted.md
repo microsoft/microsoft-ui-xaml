@@ -50,8 +50,8 @@ Starting with a command prompt or PowerShell at the root of your WinUI repo:
    .\init.ps1
    ```
 
-   Note: Package restore errors are currently expected for a few projects:
-   `Microsoft.UI.DCPP.Dependencies.Edge`, `Microsoft.Taef`,
+   Note: Package restore errors are currently expected for a couple projects:
+   `Microsoft.Taef`,
    and `Microsoft.Windows.TestInProduction`. These packages are not required to build the WinUI
    product binaries. You can ignore these errors for now. They will be addressed in future changes.
    See the [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700)
@@ -107,6 +107,7 @@ project's output folder after building your project. To do this, start with an a
 and
 [self-contained](https://learn.microsoft.com/windows/apps/package-and-deploy/self-contained-deploy/deploy-self-contained-apps).
 This can be done by setting the following properties in your app's project file:
+
 ```xml
   <PropertyGroup>
     <WindowsPackageType>None</WindowsPackageType>
@@ -136,6 +137,7 @@ Update the path in the `Include` attribute to point to your WinUI build output f
 In this option, you would reference the `Microsoft.WindowsAppSDK.WinUI` NuGet package built as part
 of the WinUI build process. To do this, start with any app (either packaged or unpackaged), and add
 this `nuget.config` file to the root of your app project (next to your `.csproj` or `.vcxproj` file):
+
 ```xml
 <configuration>
   <config>
