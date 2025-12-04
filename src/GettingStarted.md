@@ -118,17 +118,16 @@ Build the project using [WindowsAppSDK 2.0-experimental3](https://www.nuget.org/
 then replace the WinUI binaries in the output folder of your app with the ones you built from source.
 You can then just run your app as normal to use the WinUI binaries you built.
 
-You could also set up a post-build step in your app project to do this copy automatically. For
-example, you could add a target to your project file that runs after the build completes:
+You could also edit your app project to do this copy automatically, such as by adding this:
 
 ```xml
-  <Target Name="CopyWinUIBinaries" AfterTargets="Build">
-    <ItemGroup>
-      <WinUIBinaries Include="C:\winui3\src\BuildOutput\packaging\Debug\runtimes\win10-$(Platform)\native\**\*.*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(WinUIBinaries)" DestinationFolder="$(OutputPath)" />
-  </Target>
-```
+  <ItemGroup>
+    <None Include="C:\winui3\src\BuildOutput\packaging\Debug\runtimes\win10-$(Platform)\native\**\*.*">
+      <Visible>false</Visible>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+ ```
 
 Update the path in the `Include` attribute to point to your WinUI build output folder.
 
