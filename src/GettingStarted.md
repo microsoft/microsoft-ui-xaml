@@ -279,5 +279,5 @@ command at the root of the repo:
 
 ### Other notes
 
-* WinUI currently still assumes Visual Studio 2022. This project has not yet been tested with
-  Visual Studio 2026.
+* `OneTimeSetup.cmd` currently assumes Visual Studio 2022. However, this project can also be built
+  with Visual Studio 2026 if all necessary components are installed.

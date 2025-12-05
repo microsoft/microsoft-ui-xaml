@@ -18,6 +18,7 @@ CRelativePanel::~CRelativePanel()
 _Check_return_ HRESULT CRelativePanel::MeasureOverride(_In_ XSIZEF availableSize, _Out_ XSIZEF& desiredSize)
 {
     XSIZEF availableSizeForChildren;
+    XSIZEF desiredSizeOfChildren;
     XSIZEF borderSize = CBorder::HelperGetCombinedThickness(this);
 
     // The available size for the children is equal to the available
@@ -33,7 +34,7 @@ _Check_return_ HRESULT CRelativePanel::MeasureOverride(_In_ XSIZEF availableSize
     // the desired size of the panel, which corresponds to the 
     // desired size of the children as a whole plus the size of
     // the border.
-    XSIZEF desiredSizeOfChildren = m_graph.CalculateDesiredSize();
+    desiredSizeOfChildren = m_graph.CalculateDesiredSize();
 
     desiredSize.width = desiredSizeOfChildren.width + borderSize.width;
     desiredSize.height = desiredSizeOfChildren.height + borderSize.height;

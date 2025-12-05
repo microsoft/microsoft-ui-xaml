@@ -82,6 +82,7 @@
   <PropertyGroup>
     <PlatformToolSet Condition="'$(VisualStudioVersion)'>='16.0'">v142</PlatformToolSet>
     <PlatformToolSet Condition="'$(VisualStudioVersion)'>='17.0'">v143</PlatformToolSet>
+    <PlatformToolSet Condition="'$(VisualStudioVersion)'>='18.0'">v145</PlatformToolSet>
     <PlatformToolSet Condition="'$(PlatformToolSet)'==''">v141</PlatformToolSet>
   </PropertyGroup>
 
