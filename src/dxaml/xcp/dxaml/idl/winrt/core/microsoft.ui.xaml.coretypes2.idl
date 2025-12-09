@@ -830,6 +830,7 @@ namespace Microsoft.UI.Xaml
         void Activate();
         void Close();
         void SetTitleBar(Microsoft.UI.Xaml.UIElement titleBar);
+        [deprecated("Window.Current is deprecated and always returns null in WinUI Desktop apps. For alternate ways to track instances of Window in your app code, visit https://aka.ms/win.current.alt", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         static Microsoft.UI.Xaml.Window Current{ get; };
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 4)]

@@ -1658,6 +1658,7 @@ namespace Microsoft.UI.Xaml
         Object GetAnimationBaseValue(Microsoft.UI.Xaml.DependencyProperty dp);
         Int64 RegisterPropertyChangedCallback(Microsoft.UI.Xaml.DependencyProperty dp, Microsoft.UI.Xaml.DependencyPropertyChangedCallback callback);
         void UnregisterPropertyChangedCallback(Microsoft.UI.Xaml.DependencyProperty dp, Int64 token);
+        [deprecated("The Dispatcher property is deprecated, Use DispatcherQueue and TryEnqueue for UI thread work. For more info, visit https://aka.ms/DispatcherQueue.Property", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         Windows.UI.Core.CoreDispatcher Dispatcher{ get; };
         Microsoft.UI.Dispatching.DispatcherQueue DispatcherQueue{ get; };
     };
