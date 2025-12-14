@@ -45,11 +45,12 @@
 #include <ColorUtil.h>
 #include <LayoutTransitionElement.h>
 #include <SimplePropertiesHelpers.h>
-#include <microsoft.ui.composition.private.h>
 #include <Microsoft.UI.Content.h>
 #include "D2DAcceleratedPrimitives.h"
 #include "DropShadowRecipe.h"
 #include <FxCallbacks.h>
+#include <CompHelper/CompositionImplicitAnimationHelper.h>
+#include <DirectManipulationHelper.h>
 
 using namespace DirectUI;
 using namespace RuntimeFeatureBehavior;
@@ -112,7 +113,8 @@ HWCompTreeNodeWinRT::ImplicitAnimationDisabler::ImplicitAnimationDisabler(_In_ I
     if (m_disableIA)
     {
         VERIFYHR(visualUnk->QueryInterface(IID_PPV_ARGS(&m_visualAsCO)));
-        IFCFAILFAST(m_visualAsCO->EnableImplicitAnimations(FALSE));
+        CompositionImplicitAnimationHelper helper;
+        IFCFAILFAST(helper.EnableImplicitAnimations(m_visualAsCO.Get(), FALSE));
     }
 }
 
@@ -120,7 +122,8 @@ HWCompTreeNodeWinRT::ImplicitAnimationDisabler::~ImplicitAnimationDisabler()
 {
     if (m_disableIA)
     {
-        IFCFAILFAST(m_visualAsCO->EnableImplicitAnimations(TRUE));
+        CompositionImplicitAnimationHelper helper;
+        IFCFAILFAST(helper.EnableImplicitAnimations(m_visualAsCO.Get(), TRUE));
     }
 }
 
@@ -1445,10 +1448,8 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
         dropShadowVisual->get_Size(&shadowVisualSize);
         dropShadowVS->put_SourceSize(shadowVisualSize);
 
-        wrl::ComPtr<ixp::ICompositionVisualSurfacePartner> visualSurfacePartner;
-        IFCFAILFAST(dropShadowVS.As(&visualSurfacePartner));
         // TODO: Make sure to test in high DPI
-        visualSurfacePartner->put_RealizationSize(shadowVisualSize); // Required to avoid dwm.exe picking an arbitrary size that will cause bluriness.
+        dcompTreeHost->GetCompositionHelper()->SetSurfaceRealizationSize(dropShadowVS.Get(), shadowVisualSize); // Required to avoid dwm.exe picking an arbitrary size that will cause bluriness.
 
         wrl::ComPtr<ixp::ICompositionSurfaceBrush> dropShadowSurfaceBrush;
         wrl::ComPtr<ixp::ICompositionSurface> dropShadowSurface;
@@ -2516,9 +2517,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualViewportInteraction(_In_ DCompTreeH
             wrl::ComPtr<IInspectable> interaction;
             m_pUIElementNoRef->GetViewportInteraction(dcompTreeHost, &interaction);
 
-            wrl::ComPtr<ixp::IExpVisual> expVisual;
-            VERIFYHR(m_primaryVisual.As(&expVisual));
-            IFCFAILFAST(expVisual->SetInteraction(interaction.Get()));
+            IFCFAILFAST(DirectManipulationHelper::SetInteraction(m_primaryVisual.Get(), interaction.Get()));
 
             m_isViewportInteractionAssigned = true;
             TraceSetViewportInteraction(m_pUIElementNoRef, interaction.Get());
@@ -2526,9 +2525,7 @@ void HWCompTreeNodeWinRT::UpdatePrimaryVisualViewportInteraction(_In_ DCompTreeH
     }
     else if (m_isViewportInteractionAssigned)
     {
-        wrl::ComPtr<ixp::IExpVisual> expVisual;
-        VERIFYHR(m_primaryVisual.As(&expVisual));
-        IFCFAILFAST(expVisual->SetInteraction(nullptr));
+        IFCFAILFAST(DirectManipulationHelper::SetInteraction(m_primaryVisual.Get(), nullptr));
 
         m_isViewportInteractionAssigned = false;
         TraceSetViewportInteraction(m_pUIElementNoRef, nullptr);

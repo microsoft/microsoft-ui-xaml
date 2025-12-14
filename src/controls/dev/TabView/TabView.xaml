@@ -343,7 +343,6 @@
                     <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}" />
                     <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                     <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}" />
-                    <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}" />
                     <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                     <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
                     <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonBackground}" />
@@ -363,7 +362,6 @@
                     <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}" />
                     <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                     <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}" />
-                    <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}" />
                     <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                     <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
                     <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonBackground}" />
@@ -383,7 +381,6 @@
                     <Setter Target="TabContainer.Margin" Value="{ThemeResource TabViewSelectedItemHeaderMargin}" />
                     <Setter Target="TabContainer.BorderBrush" Value="{ThemeResource TabViewSelectedItemBorderBrush}" />
                     <Setter Target="TabContainer.BorderThickness" Value="{ThemeResource TabViewSelectedItemBorderThickness}" />
-                    <Setter Target="TabContainer.Padding" Value="{ThemeResource TabViewSelectedItemHeaderPadding}" />
                     <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                     <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
                     <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewItemHeaderSelectedCloseButtonBackground}" />
@@ -492,14 +489,19 @@
                   </VisualState.Setters>
                 </VisualState>
               </VisualStateGroup>
-              <VisualStateGroup x:Name="CloseIconStates">
-                <VisualState x:Name="CloseButtonVisible" />
-                <VisualState x:Name="CloseButtonCollapsed">
-                  <VisualState.Setters>
-                    <Setter Target="CloseButton.Visibility" Value="Collapsed" />
-                  </VisualState.Setters>
-                </VisualState>
-              </VisualStateGroup>
+                <VisualStateGroup x:Name="CloseIconStates">
+                    <VisualState x:Name="CloseButtonVisible">
+                        <VisualState.Setters>
+                            <Setter Target="TabContainer.Padding" Value="{StaticResource TabViewItemHeaderPaddingWithCloseButton}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="CloseButtonCollapsed">
+                        <VisualState.Setters>
+                            <Setter Target="TabContainer.Padding" Value="{StaticResource TabViewItemHeaderPaddingWithoutCloseButton}" />
+                            <Setter Target="CloseButton.Visibility" Value="Collapsed" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
               <VisualStateGroup>
                 <VisualState x:Name="ForegroundNotSet" />
                 <VisualState x:Name="ForegroundSet">

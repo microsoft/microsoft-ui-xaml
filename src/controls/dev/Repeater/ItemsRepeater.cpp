@@ -574,11 +574,22 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         {
             // Walk through all the elements and make sure they are cleared for
             // non-virtualizing layouts.
-            for (const auto& element : Children())
+
             {
-                if (GetVirtualizationInfo(element)->IsRealized())
+                // As we will be clearing up the elements from the parent at the end
+                // we will avoid owners be assigned to items while recycling so that
+                // there won't be crashes later when items are retrieved from recycle pool
+                m_viewManager.RecycleWithoutOwner(true);
+                auto const processingClear = gsl::finally([this]()
                 {
-                    ClearElementImpl(element);
+                    m_viewManager.RecycleWithoutOwner(false);
+                });
+                for (const auto& element : Children())
+                {
+                    if (GetVirtualizationInfo(element)->IsRealized())
+                    {
+                        ClearElementImpl(element);
+                    }
                 }
             }
 

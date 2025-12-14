@@ -3,8 +3,6 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <IsWinmdProject>true</IsWinmdProject>
-    <!-- IDL generation with public SDK does not work yet -->
-    <XamlUsePublicSdk>false</XamlUsePublicSdk>
     <!-- MIDL version checks do not work with [experimental] (which is used in lifted IXP idl files) -->
     <DisableMidlVersionChecks>1</DisableMidlVersionChecks>
 

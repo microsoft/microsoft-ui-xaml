@@ -18,9 +18,9 @@
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Update="Microsoft.TestPlatform.TestHost" Version="$(MicrosoftTestNetSdkVersion)" />
     <PackageReference Update="Microsoft.Windows.SDK.BuildTools" Version="$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)" />
+    <PackageReference Update="Microsoft.FrameworkUdk" Version="$(FrameworkUdkPackageVersion)" />
     <PackageReference Update="Microsoft.Internal.WinUIDetails" Version="$(WinUIDetailsNugetVersion)" GeneratePathProperty="true"/>
-    <PackageReference Update="Microsoft.Internal.InteractiveExperiences" Version="$(IxpInternalPackageVersion)"/>
-    <PackageReference Update="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="$(IxpTransportPackageVersion)"/>
+    <PackageReference Update="$(LiftedIXPTransportPackageName)" Version="$(IxpTransportPackageVersion)"/>
     <PackageReference Update="Microsoft.Web.WebView2" Version="$(WebView2Version)" GeneratePathProperty="true" />
     <PackageReference Update="Microsoft.SourceLink.AzureRepos.Git" Version="$(MicrosoftSourceLinkAzureReposVersion)" GeneratePathProperty="true"/>
     <PackageReference Update="MUXCustomBuildTasks" Version="$(MuxCustomBuildTasksPackageVersion)" />
@@ -30,9 +30,10 @@
     <PackageReference Update="CommunityToolkit.WinUI.Controls.SettingsControls" Version="$(CommunityToolkitWinUIVersion)" />
     <PackageReference Update="CommunityToolkit.WinUI.Converters" Version="$(CommunityToolkitWinUIVersion)" />
     <PackageReference Update="CommunityToolkit.WinUI.Animations" Version="$(CommunityToolkitWinUIVersion)" />
+    <PackageReference Update="CommunityToolkit.WinUI.Controls.Primitives" Version="$(CommunityToolkitWinUIVersion)" />
     <PackageReference Update="Microsoft.Graphics.Win2D" Version="$(GraphicsWin2DVersion)" />
     <PackageReference Update="Win2d.uwp" Version="$(Win2DUWPVersion)" />
-    <PackageReference Update="Win2d.winui" Version="$(Win2DWinUIVersion)" />
+    <PackageReference Update="Microsoft.Graphics.Win2D" Version="$(Win2DWinUIVersion)" />
     <PackageReference Update="DiffPlex" Version="1.2.1" />
     <PackageReference Update="System.Private.Uri" Version="4.3.2"/>
     <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)"/>

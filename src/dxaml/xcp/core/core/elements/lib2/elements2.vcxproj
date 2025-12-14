@@ -71,6 +71,7 @@
         <ClCompile Include="..\Flyout.cpp"/>
         <ClCompile Include="..\MenuFlyout.cpp"/>
         <ClCompile Include="..\MenuFlyoutSubItem.cpp"/>
+        <ClCompile Include="..\SplitMenuFlyoutItem.cpp"/>
         <ClCompile Include="..\CommandBar.cpp"/>
         <ClCompile Include="..\Button.cpp"/>
         <ClCompile Include="..\icon.cpp"/>

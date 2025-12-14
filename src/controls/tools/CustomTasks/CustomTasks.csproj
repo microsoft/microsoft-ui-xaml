@@ -46,6 +46,9 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Management.Automation">
+      <HintPath>..\packages\Microsoft.PowerShell.5.ReferenceAssemblies.1.1.0\lib\net4\System.Management.Automation.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BatchMergeXaml.cs" />
@@ -89,9 +92,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.TextTemplating.15.0">
       <Version>16.8.30709.132</Version>
-    </PackageReference>
-    <PackageReference Include="System.Management.Automation.dll">
-      <Version>10.0.10586</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0</Version>

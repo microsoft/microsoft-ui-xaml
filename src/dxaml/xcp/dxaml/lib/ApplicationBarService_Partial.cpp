@@ -267,7 +267,7 @@ ApplicationBarService::RegisterApplicationBar(_In_ AppBar* pApplicationBar, _In_
     // use the application bar UIElement to determine which (instance of) Window.Activated events we should listen for.
     // Since there is always a unique instance of ApplicationBarService for each XamlRoot, we only need to do this once.
     Window* window = nullptr;
-    IGNOREHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(pApplicationBar, &window));
+    IGNOREHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(pApplicationBar, false /*onlyForDesktopWindowXamlSource*/, &window));
     if (!m_windowActivatedHandler && window)
     {
         auto xamlRoot = XamlRoot::GetForElementStatic(pApplicationBar);
@@ -356,7 +356,7 @@ ApplicationBarService::UnregisterApplicationBar(_In_ AppBar* pApplicationBar)
     if (!m_ApplicationBars.size() && m_windowActivatedHandler)
     {
         Window* window = nullptr;
-        IGNOREHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(pApplicationBar, &window));
+        IGNOREHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(pApplicationBar, false /*onlyForDesktopWindowXamlSource*/, &window));
 
         if (window)
         {
@@ -1498,7 +1498,7 @@ _Check_return_ HRESULT ApplicationBarService::CleanupWindowActivatedEventHook()
         if (contentElement)
         {
             Window* window = nullptr;
-            IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(contentElement.Cast<UIElement>(), &window));
+            IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(contentElement.Cast<UIElement>(), false /*onlyForDesktopWindowXamlSource*/, &window));
             if (window)
             {
                 IFC_RETURN(m_windowActivatedHandler.DetachEventHandler(ctl::iinspectable_cast(window)));

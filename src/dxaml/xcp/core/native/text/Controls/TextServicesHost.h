@@ -148,10 +148,6 @@ public:
     virtual HRESULT TxGetContentPadding(_Out_ RECT *pContentPadding) override;
     virtual bool TxGetShouldUseVisualPixels() override;
 
-#if false // _ONECORETRANSFORMS_REMOVED_
-    virtual UINT64  TxGetVisualReferenceId() override;
-#endif
-
     // IGripperHost overrides
     _Check_return_ HRESULT ShowGrippers(_In_ POINT *pBeginPoint, float beginLineHeight, _In_ POINT *pEndPoint, float endLineHeight) override;
     HRESULT GetVisibleRect(_Out_ RECT *pRect) override;

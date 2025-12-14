@@ -142,7 +142,11 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
             // Round the border width, if necessary. Note that the Left and Right values of BorderThickness
             // should be individually rounded (see CBorder::GetLayoutRoundedThickness).
-            const double scaleFactor = progressBar.XamlRoot().RasterizationScale();
+            double scaleFactor = 1.0;  // Assuming a 1.0 scale factor when no XamlRoot is available at the moment.
+            if (auto const& xamlRoot = progressBar.XamlRoot())
+            {
+                scaleFactor = xamlRoot.RasterizationScale();
+            }
             const double roundedBorderWidth = progressBar.UseLayoutRounding() ?
                 (LayoutRound(borderThickness.Left, scaleFactor) + LayoutRound(borderThickness.Right, scaleFactor)) :
                 (borderThickness.Left + borderThickness.Right);

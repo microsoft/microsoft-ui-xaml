@@ -9,10 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageDownload Include="Microsoft.FrameworkUdk" Version="[$(FrameworkUdkPackageVersion)]"/>
+    <PackageReference Include="Microsoft.Internal.WinUIDetails" Version="$(WinUIDetailsNugetVersion)"/>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsInternalWinUIBuild)' != 'true'">
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" version="$(FoundationTransportPackageVersion)"/>
+    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" version="$(IxpTransportPackageVersion)"/>
+  </ItemGroup>
+  <ItemGroup Condition="'$(IsInternalWinUIBuild)' == 'true'">
     <PackageReference Include="Microsoft.WindowsAppSDK.Foundation.TransportPackage" version="$(FoundationTransportPackageVersion)"/>
     <PackageReference Include="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" version="$(IxpTransportPackageVersion)"/>
-    <PackageReference Include="Microsoft.Internal.InteractiveExperiences" version="$(IxpInternalPackageVersion)"/>
-    <PackageReference Include="Microsoft.Build.Msix" version="$(MicrosoftBuildMsixVersion)"/>
-    <PackageReference Include="Microsoft.Internal.WinUIDetails" Version="$(WinUIDetailsNugetVersion)"/>
   </ItemGroup>
 </Project>

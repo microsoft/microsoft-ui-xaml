@@ -12,7 +12,7 @@
 #include "specstrings.h"
 #include <minpal.h>
 #include <windows.system.h>
-#include <microsoft.ui.input.experimental.h>
+#include <microsoft.ui.input.h>
 #include <NamespaceAliases.h>
 
 // TODO -- Check This

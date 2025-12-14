@@ -160,6 +160,7 @@ private:
     void UnregisterElementForDeferredTransition(_In_ CUIElement* pTarget, _In_ LayoutTransitionStorage* pStorage);
 
     _Check_return_ HRESULT ProcessElementInsertions();
+    _Check_return_ HRESULT CheckUiaPropertyChanges();
 
 private:
     // stack of elements going through measure/arrange

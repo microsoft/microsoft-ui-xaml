@@ -88,7 +88,7 @@ VALIDATE_TYPE_LAYOUT(   CMultiParentShareableDependencyObject,   72,   88,  136)
 VALIDATE_TYPE_LAYOUT(                     CTimelineCollection,   84,  100,  160) // 5
 VALIDATE_TYPE_LAYOUT(                                  CBrush,   80,   96,  152) // 5
 VALIDATE_TYPE_LAYOUT(                         CContentControl,  408,  424,  608) // 5
-VALIDATE_TYPE_LAYOUT(                             CStoryboard,  240,  256,  360) // 5
+VALIDATE_TYPE_LAYOUT(                             CStoryboard,  232,  248,  352) // 5
 VALIDATE_TYPE_LAYOUT(         HWCompWinRTVisualRenderDataNode,   60,   76,  112) // 5
 VALIDATE_TYPE_LAYOUT(          CDoubleAnimationUsingKeyFrames,  240,  256,  384) // 5
 VALIDATE_TYPE_LAYOUT(                                   CGrid,  340,  356,  504) // 5

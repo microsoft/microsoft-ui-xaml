@@ -6,6 +6,9 @@
 template <typename T, std::size_t expected, std::size_t actual>
 void validate_size()
 {
+    // Note, if this static_assert fails, do a local build in this folder and look for an error
+    // line in the output like this, which shows the class name, the expected size, and the actual size:
+    //    see reference to function template instantiation 'void validate_size<CStoryboard,360,352>(void)' being compiled
     static_assert(expected == actual, "Size of type changed.");
 };
 

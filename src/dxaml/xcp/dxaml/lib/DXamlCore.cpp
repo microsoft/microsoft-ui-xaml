@@ -110,7 +110,11 @@
 #include "TextControlFlyoutHelper.h"
 #include "XamlTelemetry.h"
 
+#if __has_include("DXamlCoreTipTests.h")
 #include "DXamlCoreTipTests.h"
+#endif
+
+#include "xcpwindow.h"
 
 using namespace WRLHelper;
 using namespace DirectUI;
@@ -295,6 +299,7 @@ DXamlCore::GetUwpWindowNoRef()
 _Check_return_ HRESULT
 DXamlCore::GetAssociatedWindowNoRef(
     _In_ UIElement* element,
+     bool onlyForDesktopWindowXamlSource,
     _Outptr_result_maybenull_  Window** windowNoRef)
 {
     IFCPTR_RETURN(windowNoRef);
@@ -322,6 +327,35 @@ DXamlCore::GetAssociatedWindowNoRef(
     if (!xamlRoot)
     {
         return S_FALSE;
+    }
+
+    // This is a change we made late in the 1.8 release, so it's scoped tightly to reduce risk.
+    // The main point of this function is to return the Window object for an element that's in the 
+    // content of the Window.  But we have a problem where the call to get_HostWindow can fail
+    // if the XamlIsland that contains the element is not backed by an HWND.
+    // We know that Xaml Window uses a DesktopWindowXamlSource to host its content.  So if we can
+    // detect that the element is in a XamlIsland that's NOT associated with a DesktopWindowXamlSource,
+    // we can bail out early and avoid get_HostWindow.  We expect this to be very safe, but we're scoping
+    // it tightly to reduce risk.
+    // This is a temporary fix, we want to avoid the HWND dependency completely.
+    // FUTURE: Change m_handleToDesktopWindowMap to just be a list of Window objects, and do the lookup
+    //         for if the Window's XamlRoot matches the element's XamlRoot. Don't use an HWND at all.
+    if (onlyForDesktopWindowXamlSource)
+    {
+        if (auto visualTree = xamlRoot->GetVisualTreeNoRef())
+        {
+            if (auto contentRoot = visualTree->GetContentRootNoRef())
+            {
+                if (auto xamlIsland = contentRoot->GetXamlIslandRootNoRef())
+                {
+                    if (!xamlIsland->GetDesktopContentBridgeNoRef())
+                    {
+                        // This is a XamlIsland that's not associated with a DesktopWindowXamlSource.
+                        return S_FALSE;
+                    }
+                }
+            }
+        }
     }
 
     // Retrieve the hosting HWND from the XamlRoot.
@@ -429,11 +463,13 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
 
     TraceInitializeCoreBegin();
 
+#if __has_include("DXamlCoreTipTests.h")
     // Start TIP test
     auto initDxamlCoreTest = tip::start_and_watch_errors<DXamlInitializeCoreTest>();
 
     // Log the mux version
     initDxamlCoreTest->muxVersion = TipTestHelper::GetMuxVersion();
+#endif
 
     m_state = DXamlCore::Initializing;
 
@@ -448,13 +484,17 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     // "IslandsOnly" initialization, which means we're running in a win32 context.
     if (gps->IsProcessPackaged() && (initializationType != InitializationType::IslandsOnly))
     {
+#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::packaged_process));
+#endif
         IFC(XAML::PLM::PLMHandler::CreateForASTA(this, &m_pPLMHandler));
     }
 
     if (initializationType != InitializationType::IslandsOnly)
     {
+#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::init_type_uwp));
+#endif
         // When running in UWP, we must make sure there's a DispatcherQueueController on the thread, since XAML
         // requires one to be running.  Since we don't support UWP, we don't bother to shutdown the DQC, this is
         // just to keep XAML tests running.
@@ -468,11 +508,13 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
 
     if (initializationType == InitializationType::MainView)
     {
+#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::init_type_main_view));
+#endif
         // We allow this temporarily only for UWP because we're not supporting it for foward-compat yet.
         //  Task 29643834: Remove use of textinputproducerinternal.h before we open-source and before we fully-support UWP
         //                 (ITextInputConsumer, ITextInputProducer, ITextInputProducerInternal)
-        TextInputProducerHelper::SetAllowCallsToPrivateWindowsFunctions(true);
+        TextInputProducerHelper::EnableTemporaryUWPTestMode(true);
     }
 
     XamlOneCoreTransforms::EnsureInitialized(XamlOneCoreTransforms::InitMode::Normal);
@@ -494,15 +536,21 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     // in Island mode force to use TSF1
     if (initializationType == InitializationType::IslandsOnly)
     {
+#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::init_type_islands_only));
+#endif
         m_hCore->ForceDisableTSF3();
+#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::disabled_tsf3));
+#endif
     }
 
     // initialize the XAML dispatcher
     IFC(ctl::ComObject<DispatcherImpl>::CreateInstance(m_spDispatcherImpl.ReleaseAndGetAddressOf()));
     IFC(m_spDispatcherImpl->Connect(this));
+#if __has_include("DXamlCoreTipTests.h")
     initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::initialized_dispatcher));
+#endif
 
     // Disable the legacy IME since the legacy IMEs aren't designed for the immersive environment.
     //
@@ -525,7 +573,9 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     IFC(EnsureEventArgs());
 
     IFC(Window::Create(this, &m_uwpWindowNoRef));
+#if __has_include("DXamlCoreTipTests.h")
     initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::created_uwp_window));
+#endif
 
     // The Window needs to be pegged because it doesn't have an entry in the PeerTable,
     // and its members can potentially be GCed.
@@ -551,7 +601,9 @@ Cleanup:
     if (FAILED(hr))
     {
         m_state = DXamlCore::InitializationFailed;
+#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::failed_dxamlcore_init));
+#endif
         if (m_uwpWindowNoRef != nullptr)
         {
             m_uwpWindowNoRef->SetDXamlCore(nullptr);
@@ -565,8 +617,10 @@ Cleanup:
 
     TraceInitializeCoreEnd();
 
+#if __has_include("DXamlCoreTipTests.h")
     // End Tip Test - if cleanup is called
     initDxamlCoreTest.complete();
+#endif
 
     return hr;
 }
@@ -2438,11 +2492,16 @@ DXamlCore::OnRenderedEvent(_In_ IRenderedEventArgs* pArgs)
 {
     HRESULT hr = S_OK;
 
+    // FUTURE: Switch to PauseNewDispatch to always pause. This will need testing for compatibility.
+    CCoreServices* pCoreHandle = this->GetHandle();
+    PauseNewDispatchAtControl deferReentrancy(pCoreHandle);
+    m_deferReentrancy = &deferReentrancy;
     CEventSource<wf::IEventHandler<xaml_media::RenderedEventArgs*>, IInspectable, xaml_media::IRenderedEventArgs>* pEventSource = NULL;
     IFC(GetRenderedEventSource(&pEventSource));
     IFC(pEventSource->Raise(NULL, pArgs));
 
 Cleanup:
+    m_deferReentrancy = nullptr;
     ctl::release_interface(pEventSource);
     return hr;
 }
@@ -4051,7 +4110,7 @@ Cleanup:
 //------------------------------------------------------------------------------
 void
 DXamlCore::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice
+    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
     ) const
 {
     CCoreServices* pCoreServices = GetHandle();
@@ -4832,4 +4891,20 @@ _Check_return_ HRESULT DXamlCore::IsAnimationEnabled(_Out_ bool* result)
     *result = m_isAnimationEnabled;
 
     return S_OK;
+}
+
+void DXamlCore::PauseDispatchAtControl()
+{
+    if(m_deferReentrancy)
+    {
+        m_deferReentrancy->PauseNewDispatch();
+    }
+}
+
+void DXamlCore::ResumeDispatchAtControl()
+{
+    if(m_deferReentrancy)
+    {
+        m_deferReentrancy->ResumeNewDispatch();
+    }
 }

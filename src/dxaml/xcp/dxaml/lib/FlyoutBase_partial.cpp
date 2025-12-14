@@ -43,7 +43,6 @@
 #include "ElementSoundPlayerService_Partial.h"
 #include "MenuFlyoutPresenter_Partial.h"
 #include "XamlTelemetry.h"
-#include <Microsoft.UI.Input.Partner.h>
 
 using namespace std::placeholders;
 
@@ -2237,12 +2236,10 @@ _Check_return_ HRESULT FlyoutBase::OnPresenterLoaded(
         if (m_tpPopup && contentRoot->GetType() == CContentRoot::XamlIslandRoot)
         {
             CPopup* corePopup {static_cast<CPopup*>(m_tpPopup.Cast<Popup>()->GetHandle())};
-            wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSite = corePopup->GetIslandInputSite();
+            wrl::ComPtr<InputSiteHelper::IIslandInputSite> islandInputSite = corePopup->GetIslandInputSite();
             if (nullptr != islandInputSite && corePopup->IsWindowed())
             {
-                boolean showFocusRectangles{ false };
-                IFCFAILFAST(islandInputSite->get_ShouldShowFocusRectangles(&showFocusRectangles));
-                const bool shouldShowKeyboardIndicators = static_cast<bool>(showFocusRectangles);
+                const bool shouldShowKeyboardIndicators = InputSiteHelper::GetShouldShowFocusRectangles(islandInputSite.Get());
                 if (shouldShowKeyboardIndicators && focusState != DirectUI::FocusState::Keyboard)
                 {
                     inputManager.SetLastInputDeviceType(DirectUI::InputDeviceType::Keyboard);

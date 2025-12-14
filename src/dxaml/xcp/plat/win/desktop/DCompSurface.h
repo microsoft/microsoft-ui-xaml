@@ -11,6 +11,7 @@
 #include <HWTextureMgr.h>
 #include <Rendertypes.h>
 #include <fwd/windows.ui.composition.h>
+#include <CompHelper/CompositionSurfaceHelper.h>
 
 class CD3D11Device;
 class DCompTreeHost;
@@ -261,7 +262,7 @@ private:
 
     IDCompositionSurface *m_pCompositionSurface;
     IDCompositionVirtualSurface *m_pVirtualCompositionSurface;
-    IDCompositionSurfacePartner *m_pCompositionSurfacePrivate; // For gutter copy API
+    CompositionSurfaceHelper m_compositionSurfaceHelper; // For gutter copy API
 
     // WinRT composition objects
     wrl::ComPtr<WUComp::ICompositionSurface> m_spWinRTSurface;

@@ -3,9 +3,6 @@
 
 #pragma once
 
-#pragma warning(push)
-#pragma warning(disable:4996) // use of apis marked as [[deprecated("PrivateAPI")]]
-
 class CDOCollection; // Forward declaration for ConvertToVariant(CDOCollection, ...)
 class CAutomationPeerAnnotationCollection;
 
@@ -13,8 +10,7 @@ class __declspec(uuid("1d1e1a89-f7af-4587-af21-13f33476f481")) CUIAWrapper final
                                public IRawElementProviderFragment,
                                public IRawElementProviderAdviseEvents,
                                public CInterlockedReferenceCount,
-                               public IUIAWrapper,
-                               public IRawElementProviderVisualRelative
+                               public IUIAWrapper
 {
 public:
     CUIAWrapper(
@@ -63,11 +59,6 @@ public:
     HRESULT STDMETHODCALLTYPE SetFocus() override;
     HRESULT STDMETHODCALLTYPE SetFocusImpl();
 
-    // IRawElementProviderVisualRelative methods
-    _Check_return_ STDMETHOD(GetVisualRelativeBoundingRectangle)(_Out_ UiaVisualRelativeRectangle* visualRelativeRect) final;
-    _Check_return_ STDMETHOD(GetVisualRelativeCenterPoint)(_Out_ UiaVisualRelativePoint* visualRelativePoint) final;
-    _Check_return_ STDMETHOD(GetVisualRelativeClickablePoint)(_Out_ UiaVisualRelativePoint* visualRelativePoint) final;
-
     // IRawElementProviderAdviseEvents methods
     HRESULT STDMETHODCALLTYPE AdviseEventAdded(_In_ EVENTID eventId, _Out_ SAFEARRAY *propertyIDs) override;
     HRESULT STDMETHODCALLTYPE AdviseEventRemoved(_In_ EVENTID eventId, _Out_ SAFEARRAY *propertyIDs) override;
@@ -107,5 +98,3 @@ private:
     IUIAWindowValidator *m_pUIAWindowValidator;
     wrl::ComPtr<IRawElementProviderSimple> m_providerSimpleOverrider;
 };
-
-#pragma warning(pop)

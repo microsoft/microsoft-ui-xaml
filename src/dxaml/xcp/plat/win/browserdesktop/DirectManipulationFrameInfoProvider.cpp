@@ -6,6 +6,8 @@
 //    DirectManipulation feedback on the compositor thread.
 
 #include "precomp.h"
+#include "DirectManipulationFrameInfoProvider.h"
+#include "DirectManipulationService.h"
 
 // Uncomment to get DirectManipulation debug traces
 // #define DMC_DBG

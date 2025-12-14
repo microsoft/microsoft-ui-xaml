@@ -49,6 +49,31 @@ inline winrt::DependencyProperty InitializeDependencyProperty(
     }
 }
 
+// Helper function to get the value of a dependency property through ABI projection
+// Returns true if the value is successfully retrieved, false otherwise
+inline bool TryGetDependencyPropertyValue(
+    winrt::DependencyObject const& dependencyObject,
+    winrt::DependencyProperty const& dependencyProperty,
+    winrt::IInspectable& value
+)
+{
+    value = nullptr;
+    if (dependencyObject)
+    {
+        com_ptr<winrt::impl::abi<winrt::Microsoft::UI::Xaml::IDependencyObject>::type> dependencyObjectAbi;
+        HRESULT hr = dependencyObject.as<::IUnknown>()->QueryInterface(winrt::impl::guid_v<winrt::Microsoft::UI::Xaml::IDependencyObject>, dependencyObjectAbi.put_void());
+        if (SUCCEEDED(hr) && dependencyObjectAbi)
+        {
+            hr = dependencyObjectAbi->GetValue(winrt::get_abi(dependencyProperty), winrt::put_abi(value));
+            if (SUCCEEDED(hr))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 // Helper to provide default values and boxing without differences at the call sites
 template <typename T, typename Enable = void>
 struct ValueHelper

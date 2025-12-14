@@ -8,8 +8,6 @@
 #include "DCompSurface.h"
 #include "BufferMemoryProxy.h"
 
-#include <microsoft.ui.composition.private.h>
-
 using namespace DirectUI;
 
 _Check_return_ HRESULT LoadedImageSurface::Close()

@@ -1,0 +1,33 @@
+<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_WinUIRuntimeIdentifier>win10-$(_WinUIPlatformTarget)</_WinUIRuntimeIdentifier>
+    <_WinUIDllDir>$(MSBuildThisFileDirectory)..\runtimes\$(_WinUIRuntimeIdentifier)\native\</_WinUIDllDir>
+    <_WinUIMetadataFolder>$(MSBuildThisFileDirectory)..\metadata</_WinUIMetadataFolder>
+    <_WinUIMetadataFolder Condition="'$(WindowsAppSDKAggregatePackage)' == 'true'">$(MSBuildThisFileDirectory)..\lib\uap10.0</_WinUIMetadataFolder>
+
+    <!--
+      The C++ project system and Microsoft.NET.Sdk don't automatically copy our assemblies over,
+      so we need to do it ourselves. This condition can be removed once we move to .NET5 because
+      the behavior will be consistent.
+    -->
+    <_AddWinUIAssembliesToReferenceCopyLocalPaths Condition="'$(_AddWinUIAssembliesToReferenceCopyLocalPaths)'==''">false</_AddWinUIAssembliesToReferenceCopyLocalPaths>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_AddWinUIAssembliesToReferenceCopyLocalPaths)' == 'true'">
+    <ReferenceCopyLocalPaths Include="$(_WinUIDllDir)*.dll" />
+    <ReferenceCopyLocalPaths Include="$(_WinUIDllDir)*.pri" />
+    <ReferenceCopyLocalPaths Include="$(_WinUIDllDir)**\*.mui">
+      <DestinationSubDirectory>%(RecursiveDir)</DestinationSubDirectory>
+    </ReferenceCopyLocalPaths>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ReferenceCopyLocalPaths Include="$(_WinUIDllDir)\Microsoft.UI.Xaml\Assets\**\*.*" DestinationSubDirectory="Microsoft.UI.Xaml\Assets\%(RecursiveDir)"/>
+    <CsWinRTInputs Include="$(_WinUIMetadataFolder)\*.winmd" />
+  </ItemGroup>
+
+</Project>
+

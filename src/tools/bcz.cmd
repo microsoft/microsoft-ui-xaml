@@ -1,0 +1,1 @@
+@msb /clp:verbosity=minimal /nologo /t:Rebuild %* 

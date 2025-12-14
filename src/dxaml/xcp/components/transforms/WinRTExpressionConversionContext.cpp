@@ -93,8 +93,8 @@ void WinRTExpressionConversionContext::UpdateExpression(
     }
     else if (isAnimationDirty)
     {
-        wrl::ComPtr<WUComp::ICompositionObjectPartner> propertySetICOP;
-        IFCFAILFAST(propertySet.As(&propertySetICOP));
+        wrl::ComPtr<WUComp::ICompositionObject> propertySetICO;
+        IFCFAILFAST(propertySet.As(&propertySetICO));
 
         // No need to initialize the WUC property to a static value. That should have already been taken care of by
         // InitializeExpression after the expression was created.
@@ -104,7 +104,7 @@ void WinRTExpressionConversionContext::UpdateExpression(
 
         CTimeManager::StartWUCAnimation(
             m_spCompositor.Get(),
-            propertySetICOP.Get(),
+            propertySetICO.Get(),
             propertyName,
             animation,
             targetObject,

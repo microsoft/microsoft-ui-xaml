@@ -19,6 +19,7 @@
             $(XcpPath)\components\brushes\inc;
             $(XcpPath)\components\collection\inc;
             $(XcpPath)\components\colors\inc;
+            $(XcpPath)\components\comphelper\inc;
             $(XcpPath)\components\comptree\inc;
             $(XcpPath)\components\graphics\inc;
             $(XcpPath)\components\transforms\inc;

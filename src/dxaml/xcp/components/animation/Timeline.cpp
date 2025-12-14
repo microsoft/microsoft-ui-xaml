@@ -7,6 +7,7 @@
 #include "RepeatBehavior.h"
 #include <TimeMgr.h>
 #include <DCompTreeHost.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 #include "TimeSpan.h"
 
 CTimeline::CTimeline(_In_opt_ CCoreServices *pCore)
@@ -467,7 +468,7 @@ void CTimeline::SetWUCScopedBatch(_In_opt_ WUComp::ICompositionScopedBatch* scop
     SetIsWaitingForDCompAnimationCompleted(scopedBatch != nullptr);
 }
 
-void CTimeline::SetWUCAnimator(_In_ WUComp::ICompositionAnimatorPartner* animator)
+void CTimeline::SetWUCAnimator(_In_ ICompositionAnimationController* animator)
 {
     m_wucAnimator = animator;
 
@@ -591,24 +592,3 @@ bool CTimeline::CanRequestTicksWhileActive()
     return !m_isExpiredWhileWaitingForDCompAnimationCompleted;
 }
 
-xstring_ptr CTimeline::GetTargetPathForTracking(_In_ CDependencyObject* target, bool startFromParentOfTarget)
-{
-    // Build the details from the UI element path.
-    CDependencyObject* parent = target;
-    if (startFromParentOfTarget)
-    {
-        parent = target->GetParentInternal(/*fPublic*/false);
-    }
-
-    if (parent != nullptr)
-    {
-        xstring_ptr path = parent->GetUIPathForTracing(false /* followDOParentChain */);
-        return path;
-    }
-    else
-    {
-        xstring_ptr blank;
-        IGNOREHR(xstring_ptr::CloneBuffer(L"", &blank));
-        return blank;
-    }
-}

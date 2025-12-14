@@ -11,7 +11,6 @@
     <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
     <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
     <Import Project="$(XcpPath)\components\base.props"/>
-    <Import Project="$(XamlSourcePath)\test\external-dependencies-lift.props"/>
 
     <PropertyGroup>
         <TestCode>true</TestCode>

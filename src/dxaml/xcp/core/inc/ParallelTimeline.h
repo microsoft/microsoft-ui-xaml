@@ -33,13 +33,6 @@ public:
 
     void GetNaturalDuration(_Out_ DirectUI::DurationType *pDurationType, _Out_ XFLOAT *prDurationValue) final;
 
-    bool IsInterestingForAnimationTracking() override;
-
-    void AnimationTrackingCollectInfoNoRef(
-        _Inout_ CDependencyObject** ppTarget,
-        _Inout_ CDependencyObject** ppDynamicTimeline
-        ) override;
-
     _Check_return_ HRESULT UpdateAnimation(
         _In_ const ComputeStateParams &parentParams,
         _Inout_ ComputeStateParams &myParams,

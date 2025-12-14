@@ -74,6 +74,7 @@ namespace RuntimeFeatureBehavior
         ForceSelectionIndicatorModeOverlay,
         DisableDWriteTypographicModel,
         ForceDWriteTypographicModel,        // overides DisableDWriteTypographicModel
+        EnableReentrancyChecksAllowPaused, // If XAML dispatch is paused, then to allow process without creating the reentrancy guard, else to enable the reentrancy checks.
 
         // Insert new enum values before this one.
         // This is used to initialize the lengths of the

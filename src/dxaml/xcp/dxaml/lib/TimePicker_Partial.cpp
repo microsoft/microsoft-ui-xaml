@@ -75,7 +75,8 @@ TimePicker::~TimePicker()
     if (m_windowActivatedHandler && DXamlCore::GetCurrent())
     {
         Window* window = nullptr;
-        IGNOREHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &window));
+        // Setting onlyForDesktopWindowXamlSource here to avoid the failfast described in the function's impl.
+        IGNOREHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, true /*onlyForDesktopWindowXamlSource*/, &window));
         if (window)
         {
             IGNOREHR(m_windowActivatedHandler.DetachEventHandler(ctl::iinspectable_cast(window)));
@@ -109,7 +110,7 @@ _Check_return_ HRESULT TimePicker::PrepareState()
 _Check_return_ HRESULT TimePicker::OnLoaded(_In_ IInspectable* /*sender*/, _In_ xaml::IRoutedEventArgs* /*args*/)
 {
     Window* window = nullptr;
-    IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &window));
+    IFC_RETURN(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, true /*onlyForDesktopWindowXamlSource*/, &window));
     if (window)
     {
         ctl::WeakRefPtr weakInstance;

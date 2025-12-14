@@ -3,26 +3,6 @@
 
 #include "precomp.h"
 
-extern void
-GenerateBezierFromQuadratic(
-    _In_reads_(3) const XPOINTF *pptQuadratic,
-    _Out_writes_(4) XPOINTF *pptCubic
-    );
-
-extern void
-UpdateBounds(
-    _Inout_ XRECTF_RB *prcLocalSpaceBounds,          // The local space bounds
-    _In_reads_(cPoints) const XPOINTF *pPtsSource,  // Source points
-    _In_ XINT32 cPoints                              // Count of points
-    );
-
-extern void
-UpdateBezierBounds(
-    _Inout_ XRECTF_RB *prcLocalSpaceBounds,          // The local space bounds
-    _In_reads_(cPoints) const XPOINTF *pPtsSource,  // Source points
-    _In_range_(4,4) XINT32 cPoints                   // Count of points
-    );
-
 //-----------------------------------------------------------------------------
 //
 //  Function:  StartBounds

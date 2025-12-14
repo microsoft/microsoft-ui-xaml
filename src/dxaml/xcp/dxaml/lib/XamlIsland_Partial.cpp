@@ -15,7 +15,6 @@
 #include "Microsoft.UI.Input.h"
 #include "WrlHelper.h"
 #include "SystemBackdrop.g.h"
-#include <Microsoft.UI.Content.Private.h>
 
 using namespace DirectUI;
 
@@ -199,7 +198,7 @@ _Check_return_ HRESULT XamlIsland::Initialize()
 
                 if (spThis)
                 {
-                    IFC_RETURN(spThis->SetInputSite());
+                    spThis->m_pXamlIslandCore->OnContentIslandConnected();
                 }
 
                 return S_OK;
@@ -216,7 +215,7 @@ _Check_return_ HRESULT XamlIsland::Initialize()
 
                 if (spThis && spThis->m_pXamlIslandCore)
                 {
-                    spThis->m_pXamlIslandCore->SetIslandInputSite(nullptr);
+                    spThis->m_pXamlIslandCore->OnContentIslandDisconnected();
                 }
 
                 return S_OK;
@@ -367,20 +366,6 @@ _Check_return_ HRESULT XamlIsland::put_SystemBackdropImpl(_In_opt_ xaml::Media::
 _Check_return_ xaml_hosting::IXamlIslandRoot* XamlIsland::GetXamlIslandRootNoRef()
 {
     return m_spXamlIsland.Get();
-}
-
-_Check_return_ HRESULT XamlIsland::SetInputSite()
-{
-    wrl::ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
-    wrl::ComPtr<ixp::IContentIsland> contentIsland = m_pXamlIslandCore->GetContentIsland();
-    IFCFAILFAST(contentIsland.As(&contentIslandPartner));
-
-    wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSitePartner;
-    IFCFAILFAST(contentIslandPartner->get_IslandInputSite(&islandInputSitePartner));
-
-    m_pXamlIslandCore->SetIslandInputSite(islandInputSitePartner.Get());
-
-    return S_OK;
 }
 
 IFACEMETHODIMP XamlIsland::Close()

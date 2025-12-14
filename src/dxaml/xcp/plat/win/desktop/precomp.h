@@ -192,7 +192,6 @@
 #include "DCompSurface.h"
 #include "DCompSurfaceMonitor.h"
 #include "DCompSurfaceFactoryManager.h"
-#include "DCompInteropCompositorPartnerCallback.h"
 #include "ImageUtils.h"
 
 #include "D2DUtils.h"

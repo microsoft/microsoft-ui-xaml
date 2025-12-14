@@ -10,9 +10,10 @@
 #pragma once
 
 #include <Microsoft.DirectManipulation.h>
-#include <Microsoft.UI.Input.Partner.h>
 #include "XcpDirectManipulationViewportEventHandler.h"
 #include "XcpAutoLock.h"
+#include <microsoft.ui.input.experimental.h> // For IExpPointerPointStatics
+#include "DirectManipulationHelper.h"
 
 // Uncomment for DManip debug outputs.
 //#define DM_DEBUG
@@ -43,7 +44,7 @@ class CDirectManipulationService final :
         // IPALDirectManipulationService interface
 
         // Creates a DirectManipulation manager for the IslandInputSite if it was not created already.
-        _Check_return_ HRESULT EnsureDirectManipulationManager(_In_ IUnknown* pIslandInputSite, _In_ bool fIsForCrossSlideViewports) override;
+        _Check_return_ HRESULT EnsureDirectManipulationManager(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite, _In_ bool fIsForCrossSlideViewports) override;
 
         // Provides an IXcpDirectManipulationViewportEventHandler implementation that this service can use to provide DM feedback to
         // the input manager.
@@ -57,7 +58,7 @@ class CDirectManipulationService final :
 
         // Ensure we're associated with the correct IslandInputSite for a particular UIElement.
         // UIElements can switch between IslandInputSites if ScrollViewers move between islands or windowed popups.
-        _Check_return_ HRESULT EnsureElementIslandInputSite(_In_ IUnknown* pIslandInputSite) override;
+        _Check_return_ HRESULT EnsureElementIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite) override;
 
         // Removes the viewport from our internal m_mapViewports storage,
         // unhooks the two event listeners and releases the viewport DM interface.
@@ -286,7 +287,9 @@ public:
     }
 
     // Creates a lifted IExpDirectManipulationManager. Fails fast.
-    static wrl::ComPtr<IExpDirectManipulationManager> CreateDirectManipulationManager();
+    static wrl::ComPtr<IDirectManipulationManager3> CreateDirectManipulationManager();
+
+    DirectManipulationHelper* GetDirectManipulationHelper() const;
 
 // Private Methods
 private:
@@ -498,37 +501,6 @@ private:
         _In_ RECT viewportBounds,
         _In_ RECT contentBounds);
 
-    // Turns off built-in DM overpan behavior, a necessary first step before adding custom overpan behavior.
-    _Check_return_ HRESULT ApplyOverpanDefaultOverrideCurves(
-        _In_ IExpDirectManipulationParametricMotionBehavior* pDefaultOverrideBehavior,
-        _In_ DWORD targetPropertyType,
-        _In_ DWORD sourcePropertyType);
-
-    // Prevents content from overpanning.
-    // This is necessary when the default DM overpan behavior is turned off; otherwise, the
-    // content will be allowed to freely pan to infinity with no notion of pannable limits.
-    // Part of the secondary reflex.
-    _Check_return_ HRESULT ApplyOverpanTranslationSuppressionCurves(
-        _In_ IExpDirectManipulationParametricMotionBehavior* pOverpanTranslationSuppressionBehavior,
-        _In_ XFLOAT viewportExtent,
-        _In_ XFLOAT contentExtent,
-        _In_ XFLOAT contentOffset,
-        _In_ XDMOverpanMode overpanMode,
-        _In_ DWORD targetPropertyType,
-        _In_ DWORD sourcePropertyType);
-
-    _Check_return_ HRESULT ApplyConstantCurve(
-        _In_ IExpDirectManipulationParametricMotionBehavior* pBehavior,
-        _In_ XFLOAT constantValue,
-        _In_ DWORD targetPropertyType,
-        _In_ DWORD sourcePropertyType);
-
-    _Check_return_ HRESULT ApplyLinearCurve(
-        _In_ IExpDirectManipulationParametricMotionBehavior* pBehavior,
-        _In_ XFLOAT slope,
-        _In_ DWORD targetPropertyType,
-        _In_ DWORD sourcePropertyType);
-
     _Check_return_ HRESULT GetDMTransform(
         _In_ IDirectManipulationContent* pDMContent,
         _In_ IObject* pViewport,
@@ -576,7 +548,7 @@ private:
     bool m_fManagerActive;
 
     // Island input site associated with this service
-    wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite;
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> m_islandInputSite;
 
     // Cached for teardown scenarios where the m_islandInputSite's hwnd has already been cleared out
     // Potentially removable after this IXP bug is resolved:
@@ -589,7 +561,11 @@ private:
     IXcpDirectManipulationViewportEventHandler* m_pViewportEventHandler;
 
     // DM manager owned by this service
-    IExpDirectManipulationManager* m_pDMManager;
+    IDirectManipulationManager3* m_pDMManager;
+
+    // DM Helper provides convenient access and management of some core DM resources,
+    // with the Holder here as a smart manager of its lifetime.
+    DirectManipulationHelperHolder m_pDMHelper;
 
     // Update manager used to retrieve latest content transforms
     IDirectManipulationUpdateManager* m_pDMUpdateManager;
@@ -685,7 +661,7 @@ private:
         XDMOverpanMode m_horizontalOverpanMode;
         XDMOverpanMode m_verticalOverpanMode;
 
-        Microsoft::WRL::ComPtr<IExpDirectManipulationParametricMotionBehavior> m_spViewportBehavior;
+        Microsoft::WRL::ComPtr<IUnknown> m_spViewportBehavior;
         Microsoft::WRL::ComPtr<IDirectManipulationContent> m_spContentPrimaryReflex;
         Microsoft::WRL::ComPtr<IDirectManipulationContent> m_spContentSecondaryReflex;
         Microsoft::WRL::ComPtr<IDirectManipulationContent> m_spLeftHeaderPrimaryReflex;

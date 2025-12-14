@@ -45,6 +45,22 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void CollapseNavigationView(object sender, RoutedEventArgs e)
+        {
+            navview.IsPaneOpen = false;
+        }
+
+        private void OnRemoveSelectedItem(object sender, RoutedEventArgs e)
+        {
+            navview.SelectedItem = null;
+            SelectedItemLabel.Text = "No Item Selected";
+        }
+
+        private void AddItemToFooter(object sender, RoutedEventArgs e)
+        {
+            navview.FooterMenuItems.Add(CreateMenuItem("Footer Item"));
+        }
+
         private void CollapseSelectedItem(object sender, RoutedEventArgs e)
         {
             var selectedItem = navview.SelectedItem;

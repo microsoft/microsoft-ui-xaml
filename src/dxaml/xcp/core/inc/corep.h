@@ -143,7 +143,6 @@ class CCompositorDirectManipulationViewport;
 class CWindowRenderTarget;
 class SurfaceCache;
 class CompositorTreeHost;
-struct IDCompositionDesktopDevicePartner;
 class CRenderTargetBitmapManager;
 class CWindowRenderTarget;
 class CImageReloadManager;
@@ -529,25 +528,6 @@ struct IGripper
     virtual _Check_return_ HRESULT UpdateVisibility() = 0;
 };
 
-//------------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Struct to hold the various parameters defining an animation scenario
-//      for power scenario, tracing & telemetry purposes . The structure is
-//      expected to be zero initialized and then filled in before being passed
-//      to tracking routines.
-//
-//------------------------------------------------------------------------------
-struct AnimationTrackingScenarioInfo
-{
-    XUINT64 qpcInitiate;
-    XUINT64 qpcInput;
-    XUINT32 msIntendedDuration;
-    XUINT16 priority;
-    const WCHAR* scenarioName;
-    const WCHAR* scenarioDetails;
-};
-
 enum class LayoutCompletedNeededReason
 {
     WindowSizeChanged = 0,
@@ -579,10 +559,10 @@ public:
 
     HRESULT GetDispatcherQueueStatics(_Outptr_ msy::IDispatcherQueueStatics** statics);
     HRESULT GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::IDesktopChildSiteBridgeStatics** statics);
+    HRESULT GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::IDesktopPopupSiteBridgeStatics** statics);
     HRESULT GetDragDropManagerStatics(_Outptr_ mui::DragDrop::IDragDropManagerStatics** statics);
 
     ixp::ICompositionEasingFunctionStatics* GetCompositionEasingFunctionStatics();
-    ixp::IInteropCompositorFactoryPartner* GetInteropCompositorFactoryPartner();
     ixp::ICompositionPathFactory* GetPathFactory();
     ixp::IInputSystemCursorStatics* GetInputSystemCursorStatics();
     ixp::IContentIslandStatics* GetContentIslandStatics();
@@ -606,8 +586,8 @@ private:
     wrl::ComPtr<msy::IDispatcherQueueStatics> m_dispatcherQueueStatics;
     wrl::ComPtr<mui::DragDrop::IDragDropManagerStatics> m_dragDropManagerStatics;
     wrl::ComPtr<ixp::IDesktopChildSiteBridgeStatics> m_desktopChildSiteBridgeStatics;
+    wrl::ComPtr<ixp::IDesktopPopupSiteBridgeStatics> m_desktopPopupSiteBridgeStatics;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_compositionEasingFunctionStatics;
-    wrl::ComPtr<ixp::IInteropCompositorFactoryPartner> m_interopCompositorFactoryPartner;
     wrl::ComPtr<ixp::ICompositionPathFactory> m_compositionPathFactory;
     wrl::ComPtr<ixp::IInputSystemCursorStatics> m_inputSystemCursorStatics;
     wrl::ComPtr<ixp::IContentIslandStatics> m_contentIslandStatics;
@@ -1406,14 +1386,6 @@ public:
 
     _Check_return_ HRESULT SetLayoutCompletedNeeded(const LayoutCompletedNeededReason reason);
 
-    bool IsAnimationTrackingEnabled();
-
-    void AnimationTrackingScenarioBegin(_In_ AnimationTrackingScenarioInfo* pScenarioInfo);
-
-    void AnimationTrackingScenarioReference(XUINT64 uniqueKey);
-
-    void AnimationTrackingScenarioUnreference(XUINT64 uniqueKey);
-
     void SetSizeChangedNotification(bool value, XDWORD applicationViewState);
 
     bool IsXamlVisible() const;
@@ -1447,12 +1419,6 @@ public:
     _Check_return_ HRESULT ReleaseDeviceResources(bool releaseDCompDevice, bool isDeviceLost);
 
     WUComp::ICompositor* GetCompositor() const;
-    void EnsureCompositionIslandCreated(_In_ wuc::ICoreWindow* const coreWindow) const;
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    UINT64 GetCoreWindowCompositionIslandId();
-#endif
 
     void AddXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot);
     void RemoveXamlIslandRoot(_In_ CXamlIslandRoot* xamlIslandRoot);
@@ -1464,7 +1430,7 @@ public:
     void SetDCompDeviceLeakDetectionEnabled(bool enableLeakDetection) { m_isDCompLeakDetectionEnabled = enableLeakDetection; }
 
     void GetDCompDevice(
-        _Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice
+        _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
         ) const;
 
     _Check_return_ HRESULT SetWindowSizeOverride(
@@ -1491,6 +1457,9 @@ public:
     _Check_return_ HRESULT CheckMemoryUsage(bool simulateLowMemory);
     void ReleaseCachedTextFormatters() noexcept;
     DCompTreeHost* GetDCompTreeHost();
+
+    HRESULT GetLastConfirmedBatchId(_Out_ ULONG* lastConfirmedBatchId);
+    HRESULT GetCurrentBatchID(_Out_ ULONG* lastConfirmedBatchId);
 
     void SetThreadingAssertOverride(bool enable);
 

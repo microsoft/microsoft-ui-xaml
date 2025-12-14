@@ -28,6 +28,12 @@ namespace Microsoft.UI.Xaml
     {
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         Windows.Foundation.Boolean FocusNoActivate(Microsoft.UI.Xaml.FocusState value);
+        
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public void PauseNewDispatchIfAvailable();
+
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public void ResumeNewDispatchIfAvailable();
     }
 
     [CodeGen(partial: true)]

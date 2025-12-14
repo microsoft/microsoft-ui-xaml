@@ -7,6 +7,7 @@
 #include <ImageViewListener.h>
 #include "ImagingTelemetry.h"
 #include "ImageDecodeBoundsFinder.h"
+#include <d2d1svg.h>
 
 class EncodedImageData;
 class CBitmapImageReportCallback;

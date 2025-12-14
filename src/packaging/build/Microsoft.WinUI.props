@@ -1,0 +1,44 @@
+﻿<!--
+  Copyright (c) Microsoft Corporation. Licensed under the MIT License
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <DefaultDpiAwareSettings>PerMonV2</DefaultDpiAwareSettings>
+    <XamlCompilerPropsAndTargetsDirectory Condition="'$(XamlCompilerPropsAndTargetsDirectory)' == ''">$(MSBuildThisFileDirectory)</XamlCompilerPropsAndTargetsDirectory>
+    <WebView2EnableCsWinRTProjection Condition="'$(WebView2EnableCsWinRTProjection)' == '' and '$(UsingMicrosoftNETSdk)' == 'true'">true</WebView2EnableCsWinRTProjection>
+  </PropertyGroup>
+  <Import Project="$(XamlCompilerPropsAndTargetsDirectory)Microsoft.UI.Xaml.Markup.Compiler.props" Condition="'$(MSBuildProjectExtension)'!='.wapproj'" />
+
+  <!--
+    Enable default items for .NET projects that are using the SDK-style projects
+
+    WPF project also has App.xaml, and it's handled by Microsoft.NET.Sdk.WindowsDesktop.props. We should not handle WPF project here.
+    For UWP projects, this is already handled by the a VS .targets file, so disabling this to avoid build errors due to conflicts.
+  -->
+  <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' and '$(UsingMicrosoftNETSdk)' == 'true' and '$(UseWPF)' != 'true' and '$(UseUwpTools)' != 'true'">
+    <ApplicationDefinition Include="App.xaml"
+                           Condition="'$(EnableDefaultApplicationDefinition)' != 'false' And Exists('$(MSBuildProjectDirectory)/App.xaml')">
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </ApplicationDefinition>
+
+    <Page Include="**/*.xaml"
+          Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(ApplicationDefinition)"
+          Condition="'$(EnableDefaultPageItems)' != 'false'" >
+      <Generator>MSBuild:Compile</Generator>
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+
+    <None Remove="**/*.xaml"
+          Condition="'$(EnableDefaultApplicationDefinition)' != 'false' And '$(EnableDefaultPageItems)' != 'false'" />
+
+    <Content Include="Assets/**/*.*" Condition="'$(EnableDefaultAssets)'=='true'"/>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.WinUI.ProjectCapabilities.props" />
+
+  <ItemGroup>
+    <WindowsAppSdkComponentPackages Include="$(MSBuildThisFileDirectory)..\" />
+  </ItemGroup>
+
+</Project>

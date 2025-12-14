@@ -481,7 +481,7 @@ _Check_return_ HRESULT
 CRectangleGeometry::GetPrintGeometryVirtual(
     _In_ const D2DPrecomputeParams& cp,
     _In_ const D2DRenderParams &printParams,
-    _COM_Outptr_ IPALAcceleratedGeometry** ppGeometry
+    _COM_Outptr_result_maybenull_ IPALAcceleratedGeometry** ppGeometry
     )
 {
     HRESULT hr = S_OK;

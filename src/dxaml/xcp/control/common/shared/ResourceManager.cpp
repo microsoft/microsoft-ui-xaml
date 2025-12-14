@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "corep.h"
+#include "xcpwindow.h"
 
 _Check_return_
 HRESULT ResourceManager::Create(
@@ -53,6 +54,8 @@ HRESULT ResourceManager::GetAppDataProviderNoRef(_Outptr_ IPALApplicationDataPro
 {
     if (!m_pAppDataProvider)
     {
+        // To guard against reentrancy during the creation of the application data provider
+        PauseNewDispatch deferReentrancy(m_pCore);
         IFC_RETURN(gps->CreateApplicationDataProvider(&m_pAppDataProvider));
     }
 

@@ -152,7 +152,7 @@ namespace DirectUI
         GUID m_lastTakeFocusRequestCorrelationId;
         HWND m_lastFocusedWindowHandle = NULL;
         HWND m_positioningBridgeWindowHandle = NULL;
-        wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite = nullptr;
+        wrl::ComPtr<InputSiteHelper::IIslandInputSite> m_islandInputSite = nullptr;
         ctl::ComPtr<ixp::IAppWindowStatics> m_appWindowStatics;
 
         // We use ::GetClientRect to report the window bounds, but that returns 0x0 if the window is minimized. In

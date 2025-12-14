@@ -3,12 +3,15 @@
 
 #include "precomp.h"
 #include "OfferTracker.h"
-#include <dcompinternal.h>
-#include <dcompprivate.h>
+#include "DCompTreeHost.h"
+
+#ifndef NTDDI_WIN11_GE
+#define NTDDI_WIN11_GE 0x0A000010
+#endif
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
-OfferTracker::UnofferRevoker::UnofferRevoker(OfferTracker &offerTracker, _In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory)
+OfferTracker::UnofferRevoker::UnofferRevoker(OfferTracker &offerTracker, _In_ IDCompositionSurfaceFactory* surfaceFactory)
     : m_offerTracker(offerTracker)
     , m_surfaceFactory(surfaceFactory)
 {}
@@ -17,7 +20,7 @@ OfferTracker::UnofferRevoker::~UnofferRevoker()
 {
     // TODO: Handle DeviceLost error that may occur here
     // Bug 12111763: DeviceLost cannot always be handled reliably for LoadedImageSurface
-    IFCFAILFAST(m_surfaceFactory->OfferSurfaceResources());
+    IFCFAILFAST(m_offerTracker.m_pDCompTreeHostNoRef->GetCompositionHelper()->OfferSurfaceResources(m_surfaceFactory));
 
     //push the current surfacefactory pointer into the
     //offered list
@@ -26,7 +29,7 @@ OfferTracker::UnofferRevoker::~UnofferRevoker()
     m_offerTracker.m_csRevoker.reset();
 }
 
-_Check_return_ HRESULT OfferTracker::Unoffer(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory, _Out_ std::unique_ptr<UnofferRevoker> *unofferRevoker)
+_Check_return_ HRESULT OfferTracker::Unoffer(_In_ IDCompositionSurfaceFactory* surfaceFactory, _Out_ std::unique_ptr<UnofferRevoker> *unofferRevoker)
 {
     auto lock = m_cs.lock();
 
@@ -34,7 +37,7 @@ _Check_return_ HRESULT OfferTracker::Unoffer(_In_ IDCompositionSurfaceFactoryPar
 
     //we first check whether the surfaceFactory to be offered is
     //in the offered list, if not, we just return
-    std::vector<IDCompositionSurfaceFactoryPartner3*>::iterator positionInList = FindOfferedSurfaceFactory(surfaceFactory);
+    std::vector<IDCompositionSurfaceFactory*>::iterator positionInList = FindOfferedSurfaceFactory(surfaceFactory);
 
     if (positionInList == offeredSurfaceFactories.end())
     {
@@ -42,7 +45,7 @@ _Check_return_ HRESULT OfferTracker::Unoffer(_In_ IDCompositionSurfaceFactoryPar
     }
 
     BOOL discarded = false;
-    IFC_RETURN(surfaceFactory->ReclaimSurfaceResources(&discarded));
+    IFC_RETURN(m_pDCompTreeHostNoRef->GetCompositionHelper()->ReclaimSurfaceResources(surfaceFactory, &discarded));
 
     m_discarded = m_discarded || discarded;
 
@@ -58,7 +61,7 @@ _Check_return_ HRESULT OfferTracker::Unoffer(_In_ IDCompositionSurfaceFactoryPar
 
 //Wrapper method to iterate through the SurfaceFactory vector, the vector contains all the SurfaceFactories
 //(main and secondary ones), and it is provided by DCompTreeHost
-_Check_return_ HRESULT OfferTracker::OfferResources(_In_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector)
+_Check_return_ HRESULT OfferTracker::OfferResources(_In_ std::vector<IDCompositionSurfaceFactory*>* surfaceFactoryVector)
 {
     auto guard = m_cs.lock();
 
@@ -67,8 +70,8 @@ _Check_return_ HRESULT OfferTracker::OfferResources(_In_ std::vector<IDCompositi
     int cSurfaceFactory = surfaceFactoryVector->size();
     for (int iSurfaceFactory = 0; iSurfaceFactory < cSurfaceFactory; iSurfaceFactory++)
     {
-        IDCompositionSurfaceFactoryPartner3 *pSurfaceFactoryPartner = surfaceFactoryVector->at(iSurfaceFactory);
-        HRESULT hr = OfferSurfaceFactory(pSurfaceFactoryPartner);
+        IDCompositionSurfaceFactory *pSurfaceFactory = surfaceFactoryVector->at(iSurfaceFactory);
+        HRESULT hr = OfferSurfaceFactory(pSurfaceFactory);
 
         if (hr != DCOMPOSITION_ERROR_SURFACE_BEING_RENDERED)
         {
@@ -80,9 +83,9 @@ _Check_return_ HRESULT OfferTracker::OfferResources(_In_ std::vector<IDCompositi
 }
 
 // Helper to perform the offer while holding the lock
-_Check_return_ HRESULT OfferTracker::OfferSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory)
+_Check_return_ HRESULT OfferTracker::OfferSurfaceFactory(_In_ IDCompositionSurfaceFactory* surfaceFactory)
 {
-    IFC_RETURN(surfaceFactory->OfferSurfaceResources());
+    IFC_RETURN(m_pDCompTreeHostNoRef->GetCompositionHelper()->OfferSurfaceResources(surfaceFactory));
 
     //push the current surfacefactory pointer into the
     //offered list
@@ -99,12 +102,12 @@ _Check_return_ HRESULT OfferTracker::ReclaimResources(_Out_ BOOL* discarded)
 {
     auto guard = m_cs.lock();
 
-    std::vector<IDCompositionSurfaceFactoryPartner3*>::const_iterator cSurfaceFactory;
+    std::vector<IDCompositionSurfaceFactory*>::const_iterator cSurfaceFactory;
     for (cSurfaceFactory = offeredSurfaceFactories.begin(); cSurfaceFactory != offeredSurfaceFactories.end(); cSurfaceFactory++)
     {
         BOOL discardedNow = false;
         //we treat errors as lost pixels because we need to preserve compatibility with the previous
-        //behavior on IDCompositionDesktopDevicePartner4::ReclaimSurfaceResources().
+        //behavior.
         if (SUCCEEDED(ReclaimSurfaceFactory(*cSurfaceFactory, &discardedNow)))
         {
             *discarded |= discardedNow;
@@ -127,9 +130,9 @@ _Check_return_ HRESULT OfferTracker::ReclaimResources(_Out_ BOOL* discarded)
 }
 
 // Helper to perform the reclaim while holding the lock
-_Check_return_ HRESULT OfferTracker::ReclaimSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory, _Out_ BOOL* discarded)
+_Check_return_ HRESULT OfferTracker::ReclaimSurfaceFactory(_In_ IDCompositionSurfaceFactory* surfaceFactory, _Out_ BOOL* discarded)
 {
-    IFC_RETURN(surfaceFactory->ReclaimSurfaceResources(discarded));
+    IFC_RETURN(m_pDCompTreeHostNoRef->GetCompositionHelper()->ReclaimSurfaceResources(surfaceFactory, discarded));
 
     return S_OK;
 }
@@ -153,16 +156,16 @@ void OfferTracker::Reset()
 
 
 //Helpper method to preform a search to the spicified SF in the offered SF list
-std::vector<IDCompositionSurfaceFactoryPartner3*>::iterator OfferTracker::FindOfferedSurfaceFactory(IDCompositionSurfaceFactoryPartner3* surfaceFactory)
+std::vector<IDCompositionSurfaceFactory*>::iterator OfferTracker::FindOfferedSurfaceFactory(IDCompositionSurfaceFactory* surfaceFactory)
 {
     return std::find(offeredSurfaceFactories.begin(), offeredSurfaceFactories.end(), surfaceFactory);
 }
 
 //Helper function to delete the input SF in the offered SurfaceFactory list, usually called when resources is
 //released
-void OfferTracker::DeleteReleasedSurfaceFactoryFromList(IDCompositionSurfaceFactoryPartner3* surfaceFactory)
+void OfferTracker::DeleteReleasedSurfaceFactoryFromList(IDCompositionSurfaceFactory* surfaceFactory)
 {
-    std::vector<IDCompositionSurfaceFactoryPartner3*>::iterator Iter = FindOfferedSurfaceFactory(surfaceFactory);
+    std::vector<IDCompositionSurfaceFactory*>::iterator Iter = FindOfferedSurfaceFactory(surfaceFactory);
 
     if (Iter != offeredSurfaceFactories.end()) {
         offeredSurfaceFactories.erase(Iter);

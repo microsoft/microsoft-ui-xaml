@@ -31,11 +31,6 @@ public:
     _Check_return_ HRESULT OnBegin() override;
     _Check_return_ HRESULT FinalizeIteration() override;
 
-    void AnimationTrackingCollectInfoNoRef(
-        _Inout_ CDependencyObject** ppTarget,
-        _Inout_ CDependencyObject** ppDynamicTimeline
-        ) override;
-
     void SetGenerationMode(DynamicTimelineGenerationMode mode) { m_generationMode = mode; }
     _Check_return_ DynamicTimelineGenerationMode GetGenerationMode() const { return m_generationMode; }
 

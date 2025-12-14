@@ -271,25 +271,10 @@ namespace Composition {
         interface IDesktopWindowContentBridgeInterop;
     }
 
-    // Possibly private?
-
     enum AnimationStopBehavior : int;
     enum CompositionGetValueStatus : int;
     enum CompositionStretch : int;
     enum CompositionStrokeCap : int;
-    interface ICompositionAnimatorPartner;
-    interface ICompositionObjectPartner;
-    interface ICompositionPropertySet;
-    interface IHoverPointerSourcePartner;
-    interface IInteropCompositorPartner;
-    interface IInteropCompositorPartnerCallback;
-
-    namespace Experimental {
-        class ExpCompositionContent;
-        class ExpCompositionContentAutomationProviderRequestedEventArgs;
-        class ExpCompositionContentEventArgs;
-        interface IExpCompositionContentEventArgs;
-    }
 
 } // Composition
 } // UI

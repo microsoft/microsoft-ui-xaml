@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.WindowsAppSDK.WinUI</id>
+    <version>$VERSION$</version>
+    <title>Microsoft WindowsAppSDK WinUI component</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <description>The Windows App SDK empowers all Windows Desktop apps with modern Windows UI, APIs, and platform features, including back-compat support. This package contains the modern Windows UI features.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>Windows "Windows App SDK" WinAppSDK WinUI XAML Fluent Controls Downlevel Compatibility TreeView ColorPicker NavigationView MenuBar</tags>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="file">license.txt</license>
+    <projectUrl>https://github.com/microsoft/windowsappsdk</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/microsoft/WindowsAppSDK/main/assets/WindowsAppSDK64.png</iconUrl>
+
+    <dependencies>
+      <!-- Note: groups can be used to narrow the set of applicable TPMs for a nuget package, as well as to define dependencies for those TPMs.  
+      In this case, the set of dependencies is identical across TPMs. -->
+      <group>
+        <!-- This reference captures the 'default version' of WinUI's CWV2 SDK dependency specifed in the root packages.config. -->
+        <dependency id="Microsoft.Web.WebView2" version="[$WEBVIEW2_VERSION$,)" />
+        <dependency id="Microsoft.WindowsAppSDK.Base" version="$BASE_COMPONENT_VERSION$" />
+        <dependency id="Microsoft.WindowsAppSDK.Foundation" version="$FOUNDATION_COMPONENT_VERSION$" />
+        <dependency id="Microsoft.WindowsAppSDK.InteractiveExperiences" version="$IXP_COMPONENT_VERSION$" />
+      </group>
+    </dependencies>
+
+  </metadata>
+  <files>
+    <!-- tailor the nuget package to only include MUX content -->
+    <file target="" src="$PACKAGEROOT$\**\*" exclude="**\*" />
+    <file src="$PACKAGEROOT$\ComponentNuGet\license.txt" target="" />
+    <file src="$PACKAGEROOT$\ComponentNuGet\NOTICE.txt" target="" />
+    <file src="$PACKAGEROOT$\package.appxfragment" target="runtimes-framework\" />
+    <file src="$PACKAGEROOT$\build\**\*WindowsAppSDK.WinUI.*" target="build" />
+    <file src="$PACKAGEROOT$\build\**\Microsoft.UI*" target="build" />
+    <file src="$PACKAGEROOT$\build\**\Microsoft.WinUI*" target="build" />
+    <file src="$PACKAGEROOT$\build\LiftedWinRTClassRegistrations.xml" target="build\native" />
+    <file src="$PACKAGEROOT$\build\**\*WindowsAppSDK.WinUI.*" target="buildTransitive" />
+    <file src="$PACKAGEROOT$\build\**\Microsoft.UI*" target="buildTransitive" />
+    <file src="$PACKAGEROOT$\build\**\Microsoft.WinUI*" target="buildTransitive" />
+    <file src="$PACKAGEROOT$\build\LiftedWinRTClassRegistrations.xml" target="buildTransitive\native" />
+    <file src="$PACKAGEROOT$\include\**\microsoft.ui*" target="include" />
+    <file src="$PACKAGEROOT$\include\xamlom.winui*" target="include" />
+    <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*\**" target="lib" />
+    <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*" target="lib" />
+    <file src="$PACKAGEROOT$\lib\uap10.0\**\*.xaml" target="lib\native" />
+    <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Text.*" target="metadata" />
+    <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Xaml.*" target="metadata" />
+    <file src="$PACKAGEROOT$\runtimes-framework\**\Microsoft.UI.Xaml\**" target="runtimes-framework" />
+    <file src="$PACKAGEROOT$\runtimes-framework\**\Microsoft.UI.Xaml.*" target="runtimes-framework" />
+    <file src="$PACKAGEROOT$\runtimes-framework\**\WinUIEdit.dll" target="runtimes-framework" />
+    <file src="$PACKAGEROOT$\tools\**" target="tools" />
+    <file src="$PACKAGEROOT$\Intellisense\Microsoft.WinUI.xml" target="lib\net6.0-windows10.0.17763.0" />
+    <file src="$PACKAGEROOT$\Intellisense\Microsoft.UI.Text.xml" target="metadata" />
+    <file src="$PACKAGEROOT$\Intellisense\Microsoft.UI.Xaml.xml" target="metadata" />
+  </files>
+
+</package>

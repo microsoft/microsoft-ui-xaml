@@ -515,12 +515,10 @@ ElementGestureTracker::ProcessPointerInformation(_In_ const InputMessage& msg)
         }
         else
         {
-            if (!m_expPointerPointStatics)
-            {
-                IFC_RETURN(wf::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_Experimental_ExpPointerPoint).Get(), &m_expPointerPointStatics));
-            }
-
-            IFC_RETURN(m_expPointerPointStatics->GetIntermediatePoints(pointerId, pointerPoints.ReleaseAndGetAddressOf()));
+            // The message should always have m_pPointerEventArgsNoRef for regular input. Non-client input
+            // doesn't have that, but CInputServices::ProcessPointerMessagesWithInteractionEngine avoids
+            // calling ProcessPointerMessage() (which calls this function) when m_isNonClientPointerMessage.
+            XAML_FAIL_FAST();
         }
 
         // SYNC_CALL_TO_APP

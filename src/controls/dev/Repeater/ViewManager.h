@@ -19,6 +19,7 @@ public:
     winrt::UIElement GetElement(int index, bool forceCreate, bool suppressAutoRecycle);
     void ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange);
     void ClearElementToElementFactory(const winrt::UIElement& element);
+    void RecycleWithoutOwner(bool recycleWithoutOwner);
     int GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtInfo);
 
     void PrunePinnedElements();
@@ -86,6 +87,7 @@ private:
     // It has to be an element we own (i.e. a direct child).
     tracker_ref<winrt::UIElement> m_lastFocusedElement;
     bool m_isDataSourceStableResetPending{};
+    bool m_recycleWithoutOwner{ false };
 
     // Event tokens
     winrt::UIElement::GotFocus_revoker m_gotFocus{};

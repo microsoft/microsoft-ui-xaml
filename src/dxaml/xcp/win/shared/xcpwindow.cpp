@@ -9,10 +9,11 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include "Microsoft.UI.Dispatching.h"
-#include <coremessaging.h>
-#include "microsoft.ui.coremessaging.h"
+
 #include "GraphicsTelemetry.h"
+#if __has_include("DXamlCoreTipTests.h")
 #include "DXamlCoreTipTests.h"
+#endif
 
 //------------------------------------------------------------------------
 //
@@ -331,15 +332,6 @@ CXcpDispatcher::Init(_In_ IXcpHostSite *pSite)
         IFCFAILFAST(m_dispatcherQueueTimer->add_Tick(messageTimerCallback.Get(), &m_messageTimerCallbackToken));
     }
 
-    if (!m_messageSession)
-    {
-        IFCFAILFAST(CoreMsgCreateSession(MsgCreateFlags::MsgCreateFlags_Default, m_messageSession.ReleaseAndGetAddressOf()));
-    }
-
-    if (!m_messageLoopExtensions)
-    {
-        IFCFAILFAST(m_messageSession->GetMessageLoopExtensions(m_messageLoopExtensions.ReleaseAndGetAddressOf()));
-    }
 
     m_bInit = TRUE;
 
@@ -480,10 +472,12 @@ CXcpDispatcher::Create(
 
     IFC(pWindow->Init(pSite));
 
+#if __has_include("DXamlCoreTipTests.h")
     // DXamlCore.cpp - Tip Test
     // Init is called once
     // DispatcherQueue created
     tip::open<DXamlInitializeCoreTest>().set_flag(TIP_reason(DXamlInitializeCoreTest::reason::created_dispatcher_xcpwindow));
+#endif
 
     *ppInterface = static_cast<IXcpDispatcher *>(pWindow);
     pWindow = NULL;
@@ -680,9 +674,14 @@ CXcpDispatcher::OnReentrancyProtectedWindowMessage(
     }
 
     bool reentrancyChecksEnabled = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableReentrancyChecks);
+    bool reentrancyChecksAllowPausedEnabled = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableReentrancyChecksAllowPaused);
     if (reentrancyChecksEnabled)
     {
         QueueReentrancyCheck();
+    }
+    else if (reentrancyChecksAllowPausedEnabled)
+    {
+        QueueReentrancyCheckAllowPaused();
     }
 
     switch (msg)
@@ -1370,6 +1369,29 @@ void CXcpDispatcher::QueueReentrancyCheck()
         &enqueued);
 }
 
+void CXcpDispatcher::QueueReentrancyCheckAllowPaused()
+{
+    // Check if XAML dispatch is paused and not trigger the reentrancy guard in that case. 
+    // This does mean there is still a chance of reentrancy,if new mouse input or something comes in. 
+    // Over time it will probably be necessary to process those cases despite the reentrancy. 
+    // But that should be much less of an issue than XAML tick, which is a more common case.
+    boolean enqueued;
+    m_dispatcherQueue->TryEnqueueWithPriority(
+        msy::DispatcherQueuePriority::DispatcherQueuePriority_High,
+        WRLHelper::MakeAgileCallback<msy::IDispatcherQueueHandler>([weakPtr = GetWeakPtr()]() -> HRESULT
+            {
+                if (CXcpDispatcher* that = weakPtr->XcpDispatcher)
+                {
+                    if(that->m_state != State::Suspended)
+                    {
+                        return that->CreateReentrancyGuardAndCheckReentrancy();
+                    }
+                }
+                return S_OK;
+            }).Get(),
+        &enqueued);
+}
+
 HRESULT CXcpDispatcher::CreateReentrancyGuardAndCheckReentrancy()
 {
     CReentrancyGuard reentrancyGuard(&m_bMessageReentrancyGuard);
@@ -1452,4 +1474,76 @@ PauseNewDispatch::~PauseNewDispatch()
     {
         m_dispatcherNoRef->ResumeDispatch();
     }
+}
+
+PauseNewDispatchAtControl::PauseNewDispatchAtControl(_In_opt_ CCoreServices* coreServices)
+{
+    if (coreServices)
+    {
+        auto hostSite = coreServices->GetHostSite();
+        if (hostSite)
+        {
+            m_dispatcherNoRef = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+        }
+    }
+}
+
+PauseNewDispatchAtControl::PauseNewDispatchAtControl(_In_ CXcpDispatcher* dispatcher)
+    : m_dispatcherNoRef(dispatcher)
+{
+}
+
+PauseNewDispatchAtControl::~PauseNewDispatchAtControl()
+{
+    if (m_pauseCount>0 && m_dispatcherNoRef)
+    {
+        m_dispatcherNoRef->ResumeDispatch();
+    }
+}
+
+void PauseNewDispatchAtControl::PauseNewDispatch()
+{
+    if (m_dispatcherNoRef)
+    {
+        if (m_pauseCount == 0)
+        {
+            m_dispatcherNoRef->PauseDispatch();
+        }
+        ++m_pauseCount; // Increment the reference count
+    }
+}
+
+void PauseNewDispatchAtControl::ResumeNewDispatch()
+{
+    ASSERT(m_pauseCount > 0);
+    if (m_pauseCount > 0 && m_dispatcherNoRef)
+    {
+        --m_pauseCount; // Decrement the reference count
+        if (m_pauseCount == 0)
+        {
+            m_dispatcherNoRef->ResumeDispatch();
+        }
+    }
+}
+
+void PauseNewDispatchForTest::Pause(CCoreServices *coreServices)
+{
+    auto hostSite = coreServices->GetHostSite();
+    auto dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+
+    // The current state should be be Running. If it is in a different state,
+    // something likely needs to change to ensure m_state isn't incorrectly
+    // stomped either here in Pause or later in Resume.
+    FAIL_FAST_ASSERT(dispatcher->m_state == CXcpDispatcher::State::Running);
+    static_cast<CXcpDispatcher*>(dispatcher)->PauseDispatch();
+}
+
+void PauseNewDispatchForTest::Resume(CCoreServices *coreServices)
+{
+    auto hostSite = coreServices->GetHostSite();
+    auto dispatcher = static_cast<CXcpDispatcher*>(hostSite->GetXcpDispatcher());
+
+    // It should still be suspended. If it isn't, something resumed too early.
+    FAIL_FAST_ASSERT(dispatcher->m_state == CXcpDispatcher::State::Suspended);
+    static_cast<CXcpDispatcher*>(dispatcher)->ResumeDispatch();
 }

@@ -4,6 +4,7 @@
 #pragma once
 #include <memory>
 
+class DCompTreeHost;
 struct IDCompositionSurfaceFactoryPartner3;
 
 // Simple class to track Offer/Reclaim in a thread-safe manner.
@@ -13,8 +14,8 @@ struct IDCompositionSurfaceFactoryPartner3;
 class OfferTracker : public CXcpObjectBase<IObject>
 {
 public:
-    OfferTracker() = default;
-    
+    OfferTracker(DCompTreeHost* pDCompTreeHostNoRef) : m_pDCompTreeHostNoRef(pDCompTreeHostNoRef) {}
+
     // Non-copyable
     OfferTracker(const OfferTracker&) = delete;
     OfferTracker& operator=(const OfferTracker&) = delete;
@@ -26,22 +27,22 @@ public:
 
     private:
         friend class OfferTracker;
-        UnofferRevoker(OfferTracker &offerTracker, _In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory);
+        UnofferRevoker(OfferTracker &offerTracker, _In_ IDCompositionSurfaceFactory* surfaceFactory);
         OfferTracker &m_offerTracker;
-        IDCompositionSurfaceFactoryPartner3 *m_surfaceFactory;
+        IDCompositionSurfaceFactory *m_surfaceFactory;
     };
 
-    _Check_return_ HRESULT Unoffer(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory, _Out_ std::unique_ptr<UnofferRevoker> *unofferRevoker);
+    _Check_return_ HRESULT Unoffer(_In_ IDCompositionSurfaceFactory* surfaceFactory, _Out_ std::unique_ptr<UnofferRevoker> *unofferRevoker);
 
-    _Check_return_ HRESULT OfferResources(_In_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector);
-    _Check_return_ HRESULT OfferSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory);
+    _Check_return_ HRESULT OfferResources(_In_ std::vector<IDCompositionSurfaceFactory*>* surfaceFactoryVector);
+    _Check_return_ HRESULT OfferSurfaceFactory(_In_ IDCompositionSurfaceFactory* surfaceFactory);
 
     _Check_return_ HRESULT ReclaimResources(_Out_ BOOL* discarded);
-    _Check_return_ HRESULT ReclaimSurfaceFactory(_In_ IDCompositionSurfaceFactoryPartner3* surfaceFactory, _Out_ BOOL* discarded);
+    _Check_return_ HRESULT ReclaimSurfaceFactory(_In_ IDCompositionSurfaceFactory* surfaceFactory, _Out_ BOOL* discarded);
     bool IsOffered();
     void Reset();
-    std::vector<IDCompositionSurfaceFactoryPartner3*>::iterator FindOfferedSurfaceFactory(IDCompositionSurfaceFactoryPartner3* surfaceFactory);
-    void DeleteReleasedSurfaceFactoryFromList(IDCompositionSurfaceFactoryPartner3* surfaceFactory);
+    std::vector<IDCompositionSurfaceFactory*>::iterator FindOfferedSurfaceFactory(IDCompositionSurfaceFactory* surfaceFactory);
+    void DeleteReleasedSurfaceFactoryFromList(IDCompositionSurfaceFactory* surfaceFactory);
     int getNumOfOfferedSurfaceFactories() { return static_cast<int>(offeredSurfaceFactories.size()); }
 
 private:
@@ -49,6 +50,7 @@ private:
     wil::cs_leave_scope_exit m_csRevoker;
     BOOL m_discarded = false;
     BOOL m_offered = false;
-    std::vector<IDCompositionSurfaceFactoryPartner3*> offeredSurfaceFactories;
+    std::vector<IDCompositionSurfaceFactory*> offeredSurfaceFactories;
+    _Notnull_ DCompTreeHost* m_pDCompTreeHostNoRef;
 };
 

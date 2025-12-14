@@ -529,6 +529,12 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MapControl_TestUI", "dev\Ma
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MapControl_InteractionTests", "dev\MapControl\InteractionTests\MapControl_InteractionTests.shproj", "{189F0B87-4CA1-4F77-8195-FC6DC714157A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WrapPanel", "WrapPanel", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WrapPanel", "dev\WrapPanel\WrapPanel.vcxitems", "{EDAEAAD5-A295-49C0-8F51-C183B7CAE26B}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "WrapPanel_APITests", "dev\WrapPanel\APITests\WrapPanel_APITests.shproj", "{1277DFD3-5C9E-4E19-AC50-38E89F2529C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_test|ARM64 = Debug_test|ARM64
@@ -941,6 +947,9 @@ Global
 		{F350D71A-A980-4D63-A38A-8A2035DC4EF2} = {1CEADA92-1E59-4265-B3A3-0A0490F1360A}
 		{8C2F2FA6-5639-4C01-84D0-06E037824689} = {1CEADA92-1E59-4265-B3A3-0A0490F1360A}
 		{189F0B87-4CA1-4F77-8195-FC6DC714157A} = {1CEADA92-1E59-4265-B3A3-0A0490F1360A}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
+		{EDAEAAD5-A295-49C0-8F51-C183B7CAE26B} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{1277DFD3-5C9E-4E19-AC50-38E89F2529C5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
@@ -958,6 +967,7 @@ Global
 		dev\RatingControl\TestUI\RatingControl_TestUI.projitems*{10c52fd4-52fc-43b3-94af-895c9b5a014c}*SharedItemsImports = 13
 		dev\Interactions\ButtonInteraction\TestUI\ButtonInteraction_TestUI.projitems*{11b35f24-72b2-4228-9960-0d1ea283e1af}*SharedItemsImports = 13
 		dev\CommandBarFlyout\CommandBarFlyout.vcxitems*{11c085ff-8f68-48ee-9949-6eecbd0cbe6c}*SharedItemsImports = 9
+		dev\WrapPanel\APITests\WrapPanel_APITests.projitems*{1277dfd3-5c9e-4e19-ac50-38e89f2529c5}*SharedItemsImports = 13
 		dev\TwoPaneView\InteractionTests\TwoPaneView_InteractionTests.projitems*{1294409d-9bad-40cc-a74d-9ab29b343071}*SharedItemsImports = 13
 		dev\NumberBox\TestUI\NumberBox_TestUI.projitems*{13da8235-d04f-46d4-b5b4-f5ae774eeede}*SharedItemsImports = 13
 		dev\MenuBar\MenuBar_InteractionTests\MenuBar_InteractionTests.projitems*{1440a7b7-d3ca-4390-8c85-e1e9a7df8542}*SharedItemsImports = 13
@@ -1140,6 +1150,7 @@ Global
 		test\MUXControls.Test\MUXControls.Test.Shared.projitems*{e9fc52cd-519a-41bb-8092-523ffa9d5617}*SharedItemsImports = 13
 		dev\Expander\Expander.vcxitems*{ec3b6f65-32c6-4bc8-8902-ee0b397e2787}*SharedItemsImports = 9
 		dev\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems*{ed7dba65-8f09-44f3-8d25-7bb5a7a89609}*SharedItemsImports = 9
+		dev\WrapPanel\WrapPanel.vcxitems*{edaeaad5-a295-49c0-8f51-c183b7cae26b}*SharedItemsImports = 9
 		dev\TreeView\TreeView.vcxitems*{eeb38379-3a5c-439f-bb5e-535d75f2b6c1}*SharedItemsImports = 9
 		dev\ImageIcon\InteractionTests\ImageIcon_InteractionTests.projitems*{f14fb632-e705-44bc-9415-75b539f483e1}*SharedItemsImports = 13
 		dev\AnimatedIcon\AnimatedIcon.vcxitems*{f1c8a5a1-b1b0-4095-8849-e550fcf2ebf6}*SharedItemsImports = 9

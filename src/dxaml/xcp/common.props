@@ -7,9 +7,6 @@
     <!-- other sources files that use them.                                           -->
     <PropertyGroup>
         <ObjTargetDir>sl</ObjTargetDir>
-
-        <!-- default to public SDK for xcp directory -->
-        <XamlUsePublicSdk Condition="'$(XamlUsePublicSdk)'==''">true</XamlUsePublicSdk>
     </PropertyGroup>
 
     <!-- As we move things to the components folder there will often be    -->
@@ -56,6 +53,12 @@
     <ItemDefinitionGroup>
         <Link Condition="'$(Configuration)'=='Debug'">
             <EnableCOMDATfolding>false</EnableCOMDATfolding>
+        </Link>
+        <Link>
+          <AdditionalDependencies>
+            %(AdditionalDependencies);
+            $(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal2.lib;
+          </AdditionalDependencies>
         </Link>
     </ItemDefinitionGroup>
 

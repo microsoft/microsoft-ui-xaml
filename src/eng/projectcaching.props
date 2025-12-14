@@ -43,10 +43,12 @@
         controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj copies the file via a BinplaceItem in controls\dev\dll\Microsoft.UI.Xaml.Common.targets.
       Attempting to remove either of these leads to various downstream issues.
 
-      Note: Not using $(NativeAssemblyPackageLocation) since that value is based on the Platform, and there is some cross-platform eferencing happening.
+      Note: Not using $(NativeAssemblyPackageLocation) since that value is based on the Platform, and there is some cross-platform referencing happening.
       The value is intended to effectively be $(NativeAssemblyPackageLocation)\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png
     -->
-    <MSBuildCacheIdenticalDuplicateOutputPatterns>$(MSBuildCacheIdenticalDuplicateOutputPatterns);$(PackageOutputLocation)\runtimes\win10-*\native\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png</MSBuildCacheIdenticalDuplicateOutputPatterns>
+    <NoiseAssetOutputLocationOld>$(PackageOutputLocation)\runtimes\win10-*\native\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png</NoiseAssetOutputLocationOld>
+    <NoiseAssetOutputLocation>$(PackageOutputLocation)\runtimes-framework\win-*\native\Microsoft.UI.Xaml\Assets\NoiseAsset_256x256_PNG.png</NoiseAssetOutputLocation>
+    <MSBuildCacheIdenticalDuplicateOutputPatterns>$(MSBuildCacheIdenticalDuplicateOutputPatterns);$(NoiseAssetOutputLocationOld);$(NoiseAssetOutputLocation)</MSBuildCacheIdenticalDuplicateOutputPatterns>
 
     <!--
       Ignore controls\dev\Generated\** even though these files are possibly changed during the build (see controls\dev\dll\Microsoft.UI.Xaml.Common.targets::RunDependencyPropertyCodeGen).

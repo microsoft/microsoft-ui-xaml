@@ -32,6 +32,7 @@ InfoBarProperties::InfoBarProperties()
     : m_closeButtonClickEventSource{static_cast<InfoBar*>(this)}
     , m_closedEventSource{static_cast<InfoBar*>(this)}
     , m_closingEventSource{static_cast<InfoBar*>(this)}
+    , m_openedEventSource{static_cast<InfoBar*>(this)}
 {
     EnsureProperties();
 }
@@ -486,4 +487,14 @@ winrt::event_token InfoBarProperties::Closing(winrt::TypedEventHandler<winrt::In
 void InfoBarProperties::Closing(winrt::event_token const& token)
 {
     m_closingEventSource.remove(token);
+}
+
+winrt::event_token InfoBarProperties::Opened(winrt::TypedEventHandler<winrt::InfoBar, winrt::InfoBarOpenedEventArgs> const& value)
+{
+    return m_openedEventSource.add(value);
+}
+
+void InfoBarProperties::Opened(winrt::event_token const& token)
+{
+    m_openedEventSource.remove(token);
 }

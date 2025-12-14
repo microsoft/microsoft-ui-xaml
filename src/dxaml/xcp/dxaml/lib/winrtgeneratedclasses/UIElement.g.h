@@ -585,6 +585,7 @@ namespace DirectUI
         _Check_return_ HRESULT OnKeyboardAcceleratorInvokedProtected(_In_ ABI::Microsoft::UI::Xaml::Input::IKeyboardAcceleratorInvokedEventArgs* pArgs);
         IFACEMETHOD(OnProcessKeyboardAccelerators)(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs) override;
         _Check_return_ HRESULT OnProcessKeyboardAcceleratorsProtected(_In_ ABI::Microsoft::UI::Xaml::Input::IProcessKeyboardAcceleratorEventArgs* pArgs);
+        IFACEMETHOD(PauseNewDispatchIfAvailable)() override;
         IFACEMETHOD(PopulatePropertyInfoOverride)(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo) override;
         _Check_return_ HRESULT PopulatePropertyInfoOverrideProtected(_In_ HSTRING propertyName, _In_ ABI::Microsoft::UI::Composition::IAnimationPropertyInfo* pAnimationPropertyInfo);
         _Check_return_ HRESULT ReleaseMouseCapture();
@@ -592,6 +593,7 @@ namespace DirectUI
         IFACEMETHOD(ReleasePointerCaptures)() override;
         IFACEMETHOD(RemoveHandler)(_In_ ABI::Microsoft::UI::Xaml::IRoutedEvent* pRoutedEvent, _In_ IInspectable* pHandler) override;
         _Check_return_ HRESULT ResetGlobalScaleFactor();
+        IFACEMETHOD(ResumeNewDispatchIfAvailable)() override;
         IFACEMETHOD(StartAnimation)(_In_ ABI::Microsoft::UI::Composition::ICompositionAnimationBase* pAnimation) override;
         IFACEMETHOD(StartBringIntoView)() override;
         IFACEMETHOD(StartBringIntoViewWithOptions)(_In_ ABI::Microsoft::UI::Xaml::IBringIntoViewOptions* pOptions) override;

@@ -45,7 +45,6 @@
         <ClCompile Include="..\DCompTreeHost.cpp"/>
         <ClCompile Include="..\OfferTracker.cpp"/>
         <ClCompile Include="..\DCompPropertyChangedListener.cpp"/>
-        <ClCompile Include="..\CoreWindowIslandAdapter.cpp"/>
         <ClCompile Include="..\SharedTransitionAnimations.cpp"/>
         <ClCompile Include="..\PropertyTransitions.cpp"/>
     </ItemGroup>

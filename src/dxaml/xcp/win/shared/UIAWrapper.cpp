@@ -6,14 +6,11 @@
 #include "AutomationPeerAnnotationCollection.h"
 #include <windows.applicationmodel.core.h>
 #include "APLock.h"
-#include <XamlOneCoreTransforms.h>
 #include "FrameworkElementAutomationPeer.h"
 #include "CPopupAutomationPeer.g.h"
 #include "Popup.h"
 #include "RootScale.h"
 #include <DependencyObject.h>
-
-#pragma warning(disable:4996) // use of apis marked as [[deprecated("PrivateAPI")]]
 
 // Constructor.
 CUIAWrapper::CUIAWrapper(
@@ -131,10 +128,6 @@ HRESULT STDMETHODCALLTYPE CUIAWrapper::QueryInterface(_In_ REFIID riid, _Out_ vo
     else if (riid == __uuidof(IRawElementProviderAdviseEvents))
     {
         *ppInterface = static_cast<IRawElementProviderAdviseEvents*>(this);
-    }
-    else if (riid == __uuidof(IRawElementProviderVisualRelative) && XamlOneCoreTransforms::IsEnabled())
-    {
-        *ppInterface = static_cast<IRawElementProviderVisualRelative*>(this);
     }
     else if (riid == __uuidof(CUIAWrapper))
     {
@@ -1176,111 +1169,6 @@ HRESULT STDMETHODCALLTYPE CUIAWrapper::SetFocusImpl()
     }
 
     m_pAP->SetFocus();
-    return S_OK;
-}
-
-_Check_return_ HRESULT CUIAWrapper::GetVisualRelativeBoundingRectangle(_Out_ UiaVisualRelativeRectangle* visualRelativeRect)
-{
-    if (!m_pUIAWindowValidator || !m_pUIAWindowValidator->IsValid())
-    {
-        IFC_NOTRACE_RETURN(E_FAIL);
-    }
-
-    ASSERT(XamlOneCoreTransforms::IsEnabled());
-
-    APLock apLock(m_pAP);
-
-    if (m_pAP == nullptr)
-    {
-        return E_FAIL;
-    }
-
-    // In OneCoreTransforms mode we have to deal with a complication regarding coordinate spaces:
-    // AutomationPeer::GetBoundingRectangle can call out to public overrides via GetBoundingRectangleCore.
-    // These public overrides (outside XAML) currently hand XAML back a rect in the RawClient coordinate space.
-    // Post RS5, these peers will need to change to return RasterizedClient if they plan on using these peers
-    // within an embedded CUI component, where RawClient != RasterizedClient.  For now these peers can only
-    // be used correctly within a top-level window where RawClient == RasterizedClient.
-    // AutomationPeers within XAML will return RasterizedClient, in accordance with this new contract.
-    // Hence the conversion process looks like this:
-    // 1) Call into the AutomationPeer's implementation of GetBoundingRectangle.  These are expected to return RasterizedClient.
-    // 2) After retrieving this rect, convert from RasterizedClient back to Logical (same as Visual Relative)
-
-    XRECTF rect;
-    IFC_RETURN(m_pAP->GetBoundingRectangle(&rect));
-
-    const auto physicalRect = rect;
-    const auto scale = RootScale::GetRasterizationScaleForElement(m_pAP->GetRootNoRef());
-    const auto logicalRect = physicalRect / scale;
-    rect = logicalRect;
-
-    visualRelativeRect->Rect.left = rect.X;
-    visualRelativeRect->Rect.top = rect.Y;
-    visualRelativeRect->Rect.width = rect.Width;
-    visualRelativeRect->Rect.height = rect.Height;
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    visualRelativeRect->VisualReferenceId.Value = m_pWindow->GetVisualIdentifier();
-#endif
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT CUIAWrapper::GetVisualRelativeCenterPoint(_Out_ UiaVisualRelativePoint* visualRelativePoint)
-{
-    UiaVisualRelativeRectangle boundingRect;
-    IFC_RETURN(GetVisualRelativeBoundingRectangle(&boundingRect));
-
-    visualRelativePoint->Point.x = boundingRect.Rect.left + boundingRect.Rect.width / 2;
-    visualRelativePoint->Point.y = boundingRect.Rect.top + boundingRect.Rect.height / 2;
-    visualRelativePoint->VisualReferenceId = boundingRect.VisualReferenceId;
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT CUIAWrapper::GetVisualRelativeClickablePoint(_Out_ UiaVisualRelativePoint* visualRelativePoint)
-{
-    if (!m_pUIAWindowValidator || !m_pUIAWindowValidator->IsValid())
-    {
-        IFC_NOTRACE_RETURN(E_FAIL);
-    }
-
-    ASSERT(XamlOneCoreTransforms::IsEnabled());
-
-    APLock apLock(m_pAP);
-
-    if (m_pAP == nullptr)
-    {
-        return E_FAIL;
-    }
-
-    // In OneCoreTransforms mode we have to deal with a complication regarding coordinate spaces:
-    // AutomationPeer::GetBoundingRectangle can call out to public overrides via GetClickablePointCore.
-    // These public overrides (outside XAML) currently hand XAML back a rect in the RawClient coordinate space.
-    // Post RS5, these peers will need to change to return RasterizedClient if they plan on using these peers
-    // within an embedded CUI component, where RawClient != RasterizedClient.  For now these peers can only
-    // be used correctly within a top-level window where RawClient == RasterizedClient.
-    // AutomationPeers within XAML will return RasterizedClient, in accordance with this new contract.
-    // Hence the conversion process looks like this:
-    // 1) Call into the AutomationPeer's implementation of GetClickablePoint.  These are expected to return RasterizedClient.
-    // 2) After retrieving this rect, convert from RasterizedClient back to Logical (same as Visual Relative)
-
-    const float scale = RootScale::GetRasterizationScaleForElement(m_pAP->GetRootNoRef());
-    XPOINTF point = {};
-    IFC_RETURN(m_pAP->GetClickablePoint(&point));
-    const auto physicalPoint = point;
-    const auto logicalPoint = physicalPoint / scale;
-    point = logicalPoint;
-
-    visualRelativePoint->Point.x = point.x;
-    visualRelativePoint->Point.y = point.y;
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    visualRelativePoint->VisualReferenceId.Value = m_pAP->GetContext()->GetCoreWindowCompositionIslandId();
-#endif
-
     return S_OK;
 }
 

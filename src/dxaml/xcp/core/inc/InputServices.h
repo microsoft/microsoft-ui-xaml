@@ -18,7 +18,6 @@
 #include "InteractionManager.h"
 #include "FrameworkInputViewHandler.h"
 #include "TextInputProducerHelper.h"
-#include <Microsoft.UI.Input.Partner.h>
 
 // Uncomment for DManip debug outputs.
 //#define DM_DEBUG
@@ -403,9 +402,9 @@ public:
     void SetCoreWindow(_In_ wuc::ICoreWindow* pCoreWindow);
     wuc::ICoreWindow* GetCoreWindow() const;
 
-    void RegisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite);
-    void UnregisterIslandInputSite(_In_ ixp::IIslandInputSitePartner* pIslandInputSite);
-    wrl::ComPtr<ixp::IIslandInputSitePartner> GetPrimaryRegisteredIslandInputSite() const;
+    void RegisterIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite);
+    void UnregisterIslandInputSite(_In_ InputSiteHelper::IIslandInputSite* pIslandInputSite);
+    wrl::ComPtr<InputSiteHelper::IIslandInputSite> GetPrimaryRegisteredIslandInputSite() const;
 
     void SetLastInputDeviceType(XPointerInputType deviceType)
     {
@@ -434,7 +433,7 @@ public:
     // exist, even in a world when islands themselves might no longer be backed by hwnds.
     // Solutions that maintain the encapsulation around the input HWND should be preferred.
     // If this function must be used, the use case is potentially a candidate for a better IXP API.
-    static HWND GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ ixp::IIslandInputSitePartner* pIslandInputSite);
+    static HWND GetUnderlyingInputHwndFromIslandInputSite(_In_opt_ InputSiteHelper::IIslandInputSite* pIslandInputSite);
 
     void NotifyWindowDestroyed(_In_ XHANDLE hDestroyedWindow);
 
@@ -1103,23 +1102,27 @@ private:
         return !m_islandInputSiteRegistrations.empty();
     }
 
-    // The DirectManipulationManager for a DMContainer can only occur after GetElementIslandInputSite returns a valid
-    // IslandInputSite since it is being used for DManip's initialization.
-    static bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer)
+    static bool CanDMIslandInputSiteInitialize(_In_opt_ InputSiteHelper::IIslandInputSite* const islandInputSite)
     {
-        wrl::ComPtr<ixp::IIslandInputSitePartner> islandInputSite = dmContainer->GetElementIslandInputSite();
-
         if (nullptr != islandInputSite)
         {
-            HWND inputHwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(islandInputSite.Get());
-
+            HWND inputHwnd = CInputServices::GetUnderlyingInputHwndFromIslandInputSite(islandInputSite);
+ 
             // Make sure the window handle is valid. The same code as DManip's IDirectManipulationManager::Activate
             // is used. This ensures that Xaml will not attempt to activate a DManip manager with a handle that has
             // already been destroyed with a WM_DESTROY message.
             return SUCCEEDED(CInputServices::IsWindowHandleValid(inputHwnd));
         }
-
         return false;
+    }
+
+    // The DirectManipulationManager for a DMContainer can only occur after GetElementIslandInputSite returns a valid
+    // IslandInputSite since it is being used for DManip's initialization.
+    static bool CanDMContainerInitialize(_In_ CUIElement* const dmContainer)
+    {
+        wrl::ComPtr<InputSiteHelper::IIslandInputSite> islandInputSite = dmContainer->GetElementIslandInputSite();
+
+        return CInputServices::CanDMIslandInputSiteInitialize(islandInputSite.Get());
     }
 
     // Creates a CUIDMContainer and CUIDMContainerHandler instance for the provided element and sets them up for future usage.
@@ -1607,16 +1610,16 @@ private:
     // We cannot use just one IslandInputRegistration across different ContentIslands.
     struct IslandInputSiteRegistration
     {
-        explicit IslandInputSiteRegistration(ixp::IIslandInputSitePartner* islandInputSite) : m_islandInputSite{ islandInputSite } {}
+        explicit IslandInputSiteRegistration(InputSiteHelper::IIslandInputSite* islandInputSite) : m_islandInputSite{ islandInputSite } {}
 
-        [[nodiscard]] bool Match(ixp::IIslandInputSitePartner* islandInputSite) const
+        [[nodiscard]] bool Match(InputSiteHelper::IIslandInputSite* islandInputSite) const
         {
             if (nullptr == islandInputSite)
             {
                 return false;
             }
 
-            wrl::ComPtr<ixp::IIslandInputSitePartner> querySite{ islandInputSite };
+            wrl::ComPtr<InputSiteHelper::IIslandInputSite> querySite{ islandInputSite };
             wrl::ComPtr<IUnknown> querySiteAsIUnknown{ nullptr };
             FAIL_FAST_IF_FAILED(querySite.As(&querySiteAsIUnknown));
 
@@ -1634,7 +1637,7 @@ private:
             return Match(uiElement->GetElementIslandInputSite().Get());
         }
 
-        [[nodiscard]] wrl::ComPtr<ixp::IIslandInputSitePartner> IslandInputSite() const { return m_islandInputSite; }
+        [[nodiscard]] wrl::ComPtr<InputSiteHelper::IIslandInputSite> IslandInputSite() const { return m_islandInputSite; }
 
         [[nodiscard]] wrl::ComPtr<IPALDirectManipulationService> DMCrossSlideService() const { return m_DMCrossSlideService; }
         void DMCrossSlideService(_In_ IPALDirectManipulationService* pDMCrossSlideService) { m_DMCrossSlideService = pDMCrossSlideService; }
@@ -1643,7 +1646,7 @@ private:
         void ShouldRegisterDMViewportCallback(bool shouldRegisterDMViewportCallback) { m_shouldRegisterDMViewportCallback = shouldRegisterDMViewportCallback; }
 
     private:
-        wrl::ComPtr<ixp::IIslandInputSitePartner> m_islandInputSite { nullptr };
+        wrl::ComPtr<InputSiteHelper::IIslandInputSite> m_islandInputSite { nullptr };
         wrl::ComPtr<IPALDirectManipulationService> m_DMCrossSlideService{ nullptr }; // Common DM manager used to handle all cross-slide viewports for cross-slide support per ContentIsland.
 
         // For deciding whether or not DMViewportHandler needs to be registered on a CrossSlide viewport. True if at least one UIElement is draggable.

@@ -81,6 +81,10 @@ WebView2::WebView2()
     // inside the WebView element will be handled by Anaheim.
     this->ManipulationMode(winrt::ManipulationModes::None);
 
+    // Set the default FlowDirection to LeftToRight to prevent page inversion
+    // when parent element's FlowDirection is RightToLeft 
+    this->FlowDirection(winrt::FlowDirection::LeftToRight);
+
     // TODO_WebView2: These can be deferred to CreateCoreObjects
     m_manipulationModeChangedToken.value = RegisterPropertyChangedCallback(winrt::UIElement::ManipulationModeProperty(),
         { this, &WebView2::OnManipulationModePropertyChanged });
@@ -2165,7 +2169,9 @@ void WebView2::UpdateCoreWebViewVisibility()
             CoreWebView2RunIgnoreInvalidStateSync(
                 [&]()
                 {
+                    strongThis.as<winrt::IUIElementPrivate>().PauseNewDispatchIfAvailable();
                     m_coreWebViewController.IsVisible(m_isVisible);
+                    strongThis.as<winrt::IUIElementPrivate>().ResumeNewDispatchIfAvailable();
                 });
         }
     }

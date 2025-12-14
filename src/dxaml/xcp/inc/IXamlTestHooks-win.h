@@ -6,10 +6,9 @@
 #include <Microsoft.UI.Xaml.controls.controls.h>
 #include <Microsoft.UI.Xaml.private.h>
 #include "IXamlTestHooks-log.h"
-#include <microsoft.ui.input.experimental.h>
 #include <NamespaceAliases.h>
 
-struct IDCompositionDesktopDevicePartner;
+struct IDCompositionDesktopDevice;
 struct IDWriteFontCollection;
 interface IXamlErrorTestHooks;
 
@@ -72,7 +71,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     IFACEMETHOD_(bool, IsDragDropInProgress)() = 0;
 
     IFACEMETHOD_(void, GetDCompDevice)(
-        _Outptr_ IDCompositionDesktopDevicePartner **ppDCompDevice
+        _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
         ) const = 0;
 
     IFACEMETHOD(MarkDeviceInstanceLost)() const = 0;
@@ -354,4 +353,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     IFACEMETHOD(GetAllContentIslands)(_In_ xaml_hosting::IDesktopWindowXamlSource* desktopWindowXamlSource, _In_ wfc::IVector<IInspectable*>* contentIslands) = 0;
 
     IFACEMETHOD(GetElementsRenderedCount)(_Out_ int* elementsRendered) = 0;
+
+    IFACEMETHOD(PauseNewDispatchForTest)() = 0;
+    IFACEMETHOD(ResumeNewDispatchForTest)() = 0;
 };

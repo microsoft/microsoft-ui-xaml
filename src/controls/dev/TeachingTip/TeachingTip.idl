@@ -64,6 +64,13 @@ runtimeclass TeachingTipClosingEventArgs
     Windows.Foundation.Deferral GetDeferral();
 };
 
+[MUX_PREVIEW]
+[default_interface]
+[webhosthidden]
+runtimeclass TeachingTipOpenedEventArgs
+{
+};
+
 [MUX_PUBLIC]
 [webhosthidden]
 unsealed runtimeclass TeachingTipTemplateSettings : Microsoft.UI.Xaml.DependencyObject
@@ -128,6 +135,10 @@ unsealed runtimeclass TeachingTip : Microsoft.UI.Xaml.Controls.ContentControl
     event Windows.Foundation.TypedEventHandler<TeachingTip, Object> CloseButtonClick;
     event Windows.Foundation.TypedEventHandler<TeachingTip, TeachingTipClosingEventArgs> Closing;
     event Windows.Foundation.TypedEventHandler<TeachingTip, TeachingTipClosedEventArgs> Closed;
+    [MUX_PREVIEW]
+    {
+        event Windows.Foundation.TypedEventHandler<TeachingTip, TeachingTipOpenedEventArgs> Opened;
+    }
 
     static Microsoft.UI.Xaml.DependencyProperty IsOpenProperty{ get; };
 

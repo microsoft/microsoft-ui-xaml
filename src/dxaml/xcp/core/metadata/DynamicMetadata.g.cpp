@@ -1285,6 +1285,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "SkewTransform.g.h"
 #include "Span_Partial.h"
 #include "SplitCloseThemeAnimation_Partial.h"
+#include "SplitMenuFlyoutItemAutomationPeer_Partial.h"
 #include "SplitOpenThemeAnimation_Partial.h"
 #include "SplitViewLightDismissAutomationPeer_Partial.h"
 #include "SplitViewPaneAutomationPeer_Partial.h"
@@ -1471,6 +1472,7 @@ static_assert(sizeof(CXamlCompositionBrush::m_fallbackColor) == sizeof(uint32_t)
 #include "ListViewHeaderItem_Partial.h"
 #include "RepeatButton_Partial.h"
 #include "ScrollViewer_Partial.h"
+#include "SplitMenuFlyoutItem_Partial.h"
 #include "ToggleButton_Partial.h"
 #include "ToggleMenuFlyoutItem_Partial.h"
 #include "VirtualizingStackPanel_Partial.h"
@@ -4528,6 +4530,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
         &OnCoreCreateSplitCloseThemeAnimation, // Core constructor
         &ctl::CreateComObjectInstanceNoInit<DirectUI::SplitCloseThemeAnimation>, // Framework constructor
     },
+    // Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer
+    {
+        &OnCoreCreateSplitMenuFlyoutItemAutomationPeer, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::SplitMenuFlyoutItemAutomationPeer>, // Framework constructor
+    },
     // Microsoft.UI.Xaml.Media.Animation.SplitOpenThemeAnimation
     {
         &OnCoreCreateSplitOpenThemeAnimation, // Core constructor
@@ -5477,6 +5484,11 @@ extern const MetaDataTypeActivation c_aTypeActivations[KnownTypeCount] =
     {
         &OnCoreCreateScrollViewer, // Core constructor
         &ctl::CreateComObjectInstanceNoInit<DirectUI::ScrollViewer>, // Framework constructor
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem
+    {
+        &OnCoreCreateSplitMenuFlyoutItem, // Core constructor
+        &ctl::CreateComObjectInstanceNoInit<DirectUI::SplitMenuFlyoutItem>, // Framework constructor
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
     {
@@ -19631,6 +19643,27 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomSnapPointsType
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.Items
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.SubMenuItemStyle
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.SubMenuPresenterStyle
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback

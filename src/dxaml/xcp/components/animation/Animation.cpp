@@ -17,6 +17,7 @@
 #include <MUX-ETWEvents.h>
 #include "TimeSpan.h"
 #include "XStringBuilder.h"
+#include <CompHelper/CompositionAnimationHelper.h> // for ICompositionAnimationController
 
 using namespace std::placeholders;
 

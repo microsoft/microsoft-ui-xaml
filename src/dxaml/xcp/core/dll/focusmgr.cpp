@@ -1107,7 +1107,7 @@ CFocusManager::GetPreviousTabStop(_In_opt_ CDependencyObject* pCurrentTabStop)
 
         while (pParent != NULL && !pParent->OfTypeByIndex<KnownTypeIndex::RootVisual>() && pNewTabStop == NULL)
         {
-            if (IsValidTabStopSearchCandidate(pCurrent) && GetTabNavigation(pCurrent) == DirectUI::KeyboardNavigationMode::Cycle)
+            if (pCurrent != NULL && IsValidTabStopSearchCandidate(pCurrent) && GetTabNavigation(pCurrent) == DirectUI::KeyboardNavigationMode::Cycle)
             {
                 pNewTabStop = GetLastFocusableElement(pCurrent, pCurrent);
                 break;
@@ -2722,15 +2722,6 @@ CDependencyObject* CFocusManager::GetFocusTarget()
     }
 
     if (!IsPluginFocused())
-    {
-        return nullptr;
-    }
-
-    // don't draw focus rect for disabled FE(Got focus because of AllowFocusWhenDisabled is set)
-    CFrameworkElement* candidateAsFE = do_pointer_cast<CFrameworkElement>(candidate);
-    if (candidateAsFE
-        && candidateAsFE->AllowFocusWhenDisabled()
-        && !candidateAsFE->IsEnabled())
     {
         return nullptr;
     }

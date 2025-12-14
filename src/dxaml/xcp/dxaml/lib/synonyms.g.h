@@ -212,6 +212,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Automation::Peers::ISelectorItemAutomationPeer ISelectorItemAutomationPeer;
     typedef ABI::Microsoft::UI::Xaml::Automation::Peers::ISemanticZoomAutomationPeer ISemanticZoomAutomationPeer;
     typedef ABI::Microsoft::UI::Xaml::Automation::Peers::ISliderAutomationPeer ISliderAutomationPeer;
+    typedef ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeer ISplitMenuFlyoutItemAutomationPeer;
     typedef ABI::Microsoft::UI::Xaml::Automation::Peers::ITextBlockAutomationPeer ITextBlockAutomationPeer;
     typedef ABI::Microsoft::UI::Xaml::Automation::Peers::ITextBoxAutomationPeer ITextBoxAutomationPeer;
     typedef ABI::Microsoft::UI::Xaml::Automation::Peers::IThumbAutomationPeer IThumbAutomationPeer;
@@ -433,6 +434,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Controls::ISemanticZoomViewChangedEventArgs ISemanticZoomViewChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Controls::ISlider ISlider;
     typedef ABI::Microsoft::UI::Xaml::Controls::ISliderFeature_HeaderPlacement ISliderFeature_HeaderPlacement;
+    typedef ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem ISplitMenuFlyoutItem;
     typedef ABI::Microsoft::UI::Xaml::Controls::ISplitView ISplitView;
     typedef ABI::Microsoft::UI::Xaml::Controls::ISplitViewPaneClosingEventArgs ISplitViewPaneClosingEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Controls::IStackPanel IStackPanel;

@@ -1839,100 +1839,6 @@ LSERR RichTextServices::LineServicesGetPriorityForGoodTypography(
 //---------------------------------------------------------------------------
 //
 //  Member:
-//      LineServicesEnumText
-//
-//  Synopsis:
-//      Callback used by LS to provide the client with the contents of a text dnode.
-//
-//---------------------------------------------------------------------------
-//LSERR RichTextServices::LineServicesEnumText(
-//    _In_ POLS pols,
-//        // LS host
-//    _In_ PLSRUN plsrun,
-//        // Pointer to client run information
-//    _In_ LSCP cpFirst,
-//        // Offset of first character from dnode
-//    _In_ LSDCP dcp,
-//        // Dcp from dnode
-//    _In_reads_(cwch) LPCWSTR rgwch,
-//        // Array of characters
-//    _In_ LONG cwch,
-//        // Nnumber of characters
-//    _In_ LSTFLOW lstflow,
-//        // Text flow
-//    _In_ BOOL fReverseOrder,
-//        // Flag indicating enumerate is in reverse order
-//    _In_ BOOL fGeometryProvided,
-//        // Flag indicating whether text is prepared for display
-//    _In_opt_ PCLSPOINT pptStart,
-//        // Starting position (only if fGeometryProvided)
-//    _In_opt_ PCHEIGHTS pheightsPres,
-//        // Height in presentation units from dnode (only if fGeometryProvided)
-//    _In_ LONG dupRun,
-//        // Run width from DNODE (only if fGeometryProvided)
-//    _In_ BOOL fGlyphs,
-//        // Flag indicating whether the run is glyph-based
-//    _In_reads_(cwch) LONG* rgdupChars,
-//        // Array of character widths, if !fGlyphs
-//    _In_reads_(cwch) PCGMAP rggmap,
-//        // Array of wch->glyph mapping (only if fGlyphs)
-//    _In_reads_(cwch) PCCHPROP rgchprop,
-//        // Array of char properties (only if fGlyphs)
-//    _In_reads_(cglyph) PCGINDEX rgglyph,
-//        // Array of glyph indices (only if fGlyphs)
-//    _In_reads_(cglyph) const LONG* rgdupGlyphs,
-//        // Array of widths of glyphs (only if fGlyphs)
-//    _In_reads_(cglyph) PLSGOFFSET rgGoffset,
-//        // Array of offsets of glyphs (only if fGlyphs)
-//    _In_reads_(cglyph) PGPROP rggprop,
-//        // Array of glyph properties (only if fGlyphs)
-//    _In_ LONG cglyph
-//        // Number glyph indices (only if fGlyphs)
-//    )
-//{
-//    return lserrNotImplemented;
-//}
-
-//---------------------------------------------------------------------------
-//
-//  Member:
-//      LineServicesEnumTab
-//
-//  Synopsis:
-//      Callback used by LS to inform client that there is a tab present on the line.
-//
-//---------------------------------------------------------------------------
-//LSERR RichTextServices::LineServicesEnumTab(
-//    _In_ POLS pols,
-//        // LS host
-//    _In_ PLSRUN plsrun,
-//        // Pointer to client run information
-//    _In_ LSCP cpFirst,
-//        // Offset of first character, from dnode
-//    _In_ LPCWSTR rgwch,
-//        // Pointer to one Tab character
-//    _In_ WCHAR wchTabLeader,
-//        // Tab leader
-//    _In_ LSTFLOW lstflow,
-//        // Text flow
-//    _In_ BOOL fReverseOrder,
-//        // Flag indicating that enumeration should occur in reverse order
-//    _In_ BOOL fGeometryProvided,
-//        // Flag indicating that the line is already prepared for display
-//    _In_opt_ PCLSPOINT pptStart,
-//        // Starting position, iff fGeometryProvided
-//    _In_opt_ PCHEIGHTS pheightsPres,
-//        // From DNODE, relevant iff fGeometryProvided
-//    _In_ LONG dupRun
-//        // From DNODE, relevant iff fGeometryProvided
-//    )
-//{
-//    return lserrNotImplemented;
-//}
-
-//---------------------------------------------------------------------------
-//
-//  Member:
 //      LineServicesGetObjectHandlerInfo
 //
 //  Synopsis:
@@ -1950,17 +1856,11 @@ LSERR RichTextServices::LineServicesGetObjectHandlerInfo(
 {
     LSERR hr = lserrNone;
     LsObjectId::Enum objectId = static_cast<LsObjectId::Enum>(idObj);
-    REVERSEINIT *pReverseInit = NULL;
 
     switch(objectId)
     {
         case LsObjectId::ReverseObject:
-            pReverseInit = reinterpret_cast<REVERSEINIT *>(pObjectInfo);
-            pReverseInit->pfnEnum = reinterpret_cast<PFNREVERSEENUM>(LineServicesReverseEnum);
-            pReverseInit->pfnGetRobjInfo = reinterpret_cast<PFNREVERSEGETINFO>(LineServicesGetReverseObjectInfo);
-            pReverseInit->fUseMasterSpans = TRUE;
-            pReverseInit->wchEndReverse = '\0'; // Unused when fUseMasterSpans == TRUE.
-            pReverseInit->wchUnused1 = 0;
+            LsHelpers::InitializeReverseInit(pObjectInfo);
             break;
 
         default:
@@ -2019,86 +1919,6 @@ void RichTextServices::LineServicesAssertFailed(
     gps->XcpTrace(MonitorAssert, filename16, line, TRUE, message16, NULL);
 
 #endif
-}
-
-//---------------------------------------------------------------------------
-//
-//  Member:
-//      LineServicesReverseEnum
-//
-//  Synopsis:
-//      Callback used by LS to enumerate reverse objects.
-//
-//---------------------------------------------------------------------------
-LSERR RichTextServices::LineServicesReverseEnum(
-    _In_ POLS pols,
-        // LS host.
-    _In_ PLSRUN plsrun,
-        // Pointer to client's run information.
-    _In_ PCLSCHP plschp,
-        // Run's character properties.
-    _In_ LSSPAN lsspanMaster,
-        // Master span of object.
-    _In_ LSCP cp,
-        // Run's character position.
-    _In_ LSDCP dcp,
-        // Run length, in cp.
-    _In_ LSTFLOW lstflow,
-        // Text flow.
-    _In_ BOOL fReverse,
-        // Enumerate in reverse order.
-    _In_ BOOL fGeometryNeeded,
-        // Flag for geometry inforation.
-    _In_ PCLSPOINT pt,
-        // Starting position of the object, iff fGeometryNeeded.
-    _In_ PCLSPOINT ptSubline,
-        // Starting position of the subline, iff fGeometryNeeded.
-    _In_ PCHEIGHTS pcheights,
-        // Presentation heights, relevant iff fGeometryNeeded.
-    _In_ LONG dupRun,
-        // Presentation width of run, relevant iff fGeometryNeeded.
-    _In_    LSTFLOW lstflowSubline,
-        // Lstflow of subline in reverse object.
-    _In_ PLSSUBL plssubl
-        // Subline in reverse object.
-        )
-{
-    if (plssubl != NULL)
-    {
-        // Continue to enumerate subline
-        return LsEnumSubline(plssubl, fReverse, fGeometryNeeded, pt);
-    }
-
-    return lserrNone;
-}
-
-//---------------------------------------------------------------------------
-//
-//  Member:
-//      LineServicesGetReverseObjectInfo
-//
-//  Synopsis:
-//      Callback used by LS to get reverse object formatting preferences.
-//
-//---------------------------------------------------------------------------
-LSERR RichTextServices::LineServicesGetReverseObjectInfo(
-    _In_ POLS pols,
-        // LS host.
-    _In_ LSCP cp,
-        // Run character position.
-    _In_ LSSPAN lsspanMaster,
-        // Master span of object.
-    _In_ PLSRUN plsrun,
-        // Pointer to client run information.
-    _Out_ BOOL *fDontBreakAround,
-        // Whether reverse chunk should be broken around.
-    _Out_ BOOL *fSuppressTrailingSpaces
-        // Whether to suppress trailing spaces.
-    )
-{
-    *fDontBreakAround        = TRUE;
-    *fSuppressTrailingSpaces = TRUE;
-    return lserrNone;
 }
 
 //---------------------------------------------------------------------------
@@ -2284,3 +2104,4 @@ LSERR RichTextServices::LineServicesGetCharAlignmentEndLine(
 Cleanup:
     return LSErrFromResult(txhr);
 }
+

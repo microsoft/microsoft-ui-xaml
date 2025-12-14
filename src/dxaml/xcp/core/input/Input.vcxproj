@@ -59,7 +59,6 @@
         <ClCompile Include="CKeyboardAccelerator.cpp"/>
         <ClCompile Include="FocusManagerLostFocusEventArgs.cpp"/>
         <ClCompile Include="FocusManagerGotFocusEventArgs.cpp"/>
-        <ClCompile Include="TextInputProducerHelper.cpp"/>
     </ItemGroup>
 
     <PropertyGroup>

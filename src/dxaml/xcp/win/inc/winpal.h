@@ -945,11 +945,6 @@ public:
 
     // IPALProcessCharacteristics
     bool IsProcessPackaged() override;
-    bool IsProcessAppContainer() override;
-    _Check_return_ HRESULT GetProcessPackagePath(_Out_ xstring_ptr* pstrPackagePath) override;
-    _Check_return_ HRESULT GetProcessPackageFullName(_Out_ xstring_ptr* pstrPackageFullName) override;
-    _Check_return_ HRESULT GetProcessModernAppId(_Out_ xstring_ptr* pstrAppId) override;
-    _Check_return_ HRESULT GetProcessImageName(_Out_ xstring_ptr* pstrImageName) override;
 
     // IPALAutomationServices
     _Check_return_ HRESULT GetAutomationProvider(

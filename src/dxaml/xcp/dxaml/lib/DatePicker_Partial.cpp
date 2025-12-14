@@ -67,7 +67,7 @@ DatePicker::~DatePicker()
     if (m_windowActivatedHandler && DXamlCore::GetCurrent() != nullptr)
     {
         Window* window = nullptr;
-        VERIFYHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &window));
+        VERIFYHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, true /*onlyForDesktopWindowXamlSource*/, &window));
         if (window)
         {
             VERIFYHR(m_windowActivatedHandler.DetachEventHandler(ctl::iinspectable_cast(window)));
@@ -361,7 +361,8 @@ DatePicker::OnApplyTemplate()
     }
 
     Window* window = nullptr;
-    VERIFYHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, &window));
+    // Setting onlyForDesktopWindowXamlSource here to avoid the failfast described in the function's impl.
+    VERIFYHR(DXamlCore::GetCurrent()->GetAssociatedWindowNoRef(this, true /*onlyForDesktopWindowXamlSource*/, &window));
     if (window)
     {
         ctl::WeakRefPtr weakInstance;

@@ -53,19 +53,19 @@ namespace RichTextServices
     };
 
     // Display context for embedded UIElements.
-    class LineServicesEmbeddedObject : public CLsObject
+    class LineServicesEmbeddedObject : public LsHelpers::ISimpleLsObject
     {
     public:
-        LSERR LSAPI Display(
-            _In_ PCDISPIN pdispin);
+        LSERR Display(
+            _In_ PCDISPIN pdispin) override;
 
-        void LSAPI Destroy();
+        void Destroy() override;
 
-        LSERR LSAPI ProposeBreakAfter(
-            _Out_ BRKCOND* pbrkcond);
+        LSERR ProposeBreakAfter(
+            _Out_ BRKCOND* pbrkcond) override;
 
-        LSERR LSAPI ProposeBreakBefore(
-            _Out_ BRKCOND* pbrkcond);
+        LSERR ProposeBreakBefore(
+            _Out_ BRKCOND* pbrkcond) override;
 
         LineServicesEmbeddedObjectContext *pObjectContext;
         OBJDIM objdim;

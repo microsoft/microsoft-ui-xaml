@@ -5,7 +5,6 @@
     <UseWinUIDetails Condition="'$(UseWinUIDetails)'=='' and $(MSBuildProjectExtension)=='.vcxproj'">true</UseWinUIDetails>
   </PropertyGroup>
 
- <!-- (LUDK_IN_MUX) only need to import the nuget -->
   <Import Project="$(WinUIDetailsTargetsFile)" Condition="'$(UseWinUIDetails)'=='true' and Exists('$(WinUIDetailsTargetsFile)')" />
 
   <!-- remove the references and referencecopylocalpaths that come from the winuidetails so that we don't have them copied into every projects output directory -->

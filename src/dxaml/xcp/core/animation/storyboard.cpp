@@ -29,8 +29,6 @@ CStoryboard::~CStoryboard()
         delete m_pLayoutTransitionCompletedData;
         m_pLayoutTransitionCompletedData = NULL;
     }
-
-    AnimationStopTracking();
 }
 
 // Overridden just to fire ETW events and signal animation tracking.
@@ -44,11 +42,6 @@ _Check_return_ HRESULT CStoryboard::UpdateAnimation(
     _Out_ bool *pIsIndependentAnimation
     )
 {
-    if ((m_clockState == DirectUI::ClockState::Stopped) || (m_clockState == DirectUI::ClockState::Filling))
-    {
-        AnimationStopTracking();
-    }
-
     if (EventEnabledEndStoryboardInfo())
     {
         switch (m_clockState)
@@ -301,8 +294,6 @@ _Check_return_ HRESULT CStoryboard::ComputeStateImpl(
 // Pauses an unpaused storyboard.  No-ops if stopped.
 _Check_return_ HRESULT CStoryboard::PausePrivate()
 {
-    AnimationStopTracking();
-
     if (!m_fIsStopped && !m_fIsPaused)
     {
         // When paused, the parent time no longer moves forward during ComputeState.
@@ -464,13 +455,6 @@ _Check_return_ HRESULT CStoryboard::BeginPrivate(bool fIsTopLevel)
         }
     }
 
-    // For top level storyboards, signal the beginning of a scenario for animation tracking.
-    if (fIsTopLevel)
-    {
-        AnimationTrackingBeginScenario(/*pTransition*/nullptr, /*pTargetObject*/nullptr);
-        EnsureTelemetryName();
-    }
-
     // Top-level storyboards need to offset time from their parent timeline (the time manager).
     // Nested timelines inherit their parent's time and need no adjustment.
     //
@@ -539,10 +523,6 @@ _Check_return_ HRESULT CStoryboard::StopPrivate()
     m_lastParentTime = XDOUBLE_MAX;
     m_rPendingSeekTime = XDOUBLE_MAX;
     m_rTimeDelta = XDOUBLE_MAX;
-
-    AnimationStopTracking();
-
-    m_storyboardTelemetryName = xstring_ptr::NullString();
 
     if (m_clockState != DirectUI::ClockState::Stopped)
     {
@@ -1100,154 +1080,6 @@ _Check_return_ HRESULT CStoryboard::Begin()
 bool CStoryboard::IsTopLevelStoryboard()
 {
     return IsTopLevelTimeline();
-}
-
-// Checks if animation tracking is enabled and allowed for this storyboard.
-bool CStoryboard::IsAnimationTrackingAllowed()
-{
-    if (!GetContext()->IsAnimationTrackingEnabled())
-    {
-        return false;
-    }
-
-    return true;
-}
-
-void CStoryboard::AnimationTrackingBeginScenario(
-    _In_opt_ CTransition* pTransition,
-    _In_opt_ CDependencyObject* pTargetObject
-    )
-{
-    // If animation tracking is not enabled or not allowed, bail.
-    if (!IsAnimationTrackingAllowed())
-    {
-        return;
-    }
-
-    // If this storyboard does not look to be interesting for animation tracking
-    // purposes (e.g. due to delayed start etc.), bail.
-    // Transitions are always of interest, regardless of any staggering delays.
-    if (!pTransition && !IsInterestingForAnimationTracking())
-    {
-        return;
-    }
-
-    // Calculate the expected duration.
-    DurationType durationType = DirectUI::DurationType::TimeSpan;
-    XFLOAT rDurationValue = 0;
-    IGNOREHR(GetDuration(&durationType, &rDurationValue));
-
-    // Not interested in instant storyboards.
-    if ((durationType != DirectUI::DurationType::TimeSpan) || (rDurationValue <= 0))
-    {
-        return;
-    }
-
-    // If we have a significant begin delay, e.g. due staggering, do not begin a
-    // scenario but reference an existing one. Otherwise account for it in the
-    // duration.
-    if (m_pBeginTime && m_pBeginTime->m_rTimeSpan >= 0)
-    {
-        if ((m_pBeginTime->m_rTimeSpan * 1000) > c_AnimationTrackingMaxBeginTimeInMs)
-        {
-            AnimationStartTracking();
-            return;
-        }
-        rDurationValue += static_cast<XFLOAT>(m_pBeginTime->m_rTimeSpan);
-    }
-
-    // Not interested in storyboards that run for too long
-    if (rDurationValue >= c_AnimationTrackingMaxDurationInS)
-    {
-        return;
-    }
-
-    // Now we want to determine an appropriate name and details for this storyboard.
-    // Interesting things we want to capture include transition, dynamic timelines,
-    // visual state names.
-    CDependencyObject* pDOTarget = pTargetObject;
-    CDependencyObject* pDynamicTimeline = nullptr;
-    AnimationTrackingCollectInfoNoRef(&pDOTarget, &pDynamicTimeline);
-
-    // Look for the first named UI element parent of the target.
-    CUIElement* pUITarget = pDOTarget->GetNamedSelfOrParent<CUIElement>();
-
-    // If we did not find a suitable target, this is not an interesting storyboard.
-    if (!pUITarget)
-    {
-        return;
-    }
-
-    // Build the name.
-    xstring_ptr name;
-    xstring_ptr details;
-    XUINT16 scenarioPriority = c_AnimationTrackingDefaultPriority;
-
-    // If tracing/telemetry is not enabled, avoid the cost of building a description.
-    // Specifying the default priority will also be sufficient.
-    if (EventEnabledPerfTrackDetectionInfo())
-    {
-        name = GetNameForTracking(pTransition, pUITarget, pDynamicTimeline, &scenarioPriority);
-        details = GetTargetPathForTracking(pUITarget, true /* startFromParentOfTarget */);
-
-        // We can go through here multiple times (once from layout transitions, and again from starting the storyboard).
-        // Cache the name the first time. We'll clear it when the storyboard stops.
-        if (m_storyboardTelemetryName.IsNull())
-        {
-            m_storyboardTelemetryName = name;
-        }
-    }
-    else
-    {
-        IGNOREHR(xstring_ptr::CloneBuffer(L"XamlAnim", &name));
-        IGNOREHR(xstring_ptr::CloneBuffer(L"", &details));
-    }
-
-    // Start the animation scenario.
-    AnimationTrackingScenarioInfo info = {0};
-    info.scenarioName = name.GetBuffer();
-    info.scenarioDetails = details.GetBuffer();
-    info.msIntendedDuration = static_cast<XUINT32>(rDurationValue * 1000);
-    info.priority = scenarioPriority;
-    GetContext()->AnimationTrackingScenarioBegin(&info);
-
-    // Also start tracking this storyboard as a sub-animation.
-    AnimationStartTracking();
-}
-
-void CStoryboard::EnsureTelemetryName()
-{
-    if (m_storyboardTelemetryName.IsNull())
-    {
-        m_storyboardTelemetryName = GetNameForTracking(nullptr, nullptr, nullptr, nullptr);
-    }
-}
-
-// Start tracking this storyboard for animation tracking as a sub animation.
-void CStoryboard::AnimationStartTracking()
-{
-    if (!IsAnimationTrackingAllowed())
-    {
-        return;
-    }
-
-    if (!m_fIsTrackedForAnimationTracking)
-    {
-        XUINT64 key = reinterpret_cast<XUINT64>(static_cast<CDependencyObject*>(this));
-        GetContext()->AnimationTrackingScenarioReference(key);
-        m_fIsTrackedForAnimationTracking = TRUE;
-    }
-}
-
-// Stop tracking this storyboard for animation tracking as a sub animation.
-void CStoryboard::AnimationStopTracking()
-{
-    if (m_fIsTrackedForAnimationTracking)
-    {
-        XUINT64 key = reinterpret_cast<XUINT64>(static_cast<CDependencyObject*>(this));
-        GetContext()->AnimationTrackingScenarioUnreference(key);
-        m_fIsTrackedForAnimationTracking = FALSE;
-    }
 }
 
 // Returns the duration of the storyboard in seconds, and the duration type

@@ -6,7 +6,7 @@
 //  Abstract:
 //      Implement top level control model
 
-#include <coremessaging.h>
+
 
 class CompositorScheduler;
 class CCoreServices;
@@ -80,6 +80,8 @@ class CXcpDispatcher final :
     public CXcpObjectBase<IXcpDispatcher>
 {
     friend class PauseNewDispatch;
+    friend class PauseNewDispatchAtControl;
+    friend class PauseNewDispatchForTest;
 
 public:
 
@@ -147,6 +149,7 @@ private:
 
     void CheckReentrancy();
     void QueueReentrancyCheck();
+    void QueueReentrancyCheckAllowPaused();
     HRESULT CreateReentrancyGuardAndCheckReentrancy();
 
     static HRESULT CALLBACK MessageTimerCallbackStatic(void* myUserData);
@@ -191,8 +194,7 @@ private:
 
     EventRegistrationToken m_messageTimerCallbackToken = {};
 
-    xref_ptr<IMessageSession> m_messageSession;
-    xref_ptr<IMessageLoopExtensions> m_messageLoopExtensions;
+
 
     std::shared_ptr<WeakPtr> m_weakPtrToThis;
 
@@ -229,4 +231,37 @@ public:
 private:
     // NoRef pointer. The dispatcher is expected to be on the call stack while this object is alive (also on the stack).
     CXcpDispatcher* m_dispatcherNoRef { nullptr };
+};
+
+class PauseNewDispatchAtControl
+{
+public:
+    PauseNewDispatchAtControl(_In_opt_ CCoreServices* coreServices);
+    PauseNewDispatchAtControl(_In_ CXcpDispatcher* dispatcher);
+
+    ~PauseNewDispatchAtControl();
+
+    // Disallow copying
+    PauseNewDispatchAtControl(const PauseNewDispatchAtControl&) = delete;
+    PauseNewDispatchAtControl(PauseNewDispatchAtControl&&) = delete;
+    PauseNewDispatchAtControl& operator=(const PauseNewDispatchAtControl&) = delete;
+    PauseNewDispatchAtControl& operator=(PauseNewDispatchAtControl&&) = delete;
+
+    void PauseNewDispatch();
+    void ResumeNewDispatch();
+
+private:
+    // NoRef pointer. The dispatcher is expected to be on the call stack while this object is alive (also on the stack).
+    CXcpDispatcher* m_dispatcherNoRef { nullptr };
+    // Reference count for pause requests
+    int m_pauseCount = 0; 
+
+};
+
+// Helper only for test code to pause dispatch. Crashes if anything unexpected happens.
+class PauseNewDispatchForTest
+{
+public:
+    static void Pause(CCoreServices *coreServices);
+    static void Resume(CCoreServices *coreServices);
 };

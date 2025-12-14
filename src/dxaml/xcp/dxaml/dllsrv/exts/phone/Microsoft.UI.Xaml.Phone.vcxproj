@@ -94,6 +94,8 @@
     <ProjectReference Include="$(XcpPath)\components\OneCoreTransforms\lib\Microsoft.UI.Xaml.OneCoreTransforms.vcxproj" Project="{4d59a898-7e24-4650-baa0-7fe2bb6c82d4}" />
   </ItemGroup>
   <ItemGroup>
+    <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocationOld)" />
+    <PackageContent Include="$(OutDir)$(TargetName).dll.mui" PackageLocation="$(NativeAssemblyPackageLocationOld)\en-us" />
     <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)" />
     <PackageContent Include="$(OutDir)$(TargetName).dll.mui" PackageLocation="$(NativeAssemblyPackageLocation)\en-us" />
   </ItemGroup>

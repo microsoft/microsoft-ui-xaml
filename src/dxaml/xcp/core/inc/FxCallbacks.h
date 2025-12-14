@@ -527,7 +527,6 @@ namespace FxCallbacks
     _Check_return_ HRESULT InteractionCollection_DispatchInteraction(KnownEventIndex eventId, _In_ CUIElement* sender, _In_ CEventArgs* args);
 #endif // WI_IS_FEATURE_PRESENT(Feature_Xaml2018)
 
-    // CONTENT-TODO: OneCoreTransforms is not supported by lifted IXP at this time.
     _Check_return_ HRESULT DxamlCore_OnCompositionContentStateChangedForUWP();
 
     _Check_return_ HRESULT DXamlCore_SetBinding(_In_ CDependencyObject* source, _In_ HSTRING path, _In_ CDependencyObject* target, KnownPropertyIndex targetPropertyIndex);

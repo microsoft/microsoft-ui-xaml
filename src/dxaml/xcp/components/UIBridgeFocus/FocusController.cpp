@@ -8,7 +8,6 @@
 #include "NavigationFocusEventArgs.h"
 #include "NavigateFocusResult.h"
 #include <WRLHelper.h>
-#include <windows.ui.core.corewindow-defs.h>
 
 using namespace xaml_hosting;
 using FocusChangedEventHandler = wf::ITypedEventHandler<
@@ -20,11 +19,6 @@ namespace DirectUI
 }
 
 using namespace DirectUI;
-
-FocusController::FocusController(_In_ wuc::ICoreComponentFocusable* pFocusable)
-{
-    m_coreComponentFocusable = pFocusable;
-}
 
 FocusController::FocusController(_In_ ixp::IInputFocusController* pFocusable)
 {
@@ -40,31 +34,22 @@ FocusController::~FocusController()
 _Check_return_
 HRESULT FocusController::Init()
 {
-    if (m_coreComponentFocusable != nullptr)
-    {
-        IFC_RETURN(m_coreComponentFocusable->add_GotFocus(
-            Microsoft::WRL::Callback<wuc::GotFocusEventHandler>(
-                this, &FocusController::OnCoreInputGotFocus).Get(),
-            &m_gotFocusToken));
-    }
-    else
-    {
-        wrl::WeakRef wrThis;
-        IFCFAILFAST(wrl::AsWeak(this, &wrThis));
+    wrl::WeakRef wrThis;
+    IFCFAILFAST(wrl::AsWeak(this, &wrThis));
 
-        IFCFAILFAST(m_inputObjectFocusable->add_GotFocus(
-            WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<ixp::InputFocusController*, ixp::FocusChangedEventArgs*>>(
-                [wrThis](ixp::IInputFocusController* focusController, ixp::IFocusChangedEventArgs* args) -> HRESULT
+    IFCFAILFAST(m_inputObjectFocusable->add_GotFocus(
+        WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<ixp::InputFocusController*, ixp::FocusChangedEventArgs*>>(
+            [wrThis](ixp::IInputFocusController* focusController, ixp::IFocusChangedEventArgs* args) -> HRESULT
+    {
+        wrl::ComPtr<FocusController> spThis;
+        if (SUCCEEDED(wrThis.As(&spThis)) && spThis)
         {
-            wrl::ComPtr<FocusController> spThis;
-            if (SUCCEEDED(wrThis.As(&spThis)) && spThis)
-            {
-                args->put_Handled(true);
-                return spThis->OnGotFocusCommon();
-            }
-            return S_OK;
-        }).Get(), &m_gotFocusToken));
-    }
+            args->put_Handled(true);
+            return spThis->OnGotFocusCommon();
+        }
+        return S_OK;
+    }).Get(), &m_gotFocusToken));
+
     return S_OK;
 }
 
@@ -73,26 +58,9 @@ HRESULT FocusController::DeInit()
 {
     if (m_gotFocusToken.value != 0)
     {
-        if (m_coreComponentFocusable != nullptr)
-        {
-            IFC_RETURN(m_coreComponentFocusable->remove_GotFocus(m_gotFocusToken));
-        }
-        else
-        {
-            IFC_RETURN(m_inputObjectFocusable->remove_GotFocus(m_gotFocusToken));
-        }
+        IFC_RETURN(m_inputObjectFocusable->remove_GotFocus(m_gotFocusToken));
         m_gotFocusToken.value = 0;
     }
-    return S_OK;
-}
-
-
-_Check_return_
-HRESULT FocusController::Create(_In_ wuc::ICoreComponentFocusable* pFocusable, _Outptr_ FocusController** ppValue)
-{
-    wrl::ComPtr<FocusController> focusController = wrl::Make<FocusController>(pFocusable);
-    IFC_RETURN(focusController->Init());
-    IFC_RETURN(focusController.CopyTo(ppValue));
     return S_OK;
 }
 
@@ -273,14 +241,7 @@ HRESULT FocusController::OnGotFocusCommon()
 _Check_return_
 HRESULT FocusController::get_HasFocus(_Out_ boolean* pValue)
 {
-    if (m_coreComponentFocusable != nullptr)
-    {
-        IFC_RETURN(m_coreComponentFocusable->get_HasFocus(pValue));
-    }
-    else
-    {
-        IFC_RETURN(m_inputObjectFocusable->get_HasFocus(pValue));
-    }
+    IFC_RETURN(m_inputObjectFocusable->get_HasFocus(pValue));
     return S_OK;
 }
 

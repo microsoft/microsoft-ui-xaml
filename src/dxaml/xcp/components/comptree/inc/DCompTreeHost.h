@@ -38,9 +38,12 @@
 #include <microsoft.ui.composition.experimental.h>
 #include <microsoft.ui.composition.interop.h>
 #include "VisualDebugTags.h"
-#include <dcompinternal.h>
-#include <dcompprivate.h>
-#include <microsoft.ui.input.experimental.h>
+#include "CompHelper/CompositionHelper.h"
+
+#ifndef NTDDI_WIN11_GE
+#define NTDDI_WIN11_GE 0x0A000010
+#endif
+
 #include <Microsoft.UI.Content.h>
 
 enum XcpGradientWrapMode : uint8_t;
@@ -55,7 +58,6 @@ struct ID3D11Device;
 class OfferTracker;
 class CWindowRenderTarget;
 class WindowsGraphicsDeviceManager;
-class DCompInteropCompositorPartnerCallback;
 class DCompSurfaceFactory;
 class DCompSurfaceFactoryManager;
 class DCompSurface;
@@ -65,7 +67,6 @@ class HWCompTreeNode;
 class HWCompTreeNodeWinRT;
 class CUIElement;
 class CXamlIslandRoot;
-class CoreWindowIslandAdapter;
 class ProjectedShadowManager;
 class RefreshRateInfo;
 
@@ -95,7 +96,7 @@ static bool s_visualDebugTagsEnabledInitialized = false;
 static bool s_WUCShapesEnabled = false;
 static bool s_WUCShapesEnabledInitialized = false;
 
-class DCompTreeHost : public CXcpObjectBase<IObject>
+class DCompTreeHost : public CXcpObjectBase<IObject>, public INotifyCompositionDirty
 {
 public:
     static bool IsFullCompNodeTree();
@@ -134,7 +135,7 @@ public:
     _Check_return_ HRESULT OfferResources();
     _Check_return_ HRESULT ReclaimResources(_Out_ bool *pDiscarded);
     OfferTracker* GetOfferTrackerNoRef() const { return m_offerTracker; }
-    void GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactoryPartner3*>* surfaceFactoryVector);
+    void GetSurfaceFactoriesForCurrentThread(_Inout_ std::vector<IDCompositionSurfaceFactory*>* surfaceFactoryVector);
 
     _Check_return_ HRESULT NotifyUWPWindowLayoutComplete(CWindowRenderTarget &renderTarget);
 
@@ -162,6 +163,7 @@ public:
 
     _Check_return_ HRESULT EnsureLegacyDeviceSurface(_In_ DCompSurface* dcompSurface, unsigned int width, unsigned int height);
     _Check_return_ HRESULT CreateCompositionSurfaceForHandle(_In_ HANDLE swapChainHandle, _Outptr_ WUComp::ICompositionSurface** compositionSurface);
+    _Check_return_ HRESULT CreateCompositionSurfaceForSwapChain(_In_ IUnknown* swapChain, _Outptr_ WUComp::ICompositionSurface** compositionSurface);
 
     _Check_return_ HRESULT ObtainSurfaceFactory(
         _In_ IUnknown *pIUnk,
@@ -198,51 +200,34 @@ public:
         return m_spCompositor6.Get();
     }
 
-    WUComp::ICompositorPrivate* GetCompositorPrivate() const
-    {
-        return m_spCompositorPrivate.Get();
-    }
-
     WUComp::ICompositionGraphicsDevice* GetCompositionGraphicsDevice() const
     {
         return m_compositionGraphicsDevice.Get();
     }
 
-    bool HasInteropCompositorPartner() const;
+    bool HasInteropCompositor() const;
 
-    IDCompositionDesktopDevicePartner3 *GetMainDevice() const
+    bool HasDCompDevice() const
+    {
+        ASSERT(!m_isInitialized || m_spMainDevice != NULL);
+        return m_spMainDevice != nullptr;
+    }
+
+    IDCompositionDesktopDevice* GetMainDevice() const
     {
         ASSERT(!m_isInitialized || m_spMainDevice != NULL);
         return m_spMainDevice.Get();
     }
 
+    CompositionHelper* GetCompositionHelper() const
+    {
+        ASSERT(!m_isInitialized || m_pCompositionHelper.IsInitialized());
+        return m_pCompositionHelper.Get();
+    }
+
     bool HasSurfaceFactory() const
     {
-        return m_spMainSurfaceFactoryPartner != nullptr;
-    }
-
-    IDCompositionSurfaceFactoryPartner *GetMainSurfaceFactory() const
-    {
-        // The SurfaceFactory may be NULL even after initialization, in a device lost situation.
-        // Users of the SurfaceFactory must take care not to rely on this, particularly in the OnResume handler.
-        FAIL_FAST_ASSERT(!m_isInitialized || m_spMainSurfaceFactoryPartner != NULL);
-        return m_spMainSurfaceFactoryPartner.Get();
-    }
-
-    IDCompositionSurfaceFactoryPartner2 *GetMainSurfaceFactory2() const
-    {
-        // The SurfaceFactory may be NULL even after initialization, in a device lost situation.
-        // Users of the SurfaceFactory must take care not to rely on this, particularly in the OnResume handler.
-        FAIL_FAST_ASSERT(!m_isInitialized || m_spMainSurfaceFactoryPartner2 != nullptr);
-        return m_spMainSurfaceFactoryPartner2.Get();
-    }
-
-    IDCompositionSurfaceFactoryPartner3 *GetMainSurfaceFactory3() const
-    {
-        // The SurfaceFactory may be NULL even after initialization, in a device lost situation.
-        // Users of the SurfaceFactory must take care not to rely on this, particularly in the OnResume handler.
-        FAIL_FAST_ASSERT(!m_isInitialized || m_spMainSurfaceFactoryPartner3 != nullptr);
-        return m_spMainSurfaceFactoryPartner3.Get();
+        return m_pCompositionHelper.IsInitialized() && GetCompositionHelper()->GetSurfaceFactory() != nullptr;
     }
 
     ixp::IContentIsland* GetCoreWindowContentIsland() const
@@ -267,18 +252,6 @@ public:
     void UpdateUIThreadCounters(
         XUINT32 uiThreadFrameRate,
         XFLOAT uiThreadCPUTime);
-
-    _Check_return_ HRESULT AnimationTrackingScenarioBegin(_In_ const AnimationTrackingScenarioInfo* pScenarioInfo);
-
-    _Check_return_ HRESULT AnimationTrackingScenarioReference(
-        _In_opt_ const GUID* pScenarioGuid,
-        XUINT64 uniqueKey);
-
-    _Check_return_ HRESULT AnimationTrackingScenarioUnreference(
-        _In_opt_ const GUID* pScenarioGuid,
-        XUINT64 uniqueKey);
-
-    bool IsAnimationTrackingEnabled();
 
     _Check_return_ HRESULT RequestMainDCompDeviceCommit();
 
@@ -353,12 +326,6 @@ public:
     _Check_return_ HRESULT EnsureXamlIslandTargetRoots();
 
     XamlIslandRenderDataMap& GetXamlIslandRenderData() { return m_islandRenderData; };
-    void SetCoreWindow(_In_ wuc::ICoreWindow* const coreWindow) { m_coreWindowNoRef = coreWindow; }
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    UINT64 GetCompositionIslandId();
-#endif
 
     static void SetTag(_In_ WUComp::IVisual* visual, _In_ const wchar_t* debugTag, float value);
 
@@ -381,6 +348,9 @@ public:
 
     RefreshRateInfo* GetRefreshRateInfo() { return m_refreshRateInfo.Get(); }
 
+    // INotifyCompositionDirty
+    HRESULT NotifyCompositionDirty() override;
+
 private:
     XamlIslandRenderDataMap m_islandRenderData;
 
@@ -399,13 +369,8 @@ private:
         XUINT32 uiThreadFrameRate,
         XFLOAT uiThreadCPUTime,
         _Outptr_ DCompSurface** ppFrameRateSurface);
-    _Check_return_ HRESULT EnsureAnimationTrackingAppId();
 
     _Check_return_ HRESULT UpdateAtlasHint();
-
-    _Check_return_ HRESULT CreateWinRTInteropCompositionDevice(
-        _In_ REFIID iid,
-        _Out_ void **ppDevice);
 
     _Check_return_ HRESULT SetRootForCorrectContext(_In_ WUComp::IVisual *visual);
     bool HasDCompTarget();
@@ -463,12 +428,12 @@ private:
 
     WindowsGraphicsDeviceManager    *m_pGraphicsDeviceManagerNoRef;
 
+    // CompositionHelper provides convenient access and management of some core Composition
+    // resources, with the Holder here as a smart manager of its lifetime.
+    CompositionHelperHolder m_pCompositionHelper;
+
     // DComp resources
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDesktopDevicePartner3> m_spMainDevice;
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDeviceInternal> m_spMainDeviceInternal;
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionSurfaceFactoryPartner> m_spMainSurfaceFactoryPartner;
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionSurfaceFactoryPartner2> m_spMainSurfaceFactoryPartner2;
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionSurfaceFactoryPartner3> m_spMainSurfaceFactoryPartner3;
+    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> m_spMainDevice;
 
 #pragma region ::Windows::UI::Composition
 
@@ -477,9 +442,7 @@ private:
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor2> m_spCompositor2;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor5> m_spCompositor5;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor6> m_spCompositor6;
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorPrivate> m_spCompositorPrivate;
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorInterop> m_spCompositorInterop;
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::IInteropCompositorPartner> m_spInteropCompositorPartner;
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorSwapChainInterop> m_spCompositorInterop;
     _Maybenull_ Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionBrush> m_systemBackdropBrush; // Note: This is a system compositor brush!
     wrl::ComPtr<ixp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
@@ -490,18 +453,12 @@ private:
 
 #pragma endregion
 
-    // Application ID saved for animation/touch tracking.
-    xstring_ptr m_strAnimationTrackingAppId;
-    bool m_animationTrackingAppIdSetOnDevice;
     bool m_hasNative8BitSurfaceSupport;
 
     wrl::ComPtr<WUComp::IContainerVisual> m_hwndVisual;
     wrl::ComPtr<WUComp::IVisual> m_disconnectedHWndVisual;
     wrl::ComPtr<WUComp::IVisual> m_compNodeRootVisual;
     wrl::ComPtr<WUComp::IVisual> m_frameRateVisual;
-
-    // DCompInteropCompositorPartnerCallback instance, a WinRT interop compositor callback, which implements WUComp::IInteropCompositorPartnerCallback
-    xref_ptr<DCompInteropCompositorPartnerCallback> m_spInteropCompositorPartnerCallback;
 
     // Dummy visuals for MockDComp output.
     // Xaml's visual tree used to contain extra visuals at the root. They've been removed, but we haven't updated our
@@ -547,13 +504,6 @@ private:
     // whether the call has been made.
     bool m_isCallbackThreadRegistered;
 
-    wuc::ICoreWindow* m_coreWindowNoRef = nullptr;
-
-// CONTENT-TODO: Lifted IXP doesn't support OneCoreTransforms UIA yet.
-#if false
-    std::unique_ptr<CoreWindowIslandAdapter> m_onecoreIslandAdapter;
-#endif
-
     SharedTransitionAnimations m_sharedTransitionAnimations;
 
     // For testing - normally we can get the visual out of m_inprocIsland, but for tests this returns a real visual when
@@ -576,7 +526,7 @@ private:
 public:
     static _Check_return_ HRESULT Create(
         _In_ DCompTreeHost *pDCompTreeHost,
-        _In_ IDCompositionDesktopDevicePartner *pMainDevice,
+        _In_ IDCompositionDesktopDevice *pMainDevice,
         _In_ IUnknown *pIUnk,
         _Outptr_ DCompSurfaceFactory **ppSurfaceFactory
         );
@@ -597,12 +547,9 @@ public:
 
     DCompTreeHost* GetDCompTreeHost() { return m_DCompTreeHostNoRef; }
 
-    IDCompositionSurfaceFactoryPartner3* GetSurfaceFactoryPartner() { return m_SurfaceFactoryPartner.Get();  }
-
 private:
     DCompTreeHost *m_DCompTreeHostNoRef;
     IDCompositionSurfaceFactory *m_SurfaceFactory;
-    Microsoft::WRL::ComPtr<IDCompositionSurfaceFactoryPartner3> m_SurfaceFactoryPartner;
 };
 
 namespace DCompHelpers

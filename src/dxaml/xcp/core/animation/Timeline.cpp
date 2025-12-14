@@ -8,6 +8,7 @@
 #include "PointerAnimationUsingKeyFrames.h"
 #include <GraphicsUtility.h>
 #include <UIThreadScheduler.h>
+#include <CompHelper/CompositionAnimationHelper.h>
 #include "TimeSpan.h"
 
 using namespace DirectUI;
@@ -58,7 +59,8 @@ CTimeline::~CTimeline()
         // Manually call Stop() on the WUC animator to unbind it from the target property. Otherwise, WUC's binding manager
         // could keep the WUC animation alive and playing until someone else sets a different value on the target property.
         // This can lead to infinite animations looping forever even after they've been released by Xaml.
-        IGNOREHR(m_wucAnimator->Stop());
+        CompositionAnimationHelper helper;
+        IGNOREHR(helper.Stop(m_wucAnimator.Get()));
     }
 
     ReleaseTarget();
@@ -824,86 +826,6 @@ void CTimeline::ComputeExpirationTime(
     else
     {
         poptExpirationTime->m_fHasValue = FALSE; // indicates infinite expiration
-    }
-}
-
-bool CTimeline::IsInterestingForAnimationTracking()
-{
-    // If the timeline is delayed, ignore it: e.g. it may be speculative
-    // animation scheduled into the future to auto-hide etc.
-    if (m_pBeginTime && ((m_pBeginTime->m_rTimeSpan * 1000) > c_AnimationTrackingMaxBeginTimeInMs))
-    {
-        return false;
-    }
-
-    // If the timeline is set to run for ever or has zero duration, ignore it.
-    // Note that since parallel timeline overrides this routine, we don't expect
-    // to be calling GetNaturalDuration in an expensive recursive manner.
-    DurationType durationType;
-    XFLOAT rDurationValue;
-    GetNaturalDuration(&durationType, &rDurationValue);
-    if ((durationType == DirectUI::DurationType::Forever) ||
-        ((durationType == DirectUI::DurationType::TimeSpan) && (rDurationValue <= 0)))
-    {
-        return false;
-    }
-
-    // If there is no target, or the target is not visible etc, ignore it.
-    // This happens frequently for the scrollbar state transitions that get
-    // fired even though no scrollbars or parts are visible.
-    // Note that this a 'best effort' check - there are other animations that
-    // might not be interesting for telemetry that aren't ruled out here, e.g.
-    // target could be clipped out, off-screen, etc.
-    bool hasValidUITarget = false;
-    auto target = GetTargetObjectWeakRef().lock();
-    if (target)
-    {
-        CUIElement* pUITarget = target->GetNamedSelfOrParent<CUIElement>();
-        if (pUITarget &&
-            pUITarget->IsVisible() &&
-            pUITarget->AreAllAncestorsVisible())
-        {
-            // We do not want to force the bounds calculation in this path,
-            // but we will check it if it is already calculated.
-            if (!pUITarget->AreBoundsDirty())
-            {
-                XRECTF_RB bounds;
-                if (SUCCEEDED(pUITarget->GetOuterBounds(nullptr /*hitTestParams*/, &bounds)))
-                {
-                    if (!IsEmptyRectF(bounds))
-                    {
-                        hasValidUITarget = TRUE;
-                    }
-                }
-            }
-            else
-            {
-                hasValidUITarget = TRUE;
-            }
-        }
-    }
-
-    if (!hasValidUITarget)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-// Collect target and other information for animation tracking.
-void CTimeline::AnimationTrackingCollectInfoNoRef(
-    _Inout_ CDependencyObject** ppTarget,
-    _Inout_ CDependencyObject** ppDynamicTimeline
-    )
-{
-    if (!*ppTarget)
-    {
-        auto target = GetTargetObjectWeakRef().lock();
-        if (target)
-        {
-            *ppTarget = target.get();
-        }
     }
 }
 

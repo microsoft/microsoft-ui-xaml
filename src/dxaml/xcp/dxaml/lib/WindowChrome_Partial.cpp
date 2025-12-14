@@ -38,6 +38,7 @@ _Check_return_ HRESULT WindowChromeFactory::CreateInstanceImpl(
 _Check_return_ HRESULT WindowChrome::Initialize(_In_ HWND parentWindow)
 {
     const auto chrome = static_cast<CWindowChrome*>(GetHandle());
+    IFCPTR_RETURN(chrome);
     IFC_RETURN(chrome->Initialize(parentWindow));
     auto hr = m_LoadedEventHandler.AttachEventHandler(this,
         [this](auto&&... /*unused*/)
@@ -53,6 +54,7 @@ _Check_return_ HRESULT WindowChrome::Initialize(_In_ HWND parentWindow)
 _Check_return_ HRESULT WindowChrome::ApplyStyling()
 {
   const auto chrome = static_cast<CWindowChrome*>(GetHandle());
+  IFCPTR_RETURN(chrome);
   IFC_RETURN(chrome->ApplyStyling());
   return S_OK;
 }
@@ -61,28 +63,36 @@ _Check_return_ HRESULT WindowChrome::ApplyStyling()
 bool WindowChrome::HandleMessage(UINT uMsg, WPARAM wParam, LPARAM lParam, _Out_ LRESULT* pResult)
 {
     auto coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
-    return coreWindowChrome->HandleMessage(uMsg, wParam, lParam, pResult);
+    if (coreWindowChrome)
+    {
+        return coreWindowChrome->HandleMessage(uMsg, wParam, lParam, pResult);
+    }
+    return false;    
 }
 
 void WindowChrome::ResizeContainer(WPARAM wParam, LPARAM lParam)
 {
     auto coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
-    coreWindowChrome->UpdateContainerSize(wParam, lParam);
+    if (coreWindowChrome)
+    {
+        coreWindowChrome->UpdateContainerSize(wParam, lParam);
+    }
 }
 
 void WindowChrome::MoveContainer(WPARAM wParam, LPARAM lParam)
 {
     auto coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
-    coreWindowChrome->UpdateBridgeWindowSizePosition();
-    VERIFYHR(coreWindowChrome->OnTitleBarSizeChanged());
+    if (coreWindowChrome)
+    {
+        coreWindowChrome->UpdateBridgeWindowSizePosition();
+        VERIFYHR(coreWindowChrome->OnTitleBarSizeChanged());
+    }
 
 }
 _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titleBar)
 {
-
     auto pCoreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
-    ASSERT(pCoreWindowChrome != nullptr);
-    
+    IFCPTR_RETURN(pCoreWindowChrome);
     if (!m_inputNonClientPtrSrc)
     {
         ctl::ComPtr<ixp::IInputNonClientPointerSourceStatics> inputNonClientPtrSrcStatics;
@@ -94,16 +104,21 @@ _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titl
         ctl::ComPtr<ixp::IAppWindow> appWindow;
         IFC_RETURN(GetDesktopWindowNoRef()->get_AppWindowImpl(&appWindow));
         
-        if (!appWindow)
+        // SetTitleBar gets called with titleBar as nullptr during window close operations
+        // If the window is not a top level window, we should not failfast here
+        if (!appWindow && titleBar)
         {
              // custom titlebar code is being run in a scenario where appwindow is null and thus
              // it cannot continue to run. it is running in an unsupported scenario.
              // one such scenario is where a top level window is reparented to become a child window of another window
             IFCFAILFAST(E_NOTSUPPORTED);
         }
-        IFC_RETURN(appWindow->get_Id(&windowId));
-        
-        IFC_RETURN(inputNonClientPtrSrcStatics->GetForWindowId(windowId, &m_inputNonClientPtrSrc));
+        else if (appWindow)
+        {
+            IFC_RETURN(appWindow->get_Id(&windowId));
+            
+            IFC_RETURN(inputNonClientPtrSrcStatics->GetForWindowId(windowId, &m_inputNonClientPtrSrc));
+        }
     }
     
     //detach everything from existing titlebar
@@ -127,6 +142,7 @@ _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titl
             [this](IInspectable* sender, xaml::ISizeChangedEventArgs* args)
             {
                 auto pCoreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
+                IFCPTR_RETURN(pCoreWindowChrome);
                 IFC_RETURN(pCoreWindowChrome->OnTitleBarSizeChanged());
 
                 return S_OK;
@@ -143,12 +159,19 @@ _Check_return_ HRESULT WindowChrome::SetTitleBar(_In_opt_ xaml::IUIElement* titl
 
 bool WindowChrome::IsChromeActive() const
 {
-    return static_cast<CWindowChrome*>(GetHandle())->IsChromeActive();
+    auto pCoreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
+    if (pCoreWindowChrome)
+    {
+        return pCoreWindowChrome->IsChromeActive();
+    }
+    return false;
 }
 
 _Check_return_ HRESULT WindowChrome::SetIsChromeActive(bool value)
 {
-    IFC_RETURN(static_cast<CWindowChrome*>(GetHandle())->SetIsChromeActive(value));
+    auto pCoreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
+    IFCPTR_RETURN(pCoreWindowChrome);
+    IFC_RETURN(pCoreWindowChrome->SetIsChromeActive(value));
     return S_OK;
 }
 
@@ -181,11 +204,18 @@ ctl::ComPtr<ixp::IAppWindow> WindowChrome::GetAppWindow() const
 bool WindowChrome::CanDrag() const
 {
     CWindowChrome* coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
-    return coreWindowChrome->CanDrag();
+    if (coreWindowChrome)
+    {
+        return coreWindowChrome->CanDrag();
+    }
+    return false;
 }
 
 void WindowChrome::UpdateCanDragStatus(bool enabled)
 {
     CWindowChrome* coreWindowChrome = static_cast<CWindowChrome*>(GetHandle());
-    coreWindowChrome->UpdateCanDragStatus(enabled);
+    if (coreWindowChrome)
+    {
+        coreWindowChrome->UpdateCanDragStatus(enabled);
+    }
 }

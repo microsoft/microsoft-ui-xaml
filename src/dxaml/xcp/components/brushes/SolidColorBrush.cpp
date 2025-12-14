@@ -114,12 +114,12 @@ WUComp::ICompositionBrush* CSolidColorBrush::GetWUCBrush(_In_ WUComp::IComposito
         {
             const auto& timeManager = GetTimeManager();
 
-            wrl::ComPtr<WUComp::ICompositionObjectPartner> colorBrushICOP;
-            IFCFAILFAST(colorBrush.As(&colorBrushICOP));
+            wrl::ComPtr<WUComp::ICompositionObject> colorBrushICO;
+            IFCFAILFAST(colorBrush.As(&colorBrushICO));
 
             CTimeManager::StartWUCAnimation(
                 compositor,
-                colorBrushICOP.Get(),
+                colorBrushICO.Get(),
                 ExpressionHelper::sc_propertyName_Color,
                 animation.get(),
                 this,

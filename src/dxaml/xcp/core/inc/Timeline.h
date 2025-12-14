@@ -11,13 +11,22 @@
 #include "Duration.h"
 #include "RepeatBehavior.h"
 #include "DCompAnimationConversionContext.h"
-#include <dcompinternal.h>
-#include <dcompprivate.h>
+
+#ifndef NTDDI_WIN11_GE
+#define NTDDI_WIN11_GE 0x0A000010
+#endif
+
+// Future: These includes should be moved to a more appropriate place
+#include <d2d1_3.h>
+#include <dwrite_1.h>
+
+#include <dcomp.h>
 
 class CTimeSpan;
 class CTimelineGroup;
 class CREATEPARAMETERS;
 struct IFrameScheduler;
+struct ICompositionAnimationController;
 enum class CompositionAnimationConversionResult : byte;
 class CompositionAnimationConversionContext;
 class CTimeManager;
@@ -111,13 +120,6 @@ public:
     virtual void GetNaturalDuration(
         _Out_ DirectUI::DurationType* pDurationType,
         _Out_ XFLOAT* pDurationValue
-        );
-
-    virtual bool IsInterestingForAnimationTracking();
-
-    virtual void AnimationTrackingCollectInfoNoRef(
-        _Inout_ CDependencyObject** ppTarget,
-        _Inout_ CDependencyObject** ppDynamicTimeline
         );
 
     virtual bool IsDurationForProgressDifferent() const { return false; }
@@ -269,15 +271,13 @@ public:
     // The WUC animator for a WUC animation is created when the animation is started, not when the animation is created.
     // The time manager then notifies the Xaml animation of the animator that was created for it. The animator is used for
     // pause/seek/resume scenarios.
-    void SetWUCAnimator(_In_ WUComp::ICompositionAnimatorPartner* animator);
+    void SetWUCAnimator(_In_ ICompositionAnimationController* animator);
 
     EventRegistrationToken* GetWUCAnimationCompletedToken();
 
     bool IsWaitingForDCompAnimationCompleted() const;
     void SetIsWaitingForDCompAnimationCompleted(bool isWaiting);
     virtual void UpdateIsWaitingForDCompAnimationCompleted(bool childIsWaiting);
-
-    static xstring_ptr GetTargetPathForTracking(_In_ CDependencyObject* target, bool startFromParentOfTarget);
 
 protected:
 
@@ -418,7 +418,7 @@ protected: const CDependencyProperty*                         m_pTargetDependenc
 protected: wrl::ComPtr<WUComp::ICompositionScopedBatch>       m_wucScopedBatch;
 
 // Used for pause/seek/resume
-protected: wrl::ComPtr<WUComp::ICompositionAnimatorPartner>   m_wucAnimator;
+protected: wrl::ComPtr<ICompositionAnimationController>       m_wucAnimator;
 
 // DynamicTimelineParent is the parent that generated this timeline. This is needed to resolve names correctly, especially if the
 // timeline has been removed from its parent (the dynamic timline) and been put somewhere else (for instance a storyboard
@@ -547,10 +547,4 @@ protected: bool                                               m_shouldSynchroniz
 public:
     static bool s_allowDependentAnimations;
     static XFLOAT s_timeTolerance;  // The amount of tolerance (in seconds) allowed for floating point error when comparing times
-
-protected:
-    // Any animations that have a begin delay longer than this are not interesting for animation tracking.
-    // This value allows us to short-circuit out of the long tail of staggered animations for
-    // theme transitions too.
-    static const XUINT32 c_AnimationTrackingMaxBeginTimeInMs = 100;
 };

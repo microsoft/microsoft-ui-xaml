@@ -10,7 +10,7 @@
 </p>
 
 <h3 align="center">
-  <a href="https://aka.ms/windev">About WinUI</a>
+  <a href="https://learn.microsoft.com/windows/apps/winui/winui3/">About WinUI</a>
   <span> · </span>
   <a href="https://learn.microsoft.com/windows/apps/desktop/">Documentation</a>
   <span> · </span>
@@ -35,7 +35,7 @@ For WinUI, your app's users must be on Windows 10 1809 - Build 17763 or newer (i
 
 The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/windows/apps/desktop/):
 - [Get started with WinUI](https://learn.microsoft.com/windows/apps/get-started/start-here)
-- [Build your first WinUI app](https://learn.microsoft.com/windows/apps/how-tos/hello-world-winui3)
+- [Build your first WinUI app](https://learn.microsoft.com/windows/apps/tutorials/winui-notes/)
 - [WinUI & Windows App SDK samples](https://github.com/microsoft/WindowsAppSDK-Samples)
 - [Migrate from UWP to the Windows App SDK](https://learn.microsoft.com/windows/apps/windows-app-sdk/migrate-to-windows-app-sdk/migrate-to-windows-app-sdk-ovw)
 - [Windows Runtime APIs not supported in desktop apps](https://learn.microsoft.com/windows/apps/desktop/modernize/desktop-to-uwp-supported-api)
@@ -62,6 +62,16 @@ The WinUI Community Call is your opportunity to learn about WinUI and to engage 
 The WinUI team welcomes your feedback! To understand how we handle incoming feature requests and bugs, please see our [contribution handling](docs/contribution_handling.md) guidelines.
 
 For information on how to contribute, please see [Contributing to WinUI](CONTRIBUTING.md).
+
+> [!WARNING]
+> We're not yet ready to accept code contributions, but we are working towards that goal. It is now
+> possible to build the WinUI product binaries, with work in progress to share test code and enabling
+> locally running tests. To get started building WinUI from source and see more details on current
+> limitations, see [Getting started with building WinUI](src/GettingStarted.md). See the
+> [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) to check the
+> latest status.
+>
+> For the latest code and updates, use the [`winui3/main`](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/main) branch.
 
 ## 🛣️ Roadmap
 
