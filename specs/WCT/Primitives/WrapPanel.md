@@ -60,8 +60,8 @@ Reference Docs:
 
 <!-- See: https://learn.microsoft.com/windows/apps/design/layout/layout-panels -->
 
-The WrapPanel is a layout panel that arranges child elements in a sequential position from left to right, 
-items overflowing the line will break to the next line automatically at the edge of the containing panel. 
+The WrapPanel is a layout panel that arranges child elements in a sequential position from left to right (based on [`FlowDirection`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.frameworkelement.flowdirection)),
+items overflowing the line will break to the next line automatically at the edge of the containing panel.
 
 You can set the `Orientation` property to specify the direction of child elements. The default 
 orientation is **Horizontal**.
@@ -115,8 +115,9 @@ The following example image shows another example of `WrapPanel` usage where ele
 
 ## WrapPanel.ItemSpacing property
 
-Gets or sets a uniform Horizontal distance (in pixels) between items when Orientation is set to 
-Horizontal, or between columns of items when Orientation is set to Vertical.
+Gets or sets a uniform distance between items. If Orientation is Horizontal, then this is the horizontal
+distance between items on a single row. If Orientation is Vertical, then this is the vertical distance between
+items in a single column. Defaults to 0.
 
 In the following example, ItemSpacing has been added to space out items, though in this case that 
 then wraps the Green box around to the next line due to the Width constraint on the WrapPanel:
@@ -133,6 +134,27 @@ then wraps the Green box around to the next line due to the Width constraint on 
 The result looks like this:
 
 ![WrapPanel ItemSpacing example](images/WrapPanelItemSpacing.png)
+
+## WrapPanel.LineSpacing property
+
+Gets or sets a uniform distance between lines. If Orientation is Horizontal, then this is the vertical
+distance between items on a single row. If Orientation is Vertical, then this is the horizontal distance between
+items in a single column. Defaults to 0.
+
+In the following example, LineSpacing has been added to space out the rows:
+
+```xml
+    <controls:WrapPanel Width="132" LineSpacing="16">
+        <Rectangle Fill="Red" Width="44" Height="44"/>
+        <Rectangle Fill="Blue" Width="44" Height="44"/>
+        <Rectangle Fill="Green" Width="44" Height="44"/>
+        <Rectangle Fill="Orange" Width="44" Height="44"/>
+    </controls:WrapPanel>
+```
+
+The result looks like this:
+
+![WrapPanel ItemSpacing example](images/WrapPanelLineSpacing.png)
 
 ## WrapPanel.Orientation property
 
@@ -168,13 +190,6 @@ Instead, we can remove it's Width and have it fill the rest of the row by settin
 The result looks like this:
 
 ![WrapPanel StretchChildren example](images/WrapPanelStretchChildren.png)
-
-
-## Other WrapPanel members
-
-| Name | Description |
-|-|-|
-| LineSpacing | Gets or sets a uniform Vertical distance (in pixels) between items when Orientation is set to Vertical, or between rows of items when Orientation is set to Horizontal. (defaults to 0) |
 
 # API Details
 
