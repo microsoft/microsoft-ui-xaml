@@ -1,0 +1,153 @@
+SystemBackdropElement
+===
+
+# Background
+
+There are backdrop materials provided in WinUI such as Mica, Acrylic that are subclass of 
+[Microsoft.UI.Xaml.Media.SystemBackdrop](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop). Currently, it is possible to host a system backdrop only at the window level or on flyouts, but not in a specific area in the visual tree. This has been a major limitation on WinUI3 compared to WinUI2 in achieving the acrylic / mica effects, especially for achieving various animations.
+
+`SystemBackdropElement` is a lightweight `FrameworkElement` that bridges between the XAML tree and the composition
+infrastructure required by `SystemBackdrop`. It creates the required composition components to host the systembackdrop on a specific area, resizes the systembackdrop to fill the given area, and applies the clip on the backdrop visual based on `CornerRadius` values applied on `SystemBackdropElement` which helps for rounded corners
+appear as expected. This control abstracts lot of details for the composition layer and hence make it easy
+for WinUI3 developers to implement the acrylic effect in the applications.
+
+In WinUI2, it was possible to achieve the backdrop using `BackgroundSource` property of [`AcrylicBrush`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.media.acrylicbrush?view=winrt-26100), However in WinUI3, [`AcrylicBrush`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush) doesn't provide `BackgroundSource` property leaving it capable of achieving only in-app acrylic. This is due to the limitation of WinUI3 compositor which is running in-proc, and so can't fetch buffers outside the application window. In this design, the solution is to leverage the [ContentExternalBackdropLink](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentexternalbackdroplink) API, It provides `PlacementVisual` that would be used for rendering the backdrop in the WinUI3 visual tree. `SystemBackdropElement` control takes care of resizing and positioning this `PlacementVisual` as per the position, size and Z-order of the control.
+
+## Goals
+
+* Provide an intuitive, XAML-friendly way to place a system backdrop anywhere inside application's visual tree.
+* Handle connection, disconnection, and sizing so application only have to set a backdrop and position the element.
+* Allow to round the hosted backdrop without writing custom composition code.
+
+## Non-goals
+
+* Adding a SystemBackdrop property independently on all controls.
+* Provide a content container; `SystemBackdropElement` is purely a visual effect surface and does not host child content.
+
+# Conceptual pages (How To)
+
+The guidance in the below examples can be followed by developers for adopting
+`SystemBackdropElement`.
+
+# API Pages
+
+_(Each level-two section below maps to a docs.microsoft.com API page.)_
+
+## SystemBackdropElement class
+
+Use `SystemBackdropElement` to place a [SystemBackdrop](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop) anywhere within the XAML layout.
+
+```csharp
+public sealed class SystemBackdropElement : FrameworkElement
+```
+
+### Examples
+
+Keep the `SystemBackdropElement` in the bottom of the stack below other contents to achieve the backdrop effect:
+
+```xml
+<Grid x:Name="AnimatedGrid" Height="100" Width="100"> 
+    <Grid.Resources> 
+        <Storyboard x:Name="SizeAnimation" RepeatBehavior="Forever"> 
+            <DoubleAnimation Storyboard.TargetName="AnimatedGrid"  
+                           Storyboard.TargetProperty="Width" 
+                           From="100" To="200" Duration="0:0:2"  
+                           RepeatBehavior="Forever" 
+                           EnableDependentAnimation="True" 
+                           AutoReverse="True"/> 
+            <DoubleAnimation Storyboard.TargetName="AnimatedGrid"  
+                           Storyboard.TargetProperty="Height" 
+                           From="100" To="200" Duration="0:0:2"  
+                           EnableDependentAnimation="True" 
+                           RepeatBehavior="Forever" 
+                           AutoReverse="True"/> 
+        </Storyboard> 
+    </Grid.Resources> 
+    <SystemBackdropElement CornerRadius="4"> 
+        <SystemBackdropElement.SystemBackdrop> 
+            <DesktopAcrylicBackdrop /> 
+        </SystemBackdropElement.SystemBackdrop> 
+    </SystemBackdropElement> 
+    <Button Content="Test Button"/> 
+</Grid> 
+```
+
+![Example of SystemBackdropElement with animation](images/Acrylic.gif)
+
+The same pattern works from code:
+
+* C#:
+```csharp
+var host = new SystemBackdropElement
+{
+    SystemBackdrop = new MicaBackdrop(),
+    CornerRadius = new CornerRadius(12)
+};
+rootGrid.Children.Add(host);
+```
+
+* C++:
+```cpp
+winrt::Microsoft::UI::Xaml::Controls::SystemBackdropElement host;
+host.SystemBackdrop(winrt::Microsoft::UI::Xaml::Media::MicaBackdrop());
+host.CornerRadius(winrt::CornerRadius{ 12, 12, 12, 12 });
+rootGrid().Children().Append(host);
+```
+
+In both snippets, `rootGrid` represents the panel that hosts the backdrop surface just behind your content.
+If a `CornerRadius` is applied on the parent `rootGrid`, that would clip the `SystemBackdropElement` as well.
+
+### Remarks
+
+* _Spec note: This API is currently `experimental`; the API surface may still change before it is finalized._
+* The element have to be placed as first element in the container (for example as the first child inside a
+    panel) for having the backdrop below the contents. (First element added to tree gets rendered first and goes in the bottom of stack)
+* The host only connects to a backdrop while it has a `XamlRoot`. If the element is not in the live tree, the backdrop
+    remains disconnected until it is loaded again.
+
+## SystemBackdropElement.SystemBackdrop property
+
+Gets or sets the `SystemBackdrop` instance that renders in the host area. The default value is `null`.
+
+* When you assign a non-null backdrop and the host is loaded, it calls `SystemBackdrop.OnTargetConnected` with a
+    `ContentExternalBackdropLink` that matches the element's arranged size. If the host is not yet loaded, the connection
+    happens the next time it loads.
+* Changing the property disconnects the previous backdrop (through `OnTargetDisconnected`) before connecting the new
+    value. Setting the property to `null` releases the composition resources and removes the child visual from the
+    element.
+* You can data bind or animate this property. Typical values include `MicaBackdrop`, `DesktopAcrylicBackdrop`, or a
+    custom subclass of `SystemBackdrop`.
+* If the host does not yet have a `XamlRoot`, the connection is postponed until one becomes available.
+
+## SystemBackdropElement.CornerRadius property
+
+Gets or sets the `CornerRadius` applied to the hosted backdrop surface. The default value of `CornerRadius` is 0.
+
+* The host applies a `RectangleClip` on the `PlacementVisual` to achieve the rounded corners.
+* This property only affects the backdrop clip. It does not change layout or round other content layered above the
+    `SystemBackdropElement`.
+* Default `CornerRadius` value will be 0 aligning with [control templates](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.control.cornerradius#remarks)
+
+# API Details
+
+```csharp
+namespace Microsoft.UI.Xaml.Controls
+{
+    [MUX_PREVIEW]
+    [webhosthidden]
+    public sealed class SystemBackdropElement : Microsoft.UI.Xaml.FrameworkElement
+    {
+        public SystemBackdropElement();
+
+        public Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop { get; set; }
+        public static Microsoft.UI.Xaml.DependencyProperty SystemBackdropProperty { get; }
+
+        public Microsoft.UI.Xaml.CornerRadius CornerRadius { get; set; }
+        public static Microsoft.UI.Xaml.DependencyProperty CornerRadiusProperty { get; }
+    }
+}
+```
+
+# Appendix
+
+Additional property for `SystemBackdropElement` to hold a child content can be considered at a later point based on requirement.
