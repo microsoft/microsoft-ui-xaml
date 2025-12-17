@@ -3,7 +3,7 @@
 
 [MUX_PREVIEW]
 [webhosthidden]
-enum StretchChild
+enum WrapPanelItemsStretch
 {
     None = 0,
     Last = 1,
@@ -20,18 +20,18 @@ unsealed runtimeclass WrapPanel : Microsoft.UI.Xaml.Controls.Panel
     Microsoft.UI.Xaml.Thickness Padding{ get; set; };
     static Microsoft.UI.Xaml.DependencyProperty PaddingProperty{ get; };
 
-    Double HorizontalSpacing;
-    static Microsoft.UI.Xaml.DependencyProperty HorizontalSpacingProperty{ get; };
+    Double ItemSpacing;
+    static Microsoft.UI.Xaml.DependencyProperty ItemSpacingProperty{ get; };
 
-    Double VerticalSpacing;
-    static Microsoft.UI.Xaml.DependencyProperty VerticalSpacingProperty{ get; };
+    Double LineSpacing;
+    static Microsoft.UI.Xaml.DependencyProperty LineSpacingProperty{ get; };
 
     [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Microsoft.UI.Xaml.Controls.Orientation Orientation;
     static Microsoft.UI.Xaml.DependencyProperty OrientationProperty{ get; };
 
-    StretchChild StretchChild;
-    static Microsoft.UI.Xaml.DependencyProperty StretchChildProperty{ get; };
+    WrapPanelItemsStretch ItemsStretch;
+    static Microsoft.UI.Xaml.DependencyProperty ItemsStretchProperty{ get; };
 }
 
 }

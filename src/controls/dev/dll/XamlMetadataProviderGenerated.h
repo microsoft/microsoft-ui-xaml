@@ -5548,26 +5548,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.StretchChild",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.StretchChild",
-                /* Arg 2 - CreateFromString func */ 
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"None") return box_value(winrt::StretchChild::None);
-                    if (fromString == L"Last") return box_value(winrt::StretchChild::Last);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -6719,16 +6699,36 @@ Entry c_typeEntries[] =
                 {
                     winrt::IWrapPanelStatics statics = GetFactory<winrt::IWrapPanelStatics>(L"Microsoft.UI.Xaml.Controls.WrapPanel");
                     {
-                        xamlType.AddDPMember(L"HorizontalSpacing", L"Double", statics.HorizontalSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ItemSpacing", L"Double", statics.ItemSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ItemsStretch", L"Microsoft.UI.Xaml.Controls.WrapPanelItemsStretch", statics.ItemsStretchProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"LineSpacing", L"Double", statics.LineSpacingProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Orientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.OrientationProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Padding", L"Microsoft.UI.Xaml.Thickness", statics.PaddingProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"StretchChild", L"Microsoft.UI.Xaml.Controls.StretchChild", statics.StretchChildProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"VerticalSpacing", L"Double", statics.VerticalSpacingProperty(), false /* isContent */);
                     }
 
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.WrapPanelItemsStretch",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.WrapPanelItemsStretch",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"None") return box_value(winrt::WrapPanelItemsStretch::None);
+                    if (fromString == L"Last") return box_value(winrt::WrapPanelItemsStretch::Last);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
         }
     },
     {

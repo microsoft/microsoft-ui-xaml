@@ -69,8 +69,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Horizontal;
-                panel.HorizontalSpacing = 10;
-                panel.VerticalSpacing = 5;
+                panel.ItemSpacing = 10;
+                panel.LineSpacing = 5;
 
                 // Add buttons that will wrap to next row
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
@@ -112,8 +112,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Vertical;
-                panel.HorizontalSpacing = 10;
-                panel.VerticalSpacing = 5;
+                panel.ItemSpacing = 5;
+                panel.LineSpacing = 10;
 
                 // Add buttons that will wrap to next column
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
@@ -142,7 +142,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyStretchChildLast()
+        public void VerifyItemsStretchLast()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -153,12 +153,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Horizontal;
-                panel.StretchChild = StretchChild.Last;
+                panel.ItemsStretch = WrapPanelItemsStretch.Last;
 
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
                 var button2 = new Button { Content = "Button2", Width = 100, Height = 50 };
 
-                // With StretchChild.Last, the last button should stretch to fill remaining space
+                // With WrapPanelItemsStretch.Last, the last button should stretch to fill remaining space
                 var expectedButton1LayoutSlot = new Rect { X = 0, Y = 0, Width = 100, Height = 50 };
                 var expectedButton2LayoutSlot = new Rect { X = 100, Y = 0, Width = 200, Height = 50 }; // Stretched to fill remaining 200 width
 
@@ -174,7 +174,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        public void VerifyStretchChildNone()
+        public void VerifyItemsStretchNone()
         {
             RunOnUIThread.Execute(() =>
             {
@@ -185,12 +185,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Horizontal;
-                panel.StretchChild = StretchChild.None;
+                panel.ItemsStretch = WrapPanelItemsStretch.None;
 
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
                 var button2 = new Button { Content = "Button2", Width = 100, Height = 50 };
 
-                // With StretchChild.None, buttons should maintain their original sizes
+                // With WrapPanelItemsStretch.None, buttons should maintain their original sizes
                 var expectedButton1LayoutSlot = new Rect { X = 0, Y = 0, Width = 100, Height = 50 };
                 var expectedButton2LayoutSlot = new Rect { X = 100, Y = 0, Width = 100, Height = 50 };
 
@@ -219,8 +219,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Height = height;
                 panel.Padding = padding;
                 panel.Orientation = Orientation.Horizontal;
-                panel.HorizontalSpacing = 8;
-                panel.VerticalSpacing = 12;
+                panel.ItemSpacing = 8;
+                panel.LineSpacing = 12;
 
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
                 var button2 = new Button { Content = "Button2", Width = 100, Height = 50 };
@@ -263,7 +263,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Horizontal;
-                panel.HorizontalSpacing = 10;
+                panel.ItemSpacing = 10;
 
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
                 var button2 = new Button { Content = "Button2", Width = 100, Height = 50, Visibility = Visibility.Collapsed };
@@ -299,8 +299,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 panel = new WrapPanel() { Width = 250, Height = 400 };
                 panel.Orientation = Orientation.Horizontal;
-                panel.HorizontalSpacing = 10;
-                panel.VerticalSpacing = 5;
+                panel.ItemSpacing = 10;
+                panel.LineSpacing = 5;
 
                 button1 = new Button { Content = "1", Width = 100, Height = 50 };
                 button2 = new Button { Content = "2", Width = 100, Height = 50 };
@@ -326,14 +326,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Switch WrapPanel to Vertical orientation");
                 panel.Orientation = Orientation.Vertical;
                 panel.Width = 400;
-                panel.Height = 170; // Force wrapping
+                panel.Height = 170; // Should be space for this without wrapping (50x3 + 10x2 spacing = 170)
 
                 Content.UpdateLayout();
 
+                // Remember we use ItemSpacing here still for vertical, not line spacing, so these are still 10 apart
                 Log.Comment("Verify layout for Vertical orientation:");
                 Verify.AreEqual(new Rect(0, 0, 100, 50), LayoutInformation.GetLayoutSlot(button1), "Verify LayoutSlot of button 1 (vertical)");
-                Verify.AreEqual(new Rect(0, 55, 100, 50), LayoutInformation.GetLayoutSlot(button2), "Verify LayoutSlot of button 2 (vertical)");
-                Verify.AreEqual(new Rect(0, 110, 100, 50), LayoutInformation.GetLayoutSlot(button3), "Verify LayoutSlot of button 3 (vertical)");
+                Verify.AreEqual(new Rect(0, 60, 100, 50), LayoutInformation.GetLayoutSlot(button2), "Verify LayoutSlot of button 2 (vertical)");
+                Verify.AreEqual(new Rect(0, 120, 100, 50), LayoutInformation.GetLayoutSlot(button3), "Verify LayoutSlot of button 3 (vertical)");
             });
         }
 
@@ -349,8 +350,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Horizontal;
-                panel.HorizontalSpacing = 5;
-                panel.VerticalSpacing = 10;
+                panel.ItemSpacing = 5;
+                panel.LineSpacing = 10;
 
                 var button1 = new Button { Content = "Small", Width = 60, Height = 30 };
                 var button2 = new Button { Content = "Large", Width = 120, Height = 80 };
@@ -506,7 +507,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Horizontal;
-                panel.HorizontalSpacing = 10;
+                panel.ItemSpacing = 10;
 
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
                 var button2 = new Button { Content = "Button2", Width = 100, Height = 50 };
@@ -542,7 +543,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Vertical;
-                panel.VerticalSpacing = 10;
+                panel.ItemSpacing = 10;
 
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
                 var button2 = new Button { Content = "Button2", Width = 100, Height = 50 };
@@ -579,7 +580,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Horizontal;
-                panel.HorizontalSpacing = 10;
+                panel.ItemSpacing = 10;
                 panel.Padding = padding;
 
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
@@ -617,7 +618,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 panel.Width = width;
                 panel.Height = height;
                 panel.Orientation = Orientation.Vertical;
-                panel.VerticalSpacing = 10;
+                panel.ItemSpacing = 10;
                 panel.Padding = padding;
 
                 var button1 = new Button { Content = "Button1", Width = 100, Height = 50 };
