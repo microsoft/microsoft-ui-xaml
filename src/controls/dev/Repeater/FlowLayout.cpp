@@ -59,8 +59,8 @@ winrt::Size FlowLayout::MeasureOverride(
         availableSize,
         context,
         true, /* isWrapping*/
-        MinItemSpacing(),
-        LineSpacing(),
+        m_minItemSpacing,
+        m_lineSpacing,
         std::numeric_limits<unsigned int>::max() /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
         true /* isVirtualizationEnabled */,
@@ -134,7 +134,7 @@ winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForRealizationRect(
         const auto lastExtent = flowState->FlowAlgorithm().LastExtent();
 
         double averageItemsPerLine = 0;
-        const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + LineSpacing();
+        const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + m_lineSpacing;
         MUX_ASSERT(averageItemsPerLine != 0);
 
         const double extentMajorSize = MajorSize(lastExtent) == 0 ? (itemsCount / averageItemsPerLine) * averageLineSize : MajorSize(lastExtent);
@@ -170,7 +170,7 @@ winrt::FlowLayoutAnchorInfo FlowLayout::GetAnchorForTargetElement(
         const auto state = context.LayoutState();
         auto flowState = GetAsFlowState(state);
         double averageItemsPerLine = 0;
-        const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + LineSpacing();
+        const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + m_lineSpacing;
         const int lineIndex = (int)(targetIndex / averageItemsPerLine);
         offset = lineIndex * averageLineSize + MajorStart(flowState->FlowAlgorithm().LastExtent());
     }
@@ -200,7 +200,7 @@ winrt::Rect FlowLayout::GetExtent(
         const auto state = context.LayoutState();
         const auto flowState = GetAsFlowState(state);
         double averageItemsPerLine = 0;
-        const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + LineSpacing();
+        const double averageLineSize = GetAverageLineInfo(availableSize, context, flowState, averageItemsPerLine) + m_lineSpacing;
 
         MUX_ASSERT(averageItemsPerLine != 0);
         if (firstRealized)
@@ -224,18 +224,16 @@ winrt::Rect FlowLayout::GetExtent(
         }
         else
         {
-            const auto lineSpacing = LineSpacing();
-            const auto minItemSpacing = MinItemSpacing();
             // We dont have anything realized. make an educated guess.
             const int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
             extent =
                 std::isfinite(availableSizeMinor) ?
-                MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - lineSpacing))) :
+                MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - m_lineSpacing))) :
                 MinorMajorRect(
                     0,
                     0,
-                    std::max(0.0f, static_cast<float>((Minor(flowState->SpecialElementDesiredSize()) + minItemSpacing) * itemsCount - minItemSpacing)),
-                    std::max(0.0f, static_cast<float>(averageLineSize - lineSpacing)));
+                    std::max(0.0f, static_cast<float>((Minor(flowState->SpecialElementDesiredSize()) + m_minItemSpacing) * itemsCount - m_minItemSpacing)),
+                    std::max(0.0f, static_cast<float>(averageLineSize - m_lineSpacing)));
             ITEMSREPEATER_TRACE_VERBOSE_DBG(nullptr, TRACE_MSG_METH_IND_STR_STR, METH_NAME, this,
                 winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(),
                 L"Estimating extent with no realized elements.");
@@ -421,13 +419,13 @@ void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 
         UpdateIndexBasedLayoutOrientation(orientation);
     }
-    else if (property == s_MinColumnSpacingProperty)
+    else if (property == s_MinItemSpacingProperty)
     {
-        m_minColumnSpacing = unbox_value<double>(args.NewValue());
+        m_minItemSpacing = unbox_value<double>(args.NewValue());
     }
-    else if (property == s_MinRowSpacingProperty)
+    else if (property == s_LineSpacingProperty)
     {
-        m_minRowSpacing = unbox_value<double>(args.NewValue());
+        m_lineSpacing = unbox_value<double>(args.NewValue());
     }
     else if (property == s_LineAlignmentProperty)
     {

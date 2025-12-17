@@ -14,8 +14,8 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "FlowLayout.g.cpp"
 
 GlobalDependencyProperty FlowLayoutProperties::s_LineAlignmentProperty{ nullptr };
-GlobalDependencyProperty FlowLayoutProperties::s_MinColumnSpacingProperty{ nullptr };
-GlobalDependencyProperty FlowLayoutProperties::s_MinRowSpacingProperty{ nullptr };
+GlobalDependencyProperty FlowLayoutProperties::s_LineSpacingProperty{ nullptr };
+GlobalDependencyProperty FlowLayoutProperties::s_MinItemSpacingProperty{ nullptr };
 GlobalDependencyProperty FlowLayoutProperties::s_OrientationProperty{ nullptr };
 
 FlowLayoutProperties::FlowLayoutProperties()
@@ -36,27 +36,27 @@ void FlowLayoutProperties::EnsureProperties()
                 ValueHelper<winrt::FlowLayoutLineAlignment>::BoxValueIfNecessary(winrt::FlowLayoutLineAlignment::Start),
                 winrt::PropertyChangedCallback(&OnLineAlignmentPropertyChanged));
     }
-    if (!s_MinColumnSpacingProperty)
+    if (!s_LineSpacingProperty)
     {
-        s_MinColumnSpacingProperty =
+        s_LineSpacingProperty =
             InitializeDependencyProperty(
-                L"MinColumnSpacing",
+                L"LineSpacing",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(0.0),
-                winrt::PropertyChangedCallback(&OnMinColumnSpacingPropertyChanged));
+                winrt::PropertyChangedCallback(&OnLineSpacingPropertyChanged));
     }
-    if (!s_MinRowSpacingProperty)
+    if (!s_MinItemSpacingProperty)
     {
-        s_MinRowSpacingProperty =
+        s_MinItemSpacingProperty =
             InitializeDependencyProperty(
-                L"MinRowSpacing",
+                L"MinItemSpacing",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::FlowLayout>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(0.0),
-                winrt::PropertyChangedCallback(&OnMinRowSpacingPropertyChanged));
+                winrt::PropertyChangedCallback(&OnMinItemSpacingPropertyChanged));
     }
     if (!s_OrientationProperty)
     {
@@ -74,8 +74,8 @@ void FlowLayoutProperties::EnsureProperties()
 void FlowLayoutProperties::ClearProperties()
 {
     s_LineAlignmentProperty = nullptr;
-    s_MinColumnSpacingProperty = nullptr;
-    s_MinRowSpacingProperty = nullptr;
+    s_LineSpacingProperty = nullptr;
+    s_MinItemSpacingProperty = nullptr;
     s_OrientationProperty = nullptr;
 }
 
@@ -87,7 +87,7 @@ void FlowLayoutProperties::OnLineAlignmentPropertyChanged(
     winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
 }
 
-void FlowLayoutProperties::OnMinColumnSpacingPropertyChanged(
+void FlowLayoutProperties::OnLineSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -95,7 +95,7 @@ void FlowLayoutProperties::OnMinColumnSpacingPropertyChanged(
     winrt::get_self<FlowLayout>(owner)->OnPropertyChanged(args);
 }
 
-void FlowLayoutProperties::OnMinRowSpacingPropertyChanged(
+void FlowLayoutProperties::OnMinItemSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -124,30 +124,30 @@ winrt::FlowLayoutLineAlignment FlowLayoutProperties::LineAlignment()
     return ValueHelper<winrt::FlowLayoutLineAlignment>::CastOrUnbox(static_cast<FlowLayout*>(this)->GetValue(s_LineAlignmentProperty));
 }
 
-void FlowLayoutProperties::MinColumnSpacing(double value)
+void FlowLayoutProperties::LineSpacing(double value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<FlowLayout*>(this)->SetValue(s_MinColumnSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<FlowLayout*>(this)->SetValue(s_LineSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
     }
 }
 
-double FlowLayoutProperties::MinColumnSpacing()
+double FlowLayoutProperties::LineSpacing()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<FlowLayout*>(this)->GetValue(s_MinColumnSpacingProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<FlowLayout*>(this)->GetValue(s_LineSpacingProperty));
 }
 
-void FlowLayoutProperties::MinRowSpacing(double value)
+void FlowLayoutProperties::MinItemSpacing(double value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<FlowLayout*>(this)->SetValue(s_MinRowSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<FlowLayout*>(this)->SetValue(s_MinItemSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
     }
 }
 
-double FlowLayoutProperties::MinRowSpacing()
+double FlowLayoutProperties::MinItemSpacing()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<FlowLayout*>(this)->GetValue(s_MinRowSpacingProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<FlowLayout*>(this)->GetValue(s_MinItemSpacingProperty));
 }
 
 void FlowLayoutProperties::Orientation(winrt::Orientation const& value)

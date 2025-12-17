@@ -66,7 +66,7 @@
                     HorizontalAlignment="Right">
                     <controls:ItemsRepeater.Layout>
                         <controls:FlowLayout/>
-                        <!--<controls:FlowLayout MinColumnSpacing="10" MinRowSpacing="20"/>-->
+                        <!--<controls:FlowLayout MinItemSpacing="10" LineSpacing="20"/>-->
                     </controls:ItemsRepeater.Layout>
                 </controls:ItemsRepeater>
             </controls:ScrollView>

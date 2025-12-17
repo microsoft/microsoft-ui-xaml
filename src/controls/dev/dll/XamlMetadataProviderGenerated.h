@@ -915,8 +915,8 @@ Entry c_typeEntries[] =
                     winrt::IFlowLayoutStatics statics = GetFactory<winrt::IFlowLayoutStatics>(L"Microsoft.UI.Xaml.Controls.FlowLayout");
                     {
                         xamlType.AddDPMember(L"LineAlignment", L"Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment", statics.LineAlignmentProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"MinColumnSpacing", L"Double", statics.MinColumnSpacingProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"MinRowSpacing", L"Double", statics.MinRowSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"LineSpacing", L"Double", statics.LineSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"MinItemSpacing", L"Double", statics.MinItemSpacingProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Orientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.OrientationProperty(), false /* isContent */);
                     }
 
