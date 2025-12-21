@@ -2125,6 +2125,13 @@ namespace Microsoft.UI.Xaml.Markup
         Microsoft.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions();
     };
 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+    [webhosthidden]
+    interface IXamlPredicate 
+    {
+        Boolean Evaluate(Windows.Foundation.Collections.IVectorView<String> arguments);
+    };
+
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     interface IXamlType 

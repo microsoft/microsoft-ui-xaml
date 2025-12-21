@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include "IXamlPredicate.g.h"
 
 #define __IsApiContractNotPresent_GUID "ca2964a2-d3da-4aed-b266-f937028a3d63"
 
@@ -21,11 +20,14 @@ namespace DirectUI
 
     class __declspec(novtable) IsApiContractNotPresentGenerated:
         public DirectUI::DependencyObject
-        , public DirectUI::IXamlPredicate
+        , public ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate
     {
         friend class DirectUI::IsApiContractNotPresent;
 
 
+        BEGIN_INTERFACE_MAP(IsApiContractNotPresentGenerated, DirectUI::DependencyObject)
+            INTERFACE_ENTRY(IsApiContractNotPresentGenerated, ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate)
+        END_INTERFACE_MAP(IsApiContractNotPresentGenerated, DirectUI::DependencyObject)
 
     public:
         IsApiContractNotPresentGenerated();
@@ -48,7 +50,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(Evaluate)(_In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pArguments, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(Evaluate)(_In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pArguments, _Out_ BOOLEAN* pResult) override;
 
 
     protected:
