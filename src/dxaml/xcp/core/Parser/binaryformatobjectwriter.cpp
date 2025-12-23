@@ -13,6 +13,7 @@
 #include "XamlPredicateHelpers.h"
 #include "XamlPredicateService.h"
 #include "resources\inc\ResourceLookupLogger.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 
@@ -673,7 +674,17 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::PushConstant(_In_ const ObjectW
 // set member property on the current instance with the provided value
 _Check_return_ HRESULT BinaryFormatObjectWriter::SetValueOnCurrentInstance(_In_ const ObjectWriterNode& node, _In_ const std::shared_ptr<XamlQualifiedObject>& spValue)
 {
+    auto instance = m_spContext->Current().get_Instance();
+    auto dependencyObject = instance->GetDependencyObject();
+
     TraceSetValueOnCurrentInstanceBegin();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "BinaryFormatObjectWriter_SetValueOnCurrentInstance",
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingUInt32(dependencyObject->GetContext()->GetFrameNumber(), "FrameNumber"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(dependencyObject), "ObjectPointer"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     if (m_spContext->IsInConditionalScope(false))
     {
@@ -684,17 +695,27 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::SetValueOnCurrentInstance(_In_ 
         IFC_RETURN(PerformDuplicatePropertyAssignmentCheck(node.GetXamlProperty(), node.GetLineInfo()));
     }
 
-    IFC_RETURN(m_spRuntime->SetValue(node.GetLineInfo(), m_spContext->Current().get_Type(), m_spContext->Current().get_Instance(), node.GetXamlProperty(), spValue));
+    IFC_RETURN(m_spRuntime->SetValue(node.GetLineInfo(), m_spContext->Current().get_Type(), instance, node.GetXamlProperty(), spValue));
 
     if (EventEnabledSetValueOnCurrentInstanceEnd())
     {
-        xstring_ptr typeFullName, propertyFullName;
+        xstring_ptr typeFullName, propertyTypeFullName, propertyFullName;
         std::shared_ptr<XamlType> propertyType;
         IFC_RETURN(node.GetXamlProperty()->get_Type(propertyType));
-        propertyType->get_FullName(&propertyFullName);
+        propertyType->get_FullName(&propertyTypeFullName);
         m_spContext->Current().get_Type()->get_FullName(&typeFullName);
 
-        TraceSetValueOnCurrentInstanceEnd(typeFullName.GetBuffer(), propertyFullName.GetBuffer());
+        IFC_RETURN(node.GetXamlProperty()->get_FullName(&propertyFullName));
+
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "BinaryFormatObjectWriter_SetValueOnCurrentInstance",
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingUInt32(instance->GetDependencyObject()->GetContext()->GetFrameNumber(), "FrameNumber"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(dependencyObject), "ObjectPointer"),
+            TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+        TraceSetValueOnCurrentInstanceEnd(typeFullName.GetBuffer(), propertyTypeFullName.GetBuffer());
     }
 
     return S_OK;
@@ -876,9 +897,12 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::AddToDictionaryOnCurrentInstanc
 // looks up a static resource reference and provides the value on the parser m_qoLastInstance
 _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(_In_ const ObjectWriterNode& node, _In_opt_ CStyle* optimizedStyleParent, _In_ KnownPropertyIndex stylePropertyIndex)
 {
-    TraceProvideStaticResourceReferenceBegin();
     std::shared_ptr<XamlSchemaContext> spSchemaContext;
     CDependencyObject *pObjectNoRef = nullptr;
+
+    auto& staticResourceValue = node.GetValue()->GetValue();
+    ASSERT(staticResourceValue.GetType() == valueString);
+    auto staticResourceKey = staticResourceValue.AsString();
 
     auto traceGuard = wil::scope_exit([&]
     {
@@ -887,22 +911,42 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
             if (!pObjectNoRef)
             {
                 TraceProvideStaticResourceReferenceEnd(L"Failed to find Resource");
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter_ProvideStaticResourceReference",
+                    TraceLoggingBoolean(false, "IsStart"),
+                    TraceLoggingWideString(staticResourceKey.GetBuffer(), "ResourceKey"),
+                    TraceLoggingBoolean(false, "WasFound"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
             }
             else
             {
                 xstring_ptr fullName;
                 m_qoLastType->get_FullName(&fullName);
                 TraceProvideStaticResourceReferenceEnd(fullName.GetBuffer());
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter_ProvideStaticResourceReference",
+                    TraceLoggingBoolean(false, "IsStart"),
+                    TraceLoggingWideString(staticResourceKey.GetBuffer(), "ResourceKey"),
+                    TraceLoggingBoolean(true, "WasFound"),
+                    TraceLoggingWideString(fullName.GetBuffer(), "Name"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
             }
         }
     });
 
-    auto& staticResourceValue = node.GetValue()->GetValue();
-    ASSERT(staticResourceValue.GetType() == valueString);
-    auto staticResourceKey = staticResourceValue.AsString();
-
     IFC_RETURN(m_spContext->get_SchemaContext(spSchemaContext));
     CCoreServices* const core = spSchemaContext->GetCore();
+
+    TraceProvideStaticResourceReferenceBegin();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "BinaryFormatObjectWriter_ProvideStaticResourceReference",
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingUInt32(core->GetFrameNumber(), "FrameNumber"),
+        TraceLoggingWideString(staticResourceKey.GetBuffer(), "ResourceKey"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     IFC_RETURN(CStaticResourceExtension::LookupResourceNoRef(staticResourceKey, m_spContext->get_MarkupExtensionContext(), core, &pObjectNoRef, TRUE, optimizedStyleParent, stylePropertyIndex));
     // If we can't find an object that corresponds to the key, raise an error

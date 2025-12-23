@@ -11,6 +11,7 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <DesignMode.h>
+#include "XamlTelemetry.h"
 
 //------------------------------------------------------------------------
 //
@@ -479,20 +480,40 @@ _Check_return_ HRESULT CApplication::LoadComponent(
 
     pComponent->SetBaseUri(pUri);
     pComponent->SetCanParserOverwriteBaseUri(false);
-    auto parsingGuard = wil::scope_exit([&pComponent]()
+    auto parsingGuard = wil::scope_exit([&pComponent, strCanonicalUri]()
     {
         pComponent->SetBaseUri(nullptr);
         pComponent->SetCanParserOverwriteBaseUri(true);
         TraceApplicationLoadComponentEnd();
+
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Application_LoadComponent",
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingWideString(strCanonicalUri.GetBuffer(), "Uri"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 
     // Allow the designer to perform template validation when calling Application::LoadComponent
     auto expandTemplatesDuringParse = DesignerInterop::GetDesignerMode(DesignerMode::V2Only);
 
     TraceApplicationLoadComponentBegin(strCanonicalUri.GetBuffer());
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Application_LoadComponent",
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingUInt32(pCore->GetFrameNumber(), "FrameNumber"),
+        TraceLoggingWideString(strCanonicalUri.GetBuffer(), "Uri"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
     IFC_RETURN(pCore->ParseXamlWithExistingFrameworkRoot(buffer, pComponent, xstring_ptr(), strPhysicalResourceUri, expandTemplatesDuringParse, obj.ReleaseAndGetAddressOf()));
     parsingGuard.release();
     TraceApplicationLoadComponentEnd();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Application_LoadComponent",
+        TraceLoggingBoolean(false, "IsStart"),
+        TraceLoggingWideString(strCanonicalUri.GetBuffer(), "Uri"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     return S_OK;
 }
