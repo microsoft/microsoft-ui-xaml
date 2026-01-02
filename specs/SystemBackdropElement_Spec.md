@@ -118,10 +118,8 @@ Gets or sets the `SystemBackdrop` instance that renders in the `SystemBackdropEl
 
 Gets or sets the `CornerRadius` applied to the backdrop surface. The default value of `CornerRadius` is 0.
 
-* The `SystemBackdropElement` applies a `RectangleClip` on the `PlacementVisual` to achieve the rounded corners.
-* This property only affects the backdrop clip. It does not change layout or round other content layered above the
-    `SystemBackdropElement`.
-* Default `CornerRadius` value will be 0 aligning with [control templates](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.control.cornerradius#remarks)
+* The `SystemBackdropElement` applies a `RectangleClip` on the composition visual of SystemBackdrop to achieve the rounded corners.
+* Default `CornerRadius` value will be 0 aligning with [control templates](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.control.cornerradius#remarks) behavior.
 
 # API Details
 
