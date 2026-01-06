@@ -146,6 +146,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string IXamlBindScopeDiagnostics = KnownNamespaces.XamlMarkup + ".IXamlBindScopeDiagnostics";
         public const string IXamlMember = KnownNamespaces.XamlMarkup + ".IXamlMember";
         public const string IXamlMetadataProvider = KnownNamespaces.XamlMarkup + ".IXamlMetadataProvider";
+        public const string IXamlPredicate = KnownNamespaces.XamlMarkup + ".IXamlPredicate";
         public const string IXamlType = KnownNamespaces.XamlMarkup + ".IXamlType";
         public const string FullXamlMetadataProviderAttribute = KnownNamespaces.XamlMarkup + ".FullXamlMetadataProviderAttribute";
         public const string MarkupExtension = KnownNamespaces.XamlMarkup + ".MarkupExtension";

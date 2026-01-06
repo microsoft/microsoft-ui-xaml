@@ -557,6 +557,18 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                                 bindableTypes.Add(type);
                             }
                         }
+                        else if (HasInterface(type, KnownTypes.IXamlPredicate))
+                        {
+                            if (type.IsGenericType)
+                            {
+                                _schemaContext.SchemaErrors.Add(new XamlSchemaError_PredicateNotSupportedOnGeneric(type.FullName));
+                            }
+                            else
+                            {
+                                // Add custom IXamlPredicate types to the bindable types list to be included in the XamlTypeInfo.g.*
+                                bindableTypes.Add(type);
+                            }
+                        }
                         if (asm != localAssembly)
                         {
                             if (HasInterface(type, KnownTypes.IXamlMetadataProvider))

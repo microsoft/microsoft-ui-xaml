@@ -92,6 +92,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         WMC0820 = 0820,
         WMC0821 = 0821,
         WMC0822 = 0822,
+        WMC0823 = 0823,
 
         // Validation Errors 900-999
         WMC0901 = 0901,
@@ -933,6 +934,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             : base(ErrorCode.WMC0822)
         {
             Message = ResourceUtilities.FormatString(XamlCompilerResources.XamlCompiler_UnknownTypeError, typeName);
+        }
+    }
+    
+    internal class XamlSchemaError_PredicateNotSupportedOnGeneric : XamlCompileError
+    {
+        public XamlSchemaError_PredicateNotSupportedOnGeneric(string typeName)
+            : base(ErrorCode.WMC0823)
+        {
+            Message = ResourceUtilities.FormatString(XamlCompilerResources.DuiSchema_PredicateNotSupportedOnGeneric, typeName);
         }
     }
 
