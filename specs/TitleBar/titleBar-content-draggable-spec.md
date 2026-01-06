@@ -24,18 +24,31 @@ When you customize `TitleBar.Content`, apply `TitleBar.ExcludeFromDrag="True"` t
 #### Problem example: gaps become non-draggable
 
 ```xml
-<TitleBar>
+<TitleBar Title="Main Titlte" Subtitle="subtitle" x:Name="titleBar">
     <TitleBar.Content>
-        <Grid ColumnDefinitions="50, 200, 50">
-            <TextBlock Text="Title" />
-            <TextBlock Text="Help" Grid.Column="2" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="50" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="LightBlue" BorderBrush="Black" BorderThickness="1">
+                <TextBlock Text="Sample text block" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Column="1" />
+            <Border Grid.Column="2" Background="LightCoral" BorderBrush="Black" BorderThickness="1">
+                <TextBlock Text="Help" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
         </Grid>
     </TitleBar.Content>
 </TitleBar>
 ```
 
+#### Output:
+![Non draggable gaps in TitleBar Content](./images/titlebar-drag-issue.png)
+
 In this simple layout:
-- Column 0 contains **Title**
+- Column 0 contains **Sample Text Block**
 - Column 2 contains **Help**
 - Column 1 is **empty visual space** that may become a non-draggable gap
 
@@ -44,28 +57,38 @@ Even in simple cases, it is non-trivial for the framework to automatically class
 #### Recommended solution: exclude interactive controls
 
 ```xml
-<TitleBar>
+<TitleBar Title="Main Titlte" Subtitle="subtitle" x:Name="titleBar">
     <TitleBar.Content>
-        <StackPanel Orientation="Horizontal" Spacing="12">
-            <TextBlock Text="Dashboard" />
-
-            <!-- Interactive elements excluded from drag -->
-            <AutoSuggestBox Width="250"
-                            PlaceholderText="Search..."
-                            TitleBar.ExcludeFromDrag="True" />
-
-            <Button Content="Help"
-                    TitleBar.ExcludeFromDrag="True" />
-        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="50" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Background="LightBlue" BorderBrush="Black" BorderThickness="1" TitleBar.ExcludeFromDrag="True">
+                <TextBlock Text="Sample text block" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+            <Border Grid.Column="1" />
+            <Border Grid.Column="2" Background="LightCoral" BorderBrush="Black" BorderThickness="1" TitleBar.ExcludeFromDrag="True">
+                <TextBlock Text="Help" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            </Border>
+        </Grid>
     </TitleBar.Content>
 </TitleBar>
 ```
+
+#### Output:
+![Draggable gaps in TitleBar Content](./images/titlebar-drag-fixed.png)
+
+In this updated layout, we applied `TitleBar.ExcludeFromDrag="True"` to the interactive elements (the borders containing text). 
+The empty column (Column 1) is now treated as a draggable area, allowing users to drag the window from that space.
 
 ### Advanced Usage
 
 #### Applying to container boundaries
 
-You can apply `TitleBar.ExcludeFromDrag` to containers as well (for example, to prevent dragging from a toolbar strip that contains multiple interactive elements). In this case, the entire container area is treated as non-draggable.
+You can apply `TitleBar.ExcludeFromDrag` to containers as well (for example, to prevent dragging from a toolbar strip that contains multiple 
+interactive elements). In this case, the entire container area is treated as non-draggable.
 
 ```xml
 <TitleBar>
@@ -85,15 +108,22 @@ You can apply `TitleBar.ExcludeFromDrag` to containers as well (for example, to 
 
 #### Nested layouts
 
-`ExcludeFromDrag` does **not** automatically inherit to descendants. If you need fine-grained behavior in nested layouts, mark the specific elements that should not initiate dragging.
+`ExcludeFromDrag` does inherit to descendants. If you apply TitleBar.ExcludeFromDrag="True" to any parent container, all of its children 
+automatically become non‑draggable. 
+
+If your layout is nested and you want fine‑grained control, apply ExcludeFromDrag="True" only on the specific elements or minimal containers 
+that truly must not initiate dragging.Place the attribute on the smallest possible element to avoid unintentionally disabling drag for an entire subtree.
 
 ```xml
 <TitleBar>
     <TitleBar.Content>
         <Grid>
             <StackPanel Orientation="Horizontal">
+                <!-- This text area is draggable -->
                 <TextBlock Text="Title" />
+                <!-- This nested grid becomes draggable UNLESS excluded -->
                 <Grid>
+                    <!-- Only the button should not trigger dragging -->
                     <Button Content="Settings" TitleBar.ExcludeFromDrag="True" />
                 </Grid>
             </StackPanel>
@@ -151,8 +181,7 @@ TitleBar::SetExcludeFromDrag(button, true);</pre>
 The `ExcludeFromDrag` attached property allows developers to mark UI elements inside a custom title bar that should not contribute to window dragging. This ensures predictable drag behavior in custom and nested layouts.
 
 ```xml
-<Button Content="Refresh"
-        TitleBar.ExcludeFromDrag="True" />
+<Button Content="Refresh" TitleBar.ExcludeFromDrag="True" />
 ```
 
 ### Example Usage
