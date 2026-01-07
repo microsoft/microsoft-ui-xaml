@@ -15,9 +15,9 @@
       <Sha>547b4bb04a27a7e09e61022dc6ac3595fa1550f7</Sha>
     </Dependency>
     <!-- Closed source binary (ex PTLS and WinUIEdit) -->
-    <Dependency Name="Microsoft.Internal.WinUIDetails" Version="2.10.0-experimental.20260105.0">
+    <Dependency Name="Microsoft.Internal.WinUIDetails" Version="2.10.0-experimental.20260106.0">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKClosed</Uri>
-      <Sha>4e60cf8db6fec902aa9c401d56d247426a697270</Sha>
+      <Sha>16030caa30f240458a14672dfff4077f4219cc0f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK.Base" Version="2.0.260106001-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
