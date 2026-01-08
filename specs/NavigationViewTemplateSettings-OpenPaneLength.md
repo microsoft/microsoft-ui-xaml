@@ -72,7 +72,7 @@ _Spec note: Usage available to view in this PR: [#7341](https://github.com/micro
 
 # API Details
 
-```c#
+```csharp
 // (but really MIDL3)
 [webhosthidden]
 unsealed runtimeclass NavigationViewTemplateSettings : Windows.UI.Xaml.DependencyObject

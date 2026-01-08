@@ -14,7 +14,7 @@ interface for WinUI to use in lieu of its default `ResourceManager`.
 
 # API Pages
 
-_(Each of the following L2 sections correspond to a page that will be on docs.microsoft.com)_
+_Each of the following level-two sections correspond to a page that will be on learn.microsoft.com_
 
 ## Application.ResourceManagerRequested Event
 
@@ -25,7 +25,7 @@ implementation to be used by the framework for resolving resource URIs.
 _Spec note: is there a version of the 'ResourceDictionary and XAML resource references' article that
 links to the Windows App SDK documentation for relevant APIs?_
 
-```c#
+```csharp
 public event TypedEventHandler<Application, ResourceManagerRequestedEventArgs> 
 ResourceManagerRequested
 ```
@@ -36,7 +36,7 @@ It is strongly recommended that apps which need to listen for this event registe
 their `App` class's constructor so that it is available during initial app launch as in the
 following example.
 
-```c#
+```csharp
 public App()
 {
    this.InitializeComponent();
@@ -58,7 +58,7 @@ This event is raised once per WinUI thread during initialization. If you use the
 
 Provides event data for the `Application.ResourceManagerRequested` event.
 
-```c#
+```csharp
 public sealed class ResourceManagerRequestedEventArgs
 ```
 
@@ -79,13 +79,13 @@ framework will use the default `ResourceManager`.
 Sets the custom `IResourceManager` that should be used by WinUI to resolve MRT resources for the
 current thread. If you leave the value `null` then the default `ResourceManager` will be used.
 
-```c#
+```csharp
 public IResourceManager ResourceManager { get; set; }
 ```
 
 # API Details
 
-```c#
+```csharp
 namespace Microsoft.UI.Xaml
 {
   runtimeclass Application

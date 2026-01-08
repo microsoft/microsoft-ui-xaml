@@ -7,11 +7,11 @@ There are backdrop materials provided in WinUI such as Mica, Acrylic that are su
 [Microsoft.UI.Xaml.Media.SystemBackdrop](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop). Currently, it is possible to add a system backdrop only at the window level or on flyouts, but not in a specific area in the visual tree. This has been a major limitation on WinUI 3 compared to WinUI2 in achieving the acrylic / mica effects, especially for achieving various animations.
 
 `SystemBackdropElement` is a lightweight `FrameworkElement` that bridges between the XAML tree and the composition
-infrastructure required by `SystemBackdrop`. It creates the required composition components to add the systembackdrop on a specific area, resizes the systembackdrop to fill the given area, and applies the clip on the backdrop visual based on `CornerRadius` values applied on `SystemBackdropElement` which helps for rounded corners
+infrastructure required by `SystemBackdrop`. It creates the required composition components to add the systembackdrop on a specific area, resizes the systembackdrop to fill the given area, and applies the clip on the backdrop visual based on `CornerRadius` values applied on `SystemBackdropElement` which helps for rounded corners to
 appear as expected. This control abstracts lot of details for the composition layer and hence make it easy
 for WinUI 3 developers to implement the acrylic effect in the applications.
 
-In WinUI2, it was possible to achieve the backdrop using `BackgroundSource` property of [AcrylicBrush](https://learn.microsoft.com/uwp/api/windows.ui.xaml.media.acrylicbrush?view=winrt-26100), However in WinUI 3, [AcrylicBrush](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush) doesn't provide `BackgroundSource` property leaving it capable of achieving only in-app acrylic. This is due to the limitation of WinUI 3 compositor which is running in-proc, and so can't fetch buffers outside the application window. In this design, the solution is to leverage the [ContentExternalBackdropLink](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentexternalbackdroplink) API, It provides `PlacementVisual` that would be used for rendering the backdrop in the WinUI 3 visual tree. `SystemBackdropElement` control takes care of resizing and positioning this `PlacementVisual` as per the position, size and Z-order of the control.
+In WinUI2, it was possible to achieve the backdrop using `BackgroundSource` property of [AcrylicBrush](https://learn.microsoft.com/uwp/api/windows.ui.xaml.media.acrylicbrush?view=winrt-26100), However in WinUI 3, [AcrylicBrush](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush) doesn't provide `BackgroundSource` property leaving it capable of achieving only in-app acrylic. This is due to the limitation of WinUI 3 compositor which is running in-proc, and so can't fetch buffers outside the application window. In this design, the solution is to leverage the [ContentExternalBackdropLink](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentexternalbackdroplink) API. It provides `PlacementVisual` that would be used for rendering the backdrop in the WinUI 3 visual tree. `SystemBackdropElement` control takes care of resizing and positioning this `PlacementVisual` as per the position, size and Z-order of the control.
 
 ## Goals
 
@@ -31,7 +31,7 @@ The guidance in the below examples can be followed by developers for adopting
 
 # API Pages
 
-_(Each level-two section below maps to a docs.microsoft.com API page.)_
+_Each of the following level-two sections correspond to a page that will be on learn.microsoft.com_
 
 ## SystemBackdropElement class
 
@@ -106,7 +106,7 @@ If a `CornerRadius` is applied on the parent `rootGrid`, that would clip the `Sy
     panel. (First element added to tree gets rendered first and goes in the bottom of stack)
 * The `SystemBackdropElement` only connects to a backdrop while it has a `XamlRoot`. If the element is not in the live tree, the backdrop
     remains disconnected until it is loaded.
-* As `SystemBackdropElement` control punch hole in the layout to show the SystemBackdrop, properties like Shadow, Lights, Clip & Transform may not behave as intended.
+* As `SystemBackdropElement` control punches a hole in the layout to show the SystemBackdrop, properties like Shadow, Lights, Clip & Transform may not behave as intended.
 
 ## SystemBackdropElement.SystemBackdrop property
 

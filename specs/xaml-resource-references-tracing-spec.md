@@ -60,7 +60,7 @@ root cause._
 _Spec note: is there a version of the 'ResourceDictionary and XAML resource references' article that
 links to the Windows App SDK documentation for relevant APIs?_
 
-```c#
+```csharp
 public event TypedEventHandler<DebugSettings,XamlResourceReferenceFailedEventArgs> 
 XamlResourceReferenceFailed
 ```
@@ -79,21 +79,21 @@ Gets or sets a value indicating that when a XAML resource reference error occurs
 the `XamlResourceReferenceFailed` event should be raised,
 and error information should be logged in the native debug output.
 
-```c#
+```csharp
 public bool IsXamlResourceReferenceTracingEnabled { get; set; }
 ```
 
 ### Remarks
 
 This property is `true` by default. When XAML resource reference tracing is enabled and you
-run your app with the native debugger attached, any  XAML resource reference errors appear
+run your app with the native debugger attached, any XAML resource reference errors appear
 in the **Output** window in Microsoft Visual Studio.
 
 ## XamlResourceReferenceFailedEventArgs Class
 
 Provides event data for the `DebugSettings.XamlResourceReferenceFailed` event.
 
-```c#
+```csharp
 public sealed class XamlResourceReferenceFailedEventArgs
 ```
 
@@ -159,13 +159,13 @@ Finished search for resource with key 'OutputTextBlockStyl'.
 
 A human-readable explanation (in English) of the XAML resource reference failure.
 
-```c#
+```csharp
 public string Message { get; }
 ```
 
 # API Details
 
-```c#
+```csharp
 namespace Microsoft.UI.Xaml
 {
   runtimeclass DebugSettings

@@ -67,7 +67,7 @@ the animation objects are preloaded so that the animation may start immediately 
 
 If you call PlayAsync before animations are loaded, then the player won't start until all animations are loaded completely.
 
-```c#
+```csharp
 private void Player_PointerEntered(object sender, PointerRoutedEventArgs e)
 {
     myanimatedvisualplayer.AnimationOptimization = AnimationOptimization.Latency;
@@ -88,7 +88,7 @@ If `PlayAsync` is called and the animations have not been instantiated due to `A
 
 # API Details
 
-```c#
+```csharp
 namespace Microsoft.UI.Xaml.Controls
 {
   unsealed runtimeclass AnimatedVisualPlayer 
@@ -118,7 +118,7 @@ that adds the ability to control when animation objects are created and destroye
 | CreateAnimations | Instantiates the animation visuals for the provided progress value of the animation. |
 | DestroyAnimations | Destroys all animation visuals for a given animation.|
 
-```c#
+```csharp
 interface IAnimatedVisual2 requires IAnimatedVisual
 {
     void InstantiateAnimations(Double progressHint);
@@ -130,7 +130,7 @@ interface IAnimatedVisual2 requires IAnimatedVisual
 
 Instantiates the animation visuals for the provided progress value of the animation.
 
-```c#
+```csharp
 void CreateAnimations();
 ```
 
@@ -138,7 +138,7 @@ void CreateAnimations();
 
 Destroys all animation visuals for a given animation.
 
-```c#
+```csharp
 void DestroyAnimations();
 ```
 
@@ -148,7 +148,7 @@ An extension to
 [IAnimatedVisualSource](https://learn.microsoft.com/uwp/api/Microsoft.UI.Xaml.Controls.IAnimatedVisualSource)
 that products an `IAnimatedVisualSource3`.
 
-```c#
+```csharp
 interface IAnimatedVisualSource3
 {
     IAnimatedVisual2 TryCreateAnimatedVisual(

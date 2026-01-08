@@ -56,7 +56,7 @@ The start and end dates will be outlined in the spec and in the [API Specs Revie
 
 ## Handle Feedback
 
-We are commited to respond to all feedback in different manners depending on the feedback category.
+We are committed to respond to all feedback in different manners depending on the feedback category.
 
 **Feedback categorization:** In general, feedback will be prioritized into the categories below based on relevance, impact, and feasibility.
 

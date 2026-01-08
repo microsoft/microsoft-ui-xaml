@@ -15,19 +15,19 @@ a DLL export API to convert the hwnd to an AppWindow. This spec adds a simple `W
 property to make this much easier and more discoverable.
 
 [XAML Window](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window) will
-expose AppWindow object directly to app developer through an API. Instead of writing a lot of boiler plate
+expose AppWindow object directly to app developer through an API. Instead of writing a lot of boilerplate
 code everywhere, app developer can use this API, reducing code bloat, and making AppWindow APIs easily
 accessible from WinUI 3 code.
 
 These *before* and *after* C# code examples illustrate how this API simplifies integrating AppWindow APIs in WinUI 3 codebase.
 
-### Before
+- Before
 
-```c#
+```csharp
 // This is needed to get any Window from inside a XAML control 
 var xamlWindow = WindowHelper.GetWindowForElement(this); // API to get window object from UIElement (not a real API)  
 
-// unnecessary boiler plate code 
+// unnecessary boilerplate code 
 var windowId = Win32Interop.GetWindowIdFromWindow(WindowNative.GetWindowHandle(xamlWindow)); 
 var appWindow = AppWindow.GetFromWindowId(windowId); 
 
@@ -35,9 +35,9 @@ var appWindow = AppWindow.GetFromWindowId(windowId);
 appWindow.foo();
 ```
 
-### After
+- After
 
-```c#
+```csharp
 // This is needed to get any Window from inside a XAML control 
 var xamlWindow = WindowHelper.GetWindowForElement(this); // API to get window object from UIElement (not a real API)  
    
@@ -54,13 +54,13 @@ Notice how `xamlWindow.AppWindow.foo()` doesn't require additional steps to call
 
 Gets the `AppWindow` associated with this `Window`.
 
-```c#
+```csharp
 public Microsoft.UI.Windowing.AppWindow Window.AppWindow { get; }
 ```
 
-### Sample example
+### Example
 
-```c#
+```csharp
 var xamlWindow = WindowHelper.GetWindowForElement(this);   
 auto windowSize = xamlWindow.AppWindow.Size;  
 ```
@@ -83,8 +83,9 @@ New subclassing order with this new feature change:
 
 # API Details
 
-```c#
-// (but really MIDL3)
+- MIDL3
+
+```csharp
 namespace Microsoft.UI.Xaml
 {
    unsealed runtimeclass Window
