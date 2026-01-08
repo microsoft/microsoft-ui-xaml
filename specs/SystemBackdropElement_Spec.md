@@ -3,15 +3,15 @@ SystemBackdropElement
 
 # Background
 
-There are backdrop materials provided in WinUI such as Mica, Acrylic that are subclass of 
-[Microsoft.UI.Xaml.Media.SystemBackdrop](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop). Currently, it is possible to add a system backdrop only at the window level or on flyouts, but not in a specific area in the visual tree. This has been a major limitation on WinUI3 compared to WinUI2 in achieving the acrylic / mica effects, especially for achieving various animations.
+There are backdrop materials provided in WinUI such as Mica, Acrylic that are subclass of
+[Microsoft.UI.Xaml.Media.SystemBackdrop](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.systembackdrop). Currently, it is possible to add a system backdrop only at the window level or on flyouts, but not in a specific area in the visual tree. This has been a major limitation on WinUI 3 compared to WinUI2 in achieving the acrylic / mica effects, especially for achieving various animations.
 
 `SystemBackdropElement` is a lightweight `FrameworkElement` that bridges between the XAML tree and the composition
 infrastructure required by `SystemBackdrop`. It creates the required composition components to add the systembackdrop on a specific area, resizes the systembackdrop to fill the given area, and applies the clip on the backdrop visual based on `CornerRadius` values applied on `SystemBackdropElement` which helps for rounded corners
 appear as expected. This control abstracts lot of details for the composition layer and hence make it easy
-for WinUI3 developers to implement the acrylic effect in the applications.
+for WinUI 3 developers to implement the acrylic effect in the applications.
 
-In WinUI2, it was possible to achieve the backdrop using `BackgroundSource` property of [AcrylicBrush](https://learn.microsoft.com/uwp/api/windows.ui.xaml.media.acrylicbrush?view=winrt-26100), However in WinUI3, [AcrylicBrush](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush) doesn't provide `BackgroundSource` property leaving it capable of achieving only in-app acrylic. This is due to the limitation of WinUI3 compositor which is running in-proc, and so can't fetch buffers outside the application window. In this design, the solution is to leverage the [ContentExternalBackdropLink](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentexternalbackdroplink) API, It provides `PlacementVisual` that would be used for rendering the backdrop in the WinUI3 visual tree. `SystemBackdropElement` control takes care of resizing and positioning this `PlacementVisual` as per the position, size and Z-order of the control.
+In WinUI2, it was possible to achieve the backdrop using `BackgroundSource` property of [AcrylicBrush](https://learn.microsoft.com/uwp/api/windows.ui.xaml.media.acrylicbrush?view=winrt-26100), However in WinUI 3, [AcrylicBrush](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.media.acrylicbrush) doesn't provide `BackgroundSource` property leaving it capable of achieving only in-app acrylic. This is due to the limitation of WinUI 3 compositor which is running in-proc, and so can't fetch buffers outside the application window. In this design, the solution is to leverage the [ContentExternalBackdropLink](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.content.contentexternalbackdroplink) API, It provides `PlacementVisual` that would be used for rendering the backdrop in the WinUI 3 visual tree. `SystemBackdropElement` control takes care of resizing and positioning this `PlacementVisual` as per the position, size and Z-order of the control.
 
 ## Goals
 
@@ -77,6 +77,7 @@ Keep the `SystemBackdropElement` in the bottom of the stack below other contents
 The same pattern works from code:
 
 * C#:
+
 ```csharp
 var backdropElement = new SystemBackdropElement
 {
@@ -87,6 +88,7 @@ rootGrid.Children.Add(backdropElement);
 ```
 
 * C++:
+
 ```cpp
 winrt::Microsoft::UI::Xaml::Controls::SystemBackdropElement backdropElement;
 backdropElement.SystemBackdrop(winrt::Microsoft::UI::Xaml::Media::MicaBackdrop());
