@@ -8,9 +8,9 @@ and
 [flyouts](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutBase)
 in XAML are given two modes of display:
 
-* They can either appear as part of the rest of XAML,
+- They can either appear as part of the rest of XAML,
 in which case they're confined to the bounds of the XAML root,
-* Or they can appear in their own HWND, which
+- Or they can appear in their own HWND, which
 allows them to escape the bounds of the XAML root. This is common for elements such as context menus.
 
 [CommandBarFlyout](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CommandBarFlyout)

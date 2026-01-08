@@ -19,7 +19,7 @@ expose AppWindow object directly to app developer through an API. Instead of wri
 code everywhere, app developer can use this API, reducing code bloat, and making AppWindow APIs easily
 accessible from WinUI 3 code.
 
-These *before* and *after* C# code examples illustrate how this API simplifies integrating AppWindow APIs in WinUI 3 codebase.
+These _before_ and _after_ C# code examples illustrate how this API simplifies integrating AppWindow APIs in WinUI 3 codebase.
 
 - Before
 

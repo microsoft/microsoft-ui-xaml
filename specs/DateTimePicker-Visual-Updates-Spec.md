@@ -10,9 +10,9 @@ This allows the element to appear to be an overlay on top of the other element.
 
 `MonochromaticOverlayPresenter` element is similar to several precedents:
 
-* [CompositionMaskBrush](https://learn.microsoft.com/uwp/api/Windows.UI.Composition.CompositionMaskBrush),
+- [CompositionMaskBrush](https://learn.microsoft.com/uwp/api/Windows.UI.Composition.CompositionMaskBrush),
 which  is a brush that gets its content from another (source) brush.
-* WPF's [VisualBrush](https://learn.microsoft.com/dotnet/api/System.Windows.Media.VisualBrush),
+- WPF's [VisualBrush](https://learn.microsoft.com/dotnet/api/System.Windows.Media.VisualBrush),
 which uses an element's rendering to draw a brush.
 
 A key difference in this new type is that it only renders the portion of the source
@@ -70,12 +70,12 @@ The following example puts a `MonochromaticOverlayPresenter` on top of (z-ordere
 some scrolling text, causing the center of the text to be highlighted, even as it's scrolling.
 Things to note:
 
-* The `MonochromaticOverlayPresenter` is sourcing from the `TextBlock`, it's also z-ordered above
+- The `MonochromaticOverlayPresenter` is sourcing from the `TextBlock`, it's also z-ordered above
 the same `TextBlock`. If the `Background` and `SourceElement` properties weren't set,
 it would have no effect; it would render the `TextBlock` exactly on top of itself.
-* The `MonochromaticOverlayPresenter` is positioned and given a height such that it's a black band
+- The `MonochromaticOverlayPresenter` is positioned and given a height such that it's a black band
 across the center of the scrolling text.
-* The `MonochromaticOverlayPresenter.IsHitTestVisible` property is set to False, so that input
+- The `MonochromaticOverlayPresenter.IsHitTestVisible` property is set to False, so that input
 still goes to the ScrollViewer that is z-ordered behind it.
 
 ```xml

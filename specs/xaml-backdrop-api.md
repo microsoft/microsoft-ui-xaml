@@ -80,7 +80,7 @@ Use this class to set a backdrop on a
 [Popup](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Controls.Primitives.Popup)\*,
 or [FlyoutBase](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase)\* (such as a `Flyout` or `MenuFlyout`).
 
-* `Popup`/`MenuFlyout` `SystemBackdrop` support is not available in WinAppSDK 1.3.0, but is expected to light up in a subsequent release. Note also `SystemBackdrop` will only work in "windowed" popups, i.e. those with _ShouldConstrainToRootBounds=False_.
+- `Popup`/`MenuFlyout` `SystemBackdrop` support is not available in WinAppSDK 1.3.0, but is expected to light up in a subsequent release. Note also `SystemBackdrop` will only work in "windowed" popups, i.e. those with _ShouldConstrainToRootBounds=False_.
 
 For example:
 
@@ -103,8 +103,8 @@ You don't create this class directly, but subclass it to add your custom support
 
 Generally, the custom material overrides `OnTargetConnected` to create and configure a backing [ISystemBackdropController](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.isystembackdropcontroller?view=windows-app-sdk-1.3), which will manage the [CompositionBrush](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.compositionbrush?view=windows-app-sdk-1.3) used to fill the backdrop region. The brush's ultimate pixel rendering is affected by the environment/policy (set via [SystemBackdropConfiguration](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.systembackdropconfiguration?view=windows-app-sdk-1.3)) and material's appearance parameters, exposed via general (eg `ICompositionControllerWithTargets.SystemBackdropState` ∈ { _`Active` / `Fallback` / `HighContast`_ }) and material-specfic (eg `MicaController.Kind` ∈ { _`Base` / `BaseAlt`_} _SystemBackdropController_ properties.
 
-* The controllers available today (`MicaController` and `DesktopAcrylicController`) support the following parameters for customizing their appearance: [FallbackColor](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.desktopacryliccontroller.fallbackcolor?view=windows-app-sdk-1.3), [LuminosityOpacity](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.desktopacryliccontroller.luminosityopacity?view=windows-app-sdk-1.3), [TintColor](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.micacontroller.tintcolor?view=windows-app-sdk-1.3), and [TintOpacity](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.micacontroller.tintopacity?view=windows-app-sdk-1.3).
-* The provided XAML backdrop materials `MicaBackdrop` and `DesktopAcrylicBackdrop` currently do not expose `FallbackColor` or the material customization properties (`TintOpacity`, etc), instead relying on the default Light/Dark configurations of the underlying `MicaController` and `DesktopAcrylicController`. To customize these properties, createa a custom material class deriving from SystemBackdrop that exposes the desired properties.
+- The controllers available today (`MicaController` and `DesktopAcrylicController`) support the following parameters for customizing their appearance: [FallbackColor](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.desktopacryliccontroller.fallbackcolor?view=windows-app-sdk-1.3), [LuminosityOpacity](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.desktopacryliccontroller.luminosityopacity?view=windows-app-sdk-1.3), [TintColor](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.micacontroller.tintcolor?view=windows-app-sdk-1.3), and [TintOpacity](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.micacontroller.tintopacity?view=windows-app-sdk-1.3).
+- The provided XAML backdrop materials `MicaBackdrop` and `DesktopAcrylicBackdrop` currently do not expose `FallbackColor` or the material customization properties (`TintOpacity`, etc), instead relying on the default Light/Dark configurations of the underlying `MicaController` and `DesktopAcrylicController`. To customize these properties, createa a custom material class deriving from SystemBackdrop that exposes the desired properties.
 
 The following example shows a simple custom system backdrop class that's implemented using
 [MicaController](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Composition.SystemBackdrops.MicaController).
@@ -166,18 +166,18 @@ object that is set and maintained automatically for each `SystemBackdrop` usage 
 
 The properties on `SystemBackdropConfiguration` you receive may change over time:
 
-* `Theme`: set based on [ElementTheme](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.ElementTheme) of the target element (obtained from xamlRoot.Content)
-  * If `FallbackColor`, `LuminosityOpacity`, `TintColor`, or `TintOpacity` are modified by the material's implementation, changes to associated [SystemBackdropConfiguration.Theme](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.systembackdropconfiguration.theme?view=windows-app-sdk-1.3) will no longer automatically toggle the controller's theme (since  default Dark and Light configurations are no longer appropriate). In this case, the material's appearance properties need to be manually updated to match the new Theme in `SystemBackdrop.OnDefaultSystemBackdropConfigurationChanged`.
+- `Theme`: set based on [ElementTheme](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.ElementTheme) of the target element (obtained from xamlRoot.Content)
+  - If `FallbackColor`, `LuminosityOpacity`, `TintColor`, or `TintOpacity` are modified by the material's implementation, changes to associated [SystemBackdropConfiguration.Theme](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.composition.systembackdrops.systembackdropconfiguration.theme?view=windows-app-sdk-1.3) will no longer automatically toggle the controller's theme (since  default Dark and Light configurations are no longer appropriate). In this case, the material's appearance properties need to be manually updated to match the new Theme in `SystemBackdrop.OnDefaultSystemBackdropConfigurationChanged`.
 
-* `IsInputActive`: true if the target of the `SystemBackdrop` is in the active window.
+- `IsInputActive`: true if the target of the `SystemBackdrop` is in the active window.
 
-* `IsHighContrast`: true if the target of the `SystemBackdrop` is in high contrast mode.
+- `IsHighContrast`: true if the target of the `SystemBackdrop` is in high contrast mode.
 
 ## SystemBackdrop.OnDefaultSystemBackdropConfigurationChanged virtual protected method
 
 Override this method to be called when one of the properties (described above) on the object returned by `GetDefaultSystemBackdropConfiguration` has changed.
 
-* This is useful when implementing a custom `SystemBackdropConfiguration` that incorporates some of the tracked property states but is different in some way from the default policy. First, obtain a  `SystemBackdropConfiguration` object from `GetDefaultSystemBackdropConfiguration` as usual, but do not apply it via `CompositionController.SetSystemBackdropConfiguration`. Instead  create an additional `SystemBackdropConfiguration` object that is updated on `OnDefaultSystemBackdropConfigurationChanged` by applying custom logic to the tracked property (eg ignoring Theme change). The second `SystemBackdropConfiguration` object is hooked up to `CompositionController.SetSystemBackdropConfiguration`, applying the custom policy.
+- This is useful when implementing a custom `SystemBackdropConfiguration` that incorporates some of the tracked property states but is different in some way from the default policy. First, obtain a  `SystemBackdropConfiguration` object from `GetDefaultSystemBackdropConfiguration` as usual, but do not apply it via `CompositionController.SetSystemBackdropConfiguration`. Instead  create an additional `SystemBackdropConfiguration` object that is updated on `OnDefaultSystemBackdropConfigurationChanged` by applying custom logic to the tracked property (eg ignoring Theme change). The second `SystemBackdropConfiguration` object is hooked up to `CompositionController.SetSystemBackdropConfiguration`, applying the custom policy.
 
 ## Other `SystemBackdrop` members
 

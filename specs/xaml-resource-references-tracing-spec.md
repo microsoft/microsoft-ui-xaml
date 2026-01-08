@@ -106,8 +106,8 @@ interested in the `Message` value, which you could log or send to **Debug** outp
 The message in the event data contains the following information about the failed XAML resource
 reference:
 
-* The URI of the XAML page containing each `ResourceDictionary` that was searched
-* The order in which the `ResourceDictionary`s were searched
+- The URI of the XAML page containing each `ResourceDictionary` that was searched
+- The order in which the `ResourceDictionary`s were searched
 
 You can use this information to investigate why the XAML resource reference could not be resolved;
 perhaps the `ResourceDictionary` it is contained in was not in the list of searched
@@ -122,7 +122,7 @@ strong indicator of an erroneous reference.
 Note: The below example output is for illustrative purposes only. The precise format of the message is
 implementation-defined and may change in the future. Applications should not attempt to parse the message.
 
-```
+```text
 Beginning search for resource with key 'OutputTextBlockStyl'.
   Searching dictionary 'ms-appx:///Controls/ControlExample.xaml' for resource with key 'OutputTextBlockStyl'.
   Finished searching dictionary 'ms-appx:///Controls/ControlExample.xaml'.
