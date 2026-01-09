@@ -54,9 +54,9 @@ To allow pointer events to get to the source element, set the overlay's
 [UIElement.IsHitTestVisible](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.UIElement.IsHitTestVisible)
 property to false.
 
-> Note: the element set as the `SourceElement` cannot be an ancestor or in the descendancy of
-the `MonochromaticOverlayPresenter`. However the `SourceElement` must be in the same XAML tree as
-the `MonochromaticOverlayPresenter`.
+> [!NOTE]
+> The element set as the `SourceElement` cannot be an ancestor or in the descendancy of the `MonochromaticOverlayPresenter`.
+> However the `SourceElement` must be in the same XAML tree as the `MonochromaticOverlayPresenter`.
 
 If the `ReplacementColor` property is set and has a nonzero Alpha value, then the `SourceElement`
 is treated as a mask: every non-transparent pixel will be replaced by this color. The RGB value
@@ -140,7 +140,7 @@ article.
 ## Other MonochromaticOverlayPresenter members
 
 | Name | Description |
-| - | - |
+| --- | --- |
 | SourceElement | Gets or sets the UIElement to render inside the `MonochromaticOverlayPresenter`. |
 | ReplacementColor | Gets or sets the Color to use instead of the non-transparent pixels of the SourceElement.
 

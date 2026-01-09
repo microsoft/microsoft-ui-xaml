@@ -94,7 +94,8 @@ For example:
 </Window>
 ```
 
-Note that `MicaBackdrop` isn't supported on all systems. In such cases a solid color will be used instead of the Mica effect.
+> [!NOTE]
+> Note that `MicaBackdrop` isn't supported on all systems. In such cases a solid color will be used instead of the Mica effect.
 
 ## SystemBackdrop class
 

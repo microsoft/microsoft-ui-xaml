@@ -73,13 +73,13 @@ an observable behavior change from the behavior before the introduction of this 
 
 New subclassing order with this new feature change:
 
-* ContentAppWindowBridge
-  &darr;
-* AppWindow  
-  &darr;
-* XAML Window  
+- ContentAppWindowBridge<br/>
 &darr;
-* DefaultWndProc
+- AppWindow  
+&darr;
+- XAML Window  
+&darr;
+- DefaultWndProc
 
 # API Details
 
