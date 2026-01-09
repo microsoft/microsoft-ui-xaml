@@ -1,20 +1,20 @@
 Window.AppWindow API
 ===
 
-New API to simplify accessing [AppWindow](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/windowing/windowing-overview)
+New API to simplify accessing [AppWindow](https://learn.microsoft.com/windows/apps/windows-app-sdk/windowing/windowing-overview)
 functionality through WinUI 3 code.
 
 # Background
 
 XAML has a [Window](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Window) API that
-internally wraps an hwnd. Windows has an [AppWindow](https://learn.microsoft.com/uwp/api/Windows.UI.WindowManagement.AppWindow) class
-that similarly wraps an hwnd in UWP. WinAppSDK has a new [AppWindow](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow) which wraps an hwnd and works on Desktop.
+internally wraps an HWND. Windows has an [AppWindow](https://learn.microsoft.com/uwp/api/Windows.UI.WindowManagement.AppWindow) class
+that similarly wraps an HWND in UWP. WinAppSDK has a new [AppWindow](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow) which wraps an HWND and works on Desktop.
 
 You can get an AppWindow from a XAML Window by calling a COM API to get XAML and then
-a DLL export API to convert the hwnd to an AppWindow. This spec adds a simple `Window.AppWindow`
+a DLL export API to convert the HWND to an AppWindow. This spec adds a simple `Window.AppWindow`
 property to make this much easier and more discoverable.
 
-[XAML Window](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window) will
+[XAML Window](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window) will
 expose AppWindow object directly to app developer through an API. Instead of writing a lot of boilerplate
 code everywhere, app developer can use this API, reducing code bloat, and making AppWindow APIs easily
 accessible from WinUI 3 code.
@@ -73,13 +73,13 @@ an observable behavior change from the behavior before the introduction of this 
 
 New subclassing order with this new feature change:
 
-* ContentAppWindowBridge
-  &darr;
-* AppWindow  
-  &darr;
-* XAML Window  
+- ContentAppWindowBridge<br/>
 &darr;
-* DefaultWndProc
+- AppWindow  
+&darr;
+- XAML Window  
+&darr;
+- DefaultWndProc
 
 # API Details
 

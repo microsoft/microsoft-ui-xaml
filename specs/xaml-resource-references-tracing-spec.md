@@ -119,8 +119,10 @@ Below is an example message from the WinUI Gallery sample app after an incorrect
 that the desired resource is defined in `App.xaml`, then the failure to locate it in there is a
 strong indicator of an erroneous reference.
 
-Note: The below example output is for illustrative purposes only. The precise format of the message is
-implementation-defined and may change in the future. Applications should not attempt to parse the message.
+> [!NOTE]
+> The below example output is for illustrative purposes only.
+> The precise format of the message is implementation-defined and may change in the future.
+> Applications should not attempt to parse the message.
 
 ```text
 Beginning search for resource with key 'OutputTextBlockStyl'.

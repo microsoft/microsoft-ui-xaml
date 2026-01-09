@@ -53,8 +53,9 @@ when the player is idle (when `PlayAsync` is not active).
 |Resources | AnimatedVisualPlayer will not create animations until `PlayAsync()` is called, and will destroy them when it completes.
 If you call pause, this does not free up all resources of the player. To truly stop the animation, call Stop. |
 
-Note: If you set the `Source` or `AnimationOptimization` of your player, the player will defer
-processing of the source file until the layout is being formed.
+> [!NOTE]
+> If you set the `Source` or `AnimationOptimization` of your player,
+> the player will defer processing of the source file until the layout is being formed.
 
 If you have an animation that will start on click, you may want to initialize
 the property to `None` and set `AnimationOptimization` to 'Always'

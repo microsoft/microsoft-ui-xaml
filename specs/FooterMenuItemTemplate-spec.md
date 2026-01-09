@@ -48,7 +48,7 @@ Example showing how a NavigationView can have different object types for main an
 The following APIs are members of `NavigationView`.
 
 | Name | Description |
-| - | - |
+| --- | --- |
 | FooterMenuItemTemplate | Gets or sets the [DataTemplate](https://learn.microsoft.com/uwp/api/windows.ui.xaml.datatemplate) used to display each footer menu item. |
 | FooterMenuItemTemplateSelector | Gets or sets a reference to a custom [DataTemplateSelector](https://learn.microsoft.com/uwp/api/windows.ui.xaml.controls.datatemplateselector) logic class. The DataTemplateSelector referenced by this property returns a template to apply to Navigation items placed in the footer menu. |
 

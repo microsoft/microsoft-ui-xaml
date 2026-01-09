@@ -93,7 +93,7 @@ We are committed to respond to all feedback in different manners depending on th
 
 - **Discussion:**
 
-  - A “eye” emoji by the author / poster to signify that it is read.
+  - An “eye” emoji by the author / poster to signify that it is read.
 
 ## Consolidate Feedback
 
