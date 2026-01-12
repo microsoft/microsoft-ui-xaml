@@ -3,26 +3,27 @@ Popup additional layout properties
 
 # Background
 
-[Popups](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.Popup)
+[Popups](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.Popup)
 and
-[flyouts](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutBase)
+[flyouts](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutBase)
 in XAML are given two modes of display:
-* They can either appear as part of the rest of XAML,
-in which case they're confined to the bounds of the XAML root, 
-* Or they can appear in their own HWND, which
-allows them to escape the bounds of the XAML root.  This is common for elements such as context menus.
 
-[CommandBarFlyout](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CommandBarFlyout) 
+- They can either appear as part of the rest of XAML,
+in which case they're confined to the bounds of the XAML root,
+- Or they can appear in their own HWND, which
+allows them to escape the bounds of the XAML root. This is common for elements such as context menus.
+
+[CommandBarFlyout](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CommandBarFlyout)
 is one such element, but since it's defined in the WinUI 2 controls library
 rather than in the OS, it does not
-have access to the HWND used to allow it to escape the XAML root's bounds.  As such, it has no way to
+have access to the HWND used to allow it to escape the XAML root's bounds. As such, it has no way to
 determine which monitor it's being displayed in, which makes it unable to know whether it has enough visual space
 to open the popup for its secondary commands _below_ its primary commands or whether it should open them above instead.
 
 This new API adds three properties and an event to `Popup` which will allow apps to specify where it logically
 desires a popup
 to be displayed relative to another element, and then respond to where system XAML was able to actually place
-the popup.  This will allow elements such as `CommandBarFlyout` to be able to rely on system XAML for the placement of their
+the popup. This will allow elements such as `CommandBarFlyout` to be able to rely on system XAML for the placement of their
 child popups in a way that will take monitor or app bounds into account without needing to do that accounting manually.
 
 ## Visual Examples
@@ -41,7 +42,7 @@ Secondary commands flyout open:
 
 **Opening up**
 
-When CommandBarFlyout does *not* have enough space below its primary commands, we want it to be able to open up.
+When CommandBarFlyout does _not_ have enough space below its primary commands, we want it to be able to open up.
 
 Secondary commands flyout closed:
 
@@ -70,10 +71,10 @@ class Popup
 }
 ```
 
-The example below shows how the `Placement` APIs are used by the 
-[CommandBarFlyout](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CommandBarFlyout)
+The example below shows how the `Placement` APIs are used by the
+[CommandBarFlyout](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.CommandBarFlyout)
 to position its
-[CommandBarFlyoutCommandBar](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.CommandBarFlyoutCommandBar)'s
+[CommandBarFlyoutCommandBar](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.CommandBarFlyoutCommandBar)'s
 secondary commands Popup, and how to respond to the event raised when XAML places the Popup.
 
 ```xml
@@ -116,23 +117,23 @@ Use this property to describe which element the `Popup` should be positioned rel
 Defaults to `null`.
 
 If this is `null`, then `DesiredPlacement` is ignored, `ActualPlacement` is always `Auto`, and
-`ActualPlacementChanged` is never raised.  If the `Popup` is in the visual tree, `PlacementTarget` will override what its
-position would otherwise be set to by layout.  Setting `PlacementTarget` to an element under a different XAML root than
+`ActualPlacementChanged` is never raised. If the `Popup` is in the visual tree, `PlacementTarget` will override what its
+position would otherwise be set to by layout. Setting `PlacementTarget` to an element under a different XAML root than
 `Popup.XamlRoot` is invalid and will throw an `ArgumentException`.
 
 Ignored if `DesiredPlacement` is `Auto`.
 
 _Spec note: this property is analogous to the
-[FlyoutBase.Target](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutBase.Target)
+[FlyoutBase.Target](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutBase.Target)
 property, but `Popup.Target` looked confusing, so we added the `Placement` prefix._
 
 ## Popup.DesiredPlacement property
 
 Use this property to describe how you would ideally like the `Popup`
-positioned relative to `PlacementTarget`.  Defaults to `Auto`.
+positioned relative to `PlacementTarget`. Defaults to `Auto`.
 
 If this is `Auto`, then `PlacementTarget` is ignored,
-`ActualPlacement` is always `Auto` and `ActualPlacementChanged` is never raised. 
+`ActualPlacement` is always `Auto` and `ActualPlacementChanged` is never raised.
 If both `DesiredPlacement` and `PlacementTarget` are set and `HorizontalOffset` and/or `VerticalOffset`
 are also set, then the latter two properties will offset the `Popup` from where it would have been
 placed by `DesiredPlacement` and `PlacementTarget` alone.
@@ -149,7 +150,7 @@ Will always be `Auto` if either `PlacementTarget` and `DesiredPlacement` are not
 Raised whenever XAML changes the value of `ActualPlacement`,
 which allows apps to respond to where a `Popup` was placed.
 
-For example, use this to determine the visual state to go into, 
+For example, use this to determine the visual state to go into,
 based on whether a `Popup` is appearing above or below `PlacementTarget`.
 
 This event is raised before the screen is refreshed, meaning that any visual changes made
@@ -159,8 +160,8 @@ Will never be raised if either `PlacementTarget` and `DesiredPlacement` are not 
 ## PopupPlacementMode enum
 
 _Spec note: This is designed to align with the existing
-[FlyoutPlacementMode](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutPlacementMode)
-enum, with the exception of the absence of "Full".  "Full" is absent since developers should use a Flyout
+[FlyoutPlacementMode](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.Primitives.FlyoutPlacementMode)
+enum, with the exception of the absence of "Full". "Full" is absent since developers should use a Flyout
 if they want something full-screen._
 
 ```csharp
@@ -183,7 +184,7 @@ enum PopupPlacementMode
 ```
 
 _Spec note: The meaning of "Left" and "Right" are swapped if
-[FlowDirection](https://docs.microsoft.com/en-us/uwp/api/windows.ui.xaml.frameworkelement.flowdirection)
+[FlowDirection](https://learn.microsoft.com/uwp/api/windows.ui.xaml.frameworkelement.flowdirection)
 is `RightToLeft`._
 
 # API Details
