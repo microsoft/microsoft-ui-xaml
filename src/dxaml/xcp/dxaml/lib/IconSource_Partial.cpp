@@ -4,6 +4,11 @@
 #include "precomp.h"
 #include "IconElement.g.h"
 #include "IconSource.g.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 60408488: [1.8 Servicing][WASDK] Fix FontIconSource.CreateFontIcon() does not render correctly
+
+#define WINAPPSDK_CHANGEID_60408488 60408488, WinAppSDK_1_8_4
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -17,7 +22,20 @@ IFACEMETHODIMP IconSource::CreateIconElement(_Outptr_ ABI::Microsoft::UI::Xaml::
     {
         ctl::ComPtr<IBrush> foreground;
         IFC_RETURN(get_Foreground(&foreground));
-        IFC_RETURN(element->put_Foreground(foreground.Get()));
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_60408488>())
+        {
+            // If foreground is not set, we do not set it on the element, so that it can pick up the default foreground based on theme.
+            if (foreground)
+            {
+                IFC_RETURN(element->put_Foreground(foreground.Get()));
+            }
+        }
+        else
+        {
+            // Pre-1.8.4 behavior: Always set the foreground, even if it's null.
+            IFC_RETURN(element->put_Foreground(foreground.Get()));
+        }
     }
     
     ctl::WeakRefPtr weakElement;
