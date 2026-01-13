@@ -166,22 +166,12 @@ private:
         return MajorEnd(realizationWindow) >= MajorStart(extent) && MajorStart(realizationWindow) <= MajorEnd(extent);
     }
 
-    double LineSpacing()
-    {
-        return GetScrollOrientation() == ScrollOrientation::Vertical ? m_minRowSpacing : m_minColumnSpacing;
-    }
-
-    double MinItemSpacing()
-    {
-        return GetScrollOrientation() == ScrollOrientation::Vertical ? m_minColumnSpacing : m_minRowSpacing;
-    }
-
     void UpdateIndexBasedLayoutOrientation(
         const winrt::Orientation& orientation);
 
     // Fields
-    double m_minRowSpacing{};
-    double m_minColumnSpacing{};
+    double m_lineSpacing{};
+    double m_minItemSpacing{};
     winrt::FlowLayoutLineAlignment m_lineAlignment{ winrt::FlowLayoutLineAlignment::Start };
 
     // !!! WARNING !!!

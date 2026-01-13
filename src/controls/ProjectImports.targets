@@ -4,7 +4,7 @@
   <ImportGroup>
     <Import Project="$(MSBuildThisFileDirectory)dev\TestHooks\TestHooks.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\Common\Common.vcxitems" Label="Shared" />
-    <Import Project="$(MSBuildThisFileDirectory)dev\SystemBackdropHost\SystemBackdropHost.vcxitems" Label="Shared" Condition="$(FeatureSystemBackdropHostEnabled) == 'true' Or $(FeatureSystemBackdropHostEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\SystemBackdropElement\SystemBackdropElement.vcxitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true' Or $(FeatureSystemBackdropElementEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\CommonStyles\CommonStyles.vcxitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true' Or $(FeatureCommonStylesEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true' Or $(FeatureRatingControlEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\InfoBadge\InfoBadge.vcxitems" Label="Shared" Condition="$(FeatureInfoBadgeEnabled) == 'true' Or $(FeatureInfoBadgeEnabled) == 'productOnly'" />

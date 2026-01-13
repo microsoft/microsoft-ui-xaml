@@ -12,8 +12,7 @@
     </PropertyGroup>
 
     <Import Project="$(XcpPath)\components\base.props"/>
-    <Import Condition="'$(ExternalDependenciesLiftPropsImported)' != 'true'" Project="$(XamlSourcePath)\test\external-dependencies-lift.props"/>
-    
+
     <!-- TAEF.targets always sets INLINE_TEST_METHOD_MARKUP.  We don't want that defined so capture the value before the import and override it
          back to the starting value afterwards. -->
     <ItemDefinitionGroup>
@@ -50,7 +49,6 @@
 
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);
-            $(TestExternalDependencies);
             $(XamlSourcePath)\xcp\components\unittests\;
             $(XamlSourcePath)\test\native\inc\;
             $(XamlSourcePath)\test\native\isolated\inc\;

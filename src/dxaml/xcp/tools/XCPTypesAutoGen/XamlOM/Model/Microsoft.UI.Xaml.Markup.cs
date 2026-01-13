@@ -282,8 +282,10 @@ namespace Microsoft.UI.Xaml.Markup
         }
     }
 
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [TypeTable(IsExcludedFromNewTypeTable = true)]
     [DXamlIdlGroup("coretypes2")]
-    internal interface IXamlPredicate
+    public interface IXamlPredicate
     {
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         Windows.Foundation.Boolean Evaluate(Windows.Foundation.Collections.IVectorView<string> arguments);

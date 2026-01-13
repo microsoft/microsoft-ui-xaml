@@ -6,11 +6,11 @@
 
     <LayoutPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
         <LayoutPanel.Layout>
-            <FlowLayout Orientation="Vertical" MinColumnSpacing="5" MinRowSpacing="5"/>
+            <FlowLayout Orientation="Vertical" MinItemSpacing="5" LineSpacing="5"/>
         </LayoutPanel.Layout>
 
         <LayoutPanel.Resources>
-            <FlowLayout x:Key="flow" MinRowSpacing="5" MinColumnSpacing="5"/>
+            <FlowLayout x:Key="flow" LineSpacing="5" MinItemSpacing="5"/>
             <StackLayout x:Key="stack" Spacing="5"/>
         </LayoutPanel.Resources>
 
@@ -43,9 +43,9 @@
         <StackPanel>
             <TextBlock Text="Built in layouts" Style="{StaticResource SubheaderTextBlockStyle}"/>
             <StackPanel>
-                <TextBlock>ItemSpacing</TextBlock>
+                <TextBlock>MinItemSpacing</TextBlock>
                 <TextBox x:Name="itemSpacing" Text="10"/>
-                <TextBlock>MinColumnSpacing</TextBlock>
+                <TextBlock>LineSpacing</TextBlock>
                 <TextBox x:Name="lineSpacing" Text="10"/>
                 <TextBlock>LineAlignment</TextBlock>
                 <TextBlock>(Start/Center/End/SpaceEvenly/SpaceAround/SpaceBetween)</TextBlock>

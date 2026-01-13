@@ -41,10 +41,6 @@ namespace RichTextServices
         _Out_ LSFETCHRESULT* pfetchres
         );
 
-    // LineServicesGetAutoNumberInfo
-    // LineServicesGetNumericSeparators
-    // LineServicesCheckForDigit
-
     // Callback used by LS to fetch tab properties.
     LSERR LineServicesFetchTabs(
         _In_ POLS pols,
@@ -68,8 +64,6 @@ namespace RichTextServices
         _In_ LONG urTabPos,
         _Out_ LONG* purRightMarginNew);
 
-    // LineServicesGetPosTabProps
-
     // Callback used by LS to determine justification and alignment preferences for the last line in a 
     // paragraph.
     LSERR LineServicesGetLastLineJustification(
@@ -81,8 +75,6 @@ namespace RichTextServices
         _In_ ENDRES endr,
         _Out_ BOOL* pfJustifyLastLine, 
         _Out_ LSKALIGN* plskalLine);
-
-    // LineServicesCheckParaBoundaries
 
     // Callback used by LS to retrieve the widths for all of the characters of a given run.
     LSERR LineServicesGetRunCharacterWidths(
@@ -97,9 +89,6 @@ namespace RichTextServices
         _Out_ LONG* pduTotal,
         _Out_ LONG* pcwchConsumed
         );
-
-    // LineServicesCheckRunKernability
-    // LineServicesGetRunCharKerning
 
     // Callback used by LS to obtain text metrics for a run.
     LSERR LineServicesGetRunTextMetrics(
@@ -119,8 +108,6 @@ namespace RichTextServices
         _Out_ PLSULINFO plsulnfo
         );
 
-    // LineServicesGetRunSecondaryUnderlineInfo
-
     // Callback used by LS to obtain strikethrough information for a run.
     LSERR LineServicesGetRunStrikethroughInfo(
         _In_ POLS pols,
@@ -129,8 +116,6 @@ namespace RichTextServices
         _In_ LSTFLOW lstflow,
         _Out_ PLSSTINFO plsulnfo
         );
-    // LineServicesGetBorderInfo
-    // LineServicesReleaseRun
 
     // Callback used by LS to notify client that the run buffer is not being used any more.
     LSERR LineServicesReleaseRunBuffer(
@@ -139,11 +124,6 @@ namespace RichTextServices
         _In_ PLSRUN plsrun,
         _In_ LPWSTR rgwchRun
         );
-
-    // LineServicesHyphenate
-    // LineServicesGetPrevHyphenOpp
-    // LineServicesGetNextHyphenOpp
-    // LineServicesGetHyphenInfo
 
     // Callback used by LS to draw an underline
     LSERR LineServicesDrawUnderline(
@@ -159,8 +139,6 @@ namespace RichTextServices
         _In_ PCLSRECT prcClip
         );
 
-    // LineServicesDrawSecondaryUnderline
-    
     // Callback used by LS to draw a Strikethrough
     LSERR LineServicesDrawStrikethrough(
         _In_ POLS pols,
@@ -173,7 +151,6 @@ namespace RichTextServices
         _In_ UINT kDisp,
         _In_ PCLSRECT prcClip
         );
-    // LineServicesDrawBorder
 
     // Callback used by LS to to find out if the client wants the strikethrough 
     // to be broken between the two runs.
@@ -185,9 +162,6 @@ namespace RichTextServices
         );
 
 
-    // LineServicesFInterruptSecondaryUnderline
-    // LineServicesDrawBorder
-
     // Callback used by LS to to find out if the client wants the underline 
     // to be broken between the two runs.
     LSERR LineServicesFInterruptStrikethrough(
@@ -196,10 +170,6 @@ namespace RichTextServices
         _In_ PLSRUN plsrunSecond,
         _Out_ BOOL* pfInterruptUnderline
         );
-
-    // LineServicesFInterruptShade
-    // LineServicesFInterruptBorder
-    // LineServicesShadeRectangle
 
     // Callback used by LS to tell client to draw a text run.
     LSERR LineServicesDrawTextRun(
@@ -217,8 +187,6 @@ namespace RichTextServices
         _In_ LONG dupRun,
         _In_ PCLSRECT pRectClip
         );
-
-    // LineServicesDrawSplatLine
 
     // Callback used by LS to find out whether two adjacent runs should be shaped together.
     LSERR LineServicesFInterruptShaping(
@@ -296,22 +264,6 @@ namespace RichTextServices
         _In_ PGPROP rggprop
         );
 
-    // LineServicesGetGlyphExpansionInfo
-    // LineServicesGetGlyphExpansionInkInfo
-    // LineServicesGetGlyphRunInk
-    // LineServicesInterruptDrawing
-    // LineServicesDrawTextRunsTogether
-    // LineServicesDrawGlyphRunsTogether
-    // LineServicesGetEms
-    // LineServicesPunctStartLine
-    // LineServicesModWidthOnRun
-    // LineServicesModWidthSpace
-    // LineServicesCompOnRun
-    // LineServicesCompWidthSpace
-    // LineServicesExpOnRun
-    // LineServicesExpWidthSpace
-    // LineServicesGetModWidthClasses
-
     // Callback used by LS to obtain the breaking classes of a character.
     LSERR LineServicesGetBreakingClasses(
         _In_ POLS pols,
@@ -321,8 +273,6 @@ namespace RichTextServices
         _Out_ BRKCLS* pbrkclsFirst,
         _Out_ BRKCLS* pbrkclsSecond
         );
-
-    // LineServicesFTruncateBefore
 
     // Callback used by LS to determine if a line break is permissible between preceding object and text.
     LSERR LineServicesCanBreakBeforeChar(
@@ -338,12 +288,6 @@ namespace RichTextServices
         _Out_ BRKCOND* pbrktxtAfter
         );
 
-    // LineServicesFHangingPunct
-    // LineServicesGetSnapGrid
-    // LineServicesDrawEffects
-    // LineServicesFCancelHangingPunct
-    // LineServicesModifyCompAtLastChar
-
     // LineServicesGetDurMaxExpandRagged
     LSERR LineServicesGetDurMaxExpandRagged(
         _In_ POLS pols,
@@ -351,11 +295,6 @@ namespace RichTextServices
         _In_ LSTFLOW lstflow,
         _Out_ LONG* pdurMaxExpandRagged
         );
-
-    // LineServicesGetCharExpansionInfoFullMixed
-    // LineServicesGetGlyphExpansionInfoFullMixed
-    // LineServicesGetCharCompressionInfoFullMixed
-    // LineServicesGetGlyphCompressionInfoFullMixed
 
     LSERR LineServicesGetCharAlignmentStartLine(
         _In_ POLS pols,
@@ -397,68 +336,12 @@ namespace RichTextServices
         _Out_ LONG* pcPriorityForGoodTypographyLim
         );
 
-    // LineServicesFetchSpanProperties
-    // LineServicesGetSpanInlineMbp
-    // LineServicesReleaseSpanClient
-    // LineServicesDrawSpanBackground
-    // LineServicesDrawSpanBorder
-    // LineServicesGetSpanLineHeightProperties
-    // LineServicesGetSpanOffset
-    // LineServicesReleaseMasterSpanQualifier
-
-    //// Callback used by LS to provide the client with the contents of a text dnode.
-    //LSERR LineServicesEnumText(
-    //    _In_ POLS pols,
-    //    _In_ PLSRUN plsrun,
-    //    _In_ BOOL fScaleDownFromRef, 
-    //    _In_ LSCP cpFirst,
-    //    _In_ LSDCP dcp,
-    //    _In_reads_(cwch) LPCWSTR rgwch,
-    //    _In_ LONG cwch,
-    //    _In_ LSTFLOW lstflow,
-    //    _In_ BOOL fReverseOrder,
-    //    _In_ BOOL fGeometryProvided,
-    //    _In_opt_ PCLSPOINT pptStart,
-    //    _In_opt_ PCHEIGHTS pheightsPres,
-    //    _In_ LONG dupRun,
-    //    _In_ BOOL fGlyphs,
-    //    _In_reads_(cwch) LONG* rgdupChars,
-    //    _In_reads_(cwch) PCGMAP rggmap,
-    //    _In_reads_(cwch) PCCHPROP rgchprop,
-    //    _In_reads_(cglyph) PCGINDEX rgglyph,
-    //    _In_reads_(cglyph) const LONG* rgdupGlyphs,
-    //    _In_reads_(cglyph) PLSGOFFSET rgGoffset,
-    //    _In_reads_(cglyph) PGPROP rggprop,
-    //    _In_ LONG cglyph
-    //    );
-
-    //// Callback used by LS to inform client that there is a tab present on the line.
-    //LSERR LineServicesEnumTab(
-    //    _In_ POLS pols,
-    //    _In_ PLSRUN plsrun,
-    //    _In_ BOOL fScaleDownFromRef, 
-    //    _In_ LSCP cpFirst,
-    //    _In_ LPCWSTR rgwch,
-    //    _In_ WCHAR wchTabLeader,
-    //    _In_ LSTFLOW lstflow,
-    //    _In_ BOOL fReverseOrder,
-    //    _In_ BOOL fGeometryProvided,
-    //    _In_opt_ PCLSPOINT pptStart,
-    //    _In_opt_ PCHEIGHTS pheightsPres,
-    //    _In_ LONG dupRun
-    //    );
-
-    // LineServicesEnumPen
     // Callback used by LS to get object handler data.
-
     LSERR LineServicesGetObjectHandlerInfo(
         _In_ POLS pols,
         _In_ LONG idObj,
         _Out_ void* pObjectInfo
         );
-
-    // LineServicesGetEllipsisInfo
-    // LineServicesDrawEllipsis
 
     // Callback used by LS as an assert handler. Only in Debugging API.
     void LineServicesAssertFailed(
@@ -466,34 +349,5 @@ namespace RichTextServices
         _In_ const char* pFilename, 
         _In_ int line,
         _In_ DWORD err
-        );
-
-    // Callback used by LS to enumerate reverse objects.
-    LSERR LineServicesReverseEnum(
-        _In_ POLS pols,
-        _In_ PLSRUN plsrun,
-        _In_ PCLSCHP plschp,
-        _In_ LSSPAN lsspanMaster,
-        _In_ LSCP cp,
-        _In_ LSDCP dcp,
-        _In_ LSTFLOW lstflow,
-        _In_ BOOL fReverse,
-        _In_ BOOL fGeometryNeeded,
-        _In_ PCLSPOINT pt,
-        _In_ PCLSPOINT ptSubline,
-        _In_ PCHEIGHTS pcheights,
-        _In_ LONG dupRun,
-        _In_ LSTFLOW lstflowSubline,
-        _In_ PLSSUBL plssubl
-        );
-
-    // Callback used by LS to get reverse object info.
-    LSERR LineServicesGetReverseObjectInfo(
-        _In_ POLS pols,
-        _In_ LSCP cp,
-        _In_ LSSPAN lsspanMaster,
-        _In_ PLSRUN plsrun,
-        _Out_ BOOL *fDontBreakAround,
-        _Out_ BOOL *fSuppressTrailingSpaces
         );
 }

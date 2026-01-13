@@ -121,6 +121,11 @@ Cleanup:
     RRETURN(hr);
 }
 
+inline HRESULT InvokeOnChangedProtected(RangeBase* self, HRESULT(RangeBaseGenerated::* pmf)(DOUBLE, DOUBLE), DOUBLE oldValue, DOUBLE newValue)
+{
+    return (static_cast<RangeBaseGenerated*>(self)->*pmf)(oldValue, newValue);
+}
+
 _Check_return_ HRESULT RangeBase::HandlePropertyChanged(
     _In_ const PropertyChangedParams& args,
     HRESULT (RangeBaseAutomationPeer::*OnChanged)(const CValue&, const CValue&),
@@ -151,8 +156,7 @@ _Check_return_ HRESULT RangeBase::HandlePropertyChanged(
             IFC_RETURN((rangeBaseAutomationPeer.Cast<RangeBaseAutomationPeer>()->*OnChanged)(tempOldValue, tempNewValue));
         }
     }
-
-    IFC_RETURN((this->*OnChangedProtected)(oldValue, newValue));
+    IFC_RETURN(InvokeOnChangedProtected(this, OnChangedProtected, oldValue, newValue));
 
     return S_OK;
 }

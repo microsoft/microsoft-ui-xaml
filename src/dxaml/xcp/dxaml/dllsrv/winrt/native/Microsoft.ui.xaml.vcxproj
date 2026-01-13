@@ -68,7 +68,7 @@
   </ItemGroup>
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
   <!-- TODO: BEGIN HACK: Remove this WindowsAppSDKAggregatePackage hack when the file path bug is fixed in the Microsoft.InteractiveExperiences package -->
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(IsInternalWinUIBuild)' == 'true'">
     <WindowsAppSDKAggregatePackage>true</WindowsAppSDKAggregatePackage>
   </PropertyGroup>
   <!-- TODO: END HACK -->
@@ -78,6 +78,7 @@
   <Import Project="$(PkgMicrosoft_PGO_Helpers_Cpp)\build\Microsoft.PGO-Helpers.Cpp.targets" />
   <Target Name="MUXExternalBinaries" DependsOnTargets="ChooseExternalBinaries" BeforeTargets="Binplace">
     <ItemGroup>
+      <PackageContent Include="@(ExternalBinaries)" PackageLocation="$(NativeAssemblyPackageLocationOld)" />
       <PackageContent Include="@(ExternalBinaries)" PackageLocation="$(NativeAssemblyPackageLocation)" />
       <BinplaceItem Include="@(ExternalBinaries)" />
     </ItemGroup>
@@ -86,6 +87,8 @@
     </ItemGroup>
   </Target>
   <ItemGroup>
+    <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocationOld)" />
+    <PackageContent Include="$(OutDir)$(TargetName).dll.mui" PackageLocation="$(NativeAssemblyPackageLocationOld)\en-us" />
     <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)" />
     <PackageContent Include="$(OutDir)$(TargetName).dll.mui" PackageLocation="$(NativeAssemblyPackageLocation)\en-us" />
     <!--
@@ -97,6 +100,7 @@
         -->
       <PackageContent Include="@(ExternalWinMDs)" Exclude="@(IxpWinMds)" PackageLocation="$(WinMDPackageLocation)"/>
       <BinplaceItem Include="@(ExternalWinMDs)"  Exclude="@(IxpWinMds)"/> <!-- We exclude the ixp winmds because those are currently merged into our Microsoft.UI.winmd -->
+      <PackageContent Include="$(LocalizedMUIFilesPath)\**\*.mui" PackageLocation="$(NativeAssemblyPackageLocationOld)\%(RecursiveDir)"/>
       <PackageContent Include="$(LocalizedMUIFilesPath)\**\*.mui" PackageLocation="$(NativeAssemblyPackageLocation)\%(RecursiveDir)"/>
       <BinplaceItem Include="$(LocalizedMUIFilesPath)\**\*.mui">
         <DestinationSubDirectory>%(RecursiveDir)</DestinationSubDirectory>

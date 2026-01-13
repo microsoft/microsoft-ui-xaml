@@ -13,11 +13,11 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "WrapPanel.g.cpp"
 
-GlobalDependencyProperty WrapPanelProperties::s_HorizontalSpacingProperty{ nullptr };
+GlobalDependencyProperty WrapPanelProperties::s_ItemSpacingProperty{ nullptr };
+GlobalDependencyProperty WrapPanelProperties::s_ItemsStretchProperty{ nullptr };
+GlobalDependencyProperty WrapPanelProperties::s_LineSpacingProperty{ nullptr };
 GlobalDependencyProperty WrapPanelProperties::s_OrientationProperty{ nullptr };
 GlobalDependencyProperty WrapPanelProperties::s_PaddingProperty{ nullptr };
-GlobalDependencyProperty WrapPanelProperties::s_StretchChildProperty{ nullptr };
-GlobalDependencyProperty WrapPanelProperties::s_VerticalSpacingProperty{ nullptr };
 
 WrapPanelProperties::WrapPanelProperties()
 {
@@ -26,16 +26,38 @@ WrapPanelProperties::WrapPanelProperties()
 
 void WrapPanelProperties::EnsureProperties()
 {
-    if (!s_HorizontalSpacingProperty)
+    if (!s_ItemSpacingProperty)
     {
-        s_HorizontalSpacingProperty =
+        s_ItemSpacingProperty =
             InitializeDependencyProperty(
-                L"HorizontalSpacing",
+                L"ItemSpacing",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::WrapPanel>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHorizontalSpacingPropertyChanged));
+                winrt::PropertyChangedCallback(&OnItemSpacingPropertyChanged));
+    }
+    if (!s_ItemsStretchProperty)
+    {
+        s_ItemsStretchProperty =
+            InitializeDependencyProperty(
+                L"ItemsStretch",
+                winrt::name_of<winrt::WrapPanelItemsStretch>(),
+                winrt::name_of<winrt::WrapPanel>(),
+                false /* isAttached */,
+                ValueHelper<winrt::WrapPanelItemsStretch>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnItemsStretchPropertyChanged));
+    }
+    if (!s_LineSpacingProperty)
+    {
+        s_LineSpacingProperty =
+            InitializeDependencyProperty(
+                L"LineSpacing",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::WrapPanel>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnLineSpacingPropertyChanged));
     }
     if (!s_OrientationProperty)
     {
@@ -59,40 +81,34 @@ void WrapPanelProperties::EnsureProperties()
                 ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnPaddingPropertyChanged));
     }
-    if (!s_StretchChildProperty)
-    {
-        s_StretchChildProperty =
-            InitializeDependencyProperty(
-                L"StretchChild",
-                winrt::name_of<winrt::StretchChild>(),
-                winrt::name_of<winrt::WrapPanel>(),
-                false /* isAttached */,
-                ValueHelper<winrt::StretchChild>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnStretchChildPropertyChanged));
-    }
-    if (!s_VerticalSpacingProperty)
-    {
-        s_VerticalSpacingProperty =
-            InitializeDependencyProperty(
-                L"VerticalSpacing",
-                winrt::name_of<double>(),
-                winrt::name_of<winrt::WrapPanel>(),
-                false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnVerticalSpacingPropertyChanged));
-    }
 }
 
 void WrapPanelProperties::ClearProperties()
 {
-    s_HorizontalSpacingProperty = nullptr;
+    s_ItemSpacingProperty = nullptr;
+    s_ItemsStretchProperty = nullptr;
+    s_LineSpacingProperty = nullptr;
     s_OrientationProperty = nullptr;
     s_PaddingProperty = nullptr;
-    s_StretchChildProperty = nullptr;
-    s_VerticalSpacingProperty = nullptr;
 }
 
-void WrapPanelProperties::OnHorizontalSpacingPropertyChanged(
+void WrapPanelProperties::OnItemSpacingPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::WrapPanel>();
+    winrt::get_self<WrapPanel>(owner)->OnPropertyChanged(args);
+}
+
+void WrapPanelProperties::OnItemsStretchPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::WrapPanel>();
+    winrt::get_self<WrapPanel>(owner)->OnPropertyChanged(args);
+}
+
+void WrapPanelProperties::OnLineSpacingPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -116,33 +132,43 @@ void WrapPanelProperties::OnPaddingPropertyChanged(
     winrt::get_self<WrapPanel>(owner)->OnPropertyChanged(args);
 }
 
-void WrapPanelProperties::OnStretchChildPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::WrapPanel>();
-    winrt::get_self<WrapPanel>(owner)->OnPropertyChanged(args);
-}
-
-void WrapPanelProperties::OnVerticalSpacingPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::WrapPanel>();
-    winrt::get_self<WrapPanel>(owner)->OnPropertyChanged(args);
-}
-
-void WrapPanelProperties::HorizontalSpacing(double value)
+void WrapPanelProperties::ItemSpacing(double value)
 {
     [[gsl::suppress(con)]]
     {
-    static_cast<WrapPanel*>(this)->SetValue(s_HorizontalSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<WrapPanel*>(this)->SetValue(s_ItemSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
     }
 }
 
-double WrapPanelProperties::HorizontalSpacing()
+double WrapPanelProperties::ItemSpacing()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<WrapPanel*>(this)->GetValue(s_HorizontalSpacingProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<WrapPanel*>(this)->GetValue(s_ItemSpacingProperty));
+}
+
+void WrapPanelProperties::ItemsStretch(winrt::WrapPanelItemsStretch const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<WrapPanel*>(this)->SetValue(s_ItemsStretchProperty, ValueHelper<winrt::WrapPanelItemsStretch>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::WrapPanelItemsStretch WrapPanelProperties::ItemsStretch()
+{
+    return ValueHelper<winrt::WrapPanelItemsStretch>::CastOrUnbox(static_cast<WrapPanel*>(this)->GetValue(s_ItemsStretchProperty));
+}
+
+void WrapPanelProperties::LineSpacing(double value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<WrapPanel*>(this)->SetValue(s_LineSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double WrapPanelProperties::LineSpacing()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<WrapPanel*>(this)->GetValue(s_LineSpacingProperty));
 }
 
 void WrapPanelProperties::Orientation(winrt::Orientation const& value)
@@ -169,30 +195,4 @@ void WrapPanelProperties::Padding(winrt::Thickness const& value)
 winrt::Thickness WrapPanelProperties::Padding()
 {
     return ValueHelper<winrt::Thickness>::CastOrUnbox(static_cast<WrapPanel*>(this)->GetValue(s_PaddingProperty));
-}
-
-void WrapPanelProperties::StretchChild(winrt::StretchChild const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<WrapPanel*>(this)->SetValue(s_StretchChildProperty, ValueHelper<winrt::StretchChild>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::StretchChild WrapPanelProperties::StretchChild()
-{
-    return ValueHelper<winrt::StretchChild>::CastOrUnbox(static_cast<WrapPanel*>(this)->GetValue(s_StretchChildProperty));
-}
-
-void WrapPanelProperties::VerticalSpacing(double value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<WrapPanel*>(this)->SetValue(s_VerticalSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
-    }
-}
-
-double WrapPanelProperties::VerticalSpacing()
-{
-    return ValueHelper<double>::CastOrUnbox(static_cast<WrapPanel*>(this)->GetValue(s_VerticalSpacingProperty));
 }

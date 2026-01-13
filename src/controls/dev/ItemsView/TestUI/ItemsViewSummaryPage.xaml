@@ -185,8 +185,8 @@
 
         <FlowLayout x:Key="flowLayout"
             Orientation="Vertical"
-            MinColumnSpacing="10"
-            MinRowSpacing="10"/>
+            MinItemSpacing="10"
+            LineSpacing="10"/>
 
         <UniformGridLayout x:Key="uniformGridLayout"
             MaximumRowsOrColumns="4"

@@ -10,8 +10,6 @@ don't already have a runtime installed. This document will help you update these
 
 Edge WebView2 team's doc on SDK & browser versioning, compat scenarios, release process/schedule, etc: 
 [Link to PowerPoint doc](https://microsoft.sharepoint.com/:p:/r/teams/Edge/Documents/Planning/Anaheim/Dev%20Experience/Application%20Platform/WebView2%20Versioning.pptx?d=w6d2662e8ad514a1a8ea8022d7d992e10&csf=1&web=1)  
-Edge release schedule for the rest of 2021: 
-[Edge_release_schedule.png](https://microsoft-my.sharepoint-df.com/:i:/p/krschau/Ea-PJOlkcaBLgur81pj-U7QBflthQQpvO-qo88xFR2qxcw)
 
 ### WebView2 SDK
 
@@ -113,7 +111,7 @@ example, if an API was previously experimental before but is currently final, ol
       >nuget pack <repo_root>\dxaml\external\Microsoft.UI.DCPP.Dependencies.Edge.nuspec -OutputDirectory <repo_root>\packages\Microsoft.UI.DCPP.Dependencies.Edge
       
       Attempting to build package from 'Microsoft.UI.DCPP.Dependencies.Edge.nuspec'.
-      Successfully created package 'C:\Users\dkomin\source\repos\microsoft-ui-xaml-lift-full\packages\Microsoft.UI.DCPP.Dependencies.Edge\Microsoft.UI.DCPP.Dependencies.Edge.80.0.333.nupkg'.
+      Successfully created package 'C:\winui3\packages\Microsoft.UI.DCPP.Dependencies.Edge\Microsoft.UI.DCPP.Dependencies.Edge.80.0.333.nupkg'.
       WARNING: NU5048: The 'PackageIconUrl'/'iconUrl' element is deprecated. Consider using the 'PackageIcon'/'icon' element instead. Learn more at https://aka.ms/deprecateIconUrl
       ```
    * Pushing is done by
@@ -125,20 +123,18 @@ example, if an API was previously experimental before but is currently final, ol
       MSBuild auto-detection: using msbuild version '16.3.2.50909' from 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin'.
           [CredentialProvider]VstsCredentialProvider - Acquired bearer token using 'ADAL Windows Integrated Authentication'
           [CredentialProvider]VstsCredentialProvider - Attempting to exchange the bearer token for an Azure DevOps session token.
-      Pushing Microsoft.UI.DCPP.Dependencies.Edge.80.0.333.nupkg to 'https://microsoft.pkgs.visualstudio.com/_packaging/1103ce32-f206-4cab-b967-dcc556dacd13/nuget/v2/'...
-        PUT https://microsoft.pkgs.visualstudio.com/_packaging/1103ce32-f206-4cab-b967-dcc556dacd13/nuget/v2/
-        Accepted https://microsoft.pkgs.visualstudio.com/_packaging/1103ce32-f206-4cab-b967-dcc556dacd13/nuget/v2/ 16326ms
+      Pushing Microsoft.UI.DCPP.Dependencies.Edge.80.0.333.nupkg to 'https://.../'
+        PUT https://.../
+        Accepted https://.../ 16326ms
       Your package was pushed.
       ```
-   * This pushes the package to here: 
-     https://microsoft.visualstudio.com/DefaultCollection/WinUI/_packaging?_a=feed&feed=WinUI.Dependencies
+   * This pushes the package to the feed in the NuGet.config at the root of the repo.
 
 4. **Follow this step ONLY if you are updating the SDK to a private version**  
    If you are updating to a private SDK version (one not on nuget.org) you must also push it to the WinUI.Dependencies 
    private feed. Download the signed nuget from the Edge WebView2 pipeline, and push it to the feed like you did above.
    * You can see which SDK versions were pushed manually by us, vs which came from the public Nuget Gallery, by looking 
-     at the history 
-     [here](https://microsoft.visualstudio.com/DefaultCollection/WinUI/_artifacts/feed/WinUI.Dependencies/NuGet/Microsoft.Web.WebView2/1.0.1178/versions)
+     at the history in the feed.
  
 5. Run `init` to ensure the package gets pulled down correctly.
    * Clear the nuget caches before doing this to be even more sure the right package is being pulled down

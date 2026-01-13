@@ -4,7 +4,8 @@
   <Target Name="TraceWPP" BeforeTargets="BeforeClCompile" Inputs="@(TraceWpp)" Outputs="@(TraceWpp -> '$(OutDir)\%(Filename).tmh')">
     <PropertyGroup>
       <TraceWppExeFullPath>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\bin\$(WindowsTargetPlatformVersion)\$(WindowsSDKBuildToolsArchFolder)\tracewpp.exe</TraceWppExeFullPath>
+      <TraceWppIncludePath>$(NugetPackageDirectory)\$(WindowsSdkNugetPackageName).cpp.$(MicrosoftWindowsSDKCppNugetPackageVersion)\c\bin\$(WindowsTargetPlatformVersion)\WppConfig\Rev1</TraceWppIncludePath>
     </PropertyGroup>
-    <Exec Command="&quot;$(TraceWppExeFullPath)&quot; -cfgdir:$(TraceWPPIncludePath) -func:%(TraceWPP.Function) -odir:$(OutDir) -p:%(TraceWPP.ModuleName) -q %(TraceWPP.Identity)" />
+    <Exec Command="&quot;$(TraceWppExeFullPath)&quot; -cfgdir:$(TraceWppIncludePath) -func:%(TraceWPP.Function) -odir:$(OutDir) -p:%(TraceWPP.ModuleName) -q %(TraceWPP.Identity)" />
   </Target>
 </Project>

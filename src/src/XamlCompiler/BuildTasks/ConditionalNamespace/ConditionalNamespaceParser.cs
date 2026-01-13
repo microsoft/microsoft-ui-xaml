@@ -304,7 +304,10 @@ public partial class ConditionalNamespaceParser : Parser {
 
 	public partial class Api_informationContext : ParserRuleContext {
 		public Microsoft.UI.Xaml.Markup.Compiler.ApiInformation ApiInformation;
-		public ITerminalNode IDENTIFIER() { return GetToken(ConditionalNamespaceParser.IDENTIFIER, 0); }
+		public ITerminalNode[] IDENTIFIER() { return GetTokens(ConditionalNamespaceParser.IDENTIFIER); }
+		public ITerminalNode IDENTIFIER(int i) {
+			return GetToken(ConditionalNamespaceParser.IDENTIFIER, i);
+		}
 		public Function_paramContext[] function_param() {
 			return GetRuleContexts<Function_paramContext>();
 		}
@@ -334,24 +337,34 @@ public partial class ConditionalNamespaceParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 45; Match(IDENTIFIER);
-			State = 46; Match(T__5);
-			State = 47; function_param();
-			State = 52;
+			State = 47;
+			ErrorHandler.Sync(this);
+			switch ( Interpreter.AdaptivePredict(TokenStream,3,Context) ) {
+			case 1:
+				{
+				State = 45; Match(IDENTIFIER);
+				State = 46; Match(T__2);
+				}
+				break;
+			}
+			State = 49; Match(IDENTIFIER);
+			State = 50; Match(T__5);
+			State = 51; function_param();
+			State = 56;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.La(1);
 			while (_la==T__6) {
 				{
 				{
-				State = 48; Match(T__6);
-				State = 49; function_param();
+				State = 52; Match(T__6);
+				State = 53; function_param();
 				}
 				}
-				State = 54;
+				State = 58;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.La(1);
 			}
-			State = 55; Match(T__7);
+			State = 59; Match(T__7);
 			}
 		}
 		catch (RecognitionException re) {
@@ -393,31 +406,31 @@ public partial class ConditionalNamespaceParser : Parser {
 		Function_paramContext _localctx = new Function_paramContext(Context, State);
 		EnterRule(_localctx, 10, RULE_function_param);
 		try {
-			State = 61;
+			State = 65;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,4,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,5,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 57; unquoted_namespace();
+				State = 61; unquoted_namespace();
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 58; Match(IDENTIFIER);
+				State = 62; Match(IDENTIFIER);
 				}
 				break;
 			case 3:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 59; Match(QuotedString);
+				State = 63; Match(QuotedString);
 				}
 				break;
 			case 4:
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 60; Match(Digits);
+				State = 64; Match(Digits);
 				}
 				break;
 			}
@@ -460,7 +473,7 @@ public partial class ConditionalNamespaceParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 63;
+			State = 67;
 			_la = TokenStream.La(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << PlatformUWP) | (1L << PlatformiOS) | (1L << PlatformAndroid))) != 0)) ) {
 			ErrorHandler.RecoverInline(this);
@@ -513,18 +526,18 @@ public partial class ConditionalNamespaceParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 65; query_string_component();
-			State = 70;
+			State = 69; query_string_component();
+			State = 74;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.La(1);
 			while (_la==T__8) {
 				{
 				{
-				State = 66; Match(T__8);
-				State = 67; query_string_component();
+				State = 70; Match(T__8);
+				State = 71; query_string_component();
 				}
 				}
-				State = 72;
+				State = 76;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.La(1);
 			}
@@ -591,20 +604,20 @@ public partial class ConditionalNamespaceParser : Parser {
 		Query_string_componentContext _localctx = new Query_string_componentContext(Context, State);
 		EnterRule(_localctx, 16, RULE_query_string_component);
 		try {
-			State = 75;
+			State = 79;
 			switch (TokenStream.La(1)) {
 			case TargetPlatformString:
 				_localctx = new QueryStringTargetPlatformContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 73; target_platform_func();
+				State = 77; target_platform_func();
 				}
 				break;
 			case IDENTIFIER:
 				_localctx = new QueryStringApiInformationContext(_localctx);
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 74; api_information();
+				State = 78; api_information();
 				}
 				break;
 			default:
@@ -650,10 +663,10 @@ public partial class ConditionalNamespaceParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 77; Match(TargetPlatformString);
-			State = 78; Match(T__5);
-			State = 79; target_platform_value();
-			State = 80; Match(T__7);
+			State = 81; Match(TargetPlatformString);
+			State = 82; Match(T__5);
+			State = 83; target_platform_value();
+			State = 84; Match(T__7);
 			}
 		}
 		catch (RecognitionException re) {
@@ -672,38 +685,40 @@ public partial class ConditionalNamespaceParser : Parser {
 	{
 	    StringBuilder sb = new StringBuilder();
 	    sb.Append("\x3\x430\xD6D1\x8206\xAD2D\x4417\xAEF1\x8D80\xAADD\x3\x16");
-		sb.Append("U\x4\x2\t\x2\x4\x3\t\x3\x4\x4\t\x4\x4\x5\t\x5\x4\x6\t\x6\x4");
+		sb.Append("Y\x4\x2\t\x2\x4\x3\t\x3\x4\x4\t\x4\x4\x5\t\x5\x4\x6\t\x6\x4");
 		sb.Append("\a\t\a\x4\b\t\b\x4\t\t\t\x4\n\t\n\x4\v\t\v\x3\x2\x3\x2\x3\x2");
 		sb.Append("\x3\x3\x3\x3\x3\x3\x3\x3\x3\x4\x3\x4\x3\x4\x3\x4\x3\x4\a\x4");
 		sb.Append("#\n\x4\f\x4\xE\x4&\v\x4\x3\x5\x3\x5\x3\x5\a\x5+\n\x5\f\x5\xE");
-		sb.Append("\x5.\v\x5\x3\x6\x3\x6\x3\x6\x3\x6\x3\x6\a\x6\x35\n\x6\f\x6\xE");
-		sb.Append("\x6\x38\v\x6\x3\x6\x3\x6\x3\a\x3\a\x3\a\x3\a\x5\a@\n\a\x3\b");
-		sb.Append("\x3\b\x3\t\x3\t\x3\t\a\tG\n\t\f\t\xE\tJ\v\t\x3\n\x3\n\x5\nN");
-		sb.Append("\n\n\x3\v\x3\v\x3\v\x3\v\x3\v\x3\v\x3$\x2\f\x2\x4\x6\b\n\f\xE");
-		sb.Append("\x10\x12\x14\x2\x3\x3\x2\x11\x13V\x2\x16\x3\x2\x2\x2\x4\x19");
-		sb.Append("\x3\x2\x2\x2\x6$\x3\x2\x2\x2\b\'\x3\x2\x2\x2\n/\x3\x2\x2\x2");
-		sb.Append("\f?\x3\x2\x2\x2\xE\x41\x3\x2\x2\x2\x10\x43\x3\x2\x2\x2\x12M");
-		sb.Append("\x3\x2\x2\x2\x14O\x3\x2\x2\x2\x16\x17\x5\x4\x3\x2\x17\x18\a");
-		sb.Append("\x2\x2\x3\x18\x3\x3\x2\x2\x2\x19\x1A\x5\x6\x4\x2\x1A\x1B\a\x3");
-		sb.Append("\x2\x2\x1B\x1C\x5\x10\t\x2\x1C\x5\x3\x2\x2\x2\x1D#\v\x2\x2\x2");
-		sb.Append("\x1E#\a\x4\x2\x2\x1F#\a\x5\x2\x2 #\a\x6\x2\x2!#\a\a\x2\x2\"");
-		sb.Append("\x1D\x3\x2\x2\x2\"\x1E\x3\x2\x2\x2\"\x1F\x3\x2\x2\x2\" \x3\x2");
-		sb.Append("\x2\x2\"!\x3\x2\x2\x2#&\x3\x2\x2\x2$%\x3\x2\x2\x2$\"\x3\x2\x2");
-		sb.Append("\x2%\a\x3\x2\x2\x2&$\x3\x2\x2\x2\',\a\x16\x2\x2()\a\a\x2\x2");
-		sb.Append(")+\a\x16\x2\x2*(\x3\x2\x2\x2+.\x3\x2\x2\x2,*\x3\x2\x2\x2,-\x3");
-		sb.Append("\x2\x2\x2-\t\x3\x2\x2\x2.,\x3\x2\x2\x2/\x30\a\x16\x2\x2\x30");
-		sb.Append("\x31\a\b\x2\x2\x31\x36\x5\f\a\x2\x32\x33\a\t\x2\x2\x33\x35\x5");
-		sb.Append("\f\a\x2\x34\x32\x3\x2\x2\x2\x35\x38\x3\x2\x2\x2\x36\x34\x3\x2");
-		sb.Append("\x2\x2\x36\x37\x3\x2\x2\x2\x37\x39\x3\x2\x2\x2\x38\x36\x3\x2");
-		sb.Append("\x2\x2\x39:\a\n\x2\x2:\v\x3\x2\x2\x2;@\x5\b\x5\x2<@\a\x16\x2");
-		sb.Append("\x2=@\a\x15\x2\x2>@\a\x14\x2\x2?;\x3\x2\x2\x2?<\x3\x2\x2\x2");
-		sb.Append("?=\x3\x2\x2\x2?>\x3\x2\x2\x2@\r\x3\x2\x2\x2\x41\x42\t\x2\x2");
-		sb.Append("\x2\x42\xF\x3\x2\x2\x2\x43H\x5\x12\n\x2\x44\x45\a\v\x2\x2\x45");
-		sb.Append("G\x5\x12\n\x2\x46\x44\x3\x2\x2\x2GJ\x3\x2\x2\x2H\x46\x3\x2\x2");
-		sb.Append("\x2HI\x3\x2\x2\x2I\x11\x3\x2\x2\x2JH\x3\x2\x2\x2KN\x5\x14\v");
-		sb.Append("\x2LN\x5\n\x6\x2MK\x3\x2\x2\x2ML\x3\x2\x2\x2N\x13\x3\x2\x2\x2");
-		sb.Append("OP\a\x10\x2\x2PQ\a\b\x2\x2QR\x5\xE\b\x2RS\a\n\x2\x2S\x15\x3");
-		sb.Append("\x2\x2\x2\t\"$,\x36?HM");
+		sb.Append("\x5.\v\x5\x3\x6\x3\x6\x5\x6\x32\n\x6\x3\x6\x3\x6\x3\x6\x3\x6");
+		sb.Append("\x3\x6\a\x6\x39\n\x6\f\x6\xE\x6<\v\x6\x3\x6\x3\x6\x3\a\x3\a");
+		sb.Append("\x3\a\x3\a\x5\a\x44\n\a\x3\b\x3\b\x3\t\x3\t\x3\t\a\tK\n\t\f");
+		sb.Append("\t\xE\tN\v\t\x3\n\x3\n\x5\nR\n\n\x3\v\x3\v\x3\v\x3\v\x3\v\x3");
+		sb.Append("\v\x3$\x2\f\x2\x4\x6\b\n\f\xE\x10\x12\x14\x2\x3\x3\x2\x11\x13");
+		sb.Append("[\x2\x16\x3\x2\x2\x2\x4\x19\x3\x2\x2\x2\x6$\x3\x2\x2\x2\b\'");
+		sb.Append("\x3\x2\x2\x2\n\x31\x3\x2\x2\x2\f\x43\x3\x2\x2\x2\xE\x45\x3\x2");
+		sb.Append("\x2\x2\x10G\x3\x2\x2\x2\x12Q\x3\x2\x2\x2\x14S\x3\x2\x2\x2\x16");
+		sb.Append("\x17\x5\x4\x3\x2\x17\x18\a\x2\x2\x3\x18\x3\x3\x2\x2\x2\x19\x1A");
+		sb.Append("\x5\x6\x4\x2\x1A\x1B\a\x3\x2\x2\x1B\x1C\x5\x10\t\x2\x1C\x5\x3");
+		sb.Append("\x2\x2\x2\x1D#\v\x2\x2\x2\x1E#\a\x4\x2\x2\x1F#\a\x5\x2\x2 #");
+		sb.Append("\a\x6\x2\x2!#\a\a\x2\x2\"\x1D\x3\x2\x2\x2\"\x1E\x3\x2\x2\x2");
+		sb.Append("\"\x1F\x3\x2\x2\x2\" \x3\x2\x2\x2\"!\x3\x2\x2\x2#&\x3\x2\x2");
+		sb.Append("\x2$%\x3\x2\x2\x2$\"\x3\x2\x2\x2%\a\x3\x2\x2\x2&$\x3\x2\x2\x2");
+		sb.Append("\',\a\x16\x2\x2()\a\a\x2\x2)+\a\x16\x2\x2*(\x3\x2\x2\x2+.\x3");
+		sb.Append("\x2\x2\x2,*\x3\x2\x2\x2,-\x3\x2\x2\x2-\t\x3\x2\x2\x2.,\x3\x2");
+		sb.Append("\x2\x2/\x30\a\x16\x2\x2\x30\x32\a\x5\x2\x2\x31/\x3\x2\x2\x2");
+		sb.Append("\x31\x32\x3\x2\x2\x2\x32\x33\x3\x2\x2\x2\x33\x34\a\x16\x2\x2");
+		sb.Append("\x34\x35\a\b\x2\x2\x35:\x5\f\a\x2\x36\x37\a\t\x2\x2\x37\x39");
+		sb.Append("\x5\f\a\x2\x38\x36\x3\x2\x2\x2\x39<\x3\x2\x2\x2:\x38\x3\x2\x2");
+		sb.Append("\x2:;\x3\x2\x2\x2;=\x3\x2\x2\x2<:\x3\x2\x2\x2=>\a\n\x2\x2>\v");
+		sb.Append("\x3\x2\x2\x2?\x44\x5\b\x5\x2@\x44\a\x16\x2\x2\x41\x44\a\x15");
+		sb.Append("\x2\x2\x42\x44\a\x14\x2\x2\x43?\x3\x2\x2\x2\x43@\x3\x2\x2\x2");
+		sb.Append("\x43\x41\x3\x2\x2\x2\x43\x42\x3\x2\x2\x2\x44\r\x3\x2\x2\x2\x45");
+		sb.Append("\x46\t\x2\x2\x2\x46\xF\x3\x2\x2\x2GL\x5\x12\n\x2HI\a\v\x2\x2");
+		sb.Append("IK\x5\x12\n\x2JH\x3\x2\x2\x2KN\x3\x2\x2\x2LJ\x3\x2\x2\x2LM\x3");
+		sb.Append("\x2\x2\x2M\x11\x3\x2\x2\x2NL\x3\x2\x2\x2OR\x5\x14\v\x2PR\x5");
+		sb.Append("\n\x6\x2QO\x3\x2\x2\x2QP\x3\x2\x2\x2R\x13\x3\x2\x2\x2ST\a\x10");
+		sb.Append("\x2\x2TU\a\b\x2\x2UV\x5\xE\b\x2VW\a\n\x2\x2W\x15\x3\x2\x2\x2");
+		sb.Append("\n\"$,\x31:\x43LQ");
 	    return sb.ToString();
 	}
 

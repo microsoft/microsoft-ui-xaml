@@ -81,7 +81,19 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
 
         public override void ExitApi_information([NotNull] global::ConditionalNamespaceParser.Api_informationContext context)
         {
-            var methodName = context.IDENTIFIER().GetText();
+            var identifiers = context.IDENTIFIER();
+            string prefix, methodName;
+
+            if (identifiers.Length == 2)
+            {
+                prefix = identifiers[0].GetText();
+                methodName = identifiers[1].GetText();
+            }
+            else
+            {
+                prefix = string.Empty;
+                methodName = identifiers[0].GetText();
+            }
             var paramArray = context.function_param();
 
             List<ApiInformationParameter> parameters = null;
@@ -95,7 +107,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
             }
             try
             {
-                context.ApiInformation = new ApiInformation(methodName);
+                if(!string.IsNullOrEmpty(prefix))
+                {
+                    context.ApiInformation = new ApiInformation(methodName, prefix);
+                }
+                else
+                {
+                    context.ApiInformation = new ApiInformation(methodName);
+                }
             }
             catch (ArgumentException)
             {

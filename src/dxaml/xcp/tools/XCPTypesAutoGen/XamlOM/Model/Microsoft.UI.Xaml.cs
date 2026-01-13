@@ -356,6 +356,7 @@ namespace Microsoft.UI.Xaml
         [ReadOnly]
         [TypeTable(IsExcludedFromCore = true, IsExcludedFromNewTypeTable = true)]
         [PropertyKind(PropertyKind.PropertyOnly)]
+        [Deprecated("The Dispatcher property is deprecated, Use DispatcherQueue and TryEnqueue for UI thread work. For more info, visit https://aka.ms/DispatcherQueue.Property")]
         public Windows.UI.Core.CoreDispatcher Dispatcher
         {
             get
@@ -3429,6 +3430,7 @@ namespace Microsoft.UI.Xaml
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [TypeTable(IsExcludedFromDXaml = true)]
         [PropertyKind(PropertyKind.PropertyOnly)]
+        [Deprecated("Window.Current is deprecated and always returns null in WinUI Desktop apps. For alternate ways to track instances of Window in your app code, visit https://aka.ms/win.current.alt")]
         [ReadOnly]
         [AllowCrossThreadAccess]
         public static Microsoft.UI.Xaml.Window Current

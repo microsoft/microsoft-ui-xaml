@@ -3,6 +3,7 @@
 
 namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -36,7 +37,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             IApiInformationCodeGen codeGen = null;
             if (!apiInformationMethodCache.TryGetValue(instance, out codeGen))
             {
-                codeGen = new ApiInformationMethodCodeGenerator() { Instance = instance };
+                if (instance.IsCustomAPI)
+                {
+                    codeGen = new CustomPredicateCodeGenerator() { Instance = instance };
+                }
+                else
+                {
+                    codeGen = new ApiInformationMethodCodeGenerator() { Instance = instance };
+                }
                 apiInformationMethodCache.Add(instance, codeGen);
             }
             return codeGen;
@@ -61,11 +69,24 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             get
             {
                 var callExpression = Instance.Method.CodeGen().CallExpression;
-                return new LanguageSpecificString(
+                if (Instance.Method.IsCustomAPI)
+                {
+                    return new LanguageSpecificString(
+                    () => string.Format("{0}->Evaluate(ref new Platform::Collections::Vector<Platform::String^>({{ {1} }})->GetView())", callExpression.CppCXName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CppCXName()))),
+                    () => string.Format("{0}.Evaluate(winrt::single_threaded_vector<winrt::hstring>({{ {1} }}).GetView())", callExpression.CppWinRTName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CppWinRTName()))),
+                    () => string.Format("{0}.Evaluate(new System.Collections.Generic.List<string> {{ {1} }})", callExpression.CSharpName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CSharpName()))),
+                    () => string.Format("{0}.Evaluate(New System.Collections.Generic.List(Of String) From {{ {1} }})", callExpression.VBName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.VBName())))
+                    );
+                }
+                else
+                {
+                    return new LanguageSpecificString(
                     () => string.Format("{0}({1})", callExpression.CppCXName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CppCXName()))),
                     () => string.Format("{0}({1})", callExpression.CppWinRTName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CppWinRTName()))),
                     () => string.Format("{0}({1})", callExpression.CSharpName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CSharpName()))),
-                    () => string.Format("{0}({1})", callExpression.VBName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.VBName()))));
+                    () => string.Format("{0}({1})", callExpression.VBName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.VBName())))
+                    );
+                }
             }
         }
     }
@@ -77,7 +98,33 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 () => string.Format("{1}::Windows::Foundation::Metadata::ApiInformation::{0}", Instance.MethodName, Instance.Condition ? "" : "!"),
                 () => string.Format("{1}::winrt::Windows::Foundation::Metadata::ApiInformation::{0}", Instance.MethodName, Instance.Condition ? "" : "!"),
                 () => string.Format("{1}global::Windows.Foundation.Metadata.ApiInformation.{0}", Instance.MethodName, Instance.Condition ? "" : "!"),
-                () => string.Format("{1}Global.Windows.Foundation.Metadata.ApiInformation.{0}", Instance.MethodName, Instance.Condition ? "" : "Not "));
+                () => string.Format("{1}Global.Windows.Foundation.Metadata.ApiInformation.{0}", Instance.MethodName, Instance.Condition ? "" : "Not ")
+            );
+    }
+
+    internal class CustomPredicateCodeGenerator : CodeGeneratorBase<ApiInformationMethod>, IApiInformationCodeGen
+    {
+        public ICodeGenOutput CallExpression
+        {
+            get
+            {
+                string csNamespace = string.Empty;
+                if (Instance.Namespace != null && Instance.Namespace.StartsWith("using:", StringComparison.OrdinalIgnoreCase))
+                {
+                    csNamespace = Instance.Namespace.Substring(6); // Remove "using:"
+                }
+
+                // For C++, replace dots with ::
+                string cppNamespace = string.IsNullOrEmpty(csNamespace) ? string.Empty : csNamespace.Replace(".", "::");
+
+                return new LanguageSpecificString(
+                    () => string.Format("ref new {0}::{1}()", cppNamespace, Instance.MethodName),
+                    () => string.Format("::winrt::{0}::{1}()", cppNamespace, Instance.MethodName),
+                    () => string.Format("new {0}.{1}()", csNamespace, Instance.MethodName),
+                    () => string.Format("New Global.{0}.{1}()", csNamespace, Instance.MethodName)
+                );
+            }
+        }
     }
 
     internal class ApiInformationParameterCodeGenerator : CodeGeneratorBase<ApiInformationParameter>, IApiInformationCodeGen
@@ -88,6 +135,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 () => string.Format("{0}{1}{2}", Instance.ParameterType == typeof(string) ? "L\"" : "", Instance.ParameterValue, Instance.ParameterType == typeof(string) ? "\"" : ""),
                 () => string.Format("{0}{1}{0}", Instance.ParameterType == typeof(string) ? "\"" : "", Instance.ParameterValue),
                 () => string.Format("{0}{1}{0}", Instance.ParameterType == typeof(string) ? "\"" : "", Instance.ParameterValue)
-                );
+            );
     }
 }

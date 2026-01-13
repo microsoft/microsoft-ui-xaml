@@ -222,6 +222,7 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
     bool isAppBar = false;
     bool isContentDialog = false;
     XTHICKNESS focusVisualMarginInPhysicalPixels = { 0.0f, 0.0f, 0.0f, 0.0f };
+    XTHICKNESS focusVisualMargin;
 
     IFCPTR(focusedElement);
     IFCPTR(innerScroller);
@@ -274,7 +275,7 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
     }
 
     // Get the Focus Visual bounds (the bounds by which it extends outside the element bounds)
-    XTHICKNESS focusVisualMargin = CFocusRectManager::GetFocusVisualMargin(focusedElement, nullptr);
+    focusVisualMargin = CFocusRectManager::GetFocusVisualMargin(focusedElement, nullptr);
     DipsToPhysicalPixels(rootElement, focusVisualMargin, &focusVisualMarginInPhysicalPixels);
 
     // Gets the bounding rectangle for the focused element to land away either from the scroller, IHM or screen edges.

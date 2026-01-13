@@ -181,7 +181,8 @@
     <LiftedIXPPackagePath>$(NugetPackageDirectory)\$(LiftedIXPTransportPackageName)\$(IxpTransportPackageVersion)</LiftedIXPPackagePath>
     <LiftedIXPBuildPath>$(LiftedIXPPackagePath)\build\native</LiftedIXPBuildPath>
     <LiftedIXPRuntimePath>$(LiftedIXPPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedIXPRuntimePath>
-    <LiftedIXPWinmdPath>$(LiftedIXPPackagePath)\lib\uap$(CurrentLiftedIXPTargetPlatformVersion.Substring(0,10))</LiftedIXPWinmdPath>
+    <LiftedIXPWinmdPath>$(LiftedIXPPackagePath)\metadata\$(CurrentLiftedIXPTargetPlatformVersion)</LiftedIXPWinmdPath>
+    <LiftedIXPWinmdPath Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedIXPPackagePath)\lib\uap$(CurrentLiftedIXPTargetPlatformVersion.Substring(0,10))</LiftedIXPWinmdPath>
     <LiftedIXPGeneratedIncludePath>$(ArtifactsObjDir)liftedixp-$(IxpTransportPackageVersion)\generated\inc</LiftedIXPGeneratedIncludePath>
     <LiftedIXPGeneratedIdlPath>$(ArtifactsObjDir)liftedixp-$(IxpTransportPackageVersion)\generated\idl</LiftedIXPGeneratedIdlPath>
     <LiftedIXPIncludePath>$(LiftedIXPPackagePath)\include</LiftedIXPIncludePath>
@@ -197,7 +198,10 @@
     <LiftedMRTPackagePath>$(NugetPackageDirectory)\$(ProjectReunionFoundationTransportPackageName)\$(FoundationTransportPackageVersion)</LiftedMRTPackagePath>
     <LiftedMRTBuildPath>$(LiftedMRTPackagePath)\build</LiftedMRTBuildPath>
     <LiftedMRTLibPath>$(LiftedMRTPackagePath)\lib</LiftedMRTLibPath>
-    <LiftedMRTRuntimesPath>$(LiftedMRTPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedMRTRuntimesPath>
+    <LiftedMRTWinmdPath>$(LiftedMRTPackagePath)\metadata</LiftedMRTWinmdPath>
+    <LiftedMRTWinmdPath Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedMRTLibPath)\uap10.0</LiftedMRTWinmdPath>
+    <LiftedMRTRuntimesPath>$(LiftedMRTPackagePath)\runtimes-framework\win-$(NugetArch)\native</LiftedMRTRuntimesPath>
+    <LiftedMRTRuntimesPath Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedMRTPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedMRTRuntimesPath>
     <LiftedMRTGeneratedIncludePath>$(ArtifactsObjDir)liftedmrt-$(FoundationTransportPackageVersion)\generated\inc</LiftedMRTGeneratedIncludePath>
     <LiftedMRTGeneratedIdlPath>$(ArtifactsObjDir)liftedmrt-$(FoundationTransportPackageVersion)\generated\idl</LiftedMRTGeneratedIdlPath>
     <LiftedMRTIncludePaths>$(LiftedMRTGeneratedIncludePath)</LiftedMRTIncludePaths>

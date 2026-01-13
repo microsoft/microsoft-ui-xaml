@@ -33,6 +33,6 @@
 
   <ItemGroup>
     <CsWinRTInputs Include="$(PkgMicrosoft_Internal_WinUIDetails)\lib\uap10.0\Microsoft.UI.Text.winmd" />
-    <CsWinRTInputs Include="$(LiftedMRTLibPath)\uap10.0\Microsoft.Windows.ApplicationModel.Resources.winmd" />
+    <CsWinRTInputs Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd" />
   </ItemGroup>
 </Project>

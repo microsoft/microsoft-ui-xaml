@@ -9,7 +9,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 {
     public class ApiInformation
     {
-        private static IReadOnlyDictionary<string, ApiInformationMethod> SupportedApiInformation =
+        private static Dictionary<string, ApiInformationMethod> SupportedApiInformation =
             new Dictionary<string, ApiInformationMethod>()
         {
             { "IsApiContractPresent",       new ApiInformationMethod("IsApiContractPresent", true) },
@@ -20,7 +20,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             { "IsTypeNotPresent",           new ApiInformationMethod("IsTypePresent", false) },
         };
 
-        private static IReadOnlyDictionary<string, List<ApiInformationParameter>> SupportedApiInformationParameters =
+        private static Dictionary<string, List<ApiInformationParameter>> SupportedApiInformationParameters =
             new Dictionary<string, List<ApiInformationParameter>>()
         {
             { "IsApiContractPresent2",  new List<ApiInformationParameter>() { new ApiInformationParameter(typeof(string)), new ApiInformationParameter(typeof(ushort)) }},
@@ -31,31 +31,59 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public ApiInformationMethod Method { get; }
         public IEnumerable<ApiInformationParameter> Parameters { get; private set; }
+        public bool IsCustomPredicate { get; private set; }
 
         public ApiInformation(string methodName)
         {
             if (!SupportedApiInformation.ContainsKey(methodName))
             {
-                throw new ArgumentException("methodName");
+                this.IsCustomPredicate = true;
+                Method = new ApiInformationMethod(methodName, true);
+                Method.IsCustomAPI = true;
             }
-            Method = SupportedApiInformation[methodName];
+            else
+            {
+                Method = SupportedApiInformation[methodName];
+            }
+        }
+
+        public ApiInformation(string methodName, string prefix)
+        {
+            if (!SupportedApiInformation.ContainsKey(methodName))
+            {
+                this.IsCustomPredicate = true;
+                Method = new ApiInformationMethod(methodName, true);
+                Method.IsCustomAPI = true;
+                Method.Prefix = prefix;
+            }
+            else
+            {
+                SupportedApiInformation[methodName].Prefix = prefix;
+                Method = SupportedApiInformation[methodName];
+            }
         }
 
         internal void SetParameters(List<ApiInformationParameter> parameters)
         {
-            if (!SupportedApiInformationParameters.ContainsKey(Method.MethodName + parameters.Count))
+            if (Method.IsCustomAPI)
             {
-                throw new ArgumentException("parameters");
+                for (int i = 0; i < parameters.Count; i++)
+                {
+                    parameters[i].ParameterType = typeof(string);
+                }
             }
-            List<ApiInformationParameter> supportedParameters = SupportedApiInformationParameters[Method.MethodName + parameters.Count];
-            if (supportedParameters.Count != parameters.Count)
+            else
             {
-                throw new ArgumentException("parameters");
-            }
-
-            for (int i = 0; i < parameters.Count; i++)
-            {
-                parameters[i].ParameterType = supportedParameters[i].ParameterType;
+                string key = Method.MethodName + parameters.Count;
+                if (!SupportedApiInformationParameters.ContainsKey(key))
+                {
+                    throw new ArgumentException("Invalid parameter count for method: " + Method.MethodName);
+                }
+                List<ApiInformationParameter> supportedParameters = SupportedApiInformationParameters[Method.MethodName + parameters.Count];
+                for (int i = 0; i < parameters.Count; i++)
+                {
+                    parameters[i].ParameterType = supportedParameters[i].ParameterType;
+                }
             }
             Parameters = parameters;
         }

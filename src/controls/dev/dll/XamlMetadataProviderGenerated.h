@@ -915,8 +915,8 @@ Entry c_typeEntries[] =
                     winrt::IFlowLayoutStatics statics = GetFactory<winrt::IFlowLayoutStatics>(L"Microsoft.UI.Xaml.Controls.FlowLayout");
                     {
                         xamlType.AddDPMember(L"LineAlignment", L"Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment", statics.LineAlignmentProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"MinColumnSpacing", L"Double", statics.MinColumnSpacingProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"MinRowSpacing", L"Double", statics.MinRowSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"LineSpacing", L"Double", statics.LineSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"MinItemSpacing", L"Double", statics.MinItemSpacingProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Orientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.OrientationProperty(), false /* isContent */);
                     }
 
@@ -5548,26 +5548,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.StretchChild",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make<EnumXamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.StretchChild",
-                /* Arg 2 - CreateFromString func */ 
-                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
-                {
-                    if (fromString == L"None") return box_value(winrt::StretchChild::None);
-                    if (fromString == L"Last") return box_value(winrt::StretchChild::Last);
-                    throw winrt::hresult_invalid_argument();
-                });
-
-            return xamlType;
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -5701,21 +5681,21 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.Controls.SystemBackdropHost",
+        L"Microsoft.UI.Xaml.Controls.SystemBackdropElement",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
         {
             auto xamlType = winrt::make_self<XamlType>(
                 /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.Controls.SystemBackdropHost",
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.SystemBackdropElement",
                 /* Arg 2 - BaseTypeName */ 
                 (PCWSTR)L"Microsoft.UI.Xaml.FrameworkElement",
                 /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISystemBackdropHostFactory>(L"Microsoft.UI.Xaml.Controls.SystemBackdropHost"); },
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ISystemBackdropElementFactory>(L"Microsoft.UI.Xaml.Controls.SystemBackdropElement"); },
                 /* Arg 4 - Populate properties func */ 
                 (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
                 {
-                    winrt::ISystemBackdropHostStatics statics = GetFactory<winrt::ISystemBackdropHostStatics>(L"Microsoft.UI.Xaml.Controls.SystemBackdropHost");
+                    winrt::ISystemBackdropElementStatics statics = GetFactory<winrt::ISystemBackdropElementStatics>(L"Microsoft.UI.Xaml.Controls.SystemBackdropElement");
                     {
                         xamlType.AddDPMember(L"CornerRadius", L"Microsoft.UI.Xaml.CornerRadius", statics.CornerRadiusProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"SystemBackdrop", L"Microsoft.UI.Xaml.Media.SystemBackdrop", statics.SystemBackdropProperty(), false /* isContent */);
@@ -6719,16 +6699,36 @@ Entry c_typeEntries[] =
                 {
                     winrt::IWrapPanelStatics statics = GetFactory<winrt::IWrapPanelStatics>(L"Microsoft.UI.Xaml.Controls.WrapPanel");
                     {
-                        xamlType.AddDPMember(L"HorizontalSpacing", L"Double", statics.HorizontalSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ItemSpacing", L"Double", statics.ItemSpacingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ItemsStretch", L"Microsoft.UI.Xaml.Controls.WrapPanelItemsStretch", statics.ItemsStretchProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"LineSpacing", L"Double", statics.LineSpacingProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Orientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.OrientationProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Padding", L"Microsoft.UI.Xaml.Thickness", statics.PaddingProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"StretchChild", L"Microsoft.UI.Xaml.Controls.StretchChild", statics.StretchChildProperty(), false /* isContent */);
-                        xamlType.AddDPMember(L"VerticalSpacing", L"Double", statics.VerticalSpacingProperty(), false /* isContent */);
                     }
 
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.WrapPanelItemsStretch",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.WrapPanelItemsStretch",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"None") return box_value(winrt::WrapPanelItemsStretch::None);
+                    if (fromString == L"Last") return box_value(winrt::WrapPanelItemsStretch::Last);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
         }
     },
     {
@@ -8024,7 +8024,7 @@ hstring c_knownNamespacePrefixes[] =
 #include "SwipeControl.properties.h"
 #include "SwipeItem.properties.h"
 #include "SwipeItems.properties.h"
-#include "SystemBackdropHost.properties.h"
+#include "SystemBackdropElement.properties.h"
 #include "TabView.properties.h"
 #include "TabViewItem.properties.h"
 #include "TabViewItemTemplateSettings.properties.h"
@@ -8123,7 +8123,7 @@ void ClearTypeProperties()
     SwipeControlProperties::ClearProperties();
     SwipeItemProperties::ClearProperties();
     SwipeItemsProperties::ClearProperties();
-    SystemBackdropHostProperties::ClearProperties();
+    SystemBackdropElementProperties::ClearProperties();
     TabViewProperties::ClearProperties();
     TabViewItemProperties::ClearProperties();
     TabViewItemTemplateSettingsProperties::ClearProperties();

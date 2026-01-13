@@ -5,6 +5,7 @@
 #include "DynamicMetadataStorage.h"
 #include "CustomClassInfo.h"
 #include "CustomDependencyProperty.h"
+#include "CValueBoxer.h"
 
 using namespace DirectUI;
 
@@ -25,4 +26,9 @@ _Check_return_ HRESULT CCustomDependencyProperty::SetDefaultMetadata(_In_ xaml::
 _Check_return_ HRESULT CClassInfo::RunClassConstructorIfNecessary()
 {
     RRETURN(S_OK);
+}
+
+_Check_return_ HRESULT CValueBoxer::UnboxObjectValue(_In_ const CValue* box, _In_opt_ const CClassInfo* pTargetType, _Out_ IInspectable** result)
+{
+    return S_OK;
 }

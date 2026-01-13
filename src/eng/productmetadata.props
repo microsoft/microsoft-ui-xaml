@@ -34,7 +34,7 @@
     <IxpWinMDs Include="$(LiftedIxpWinmdPath)\Microsoft.Graphics.winmd" />
     <IxpWinMDs Include="$(LiftedIxpWinmdPath)\Microsoft.UI.winmd" />
 
-    <MRTWinMDs Include="$(LiftedMRTLibPath)\uap10.0\Microsoft.Windows.ApplicationModel.Resources.winmd">
+    <MRTWinMDs Include="$(LiftedMRTWinmdPath)\Microsoft.Windows.ApplicationModel.Resources.winmd">
       <ImplementationDll>Microsoft.Windows.ApplicationModel.Resources.dll</ImplementationDll>
       <!-- This winmd isn't merged into any other winmd -->
       <Merge>false</Merge>

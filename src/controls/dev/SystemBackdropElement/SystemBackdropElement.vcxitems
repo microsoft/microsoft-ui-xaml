@@ -14,13 +14,13 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SystemBackdropHost.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropHost.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\SystemBackdropElement.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SystemBackdropElement.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)SystemBackdropHost.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SystemBackdropElement.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropHost.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SystemBackdropElement.h" />
   </ItemGroup>
 </Project>

@@ -11,7 +11,6 @@
 
 #pragma once
 
-#include "IXamlPredicate.g.h"
 
 #define __IsPropertyPresent_GUID "6328c17a-af24-4f3f-b99e-6813bd0b14ee"
 
@@ -21,11 +20,14 @@ namespace DirectUI
 
     class __declspec(novtable) IsPropertyPresentGenerated:
         public DirectUI::DependencyObject
-        , public DirectUI::IXamlPredicate
+        , public ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate
     {
         friend class DirectUI::IsPropertyPresent;
 
 
+        BEGIN_INTERFACE_MAP(IsPropertyPresentGenerated, DirectUI::DependencyObject)
+            INTERFACE_ENTRY(IsPropertyPresentGenerated, ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate)
+        END_INTERFACE_MAP(IsPropertyPresentGenerated, DirectUI::DependencyObject)
 
     public:
         IsPropertyPresentGenerated();
@@ -48,7 +50,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(Evaluate)(_In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pArguments, _Out_ BOOLEAN* pReturnValue) override;
+        IFACEMETHOD(Evaluate)(_In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pArguments, _Out_ BOOLEAN* pResult) override;
 
 
     protected:

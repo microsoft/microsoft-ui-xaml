@@ -296,6 +296,9 @@ namespace DirectUI
 
         IFACEMETHOD(GetElementsRenderedCount)(_Out_ int* elementsRendered) override;
 
+        IFACEMETHOD(PauseNewDispatchForTest)() override;
+        IFACEMETHOD(ResumeNewDispatchForTest)() override;
+
     protected:
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void **ppvObject) override;
 

@@ -81,6 +81,7 @@ class CXcpDispatcher final :
 {
     friend class PauseNewDispatch;
     friend class PauseNewDispatchAtControl;
+    friend class PauseNewDispatchForTest;
 
 public:
 
@@ -255,4 +256,12 @@ private:
     // Reference count for pause requests
     int m_pauseCount = 0; 
 
+};
+
+// Helper only for test code to pause dispatch. Crashes if anything unexpected happens.
+class PauseNewDispatchForTest
+{
+public:
+    static void Pause(CCoreServices *coreServices);
+    static void Resume(CCoreServices *coreServices);
 };

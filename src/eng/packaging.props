@@ -5,8 +5,12 @@
     we output the structure of the package to the BuildOutput\packaging location.
   -->
   <PropertyGroup>
-    <WinUIRuntimeIdentifier Condition="'$(Platform)' == 'Win32' or '$(Platform)'=='AnyCPU'">win10-x86</WinUIRuntimeIdentifier>
-    <WinUIRuntimeIdentifier Condition="'$(WinUIRuntimeIdentifier)' == ''">win10-$(Platform.ToLowerInvariant())</WinUIRuntimeIdentifier>
+    <!-- The "*Old" properties here are used for the old Microsoft.ProjectReunion.WinUI.TransportPackage.nuspec. Remove when it is deleted! -->
+    <WinUIRuntimeIdentifierOld Condition="'$(Platform)' == 'Win32' or '$(Platform)'=='AnyCPU'">win10-x86</WinUIRuntimeIdentifierOld>
+    <WinUIRuntimeIdentifierOld Condition="'$(WinUIRuntimeIdentifierOld)' == ''">win10-$(Platform.ToLowerInvariant())</WinUIRuntimeIdentifierOld>
+
+    <WinUIRuntimeIdentifier Condition="'$(Platform)' == 'Win32' or '$(Platform)'=='AnyCPU'">win-x86</WinUIRuntimeIdentifier>
+    <WinUIRuntimeIdentifier Condition="'$(WinUIRuntimeIdentifier)' == ''">win-$(Platform.ToLowerInvariant())</WinUIRuntimeIdentifier>
 
     <PackageOutputLocation>$(ArtifactsRoot)packaging\$(Configuration)</PackageOutputLocation>
 
@@ -15,7 +19,8 @@
 
     <!-- Common properties that define the layout of the package -->
     <WinMDPackageLocation>$(PackageOutputLocation)\lib\uap10.0</WinMDPackageLocation>
-    <NativeAssemblyPackageLocation>$(PackageOutputLocation)\runtimes\$(WinUIRuntimeIdentifier)\native</NativeAssemblyPackageLocation>
+    <NativeAssemblyPackageLocationOld>$(PackageOutputLocation)\runtimes\$(WinUIRuntimeIdentifierOld)\native</NativeAssemblyPackageLocationOld>
+    <NativeAssemblyPackageLocation>$(PackageOutputLocation)\runtimes-framework\$(WinUIRuntimeIdentifier)\native</NativeAssemblyPackageLocation>
     <ToolsPackageLocation>$(PackageOutputLocation)\tools</ToolsPackageLocation>
     <BuildTargetsPackageLocation>$(PackageOutputLocation)\build</BuildTargetsPackageLocation>
     <CSWinRTInteropAssemblyPackageLocation>$(PackageOutputLocation)\lib\$(WindowsAppSdkTargetFrameworkMoniker)</CSWinRTInteropAssemblyPackageLocation>

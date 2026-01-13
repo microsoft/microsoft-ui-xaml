@@ -830,6 +830,7 @@ namespace Microsoft.UI.Xaml
         void Activate();
         void Close();
         void SetTitleBar(Microsoft.UI.Xaml.UIElement titleBar);
+        [deprecated("Window.Current is deprecated and always returns null in WinUI Desktop apps. For alternate ways to track instances of Window in your app code, visit https://aka.ms/win.current.alt", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         static Microsoft.UI.Xaml.Window Current{ get; };
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 4)]
@@ -1701,6 +1702,7 @@ namespace Microsoft.UI.Xaml.Input
         [method_name("FindNextFocusableElement")] static Microsoft.UI.Xaml.UIElement FindNextFocusableElement(Microsoft.UI.Xaml.Input.FocusNavigationDirection focusNavigationDirection);
         [method_name("FindNextFocusableElementWithHint")] static Microsoft.UI.Xaml.UIElement FindNextFocusableElement(Microsoft.UI.Xaml.Input.FocusNavigationDirection focusNavigationDirection, Windows.Foundation.Rect hintRect);
         [method_name("TryMoveFocus")] static Boolean TryMoveFocus(Microsoft.UI.Xaml.Input.FocusNavigationDirection focusNavigationDirection);
+        [deprecated("GetFocusedElement() is deprecated. Use GetFocusedElement(XamlRoot) instead to ensure correct behavior in multi-window scenarios.", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         static Object GetFocusedElement();
         [method_name("GetFocusedElementWithRoot")] static Object GetFocusedElement(Microsoft.UI.Xaml.XamlRoot xamlRoot);
     };
@@ -2121,6 +2123,13 @@ namespace Microsoft.UI.Xaml.Markup
         [method_name("GetXamlType"), default_overload] Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(Windows.UI.Xaml.Interop.TypeName type);
         [method_name("GetXamlTypeByFullName")] Microsoft.UI.Xaml.Markup.IXamlType GetXamlType(String fullName);
         Microsoft.UI.Xaml.Markup.XmlnsDefinition[] GetXmlnsDefinitions();
+    };
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+    [webhosthidden]
+    interface IXamlPredicate 
+    {
+        Boolean Evaluate(Windows.Foundation.Collections.IVectorView<String> arguments);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

@@ -53,6 +53,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocationOld)"/>
         <PackageContent Include="$(OutDir)$(TargetName).dll" PackageLocation="$(NativeAssemblyPackageLocation)"/>
     </ItemGroup>
     

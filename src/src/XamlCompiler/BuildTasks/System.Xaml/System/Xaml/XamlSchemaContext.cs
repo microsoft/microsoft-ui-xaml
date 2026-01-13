@@ -157,6 +157,8 @@ namespace System.Xaml
         // in full. After that, it will be updated as needed by UpdateXmlNsInfo.
         private ConcurrentDictionary<string, string> _preferredPrefixes;
 
+        public Func<string, string> XmlNamespaceResolver { get; set; }
+
         public virtual string GetPreferredPrefix(string xmlns)
         {
             if (xmlns == null)
@@ -265,6 +267,15 @@ namespace System.Xaml
                     }
                 }
             }
+        }
+
+        public string FindNamespaceByPrefix(String prefix)
+        {
+            if (XmlNamespaceResolver != null)
+            {
+                return XmlNamespaceResolver(prefix);
+            }
+            return string.Empty;
         }
 
         #endregion

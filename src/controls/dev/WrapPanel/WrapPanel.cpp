@@ -11,10 +11,10 @@ void WrapPanel::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs cons
 {
     const winrt::IDependencyProperty dependencyProperty = args.Property();
 
-    if (dependencyProperty == s_StretchChildProperty ||
+    if (dependencyProperty == s_ItemsStretchProperty ||
         dependencyProperty == s_PaddingProperty ||
-        dependencyProperty == s_HorizontalSpacingProperty ||
-        dependencyProperty == s_VerticalSpacingProperty ||
+        dependencyProperty == s_ItemSpacingProperty ||
+        dependencyProperty == s_LineSpacingProperty ||
         dependencyProperty == s_OrientationProperty)
     {
         InvalidateMeasure();
@@ -95,7 +95,7 @@ winrt::Size WrapPanel::UpdateRows(winrt::Size availableSize)
     }
 
     UvMeasure parentMeasure(orientation, availableSize.Width, availableSize.Height);
-    UvMeasure spacingMeasure(orientation, HorizontalSpacing(), VerticalSpacing());
+    UvMeasure spacingMeasure(ItemSpacing(), LineSpacing());
     UvMeasure position(orientation, padding.Left, padding.Top);
 
     Row currentRow;
@@ -141,7 +141,7 @@ winrt::Size WrapPanel::UpdateRows(winrt::Size availableSize)
         }
         
         // Arrange the last child (which may be the only child)
-        arrange(children.GetAt(lastIndex), StretchChild() == winrt::StretchChild::Last);
+        arrange(children.GetAt(lastIndex), ItemsStretch() == winrt::WrapPanelItemsStretch::Last);
     }
 
     if (!currentRow.ChildrenRects.empty())
