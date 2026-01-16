@@ -110,9 +110,7 @@
 #include "TextControlFlyoutHelper.h"
 #include "XamlTelemetry.h"
 
-#if __has_include("DXamlCoreTipTests.h")
 #include "DXamlCoreTipTests.h"
-#endif
 
 #include "xcpwindow.h"
 
@@ -463,13 +461,11 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
 
     TraceInitializeCoreBegin();
 
-#if __has_include("DXamlCoreTipTests.h")
     // Start TIP test
     auto initDxamlCoreTest = tip::start_and_watch_errors<DXamlInitializeCoreTest>();
 
     // Log the mux version
     initDxamlCoreTest->muxVersion = TipTestHelper::GetMuxVersion();
-#endif
 
     m_state = DXamlCore::Initializing;
 
@@ -484,17 +480,13 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     // "IslandsOnly" initialization, which means we're running in a win32 context.
     if (gps->IsProcessPackaged() && (initializationType != InitializationType::IslandsOnly))
     {
-#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::packaged_process));
-#endif
         IFC(XAML::PLM::PLMHandler::CreateForASTA(this, &m_pPLMHandler));
     }
 
     if (initializationType != InitializationType::IslandsOnly)
     {
-#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::init_type_uwp));
-#endif
         // When running in UWP, we must make sure there's a DispatcherQueueController on the thread, since XAML
         // requires one to be running.  Since we don't support UWP, we don't bother to shutdown the DQC, this is
         // just to keep XAML tests running.
@@ -508,9 +500,7 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
 
     if (initializationType == InitializationType::MainView)
     {
-#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::init_type_main_view));
-#endif
         // We allow this temporarily only for UWP because we're not supporting it for foward-compat yet.
         //  Task 29643834: Remove use of textinputproducerinternal.h before we open-source and before we fully-support UWP
         //                 (ITextInputConsumer, ITextInputProducer, ITextInputProducerInternal)
@@ -536,21 +526,15 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     // in Island mode force to use TSF1
     if (initializationType == InitializationType::IslandsOnly)
     {
-#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::init_type_islands_only));
-#endif
         m_hCore->ForceDisableTSF3();
-#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::disabled_tsf3));
-#endif
     }
 
     // initialize the XAML dispatcher
     IFC(ctl::ComObject<DispatcherImpl>::CreateInstance(m_spDispatcherImpl.ReleaseAndGetAddressOf()));
     IFC(m_spDispatcherImpl->Connect(this));
-#if __has_include("DXamlCoreTipTests.h")
     initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::initialized_dispatcher));
-#endif
 
     // Disable the legacy IME since the legacy IMEs aren't designed for the immersive environment.
     //
@@ -573,9 +557,7 @@ _Check_return_ HRESULT DXamlCore::InitializeInstance(_In_ InitializationType ini
     IFC(EnsureEventArgs());
 
     IFC(Window::Create(this, &m_uwpWindowNoRef));
-#if __has_include("DXamlCoreTipTests.h")
     initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::created_uwp_window));
-#endif
 
     // The Window needs to be pegged because it doesn't have an entry in the PeerTable,
     // and its members can potentially be GCed.
@@ -601,9 +583,7 @@ Cleanup:
     if (FAILED(hr))
     {
         m_state = DXamlCore::InitializationFailed;
-#if __has_include("DXamlCoreTipTests.h")
         initDxamlCoreTest.set_flag(TIP_reason(DXamlInitializeCoreTest::reason::failed_dxamlcore_init));
-#endif
         if (m_uwpWindowNoRef != nullptr)
         {
             m_uwpWindowNoRef->SetDXamlCore(nullptr);
@@ -617,10 +597,8 @@ Cleanup:
 
     TraceInitializeCoreEnd();
 
-#if __has_include("DXamlCoreTipTests.h")
     // End Tip Test - if cleanup is called
     initDxamlCoreTest.complete();
-#endif
 
     return hr;
 }

@@ -156,7 +156,21 @@
     <TaefPkgDirectory>$(NugetPackageDirectory)\Microsoft.Taef.$(TaefNugetPackageVersion)\</TaefPkgDirectory>
     <AbiWinRtPackageDirectory>$(NugetPackageDirectory)\Microsoft.Windows.AbiWinRT.$(AbiWinRtVersion)\</AbiWinRtPackageDirectory>
     <AbiWinRtExePath>$(AbiWinRtPackageDirectory)bin\abi.exe</AbiWinRtExePath>
+  </PropertyGroup>
+
+  <!-- TestInProduction paths -->
+  <PropertyGroup Condition="Exists('$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction')">
+    <!-- Use the production package -->
+    <TIPPackagesConfigContents>$([System.IO.File]::ReadAllText("$(MSBuildThisFileDirectory)..\build\packages.TestInProduction.config"))</TIPPackagesConfigContents>
+    <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(TIPPackagesConfigContents), 'Microsoft.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>
     <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
+    <TestInProductionTargetsFile>$(TestInProductionPkgDirectory)\build\native\Microsoft.Windows.TestInProduction.targets</TestInProductionTargetsFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="!Exists('$(NugetPackageDirectory)\Microsoft.Windows.TestInProduction')">
+    <!-- Use the stub package -->
+    <TestInProductionPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesConfigContents), 'Microsoft.Internal.Windows.TestInProduction.*?version="(.*?)"').Groups[1].Value)</TestInProductionPackageVersion>
+    <TestInProductionPkgDirectory>$(NugetPackageDirectory)\Microsoft.Internal.Windows.TestInProduction.$(TestInProductionPackageVersion)</TestInProductionPkgDirectory>
+    <TestInProductionTargetsFile>$(TestInProductionPkgDirectory)\build\native\Microsoft.Internal.Windows.TestInProduction.targets</TestInProductionTargetsFile>
   </PropertyGroup>
 
   <!-- WinUIDetails paths -->
