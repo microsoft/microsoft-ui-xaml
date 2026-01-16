@@ -2737,9 +2737,22 @@ void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::Navigation
     switch (key)
     {
     case winrt::VirtualKey::Enter:
-    case winrt::VirtualKey::Space:
         args.Handled(true);
         OnNavigationViewItemInvoked(nvi);
+        break;
+    case winrt::VirtualKey::Space:
+        {
+            // Check if Alt key is pressed. If Alt+Space is pressed, don't handle it
+            // to allow the system menu to be opened (Alt+Space is a system shortcut).
+            const auto altState = winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Menu);
+            const bool isAltPressed = (altState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+            
+            if (!isAltPressed)
+            {
+                args.Handled(true);
+                OnNavigationViewItemInvoked(nvi);
+            }
+        }
         break;
     case winrt::VirtualKey::Home:
         args.Handled(true);
