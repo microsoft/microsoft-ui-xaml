@@ -12,6 +12,7 @@
 #include "XamlParserContext.h"
 #include "MetadataApi.h"
 #include "StableXbfIndexes.g.h"
+#include "XamlTraceLogging.h"
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -242,6 +243,7 @@ bool XamlPredicateService::EvaluatePredicate(
         if (pObject)
         {
             bool result = false;
+            bool isCustomPredicate = false;
 
             auto argsVector = SplitArgumentsString(argsClone);
             if (pObject->GetTypeIndex() == KnownTypeIndex::IsApiContractPresent
@@ -252,12 +254,12 @@ bool XamlPredicateService::EvaluatePredicate(
                 || pObject->GetTypeIndex() == KnownTypeIndex::IsTypeNotPresent)
             {
                 // We know the built-in predicates derive from IXamlPredicate
-                 result = static_cast<IXamlPredicate*>(pObject)->Evaluate(argsVector);
+                result = static_cast<IXamlPredicate*>(pObject)->Evaluate(argsVector);
             }
             else
             {
+                isCustomPredicate = true;
 				wrl::ComPtr<wfci_::Vector<HSTRING>> hstringVector = ConvertXStringPtrVectorToHStringVector(argsVector);
-                boolean result2;
 
                 // Get the IVectorView from the vector
                 wrl::ComPtr<wfc::IVectorView<HSTRING>> spVectorView;
@@ -269,11 +271,21 @@ bool XamlPredicateService::EvaluatePredicate(
                 wrl::ComPtr<xaml_markup::IXamlPredicate> pXamlPredicate;
                 THROW_IF_FAILED(spInspectable.As(&pXamlPredicate));
 
+                boolean result2;
                 THROW_IF_FAILED(pXamlPredicate->Evaluate(spVectorView.Get(), &result2));
                 result = (result2 != FALSE);
             }
             
             tokenToArgsMap->emplace(argsClone, result);
+
+            TraceLoggingWrite(
+                g_hTraceProvider,
+                "XamlPredicateEvaluated",
+                TraceLoggingBoolean(isCustomPredicate, "IsCustomPredicate"),
+                TraceLoggingBoolean(result, "Result"),
+                TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS),
+                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
 
             return result;
         }
