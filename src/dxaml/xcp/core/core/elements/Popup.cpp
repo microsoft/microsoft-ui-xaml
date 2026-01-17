@@ -43,6 +43,7 @@
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
+#include "Geometry.h"
 
 using namespace DirectUI;
 using namespace Focus;
@@ -1855,10 +1856,30 @@ void CPopup::ApplyRootRoundedCornerClipToSystemBackdrop()
         collectedCorners.bottomLeft = std::max(0.0f, collectedCorners.bottomLeft - collectedBorderThickness/2);
         collectedCorners.bottomRight = std::max(0.0f, collectedCorners.bottomRight - collectedBorderThickness/2);
 
-        IFCFAILFAST(rectangleClip->put_TopLeftRadius({collectedCorners.topLeft, collectedCorners.topLeft}));
-        IFCFAILFAST(rectangleClip->put_TopRightRadius({collectedCorners.topRight, collectedCorners.topRight}));
-        IFCFAILFAST(rectangleClip->put_BottomLeftRadius({collectedCorners.bottomLeft, collectedCorners.bottomLeft}));
-        IFCFAILFAST(rectangleClip->put_BottomRightRadius({collectedCorners.bottomRight, collectedCorners.bottomRight}));
+        // Clamp corner radii when they exceed the available space, following the same policy as
+        // HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual.
+        const float clipWidth = width - collectedBorderThickness;
+        const float clipHeight = height - collectedBorderThickness;
+        const float topLeft = collectedCorners.topLeft;
+        const float topRight = collectedCorners.topRight;
+        const float bottomLeft = collectedCorners.bottomLeft;
+        const float bottomRight = collectedCorners.bottomRight;
+        
+        float topLeftRadiusX, topRightRadiusX, bottomLeftRadiusX, bottomRightRadiusX;
+        float topLeftRadiusY, topRightRadiusY, bottomLeftRadiusY, bottomRightRadiusY;
+        
+        // Clamp X components against width
+        CGeometryBuilder::ClampCornerRadii(topLeft, topRight, clipWidth, &topLeftRadiusX, &topRightRadiusX);
+        CGeometryBuilder::ClampCornerRadii(bottomLeft, bottomRight, clipWidth, &bottomLeftRadiusX, &bottomRightRadiusX);
+        
+        // Clamp Y components against height
+        CGeometryBuilder::ClampCornerRadii(topLeft, bottomLeft, clipHeight, &topLeftRadiusY, &bottomLeftRadiusY);
+        CGeometryBuilder::ClampCornerRadii(topRight, bottomRight, clipHeight, &topRightRadiusY, &bottomRightRadiusY);
+
+        IFCFAILFAST(rectangleClip->put_TopLeftRadius({topLeftRadiusX, topLeftRadiusY}));
+        IFCFAILFAST(rectangleClip->put_TopRightRadius({topRightRadiusX, topRightRadiusY}));
+        IFCFAILFAST(rectangleClip->put_BottomLeftRadius({bottomLeftRadiusX, bottomLeftRadiusY}));
+        IFCFAILFAST(rectangleClip->put_BottomRightRadius({bottomRightRadiusX, bottomRightRadiusY}));
 
         IFCFAILFAST(m_systemBackdropPlacementVisual->put_Size({width, height}));
         IFCFAILFAST(m_systemBackdropPlacementVisual->put_Offset({x, y}));

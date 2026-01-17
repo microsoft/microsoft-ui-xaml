@@ -262,6 +262,9 @@ public:
 
     static winrt::CoreApplicationView TryGetCurrentCoreApplicationView();
 
+    // Helper function to clamp corner radii according to same policy as CGeometryBuilder::CalculateRoundedCornersRectangle()
+    static void ClampCornerRadii(float radius1, float radius2, float edgeLength, _Out_ float* pRadius1Clamped, _Out_ float* pRadius2Clamped);
+
 private:
     SharedHelpers() = default;
 
