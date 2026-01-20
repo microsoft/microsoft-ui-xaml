@@ -1,25 +1,19 @@
-﻿TitleBar ExcludeFromDrag
+﻿TitleBar Drag Region API Specification
 ===
 
 # Background
 
-Custom title bar layouts often combine interactive controls with non-interactive visual elements using containers like `Grid`, `StackPanel`, or nested structures. These layouts can unintentionally create gaps or regions whose drag behavior the framework cannot reliably infer. As a result, some title bar areas may unexpectedly become non-draggable, leading to inconsistent window movement.
+Custom title bar layouts often combine **interactive controls** and **non‑interactive visual elements** using containers such as `Grid`, `StackPanel`, or deeper nested structures. While this flexibility enables rich and branded title bar designs, it also introduces ambiguity when determining **which parts of the title bar should behave as draggable regions** for moving the window.
 
-To ensure predictable dragging behavior, developers need a way to explicitly mark UI elements that should **not** participate in window dragging—typically interactive controls. All remaining areas then function automatically as draggable regions. This proposal introduces the `TitleBar.ExcludeFromDrag` attached property to provide explicit, predictable control.
+Under the **current default behavior**, the framework treats the entire `TitleBar.Content` area as the primary drag surface and then subtracts (or *"punches holes"* from) regions that should not initiate window dragging. This approach works reasonably well for dense, predictable layouts. However, it **fails in scenarios with empty gaps, uneven spacing, nested templates, or dynamically generated UI**, where the system cannot reliably infer developer intent. These situations can lead to **unexpected non‑draggable gaps**, creating inconsistent or unintuitive window‑drag behavior for users.
 
-This work is also related to **[#10421](https://github.com/microsoft/microsoft-ui-xaml/issues/10421)**.
+This problem has been raised and discussed by developers in the WinUI community, for example in: **[#10421](https://github.com/microsoft/microsoft-ui-xaml/issues/10421)**.
+
+This specification evaluates multiple approaches to defining draggable and non‑draggable regions within `TitleBar.Content`, and proposes a solution that balances **predictable defaults** with **developer‑provided intent**.
 
 ---
 
 # Conceptual pages (How To)
-
-## How to use TitleBar.ExcludeFromDrag
-
-Custom layouts inside `TitleBar.Content` can introduce empty regions or areas where the framework cannot determine whether dragging should occur.
-
-### Standard Usage (Default behaviour)
-
-When you customize `TitleBar.Content`, apply `TitleBar.ExcludeFromDrag="True"` to interactive controls (or any element that should not initiate dragging). All unmarked areas—including visual gaps—automatically behave as draggable regions.
 
 #### Problem example: gaps become non-draggable
 
@@ -33,7 +27,7 @@ When you customize `TitleBar.Content`, apply `TitleBar.ExcludeFromDrag="True"` t
                 <ColumnDefinition Width="50" />
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Background="LightBlue" BorderBrush="Black" BorderThickness="1">
-                <TextBlock Text="Sample text block" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                <AutoSuggestBox PlaceholderText="Search"/>
             </Border>
             <Border Grid.Column="1" />
             <Border Grid.Column="2" Background="LightCoral" BorderBrush="Black" BorderThickness="1">
@@ -48,14 +42,25 @@ When you customize `TitleBar.Content`, apply `TitleBar.ExcludeFromDrag="True"` t
 ![Non draggable gaps in TitleBar Content](./images/titlebar-drag-issue.png)
 
 In this simple layout:
-- Column 0 contains **Sample Text Block**
+- Column 0 contains **Sample Search Box**
 - Column 2 contains **Help**
 - Column 1 is **empty visual space** that may become a non-draggable gap
 
 Even in simple cases, it is non-trivial for the framework to automatically classify such gaps as draggable or non-draggable. More complex layouts—nested controls, templated UI, and dynamic content—make automatic detection even harder.
 
-#### Recommended solution: exclude interactive controls
+## Approaches Overview
 
+In this approach the framework recursively traverses the visual tree and **excludes interactive controls from drag by default**. Developers can then **override** per element using `TitleBar.IsDragRegion`:
+- Set `IsDragRegion="True"` to **include** an element in the drag region even if it is an interactive control (e.g., ribbon areas that should drag).
+- Set `IsDragRegion="False"` to **exclude** non‑control surfaces or containers or any UI Element from drag.
+- If the property is **omitted**, the framework uses the new default behavior.
+
+**Advantages**
+- **Low developer effort** (good defaults).
+- **High flexibility** (simple overrides where needed).
+- **Consistent, accessible behavior** aligned with product expectations.
+
+**XAML sample**
 ```xml
 <TitleBar Title="Main Titlte" Subtitle="subtitle" x:Name="titleBar">
     <TitleBar.Content>
@@ -65,76 +70,52 @@ Even in simple cases, it is non-trivial for the framework to automatically class
                 <ColumnDefinition Width="200" />
                 <ColumnDefinition Width="50" />
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" Background="LightBlue" BorderBrush="Black" BorderThickness="1" TitleBar.ExcludeFromDrag="True">
-                <TextBlock Text="Sample text block" VerticalAlignment="Center" HorizontalAlignment="Center" />
+            <Border Grid.Column="0" Background="LightBlue" BorderBrush="Black" BorderThickness="1">
+                <AutoSuggestBox PlaceholderText="Search"/>
             </Border>
             <Border Grid.Column="1" />
-            <Border Grid.Column="2" Background="LightCoral" BorderBrush="Black" BorderThickness="1" TitleBar.ExcludeFromDrag="True">
+            <Border Grid.Column="2" Background="LightCoral" BorderBrush="Black" BorderThickness="1">
                 <TextBlock Text="Help" VerticalAlignment="Center" HorizontalAlignment="Center" />
             </Border>
         </Grid>
     </TitleBar.Content>
 </TitleBar>
 ```
-
 #### Output:
-![Draggable gaps in TitleBar Content](./images/titlebar-drag-fixed.png)
+![Non draggable gaps in TitleBar Content](./images/titlebar-drag-issue-fixed.png)
 
-In this updated layout, we applied `TitleBar.ExcludeFromDrag="True"` to the interactive elements (the borders containing text). 
-The empty column (Column 1) is now treated as a draggable area, allowing users to drag the window from that space.
+#### Notes on behavior
+- The framework still uses `ReadLocalValue(IsDragRegionProperty)` to determine whether the developer **explicitly set** a value. If **omitted**, the framework applies the new default drag‑region rules.
+---
 
-### Advanced Usage
+## Additional How‑To Topics
 
-#### Applying to container boundaries
-
-You can apply `TitleBar.ExcludeFromDrag` to containers as well (for example, to prevent dragging from a toolbar strip that contains multiple 
-interactive elements). In this case, the entire container area is treated as non-draggable.
-
-```xml
-<TitleBar>
-    <TitleBar.Content>
-        <Grid>
-            <StackPanel Orientation="Horizontal"
-                        TitleBar.ExcludeFromDrag="True">
-                <Button Content="Back" />
-                <Button Content="Forward" />
-                <Button Content="Refresh" />
-            </StackPanel>
-            <TextBlock Text="My App" HorizontalAlignment="Center" />
-        </Grid>
-    </TitleBar.Content>
-</TitleBar>
-```
-
-#### Nested layouts
-
-`ExcludeFromDrag` does inherit to descendants. If you apply TitleBar.ExcludeFromDrag="True" to any parent container, all of its children 
-automatically become non‑draggable. 
-
-If your layout is nested and you want fine‑grained control, apply ExcludeFromDrag="True" only on the specific elements or minimal containers 
-that truly must not initiate dragging.Place the attribute on the smallest possible element to avoid unintentionally disabling drag for an entire subtree.
+### Styling and Containers
+You can apply `IsDragRegion` to containers to include/exclude large UI areas (e.g., toolbars). Use it sparingly to avoid accidentally disabling drag for entire subtrees; prefer marking the minimum necessary element.
 
 ```xml
-<TitleBar>
-    <TitleBar.Content>
-        <Grid>
-            <StackPanel Orientation="Horizontal">
-                <!-- This text area is draggable -->
-                <TextBlock Text="Title" />
-                <!-- This nested grid becomes draggable UNLESS excluded -->
-                <Grid>
-                    <!-- Only the button should not trigger dragging -->
-                    <Button Content="Settings" TitleBar.ExcludeFromDrag="True" />
-                </Grid>
-            </StackPanel>
-        </Grid>
-    </TitleBar.Content>
-</TitleBar>
+<StackPanel Orientation="Horizontal" TitleBar.IsDragRegion="False">
+  <Button Content="Back"/>
+  <Button Content="Forward"/>
+  <Button Content="Refresh"/>
+</StackPanel>
 ```
 
-### Using TitleBar.ExcludeFromDrag in XAML, C#, and C++
+### Nested Layouts
+Use explicit `IsDragRegion` overrides on the specific nested element(s) that deviate from the default mode.
 
-As any API can be used from XAML, C#, or C++/WinRT, the following table shows equivalent ways to apply the property.
+```xml
+<Grid>
+  <StackPanel Orientation="Horizontal">
+    <TextBlock Text="Title"/>
+    <Grid>
+      <Button Content="Settings" TitleBar.IsDragRegion="False"/> <!-- Exclude -->
+    </Grid>
+  </StackPanel>
+</Grid>
+```
+
+### Using in XAML, C#, and C++/WinRT
 
 <table>
   <tr>
@@ -145,30 +126,39 @@ As any API can be used from XAML, C#, or C++/WinRT, the following table shows eq
   <tr>
     <td><b>XAML</b></td>
     <td>
-<pre lang="xml">&lt;Button Content="Refresh"
-        TitleBar.ExcludeFromDrag="True" /&gt;</pre>
+<pre lang="xml">&lt;TitleBar&gt;
+  &lt;TitleBar.Content&gt;
+    &lt;TextBlock Text="My App" /&gt;
+    &lt;AutoSuggestBox TitleBar.IsDragRegion="True" /&gt;
+  &lt;/TitleBar.Content&gt;
+&lt;/TitleBar&gt;</pre>
     </td>
-    <td>Recommended for declarative UI.</td>
+    <td>Enable enhanced defaults and opt a control into drag.</td>
   </tr>
   <tr>
     <td><b>C#</b></td>
     <td>
-<pre lang="csharp">var button = new Button { Content = "Refresh" };
-TitleBar.SetExcludeFromDrag(button, true);</pre>
+<pre lang="csharp">// Behavior on TitleBar
+TitleBar tb = this.AppWindow.TitleBar();
+
+// Per-element override
+var search = new AutoSuggestBox();
+TitleBar.SetIsDragRegion(search, true);</pre>
     </td>
-    <td>Uses the generated attached-property accessors.</td>
+    <td>Set the boolean and override an element in code-behind.</td>
   </tr>
   <tr>
     <td><b>C++/WinRT</b></td>
     <td>
-<pre lang="cpp">#include &lt;winrt/Microsoft.UI.Xaml.Controls.h&gt;
+<pre lang="cpp">using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
 
-Button button;
-button.Content(box_value(L"Refresh"));
-TitleBar::SetExcludeFromDrag(button, true);</pre>
+TitleBar tb = AppWindow().TitleBar();
+
+AutoSuggestBox search{};
+TitleBar::SetIsDragRegion(search, true);</pre>
     </td>
-    <td>Uses static accessor methods on <code>TitleBar</code>.</td>
+    <td>Equivalent usage in C++/WinRT.</td>
   </tr>
 </table>
 
@@ -176,61 +166,35 @@ TitleBar::SetExcludeFromDrag(button, true);</pre>
 
 # API Pages
 
-## TitleBar.ExcludeFromDrag attached property
-
-The `ExcludeFromDrag` attached property allows developers to mark UI elements inside a custom title bar that should not contribute to window dragging. This ensures predictable drag behavior in custom and nested layouts.
+## TitleBar.IsDragRegion attached property
+Marks an element as **included** in the window drag region (`True`) or **excluded** (`False`), overriding the framework default for the current behavior.
 
 ```xml
-<Button Content="Refresh" TitleBar.ExcludeFromDrag="True" />
+<Button Content="Refresh" TitleBar.IsDragRegion="False"/>
 ```
 
 ### Example Usage
-
 ```xml
-<TitleBar Title="SampleApp" Subtitle="Preview">
-    <TitleBar.Content>
-        <Grid ColumnDefinitions="50, *, Auto">
-            <TextBlock Text="SampleApp" />
-            <AutoSuggestBox Grid.Column="1"
-                            PlaceholderText="Search..."
-                            TitleBar.ExcludeFromDrag="True" />
-            <Button Grid.Column="2" Content="Settings"
-                    TitleBar.ExcludeFromDrag="True" />
-        </Grid>
-    </TitleBar.Content>
+<TitleBar>
+  <TitleBar.Content>
+    <AutoSuggestBox TitleBar.IsDragRegion="True"/>
+    <TextBlock Text="Title"/>
+  </TitleBar.Content>
 </TitleBar>
-```
-
-### Remarks
-
-- Default behavior remains unchanged for non-custom layouts.
-- Use this property only when customizing `TitleBar.Content`.
-- Interactive controls should typically be excluded from dragging.
-
-## TitleBar.SetExcludeFromDrag method
-
-Sets the `ExcludeFromDrag` attached property value on the specified element.
-
-```csharp
-TitleBar.SetExcludeFromDrag(element, true);
-```
-
-## TitleBar.GetExcludeFromDrag method
-
-Gets the `ExcludeFromDrag` attached property value from the specified element.
-
-```csharp
-bool excluded = TitleBar.GetExcludeFromDrag(element);
 ```
 
 ---
 
 # API Details
 
-```c++
-static Microsoft.UI.Xaml.DependencyProperty ExcludeFromDragProperty{ get; };
-static void SetExcludeFromDrag(Microsoft.UI.Xaml.DependencyObject element, Boolean value);
-static Boolean GetExcludeFromDrag(Microsoft.UI.Xaml.DependencyObject element);
+```c#
+namespace Microsoft.UI.Xaml.Controls
+{
+    // Attached property used for per-element overrides
+    static DependencyProperty IsDragRegionProperty { get; };
+    static void SetIsDragRegion(DependencyObject element, Boolean value);
+    static Boolean GetIsDragRegion(DependencyObject element);
+}
 ```
 
 ---
@@ -238,15 +202,10 @@ static Boolean GetExcludeFromDrag(Microsoft.UI.Xaml.DependencyObject element);
 ## Appendix
 
 ### Keyboard Behaviour
+This API affects **pointer hit‑testing** for window drag only; it does not change keyboard interaction. Ensure that interactive controls in `TitleBar.Content` remain fully focusable and operable. Keep a logical tab order in the title bar.
 
-This API does not introduce new keyboard interactions by itself; it influences pointer-driven window dragging. However, custom title bar content must still follow common keyboard accessibility expectations:
+### Automation Behaviour
+`IsDragRegion` **do not alter** UIA patterns or names of elements. Interactability for screen readers remains unchanged. Developers should verify that drag affordances are communicated visually and do not conflict with UIA expectations.
 
-- Interactive controls in `TitleBar.Content` should remain focusable and keyboard-operable.
-- Do not rely on dragging gestures as the only means of window movement for keyboard users.
-- Ensure tab order and directional navigation (where applicable) remain logical in the title bar area.
-
-### Other Behaviour
-
-- A future improvement may rename this property or adjust behavior based on API review feedback.
-- Alternatives such as automatic region detection were considered but rejected due to unpredictability in complex UI layouts.
-- Consider applying `ExcludeFromDrag` conservatively: prefer marking only interactive elements and leaving the rest draggable.
+### Backward Compatibility
+- The updated drag‑region model introduces a new global default: interactive controls are not draggable, and non‑interactive visuals are draggable, unless explicitly overridden.
