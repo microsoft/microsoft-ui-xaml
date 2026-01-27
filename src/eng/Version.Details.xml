@@ -6,9 +6,9 @@
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>547b4bb04a27a7e09e61022dc6ac3595fa1550f7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="2.0.0-20260125.0.nightly.internal">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="2.0.0-20260126.1.nightly.internal">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>0f919de6b46fb427dc48648a157502aae96a728a</Sha>
+      <Sha>4da9ca81c45c13891804704bd5858d4a4d275ef5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="2.0.0-experimental-27200.1845.251215-1020.5">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
@@ -23,9 +23,9 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
       <Sha>80c83f790be1302bc55e1df1c845b2d6cc222a0c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="2.0.260125000-experimental">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="2.0.260126001-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>0f919de6b46fb427dc48648a157502aae96a728a</Sha>
+      <Sha>4da9ca81c45c13891804704bd5858d4a4d275ef5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.0.5-experimental">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
