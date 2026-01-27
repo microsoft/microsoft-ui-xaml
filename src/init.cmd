@@ -202,7 +202,9 @@ if "%EnvOnly%"=="" (
 )
 
 if "%ARM64EC%"=="1" (
-    powershell -ExecutionPolicy Bypass -NoProfile -File %RepoRoot%\scripts\MockArm64ECFolder.ps1
+    if exist %RepoRoot%\scripts\MockArm64ECFolder.ps1 (
+        powershell -ExecutionPolicy Bypass -NoProfile -File %RepoRoot%\scripts\MockArm64ECFolder.ps1
+    )
 )
 
 xcopy /d /y %RepoRoot%\scripts\winui.natvis "%USERPROFILE%\My Documents\Visual Studio 2022\Visualizers\" >nul 2>&1
