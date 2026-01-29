@@ -15,11 +15,20 @@ namespace DirectUI
     private:
         // Weak reference to the MenuFlyoutPresenter that contains this MenuFlyoutItemBase.
         ctl::WeakRefPtr m_wrParentMenuFlyoutPresenter;
+        
+        // Flag indicating whether this item has a style set by a parent menu (SplitMenuFlyoutItem).
+        bool m_isStyleSetFromParentMenu = false;
 
     public:
         // Get the parent MenuFlyoutPresenter.
         _Check_return_ HRESULT GetParentMenuFlyoutPresenter(
             _Outptr_ MenuFlyoutPresenter** ppParentMenuFlyoutPresenter);
+
+        // Check whether this MenuFlyoutItemBase has a Style set by a parent menu.
+        bool GetIsStyleSetFromParentMenu();
+
+        // Sets a flag showing whether this MenuFlyoutItemBase had a style set by a parent menu.
+        void SetIsStyleSetFromParentMenu(bool value);
 
     protected:
         // Gets a value indicating whether or not this item

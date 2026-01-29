@@ -736,7 +736,7 @@ IFACEMETHODIMP ItemsPresenter::OnApplyTemplate()
     // Intentionally no break; Cut new panels from ComboBox and FlipView
     case KnownTypeIndex::ItemsWrapGrid:
     case KnownTypeIndex::WrapGrid:
-        if (KnownTypeIndex::ItemsControl != indexItemsControl && KnownTypeIndex::ListView != indexItemsControl && KnownTypeIndex::GridView != indexItemsControl)
+        if (KnownTypeIndex::ItemsControl != indexItemsControl && KnownTypeIndex::ListView != indexItemsControl && KnownTypeIndex::GridView != indexItemsControl && KnownTypeIndex::MenuFlyoutPresenter != indexItemsControl)
         {
             hr = E_FAIL;
         }

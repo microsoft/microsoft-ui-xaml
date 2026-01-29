@@ -62,3 +62,15 @@ MenuFlyoutItemBase::GetShouldBeNarrow(
 
     return S_OK;
 }
+
+// Check whether this MenuFlyoutItemBase has a Style set by a parent menu.
+bool MenuFlyoutItemBase::GetIsStyleSetFromParentMenu()
+{
+    return m_isStyleSetFromParentMenu;
+}
+
+// Set a flag showing whether this MenuFlyoutItemBase had a style set by a parent menu.
+void MenuFlyoutItemBase::SetIsStyleSetFromParentMenu(bool value)
+{
+    m_isStyleSetFromParentMenu = value;
+}
