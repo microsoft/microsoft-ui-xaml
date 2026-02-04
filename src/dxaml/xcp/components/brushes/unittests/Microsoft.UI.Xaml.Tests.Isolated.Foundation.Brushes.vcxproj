@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{2bbfd800-5e50-403c-a1c9-49cca9f7491c}</ProjectGuid>
+        <UseHybridCRT>false</UseHybridCRT>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest-uielement.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\components\pch\ut-nohybrid\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\brushes\inc;
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\colors\inc;
+            $(XcpPath)\components\comptree\inc;
+            $(XcpPath)\components\elements\inc;
+            $(XcpPath)\components\text\inc;
+            $(XcpPath)\components\contentroot\inc;
+            $(XcpPath)\components\unittests\mocks;
+            $(XcpPath)\core\text\inc;
+            $(XamlSourcePath)\test\dcomp\inc;
+            $(XamlBinaryPath)\test\dcomp\idl;
+            $(WinUIDetailsIncludePath)\abi;
+            $(WinUIDetailsIncludePath)\MockDComp;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="SolidColorBrushUnitTests.h"/>
+
+        <ClCompile Include="SolidColorBrushUnitTests.cpp"/>
+
+        <!-- MockDComp.dll is needed for these unittests -->
+        <ReferenceCopyLocalPaths Include="$(WinUIDetailsRuntimesPath)\MockDComp.dll" />
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>
+                $(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;
+                %(AdditionalDependencies);
+                $(WinUIDetailsRuntimesPath)\MockDComp.lib;
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut-nohybrid\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{33a6c9ea-636f-42fb-9ceb-15e54abab8e6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\brushes\lib\Microsoft.UI.Xaml.Brushes.vcxproj" Project="{83ba909b-3bf5-4a36-8118-7f398b52cc3e}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\colors\lib\Microsoft.UI.Xaml.Colors.vcxproj" Project="{6b5aed1f-fd5d-47bc-9b9a-37d56e2c2e97}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\transforms\lib\Microsoft.UI.Xaml.Transforms.vcxproj" Project="{365cdabf-7f04-445d-a598-ba372821b5a6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\text\lib\Microsoft.UI.Xaml.Text.vcxproj" Project="{df854298-841f-4dd5-9ddf-fefbc280a6d1}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\unittests\stubs\Microsoft.UI.Xaml.Stubs.vcxproj" Project="{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

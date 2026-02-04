@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{d82c40b8-9902-4565-8248-4c629f9e9024}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\qualifiers\inc;
+            $(XamlSourcePath)\test\dcomp\inc;
+            $(XamlBinaryPath)\test\dcomp\idl;
+            $(WinUIDetailsIncludePath)\abi;
+            $(WinUIDetailsIncludePath)\MockDComp;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="IntegrationTests.h"/>
+        <ClInclude Include="MinHeightQualifierTests.h"/>
+        <ClInclude Include="MinWidthQualifierTests.h"/>
+        <ClInclude Include="MocksAndHelpers.h"/>
+        <ClInclude Include="MultiQualifierTests.h"/>
+        <ClInclude Include="QualifierContextTests.h"/>
+        <ClInclude Include="QualifierFactoryTests.h"/>
+        <ClInclude Include="VariantMapTests.h"/>
+
+        <ClCompile Include="QualifierContextTests.cpp"/>
+        <ClCompile Include="VariantMapTests.cpp"/>
+        <ClCompile Include="IntegrationTests.cpp"/>
+        <ClCompile Include="MinWidthQualifierTests.cpp"/>
+        <ClCompile Include="MinHeightQualifierTests.cpp"/>
+        <ClCompile Include="MultiQualifierTests.cpp"/>
+        <ClCompile Include="QualifierFactoryTests.cpp"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\qualifiers\lib\Microsoft.UI.Xaml.Qualifiers.vcxproj" Project="{664bb810-5217-4eb3-85c0-c7ab5e34060b}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\DependencyObject\lib\Microsoft.UI.Xaml.DependencyObject.vcxproj" Project="{f7139209-4407-43f4-b04b-cddfcbfd5a65}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\runtimeEnabledFeatures\lib\Microsoft.UI.Xaml.RuntimeEnabledFeatures.vcxproj" Project="{968dc6e1-0f0a-4211-97cc-57ab0754206b}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\staticpal\lib\Microsoft.UI.Xaml.StaticPal.vcxproj" Project="{c766b284-6b02-474b-9a87-58b2a997bc59}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

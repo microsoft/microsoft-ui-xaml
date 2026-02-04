@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\common.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\components\pch\prod\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\inc\;
+            $(XcpPath)\components\base\inc\;
+            $(XcpPath)\components\criticalsection\inc;
+            $(XcpPath)\components\xstring\inc\;
+            $(XcpPath)\components\legacy\inc\;
+            $(XcpPath)\components\metadata\inc\;
+            $(XcpPath)\components\theming\inc\;
+            $(XcpPath)\components\deferral\inc\;
+            $(XcpPath)\components\objectWriter\inc;
+            $(XcpPath)\components\resources\inc;
+            $(XcpPath)\core\inc\;
+            $(XcpPath)\core\compositor;
+            $(XcpPath)\core\hw;
+            $(XcpPath)\core\parser;
+            $(XcpPath)\pal\inc\;
+            $(XcpPath)\plat\win\desktop\;
+            $(XcpPath)\components\accesskeys\inc\;
+            $(XcpPath)\components\graphics\inc\;
+            $(XcpPath)\dxaml\lib\;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses\;
+            $(XcpPath)\components\collection\inc\;
+            $(XcpPath)\components\FocusRect\inc\;
+            $(XcpPath)\components\graphics\inc\;
+            $(XcpPath)\components\math\inc\;
+            $(XcpPath)\components\comptree\inc\;
+            $(XcpPath)\components\contentroot\inc\;
+            $(XcpPath)\components\brushes\inc\;
+            $(XcpPath)\components\imaging\inc\;
+            $(XcpPath)\components\text\inc\;
+            $(XcpPath)\components\theming\inc\;
+            $(XcpPath)\components\relativepanel\inc\;
+            $(XcpPath)\components\qualifiers\inc\;
+            $(XcpPath)\components\vsm\inc\;
+            $(XcpPath)\components\valueboxer\inc\;
+            $(XcpPath)\components\namescope\inc\;
+            $(XcpPath)\plat\win\desktop\;
+            $(XcpPath)\core\text\inc\;
+            $(XcpPath)\core\text\RichTextServices\inc\;
+            $(XcpPath)\core\native\inc\;
+            $(XcpPath)\core\native\text\Common\;
+            $(XcpPath)\core\hw\;
+            $(XcpPath)\dxaml\lib\;
+            $(XcpPath)\dxaml\lib\winrtgeneratedclasses\;
+            $(XcpPath)\win\inc\;
+            $(XcpPath)\core\controls\generated\;
+            $(XcpPath)\core\native\text\Controls\;
+            $(XcpPath)\components\xboxutility\inc\;
+            $(XcpPath)\components\diagnosticsInterop\inc\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClCompile Include="..\CoInitHelper.cpp"/>
+        <ClCompile Include="ClassInfo_Stub.cpp"/>
+        <ClCompile Include="MetadataAPI_Stub.cpp"/>
+        <ClCompile Include="DependencyObject_Stub.cpp"/>
+        <ClCompile Include="InheritedProperties_Stub.cpp"/>
+        <ClCompile Include="Timeline_Stub.cpp"/>
+        <ClCompile Include="Animation_Stub.cpp"/>
+        <ClCompile Include="DoubleAnimation_Stub.cpp"/>
+        <ClCompile Include="DXamlServices_Stub.cpp"/>
+        <ClCompile Include="ColorAnimation_Stub.cpp"/>
+        <ClCompile Include="KeyFrame_Stub.cpp"/>
+        <ClCompile Include="DoubleKeyFrame_Stub.cpp"/>
+        <ClCompile Include="KeyTime_Stub.cpp"/>
+        <ClCompile Include="TimeSpan_Stub.cpp"/>
+        <ClCompile Include="Duration_Stub.cpp"/>
+        <ClCompile Include="RepeatBehavior_Stub.cpp"/>
+        <ClCompile Include="TimelineGroup_Stub.cpp"/>
+        <ClCompile Include="ParallelTimeline_Stub.cpp"/>
+        <ClCompile Include="TimingCollection_Stub.cpp"/>
+        <ClCompile Include="TimelineCollection_Stub.cpp"/>
+        <ClCompile Include="NoParentShareableDependencyObject_Stub.cpp"/>
+        <ClCompile Include="MultiParentShareableDependencyObject_Stub.cpp"/>
+        <ClCompile Include="Transform_Stub.cpp"/>
+        <ClCompile Include="TranslateTransform_Stub.cpp"/>
+        <ClCompile Include="RotateTransform_Stub.cpp"/>
+        <ClCompile Include="ScaleTransform_Stub.cpp"/>
+        <ClCompile Include="SkewTransform_Stub.cpp"/>
+        <ClCompile Include="CompositeTransform_Stub.cpp"/>
+        <ClCompile Include="MatrixTransform_Stub.cpp"/>
+        <ClCompile Include="TransformGroup_Stub.cpp"/>
+        <ClCompile Include="ThemeResourceExtension_Stub.cpp"/>
+        <ClCompile Include="UIElement_Stub.cpp"/>
+        <ClCompile Include="PAL_Stub.cpp"/>
+        <!-- Memory_Stub.cpp \ -->
+        <ClCompile Include="TransitionTarget_Stub.cpp"/>
+        <ClCompile Include="KeySpline_Stub.cpp"/>
+        <ClCompile Include="KeyFrameCollection_Stub.cpp"/>
+        <ClCompile Include="EasingFunction_Stub.cpp"/>
+        <ClCompile Include="HWCompNode_Stub.cpp"/>
+        <ClCompile Include="Projection_Stub.cpp"/>
+        <ClCompile Include="Brush_Stub.cpp"/>
+        <ClCompile Include="ColorKeyFrame_Stub.cpp"/>
+        <ClCompile Include="LayoutStorage_Stub.cpp"/>
+        <ClCompile Include="DeferredElement_Stub.cpp"/>
+        <ClCompile Include="Storyboard_Stub.cpp"/>
+        <ClCompile Include="ReferenceTrackerManager_Stub.cpp"/>
+        <ClCompile Include="CoreServices_Stub.cpp"/>
+        <ClCompile Include="UIElementCollection_Stub.cpp"/>
+        <ClCompile Include="DCompVisual_Stub.cpp"/>
+        <ClCompile Include="ResourceDictionary_Stub.cpp"/>
+        <ClCompile Include="Setter_Stub.cpp"/>
+        <ClCompile Include="FrameworkElement_Stub.cpp"/>
+        <ClCompile Include="Control_Stub.cpp"/>
+        <ClCompile Include="WindowRenderTarget_Stub.cpp"/>
+        <ClCompile Include="Geometry_Stub.cpp"/>
+        <ClCompile Include="FxCallbacks_Stub.cpp"/>
+        <ClCompile Include="XamlLight_Stub.cpp"/>
+        <ClCompile Include="DiagnosticsInterop_Stub.cpp"/>
+        <ClCompile Include="Parser_Stub.cpp"/>
+        <ClCompile Include="TemplateContent_Stub.cpp"/>
+        <ClCompile Include="VisualStateManager_Stub.cpp"/>
+        <ClCompile Include="VisualTree_Stub.cpp"/>
+        <ClCompile Include="XamlIslandRoot_Stub.cpp"/>
+        <ClCompile Include="WindowsPresentTarget_Stub.cpp"/>
+        <ClCompile Include="FlyweightCoreAdapter_Stub.cpp"/>
+        <ClCompile Include="LayoutTransitionElement_Stub.cpp"/>
+        <ClCompile Include="Grid_Stub.cpp"/>
+        <ClCompile Include="TextElement_Stub.cpp"/>
+        <ClCompile Include="TextPointerWrapper_Stub.cpp"/>
+        <ClCompile Include="ActivationAPI_Stub.cpp"/>
+        <ClCompile Include="ValueBoxer_Stub.cpp"/>
+        <ClCompile Include="DXaml_Stub.cpp"/>
+        <ClCompile Include="ContentRoot_Stub.cpp"/>
+        <ClCompile Include="ContentRootCoordinator_Stub.cpp"/>
+        <ClCompile Include="Utility_Stub.cpp"/>
+        <ClCompile Include="RuntimeProfiler_unittests.cpp"/>
+        <ClCompile Include="DebugOutput_Stub.cpp" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\prod\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{ccc61973-be99-4223-b935-353d03571e92}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

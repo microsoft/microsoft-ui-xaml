@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{184a3886-dedb-4515-9aeb-4697e55472b2}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest-uielement.props"/>
+
+    <PropertyGroup>
+        <XamlDiagPath>$(XamlSourcePath)\xcp\components\xamldiagnostics</XamlDiagPath>
+        <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
+
+        <!-- Satisfy "UT", which currently doesn't parse includes. -->
+        <!-- UT:TARGETTYPE=DYNLINK                                 -->
+        <!-- UT:TARGET_DESTINATION=NTTEST\WINDOWSTEST\dxaml\test   -->
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(FrameworkUdkIncPath);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\input\inc;
+            $(XcpPath)\components\unittest;
+            $(XcpPath)\win\inc;
+            $(XcpPath)\win\shared\inc;
+            $(XcpPath)\dxaml\lib;
+            $(XamlDiagPath)\inc;
+            $(XamlDiagObjPath)\idl;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClInclude Include="ElementStateChangedBuilderTests.h"/>
+        <ClInclude Include="HandleMapUnitTests.h"/>
+
+        <ClCompile Include="HandleMapUnitTests.cpp"/>
+        <ClCompile Include="ElementStateChangedBuilderTests.cpp"/>
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" Project="{c6e1e90c-ee33-4352-a8de-067b013c7cc9}"/>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\xamlDiagnostics\lib\Microsoft.UI.Xaml.XamlDiagnostics.vcxproj" Project="{0e6efb75-5844-4f7a-90aa-eaba4f6b76a9}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\style\lib\Microsoft.UI.Xaml.Style.vcxproj" Project="{a62ef27a-9759-4647-a1b9-c52ec131cb34}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\text\lib\Microsoft.UI.Xaml.Text.vcxproj" Project="{df854298-841f-4dd5-9ddf-fefbc280a6d1}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\unittests\stubs\Microsoft.UI.Xaml.Stubs.vcxproj" Project="{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>
