@@ -322,6 +322,8 @@ public:
     wrl::ComPtr<InputSiteHelper::IIslandInputSite> GetIslandInputSite() const;
     WindowedPopupInputSiteAdapter* GetInputSiteAdapter() { return m_inputSiteAdapter.get(); };
 
+    bool GetShouldShowKeyboardCues(); // Only valid if popup->IsWindowed() and the ContentIsland is created
+
     wf::Point GetTranslationFromMainWindow() { return m_offsetFromMainWindow; }
 
     // Used for MockDComp dumping

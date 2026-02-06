@@ -1208,6 +1208,26 @@ wrl::ComPtr<InputSiteHelper::IIslandInputSite> CPopup::GetIslandInputSite() cons
     return const_cast<CPopup*>(this)->GetElementIslandInputSite();
 }
 
+bool CPopup::GetShouldShowKeyboardCues()
+{
+    if (m_contentIsland)
+    {
+        ixp::IInputFocusControllerStatics* inputFocusControllerStaticsNoRef = ActivationFactoryCache::GetActivationFactoryCache()->GetInputFocusControllerStatics();
+
+        Microsoft::WRL::ComPtr<ixp::IInputFocusController> inputFocusController;
+        IFCFAILFAST(inputFocusControllerStaticsNoRef->GetForIsland(m_contentIsland.Get(), &inputFocusController));
+
+        wrl::ComPtr<ixp::IInputFocusController3> focusController3;
+        IFCFAILFAST(inputFocusController.As(&focusController3));
+
+        boolean showFocusRectangles{};
+        IFCFAILFAST(focusController3->get_ShouldShowKeyboardCues(&showFocusRectangles));
+        return !!showFocusRectangles;
+    }
+
+    return false;
+}
+
 // Ensure that DComp resources are created for windowed popup
 _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
 {
