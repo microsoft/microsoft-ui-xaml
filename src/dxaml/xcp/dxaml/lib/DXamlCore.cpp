@@ -327,17 +327,17 @@ DXamlCore::GetAssociatedWindowNoRef(
         return S_FALSE;
     }
 
-    // This is a change we made late in the 1.8, so it's scoped tightly to reduce risk.
+    // This is a change we made late in the 1.8 release, so it's scoped tightly to reduce risk.
     // The main point of this function is to return the Window object for an element that's in the 
-    // content of the Window.  But we have a problem where the call to get_HostWindow can
-    // trigger a failfast when it calls get_TEMP_DesktopSiteBridge if the XamlIsland that contains
-    // the element is not backed by an HWND.  If we knew a way to check for that and avoid it,
-    // we would, but we don't.
-    // But we DO know that Xaml Window uses a DesktopWindowXamlSource to host its content.  So if we
-    // can detect that the element is in a XamlIsland that's NOT associated with a DesktopWindowXamlSource,
-    // we can bail out early and avoid the failfast.  We expect this to be very safe, but we're scoping
+    // content of the Window.  But we have a problem where the call to get_HostWindow can fail
+    // if the XamlIsland that contains the element is not backed by an HWND.
+    // We know that Xaml Window uses a DesktopWindowXamlSource to host its content.  So if we can
+    // detect that the element is in a XamlIsland that's NOT associated with a DesktopWindowXamlSource,
+    // we can bail out early and avoid get_HostWindow.  We expect this to be very safe, but we're scoping
     // it tightly to reduce risk.
     // This is a temporary fix, we want to avoid the HWND dependency completely.
+    // FUTURE: Change m_handleToDesktopWindowMap to just be a list of Window objects, and do the lookup
+    //         for if the Window's XamlRoot matches the element's XamlRoot. Don't use an HWND at all.
     if (onlyForDesktopWindowXamlSource)
     {
         if (auto visualTree = xamlRoot->GetVisualTreeNoRef())

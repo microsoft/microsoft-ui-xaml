@@ -12,6 +12,10 @@
 #include "RootScrollViewer.g.h"
 #include <Microsoft.UI.Content.Private.h>
 #include <windowing.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 60697780: [1.8 Servicing][WASDK] Handle MUX usage of IContentIslandPartner::get_TEMP_DesktopSiteBridge
+#define WINAPPSDK_CHANGEID_60697780 60697780, WinAppSDK_1_8_5
 
 using namespace DirectUI;
 
@@ -269,31 +273,53 @@ _Check_return_ HRESULT XamlRoot::get_HostWindow(HWND* pValue)
             // we can't guarantee that the XamlIsland is hosted in an HWND bridge and can't access that
             // HWND if it is. Any calls to method should instead include an equivalent call to the
             // ContentIsland if we return null.
-
-            // Bug https://task.ms/48685229: For now, there are still calls to this method that cannot be
-            // easily replaced with a ContentIsland API, specifically in WebView2.cpp. This means that we
-            // have to return a hosting HWND even in the XamlIsland scenario. We've added a temporary
-            // partner interface on the ContentIsland to retrieve this bridge/HWND. This is only a
-            // workaround, and new calls to this method and the partner method on the island should
-            // not be added. Once work is completed to make it so that there is full functionality
-            // without an HWND, this call should be removed.
-    
-            if (auto xamlIsland = GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef())
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_60697780>())
             {
-                // Get the partner interface for the ContentIsland.
-                ctl::ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
-                ctl::ComPtr<ixp::IContentIsland> contentIsland = xamlIsland->GetContentIsland();
-                IFCFAILFAST(contentIsland.As(&contentIslandPartner));
+                // Bug https://task.ms/48685229: For now, there are still calls to this method that cannot be
+                // easily replaced with a ContentIsland API, specifically in WebView2.cpp. This means that we
+                // have to return a hosting HWND even in the XamlIsland scenario. Return the
+                // ContentIsland.Environment.AppWindowId, in hopes that provides an adequate HWND. This may
+                // need improvements in the future, and ideally any uses should be moved directly into
+                // the callers to avoid other code incorrectly using get_HostWindow().
 
-                // Use the partner interface to retrieve the DesktopSiteBridge, then use that to get
-                // to the WindowId.
-                ctl::ComPtr<ixp::IDesktopSiteBridge> desktopSiteBridge;
-                IFC_RETURN(contentIslandPartner->get_TEMP_DesktopSiteBridge(&desktopSiteBridge));
+                if (auto xamlIsland = GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef())
+                {
+                    ctl::ComPtr<ixp::IContentIsland> contentIsland = xamlIsland->GetContentIsland();
 
-                // Translate the WindowId to an HWND.
-                ABI::Microsoft::UI::WindowId windowId;
-                IFC_RETURN(desktopSiteBridge->get_WindowId(&windowId));
-                IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &hwnd));
+                    ctl::ComPtr<ixp::IContentIslandEnvironment> contentIslandEnvironment;
+                    IFC_RETURN(contentIsland->get_Environment(&contentIslandEnvironment));
+
+                    ABI::Microsoft::UI::WindowId windowId;
+                    IFC_RETURN(contentIslandEnvironment->get_AppWindowId(&windowId));
+                    IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &hwnd));
+                }
+            }
+            else
+            {
+                // Bug https://task.ms/48685229: For now, there are still calls to this method that cannot be
+                // easily replaced with a ContentIsland API, specifically in WebView2.cpp. This means that we
+                // have to return a hosting HWND even in the XamlIsland scenario. We've added a temporary
+                // partner interface on the ContentIsland to retrieve this bridge/HWND. This is only a
+                // workaround, and new calls to this method and the partner method on the island should
+                // not be added. Once work is completed to make it so that there is full functionality
+                // without an HWND, this call should be removed.
+                if (auto xamlIsland = GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef())
+                {
+                    // Get the partner interface for the ContentIsland.
+                    ctl::ComPtr<ixp::IContentIslandPartner> contentIslandPartner;
+                    ctl::ComPtr<ixp::IContentIsland> contentIsland = xamlIsland->GetContentIsland();
+                    IFCFAILFAST(contentIsland.As(&contentIslandPartner));
+
+                    // Use the partner interface to retrieve the DesktopSiteBridge, then use that to get
+                    // to the WindowId.
+                    ctl::ComPtr<ixp::IDesktopSiteBridge> desktopSiteBridge;
+                    IFC_RETURN(contentIslandPartner->get_TEMP_DesktopSiteBridge(&desktopSiteBridge));
+
+                    // Translate the WindowId to an HWND.
+                    ABI::Microsoft::UI::WindowId windowId;
+                    IFC_RETURN(desktopSiteBridge->get_WindowId(&windowId));
+                    IFC_RETURN(Windowing_GetWindowFromWindowId(windowId, &hwnd));
+                }
             }
         }
 
