@@ -48,8 +48,8 @@ body:
       description: If you are seeing your issue on older versions please try the latest release
       options:
         - "WinUI 3 - Windows App SDK 1.8.3: 1.8.251106002"
-        - "WinUI 3 - Windows App SDK 1.8 Preview 1: 1.8.250814004-preview1"
-        - "WinUI 3 - Windows App SDK 2.0 Experimental 3: 2.0.0-experimental3"
+        - "WinUI 3 - Windows App SDK 2.0 Preview 1: 2.0.0-preview1"
+        - "WinUI 3 - Windows App SDK 2.0 Experimental 5: 2.0.0-experimental5"
         - "WinUI 2 - Microsoft.UI.Xaml 2.8.7"
   - type: dropdown
     attributes:
