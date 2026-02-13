@@ -2126,6 +2126,7 @@ namespace Microsoft.UI.Xaml.Markup
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     interface IXamlPredicate 
     {

@@ -9,7 +9,7 @@
     <ComponentNuGetLicensePath Condition="'$(ProductPrereleaseTag)'=='stable'">..\WindowsAppSDKConfig\NuGetLicense\release\license.txt</ComponentNuGetLicensePath>
     <!-- Fallback for local builds which don't have WindowsAppSDKConfig. -->
     <ComponentNuGetLicensePath Condition="!Exists('$(ComponentNuGetLicensePath)')">license.txt</ComponentNuGetLicensePath>
-    <IntellisenseFolder>..\WindowsAppSDKAggregator\docs\Intellisense\generated</IntellisenseFolder>
+    <IntellisenseFolder>Intellisense\generated</IntellisenseFolder>
   </PropertyGroup>
 
   <!--
@@ -26,10 +26,9 @@
     <PackageContent Include="$(LiftedMRTBuildPath)\*.targets" PackageLocation="$(BuildTargetsPackageLocation)" />
     <PackageContent Include="$(LiftedMRTLibPath)\net6.0-windows*\*.dll" PackageLocation="$(CSWinRTInteropAssemblyPackageLocation)" />
 
-    <!-- TODO: Move the Intellisense files for WinUI into this repo. https://task.ms/60148778 -->
-    <PackageContent Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="$(IntellisenseFolder)\Microsoft.WinUI.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
-    <PackageContent Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="$(IntellisenseFolder)\Microsoft.UI.Text.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
-    <PackageContent Condition="'$(IsInternalWinUIBuild)' == 'true'" Include="$(IntellisenseFolder)\Microsoft.UI.Xaml.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
+    <PackageContent Include="$(IntellisenseFolder)\Microsoft.WinUI.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
+    <PackageContent Include="$(IntellisenseFolder)\Microsoft.UI.Text.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
+    <PackageContent Include="$(IntellisenseFolder)\Microsoft.UI.Xaml.xml" PackageLocation="$(PackageOutputLocation)\Intellisense\"/>
   </ItemGroup>
   
   <Import Project="$(MSBuildThisFileDirectory)\update-project-capability-version.targets" />

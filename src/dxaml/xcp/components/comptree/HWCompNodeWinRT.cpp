@@ -3106,22 +3106,6 @@ void HWCompTreeNodeWinRT::UpdateTransitionClipVisual(
     }
 }
 
-// Helper function to clamp corner radii according to same policy as CGeometryBuilder::CalculateRoundedCornersRectangle()
-static void ClampRadii(float r1, float r2, float edgeLength, _Out_ float* r1Clamped, _Out_ float* r2Clamped)
-{
-    float total = r1 + r2;
-    if (total > 0 && total > edgeLength)
-    {
-        // If the total of both radii exceed the edge length, distribute the radii according to the percentages taken.
-        *r1Clamped = (r1 / total) * edgeLength;
-        *r2Clamped = (r2 / total) * edgeLength;
-    }
-    else
-    {
-        *r1Clamped = r1;
-        *r2Clamped = r2;
-    }
-}
 
 void HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual(_In_ DCompTreeHost* dcompTreeHost)
 {
@@ -3170,10 +3154,10 @@ void HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual(_In_ DCompTreeHost* dcom
 
         // DComp does not enforce any clamping of radii, unlike XAML, which would lead to incorrect clipping in cases
         // where the radii exceed edge length.  Clamp the radii down ourselves before setting on the visual.
-        ClampRadii(cornerRadius.topLeft, cornerRadius.topRight, size.X, &radiusTopLeft.X, &radiusTopRight.X);
-        ClampRadii(cornerRadius.bottomLeft, cornerRadius.bottomRight, size.X, &radiusBottomLeft.X, &radiusBottomRight.X);
-        ClampRadii(cornerRadius.topLeft, cornerRadius.bottomLeft, size.Y, &radiusTopLeft.Y, &radiusBottomLeft.Y);
-        ClampRadii(cornerRadius.topRight, cornerRadius.bottomRight, size.Y, &radiusTopRight.Y, &radiusBottomRight.Y);
+        CGeometryBuilder::ClampCornerRadii(cornerRadius.topLeft, cornerRadius.topRight, size.X, &radiusTopLeft.X, &radiusTopRight.X);
+        CGeometryBuilder::ClampCornerRadii(cornerRadius.bottomLeft, cornerRadius.bottomRight, size.X, &radiusBottomLeft.X, &radiusBottomRight.X);
+        CGeometryBuilder::ClampCornerRadii(cornerRadius.topLeft, cornerRadius.bottomLeft, size.Y, &radiusTopLeft.Y, &radiusBottomLeft.Y);
+        CGeometryBuilder::ClampCornerRadii(cornerRadius.topRight, cornerRadius.bottomRight, size.Y, &radiusTopRight.Y, &radiusBottomRight.Y);
 
         IFCFAILFAST(rectangleClip->put_TopLeftRadius(radiusTopLeft));
         IFCFAILFAST(rectangleClip->put_TopRightRadius(radiusTopRight));

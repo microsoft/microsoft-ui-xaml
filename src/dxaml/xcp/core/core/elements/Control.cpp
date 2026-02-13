@@ -14,6 +14,7 @@
 #include "DXamlServices.h"
 #include "CVisualStateManager2.h"
 #include <Theme.h>
+#include "XamlTelemetry.h"
 
 //  Class:  CControl
 //
@@ -950,9 +951,24 @@ _Check_return_ HRESULT CControl::RefreshTemplateBindings(
     {
         m_fRequestTemplateBindingRefresh = FALSE;
         TraceRefreshTemplateBindingsEnd();
+
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Control_RefreshTemplateBindings",
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 
     TraceRefreshTemplateBindingsBegin();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Control_RefreshTemplateBindings",
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingUInt32(GetContext()->GetFrameNumber(), "FrameNumber"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingWideString(GetStrClassName().GetBuffer(), "ClassName"),
+        TraceLoggingWideString(m_strName.GetBuffer(), "Name"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     if (m_propertySubscriptions)
     {
@@ -1491,7 +1507,7 @@ CControl::Enabled(
                                 DirectUI::FocusState::Programmatic,
                                 false /*animateIfBringIntoView*/,
                                 &focusUpdated,
-                                DirectUI::FocusNavigationDirection::None, 
+                                DirectUI::FocusNavigationDirection::None,
                                 InputActivationBehavior::NoActivate));
                         }
                     }

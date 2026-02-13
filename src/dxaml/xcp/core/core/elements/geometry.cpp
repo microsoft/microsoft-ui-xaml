@@ -858,6 +858,38 @@ CGeometryBuilder::AddSegments(
 
 //------------------------------------------------------------------------
 //
+//  Synopsis:
+//      Clamps two corner radii on an edge when they exceed the edge length.
+//      This function partitions radii according to their percentage
+//      when the sum exceeds the edge length, following the same policy
+//      as CalculateRoundedCornersRectangle.
+//
+//------------------------------------------------------------------------
+void
+CGeometryBuilder::ClampCornerRadii(
+    _In_ XFLOAT radius1,
+    _In_ XFLOAT radius2,
+    _In_ XFLOAT edgeLength,
+    _Out_ XFLOAT* pRadius1Clamped,
+    _Out_ XFLOAT* pRadius2Clamped
+    )
+{
+    XFLOAT total = radius1 + radius2;
+    if (total > 0.0f && total > edgeLength)
+    {
+        // If the total of both radii exceed the edge length, distribute the radii according to the percentages taken.
+        *pRadius1Clamped = (radius1 / total) * edgeLength;
+        *pRadius2Clamped = (radius2 / total) * edgeLength;
+    }
+    else
+    {
+        *pRadius1Clamped = radius1;
+        *pRadius2Clamped = radius2;
+    }
+}
+
+//------------------------------------------------------------------------
+//
 //------------------------------------------------------------------------
 void
 CGeometryBuilder::CalculateRoundedCornersRectangle(

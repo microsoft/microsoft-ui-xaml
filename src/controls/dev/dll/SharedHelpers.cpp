@@ -698,3 +698,19 @@ winrt::CoreApplicationView SharedHelpers::TryGetCurrentCoreApplicationView()
 
     return view;
 }
+
+void SharedHelpers::ClampCornerRadii(float radius1, float radius2, float edgeLength, _Out_ float* pRadius1Clamped, _Out_ float* pRadius2Clamped)
+{
+    float total = radius1 + radius2;
+    if (total > 0.0f && total > edgeLength)
+    {
+        // If the total of both radii exceed the edge length, distribute the radii according to the percentages taken.
+        *pRadius1Clamped = (radius1 / total) * edgeLength;
+        *pRadius2Clamped = (radius2 / total) * edgeLength;
+    }
+    else
+    {
+        *pRadius1Clamped = radius1;
+        *pRadius2Clamped = radius2;
+    }
+}

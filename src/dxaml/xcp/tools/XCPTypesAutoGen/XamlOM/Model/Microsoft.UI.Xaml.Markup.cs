@@ -283,6 +283,7 @@ namespace Microsoft.UI.Xaml.Markup
     }
 
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [VelocityFeature("Feature_ExperimentalApi")]
     [TypeTable(IsExcludedFromNewTypeTable = true)]
     [DXamlIdlGroup("coretypes2")]
     public interface IXamlPredicate

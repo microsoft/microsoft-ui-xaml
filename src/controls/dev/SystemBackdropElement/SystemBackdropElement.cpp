@@ -5,6 +5,7 @@
 #include "common.h"
 #include "RuntimeProfiler.h"
 #include "SystemBackdropElement.h"
+#include "SharedHelpers.h"
 
 SystemBackdropElement::SystemBackdropElement()
 {
@@ -147,11 +148,29 @@ void SystemBackdropElement::UpdatePlacementVisualClip()
     m_clip.Right(m_lastArrangedSize.Width);
     m_clip.Bottom(m_lastArrangedSize.Height);
 
-    //Applying corner radius
-    m_clip.TopLeftRadius({static_cast<float>(m_cornerRadius.TopLeft), static_cast<float>(m_cornerRadius.TopLeft)});
-    m_clip.TopRightRadius({static_cast<float>(m_cornerRadius.TopRight), static_cast<float>(m_cornerRadius.TopRight)});
-    m_clip.BottomLeftRadius({static_cast<float>(m_cornerRadius.BottomLeft), static_cast<float>(m_cornerRadius.BottomLeft)});
-    m_clip.BottomRightRadius({static_cast<float>(m_cornerRadius.BottomRight), static_cast<float>(m_cornerRadius.BottomRight)});
+    // Clamp corner radii when they exceed the available space, following the same policy as
+    // HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual.
+    const float topLeft = static_cast<float>(m_cornerRadius.TopLeft);
+    const float topRight = static_cast<float>(m_cornerRadius.TopRight);
+    const float bottomLeft = static_cast<float>(m_cornerRadius.BottomLeft);
+    const float bottomRight = static_cast<float>(m_cornerRadius.BottomRight);
+    
+    float topLeftRadiusX, topRightRadiusX, bottomLeftRadiusX, bottomRightRadiusX;
+    float topLeftRadiusY, topRightRadiusY, bottomLeftRadiusY, bottomRightRadiusY;
+    
+    // Clamp X components against width
+    SharedHelpers::ClampCornerRadii(topLeft, topRight, m_lastArrangedSize.Width, &topLeftRadiusX, &topRightRadiusX);
+    SharedHelpers::ClampCornerRadii(bottomLeft, bottomRight, m_lastArrangedSize.Width, &bottomLeftRadiusX, &bottomRightRadiusX);
+    
+    // Clamp Y components against height
+    SharedHelpers::ClampCornerRadii(topLeft, bottomLeft, m_lastArrangedSize.Height, &topLeftRadiusY, &bottomLeftRadiusY);
+    SharedHelpers::ClampCornerRadii(topRight, bottomRight, m_lastArrangedSize.Height, &topRightRadiusY, &bottomRightRadiusY);
+
+    // Apply corner radius with separate X and Y components
+    m_clip.TopLeftRadius({topLeftRadiusX, topLeftRadiusY});
+    m_clip.TopRightRadius({topRightRadiusX, topRightRadiusY});
+    m_clip.BottomLeftRadius({bottomLeftRadiusX, bottomLeftRadiusY});
+    m_clip.BottomRightRadius({bottomRightRadiusX, bottomRightRadiusY});
     
     // Apply the clip to the placement visual
     m_backdropLink.PlacementVisual().Clip(m_clip);

@@ -12,16 +12,10 @@
 #pragma once
 
 #include "MenuFlyoutItem.g.h"
-#include <FeatureFlags.h>
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
-#else
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE
-#endif
+
 #define __SplitMenuFlyoutItem_GUID "f3e4d2a1-8b7c-4e9f-a1b2-c3d4e5f6789a"
 
 #pragma region forwarders
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
 namespace ctl
 {
     template<typename impl_type>
@@ -36,7 +30,6 @@ namespace ctl
         IFACEMETHOD(put_SubMenuPresenterStyle)(_In_opt_ ABI::Microsoft::UI::Xaml::IStyle* pValue) override { return This()->put_SubMenuPresenterStyle(pValue); }
     };
 }
-#endif
 #pragma endregion
 
 namespace DirectUI
@@ -46,22 +39,16 @@ namespace DirectUI
 
     class __declspec(novtable) SplitMenuFlyoutItemGenerated:
         public DirectUI::MenuFlyoutItem
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem, SplitMenuFlyoutItemGenerated >
         , public ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner
-#endif
     {
         friend class DirectUI::SplitMenuFlyoutItem;
 
         INSPECTABLE_CLASS(L"Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem");
 
         BEGIN_INTERFACE_MAP(SplitMenuFlyoutItemGenerated, DirectUI::MenuFlyoutItem)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(SplitMenuFlyoutItemGenerated, ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem)
             INTERFACE_ENTRY(SplitMenuFlyoutItemGenerated, ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner)
-#else
-            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
-#endif
         END_INTERFACE_MAP(SplitMenuFlyoutItemGenerated, DirectUI::MenuFlyoutItem)
 
     public:
@@ -128,18 +115,12 @@ namespace DirectUI
     // care.
     class __declspec(novtable) SplitMenuFlyoutItemFactory:
        public ctl::BetterAggregableCoreObjectActivationFactory
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItemFactory
         , public ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItemStatics
-#endif
     {
         BEGIN_INTERFACE_MAP(SplitMenuFlyoutItemFactory, ctl::BetterAggregableCoreObjectActivationFactory)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(SplitMenuFlyoutItemFactory, ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItemFactory)
             INTERFACE_ENTRY(SplitMenuFlyoutItemFactory, ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItemStatics)
-#else
-            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
-#endif
         END_INTERFACE_MAP(SplitMenuFlyoutItemFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
@@ -150,8 +131,8 @@ namespace DirectUI
 
         // Dependency properties.
         
-        IFACEMETHOD(get_SubMenuPresenterStyleProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
-        IFACEMETHOD(get_SubMenuItemStyleProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) FEATURE_EXPERIMENTALAPI_OVERRIDE;
+        IFACEMETHOD(get_SubMenuPresenterStyleProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
+        IFACEMETHOD(get_SubMenuItemStyleProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
 
         // Attached properties.
 
