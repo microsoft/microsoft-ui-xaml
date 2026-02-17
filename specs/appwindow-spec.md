@@ -1,83 +1,91 @@
-Window.AppWindow api
+Window.AppWindow API
 ===
-New api to simplify accessing [appwindow](https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/windowing/windowing-overview)
-functionality through WinUI 3 code
+
+New API to simplify accessing [AppWindow](https://learn.microsoft.com/windows/apps/windows-app-sdk/windowing/windowing-overview)
+functionality through WinUI 3 code.
 
 # Background
-Xaml has a [Window](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Window) API that
-internally wraps an hwnd. Windows has an [AppWindow](https://docs.microsoft.com/uwp/api/Windows.UI.WindowManagement.AppWindow) class
-that similarly wraps an hwnd in UWP. WinAppSDK has a new [AppWindow](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow) which wraps an hwnd and works on Desktop.
 
-You can get an AppWindow from a Xaml Window by calling a COM API to get Xaml and then
-a DLL export API to convert the hwnd to an AppWindow. This spec adds a simple `Window.AppWindow`
+XAML has a [Window](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Window) API that
+internally wraps an HWND. Windows has an [AppWindow](https://learn.microsoft.com/uwp/api/Windows.UI.WindowManagement.AppWindow) class
+that similarly wraps an HWND in UWP. WinAppSDK has a new [AppWindow](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow) which wraps an HWND and works on Desktop.
+
+You can get an AppWindow from a XAML Window by calling a COM API to get XAML and then
+a DLL export API to convert the HWND to an AppWindow. This spec adds a simple `Window.AppWindow`
 property to make this much easier and more discoverable.
 
-[Xaml Window](https://docs.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window) will
-expose AppWindow object directly to app developer through an api. Instead of writing a lot of boiler plate
-code everywhere, app developer can use this api, reducing code bloat, and making appwindow apis easily
+[XAML Window](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window) will
+expose AppWindow object directly to app developer through an API. Instead of writing a lot of boilerplate
+code everywhere, app developer can use this API, reducing code bloat, and making AppWindow APIs easily
 accessible from WinUI 3 code.
 
-These *before* and *after* C# code examples illustrate how this api simplifies integrating appwindow apis in WinUI 3 codebase.
+These _before_ and _after_ C# code examples illustrate how this API simplifies integrating AppWindow APIs in WinUI 3 codebase.
 
-### Before
-```c#
-// This is needed to get any Window from inside a Xaml control 
-var xamlWindow = WindowHelper.GetWindowForElement(this); // api to get window object from UIElement (not a real api)  
+- Before
 
-// unnecessary boiler plate code 
+```csharp
+// This is needed to get any Window from inside a XAML control 
+var xamlWindow = WindowHelper.GetWindowForElement(this); // API to get window object from UIElement (not a real API)  
+
+// unnecessary boilerplate code 
 var windowId = Win32Interop.GetWindowIdFromWindow(WindowNative.GetWindowHandle(xamlWindow)); 
 var appWindow = AppWindow.GetFromWindowId(windowId); 
 
-//calling function foo  (not a real appwindow function)
+//calling function foo  (not a real AppWindow function)
 appWindow.foo();
 ```
 
-### After
-```c#
-// This is needed to get any Window from inside a Xaml control 
-var xamlWindow = WindowHelper.GetWindowForElement(this); // api to get window object from UIElement (not a real api)  
+- After
+
+```csharp
+// This is needed to get any Window from inside a XAML control 
+var xamlWindow = WindowHelper.GetWindowForElement(this); // API to get window object from UIElement (not a real API)  
    
 
 //calling function foo directly
 xamlWindow.AppWindow.foo();  
 ```
-Notice how `xamlWindow.AppWindow.foo()` doesn't require additional steps to call the function `foo`.
 
+Notice how `xamlWindow.AppWindow.foo()` doesn't require additional steps to call the function `foo`.
 
 # API Pages
 
 ## Window.AppWindow property
 
 Gets the `AppWindow` associated with this `Window`.
-```c#
+
+```csharp
 public Microsoft.UI.Windowing.AppWindow Window.AppWindow { get; }
 ```
-### Sample example
-```c#
+
+### Example
+
+```csharp
 var xamlWindow = WindowHelper.GetWindowForElement(this);   
 auto windowSize = xamlWindow.AppWindow.Size;  
 ```
 
-Mapping an hwnd to an AppWindow causes the hwnd to be subclassed, meaning that the timing of
-when [AppWindow.GetFromWindowId](https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow.GetFromWindowId)
+Mapping an HWND to an AppWindow causes the HWND to be subclassed, meaning that the timing of
+when [AppWindow.GetFromWindowId](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Windowing.AppWindow.GetFromWindowId)
 is first called can potentially have a behavioral side effect. To ensure this is predictable, the AppWindow
-for Xaml's hwnd will be created during the Xaml Window's construction. Note that this could potentially be
+for XAML's HWND will be created during the XAML Window's construction. Note that this could potentially be
 an observable behavior change from the behavior before the introduction of this API.
 
 New subclassing order with this new feature change:
 
-* ContentAppWindowBridge   
-  &darr;
-* AppWindow  
-  &darr;
-* Xaml Window  
+- ContentAppWindowBridge<br/>
 &darr;
-* DefaultWndProc
-
+- AppWindow  
+&darr;
+- XAML Window  
+&darr;
+- DefaultWndProc
 
 # API Details
 
-```c# (but really MIDL3)
+- MIDL3
+
+```csharp
 namespace Microsoft.UI.Xaml
 {
    unsealed runtimeclass Window
@@ -89,16 +97,13 @@ namespace Microsoft.UI.Xaml
 ```
 
 # Appendix
-- Window.AppWindow api returns reference to the same appwindow object every time. It gets created
-  during xaml window object's creation. There is minimal performance impact observed for this change.
 
+- Window.AppWindow API returns reference to the same AppWindow object every time. It gets created
+  during XAML window object's creation. There is minimal performance impact observed for this change.
 - Since AppWindow is an abstraction for HWND, its lifetime will be same as that of HWND. The
-  api cannot return null as AppWindow will always be present if Window object is there. If called after
-  window has been closed, it will fail similarly to other WinUI 3 apis and return a failure HRESULT. 
-
-- There will be only one appwindow object per top level HWND, created during Window object creation.
-  No new appwindow objects are created for child windows. 
-
-- Future scope : Since this api is limited to top level HWND, there should be a way to get app window object
-  for top level HWND from one of its nested children HWND which doesn’t require app developer writing a lot of code. 
-
+  API cannot return null as AppWindow will always be present if Window object is there. If called after
+  window has been closed, it will fail similarly to other WinUI 3 APIs and return a failure HRESULT.
+- There will be only one AppWindow object per top level HWND, created during Window object creation.
+  No new AppWindow objects are created for child windows.
+- Future scope: Since this API is limited to top level HWND, there should be a way to get app window object
+  for top level HWND from one of its nested children HWND which doesn’t require app developer writing a lot of code.
