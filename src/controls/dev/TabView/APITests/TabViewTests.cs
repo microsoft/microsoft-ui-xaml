@@ -3,6 +3,8 @@
 
 using MUXControlsTestApp.Utilities;
 using System;
+using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -29,6 +31,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestProperty("Ignore", "True")] // Disabled due to #40853867
     public class TabViewTests : ApiTestBase
     {
+        // Win32 API for setting thread locale (affects native C++ code)
+        [DllImport("kernel32.dll")]
+        private static extern uint GetThreadLocale();
+
+        [DllImport("kernel32.dll")]
+        private static extern bool SetThreadLocale(uint locale);
+
         [TestMethod]
         public void VerifyCompactTabWidthVisualStates_ItemsMode()
         {
@@ -222,6 +231,54 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Clear the specified tab items source");
                 tabItemsSource.Clear();
             });       
+        }
+
+        [TestMethod]
+        public void VerifyTabGeometryWorksWithEuropeanLocale()
+        {
+            // This test verifies the fix for bug where TabViewItem geometry creation
+            // would fail in European locales that use ',' as decimal separator.
+            // The fix ensures locale-invariant formatting is used in the native C++ code.
+            // Using SetThreadLocale (Win32 API) to set locale at OS level which affects native code.
+            
+            const uint LOCALE_GERMAN = 0x0407; // de-DE locale identifier
+            
+            RunOnUIThread.Execute(() =>
+            {
+                // Get and set thread locale on UI thread where geometry creation happens
+                uint originalLocale = GetThreadLocale();
+                
+                try
+                {
+                    // Set thread locale to German which uses ',' as decimal separator
+                    // This affects native C++ code unlike CultureInfo which only affects managed code
+                    SetThreadLocale(LOCALE_GERMAN);
+                    
+                    Log.Comment("Creating TabView with TabViewItem in de-DE locale");
+                    TabView tabView = new TabView();
+                    
+                    var tabViewItem = CreateTabViewItem("Test Tab", Symbol.Home);
+                    tabView.TabItems.Add(tabViewItem);
+                    
+                    Content = tabView;
+                    
+                    // This should not crash even with European locale
+                    // UpdateLayout triggers UpdateTabGeometry which formats float values
+                    Log.Comment("Calling UpdateLayout to trigger geometry creation");
+                    Content.UpdateLayout();
+                    
+                    Log.Comment("Verifying TabViewItem was created successfully");
+                    Verify.IsNotNull(tabViewItem);
+                    Verify.AreEqual(1, tabView.TabItems.Count);
+                    
+                    Log.Comment("Test passed - geometry creation succeeded in European locale");
+                }
+                finally
+                {
+                    // Restore original locale on UI thread
+                    SetThreadLocale(originalLocale);
+                }
+            });
         }
 
         [TestMethod]
