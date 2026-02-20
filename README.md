@@ -12,7 +12,7 @@
 <h3 align="center">
   <a href="https://learn.microsoft.com/windows/apps/winui/winui3/">About WinUI</a>
   <span> · </span>
-  <a href="https://learn.microsoft.com/windows/apps/desktop/">Documentation</a>
+  <a href="https://learn.microsoft.com/windows/apps/">Documentation</a>
   <span> · </span>
   <a href="https://aka.ms/winui-releasenotes">Release notes</a>
 </h3>
@@ -34,7 +34,7 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 
 For WinUI, your app's users must be on Windows 10 1809 - Build 17763 or newer (including Windows Insider Previews).
 
-The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/windows/apps/introduction):
+The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/windows/apps/):
 - [Get started with WinUI](https://learn.microsoft.com/windows/apps/get-started/start-here)
 - [Build your first WinUI app](https://learn.microsoft.com/windows/apps/tutorials/winui-notes/)
 - [WinUI & Windows App SDK samples](https://learn.microsoft.com/en-us/windows/apps/get-started/samples)
