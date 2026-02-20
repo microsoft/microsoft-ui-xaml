@@ -9,6 +9,7 @@ rem Remove the trailing backslash
 set RepoRoot=%RepoRoot:~0,-1%
 
 set EnvOnly=
+set EnvCheck=
 set Verbose=
 set NoTitle=
 set Pipeline=
@@ -40,7 +41,10 @@ if /i "%1"=="" (
     goto:doneParsingArgs
 ) else if /i "%1"=="/envonly" (
     set EnvOnly=true
-) else if /i "%1"=="/pipeline" (
+) else if /i "%1"=="/envcheck" (
+    set EnvOnly=true
+    set EnvCheck=true
+)else if /i "%1"=="/pipeline" (
     set EnvOnly=true
     set Pipeline=true
 ) else if /i "%1"=="/verbose" (
@@ -98,7 +102,7 @@ if /i "%1"=="" (
     echo.
     echo            ^<arch^> :          x86 ^| ^(x64^|amd64^) ^| ARM64
     echo            ^<flavor^> :        chk ^| fre
-    echo            ^<options^> :       /verbose, /envonly, /notitle
+    echo            ^<options^> :       /verbose, /envonly, /envcheck, /notitle
     exit /b 1
 )
 
@@ -111,6 +115,28 @@ shift
 goto:parseArgs
 
 :doneParsingArgs
+
+rem If /envcheck is specified, verify that a full init has been run at least once.
+rem Without a prior full init, required tools and NuGet packages won't be available.
+if "%EnvCheck%"=="true" (
+    if not exist "%RepoRoot%\packages" (
+        echo ERROR: Cannot use /envcheck because a full init has not been run yet.
+        echo        Required tools and NuGet packages are missing.
+        echo.
+        echo        Run a full init first:  init.cmd [flavor]
+        echo        Example:                init.cmd amd64chk
+        exit /b 1
+    )
+    if not exist "%RepoRoot%\.tools" (
+        echo ERROR: Cannot use /envcheck because a full init has not been run yet.
+        echo        Required tools and NuGet packages are missing.
+        echo.
+        echo        Run a full init first:  init.cmd [flavor]
+        echo        Example:                init.cmd amd64chk
+        exit /b 1
+    )
+)
+
 if "%_archIsSet%"=="" (
     set amd64=1
     set chk=1

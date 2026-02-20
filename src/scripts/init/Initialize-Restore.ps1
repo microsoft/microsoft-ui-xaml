@@ -5,6 +5,10 @@ param(
 
 $startTime = [datetime]::Now
 $ErrorActionPreference = "Stop"
+# Suppress Write-Progress rendering which can crash PowerShell 5.1 in some terminal environments.
+if ($Verbosity -eq 'quiet') {
+    $ProgressPreference = "SilentlyContinue"
+}
 
 $scriptsDir = $PSScriptRoot
 $customScriptsDir = "$repoRoot\scripts\"
