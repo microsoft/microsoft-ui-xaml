@@ -7,6 +7,7 @@
     <FrameworkUdkPackageName>Microsoft.FrameworkUdk</FrameworkUdkPackageName>
     <LiftedIXPTransportPackageName>Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage</LiftedIXPTransportPackageName>
     <ProjectReunionFoundationTransportPackageName>Microsoft.WindowsAppSDK.Foundation.TransportPackage</ProjectReunionFoundationTransportPackageName>
+    <BasePackageName>Microsoft.WindowsAppSDK.Base</BasePackageName>
     <WebView2PackageName>Microsoft.Web.WebView2</WebView2PackageName>
     <WilPackageName>Microsoft.Windows.ImplementationLibrary</WilPackageName>
     <MicrosoftCsWinRtPackageName>Microsoft.Windows.CsWinRT</MicrosoftCsWinRtPackageName>
@@ -20,6 +21,9 @@
     <IsInternalWinUIBuild Condition="Exists('$(MSBuildThisFileDirectory)..\.azuredevops')">true</IsInternalWinUIBuild>
     <LiftedIXPTransportPackageName Condition="'$(IsInternalWinUIBuild)' != 'true'">Microsoft.WindowsAppSDK.InteractiveExperiences</LiftedIXPTransportPackageName>
     <ProjectReunionFoundationTransportPackageName Condition="'$(IsInternalWinUIBuild)' != 'true'">Microsoft.WindowsAppSDK.Foundation</ProjectReunionFoundationTransportPackageName>
+    <!-- Package names for sample and test apps. Revert this when transport packages are removed -->
+    <LiftedIXPPackageName>Microsoft.WindowsAppSDK.InteractiveExperiences</LiftedIXPPackageName>
+    <FoundationPackageName>Microsoft.WindowsAppSDK.Foundation</FoundationPackageName>
     <!-- Determine the configured versions based upon the architecture neutral nuget packages -->
     <PackagesConfigFile>$(MSBuildThisFileDirectory)..\packages.config</PackagesConfigFile>
     <PackagesConfigContents>$([System.IO.File]::ReadAllText("$(PackagesConfigFile)"))</PackagesConfigContents>
@@ -42,13 +46,21 @@
     <FoundationTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(ProjectReunionFoundationTransportPackageName)".*?Version="(.*?)"').Groups[1].Value)</FoundationTransportPackageVersion>
     <FrameworkUdkPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.FrameworkUdk.*?Version="(.*?)"').Groups[1].Value)</FrameworkUdkPackageVersion>
     <IxpTransportPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(LiftedIXPTransportPackageName).*?Version="(.*?)"').Groups[1].Value)</IxpTransportPackageVersion>
+    <BasePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(BasePackageName)".*?Version="(.*?)"').Groups[1].Value)</BasePackageVersion>
     <WinUIDetailsNugetVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), 'Microsoft.Internal.WinUIDetails.*?Version="(.*?)"').Groups[1].Value)</WinUIDetailsNugetVersion>
+    <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
+    <FoundationPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(FoundationPackageName)".*?Version="(.*?)"').Groups[1].Value)</FoundationPackageVersion>
+    <IXPPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(VersionDetailsFileContents), '$(LiftedIXPPackageName)".*?Version="(.*?)"').Groups[1].Value)</IXPPackageVersion>
     <!-- ====================================================================================== -->
     <!-- OSS builds currently pin to last-known-good versions. -->
     <FoundationTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.8-experimental</FoundationTransportPackageVersion>
     <FrameworkUdkPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.0-experimental-27200.1835.251029-1735.1</FrameworkUdkPackageVersion>
     <IxpTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.3-experimental</IxpTransportPackageVersion>
+    <BasePackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.0-experimental</BasePackageVersion>
     <WinUIDetailsNugetVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.10.0-experimental.20251117.0</WinUIDetailsNugetVersion>
+    <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
+    <FoundationPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.8-experimental</FoundationPackageVersion>
+    <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.3-experimental</IXPPackageVersion>
     <!-- ====================================================================================== -->
     <!-- It is at this point that we might want our non-product code to be able to use a package version different than the primary configuration -->
     <!-- If so, this would probably be the point at which we would override the above version with what is configured for the app                 -->

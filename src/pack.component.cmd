@@ -24,7 +24,11 @@ shift
 goto :parseArgs
 
 :main
-call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration% -UseDependencyOverrides
+if EXIST "%RepoRoot%\pack.cmd" (
+    call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration%
+) else (
+    call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration% -UseDependencyOverrides
+)
 if ERRORLEVEL 1 (
     echo ---
     echo ERROR: build-nupkg.ps1 FAILED with %ERRORLEVEL%
