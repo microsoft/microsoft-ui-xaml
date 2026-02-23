@@ -12,9 +12,9 @@ description: Build the WinUI repository. Use when asked to build, compile, or re
 # Default flavor is amd64chk. Override with -Flavor.
 
 .\initrun.ps1 .\build.cmd /q                            # full repo build (product + tests) — USE THIS BY DEFAULT
-.\initrun.ps1 .\build.cmd product /q                    # product code only (no tests)
-.\initrun.ps1 .\build.cmd mux /q                        # MUX only (Microsoft.UI.Xaml.dll)
-.\initrun.ps1 msb "path\to\project.vcxproj" /q          # build a single project
+.\initrun.ps1 .\build.cmd /q product                    # product code only (no tests)
+.\initrun.ps1 .\build.cmd /q mux                        # MUX only (Microsoft.UI.Xaml.dll)
+.\initrun.ps1 msb /q "path\to\project.vcxproj"          # build a single project
 .\initrun.ps1 -Flavor arm64fre .\build.cmd /q           # build for a different flavor
 ```
 
@@ -50,17 +50,16 @@ If you get build errors that seem to indicate missing dependencies, try running 
 | Command | What it builds | Time |
 |---------|---------------|------|
 | `.\initrun.ps1 .\build.cmd /q` | Everything (product + tests) | 10+ min |
-| `.\initrun.ps1 .\build.cmd mux /q` | `Microsoft.UI.Xaml.dll` only | 1-6 min |
-| `.\initrun.ps1 .\build.cmd product /q` | Product code (no tests) | 5-10 min |
-| `.\initrun.ps1 .\build.cmd /c /q` | Clean + full rebuild | 15+ min |
-| `.\initrun.ps1 msb "<project>" /q` | Single `.vcxproj` | 5s - 5 min |
+| `.\initrun.ps1 .\build.cmd /q mux` | `Microsoft.UI.Xaml.dll` only | 1-6 min |
+| `.\initrun.ps1 .\build.cmd /q product` | Product code (no tests) | 5-10 min |
+| `.\initrun.ps1 .\build.cmd /q /c` | Clean + full rebuild | 15+ min |
+| `.\initrun.ps1 msb /q "<project>"` | Single `.vcxproj` | 5s - 5 min |
 
-### Flags (for `.\build.cmd` and `msb`)
+### Flags (for `.\build.cmd`)
 
 | Flag | Effect |
 |------|--------|
 | `/q` | Quiet — errors only, plus elapsed time |
-| `/i <flavor>` | Init environment inline (alternative to `.\initrun.ps1`) |
 | `/restore` | NuGet restore before building |
 | `/nomock` | Skip mock package.  Use if you're only updating product and test code under`dxaml/` and don't need to run MUXControls or sample tests.) |
 | `/fake` | Dry run — print commands without executing |
@@ -69,9 +68,9 @@ If you get build errors that seem to indicate missing dependencies, try running 
 
 | Files changed in | Build command |
 |---|---|
-| `dxaml/xcp/**` | `.\initrun.ps1 msb "dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj"` |
-| `controls/dev/**` or `controls/idl/**` | `.\initrun.ps1 msb "controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj"` |
-| `dxaml/test/native/external/<area>/**` | `.\initrun.ps1 msb "dxaml\test\native\external\<area>\Microsoft.UI.Xaml.Tests.External.<Area>.vcxproj"` |
+| `dxaml/xcp/**` | `.\initrun.ps1 msb /q "dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj"` |
+| `controls/dev/**` or `controls/idl/**` | `.\initrun.ps1 msb /q "controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj"` |
+| `dxaml/test/native/external/<area>/**` | `.\initrun.ps1 msb /q "dxaml\test\native\external\<area>\Microsoft.UI.Xaml.Tests.External.<Area>.vcxproj"` |
 | Multiple areas or unsure | `.\initrun.ps1 .\build.cmd /q` |
 
 Test areas: `controls`, `foundation`, `framework`, `automation`
