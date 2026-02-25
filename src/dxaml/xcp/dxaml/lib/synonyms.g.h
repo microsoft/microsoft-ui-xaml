@@ -634,9 +634,9 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Markup::IRootObjectProvider IRootObjectProvider;
     typedef ABI::Microsoft::UI::Xaml::Markup::IUriContext IUriContext;
     typedef ABI::Microsoft::UI::Xaml::Markup::IXamlBindScopeDiagnostics IXamlBindScopeDiagnostics;
+    typedef ABI::Microsoft::UI::Xaml::Markup::IXamlCondition IXamlCondition;
     typedef ABI::Microsoft::UI::Xaml::Markup::IXamlMember IXamlMember;
     typedef ABI::Microsoft::UI::Xaml::Markup::IXamlMetadataProvider IXamlMetadataProvider;
-    typedef ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate IXamlPredicate;
     typedef ABI::Microsoft::UI::Xaml::Markup::IXamlType IXamlType;
     typedef ABI::Microsoft::UI::Xaml::Markup::IXamlTypeResolver IXamlTypeResolver;
     typedef ABI::Microsoft::UI::Xaml::Markup::IMarkupExtension IMarkupExtension;

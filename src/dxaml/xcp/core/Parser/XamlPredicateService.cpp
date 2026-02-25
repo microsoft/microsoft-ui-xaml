@@ -268,11 +268,11 @@ bool XamlPredicateService::EvaluatePredicate(
                 wrl::ComPtr<IInspectable> spInspectable;
                 THROW_IF_FAILED(DirectUI::CValueBoxer::UnboxObjectValue(&predicateInstance->GetValue(), DirectUI::MetadataAPI::GetClassInfoByIndex(pObject->GetTypeIndex()), spInspectable.GetAddressOf()));
 
-                wrl::ComPtr<xaml_markup::IXamlPredicate> pXamlPredicate;
-                THROW_IF_FAILED(spInspectable.As(&pXamlPredicate));
+                wrl::ComPtr<xaml_markup::IXamlCondition> pXamlCondition;
+                THROW_IF_FAILED(spInspectable.As(&pXamlCondition));
 
                 boolean result2;
-                THROW_IF_FAILED(pXamlPredicate->Evaluate(spVectorView.Get(), &result2));
+                THROW_IF_FAILED(pXamlCondition->Evaluate(spVectorView.Get(), &result2));
                 result = (result2 != FALSE);
             }
             

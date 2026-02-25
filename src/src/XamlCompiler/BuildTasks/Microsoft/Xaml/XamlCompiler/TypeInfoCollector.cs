@@ -557,7 +557,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                                 bindableTypes.Add(type);
                             }
                         }
-                        else if (HasInterface(type, KnownTypes.IXamlPredicate))
+                        else if (HasInterface(type, KnownTypes.IXamlCondition))
                         {
                             if (type.IsGenericType)
                             {
@@ -565,7 +565,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                             }
                             else
                             {
-                                // Add custom IXamlPredicate types to the bindable types list to be included in the XamlTypeInfo.g.*
+                                // Add custom IXamlCondition types to the bindable types list to be included in the XamlTypeInfo.g.*
                                 bindableTypes.Add(type);
                             }
                         }

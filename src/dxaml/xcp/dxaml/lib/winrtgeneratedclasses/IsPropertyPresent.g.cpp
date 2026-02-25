@@ -27,9 +27,9 @@ HRESULT DirectUI::IsPropertyPresentGenerated::QueryInterfaceImpl(_In_ REFIID iid
     {
         *ppObject = static_cast<DirectUI::IsPropertyPresent*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate)))
+    else if (InlineIsEqualGUID(iid, __uuidof(DirectUI::IXamlPredicate)))
     {
-        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate*>(this);
+        *ppObject = static_cast<DirectUI::IXamlPredicate*>(this);
     }
     else
     {
@@ -45,7 +45,7 @@ HRESULT DirectUI::IsPropertyPresentGenerated::QueryInterfaceImpl(_In_ REFIID iid
 // Events.
 
 // Methods.
-IFACEMETHODIMP DirectUI::IsPropertyPresentGenerated::Evaluate(_In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pArguments, _Out_ BOOLEAN* pResult)
+IFACEMETHODIMP DirectUI::IsPropertyPresentGenerated::Evaluate(_In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pArguments, _Out_ BOOLEAN* pReturnValue)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
@@ -53,11 +53,11 @@ IFACEMETHODIMP DirectUI::IsPropertyPresentGenerated::Evaluate(_In_ ABI::Windows:
         XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "IsPropertyPresent_Evaluate", 0);
     }
     ARG_NOTNULL(pArguments, "arguments");
-    ARG_VALIDRETURNPOINTER(pResult);
-    *pResult={};
+    ARG_VALIDRETURNPOINTER(pReturnValue);
+    *pReturnValue={};
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
-    IFC(static_cast<IsPropertyPresent*>(this)->EvaluateImpl(pArguments, pResult));
+    IFC(static_cast<IsPropertyPresent*>(this)->EvaluateImpl(pArguments, pReturnValue));
 Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
