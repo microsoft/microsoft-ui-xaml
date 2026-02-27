@@ -194,7 +194,8 @@
   <PropertyGroup>
     <LiftedIXPPackagePath>$(NugetPackageDirectory)\$(LiftedIXPTransportPackageName)\$(IxpTransportPackageVersion)</LiftedIXPPackagePath>
     <LiftedIXPBuildPath>$(LiftedIXPPackagePath)\build\native</LiftedIXPBuildPath>
-    <LiftedIXPRuntimePath>$(LiftedIXPPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedIXPRuntimePath>
+    <LiftedIXPRuntimePath>$(LiftedIXPPackagePath)\runtimes-framework\win-$(NugetArch)\native</LiftedIXPRuntimePath>
+    <LiftedIXPRuntimePath Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedIXPPackagePath)\runtimes\win10-$(NugetArch)\native</LiftedIXPRuntimePath>
     <LiftedIXPWinmdPath>$(LiftedIXPPackagePath)\metadata\$(CurrentLiftedIXPTargetPlatformVersion)</LiftedIXPWinmdPath>
     <LiftedIXPWinmdPath Condition="'$(IsInternalWinUIBuild)' == 'true'">$(LiftedIXPPackagePath)\lib\uap$(CurrentLiftedIXPTargetPlatformVersion.Substring(0,10))</LiftedIXPWinmdPath>
     <LiftedIXPGeneratedIncludePath>$(ArtifactsObjDir)liftedixp-$(IxpTransportPackageVersion)\generated\inc</LiftedIXPGeneratedIncludePath>
