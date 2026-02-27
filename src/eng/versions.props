@@ -55,12 +55,12 @@
     <!-- OSS builds currently pin to last-known-good versions. -->
     <FoundationTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.8-experimental</FoundationTransportPackageVersion>
     <FrameworkUdkPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.0-experimental-27200.1835.251029-1735.1</FrameworkUdkPackageVersion>
-    <IxpTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.3-experimental</IxpTransportPackageVersion>
-    <BasePackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.0-experimental</BasePackageVersion>
+    <IxpTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.9-experimental</IxpTransportPackageVersion>
+    <BasePackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.1-experimental</BasePackageVersion>
     <WinUIDetailsNugetVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.10.0-experimental.20251117.0</WinUIDetailsNugetVersion>
     <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
     <FoundationPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.8-experimental</FoundationPackageVersion>
-    <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.3-experimental</IXPPackageVersion>
+    <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.9-experimental</IXPPackageVersion>
     <!-- ====================================================================================== -->
     <!-- It is at this point that we might want our non-product code to be able to use a package version different than the primary configuration -->
     <!-- If so, this would probably be the point at which we would override the above version with what is configured for the app                 -->
