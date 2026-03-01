@@ -5,6 +5,8 @@
 #include <common.h>
 #include "InkCanvas.h"
 #include "InkCanvasAutomationPeer.h"
+#include "InkCanvasStrokeCollectedEventArgs.h"
+#include "InkCanvasStrokesErasedEventArgs.h"
 #include "RuntimeProfiler.h"
 #include "Microsoft.UI.Xaml.xamlroot.h"
 #include "Microsoft.UI.Composition.h"
@@ -188,6 +190,193 @@ void InkCanvas::OnIsEnabledPropertyChanged(winrt::DependencyPropertyChangedEvent
         });
 }
 
+void InkCanvas::OnModePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    UpdateInkPresenterMode();
+}
+
+void InkCanvas::OnAllowedInputTypesPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    UpdateInkPresenterInputTypes();
+}
+
+void InkCanvas::OnDefaultDrawingAttributesPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto newAttrs = unbox_value<winrt::InkDrawingAttributes>(args.NewValue());
+    if (newAttrs)
+    {
+        QueueInkPresenterWorkItem([newAttrs](auto presenter)
+            {
+                presenter.CopyDefaultDrawingAttributes(newAttrs);
+            });
+    }
+}
+
+void InkCanvas::UpdateInkPresenterMode()
+{
+    auto mode = Mode();
+    QueueInkPresenterWorkItem([mode](auto presenter)
+        {
+            switch (mode)
+            {
+            case winrt::InkCanvasMode::Draw:
+                presenter.InputProcessingConfiguration().Mode(winrt::InkInputProcessingMode::Inking);
+                break;
+            case winrt::InkCanvasMode::Erase:
+                presenter.InputProcessingConfiguration().Mode(winrt::InkInputProcessingMode::Erasing);
+                break;
+            case winrt::InkCanvasMode::Select:
+                presenter.InputProcessingConfiguration().Mode(winrt::InkInputProcessingMode::None);
+                break;
+            }
+        });
+}
+
+void InkCanvas::UpdateInkPresenterInputTypes()
+{
+    auto allowedTypes = AllowedInputTypes();
+    QueueInkPresenterWorkItem([allowedTypes](auto presenter)
+        {
+            winrt::CoreInputDeviceTypes types = winrt::CoreInputDeviceTypes::None;
+            if (static_cast<uint32_t>(allowedTypes) & static_cast<uint32_t>(winrt::InkInputType::Pen))
+            {
+                types = types | winrt::CoreInputDeviceTypes::Pen;
+            }
+            if (static_cast<uint32_t>(allowedTypes) & static_cast<uint32_t>(winrt::InkInputType::Touch))
+            {
+                types = types | winrt::CoreInputDeviceTypes::Touch;
+            }
+            if (static_cast<uint32_t>(allowedTypes) & static_cast<uint32_t>(winrt::InkInputType::Mouse))
+            {
+                types = types | winrt::CoreInputDeviceTypes::Mouse;
+            }
+            presenter.InputDeviceTypes(types);
+        });
+}
+
+winrt::InkStrokeContainer InkCanvas::StrokeContainer()
+{
+    if (m_inkPresenter)
+    {
+        return m_inkPresenter.StrokeContainer();
+    }
+    return nullptr;
+}
+
+winrt::IAsyncAction InkCanvas::SaveAsync(winrt::Windows::Storage::Streams::IOutputStream stream)
+{
+    // Save all strokes to the provided stream
+    concurrency::task_completion_event<void> taskComplete;
+
+    auto callback = [stream, taskComplete, strongThis = get_strong()]()
+        {
+            try
+            {
+                if (strongThis->m_inkPresenter)
+                {
+                    auto strokeContainer = strongThis->m_inkPresenter.StrokeContainer();
+                    auto strokes = strokeContainer.GetStrokes();
+                    if (strokes.Size() > 0)
+                    {
+                        // SaveAsync returns IAsyncOperationWithProgress, we block on the ink thread
+                        auto saveOp = strokeContainer.SaveAsync(stream);
+                        saveOp.get();
+                    }
+                }
+                taskComplete.set();
+            }
+            catch (...)
+            {
+                taskComplete.set_exception(std::current_exception());
+            }
+        };
+
+    winrt::check_hresult(m_threadData->m_inkHost->QueueWorkItem(winrt::make<GenericInkCallback>(callback).get()));
+
+    auto inktask = concurrency::create_task(taskComplete, concurrency::task_continuation_context::get_current_winrt_context());
+    co_await inktask;
+}
+
+winrt::IAsyncAction InkCanvas::LoadAsync(winrt::Windows::Storage::Streams::IInputStream stream)
+{
+    // Load strokes from the provided stream
+    concurrency::task_completion_event<void> taskComplete;
+
+    auto callback = [stream, taskComplete, strongThis = get_strong()]()
+        {
+            try
+            {
+                if (strongThis->m_inkPresenter)
+                {
+                    auto strokeContainer = strongThis->m_inkPresenter.StrokeContainer();
+                    auto loadOp = strokeContainer.LoadAsync(stream);
+                    loadOp.get();
+                }
+                taskComplete.set();
+            }
+            catch (...)
+            {
+                taskComplete.set_exception(std::current_exception());
+            }
+        };
+
+    winrt::check_hresult(m_threadData->m_inkHost->QueueWorkItem(winrt::make<GenericInkCallback>(callback).get()));
+
+    auto inktask = concurrency::create_task(taskComplete, concurrency::task_continuation_context::get_current_winrt_context());
+    co_await inktask;
+}
+
+void InkCanvas::ClearStrokes()
+{
+    QueueInkPresenterWorkItem([](auto presenter)
+        {
+            presenter.StrokeContainer().Clear();
+        });
+}
+
+void InkCanvas::SetupStrokeEvents()
+{
+    if (m_strokeEventsConnected || !m_inkPresenter)
+    {
+        return;
+    }
+
+    // We set up these event subscriptions on the ink thread since the presenter 
+    // fires events on that thread.
+    auto weakThis = get_weak();
+    QueueInkPresenterWorkItem([weakThis](auto presenter)
+        {
+            presenter.StrokesCollected(
+                [weakThis](winrt::InkPresenter const& /*sender*/, winrt::InkStrokesCollectedEventArgs const& args)
+                {
+                    auto strongThis = weakThis.get();
+                    if (strongThis)
+                    {
+                        auto strokes = args.Strokes();
+                        for (auto const& stroke : strokes)
+                        {
+                            auto eventArgs = winrt::make<winrt::implementation::InkCanvasStrokeCollectedEventArgs>();
+                            // Fire through the generated event source
+                            strongThis->m_strokeCollectedEventSource(*strongThis, eventArgs);
+                        }
+                    }
+                });
+
+            presenter.StrokesErased(
+                [weakThis](winrt::InkPresenter const& /*sender*/, winrt::InkStrokesErasedEventArgs const& args)
+                {
+                    auto strongThis = weakThis.get();
+                    if (strongThis)
+                    {
+                        auto eventArgs = winrt::make<winrt::implementation::InkCanvasStrokesErasedEventArgs>();
+                        strongThis->m_strokesErasedEventSource(*strongThis, eventArgs);
+                    }
+                });
+        });
+
+    m_strokeEventsConnected = true;
+}
+
 winrt::AutomationPeer InkCanvas::OnCreateAutomationPeer()
 {
     return winrt::make<InkCanvasAutomationPeer>(*this);
@@ -270,6 +459,9 @@ void InkCanvas::CreateInkPresenter()
             strongThis->m_inkPresenter = inkPresenter;
         });
     winrt::check_hresult(inkHost->QueueWorkItem(callback.get()));
+
+    // Set up stroke events eagerly after the ink presenter work item is queued.
+    SetupStrokeEvents();
 }
 
 void InkCanvas::UpdateInkPresenterSize()

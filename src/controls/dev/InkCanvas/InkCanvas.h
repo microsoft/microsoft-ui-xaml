@@ -26,14 +26,30 @@ public:
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnIsEnabledPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void OnModePropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void OnAllowedInputTypesPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void OnDefaultDrawingAttributesPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     winrt::IAsyncAction QueueInkPresenterWorkItem(winrt::DoInkPresenterWork workItem);
+
+    // New API surface - Mode, Input Types, Drawing Attributes
+    winrt::InkStrokeContainer StrokeContainer();
+
+    // Persistence
+    winrt::IAsyncAction SaveAsync(winrt::Windows::Storage::Streams::IOutputStream stream);
+    winrt::IAsyncAction LoadAsync(winrt::Windows::Storage::Streams::IInputStream stream);
+
+    // Clear all strokes
+    void ClearStrokes();
 
 private:
 
     void CreateInkPresenter();
     void UpdateInkPresenterSize();
+    void UpdateInkPresenterMode();
+    void UpdateInkPresenterInputTypes();
+    void SetupStrokeEvents();
 
     void AttachToVisualLink();
     void DetachFromVisualLink();
@@ -50,6 +66,10 @@ private:
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_sizeChanged_revoker;
+
+    // Stroke event tokens for InkPresenter
+    winrt::event_token m_strokesCollectedToken{};
+    bool m_strokeEventsConnected{ false };
 
     // These methods (and struct) are all in support of the Composition Target method of
     // doing things.  They all can just go away and calls to them be removed when we
