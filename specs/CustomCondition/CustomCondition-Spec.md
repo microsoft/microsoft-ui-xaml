@@ -1,38 +1,38 @@
-XAML Custom Predicate
+XAML Custom Condition
 ===
 
 # Background
 
-This spec provides WinUI3 XAML applications with the ability to define custom predicates. This extends the concept from
+This spec provides WinUI3 XAML applications with the ability to define custom conditionals. This extends the concept from
 the pre-existing [XAML conditionals](https://learn.microsoft.com/windows/uwp/debug-test-perf/conditional-xaml).
 
 XAML conditionals allow you to conditionally include or exclude markup based on runtime conditions.
-The platform provides built-in predicates like `IsApiContractPresent`, `IsTypePresent`, and `IsPropertyPresent`.
+The platform provides built-in conditionals like `IsApiContractPresent`, `IsTypePresent`, and `IsPropertyPresent`.
 
-Custom predicates address scenarios where you need conditional XAML based on:
+Custom conditionals address scenarios where you need conditional XAML based on:
 - Application-specific feature flags
 - Custom device capabilities
 - Business logic conditions
 - Configuration settings
 - Any other runtime condition specific to your application
 
-By implementing the `IXamlPredicate` interface, you can create predicates that work seamlessly with XAML's conditional namespace syntax,
+By implementing the `IXamlCondition` interface, you can create conditionals that work seamlessly with XAML's conditional namespace syntax,
 evaluated at runtime.
 
 # Conceptual pages (How To)
 
-The guidance in the below examples can be followed by developers for using custom predicates in their WinUI3 XAML applications. 
+The guidance in the below examples can be followed by developers for using custom conditionals in their WinUI3 XAML applications. 
 Conditional evaluation for markup can be achieved for elements as well as their attributes. It can also be achieved for user controls, styles,
 storyboard, Grid,resources, and more. 
 
 ### Remarks
 * Any two elements cannot have the same x:Name, even if they are conditionally loaded.
 * If multiple conditions are applied to an element attribute, ensure that only one condition evaluates to true at runtime to avoid exceptions.
-* Custom predicates are evaluated at runtime, so compiler checks for logical consistency cannot be performed.
-* Custom predicates don't work with anything that is derived from 'xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"' namespace. 
+* Custom conditionals are evaluated at runtime, so compiler checks for logical consistency cannot be performed.
+* Custom conditionals don't work with anything that is derived from 'xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"' namespace. 
   For example: x:uid, x:Key etc.
-* For single predicate with same args, the evaluate result is cached. The evaluate result during startup decides the loading of the elements.
-  For example, if a TextBlock is conditionally loaded based on a custom predicate with argument "FeatureX" and the predicate evaluates to true during startup,
+* For single conditionals with same args, the evaluate result is cached. The evaluate result during startup decides the loading of the elements.
+  For example, if a TextBlock is conditionally loaded based on a custom conditional with argument "FeatureX" and the conditional evaluates to true during startup,
   the TextBlock will be loaded. Subsequent changes to the condition (e.g., toggling "FeatureX" off) will not affect the loading of the TextBlock.
 
 
@@ -40,10 +40,10 @@ storyboard, Grid,resources, and more.
 
 _(Each of the following L2 sections correspond to a page that will be on docs.microsoft.com)_
 
-## IXamlPredicate interface
+## IXamlCondition interface
 
-IXamlPredicate interface defines a custom predicate that can be used in XAML conditionals. This interface consists of a single method,
-Evaluate, which takes a vector of string arguments and returns a boolean value indicating the result of the predicate evaluation. This allows
+IXamlCondition interface defines a custom conditional that can be used in XAML conditionals. This interface consists of a single method,
+Evaluate, which takes a vector of string arguments and returns a boolean value indicating the result of the conditional evaluation. This allows
 developers to implement their own logic for determining conditions in XAML based on application-specific requirements. A developer-defined
 class implementing this interface can then be referenced in XAML to control the inclusion or exclusion of markup
 based on the evaluation result.
@@ -51,11 +51,11 @@ based on the evaluation result.
 
 Example:
 ```c#
-namespace CustomPredicateNamespace
+namespace CustomConditionNamespace
 {
-    public class MyCustomPredicate : DependencyObject, Microsoft.UI.Xaml.Markup.IXamlPredicate
+    public class MyCustomCondition : DependencyObject, Microsoft.UI.Xaml.Markup.IXamlCondition
     {
-        public MyCustomPredicate()
+        public MyCustomCondition()
         {
 
         }
@@ -81,12 +81,12 @@ namespace CustomPredicateNamespace
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:YourApplicationNamespace"
-    xmlns:predicate="using:CustomPredicateNamespace"
-    xmlns:condition1="http://schemas.microsoft.com/winfx/2006/xaml/presentation?predicate:MyCustomPredicate(ConditionOne)"
-    xmlns:condition2="http://schemas.microsoft.com/winfx/2006/xaml/presentation?predicate:MyCustomPredicate(ConditionTwo)"
-    xmlns:condition3="http://schemas.microsoft.com/winfx/2006/xaml/presentation?predicate:MyCustomPredicate(ConditionThree)"
-    xmlns:condition4="http://schemas.microsoft.com/winfx/2006/xaml/presentation?predicate:MyCustomPredicate(ConditionFour)"
-    xmlns:conditionderived="using:YourApplicationDerivedUserControlNamespace?predicate:MyCustomPredicate(ConditionDerived)"
+    xmlns:condition="using:CustomConditionNamespace"
+    xmlns:condition1="http://schemas.microsoft.com/winfx/2006/xaml/presentation?condition:MyCustomCondition(ConditionOne)"
+    xmlns:condition2="http://schemas.microsoft.com/winfx/2006/xaml/presentation?condition:MyCustomCondition(ConditionTwo)"
+    xmlns:condition3="http://schemas.microsoft.com/winfx/2006/xaml/presentation?condition:MyCustomCondition(ConditionThree)"
+    xmlns:condition4="http://schemas.microsoft.com/winfx/2006/xaml/presentation?condition:MyCustomCondition(ConditionFour)"
+    xmlns:conditionderived="using:YourApplicationDerivedUserControlNamespace?condition:MyCustomCondition(ConditionDerived)"
     mc:Ignorable="d"
     Title="YourApplicationNamespace">
     <Grid>
@@ -112,7 +112,7 @@ namespace CustomPredicateNamespace
 
 ```
 
-In the above example, a custom predicate `MyCustomPredicate` is defined in the `CustomPredicateNamespace` namespace.
+In the above example, a custom conditional `MyCustomCondition` is defined in the `CustomConditionNamespace` namespace.
 While using custom conditionals, developers need to be cautious that more than one condition for element attributes like
 Background in the above example should not evaluate to true at the same time, as it may lead to unexpected behavior
 and cause an exception at runtime. Since the evaluation happens at runtime, compiler doesn't perform any sanity checks for such scenarios.
@@ -197,11 +197,11 @@ More examples:
 </Grid.Resources>
 ```
 
-## IXamlPredicate members
+## IXamlCondition members
 
 | Name | Description |
 |-|-|
-| Evaluate | Evaluate method accepts a vector of string arguments and returns a boolean value indicating the result of the predicate evaluation. |
+| Evaluate | Evaluate method accepts a vector of string arguments and returns a boolean value indicating the result of the conditional evaluation. |
 
 # API Details
 
@@ -210,7 +210,7 @@ namespace Microsoft.UI.Xaml.Markup
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
     [webhosthidden]
-    interface IXamlPredicate 
+    interface IXamlCondition 
     {
         Boolean Evaluate(Windows.Foundation.Collections.IVectorView<String> arguments);
     };
