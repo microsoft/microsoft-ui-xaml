@@ -43,7 +43,7 @@ _(Each of the following L2 sections correspond to a page that will be on docs.mi
 ## IXamlCondition interface
 
 IXamlCondition interface defines a custom conditional that can be used in XAML conditionals. This interface consists of a single method,
-Evaluate, which takes a vector of string arguments and returns a boolean value indicating the result of the conditional evaluation. This allows
+Evaluate, which takes a string argument and returns a boolean value indicating the result of the conditional evaluation. This allows
 developers to implement their own logic for determining conditions in XAML based on application-specific requirements. A developer-defined
 class implementing this interface can then be referenced in XAML to control the inclusion or exclusion of markup
 based on the evaluation result.
@@ -59,10 +59,9 @@ namespace CustomConditionNamespace
         {
 
         }
-        public bool Evaluate(IReadOnlyList<string> arguments)
+        public bool Evaluate(string argument)
         {
-            var arg = arguments.FirstOrDefault();
-            if (arg == "ConditionOne" || arg == "ConditionThree" || arg == "ConditionDerived" )
+            if (argument == "ConditionOne" || argument == "ConditionThree" || argument == "ConditionDerived" )
                 return true;
             else
                 return false;
@@ -201,7 +200,7 @@ More examples:
 
 | Name | Description |
 |-|-|
-| Evaluate | Evaluate method accepts a vector of string arguments and returns a boolean value indicating the result of the conditional evaluation. |
+| Evaluate | Evaluate method accepts a string argument and returns a boolean value indicating the result of the conditional evaluation. |
 
 # API Details
 
@@ -212,7 +211,7 @@ namespace Microsoft.UI.Xaml.Markup
     [webhosthidden]
     interface IXamlCondition 
     {
-        Boolean Evaluate(Windows.Foundation.Collections.IVectorView<String> arguments);
+        Boolean Evaluate(String argument);
     };
 }
 ```
