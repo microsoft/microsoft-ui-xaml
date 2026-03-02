@@ -6,6 +6,8 @@
 #include <corewindow.h>
 #include "dcomp.h"
 #include "InvokableCallbackHelper.h"
+#include "winrt\Microsoft.UI.Input.DragDrop.h"
+#include "shobjidl_core.h"
 #include "math.h"
 #include "Microsoft.UI.Xaml.xamlroot.h"
 #include "ResourceAccessor.h"
@@ -19,11 +21,23 @@
 #include "Windows.Globalization.h"
 #include <wrl\event.h>
 #include "MuxcTraceLogging.h"
+#include <shellapi.h>  // For DragQueryFile, CF_HDROP
+#include <appmodel.h>
 
 using namespace Microsoft::WRL;
 
 static constexpr wstring_view s_error_wv2_closed{ L"Cannot create CoreWebView2 for Closed WebView2 element."sv };
 static constexpr wstring_view s_error_cwv2_not_present{ L"Failed because a valid CoreWebView2 is not present. Make sure one was created, for example by calling EnsureCoreWebView2Async() API."sv };
+
+// Drag content type flags - each bit represents a clipboard format present in the data object.
+// Multiple bits can be set when the data object contains multiple formats.
+static constexpr DWORD DRAG_CONTENT_NONE = 0x0000;
+static constexpr DWORD DRAG_CONTENT_FILES = 0x0001;  // CF_HDROP
+static constexpr DWORD DRAG_CONTENT_HTML = 0x0002;  // "HTML Format"
+static constexpr DWORD DRAG_CONTENT_URL = 0x0004;  // "UniformResourceLocatorW"
+static constexpr DWORD DRAG_CONTENT_TEXT = 0x0008;  // CF_UNICODETEXT
+static constexpr DWORD DRAG_CONTENT_BITMAP = 0x0010;  // CF_BITMAP
+static constexpr DWORD DRAG_CONTENT_IMAGE = 0x0020;  // CF_DIB
 
 // White matches CoreWebView2Controller.DefaultBackgroundColor
 const winrt::Color WebView2::sc_controllerDefaultBackgroundColor{ 255, 255, 255, 255 };
@@ -355,6 +369,9 @@ void WebView2::HandlePointerReleased(const winrt::Windows::Foundation::IInspecta
 
 void WebView2::HandlePointerMoved(const winrt::Windows::Foundation::IInspectable&, const winrt::PointerRoutedEventArgs& args)
 {
+    // Capture pointer point to be used in StartAsync later
+    m_lastPointerPoint = args.GetCurrentPoint(*this);
+
     // Chromium handles WM_MOUSEXXX for mouse, WM_POINTERXXX for touch
     winrt::PointerDeviceType deviceType{ args.Pointer().PointerDeviceType() };
     UINT message = deviceType == winrt::PointerDeviceType::Mouse ? WM_MOUSEMOVE : WM_POINTERUPDATE;
@@ -613,7 +630,7 @@ void WebView2::RegisterCoreEventHandlers()
                         winrt::FocusNavigationDirection xamlDirection = moveFocusRequestedReason == winrt::CoreWebView2MoveFocusReason::Next
                             ? winrt::FocusNavigationDirection::Next 
                             : winrt::FocusNavigationDirection::Previous;
-                        
+                            
                         winrt::FindNextElementOptions findNextElementOptions;
                         findNextElementOptions.SearchRoot(xamlRoot.Content());
 
@@ -764,6 +781,8 @@ void WebView2::RegisterCoreEventHandlers()
                 rawThis->ProtectedCursor(inputCursorToSet);
             }
         } });
+
+    RegisterDragStartingHandler();
 }
 
 void WebView2::UnregisterCoreEventHandlers()
@@ -785,13 +804,15 @@ void WebView2::UnregisterCoreEventHandlers()
     if (m_coreWebViewCompositionController)
     {
         m_cursorChangedRevoker.revoke();
+
+        UnRegisterDragStartingHandler();
     }
 }
 
 winrt::IAsyncAction WebView2::CreateCoreObjects(winrt::CoreWebView2Environment environment, winrt::CoreWebView2ControllerOptions controllerOptions)
 {
     MUX_ASSERT((m_isImplicitCreationInProgress && !m_isExplicitCreationInProgress) ||
-               (!m_isImplicitCreationInProgress && m_isExplicitCreationInProgress));
+                (!m_isImplicitCreationInProgress && m_isExplicitCreationInProgress));
 
     auto strongThis = get_strong(); // ensure object lifetime during coroutines
 
@@ -844,7 +865,7 @@ winrt::IAsyncOperation<winrt::CoreWebView2Environment> WebView2::CreateDefaultCo
     auto strongThis = get_strong(); // ensure object lifetime during coroutines
 
     // NOTE: To enable Anaheim logging, add: environmentOptions.AdditionalBrowserArguments(L"--enable-logging=stderr --v=1");
-    winrt::CoreWebView2EnvironmentOptions environmentOptions =  winrt::CoreWebView2EnvironmentOptions();
+    winrt::CoreWebView2EnvironmentOptions environmentOptions = winrt::CoreWebView2EnvironmentOptions();
 
     auto applicationLanguagesList = winrt::ApplicationLanguages::Languages();
     if (applicationLanguagesList.Size() > 0)
@@ -1215,7 +1236,7 @@ void WebView2::OnXamlPointerMessage(UINT message, const winrt::PointerRoutedEven
         }
     }
     else if ((deviceType == winrt::Microsoft::UI::Input::PointerDeviceType::Touch) ||
-             (deviceType == winrt::Microsoft::UI::Input::PointerDeviceType::Pen))
+                (deviceType == winrt::Microsoft::UI::Input::PointerDeviceType::Pen))
     {
         const winrt::PointerPoint inputPt{ args.GetCurrentPoint(*this) };
         winrt::CoreWebView2PointerInfo outputPt = m_coreWebViewEnvironment.CreateCoreWebView2PointerInfo();
@@ -1457,20 +1478,20 @@ winrt::IAsyncAction WebView2::EnsureCoreWebView2Async(winrt::CoreWebView2Environ
     {
         if (environment != nullptr || controllerOptions != nullptr)
         {
-             if (m_coreWebViewEnvironment != environment)
-             {
+            if (m_coreWebViewEnvironment != environment)
+            {
                 throw winrt::hresult_invalid_argument(
                     L"WebView2 was already initialized with a different CoreWebView2Environment. "
                     L"Check to see if the Source property was already set or EnsureCoreWebView2Async was previously called with different values."
-                    );
-             }
-             if (m_customCoreWebViewControllerOptions != controllerOptions)
-             {
+                );
+            }
+            if (m_customCoreWebViewControllerOptions != controllerOptions)
+            {
                 throw winrt::hresult_invalid_argument(
                     L"WebView2 was already initialized with different CoreWebView2ControllerOptions. "
                     L"Check to see if the Source property was already set or EnsureCoreWebView2Async was previously called with different values."
-                    );
-             }
+                );
+            }
         }
 
         // Synchronous return - existing core objects are compatible
@@ -1529,9 +1550,9 @@ struct WebView2_TryCompleteInitialization_RAII : public SimpleXamlStartStopEvent
 {
 public:
     WebView2_TryCompleteInitialization_RAII(uint64_t objectPointer) : SimpleXamlStartStopEvent_RAII(objectPointer)
-        { XamlTelemetry::WebView2_TryCompleteInitialization(true, m_objectPointer); }
+    { XamlTelemetry::WebView2_TryCompleteInitialization(true, m_objectPointer); }
     ~WebView2_TryCompleteInitialization_RAII()
-        { XamlTelemetry::WebView2_TryCompleteInitialization(false, m_objectPointer); }
+    { XamlTelemetry::WebView2_TryCompleteInitialization(false, m_objectPointer); }
 };
 
 void WebView2::TryCompleteInitialization()
@@ -1691,34 +1712,34 @@ void WebView2::ConvertXamlArgsToOle32Args(const winrt::DragEventArgs& args, DWOR
     dropEffect = DROPEFFECT_NONE;
 
     // Get the drag drop modifiers and convert to key state
-    winrt::DragDropModifiers dragDropModifiers = args.Modifiers();
-    if ((dragDropModifiers & winrt::DragDropModifiers::LeftButton) ==
-        winrt::DragDropModifiers::LeftButton)
+    auto dragDropModifiers = args.Modifiers();
+    if ((dragDropModifiers & winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::LeftButton) ==
+        winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::LeftButton)
     {
         keyState |= MK_LBUTTON;
     }
-    if ((dragDropModifiers & winrt::DragDropModifiers::MiddleButton) ==
-        winrt::DragDropModifiers::MiddleButton)
+    if ((dragDropModifiers & winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::MiddleButton) ==
+        winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::MiddleButton)
     {
         keyState |= MK_MBUTTON;
     }
-    if ((dragDropModifiers & winrt::DragDrop::DragDropModifiers::RightButton) ==
-        winrt::DragDrop::DragDropModifiers::RightButton)
+    if ((dragDropModifiers & winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::RightButton) ==
+        winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::RightButton)
     {
         keyState |= MK_RBUTTON;
     }
-    if ((dragDropModifiers & winrt::DragDrop::DragDropModifiers::Shift) ==
-        winrt::DragDrop::DragDropModifiers::Shift)
+    if ((dragDropModifiers & winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::Shift) ==
+        winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::Shift)
     {
         keyState |= MK_SHIFT;
     }
-    if ((dragDropModifiers & winrt::DragDrop::DragDropModifiers::Control) ==
-        winrt::DragDrop::DragDropModifiers::Control)
+    if ((dragDropModifiers & winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::Control) ==
+        winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::Control)
     {
         keyState |= MK_CONTROL;
     }
-    if ((dragDropModifiers & winrt::DragDrop::DragDropModifiers::Alt) ==
-        winrt::DragDrop::DragDropModifiers::Alt)
+    if ((dragDropModifiers & winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::Alt) ==
+        winrt::Windows::ApplicationModel::DataTransfer::DragDrop::DragDropModifiers::Alt)
     {
         keyState |= MK_ALT;
     }
@@ -2125,15 +2146,15 @@ void WebView2::CheckAndUpdateWindowPosition()
                 m_coreWebViewController.NotifyParentWindowPositionChanged();
             });
     }
- }
+}
 
 void WebView2::CheckAndUpdateVisibility(bool force)
 {
     // Keep booleans in this order to prevent doing expensive tree walk if we don't have to.
     bool currentVisibility = this->Visibility() == winrt::Visibility::Visible &&
-                             this->IsLoaded() &&
-                             this->m_isHostVisible &&
-                             AreAllAncestorsVisible();
+                                this->IsLoaded() &&
+                                this->m_isHostVisible &&
+                                AreAllAncestorsVisible();
     if (m_isVisible != currentVisibility || force)
     {
         m_isVisible = currentVisibility;
@@ -2294,4 +2315,353 @@ winrt::UISettings WebView2::GetUISettings()
         m_uiSettings = winrt::UISettings();
     }
     return m_uiSettings;
+}
+
+static DWORD GetDragContentTypeFromDataObject(IDataObject* dataObject)
+{
+    DWORD contentFlags = DRAG_CONTENT_NONE;
+
+    // Pre-register custom clipboard formats for comparison during enumeration.
+    static const CLIPFORMAT cfHtml = static_cast<CLIPFORMAT>(RegisterClipboardFormatW(L"HTML Format"));
+    static const CLIPFORMAT cfUrl = static_cast<CLIPFORMAT>(RegisterClipboardFormatW(L"UniformResourceLocatorW"));
+
+    Microsoft::WRL::ComPtr<IEnumFORMATETC> enumFmt;
+    if (FAILED(dataObject->EnumFormatEtc(DATADIR_GET, &enumFmt)) || !enumFmt)
+    {
+        return DRAG_CONTENT_NONE;
+    }
+
+    constexpr DWORD allContentFlags = DRAG_CONTENT_FILES | DRAG_CONTENT_HTML | DRAG_CONTENT_URL |
+        DRAG_CONTENT_TEXT | DRAG_CONTENT_BITMAP | DRAG_CONTENT_IMAGE;
+
+    FORMATETC fetc{};
+    while (enumFmt->Next(1, &fetc, nullptr) == S_OK)
+    {
+        switch (fetc.cfFormat)
+        {
+        case CF_HDROP:
+            contentFlags |= DRAG_CONTENT_FILES;
+            break;
+        case CF_UNICODETEXT:
+            contentFlags |= DRAG_CONTENT_TEXT;
+            break;
+        case CF_BITMAP:
+            contentFlags |= DRAG_CONTENT_BITMAP;
+            break;
+        case CF_DIB:
+        case CF_DIBV5:
+            contentFlags |= DRAG_CONTENT_IMAGE;
+            break;
+        default:
+            // Custom registered formats cannot appear in a switch statement,
+            // so compare them here.
+            if (fetc.cfFormat == cfHtml)
+            {
+                contentFlags |= DRAG_CONTENT_HTML;
+            }
+            else if (fetc.cfFormat == cfUrl)
+            {
+                contentFlags |= DRAG_CONTENT_URL;
+            }
+            break;
+        }
+
+        // Free the DVTARGETDEVICE if the enumerator allocated one.
+        if (fetc.ptd)
+        {
+            CoTaskMemFree(fetc.ptd);
+            fetc.ptd = nullptr;
+        }
+
+        // All content types discovered, no need to continue enumeration.
+        if (contentFlags == allContentFlags)
+        {
+            break;
+        }
+    }
+
+    return contentFlags;
+}
+
+void WebView2::DragStartingCallback(ICoreWebView2DragStartingEventArgs* args) noexcept
+{
+    TraceLoggingWrite(
+        g_hTelemetryProvider,
+        "WebView2_DragStarting_Start",
+        TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+
+    if (!args)
+    {
+        return;
+    }
+
+    HRESULT hrDragCallback = S_OK;
+    DWORD contentType = DRAG_CONTENT_NONE;
+
+    try
+    {
+        hrDragCallback = args->put_Handled(TRUE);
+
+        if (FAILED(hrDragCallback))
+        {
+            LogTelemetryDragStartingFailure(hrDragCallback, contentType);
+            XamlTelemetry::WebView2_DragStartingCallback_Failed(hrDragCallback, L"Failed to set Handled flag on DragStarting event args");
+            return;
+        }
+
+        if(!m_lastPointerPoint)
+        {
+            return;
+        }
+
+        auto lastPointerPointCopy = m_lastPointerPoint;
+
+        winrt::Microsoft::UI::Input::DragDrop::DragOperation dragOperation;
+
+        Microsoft::WRL::ComPtr<IDataObject> spDataObject;
+        hrDragCallback = args->get_Data(&spDataObject);
+
+        if(FAILED(hrDragCallback) || !spDataObject)
+        {
+            LogTelemetryDragStartingFailure(hrDragCallback, contentType);
+            XamlTelemetry::WebView2_DragStartingCallback_Failed(hrDragCallback, L"Failed to get DataObject from DragStarting event args");
+            return;
+        }
+
+        auto dataPackage = dragOperation.Data();
+        auto dataObjectProvider = dataPackage.try_as<::IDataObjectProvider>();
+
+        if(!dataObjectProvider)
+        {
+            hrDragCallback = E_NOINTERFACE;
+            LogTelemetryDragStartingFailure(hrDragCallback, contentType);
+            XamlTelemetry::WebView2_DragStartingCallback_Failed(hrDragCallback, L"Failed to get IDataObjectProvider from DataPackage");
+            return;
+        }
+
+        dataObjectProvider->SetDataObject(spDataObject.Get());
+
+        contentType = GetDragContentTypeFromDataObject(spDataObject.Get());
+
+        TraceLoggingWrite(
+            g_hTelemetryProvider,
+            "WebView2_DragStarting_ContentType",
+            TraceLoggingUInt32(contentType, "ContentType"),
+            TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+
+        DWORD allowedDropEffects = DROPEFFECT_NONE;
+        hrDragCallback = args->get_AllowedDropEffects(&allowedDropEffects);
+
+        if (FAILED(hrDragCallback))
+        {
+            LogTelemetryDragStartingFailure(hrDragCallback, contentType);
+            XamlTelemetry::WebView2_DragStartingCallback_WithContentType_Failed(hrDragCallback, contentType, L"Failed to get AllowedDropEffects from DragStarting event args");
+            return;
+        }
+
+        winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation allowedOperations = winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None;
+        if (allowedDropEffects & DROPEFFECT_COPY)
+        {
+            allowedOperations |= winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Copy;
+        }
+        if (allowedDropEffects & DROPEFFECT_MOVE)
+        {
+            allowedOperations |= winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move;
+        }
+        if (allowedDropEffects & DROPEFFECT_LINK)
+        {
+            allowedOperations |= winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Link;
+        }
+
+        dragOperation.AllowedOperations(allowedOperations);
+
+        // Defer the drag UI rendering to let WebView2 handle it
+        dragOperation.DragUIContentMode(winrt::Microsoft::UI::Input::DragDrop::DragUIContentMode::Deferred);
+
+        // The DragDropManager here is NULL.
+        // Reason: We don't have the need of custom drop logic for targets within WinUI3
+        auto asyncDragOperation = dragOperation.StartAsync(nullptr, lastPointerPointCopy);
+
+        asyncDragOperation.Completed([contentType](winrt::IAsyncOperation<winrt::DataPackageOperation> const& asyncInfo, winrt::AsyncStatus status)
+            {
+                if (status == winrt::AsyncStatus::Canceled || status == winrt::AsyncStatus::Completed)
+                {
+                    PCWSTR statusStr = (status == winrt::AsyncStatus::Canceled) ? L"Canceled" : L"Completed";
+
+                    TraceLoggingWrite(
+                        g_hTelemetryProvider,
+                        "WebView2_DragOperation_Successful",
+                        TraceLoggingWideString(statusStr, "Status"),
+                        TraceLoggingUInt32(contentType, "ContentType"),
+                        TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+                        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+                }
+                else if (status == winrt::AsyncStatus::Error)
+                {
+                    HRESULT hr = static_cast<HRESULT>(asyncInfo.ErrorCode());
+                    TraceLoggingWrite(
+                        g_hTelemetryProvider,
+                        "WebView2_DragOperation_Failed",
+                        TraceLoggingHResult(hr, "HRESULT"),
+                        TraceLoggingUInt32(contentType, "ContentType"),
+                        TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+                        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+                }
+
+                asyncInfo.Close();
+
+            });
+    }
+    catch (...)
+    {
+        hrDragCallback = E_FAIL;
+        LogTelemetryDragStartingFailure(hrDragCallback, contentType);
+        TraceLoggingProviderWrite(
+            XamlTelemetryLogging,
+            "WebView2_DragStartingCallback_Exception",
+            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+    }
+}
+
+void WebView2::RegisterDragStartingHandler() noexcept
+{
+    try
+    {
+        auto coreWebView2CompositionControllerInterop3 = GetDragStartingInterop();
+        if (!coreWebView2CompositionControllerInterop3)
+        {
+            return;
+        }
+
+        auto weakThis{ winrt::make_weak(static_cast<winrt::WebView2>(*this)) };
+
+        m_dragStartingHandler = Microsoft::WRL::Callback<ICoreWebView2DragStartingEventHandler>(
+            [weakThis](ICoreWebView2CompositionController* sender, ICoreWebView2DragStartingEventArgs* args) -> HRESULT
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    WebView2* rawThis = winrt::get_self<WebView2>(strongThis);
+                    rawThis->DragStartingCallback(args);
+                }
+                return S_OK;
+            });
+
+        HRESULT hr = coreWebView2CompositionControllerInterop3->add_DragStarting(
+            m_dragStartingHandler.Get(),
+            &m_dragStartingToken
+        );
+
+        if (FAILED(hr))
+        {
+            TraceLoggingProviderWrite(
+                XamlTelemetryLogging,
+                "WebView2_RegisterDragStartingHandler_Failed",
+                TraceLoggingHResult(hr, "HRESULT"),
+                TraceLoggingWideString(L"Failed to add DragStarting handler", "ErrorMessage"),
+                TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+            return;
+        }
+    }
+    catch (...)
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetryLogging,
+            "WebView2_RegisterDragStartingHandler_Exception",
+            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+    }
+}
+
+void WebView2::UnRegisterDragStartingHandler() noexcept
+{
+    if (m_dragStartingToken.value == 0 || !m_coreWebViewCompositionController)
+    {
+        m_lastPointerPoint = nullptr;
+        m_dragStartingToken = {};
+        return;
+    }
+
+    HRESULT hrRemove = S_OK;
+
+    try {
+        auto coreWebView2CompositionControllerInterop3 = GetDragStartingInterop();
+
+        if (!coreWebView2CompositionControllerInterop3)
+        {
+            m_lastPointerPoint = nullptr;
+            m_dragStartingToken = {};
+            return;
+        }
+
+        hrRemove = coreWebView2CompositionControllerInterop3 ? coreWebView2CompositionControllerInterop3->remove_DragStarting(m_dragStartingToken) : E_NOINTERFACE;
+
+        if (FAILED(hrRemove))
+        {
+            TraceLoggingProviderWrite(
+                XamlTelemetryLogging,
+                "WebView2_UnRegisterDragStartingHandler_Failed",
+                TraceLoggingHResult(hrRemove, "HRESULT"),
+                TraceLoggingWideString(L"Failed to remove DragStarting handler", "ErrorMessage"),
+                TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+            m_lastPointerPoint = nullptr;
+            m_dragStartingToken = {};
+            return;
+        }
+    }
+    catch (...)
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetryLogging,
+            "WebView2_UnRegisterDragStartingHandler_Exception",
+            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+    }
+
+    // Always reset the token, even if unregistration failed
+    // This prevents repeated failed attempts to unregister the same token
+    m_dragStartingToken = {};
+    m_lastPointerPoint = nullptr;
+}
+
+com_ptr<ICoreWebView2CompositionControllerInterop3> WebView2::GetDragStartingInterop()
+{
+    com_ptr<ICoreWebView2CompositionControllerInterop3> interop;
+    auto hr = m_coreWebViewCompositionController.as<IUnknown>()->QueryInterface(
+        __uuidof(ICoreWebView2CompositionControllerInterop3), interop.put_void());
+
+    if (FAILED(hr))
+    {
+        TraceLoggingWrite(
+            g_hTelemetryProvider,
+            "WebView2_QueryDragInterface_Failed",
+            TraceLoggingHResult(hr, "HRESULT"),
+            TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+        return nullptr;
+    }
+
+    return interop;
+}
+
+void WebView2::LogTelemetryDragStartingFailure(HRESULT hr, DWORD contentType) const
+{
+    if (contentType == DRAG_CONTENT_NONE)
+    {
+        TraceLoggingWrite(
+            g_hTelemetryProvider,
+            "WebView2_DragStartingCallback_Failed",
+            TraceLoggingHResult(hr, "HRESULT"),
+            TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+    }
+    else
+    {
+        TraceLoggingWrite(
+            g_hTelemetryProvider,
+            "WebView2_DragStartingCallback_WithContentType_Failed",
+            TraceLoggingHResult(hr, "HRESULT"),
+            TraceLoggingUInt32(contentType, "ContentType"),
+            TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+    }
 }

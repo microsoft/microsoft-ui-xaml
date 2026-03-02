@@ -199,6 +199,11 @@ namespace MUXControlsTestApp
             ParentHiddenThenVisibleTest,
             LifetimeTabTest,
             DragDropIntoWebView2Test,
+            DragFromWebView2_DragStartEventTest,
+            DragFromWebView2_DragContentTest,
+            DragFromWebView2_DropTextTest,
+            DragFromWebView2_DropLinkTest,
+            DragFromWebView2_DropImageTest,
             CustomConfiguration_BasicTest,
             CustomConfiguration_EnsureAgainAfterDefaultTest,
             CustomConfiguration_EnsureAgainAfterCustomTest
@@ -272,6 +277,11 @@ namespace MUXControlsTestApp
             { TestList.ParentHiddenThenVisibleTest, 1 },
             { TestList.LifetimeTabTest, 0 },
             { TestList.DragDropIntoWebView2Test, 3 },
+            { TestList.DragFromWebView2_DragStartEventTest, 8 },
+            { TestList.DragFromWebView2_DragContentTest, 8 },
+            { TestList.DragFromWebView2_DropTextTest, 8 },
+            { TestList.DragFromWebView2_DropLinkTest, 8 },
+            { TestList.DragFromWebView2_DropImageTest, 8 },
             { TestList.CustomConfiguration_BasicTest, 0 },
             { TestList.CustomConfiguration_EnsureAgainAfterDefaultTest, 0 },
             { TestList.CustomConfiguration_EnsureAgainAfterCustomTest, 0 }
@@ -287,6 +297,7 @@ namespace MUXControlsTestApp
             "SimpleInputPage.html",
             "SimplePageWithManyButtons.html",
             "SimplePageWithNonÅscií.html",
+            "SimplePageWithDraggableElements.html",
         };
 
         readonly WebView2Common _helpers;
@@ -872,7 +883,7 @@ namespace MUXControlsTestApp
                         focusLog.Text += webMessageAsString + "\n";
                         focusScrollViewer.ChangeView(null, focusScrollViewer.ScrollableHeight, null);
                     }
-                    else if (IsW2CenterPointMessage(webMessageAsString))
+                    else if (IsW2CenterPointMessage(webMessageAsString) || IsDraggableElementsMessage(webMessageAsString) || IsDragStartingMessage(webMessageAsString))
                     {
                         MiscTextBox.Text = webMessageAsString;
                     }
@@ -898,6 +909,16 @@ namespace MUXControlsTestApp
         private static bool IsW2CenterPointMessage(string webMessageAsString)
         {
             return webMessageAsString.StartsWith("w2 CenterPoint:");
+        }
+
+        private static bool IsDraggableElementsMessage(string webMessageAsString)
+        {
+            return webMessageAsString.StartsWith("DraggableElements:");
+        }
+
+        private static bool IsDragStartingMessage(string webMessageAsString)
+        {
+            return webMessageAsString.StartsWith("DragStarting");
         }
 
         private static bool IsFocusMessage(string webMessageAsString)
@@ -1088,6 +1109,50 @@ namespace MUXControlsTestApp
             args.Data.RequestedOperation = DataPackageOperation.Copy;
         }
 
+        private void DropTargetTextBox_DragOver(object sender, DragEventArgs e)
+        {
+            // Only accept if we can actually handle the data
+            if (e.DataView.Contains(StandardDataFormats.Text) ||
+                e.DataView.Contains(StandardDataFormats.Uri) ||
+                e.DataView.Contains(StandardDataFormats.Bitmap))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
+            }
+            else
+            {
+                e.AcceptedOperation = DataPackageOperation.None;
+            }
+            e.Handled = true;
+        }
+
+        private async void DropTargetTextBox_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (e.DataView.Contains(StandardDataFormats.Bitmap))
+                {
+                    var bitmapRef = await e.DataView.GetBitmapAsync();
+                    DropTargetTextBox.Text = "[Bitmap received]";
+                }
+                else if (e.DataView.Contains(StandardDataFormats.Uri))
+                {
+                    Uri uri = await e.DataView.GetUriAsync();
+                    DropTargetTextBox.Text = uri.ToString();
+                }
+                else if (e.DataView.Contains(StandardDataFormats.Text))
+                {
+                    string text = await e.DataView.GetTextAsync();
+                    DropTargetTextBox.Text = text;
+                }
+            }
+            catch (Exception)
+            {
+                DropTargetTextBox.Text = "Exception occurred when trying to read dropped data.";
+            }
+            
+            e.Handled = true;
+        }
+
         // Some tests receive multiple messages from WebMessageReceived, but we only care about the last one
         bool IsTransientWebMessage(string webMessageAsString)
         {
@@ -1104,6 +1169,8 @@ namespace MUXControlsTestApp
                    isInitialResize ||
                    isInitialWindowVisible ||
                    IsW2CenterPointMessage(webMessageAsString) || 
+                   IsDraggableElementsMessage(webMessageAsString) ||
+                   IsDragStartingMessage(webMessageAsString) ||
                    IsFocusMessage(webMessageAsString);
         }
 

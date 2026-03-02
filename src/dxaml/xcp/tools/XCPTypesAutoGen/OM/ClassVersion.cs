@@ -104,7 +104,7 @@ namespace OM
             projection.FactoryImplementedInterfaces.AddRange(ActualClass.FactoryImplementedInterfaces.Where(i => i.Version == Version));
             projection.ImplementedInterfaces.AddRange(ActualClass.ImplementedInterfaces.Where(i => i.Version == Version));
             projection.AllMethods.AddRange(ActualClass.AllMethods.Where(m => m.Version == Version));
-            projection.AllProperties.AddRange(ActualClass.AllProperties.Where(m => m.Version == Version || m.GetterVersion == Version || m.SetterVersion == Version));
+            projection.AllProperties.AddRange(ActualClass.AllProperties.Where(m => m.Version == Version || m.GetterVersion == Version || m.SetterVersion == Version || (m is DependencyPropertyDefinition dpDef && dpDef.DependencyPropertyVersion == Version)));
             projection.SupportedContracts.AddRange(SupportedContracts);
             projection.ForcePrimaryInterfaceGeneration = ForcePrimaryInterfaceGeneration;
 

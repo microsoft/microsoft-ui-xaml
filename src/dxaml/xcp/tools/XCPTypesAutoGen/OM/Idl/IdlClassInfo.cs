@@ -82,7 +82,8 @@ namespace OM.Idl
         {
             get
             {
-                return _owner.DependencyProperties.Where(dp => !dp.IdlMemberInfo.IsExcluded && dp.IsHandlePublic);
+                return _owner.DependencyProperties.Where(dp => !dp.IdlMemberInfo.IsExcluded && dp.IsHandlePublic
+                     && IsDependencyPropertyVersionMatching(dp));
             }
         }
         public Guid FactoryInterfaceGuid
@@ -476,7 +477,8 @@ namespace OM.Idl
         {
             get
             {
-                return _owner.InstanceEvents.Where(e => !e.IdlMemberInfo.IsExcluded && e.InterfaceMember == null);
+                return _owner.InstanceEvents.Where(e => !e.IdlMemberInfo.IsExcluded && e.InterfaceMember == null
+                    && IsEventVersionMatching(e));
             }
         }
 
@@ -484,7 +486,8 @@ namespace OM.Idl
         {
             get
             {
-                return _owner.InstanceProperties.Where(p => !p.IdlMemberInfo.IsExcluded && p.InterfaceMember == null);
+                return _owner.InstanceProperties.Where(p => !p.IdlMemberInfo.IsExcluded && p.InterfaceMember == null
+                    && IsPropertyVersionMatching(p));
             }
         }
 
@@ -500,7 +503,8 @@ namespace OM.Idl
         {
             get
             {
-                return _owner.InstanceMethods.Where(m => !m.IdlMemberInfo.IsExcluded && m.InterfaceMember == null);
+                return _owner.InstanceMethods.Where(m => !m.IdlMemberInfo.IsExcluded && m.InterfaceMember == null
+                    && IsMethodVersionMatching(m));
             }
         }
 
@@ -856,6 +860,53 @@ namespace OM.Idl
 				// CorrectedTypeName for our own use in order to be consistent with the IDL.
                 return _owner.CorrectedTypeName.Substring(0, _owner.CorrectedTypeName.LastIndexOf('.'));
             }
+        }
+
+        /// Determines whether a property version matches the current class version context.
+        /// A property version matches if:
+        /// - The class is not a version projection, OR
+        /// - The property's version equals the class's version, OR
+        /// - The property's getter version equals the class's version, OR
+        /// - The property's setter version equals the class's version
+        private bool IsPropertyVersionMatching(PropertyDefinition property)
+        {
+            return !_owner.IsVersionProjection
+                || property.Version == _owner.Version
+                || property.GetterVersion == _owner.Version
+                || property.SetterVersion == _owner.Version;
+        }
+
+
+        /// Determines whether a dependency property version matches the current class version context.
+        /// A dependency property version matches if:
+        /// - The property has no specific version assigned, OR
+        /// - The class is not a version projection, OR  
+        /// - The property's version equals the class's version
+        private bool IsDependencyPropertyVersionMatching(DependencyPropertyDefinition dependencyProperty)
+        {
+            return !dependencyProperty.DependencyPropertyVersion.HasValue 
+                || !_owner.IsVersionProjection 
+                || dependencyProperty.DependencyPropertyVersion.Value == _owner.Version;
+        }
+
+        /// Determines whether an event version matches the current class version context.
+        /// An event version matches if:
+        /// - The class is not a version projection, OR
+        /// - The event's version equals the class's version
+        private bool IsEventVersionMatching(EventDefinition eventDef)
+        {
+            return !_owner.IsVersionProjection
+                || eventDef.Version == _owner.Version;
+        }
+
+        /// Determines whether a method version matches the current class version context.
+        /// A method version matches if:
+        /// - The class is not a version projection, OR
+        /// - The method's version equals the class's version
+        private bool IsMethodVersionMatching(MethodDefinition method)
+        {
+            return !_owner.IsVersionProjection
+                || method.Version == _owner.Version;
         }
     }
 }

@@ -185,6 +185,17 @@ public:
         uint64_t, ObjectPointer,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
+    DEFINE_TRACELOGGING_EVENT_PARAM3(WebView2_DragStartingCallback_WithContentType_Failed,
+        HRESULT, HR,
+        uint32_t, ContentType,
+        PCWSTR, ErrorMessage,
+        TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+
+    DEFINE_TRACELOGGING_EVENT_PARAM2(WebView2_DragStartingCallback_Failed,
+        HRESULT, HR,
+        PCWSTR, ErrorMessage,
+        TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+
     DEFINE_TRACELOGGING_EVENT_PARAM2(MapControl_InitializeWebMap,
         bool, IsStart,
         uint64_t, ObjectPointer,
