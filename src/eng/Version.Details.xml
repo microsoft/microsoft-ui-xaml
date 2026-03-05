@@ -2,17 +2,17 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.FrameworkUdk" Version="2.0.0-experimental-27300.1856.260222-1705.0">
+    <Dependency Name="Microsoft.FrameworkUdk" Version="2.0.0-experimental-27300.1857.260302-0806.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>50a503f7550e571c356371967e75ccb111eab574</Sha>
+      <Sha>ad0a4add4b0a1acd66ac964b4edec5d764fd952d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="2.0.0-20260303.0.nightly.internal">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
       <Sha>88b72d0d997dffacd3215a480d824cd526fb864c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="2.0.0-experimental-27300.1856.260222-1705.0">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="2.0.0-experimental-27300.1857.260302-0806.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>50a503f7550e571c356371967e75ccb111eab574</Sha>
+      <Sha>ad0a4add4b0a1acd66ac964b4edec5d764fd952d</Sha>
     </Dependency>
     <!-- Closed source binary (ex PTLS and WinUIEdit) -->
     <Dependency Name="Microsoft.Internal.WinUIDetails" Version="2.10.0-experimental.20260304.0">
@@ -27,9 +27,9 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
       <Sha>88b72d0d997dffacd3215a480d824cd526fb864c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.0.8-experimental">
+    <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.0.10-experimental">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>50a503f7550e571c356371967e75ccb111eab574</Sha>
+      <Sha>ad0a4add4b0a1acd66ac964b4edec5d764fd952d</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
