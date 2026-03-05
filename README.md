@@ -37,7 +37,7 @@ For WinUI, your app's users must be on Windows 10 1809 - Build 17763 or newer (i
 The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/windows/apps/):
 - [Get started with WinUI](https://learn.microsoft.com/windows/apps/get-started/start-here)
 - [Build your first WinUI app](https://learn.microsoft.com/windows/apps/tutorials/winui-notes/)
-- [WinUI & Windows App SDK samples](https://learn.microsoft.com/en-us/windows/apps/get-started/samples)
+- [WinUI & Windows App SDK samples](https://learn.microsoft.com/windows/apps/get-started/samples)
 
 </br>
 
