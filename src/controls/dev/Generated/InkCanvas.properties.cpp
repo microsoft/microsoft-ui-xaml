@@ -13,15 +13,42 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "InkCanvas.g.cpp"
 
+GlobalDependencyProperty InkCanvasProperties::s_AllowedInputTypesProperty{ nullptr };
+GlobalDependencyProperty InkCanvasProperties::s_DefaultDrawingAttributesProperty{ nullptr };
 GlobalDependencyProperty InkCanvasProperties::s_IsEnabledProperty{ nullptr };
+GlobalDependencyProperty InkCanvasProperties::s_ModeProperty{ nullptr };
 
 InkCanvasProperties::InkCanvasProperties()
+    : m_strokeCollectedEventSource{static_cast<InkCanvas*>(this)}
+    , m_strokesErasedEventSource{static_cast<InkCanvas*>(this)}
 {
     EnsureProperties();
 }
 
 void InkCanvasProperties::EnsureProperties()
 {
+    if (!s_AllowedInputTypesProperty)
+    {
+        s_AllowedInputTypesProperty =
+            InitializeDependencyProperty(
+                L"AllowedInputTypes",
+                winrt::name_of<winrt::InkInputType>(),
+                winrt::name_of<winrt::InkCanvas>(),
+                false /* isAttached */,
+                ValueHelper<winrt::InkInputType>::BoxValueIfNecessary(winrt::InkInputType::Pen | winrt::InkInputType::Mouse),
+                winrt::PropertyChangedCallback(&OnAllowedInputTypesPropertyChanged));
+    }
+    if (!s_DefaultDrawingAttributesProperty)
+    {
+        s_DefaultDrawingAttributesProperty =
+            InitializeDependencyProperty(
+                L"DefaultDrawingAttributes",
+                winrt::name_of<winrt::InkDrawingAttributes>(),
+                winrt::name_of<winrt::InkCanvas>(),
+                false /* isAttached */,
+                ValueHelper<winrt::InkDrawingAttributes>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnDefaultDrawingAttributesPropertyChanged));
+    }
     if (!s_IsEnabledProperty)
     {
         s_IsEnabledProperty =
@@ -33,11 +60,41 @@ void InkCanvasProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 winrt::PropertyChangedCallback(&OnIsEnabledPropertyChanged));
     }
+    if (!s_ModeProperty)
+    {
+        s_ModeProperty =
+            InitializeDependencyProperty(
+                L"Mode",
+                winrt::name_of<winrt::InkCanvasMode>(),
+                winrt::name_of<winrt::InkCanvas>(),
+                false /* isAttached */,
+                ValueHelper<winrt::InkCanvasMode>::BoxValueIfNecessary(winrt::InkCanvasMode::Draw),
+                winrt::PropertyChangedCallback(&OnModePropertyChanged));
+    }
 }
 
 void InkCanvasProperties::ClearProperties()
 {
+    s_AllowedInputTypesProperty = nullptr;
+    s_DefaultDrawingAttributesProperty = nullptr;
     s_IsEnabledProperty = nullptr;
+    s_ModeProperty = nullptr;
+}
+
+void InkCanvasProperties::OnAllowedInputTypesPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkCanvas>();
+    winrt::get_self<InkCanvas>(owner)->OnAllowedInputTypesPropertyChanged(args);
+}
+
+void InkCanvasProperties::OnDefaultDrawingAttributesPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkCanvas>();
+    winrt::get_self<InkCanvas>(owner)->OnDefaultDrawingAttributesPropertyChanged(args);
 }
 
 void InkCanvasProperties::OnIsEnabledPropertyChanged(
@@ -46,6 +103,40 @@ void InkCanvasProperties::OnIsEnabledPropertyChanged(
 {
     auto owner = sender.as<winrt::InkCanvas>();
     winrt::get_self<InkCanvas>(owner)->OnIsEnabledPropertyChanged(args);
+}
+
+void InkCanvasProperties::OnModePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::InkCanvas>();
+    winrt::get_self<InkCanvas>(owner)->OnModePropertyChanged(args);
+}
+
+void InkCanvasProperties::AllowedInputTypes(winrt::InkInputType const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InkCanvas*>(this)->SetValue(s_AllowedInputTypesProperty, ValueHelper<winrt::InkInputType>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::InkInputType InkCanvasProperties::AllowedInputTypes()
+{
+    return ValueHelper<winrt::InkInputType>::CastOrUnbox(static_cast<InkCanvas*>(this)->GetValue(s_AllowedInputTypesProperty));
+}
+
+void InkCanvasProperties::DefaultDrawingAttributes(winrt::InkDrawingAttributes const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InkCanvas*>(this)->SetValue(s_DefaultDrawingAttributesProperty, ValueHelper<winrt::InkDrawingAttributes>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::InkDrawingAttributes InkCanvasProperties::DefaultDrawingAttributes()
+{
+    return ValueHelper<winrt::InkDrawingAttributes>::CastOrUnbox(static_cast<InkCanvas*>(this)->GetValue(s_DefaultDrawingAttributesProperty));
 }
 
 void InkCanvasProperties::IsEnabled(bool value)
@@ -59,4 +150,37 @@ void InkCanvasProperties::IsEnabled(bool value)
 bool InkCanvasProperties::IsEnabled()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<InkCanvas*>(this)->GetValue(s_IsEnabledProperty));
+}
+
+void InkCanvasProperties::Mode(winrt::InkCanvasMode const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<InkCanvas*>(this)->SetValue(s_ModeProperty, ValueHelper<winrt::InkCanvasMode>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::InkCanvasMode InkCanvasProperties::Mode()
+{
+    return ValueHelper<winrt::InkCanvasMode>::CastOrUnbox(static_cast<InkCanvas*>(this)->GetValue(s_ModeProperty));
+}
+
+winrt::event_token InkCanvasProperties::StrokeCollected(winrt::TypedEventHandler<winrt::InkCanvas, winrt::InkCanvasStrokeCollectedEventArgs> const& value)
+{
+    return m_strokeCollectedEventSource.add(value);
+}
+
+void InkCanvasProperties::StrokeCollected(winrt::event_token const& token)
+{
+    m_strokeCollectedEventSource.remove(token);
+}
+
+winrt::event_token InkCanvasProperties::StrokesErased(winrt::TypedEventHandler<winrt::InkCanvas, winrt::InkCanvasStrokesErasedEventArgs> const& value)
+{
+    return m_strokesErasedEventSource.add(value);
+}
+
+void InkCanvasProperties::StrokesErased(winrt::event_token const& token)
+{
+    m_strokesErasedEventSource.remove(token);
 }

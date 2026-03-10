@@ -17,6 +17,8 @@
   <ItemGroup>
       <ClInclude Include="$(MSBuildThisFileDirectory)InkCanvas.h" />
       <ClInclude Include="$(MSBuildThisFileDirectory)InkCanvasAutomationPeer.h" />
+      <ClInclude Include="$(MSBuildThisFileDirectory)InkCanvasStrokeCollectedEventArgs.h" />
+      <ClInclude Include="$(MSBuildThisFileDirectory)InkCanvasStrokesErasedEventArgs.h" />
   </ItemGroup>
 
   <ItemGroup>

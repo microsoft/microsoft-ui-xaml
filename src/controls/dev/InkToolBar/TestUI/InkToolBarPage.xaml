@@ -1,0 +1,79 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.InkToolBarPage"
+    x:Name="InkToolBarTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Controls -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <ComboBox x:Name="InitialControlsSelector" AutomationProperties.Name="InitialControlsSelector"
+                      Header="InitialControls" Width="140" SelectionChanged="OnInitialControlsChanged">
+                <ComboBoxItem Content="All" IsSelected="True" />
+                <ComboBoxItem Content="None" />
+                <ComboBoxItem Content="PensOnly" />
+                <ComboBoxItem Content="AllExceptPens" />
+            </ComboBox>
+
+            <ComboBox x:Name="OrientationSelector" AutomationProperties.Name="OrientationSelector"
+                      Header="Orientation" Width="120" SelectionChanged="OnOrientationChanged">
+                <ComboBoxItem Content="Horizontal" IsSelected="True" />
+                <ComboBoxItem Content="Vertical" />
+            </ComboBox>
+
+            <ComboBox x:Name="FlyoutPlacementSelector" AutomationProperties.Name="FlyoutPlacementSelector"
+                      Header="Flyout Placement" Width="120" SelectionChanged="OnFlyoutPlacementChanged">
+                <ComboBoxItem Content="Auto" IsSelected="True" />
+                <ComboBoxItem Content="Top" />
+                <ComboBoxItem Content="Bottom" />
+                <ComboBoxItem Content="Left" />
+                <ComboBoxItem Content="Right" />
+            </ComboBox>
+
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <CheckBox x:Name="RulerCheckBox" AutomationProperties.Name="RulerCheckBox"
+                          Content="Ruler" Checked="OnRulerCheckedChanged" Unchecked="OnRulerCheckedChanged" />
+                <CheckBox x:Name="StencilCheckBox" AutomationProperties.Name="StencilCheckBox"
+                          Content="Stencil" Checked="OnStencilCheckedChanged" Unchecked="OnStencilCheckedChanged" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- InkToolBar -->
+        <controls:InkToolBar x:Name="TestInkToolBar" AutomationProperties.Name="TestInkToolBar"
+                             Grid.Row="1"
+                             TargetInkCanvas="{x:Bind TestInkCanvas}"
+                             ActiveToolChanged="OnActiveToolChanged"
+                             InkDrawingAttributesChanged="OnInkDrawingAttributesChanged"
+                             EraseAllClicked="OnEraseAllClicked"
+                             Margin="0,0,0,8" />
+
+        <!-- Status -->
+        <TextBlock x:Name="StatusText" AutomationProperties.Name="StatusText" Grid.Row="2" Margin="0,0,0,4" Text="Ready" />
+
+        <!-- InkCanvas -->
+        <Border Grid.Row="3" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1">
+            <controls:InkCanvas x:Name="TestInkCanvas" AutomationProperties.Name="TestInkCanvas" />
+        </Border>
+
+        <!-- Info Panel -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+            <TextBlock x:Name="ActiveToolText" AutomationProperties.Name="ActiveToolText" Text="Active Tool: -" />
+            <TextBlock x:Name="OrientationText" AutomationProperties.Name="OrientationText" Text="Orientation: Horizontal" />
+            <TextBlock x:Name="FlyoutPlacementText" AutomationProperties.Name="FlyoutPlacementText" Text="Flyout: Auto" />
+        </StackPanel>
+    </Grid>
+</local:TestPage>

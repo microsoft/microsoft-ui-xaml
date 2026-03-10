@@ -3,19 +3,82 @@
     [MUX_PREVIEW]
     delegate void DoInkPresenterWork(Windows.UI.Input.Inking.InkPresenter presenter);
 
+    [MUX_PREVIEW]
+    enum InkCanvasMode
+    {
+        Draw = 0,
+        Erase = 1,
+        Select = 2,
+    };
+
+    [MUX_PREVIEW]
+    [flags]
+    enum InkInputType
+    {
+        None = 0x0,
+        Pen = 0x1,
+        Touch = 0x2,
+        Mouse = 0x4,
+    };
+
+    [MUX_PREVIEW]
+    runtimeclass InkCanvasStrokeCollectedEventArgs
+    {
+        Windows.UI.Input.Inking.InkStroke Stroke{ get; };
+    };
+
+    [MUX_PREVIEW]
+    runtimeclass InkCanvasStrokesErasedEventArgs
+    {
+        Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> Strokes{ get; };
+    };
 
     [MUX_PREVIEW]
     unsealed runtimeclass InkCanvas : Microsoft.UI.Xaml.FrameworkElement
     {
         InkCanvas();
 
+        // Core enable/disable
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         [MUX_DEFAULT_VALUE("true")]
         Boolean IsEnabled{ get; set; };
 
+        // InkPresenter work queue (existing)
         Windows.Foundation.IAsyncAction QueueInkPresenterWorkItem(DoInkPresenterWork workItem);
 
+        // Drawing mode
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        [MUX_DEFAULT_VALUE("winrt::InkCanvasMode::Draw")]
+        InkCanvasMode Mode{ get; set; };
+
+        // Input type filtering
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        [MUX_DEFAULT_VALUE("winrt::InkInputType::Pen | winrt::InkInputType::Mouse")]
+        InkInputType AllowedInputTypes{ get; set; };
+
+        // Default stroke attributes
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        Windows.UI.Input.Inking.InkDrawingAttributes DefaultDrawingAttributes{ get; set; };
+
+        // Stroke container access
+        Windows.UI.Input.Inking.InkStrokeContainer StrokeContainer{ get; };
+
+        // Persistence: Save / Load ink strokes
+        Windows.Foundation.IAsyncAction SaveAsync(Windows.Storage.Streams.IOutputStream stream);
+        Windows.Foundation.IAsyncAction LoadAsync(Windows.Storage.Streams.IInputStream stream);
+
+        // Clear all strokes
+        void ClearStrokes();
+
+        // Stroke events
+        event Windows.Foundation.TypedEventHandler<InkCanvas, InkCanvasStrokeCollectedEventArgs> StrokeCollected;
+        event Windows.Foundation.TypedEventHandler<InkCanvas, InkCanvasStrokesErasedEventArgs> StrokesErased;
+
+        // Dependency properties
         static Microsoft.UI.Xaml.DependencyProperty IsEnabledProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty ModeProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty AllowedInputTypesProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty DefaultDrawingAttributesProperty{ get; };
     };
 }
 

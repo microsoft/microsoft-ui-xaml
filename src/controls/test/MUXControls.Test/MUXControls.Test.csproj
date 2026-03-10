@@ -125,6 +125,8 @@
   <Import Project="..\..\dev\SelectorBar\InteractionTests\SelectorBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true'" />
   <Import Project="..\..\dev\TitleBar\InteractionTests\TitleBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true'" />
   <Import Project="..\..\dev\SystemBackdropElement\InteractionTests\SystemBackdropElement_InteractionTests.projitems" Label="Shared" Condition="$(FeatureSystemBackdropElementEnabled) == 'true'" />
+  <Import Project="..\..\dev\InkCanvas\InteractionTests\InkCanvas_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true'" />
+  <Import Project="..\..\dev\InkToolBar\InteractionTests\InkToolBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInkToolBarEnabled) == 'true'" />
   <PropertyGroup>
     <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
   </PropertyGroup>

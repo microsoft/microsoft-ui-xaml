@@ -15,11 +15,34 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBar.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarCustomPen.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarBallpointPenButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarPenButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarToolButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarToggleButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarMenuButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarEraserButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarHighlighterButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarStencilButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarPencilButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarCustomPenButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarCustomToggleButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarCustomToolButton.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarFlyoutItem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarPenConfigurationControl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarEraserFlyoutItemClickedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarIsStencilButtonCheckedChangedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarEraserButtonInternal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarTrace.h" />
     <ClInclude Condition="false" Include="$(MSBuildThisFileDirectory)InkToolBarAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarToolButtonAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarMenuButtonAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarFlyoutItemAutomationPeer.h" />
   </ItemGroup>
 
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolBar.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBar.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarAutomationPeer.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarBallpointPenButton.properties.cpp" />
