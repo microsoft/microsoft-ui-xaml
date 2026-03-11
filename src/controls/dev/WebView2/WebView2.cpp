@@ -1345,8 +1345,19 @@ void WebView2::HandleGotFocus(const winrt::Windows::Foundation::IInspectable&, c
 {
     if (m_coreWebView && m_xamlFocusChangeInfo.m_isPending)
     {
-        MoveFocusIntoCoreWebView2(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
-        m_xamlFocusChangeInfo.m_isPending = false;
+        // Check if controller is visible before attempting to move focus
+        bool isVisible = false;
+        CoreWebView2RunIgnoreInvalidStateSync(
+            [&]()
+            {
+                isVisible = m_coreWebViewController ? m_coreWebViewController.IsVisible() : false;
+            });
+        
+        if (isVisible)
+        {
+            MoveFocusIntoCoreWebView2(m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+            m_xamlFocusChangeInfo.m_isPending = false;
+        }
     }
 }
 
@@ -2175,6 +2186,13 @@ void WebView2::UpdateCoreWebViewVisibility()
                 [&]()
                 {
                     strongThis->m_coreWebViewController.IsVisible(strongThis->m_isVisible);
+                    
+                    // If controller is now visible and focus was pending, move focus now
+                    if (strongThis->m_isVisible && strongThis->m_xamlFocusChangeInfo.m_isPending)
+                    {
+                        strongThis->MoveFocusIntoCoreWebView2(strongThis->m_xamlFocusChangeInfo.m_storedMoveFocusReason);
+                        strongThis->m_xamlFocusChangeInfo.m_isPending = false;
+                    }
                 });
         }
     };
