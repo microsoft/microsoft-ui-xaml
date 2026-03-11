@@ -145,10 +145,7 @@ DemoBorder().SetValue(Border::BorderThicknessProperty(), thicknessSetter.Value()
 
 ### Remarks
 
-* `dependencyObject` must not be `null`; an `E_POINTER` error is returned if it is `null`.
-* `propertyToSet` must not be `null`; an `E_POINTER` error is returned if it is `null`.
-
-## XamlBindingHelper.SetPropertyFromCornerRadius method
+* If `dependencyObject` or `propertyToSet` is `null`, an exception is thrown by the WinRT layer from the underlying `E_POINTER` failure.
 
 Sets a `Microsoft.UI.Xaml.CornerRadius` value on the specified dependency property of an object,
 without requiring the caller to box the struct to `IInspectable`.
@@ -196,8 +193,7 @@ DemoBorder().SetValue(Border::CornerRadiusProperty(), cornerRadiusSetter.Value()
 
 ### Remarks
 
-* `dependencyObject` must not be `null`; an `E_POINTER` error is returned if it is `null`.
-* `propertyToSet` must not be `null`; an `E_POINTER` error is returned if it is `null`.
+* If `dependencyObject` or `propertyToSet` is `null`, an exception is thrown by the WinRT layer from the underlying `E_POINTER` failure.
 
 ## XamlBindingHelper.SetPropertyFromColor method
 
@@ -253,8 +249,7 @@ DemoBorder().SetValue(Border::BorderBrushProperty(), brush);
 
 ### Remarks
 
-* `dependencyObject` must not be `null`; an `E_POINTER` error is returned if it is `null`.
-* `propertyToSet` must not be `null`; an `E_POINTER` error is returned if it is `null`.
+* If `dependencyObject` or `propertyToSet` is `null`, an exception is thrown by the WinRT layer from the underlying `E_POINTER` failure.
 
 # API Details
 
