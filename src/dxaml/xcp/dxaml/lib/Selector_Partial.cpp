@@ -2406,8 +2406,13 @@ _Check_return_
         shouldFocus = TRUE;
     }
 
-    if (shouldFocus)
+    if (shouldFocus || GetFocusedIndex() >= static_cast<INT>(nCount))
     {
+        // Always update m_focusedIndex when we have focus. Also correct it when the Selector
+        // doesn't currently have focus (e.g. the focused container was recycled during an item
+        // removal) but m_focusedIndex is stale and points beyond the valid item range.
+        // In that case, if current focused index goes out of range, we should set the focused
+        // index to value asked by caller. Note that we have already verified that index is valid above.
         SetFocusedIndex(index);
     }
 
