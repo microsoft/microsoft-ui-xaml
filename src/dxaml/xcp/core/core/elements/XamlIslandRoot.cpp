@@ -1174,11 +1174,7 @@ void CXamlIslandRoot::HandleContentIslandConnectionChange(bool isConnected)
         // Ask the system, via the IslandInputSite whether focus rectangles should be visible.
         // If not, this can be extrapolated to assume the last input device used according to the system was not the keyboard.
         // This, in turn, instructs XAML to not draw focus rectangles.
-        wrl::ComPtr<ixp::IInputFocusController3> focusController3;
-        IFCFAILFAST(m_inputFocusController.As(&focusController3));
-
-        boolean showFocusRectangles{};
-        IFCFAILFAST(focusController3->get_ShouldShowKeyboardCues(&showFocusRectangles));
+        bool showFocusRectangles = InputSiteHelper::GetShouldShowFocusRectangles(m_islandInputSite.Get());
         if (!showFocusRectangles)
         {
             m_contentRoot->GetInputManager().SetLastInputDeviceType(DirectUI::InputDeviceType::None);

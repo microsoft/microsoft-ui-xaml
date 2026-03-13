@@ -1717,7 +1717,6 @@ public:
 
     const bool IsFrameAfterVisualTreeReset() { return m_isFrameAfterVisualTreeReset; }
     const bool HasRenderedFrame() { return m_uFrameNumber > 1; }
-    const XUINT32 GetFrameNumber() { return m_uFrameNumber; }
 
     Diagnostics::ResourceLookupLogger* GetResourceLookupLogger();
 

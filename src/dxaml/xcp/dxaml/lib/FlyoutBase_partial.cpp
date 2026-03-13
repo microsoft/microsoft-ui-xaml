@@ -2236,9 +2236,10 @@ _Check_return_ HRESULT FlyoutBase::OnPresenterLoaded(
         if (m_tpPopup && contentRoot->GetType() == CContentRoot::XamlIslandRoot)
         {
             CPopup* corePopup {static_cast<CPopup*>(m_tpPopup.Cast<Popup>()->GetHandle())};
-            if (corePopup->IsWindowed())
+            wrl::ComPtr<InputSiteHelper::IIslandInputSite> islandInputSite = corePopup->GetIslandInputSite();
+            if (nullptr != islandInputSite && corePopup->IsWindowed())
             {
-                bool shouldShowKeyboardIndicators = corePopup->GetShouldShowKeyboardCues();
+                const bool shouldShowKeyboardIndicators = InputSiteHelper::GetShouldShowFocusRectangles(islandInputSite.Get());
                 if (shouldShowKeyboardIndicators && focusState != DirectUI::FocusState::Keyboard)
                 {
                     inputManager.SetLastInputDeviceType(DirectUI::InputDeviceType::Keyboard);

@@ -28,7 +28,8 @@ HRESULT DirectUI::SplitMenuFlyoutItemGenerated::QueryInterfaceImpl(_In_ REFIID i
     {
         *ppObject = static_cast<DirectUI::SplitMenuFlyoutItem*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem)))
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem)) && Feature_ExperimentalApi::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem>(this);
     }
@@ -36,6 +37,7 @@ HRESULT DirectUI::SplitMenuFlyoutItemGenerated::QueryInterfaceImpl(_In_ REFIID i
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISubMenuOwner*>(this);
     }
+#endif
     else
     {
         RRETURN(DirectUI::MenuFlyoutItem::QueryInterfaceImpl(iid, ppObject));
@@ -300,6 +302,7 @@ Cleanup:
 
 HRESULT DirectUI::SplitMenuFlyoutItemFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItemFactory)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItemFactory*>(this);
@@ -309,18 +312,22 @@ HRESULT DirectUI::SplitMenuFlyoutItemFactory::QueryInterfaceImpl(_In_ REFIID iid
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItemStatics*>(this);
     }
     else
+#endif
     {
         RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     AddRefOuter();
     RRETURN(S_OK);
+#endif
 }
 
 
 // Factory methods.
 IFACEMETHODIMP DirectUI::SplitMenuFlyoutItemFactory::CreateInstance(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem** ppInstance)
 {
+    if (!Feature_ExperimentalApi::IsEnabled()) IFC_RETURN(E_NOTIMPL);
 
 #if DBG
     // We play some games with reinterpret_cast and assuming that the GUID type table is accurate - which is somewhat sketchy, but

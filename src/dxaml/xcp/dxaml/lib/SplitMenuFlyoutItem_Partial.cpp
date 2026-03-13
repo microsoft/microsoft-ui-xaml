@@ -19,7 +19,6 @@
 #include "ButtonBase.g.h"
 #include "localizedResource.h"
 #include "WrlHelper.h"
-#include "XamlTraceLogging.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -855,13 +854,6 @@ SplitMenuFlyoutItem::OpenSubMenuImpl(wf::Point position)
         IFC_RETURN(ForwardSystemBackdropToPopup(parentMenuFlyout.Get()));
     }
 
-    TraceLoggingWrite(
-        g_hTraceProvider,
-        "SplitMenuFlyoutItem-SubMenuOpened",
-        TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS),
-        TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
-
     return S_OK;
 }
 
@@ -1455,14 +1447,6 @@ SplitMenuFlyoutItem::OnSecondaryButtonPointerExited(_In_ IInspectable* sender, _
 _Check_return_ HRESULT
 SplitMenuFlyoutItem::OnPrimaryButtonClick(_In_ IInspectable* sender, _In_ xaml::IRoutedEventArgs* args)
 {
-    // Log primary button click telemetry
-    TraceLoggingWrite(
-        g_hTraceProvider,
-        "SplitMenuFlyoutItem-PrimaryButtonClicked",
-        TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS),
-        TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
-
     IFC_RETURN(Invoke());
 
     // There is an intermittent issue where the primary button remains in the

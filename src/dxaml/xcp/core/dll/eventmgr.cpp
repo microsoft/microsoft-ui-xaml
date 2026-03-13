@@ -11,7 +11,6 @@
 #include <optional>
 
 #include <FocusSelection.h>
-#include "XamlTelemetry.h"
 
 //------------------------------------------------------------------------
 //
@@ -683,25 +682,9 @@ CEventManager::RemoveRequest(
 _Check_return_ HRESULT CEventManager::RaiseLoadedEventForObject(_In_ CDependencyObject* pLoadedEventObject, _In_ CEventArgs* loadedArgs)
 {
     TraceRaiseLoadedEventBegin((UINT64)pLoadedEventObject);
-
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "EventManager_RaiseLoadedEvent",
-        TraceLoggingBoolean(true, "IsStart"),
-        TraceLoggingUInt32(pLoadedEventObject->GetContext()->GetFrameNumber(), "FrameNumber"),
-        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pLoadedEventObject), "ObjectPointer"),
-        TraceLoggingWideString(pLoadedEventObject->OfTypeByIndex<KnownTypeIndex::FrameworkElement>() ? static_cast<CFrameworkElement*>(pLoadedEventObject)->GetStrClassName().GetBuffer() : nullptr, "ClassName"),
-        TraceLoggingWideString(pLoadedEventObject->m_strName.GetBuffer(), "Name"),
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-
-    auto scopeGuard = wil::scope_exit([pLoadedEventObject]
+    auto scopeGuard = wil::scope_exit([]
     {
         TraceRaiseLoadedEventEnd();
-
-        TraceLoggingProviderWrite(
-            XamlTelemetry, "EventManager_RaiseLoadedEvent",
-            TraceLoggingBoolean(false, "IsStart"),
-            TraceLoggingUInt64(reinterpret_cast<uint64_t>(pLoadedEventObject), "ObjectPointer"),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 
     CRequestsForObjectList* pRegisteredRequests = nullptr;

@@ -27,7 +27,8 @@ HRESULT DirectUI::SplitMenuFlyoutItemAutomationPeerGenerated::QueryInterfaceImpl
     {
         *ppObject = static_cast<DirectUI::SplitMenuFlyoutItemAutomationPeer*>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeer)))
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeer)) && Feature_ExperimentalApi::IsEnabled())
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeer>(this);
     }
@@ -39,6 +40,7 @@ HRESULT DirectUI::SplitMenuFlyoutItemAutomationPeerGenerated::QueryInterfaceImpl
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider*>(this);
     }
+#endif
     else
     {
         RRETURN(DirectUI::FrameworkElementAutomationPeer::QueryInterfaceImpl(iid, ppObject));
@@ -120,17 +122,21 @@ Cleanup:
 
 HRESULT DirectUI::SplitMenuFlyoutItemAutomationPeerFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeerFactory)))
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeerFactory*>(this);
     }
     else
+#endif
     {
         RRETURN(ctl::BetterAggregableCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
     }
 
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     AddRefOuter();
     RRETURN(S_OK);
+#endif
 }
 
 

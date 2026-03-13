@@ -223,7 +223,8 @@ namespace Microsoft.UI.Xaml.Controls
         }
     }
 
-    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 10)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [VelocityFeature("Feature_ExperimentalApi")]
     [CodeGen(partial: true)]
     [ContentProperty("Items")]
     [DXamlIdlGroup("Controls2")]
@@ -400,7 +401,8 @@ namespace Microsoft.UI.Xaml.Automation.Peers
             : base(owner) { }
     }
 
-    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 10)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [VelocityFeature("Feature_ExperimentalApi")]
     [CodeGen(partial: true)]
     [TypeFlags(IsCreateableFromXAML = false)]
     [DXamlIdlGroup("Controls2")]

@@ -443,8 +443,6 @@ public:
 
     void NotifyThemeChangedListeners(_In_ Theming::Theme theme);
 
-    const xstring_ptr GetStrClassName() { return m_strClassName; }
-
 private:
 
     static const FrameworkElementGroupStorage DefaultLayoutProperties;
