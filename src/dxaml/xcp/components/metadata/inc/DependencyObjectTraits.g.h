@@ -2255,6 +2255,12 @@ struct DependencyObjectTraits<CSplitCloseThemeAnimation>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::SplitCloseThemeAnimation;
 };
+class CSplitMenuFlyoutItemAutomationPeer;
+template<>
+struct DependencyObjectTraits<CSplitMenuFlyoutItemAutomationPeer>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::SplitMenuFlyoutItemAutomationPeer;
+};
 class CSplitOpenThemeAnimation;
 template<>
 struct DependencyObjectTraits<CSplitOpenThemeAnimation>
@@ -3382,6 +3388,12 @@ template<>
 struct DependencyObjectTraits<CScrollViewer>
 {
     static const KnownTypeIndex Index = KnownTypeIndex::ScrollViewer;
+};
+class CSplitMenuFlyoutItem;
+template<>
+struct DependencyObjectTraits<CSplitMenuFlyoutItem>
+{
+    static const KnownTypeIndex Index = KnownTypeIndex::SplitMenuFlyoutItem;
 };
 class CToggleButton;
 template<>

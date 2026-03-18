@@ -33,7 +33,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount];
 extern const IID c_aTypeUUIDs[KnownTypeCount];
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[940];
+extern const MetaDataTypeName c_aTypeNames[942];
 
 // Properties.
 extern const MetaDataProperty c_aProperties[KnownPropertyCount];

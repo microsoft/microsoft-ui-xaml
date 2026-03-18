@@ -3778,6 +3778,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
         KnownTypeIndex::DynamicTimeline, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::RequiresPeerActivation)), // Type flags
     },
+    // Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer
+    {
+        KnownTypeIndex::SplitMenuFlyoutItemAutomationPeer, // Index name
+        KnownTypeIndex::FrameworkElementAutomationPeer, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible)), // Type flags
+    },
     // Microsoft.UI.Xaml.Media.Animation.SplitOpenThemeAnimation
     {
         KnownTypeIndex::SplitOpenThemeAnimation, // Index name
@@ -4916,6 +4922,12 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
     {
         KnownTypeIndex::ScrollViewer, // Index name
         KnownTypeIndex::ScrollContentControl, // Base index name
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::RequiresPeerActivation)), // Type flags
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem
+    {
+        KnownTypeIndex::SplitMenuFlyoutItem, // Index name
+        KnownTypeIndex::MenuFlyoutItem, // Base index name
         static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::ExecutedClassConstructor) | static_cast<UINT>(MetaDataTypeInfoFlags::IsConstructible) | static_cast<UINT>(MetaDataTypeInfoFlags::RequiresPeerActivation)), // Type flags
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
@@ -9747,6 +9759,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.SplitCloseThemeAnimation"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Media_Animation, // Declaring namespace index
     },
+    // Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer
+    {
+        XSTRING_PTR_STORAGE(L"SplitMenuFlyoutItemAutomationPeer"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Automation_Peers, // Declaring namespace index
+    },
     // Microsoft.UI.Xaml.Media.Animation.SplitOpenThemeAnimation
     {
         XSTRING_PTR_STORAGE(L"SplitOpenThemeAnimation"), // Name
@@ -10885,6 +10903,12 @@ extern const MetaDataTypeNameInfo c_aTypeNameInfos[KnownTypeCount] =
     {
         XSTRING_PTR_STORAGE(L"ScrollViewer"), // Name
         XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.ScrollViewer"), // Full name
+        KnownNamespaceIndex::Microsoft_UI_Xaml_Controls, // Declaring namespace index
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem
+    {
+        XSTRING_PTR_STORAGE(L"SplitMenuFlyoutItem"), // Name
+        XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem"), // Full name
         KnownNamespaceIndex::Microsoft_UI_Xaml_Controls, // Declaring namespace index
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
@@ -17540,6 +17564,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         34, // First object property = Microsoft.UI.Xaml.Media.Animation.DynamicTimeline.Children
         28, // Property slot count
     },
+    // Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer
+    {
+        KnownPropertyIndex::FrameworkElementAutomationPeer_Owner, // First property
+        KnownPropertyIndex::UnknownType_UnknownProperty, // Content property
+        0, // First enter property = UnknownObject.UnknownProperty
+        0, // First render property = UnknownObject.UnknownProperty
+        0, // First object property = UnknownObject.UnknownProperty
+        10, // Property slot count
+    },
     // Microsoft.UI.Xaml.Media.Animation.SplitOpenThemeAnimation
     {
         KnownPropertyIndex::SplitOpenThemeAnimation_ClosedLength, // First property
@@ -19249,6 +19282,15 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         135, // First render property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTransitions
         144, // First object property = Microsoft.UI.Xaml.Controls.ContentControl.ContentTemplate
         190, // Property slot count
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem
+    {
+        KnownPropertyIndex::SplitMenuFlyoutItem_Items, // First property
+        KnownPropertyIndex::SplitMenuFlyoutItem_Items, // Content property
+        69, // First enter property = Microsoft.UI.Xaml.Controls.Control.Background
+        59, // First render property = Microsoft.UI.Xaml.Controls.Control.Background
+        66, // First object property = Microsoft.UI.Xaml.Controls.Control.Background
+        170, // Property slot count
     },
     // Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
     {
@@ -21444,6 +21486,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Media::ISkewTransform),
     __uuidof(ABI::Microsoft::UI::Xaml::Documents::ISpan),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplitCloseThemeAnimation),
+    __uuidof(ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeer),
     __uuidof(ABI::Microsoft::UI::Xaml::Media::Animation::ISplitOpenThemeAnimation),
     GUID{} /*GUID_NULL*/,
     GUID{} /*GUID_NULL*/,
@@ -21634,6 +21677,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IListViewHeaderItem),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IRepeatButton),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IScrollViewer),
+    __uuidof(ABI::Microsoft::UI::Xaml::Controls::ISplitMenuFlyoutItem),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::Primitives::IToggleButton),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IToggleMenuFlyoutItem),
     __uuidof(ABI::Microsoft::UI::Xaml::Controls::IVirtualizingStackPanel),
@@ -21833,7 +21877,7 @@ extern constexpr IID c_aTypeUUIDs[KnownTypeCount] =
 };
 
 // Types that can be referenced from XAML.
-extern const MetaDataTypeName c_aTypeNames[940] =
+extern const MetaDataTypeName c_aTypeNames[942] =
 {
     { KnownTypeIndex::UnknownType },
     { KnownTypeIndex::Hub },
@@ -22335,6 +22379,7 @@ extern const MetaDataTypeName c_aTypeNames[940] =
     { KnownTypeIndex::SnapPointsAlignment },
     { KnownTypeIndex::SplineColorKeyFrame },
     { KnownTypeIndex::SplinePointKeyFrame },
+    { KnownTypeIndex::SplitMenuFlyoutItem },
     { KnownTypeIndex::StaggerFunctionBase },
     { KnownTypeIndex::TextHighlighterBase },
     { KnownTypeIndex::TextRangeCollection },
@@ -22729,6 +22774,7 @@ extern const MetaDataTypeName c_aTypeNames[940] =
     { KnownTypeIndex::MenuFlyoutPresenterAutomationPeer },
     { KnownTypeIndex::ResourceManagerRequestedEventArgs },
     { KnownTypeIndex::ScrollViewerViewChangingEventArgs },
+    { KnownTypeIndex::SplitMenuFlyoutItemAutomationPeer },
     { KnownTypeIndex::TextBoxSelectionChangingEventArgs },
     { KnownTypeIndex::XYFocusNavigationStrategyOverride },
     { KnownTypeIndex::AccessKeyDisplayDismissedEventArgs },
@@ -37836,6 +37882,30 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::ScrollViewer, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.Items
+    {
+        KnownPropertyIndex::SplitMenuFlyoutItem_Items, // Index name
+        KnownTypeIndex::MenuFlyoutItemBaseCollection, // Property type
+        KnownTypeIndex::SplitMenuFlyoutItem, // Declaring type
+        KnownTypeIndex::SplitMenuFlyoutItem, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsExternalReadOnlyProperty)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.SubMenuItemStyle
+    {
+        KnownPropertyIndex::SplitMenuFlyoutItem_SubMenuItemStyle, // Index name
+        KnownTypeIndex::Style, // Property type
+        KnownTypeIndex::SplitMenuFlyoutItem, // Declaring type
+        KnownTypeIndex::SplitMenuFlyoutItem, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.SubMenuPresenterStyle
+    {
+        KnownPropertyIndex::SplitMenuFlyoutItem_SubMenuPresenterStyle, // Index name
+        KnownTypeIndex::Style, // Property type
+        KnownTypeIndex::SplitMenuFlyoutItem, // Declaring type
+        KnownTypeIndex::SplitMenuFlyoutItem, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
     // Microsoft.UI.Xaml.Controls.Primitives.ToggleButton.IsChecked
     {
         KnownPropertyIndex::ToggleButton_IsChecked, // Index name
@@ -40235,6 +40305,9 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::ScrollViewer_ZoomSnapPoints, // ScrollViewer_ZoomMode
     KnownPropertyIndex::ScrollViewer_ZoomSnapPointsType, // ScrollViewer_ZoomSnapPoints
     KnownPropertyIndex::ContentControl_Content, // ScrollViewer_ZoomSnapPointsType
+    KnownPropertyIndex::SplitMenuFlyoutItem_SubMenuItemStyle, // SplitMenuFlyoutItem_Items
+    KnownPropertyIndex::SplitMenuFlyoutItem_SubMenuPresenterStyle, // SplitMenuFlyoutItem_SubMenuItemStyle
+    KnownPropertyIndex::MenuFlyoutItem_Command, // SplitMenuFlyoutItem_SubMenuPresenterStyle
     KnownPropertyIndex::ToggleButton_IsThreeState, // ToggleButton_IsChecked
     KnownPropertyIndex::ButtonBase_ClickMode, // ToggleButton_IsThreeState
     KnownPropertyIndex::MenuFlyoutItem_Command, // ToggleMenuFlyoutItem_IsChecked
@@ -42186,6 +42259,9 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     0, // ScrollViewer_ZoomMode
     188, // ScrollViewer_ZoomSnapPoints
     189, // ScrollViewer_ZoomSnapPointsType
+    167, // SplitMenuFlyoutItem_Items
+    168, // SplitMenuFlyoutItem_SubMenuItemStyle
+    169, // SplitMenuFlyoutItem_SubMenuPresenterStyle
     170, // ToggleButton_IsChecked
     171, // ToggleButton_IsThreeState
     167, // ToggleMenuFlyoutItem_IsChecked
@@ -44137,6 +44213,9 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"ZoomMode"),
     XSTRING_PTR_STORAGE(L"ZoomSnapPoints"),
     XSTRING_PTR_STORAGE(L"ZoomSnapPointsType"),
+    XSTRING_PTR_STORAGE(L"Items"),
+    XSTRING_PTR_STORAGE(L"SubMenuItemStyle"),
+    XSTRING_PTR_STORAGE(L"SubMenuPresenterStyle"),
     XSTRING_PTR_STORAGE(L"IsChecked"),
     XSTRING_PTR_STORAGE(L"IsThreeState"),
     XSTRING_PTR_STORAGE(L"IsChecked"),
@@ -44257,86 +44336,86 @@ UINT MapTypeNameLengthToSearchRange(_In_ UINT nLength, _Out_ UINT* pnEndIndex)
             *pnEndIndex = 457;
             return 417;
         case 19:
-            *pnEndIndex = 509;
+            *pnEndIndex = 510;
             return 457;
         case 20:
-            *pnEndIndex = 557;
-            return 509;
+            *pnEndIndex = 558;
+            return 510;
         case 21:
-            *pnEndIndex = 591;
-            return 557;
+            *pnEndIndex = 592;
+            return 558;
         case 22:
-            *pnEndIndex = 642;
-            return 591;
+            *pnEndIndex = 643;
+            return 592;
         case 23:
-            *pnEndIndex = 682;
-            return 642;
+            *pnEndIndex = 683;
+            return 643;
         case 24:
-            *pnEndIndex = 715;
-            return 682;
+            *pnEndIndex = 716;
+            return 683;
         case 25:
-            *pnEndIndex = 750;
-            return 715;
+            *pnEndIndex = 751;
+            return 716;
         case 26:
-            *pnEndIndex = 778;
-            return 750;
+            *pnEndIndex = 779;
+            return 751;
         case 27:
-            *pnEndIndex = 792;
-            return 778;
+            *pnEndIndex = 793;
+            return 779;
         case 28:
-            *pnEndIndex = 813;
-            return 792;
+            *pnEndIndex = 814;
+            return 793;
         case 29:
-            *pnEndIndex = 833;
-            return 813;
+            *pnEndIndex = 834;
+            return 814;
         case 30:
-            *pnEndIndex = 854;
-            return 833;
+            *pnEndIndex = 855;
+            return 834;
         case 31:
-            *pnEndIndex = 866;
-            return 854;
+            *pnEndIndex = 867;
+            return 855;
         case 32:
-            *pnEndIndex = 883;
-            return 866;
+            *pnEndIndex = 884;
+            return 867;
         case 33:
-            *pnEndIndex = 896;
-            return 883;
+            *pnEndIndex = 898;
+            return 884;
         case 34:
-            *pnEndIndex = 909;
-            return 896;
+            *pnEndIndex = 911;
+            return 898;
         case 35:
-            *pnEndIndex = 915;
-            return 909;
+            *pnEndIndex = 917;
+            return 911;
         case 36:
-            *pnEndIndex = 921;
-            return 915;
+            *pnEndIndex = 923;
+            return 917;
         case 37:
-            *pnEndIndex = 926;
-            return 921;
+            *pnEndIndex = 928;
+            return 923;
         case 38:
-            *pnEndIndex = 929;
-            return 926;
+            *pnEndIndex = 931;
+            return 928;
         case 39:
-            *pnEndIndex = 934;
-            return 929;
-        case 40:
-            *pnEndIndex = 935;
-            return 934;
-        case 41:
             *pnEndIndex = 936;
-            return 935;
-        case 42:
+            return 931;
+        case 40:
             *pnEndIndex = 937;
             return 936;
-        case 43:
+        case 41:
             *pnEndIndex = 938;
             return 937;
-        case 49:
+        case 42:
             *pnEndIndex = 939;
             return 938;
-        case 50:
+        case 43:
             *pnEndIndex = 940;
             return 939;
+        case 49:
+            *pnEndIndex = 941;
+            return 940;
+        case 50:
+            *pnEndIndex = 942;
+            return 941;
         default:
             *pnEndIndex = 0;
             return 0;

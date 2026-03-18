@@ -20,6 +20,7 @@ namespace DirectUI
         friend class MenuFlyoutItem;
         friend class MenuFlyoutSubItem;
         friend class ToggleMenuFlyoutItem;
+        friend class SplitMenuFlyoutItem;
 
         //Give access to the private method HandleUpOrDownKey
         friend class KeyPress::MenuFlyoutPresenter;

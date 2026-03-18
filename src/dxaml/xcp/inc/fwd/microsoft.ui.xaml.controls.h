@@ -197,6 +197,7 @@ namespace Controls {
     class SplitButton;
     class SplitButtonAutomationPeer;
     class SplitButtonClickEventArgs;
+    class SplitMenuFlyoutItem;
     class SplitView;
     class SplitViewPaneClosingEventArgs;
     class StackPanel;
@@ -880,6 +881,9 @@ namespace Controls {
     interface ISplitButtonClickEventArgs;
     interface ISplitButtonFactory;
     interface ISplitButtonStatics;
+    interface ISplitMenuFlyoutItem;
+    interface ISplitMenuFlyoutItemFactory;
+    interface ISplitMenuFlyoutItemStatics;
     interface ISplitView;
     interface ISplitView2;
     interface ISplitView3;

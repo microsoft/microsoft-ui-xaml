@@ -92,6 +92,7 @@
         <ClCompile Include="..\MenuFlyoutItemAutomationPeer_Partial.cpp"/>
         <ClCompile Include="..\MenuFlyoutSubItemAutomationPeer_Partial.cpp"/>
         <ClCompile Include="..\ToggleMenuFlyoutItemAutomationPeer_Partial.cpp"/>
+        <ClCompile Include="..\SplitMenuFlyoutItemAutomationPeer_Partial.cpp"/>
         <ClCompile Include="..\GridViewHeaderItemAutomationPeer_Partial.cpp"/>
         <ClCompile Include="..\ListViewBaseHeaderItemAutomationPeer_Partial.cpp"/>
         <ClCompile Include="..\ListViewHeaderItemAutomationPeer_Partial.cpp"/>

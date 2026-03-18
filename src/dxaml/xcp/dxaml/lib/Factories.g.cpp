@@ -328,6 +328,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_CommandingContainer();
     _Check_return_ IActivationFactory* CreateActivationFactory_MenuFlyoutPresenter();
     _Check_return_ IActivationFactory* CreateActivationFactory_MenuFlyoutSeparator();
+    _Check_return_ IActivationFactory* CreateActivationFactory_SplitMenuFlyoutItem();
     _Check_return_ IActivationFactory* CreateActivationFactory_UIElementCollection();
     _Check_return_ IActivationFactory* CreateActivationFactory_SvgImageSource();
     _Check_return_ IActivationFactory* CreateActivationFactory_Selector();
@@ -655,6 +656,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_MenuFlyoutItemTemplateSettings();
     _Check_return_ IActivationFactory* CreateActivationFactory_RangeBaseValueChangedEventArgs();
     _Check_return_ IActivationFactory* CreateActivationFactory_MenuFlyoutPresenterAutomationPeer();
+    _Check_return_ IActivationFactory* CreateActivationFactory_SplitMenuFlyoutItemAutomationPeer();
     _Check_return_ IActivationFactory* CreateActivationFactory_ToggleMenuFlyoutItemAutomationPeer();
     _Check_return_ IActivationFactory* CreateActivationFactory_BasicConnectedAnimationConfiguration();
     _Check_return_ IActivationFactory* CreateActivationFactory_RichTextBlockOverflowAutomationPeer();
@@ -982,6 +984,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.CommandingContainer"), &DirectUI::CreateActivationFactory_CommandingContainer)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.MenuFlyoutPresenter"), &DirectUI::CreateActivationFactory_MenuFlyoutPresenter)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.MenuFlyoutSeparator"), &DirectUI::CreateActivationFactory_MenuFlyoutSeparator)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem"), &DirectUI::CreateActivationFactory_SplitMenuFlyoutItem)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.UIElementCollection"), &DirectUI::CreateActivationFactory_UIElementCollection)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Imaging.SvgImageSource"), &DirectUI::CreateActivationFactory_SvgImageSource)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.Primitives.Selector"), &DirectUI::CreateActivationFactory_Selector)
@@ -1309,6 +1312,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.Primitives.MenuFlyoutItemTemplateSettings"), &DirectUI::CreateActivationFactory_MenuFlyoutItemTemplateSettings)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs"), &DirectUI::CreateActivationFactory_RangeBaseValueChangedEventArgs)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.Peers.MenuFlyoutPresenterAutomationPeer"), &DirectUI::CreateActivationFactory_MenuFlyoutPresenterAutomationPeer)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer"), &DirectUI::CreateActivationFactory_SplitMenuFlyoutItemAutomationPeer)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.Peers.ToggleMenuFlyoutItemAutomationPeer"), &DirectUI::CreateActivationFactory_ToggleMenuFlyoutItemAutomationPeer)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.BasicConnectedAnimationConfiguration"), &DirectUI::CreateActivationFactory_BasicConnectedAnimationConfiguration)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Automation.Peers.RichTextBlockOverflowAutomationPeer"), &DirectUI::CreateActivationFactory_RichTextBlockOverflowAutomationPeer)

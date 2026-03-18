@@ -10,6 +10,10 @@
 #include "OrientedVirtualizingPanel.g.h"
 #include "Canvas.g.h"
 #include "VisualTreeHelper.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 60878987: [1.8 Servicing][WASDK] Add SplitMenuFlyoutItem control
+#define WINAPPSDK_CHANGEID_60878987 60878987, WinAppSDK_1_8_6
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -738,7 +742,10 @@ IFACEMETHODIMP ItemsPresenter::OnApplyTemplate()
     case KnownTypeIndex::WrapGrid:
         if (KnownTypeIndex::ItemsControl != indexItemsControl && KnownTypeIndex::ListView != indexItemsControl && KnownTypeIndex::GridView != indexItemsControl)
         {
-            hr = E_FAIL;
+            if(!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_60878987>() || KnownTypeIndex::MenuFlyoutPresenter != indexItemsControl)
+            {
+                hr = E_FAIL;
+            }
         }
         break;
     case KnownTypeIndex::VariableSizedWrapGrid:

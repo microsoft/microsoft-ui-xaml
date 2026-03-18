@@ -1000,6 +1000,8 @@ namespace Parser
         KnownTypeIndex::PopupPlacementMode,
         KnownTypeIndex::SystemBackdrop,
         KnownTypeIndex::SeekSliderAutomationPeer,
+        KnownTypeIndex::SplitMenuFlyoutItemAutomationPeer,
+        KnownTypeIndex::SplitMenuFlyoutItem,
     };
 
     // Map known type indexes to stable Xbf type indexes
@@ -1613,6 +1615,7 @@ namespace Parser
         StableXbfTypeIndex::SkewTransform,
         StableXbfTypeIndex::Span,
         StableXbfTypeIndex::SplitCloseThemeAnimation,
+        StableXbfTypeIndex::SplitMenuFlyoutItemAutomationPeer,
         StableXbfTypeIndex::SplitOpenThemeAnimation,
         StableXbfTypeIndex::SplitViewLightDismissAutomationPeer,
         StableXbfTypeIndex::SplitViewPaneAutomationPeer,
@@ -1803,6 +1806,7 @@ namespace Parser
         StableXbfTypeIndex::ListViewHeaderItem,
         StableXbfTypeIndex::RepeatButton,
         StableXbfTypeIndex::ScrollViewer,
+        StableXbfTypeIndex::SplitMenuFlyoutItem,
         StableXbfTypeIndex::ToggleButton,
         StableXbfTypeIndex::ToggleMenuFlyoutItem,
         StableXbfTypeIndex::VirtualizingStackPanel,
@@ -4470,6 +4474,9 @@ namespace Parser
         KnownPropertyIndex::MenuFlyoutPresenter_SystemBackdrop,
         KnownPropertyIndex::Window_SystemBackdrop,
         KnownPropertyIndex::Window_Title,
+        KnownPropertyIndex::SplitMenuFlyoutItem_Items,
+        KnownPropertyIndex::SplitMenuFlyoutItem_SubMenuItemStyle,
+        KnownPropertyIndex::SplitMenuFlyoutItem_SubMenuPresenterStyle,
     };
 
     // Map known property indexes to stable Xbf property indexes
@@ -6357,6 +6364,9 @@ namespace Parser
         StableXbfPropertyIndex::ScrollViewer_ZoomMode,
         StableXbfPropertyIndex::ScrollViewer_ZoomSnapPoints,
         StableXbfPropertyIndex::ScrollViewer_ZoomSnapPointsType,
+        StableXbfPropertyIndex::SplitMenuFlyoutItem_Items,
+        StableXbfPropertyIndex::SplitMenuFlyoutItem_SubMenuItemStyle,
+        StableXbfPropertyIndex::SplitMenuFlyoutItem_SubMenuPresenterStyle,
         StableXbfPropertyIndex::ToggleButton_IsChecked,
         StableXbfPropertyIndex::ToggleButton_IsThreeState,
         StableXbfPropertyIndex::ToggleMenuFlyoutItem_IsChecked,

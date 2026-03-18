@@ -5,6 +5,11 @@
 #include "MenuFlyoutItemBaseCollection.g.h"
 #include "MenuFlyout.g.h"
 #include "MenuFlyoutSubItem.g.h"
+#include "SplitMenuFlyoutItem.g.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 60878987: [1.8 Servicing][WASDK] Add SplitMenuFlyoutItem control
+#define WINAPPSDK_CHANGEID_60878987 60878987, WinAppSDK_1_8_6
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -154,11 +159,29 @@ MenuFlyoutItemBaseCollection::NotifyMenuFlyoutOfCollectionChange()
     {
         auto ownerAsMenuFlyoutSubItem = ownerAsDO.AsOrNull<IMenuFlyoutSubItem>();
 
-        // MenuFlyoutItemBaseCollection is only used by MenuFlyout and MenuFlyoutSubItem.
-        // If another type is added, this will need to change.
-        IFCEXPECT_RETURN(ownerAsMenuFlyoutSubItem != nullptr);
+        if(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_60878987>())
+        {
+            auto ownerAsSplitMenuFlyoutItem = ownerAsDO.AsOrNull<SplitMenuFlyoutItem>();
 
-        IFC_RETURN(ownerAsMenuFlyoutSubItem.Cast<MenuFlyoutSubItem>()->QueueRefreshItemsSource());
+            // MenuFlyoutItemBaseCollection is used by MenuFlyout, MenuFlyoutSubItem and SplitMenuFlyoutItem.
+            // If another type is added, this will need to change.
+            IFCEXPECT_RETURN(ownerAsMenuFlyoutSubItem != nullptr || ownerAsSplitMenuFlyoutItem != nullptr);
+
+            if(ownerAsMenuFlyoutSubItem != nullptr)
+            {
+                IFC_RETURN(ownerAsMenuFlyoutSubItem.Cast<MenuFlyoutSubItem>()->QueueRefreshItemsSource());
+            }
+            else
+            {
+                IFC_RETURN(ownerAsSplitMenuFlyoutItem->QueueRefreshItemsSource());
+            }
+        }
+        else
+        {
+            // MenuFlyoutItemBaseCollection is used by MenuFlyout, MenuFlyoutSubItem.
+            IFCEXPECT_RETURN(ownerAsMenuFlyoutSubItem != nullptr);
+            IFC_RETURN(ownerAsMenuFlyoutSubItem.Cast<MenuFlyoutSubItem>()->QueueRefreshItemsSource());
+        }
     }
 
     return S_OK;

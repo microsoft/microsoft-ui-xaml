@@ -1000,6 +1000,8 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         PopupPlacementMode = 979,
         SystemBackdrop = 980,
         SeekSliderAutomationPeer = 981,
+        SplitMenuFlyoutItemAutomationPeer = 982,
+        SplitMenuFlyoutItem = 983,
     }
 
     // Define the stable XBF property indices
@@ -3471,6 +3473,9 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
         MenuFlyoutPresenter_SystemBackdrop = 2463,
         Window_SystemBackdrop = 2464,
         Window_Title = 2465,
+        SplitMenuFlyoutItem_Items = 2466,
+        SplitMenuFlyoutItem_SubMenuItemStyle = 2467,
+        SplitMenuFlyoutItem_SubMenuPresenterStyle = 2468,
     }
 
     // Define the stable XBF event indices
@@ -4333,6 +4338,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfTypeIndex.SkewTransform, new XamlTypeInfo("Microsoft.UI.Xaml.Media.SkewTransform", StableXbfTypeIndex.Transform, XamlTypeFlags.None) },
             { StableXbfTypeIndex.Span, new XamlTypeInfo("Microsoft.UI.Xaml.Documents.Span", StableXbfTypeIndex.Inline, XamlTypeFlags.None) },
             { StableXbfTypeIndex.SplitCloseThemeAnimation, new XamlTypeInfo("Microsoft.UI.Xaml.Media.Animation.SplitCloseThemeAnimation", StableXbfTypeIndex.DynamicTimeline, XamlTypeFlags.None) },
+            { StableXbfTypeIndex.SplitMenuFlyoutItemAutomationPeer, new XamlTypeInfo("Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer", StableXbfTypeIndex.FrameworkElementAutomationPeer, XamlTypeFlags.None) },
             { StableXbfTypeIndex.SplitOpenThemeAnimation, new XamlTypeInfo("Microsoft.UI.Xaml.Media.Animation.SplitOpenThemeAnimation", StableXbfTypeIndex.DynamicTimeline, XamlTypeFlags.None) },
             { StableXbfTypeIndex.SplitViewLightDismissAutomationPeer, new XamlTypeInfo("Microsoft.UI.Xaml.Automation.Peers.SplitViewLightDismissAutomationPeer", StableXbfTypeIndex.FrameworkElementAutomationPeer, XamlTypeFlags.None) },
             { StableXbfTypeIndex.SplitViewPaneAutomationPeer, new XamlTypeInfo("Microsoft.UI.Xaml.Automation.Peers.SplitViewPaneAutomationPeer", StableXbfTypeIndex.FrameworkElementAutomationPeer, XamlTypeFlags.None) },
@@ -4523,6 +4529,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfTypeIndex.ListViewHeaderItem, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.ListViewHeaderItem", StableXbfTypeIndex.ListViewBaseHeaderItem, XamlTypeFlags.None) },
             { StableXbfTypeIndex.RepeatButton, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.Primitives.RepeatButton", StableXbfTypeIndex.ButtonBase, XamlTypeFlags.None) },
             { StableXbfTypeIndex.ScrollViewer, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.ScrollViewer", StableXbfTypeIndex.ScrollContentControl, XamlTypeFlags.None) },
+            { StableXbfTypeIndex.SplitMenuFlyoutItem, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem", StableXbfTypeIndex.MenuFlyoutItem, XamlTypeFlags.None) },
             { StableXbfTypeIndex.ToggleButton, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.Primitives.ToggleButton", StableXbfTypeIndex.ButtonBase, XamlTypeFlags.None) },
             { StableXbfTypeIndex.ToggleMenuFlyoutItem, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.ToggleMenuFlyoutItem", StableXbfTypeIndex.MenuFlyoutItem, XamlTypeFlags.None) },
             { StableXbfTypeIndex.VirtualizingStackPanel, new XamlTypeInfo("Microsoft.UI.Xaml.Controls.VirtualizingStackPanel", StableXbfTypeIndex.OrientedVirtualizingPanel, XamlTypeFlags.None) },
@@ -6605,6 +6612,9 @@ namespace Microsoft.Xaml.WidgetSpinner.Metadata
             { StableXbfPropertyIndex.ScrollViewer_ZoomMode, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomMode", StableXbfTypeIndex.ZoomMode, StableXbfTypeIndex.ScrollViewer, XamlPropertyFlags.IsAttached) },
             { StableXbfPropertyIndex.ScrollViewer_ZoomSnapPoints, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomSnapPoints", StableXbfTypeIndex.UnknownType, StableXbfTypeIndex.ScrollViewer, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.ScrollViewer_ZoomSnapPointsType, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.ScrollViewer.ZoomSnapPointsType", StableXbfTypeIndex.SnapPointsType, StableXbfTypeIndex.ScrollViewer, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.SplitMenuFlyoutItem_Items, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.Items", StableXbfTypeIndex.MenuFlyoutItemBaseCollection, StableXbfTypeIndex.SplitMenuFlyoutItem, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.SplitMenuFlyoutItem_SubMenuItemStyle, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.SubMenuItemStyle", StableXbfTypeIndex.Style, StableXbfTypeIndex.SplitMenuFlyoutItem, XamlPropertyFlags.None) },
+            { StableXbfPropertyIndex.SplitMenuFlyoutItem_SubMenuPresenterStyle, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem.SubMenuPresenterStyle", StableXbfTypeIndex.Style, StableXbfTypeIndex.SplitMenuFlyoutItem, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.ToggleButton_IsChecked, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Primitives.ToggleButton.IsChecked", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.ToggleButton, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.ToggleButton_IsThreeState, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.Primitives.ToggleButton.IsThreeState", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.ToggleButton, XamlPropertyFlags.None) },
             { StableXbfPropertyIndex.ToggleMenuFlyoutItem_IsChecked, new XamlPropertyInfo("Microsoft.UI.Xaml.Controls.ToggleMenuFlyoutItem.IsChecked", StableXbfTypeIndex.Boolean, StableXbfTypeIndex.ToggleMenuFlyoutItem, XamlPropertyFlags.None) },
