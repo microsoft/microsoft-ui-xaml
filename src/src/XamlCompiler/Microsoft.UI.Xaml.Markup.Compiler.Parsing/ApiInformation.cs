@@ -67,9 +67,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         {
             if (Method.IsCustomAPI)
             {
-                for (int i = 0; i < parameters.Count; i++)
+                if(parameters != null)
                 {
-                    parameters[i].ParameterType = typeof(string);
+                    for (int i = 0; i < parameters.Count; i++)
+                    {
+                        parameters[i].ParameterType = typeof(string);
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid parameter count for method: " + Method.MethodName);
                 }
             }
             else

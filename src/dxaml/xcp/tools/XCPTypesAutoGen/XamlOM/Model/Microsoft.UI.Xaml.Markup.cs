@@ -288,7 +288,7 @@ namespace Microsoft.UI.Xaml.Markup
     public interface IXamlCondition
     {
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        Windows.Foundation.Boolean Evaluate(Windows.Foundation.Collections.IVectorView<string> arguments);
+        Windows.Foundation.Boolean Evaluate(Windows.Foundation.String argument);
     }
 
     [DXamlIdlGroup("coretypes2")]

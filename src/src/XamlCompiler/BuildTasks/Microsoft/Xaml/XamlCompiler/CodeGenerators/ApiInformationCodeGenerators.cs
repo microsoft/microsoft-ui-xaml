@@ -71,11 +71,12 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 var callExpression = Instance.Method.CodeGen().CallExpression;
                 if (Instance.Method.IsCustomAPI)
                 {
+                    var paramValue = Instance.Parameters.First().CodeGen().CallExpression;
                     return new LanguageSpecificString(
-                    () => string.Format("{0}->Evaluate(ref new Platform::Collections::Vector<Platform::String^>({{ {1} }})->GetView())", callExpression.CppCXName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CppCXName()))),
-                    () => string.Format("{0}.Evaluate(winrt::single_threaded_vector<winrt::hstring>({{ {1} }}).GetView())", callExpression.CppWinRTName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CppWinRTName()))),
-                    () => string.Format("{0}.Evaluate(new System.Collections.Generic.List<string> {{ {1} }})", callExpression.CSharpName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.CSharpName()))),
-                    () => string.Format("{0}.Evaluate(New System.Collections.Generic.List(Of String) From {{ {1} }})", callExpression.VBName(), string.Join(", ", Instance.Parameters.Select(p => p.CodeGen().CallExpression.VBName())))
+                    () => string.Format("{0}->Evaluate({1})", callExpression.CppCXName(), paramValue.CppCXName()),
+                    () => string.Format("{0}.Evaluate({1})", callExpression.CppWinRTName(), paramValue.CppWinRTName()),
+                    () => string.Format("{0}.Evaluate({1})", callExpression.CSharpName(), paramValue.CSharpName()),
+                    () => string.Format("{0}.Evaluate({1})", callExpression.VBName(), paramValue.VBName())
                     );
                 }
                 else

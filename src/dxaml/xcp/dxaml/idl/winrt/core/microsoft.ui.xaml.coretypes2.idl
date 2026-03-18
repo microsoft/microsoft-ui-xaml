@@ -2106,7 +2106,7 @@ namespace Microsoft.UI.Xaml.Markup
     [webhosthidden]
     interface IXamlCondition 
     {
-        Boolean Evaluate(Windows.Foundation.Collections.IVectorView<String> arguments);
+        Boolean Evaluate(String argument);
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
