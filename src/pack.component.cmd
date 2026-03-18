@@ -25,9 +25,9 @@ goto :parseArgs
 
 :main
 if EXIST "%RepoRoot%\pack.cmd" (
-    call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration%
+    call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration% -InstallPackage
 ) else (
-    call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration% -UseDependencyOverrides
+    call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration% -InstallPackage -UseDependencyOverrides
 )
 if ERRORLEVEL 1 (
     echo ---

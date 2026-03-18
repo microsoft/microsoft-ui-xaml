@@ -5,6 +5,7 @@ Param(
     [string]$VersionOverride,
     [switch]$NoPackageAnalysis,
     [switch]$UseDependencyOverrides,
+    [switch]$InstallPackage,
     [string]$Nuspec = "Microsoft.ProjectReunion.WinUI.TransportPackage.nuspec"
 )
 
@@ -133,10 +134,35 @@ if ($NoPackageAnalysis)
 $NugetCmdLine = "$env:NUGETCMD pack $Nuspec $NugetArgs"
 Write-Host $NugetCmdLine
 Invoke-Expression $NugetCmdLine
+
 if ($lastexitcode -ne 0)
 {
     Write-Host "Nuget returned $lastexitcode"
     Exit $lastexitcode;
 }
+
+
+if ($InstallPackage)
+{
+    $PackageCache = Join-Path "$scriptDirectory\..\.." "packages"
+    $NugetConfigPath = Join-Path "$scriptDirectory\..\.." "NuGet.config"    
+    # Remove existing package if it exists to force reinstallation
+    $ExistingPackagePath = Join-Path $PackageCache "Microsoft.WindowsAppSDK.WinUI.$VersionOverride"
+    if (Test-Path $ExistingPackagePath)
+    {
+        Write-Host "Removing existing package: $ExistingPackagePath" -ForegroundColor Yellow
+        Remove-Item $ExistingPackagePath -Recurse -Force
+    }
+    
+    Write-Host "nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath"
+    nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath
+
+    if ($lastexitcode -ne 0)
+    {
+        Write-Host "Nuget Install returned $lastexitcode"
+        Exit $lastexitcode;
+    }
+}
+
 
 popd
