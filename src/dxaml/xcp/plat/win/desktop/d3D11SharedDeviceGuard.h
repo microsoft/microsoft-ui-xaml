@@ -25,7 +25,7 @@ public:
     bool LockMatches(_In_ const wil::critical_section* cs) const { return m_pCriticalSection == cs; }
 
 private:
-#pragma prefast(suppress: 26165 "m_locktaken ensures that if we take the lock we will release it in the destructor")
+#pragma warning(suppress: 26165)  // m_locktaken ensures that if we take the lock we will release it in the destructor
     _Acquires_shared_lock_(m_pCriticalSection->m_cs)
     void TakeLock(_In_ wil::critical_section* cs)
     {

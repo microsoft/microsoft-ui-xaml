@@ -197,9 +197,9 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
                     IFC(E_INVALIDARG);
                 }
 
-#pragma prefast(push)
+#pragma warning(push)
                 // wcsncpy_s will always null-terminate szIndex on success
-#pragma prefast(disable: __WARNING_BUFFER_OVERFLOW, "Read overflow of null terminated buffer using expression '(WCHAR *)szIndex'")
+#pragma warning(disable: 6385)  // Read overflow of null terminated buffer using expression '(WCHAR *)szIndex'
                 // Create the right type of indexer
                 if (IsNumericIndex(szIndex))
                 {
@@ -213,7 +213,7 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
                     pCurrentStep = new StringIndexerPathStepDescriptor(szIndex);
                     szIndex = NULL; // The indexer now owns the string
                 }
-#pragma prefast(pop)
+#pragma warning(pop)
 
                 // Now add the step to the list
                 IFC(AppendStepDescriptor(pCurrentStep));

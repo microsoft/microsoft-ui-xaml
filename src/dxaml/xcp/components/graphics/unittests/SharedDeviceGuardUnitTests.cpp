@@ -30,7 +30,7 @@ bool IsD3D11SharedDeviceGuardLocked()
 /* ------------------------------------------------------------------------------------------
 Shared device guard unit tests
 -------------------------------------------------------------------------------------------*/
-#pragma prefast(suppress: 26135 "We mock out the win critical section, so it really doesn't take a lock")
+#pragma warning(suppress: 26135)  // We mock out the win critical section, so it really doesn't take a lock
 void SharedDeviceGuardUnitTests::SharedDeviceGuard()
 {
     {

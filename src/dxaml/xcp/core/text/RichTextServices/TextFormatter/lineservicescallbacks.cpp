@@ -1178,8 +1178,8 @@ LSERR RichTextServices::LineServicesFInterruptShaping(
     return LSErrFromResult(txhr);
 }
 
-#pragma prefast(push)
-#pragma prefast(disable: 26030, "Disable prefast false positive on assignment of prggprop and prcindex")
+#pragma warning(push)
+#pragma warning(disable: 26030)  // Disable prefast false positive on assignment of prggprop and prcindex
 //---------------------------------------------------------------------------
 //
 //  Member:
@@ -1320,7 +1320,7 @@ Cleanup:
 
     return LSErrFromResult(txhr);
 }
-#pragma prefast(pop)
+#pragma warning(pop)
 
 //---------------------------------------------------------------------------
 //
