@@ -37,6 +37,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         public void VerifyCorrectNumberOfEventsRaised()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            using (var orientation = new OrientationResetHelper())
             {
                 TextBlock itemInvokedCountTextBlock = new TextBlock(FindElement.ByName("NumberOfItemInvokedEventsRaisedTextBlock"));
                 TextBlock selectionChangedCountTextBlock = new TextBlock(FindElement.ByName("NumberOfSelectionChangedEventsRaisedTextBlock"));
@@ -68,15 +69,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
 
                 Log.Comment("Verify that switching pane mode to top does not raise any events.");
-                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
+                orientation.Flip();
                 Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
                 Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
 
                 Log.Comment("Verify that switching pane mode to auto does not raise any events.");
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
+                orientation.Flip();
                 Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
                 Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
             }

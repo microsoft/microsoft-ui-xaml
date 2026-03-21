@@ -32,6 +32,48 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         protected enum TopNavPosition { Primary, Overflow }
         protected enum PaneOpenStatus { Opened, Closed }
 
+        // Tracks orientation flips and auto-restores on dispose.  Wrap your
+        // flips in a using block so the NavigationView always returns to its
+        // original orientation -- even if the test fails partway through.
+        //
+        //   using (var orientation = new OrientationResetHelper())
+        //   {
+        //       orientation.Flip(); // Left -> Top
+        //       // test stuff here
+        //       orientation.Flip(); // Top -> Left
+        //       // more test stuff
+        //       orientation.Flip(); // Left -> Top
+        //   }
+        //   // Dispose auto-flips back to Left since we did an odd number of flips
+        //
+        protected class OrientationResetHelper : IDisposable
+        {
+            private readonly Button _flipButton;
+            private int _flipCount;
+
+            public OrientationResetHelper()
+            {
+                _flipButton = new Button(FindElement.ByName("FlipOrientationButton"));
+            }
+
+            public void Flip()
+            {
+                _flipButton.Invoke();
+                Wait.ForIdle();
+                _flipCount++;
+            }
+
+            public void Dispose()
+            {
+                if (_flipCount % 2 != 0)
+                {
+                    Log.Comment("Restoring original orientation.");
+                    _flipButton.Invoke();
+                    Wait.ForIdle();
+                }
+            }
+        }
+
         [TestCleanup]
         public void TestCleanup()
         {
@@ -116,43 +158,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
         protected void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
-            if (navviewMode == RegressionTestType.TopNav)
+            using (var orientation = new OrientationResetHelper())
             {
-                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
-            }
+                if (navviewMode == RegressionTestType.TopNav)
+                {
+                    orientation.Flip();
+                }
 
-            var changePaneHeaderbutton = new Button(FindElement.ByName("ChangePaneHeader"));
-            changePaneHeaderbutton.Invoke();
-            Wait.ForIdle();
-
-            UIObject paneHeaderContent = null;
-
-            if (navviewMode == RegressionTestType.TopNav)
-            {
-                paneHeaderContent = FindElement.ById("PaneHeaderOnTopPane");
-            }
-            else
-            {
-                paneHeaderContent = FindElement.ById("PaneHeaderContentBorder");
-            }
-
-            TextBlock text = new TextBlock(paneHeaderContent.FirstChild);
-            Verify.AreEqual("Modified Pane Header", text.DocumentText);
-
-            if (navviewMode == RegressionTestType.LeftNav)
-            {
-                // In Closed Compact mode, the PaneHeader should not be visible:
-
-                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
-                panelDisplayModeComboBox.SelectItemByName("LeftCompact");
+                var changePaneHeaderbutton = new Button(FindElement.ByName("ChangePaneHeader"));
+                changePaneHeaderbutton.Invoke();
                 Wait.ForIdle();
 
-                EnsureNavViewClosed();
+                UIObject paneHeaderContent = null;
 
-                ElementCache.Clear();
-                VerifyElement.NotFound("PaneHeaderContentBorder", FindBy.Name);
+                if (navviewMode == RegressionTestType.TopNav)
+                {
+                    paneHeaderContent = FindElement.ById("PaneHeaderOnTopPane");
+                }
+                else
+                {
+                    paneHeaderContent = FindElement.ById("PaneHeaderContentBorder");
+                }
+
+                TextBlock text = new TextBlock(paneHeaderContent.FirstChild);
+                Verify.AreEqual("Modified Pane Header", text.DocumentText);
+
+                if (navviewMode == RegressionTestType.LeftNav)
+                {
+                    // In Closed Compact mode, the PaneHeader should not be visible:
+
+                    var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                    panelDisplayModeComboBox.SelectItemByName("LeftCompact");
+                    Wait.ForIdle();
+
+                    EnsureNavViewClosed();
+
+                    ElementCache.Clear();
+                    VerifyElement.NotFound("PaneHeaderContentBorder", FindBy.Name);
+                }
             }
         }
 
