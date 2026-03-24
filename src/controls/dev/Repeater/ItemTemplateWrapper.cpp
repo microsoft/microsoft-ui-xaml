@@ -16,14 +16,36 @@ ItemTemplateWrapper::ItemTemplateWrapper(winrt::DataTemplateSelector const& data
     m_dataTemplateSelector = dataTemplateSelector;
 }
 
+void ItemTemplateWrapper::EnableTracking(const ITrackerHandleManager* owner)
+{
+    if (owner && m_dataTemplate)
+    {
+        m_trackedDataTemplate.emplace(owner, m_dataTemplate);
+        m_dataTemplate = nullptr;  // Release the raw ref; tracker_ref now owns it
+        m_isTracking = true;
+    }
+}
+
+winrt::DataTemplate ItemTemplateWrapper::GetDataTemplate() const
+{
+    return m_isTracking ? m_trackedDataTemplate->get() : m_dataTemplate;
+}
+
 winrt::DataTemplate ItemTemplateWrapper::Template()
 {
-    return m_dataTemplate;
+    return GetDataTemplate();
 }
 
 void ItemTemplateWrapper::Template(winrt::DataTemplate const& value)
 {
-    m_dataTemplate = value;
+    if (m_isTracking)
+    {
+        m_trackedDataTemplate->set(value);
+    }
+    else
+    {
+        m_dataTemplate = value;
+    }
 }
 
 winrt::DataTemplateSelector ItemTemplateWrapper::TemplateSelector()
@@ -40,7 +62,8 @@ void ItemTemplateWrapper::TemplateSelector(winrt::DataTemplateSelector const& va
 
 winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs const& args)
 {
-    auto selectedTemplate = m_dataTemplate ? m_dataTemplate : m_dataTemplateSelector.SelectTemplate(args.Data());
+    auto dataTemplate = GetDataTemplate();
+    auto selectedTemplate = dataTemplate ? dataTemplate : m_dataTemplateSelector.SelectTemplate(args.Data());
     // Check if selected template we got is valid
     if (selectedTemplate == nullptr)
     {
@@ -97,8 +120,9 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
 void ItemTemplateWrapper::RecycleElement(winrt::ElementFactoryRecycleArgs const& args)
 {
     auto element = args.Element();
-    winrt::DataTemplate selectedTemplate = m_dataTemplate? 
-        m_dataTemplate:
+    auto dataTemplate = GetDataTemplate();
+    winrt::DataTemplate selectedTemplate = dataTemplate ?
+        dataTemplate :
         RecyclePool::GetOriginTemplate(element);
     auto recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
     if (!recyclePool)
