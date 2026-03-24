@@ -7,8 +7,6 @@ Custom title bar layouts often combine **interactive controls** and **non‑inte
 
 Under the **current default behavior**, the framework treats the entire `TitleBar.Content` area as the primary drag surface and then subtracts (or *"punches holes"* from) regions that should not initiate window dragging. This approach works reasonably well for dense, predictable layouts. However, it **fails in scenarios with empty gaps, uneven spacing, nested templates, or dynamically generated UI**, where the system cannot reliably infer developer intent. These situations can lead to **unexpected non‑draggable gaps**, creating inconsistent or unintuitive window‑drag behavior for users.
 
-This problem has been raised and discussed by developers in the WinUI community, for example in: **[#10421](https://github.com/microsoft/microsoft-ui-xaml/issues/10421)**.
-
 This specification introduces **two changes** to address these issues:
 
 1. **Changing the default behavior** for deciding which parts of the TitleBar can be used to drag. The framework now recursively walks the visual tree and automatically excludes interactive controls from the drag region, making empty gaps and non‑interactive areas draggable by default.
@@ -188,7 +186,9 @@ In **Case B**, the "Font" `ComboBox` is explicitly excluded from drag (`IsDragRe
 var search = new AutoSuggestBox();
 TitleBar.SetIsDragRegion(search, true);
 // Manual refresh after dynamic changes
-titleBar.RecomputeDragRegions();</pre>
+titleBar.RecomputeDragRegions();
+ // Read the current override (returns null if not explicitly set)
+ var isDrag = TitleBar.GetIsDragRegion(search)</pre>
     </td>
     <td>Override an element in code-behind and manually refresh.</td>
   </tr>
@@ -199,7 +199,9 @@ titleBar.RecomputeDragRegions();</pre>
 AutoSuggestBox search{};
 TitleBar::SetIsDragRegion(search, true);
 // Manual refresh after dynamic changes
-titleBar.RecomputeDragRegions();</pre>
+titleBar.RecomputeDragRegions();
+// Read the current override
+auto isDrag = TitleBar::GetIsDragRegion(search);</pre>
     </td>
     <td>Equivalent usage in C++/WinRT.</td>
   </tr>
