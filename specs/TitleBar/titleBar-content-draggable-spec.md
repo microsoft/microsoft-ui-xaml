@@ -39,7 +39,8 @@ This specification introduces **two changes** to address these issues:
 </TitleBar>
 ```
 
-#### Output:
+Output:
+
 ![Non draggable gaps in TitleBar Content](./images/titlebar-drag-issue.png)
 
 In this simple layout:
@@ -51,32 +52,33 @@ Even in simple cases, it is non-trivial for the framework to automatically class
 
 **With the new default behavior**, the framework recursively traverses the visual tree and **excludes only interactive controls from drag**. Empty visual space (such as Column 1 above) and non‑interactive elements are now **draggable by default**, without any markup changes. The same XAML above now produces the correct result:
 
-#### Output (with new defaults):
+Output (with new defaults):
+
 ![Non draggable gaps in TitleBar Content](./images/titlebar-drag-issue-fixed.png)
 
 ---
 
 ## Change 2: Per‑element overrides with `TitleBar.IsDragRegion`
 
-Developers can **override** the default behavior on any element using the `TitleBar.IsDragRegion` attached property:
-- Set `IsDragRegion="True"` to **include** an element in the drag region even if it is an interactive control (e.g., ribbon areas that should drag).
-- Set `IsDragRegion="False"` to **exclude** an element from drag even if the framework would not auto‑detect it as interactive.
-- If the property is **not set** (remains `null`), the framework uses the default behavior: interactive controls are excluded from drag, non‑interactive visuals are draggable.
+Developers can override the default behavior on any element using the `TitleBar.IsDragRegion` attached property:
+- Set `IsDragRegion="True"` to include an element in the drag region even if it is an interactive control (e.g., ribbon areas that should drag).
+- Set `IsDragRegion="False"` to exclude an element from drag even if the framework would not auto‑detect it as interactive.
+- If the property is not set (remains `null`), the framework uses the default behavior: interactive controls are excluded from drag, non‑interactive visuals are draggable.
 
-> **Implementation note:** `IsDragRegion` is a **nullable boolean** (`IReference<Boolean>`). The getter returns `null` when the property has not been set, `true` when explicitly set to `True`, and `false` when explicitly set to `False`.
+> **Implementation note:** `IsDragRegion` is a nullable boolean (`IReference<Boolean>`). The getter returns `null` when the property has not been set, `true` when explicitly set to `True`, and `false` when explicitly set to `False`.
 
 **Advantages**
 - **Low developer effort** (good defaults).
 - **High flexibility** (simple overrides where needed).
 - **Consistent, accessible behavior** aligned with product expectations.
 
-#### IsDragRegion tri-state behavior
+IsDragRegion tri-state behavior:
 
 | State | How it's set | Getter returns | Meaning |
 |---|---|---|---|
 | **Not set** | Developer doesn't set it | `null` | "No opinion" — framework auto-detects based on control type |
-| **`False`** | `TitleBar.IsDragRegion="False"` | `false` | "Explicitly clickable" — always a passthrough hole |
-| **`True`** | `TitleBar.IsDragRegion="True"` | `true` | "Explicitly draggable" — never a passthrough, even if auto-detected as interactive |
+| `False` | `TitleBar.IsDragRegion="False"` | `false` | "Explicitly clickable" — always a passthrough hole |
+| `True` | `TitleBar.IsDragRegion="True"` | `true` | "Explicitly draggable" — never a passthrough, even if auto-detected as interactive |
 
 ---
 
@@ -135,7 +137,8 @@ You can apply `IsDragRegion` to containers to include/exclude large UI areas (e.
 ### Nested Layouts with Overrides
 A container can be marked as draggable, while a specific child overrides that to remain interactive. The two cases below show the difference side‑by‑side.
 
-**Case A — Entire StackPanel is draggable (no overrides):**
+Case A — Entire StackPanel is draggable (no overrides):
+
 ```xml
 <!-- The entire StackPanel and all its children are part of the drag region -->
 <StackPanel Orientation="Horizontal" TitleBar.IsDragRegion="True">
@@ -145,7 +148,8 @@ A container can be marked as draggable, while a specific child overrides that to
 </StackPanel>
 ```
 
-**Case B — StackPanel is draggable, but one child overrides to remain clickable:**
+Case B — StackPanel is draggable, but one child overrides to remain clickable:
+
 ```xml
 <!-- StackPanel is draggable, but the ComboBox overrides to stay interactive -->
 <StackPanel Orientation="Horizontal" TitleBar.IsDragRegion="True">
@@ -212,13 +216,13 @@ auto isDrag = TitleBar::GetIsDragRegion(search);</pre>
 # API Pages
 
 ## TitleBar.IsDragRegion attached property
-A **nullable boolean** (`IReference<Boolean>`) that marks an element as **included** in the window drag region (`True`) or **excluded** (`False`), overriding the framework default. When not set (`null`), the framework auto-detects based on control type.
+A nullable boolean (`IReference<Boolean>`) that marks an element as included in the window drag region (`True`) or excluded (`False`), overriding the framework default. When not set (`null`), the framework auto-detects based on control type.
 
 | Value | Meaning |
 |---|---|
 | **Not set** (`null`) | Framework decides: interactive controls are excluded from drag, non-interactive visuals are draggable. |
-| **`False`** | Explicitly clickable — always a passthrough hole, even if non-interactive. |
-| **`True`** | Explicitly draggable — never a passthrough, even if interactive. |
+| `False` | Explicitly clickable — always a passthrough hole, even if non-interactive. |
+| `True` | Explicitly draggable — never a passthrough, even if interactive. |
 
 ```xml
 <ComboBox PlaceholderText="Font" TitleBar.IsDragRegion="False"/>
