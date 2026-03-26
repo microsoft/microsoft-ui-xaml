@@ -39,6 +39,10 @@ namespace DirectUI
 
             virtual _Check_return_ HRESULT get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor) = 0;
             virtual _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue) = 0;
+            virtual _Check_return_ HRESULT get_WidthImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_WidthImpl(DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_HeightImpl(DOUBLE value) = 0;
 
             virtual _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** systemBackdrop) = 0;
             virtual _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* systemBackdrop) = 0;

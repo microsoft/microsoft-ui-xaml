@@ -3330,6 +3330,7 @@ namespace Microsoft.UI.Xaml
     [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 1, ForcePrimaryInterfaceGeneration = true)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 4)]
+    [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
     [DXamlIdlGroup("coretypes2")]
     [Guids(ClassGuid = "b0d8d8be-9fae-4cdc-a457-523fb68b3953")]
     [ContentProperty("Content")]
@@ -3446,6 +3447,24 @@ namespace Microsoft.UI.Xaml
         public Microsoft.UI.Windowing.AppWindow AppWindow
         {
             get;
+        }
+
+        [Version(3)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Double Width
+        {
+            get;
+            set;
+        }
+
+        [Version(3)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        public Windows.Foundation.Double Height
+        {
+            get;
+            set;
         }
 
 
