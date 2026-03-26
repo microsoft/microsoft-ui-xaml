@@ -139,7 +139,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             Log.Comment("Validating backward tab navigation...");
 
-            foreach (var expectedElement in expectedSequence.Reverse().Skip(1))
+            foreach (var expectedElement in Enumerable.Reverse(expectedSequence).Skip(1))
             {
                 var actualElement = (Button)FocusManager.FindNextElement(FocusNavigationDirection.Previous, options);
                 Log.Comment("Expected: " + expectedElement.Content);
