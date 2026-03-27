@@ -1,0 +1,117 @@
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+
+import "wtypes.idl";
+
+// Enumerations of possible input device types for the RpcInterface methods.
+// Maps to the enum INPUT_DEVICE {ID_MULTITOUCH, ID_SINGLE_TOUCH, ID_INTERNAL_PEN,
+// ID_EXTERNAL_PEN, ID_MOUSE, ID_TPAD, ID_MOUSEPAD}.
+typedef[v1_enum] enum InputDevice
+{
+    MultiTouch,
+    SingleTouch,
+    InternalPen,
+    ExternalPen,
+    Mouse,
+    TrackPad,
+    MousePad
+} InputDevice;
+
+typedef[v1_enum] enum MouseButton
+{
+    MouseButton_Left,
+    MouseButton_Right,
+    MouseButton_Middle
+} MouseButton;
+
+typedef unsigned __int64 ObjectHandle;
+
+#ifndef _WINNT_
+cpp_quote("#ifndef _WINNT_")
+typedef struct _LUID {
+    DWORD LowPart;
+    LONG HighPart;
+} LUID, *PLUID;
+cpp_quote("#endif")
+#endif
+
+// This interface defines the methods that will be available for calling
+// across process boundaries. When built, it generates the appropriate
+// stubs for calling these methods from the client and server and performing
+// the correct RPC marshalling and returning results. For now we'll consider
+// this a flat C-style API, although in the future we can add more interfaces
+// as needed if it makes sense.
+[
+   uuid(30D70360-5923-45C4-91BC-217B46EDC1FF),
+   version(1.0)
+]
+interface RpcInterface
+{
+    // General utilities
+    HRESULT RpcIsOneCore([out] BOOLEAN* isOneCore);
+    HRESULT RpcIsXBox([out] BOOLEAN* isXbox);
+    HRESULT RpcIsDesktop([out] BOOLEAN* isDesktop);
+    HRESULT RpcSetRegKey([in, string] const WCHAR* path, [in, string] const WCHAR* name, [in] DWORD dwValue, [out] BOOLEAN* nameExisted, [in] BOOLEAN currentUser);
+    HRESULT RpcDeleteRegKey([in, string] const WCHAR* path, [in, string] const WCHAR* name, [in] BOOLEAN currentUser);
+    HRESULT RpcEnableChangingTimeZone([in] BOOLEAN enable);
+    HRESULT RpcSetTimeZone([in, string] const WCHAR* timezoneId);
+    HRESULT RpcRunCommandLine([in, string] const WCHAR* commandLine, [out]DWORD* pExitCode);
+
+    // Input Injection
+    HRESULT RpcInjectPress([in] InputDevice inputDevice, [in] POINT ptLocation, [in] UINT durationMs, [in] UINT pressCount, [in] UINT pressDeltaMs);
+    HRESULT RpcInjectPenBarrelTap([in] POINT ptLocation);
+    HRESULT RpcInjectDragWithPenBarrelDown(POINT ptStart, POINT ptEnd, UINT durationInDragMs);
+    HRESULT RpcInjectPressAndDrag([in] InputDevice inputDevice, [in] POINT ptStart, [in] POINT ptEnd, [in] UINT durationInDragMs, [in] UINT durationInHoldMs);
+    HRESULT RpcInjectZoom([in] POINT ptStartFinger1, [in] POINT ptStartFinger2, [in] FLOAT dbDirection, [in] UINT durationMs, [in] UINT distance);
+    HRESULT RpcInjectRotate([in] POINT startFinger1, [in] POINT startFinger2, [in] FLOAT rotationAngle, [in] UINT durationMs, [in] BOOLEAN pivotRotate);
+    HRESULT RpcInjectDynamicPress([in] InputDevice inputDevice, [in] POINT ptPress, [in] DWORD dwWidth, [in] DWORD dwHeight, [in] UINT contactID);
+    HRESULT RpcInjectDynamicRelease([in] UINT contactID);
+    HRESULT RpcSendKeyInput([in] UINT16 keyCode, [in] BOOLEAN down, [in] BOOLEAN scanCode);
+    HRESULT RpcSendMouseButtonInput([in] MouseButton button, [in] POINT position, [in] BOOLEAN down);
+    HRESULT RpcSendMouseDragInput([in] MouseButton button, [in] POINT positionSrc, [in] POINT positionDest);
+    HRESULT RpcSendMouseMoveInput([in] POINT position);
+    HRESULT RpcSendMouseWheelInput([in] POINT position, [in] INT numberOfWheelClicks);
+    HRESULT RpcResetInputInjection();
+
+    // TraceConsumer
+    HRESULT RpcEnableTracingByEventId([in] int eventId);
+    HRESULT RpcTraceConsumerStart();
+    HRESULT RpcTraceConsumerStartProvider([in] GUID xamlProvider);
+    HRESULT RpcVerifyEventTraced([in, string] const WCHAR* event, [in] UINT count);
+    HRESULT RpcVerifyEventTracedById([in] int eventId, [in] UINT count);
+    HRESULT RpcVerifyEventTracedMoreThanOnce([in] int eventId);
+    HRESULT RpcTraceConsumerStop();
+
+    // ETWTraceWaiter
+    HRESULT RpcETWWaiterStart(GUID providerGuid, unsigned long eventId);
+    HRESULT RpcETWWaiterStartWithTaskName(GUID providerGuid, [in, string] const WCHAR* taskName);
+    HRESULT RpcETWWaiterStartWithPayLoad(GUID providerGuid, unsigned long eventId, [in, string] const WCHAR* payloadCriteria);
+    HRESULT RpcETWWaiterWait(GUID providerGuid, unsigned long eventId, unsigned int timeoutMs);
+    HRESULT RpcETWWaiterWaitForTaskName(GUID providerGuid, [in, string] const WCHAR* taskName, unsigned int timeoutMs);
+    HRESULT RpcETWWaiterStop(GUID providerGuid, unsigned long eventId);
+    HRESULT RpcETWWaiterStopTaskName(GUID providerGuid, [in, string] const WCHAR* taskName);
+    HRESULT RpcETWWaiterCount(unsigned int *waiterCount);
+
+    // WindowingHelper
+    HRESULT RpcSetForegroundWindow([in] LONG_PTR hwnd);
+    HRESULT RpcMaximizeDesktopWindow([in] LONG_PTR hwnd);
+    HRESULT RpcSetDesktopWindowSize([in] LONG_PTR hwnd, [in] unsigned int width, [in] unsigned int height);
+    HRESULT RpcMoveDesktopWindow([in] LONG_PTR hwnd, [in] unsigned int x, [in] unsigned int y);
+    HRESULT RpcIsDesktopWindowMaximized([in] LONG_PTR hwnd, [out] BOOL* isDesktopWindowMaximized);
+    HRESULT RpcCaptureScreenshot([in, string] const WCHAR* filename);
+
+    // AppAnalysisHelper
+    HRESULT RpcEnableRule([in] unsigned int processId, [in, string] const WCHAR* ruleId, [in, string] const WCHAR* testIdentifier, [in] BOOLEAN shouldHaveSourceInfo);
+    HRESULT RpcVerifyRuleTriggered([in] unsigned int timesTriggered);
+    HRESULT RpcVerifyMeasurement([in] unsigned int index, [in] unsigned int measurementType, [in] DOUBLE value);
+    HRESULT RpcVerifySourceInfo([in] unsigned int index, [in, string] const WCHAR* fileName, [in] unsigned int line, [in] unsigned int column);
+    HRESULT RpcVerifyCanLinkToLVT([in] unsigned int index, [in] ObjectHandle lvtHandle);
+    HRESULT RpcVerifyDescription([in] unsigned int index, [in] unsigned int resourceId, [in] unsigned int count, [in, string, size_is(count)] const WCHAR** args);
+    HRESULT RpcDisableCurrentRule();
+    HRESULT RpcVerifyRuleNotTriggered();
+
+    HRESULT RpcRunAsBVT();
+
+    HRESULT RpcTerminateProcess([in, string] const WCHAR* processName);
+
+    HRESULT RpcSetDpi([in] LUID displayAdapterId, [in] unsigned int DisplayAdapterTargetId, [in] int newDpi, [out, optional] int* oldDpi);
+}

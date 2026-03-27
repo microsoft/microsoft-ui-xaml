@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Package
+   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+   xmlns:wincap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities"
+   xmlns:wincap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"
+   IgnorableNamespaces="mp rescap uap uap3 wincap wincap3">
+  <Identity Name="XamlTAEFTests"
+          ProcessorArchitecture="__ARCH__"
+          Publisher="CN=WinUITest"
+          Version="1.0.0.0"
+          ResourceId="en-us" />
+
+  <mp:PhoneIdentity PhoneProductId="b1a325e7-4016-427f-b36c-26689574f544" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+
+  <Properties>
+    <DisplayName>TAEF Tailored Application Host Process</DisplayName>
+    <PublisherDisplayName>Microsoft Corp.</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>TAEF Tailored Application Host Process</Description>
+    <uap:SupportedUsers>multiple</uap:SupportedUsers>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="12.0.0.0" />
+    <PackageDependency Name="Microsoft.NET.CoreRuntime.2.2" MinVersion="2.2.27404.2" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
+    <PackageDependency Name="Microsoft.NET.CoreFramework.Debug.2.2" MinVersion="2.2.27505.2" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Applications>
+    <Application Id="XamlManagedTAEFTests" Executable="TaefHostAppManaged.exe" EntryPoint="TaefHostAppManaged.App">
+      <uap:VisualElements DisplayName="TAEF Tailored Application Host Process" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="TAEF Tailored Application Host Process" BackgroundColor="transparent">
+
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <rescap:Capability Name="uiAutomationSystem" />
+    <uap:Capability Name="picturesLibrary" />
+    <Capability Name="internetClient" />
+    <DeviceCapability Name="location" />
+    <DeviceCapability Name="webcam" />
+    <DeviceCapability Name="microphone" />
+  </Capabilities>
+</Package>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Microsoft.UI.Xaml.Build.Tests.Managed.props', '$(MSBuildThisFileDirectory)../'))" />
+  
+  <ItemGroup>
+    <!-- These don't currently compile. -->
+    <Compile Remove="dataValidation\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BinplaceItem Include="$(MSBuildThisFileDirectory)\componentConnector\MainPage.xaml">
+      <Destination>$(TestBinplaceResourcesDestinationPath)\managed\framework\componentconnector</Destination>
+    </BinplaceItem>
+  </ItemGroup>
+</Project>

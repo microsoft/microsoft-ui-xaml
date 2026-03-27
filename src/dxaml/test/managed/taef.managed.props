@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project ToolsVersion="4.0"
+  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TaefManagedRefPath>$(TaefPkgDirectory)\lib\netstandard2.0\</TaefManagedRefPath>
+  </PropertyGroup>
+  <ItemGroup Label="Common TAEF References">
+    <Reference Include="TE.Managed">
+      <HintPath>$(TaefManagedRefPath)TE.Managed.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Wex.Logger.Interop" >
+      <HintPath>$(TaefManagedRefPath)Wex.Logger.Interop.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

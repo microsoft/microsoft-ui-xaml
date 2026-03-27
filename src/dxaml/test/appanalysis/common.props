@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup>
+        <TargetDestination>$(TestBinplaceDestinationPath)\AppAnalysis</TargetDestination>
+    </PropertyGroup>
+
+    <Import Project="$(XamlSourcePath)\test\common.props"/>
+
+    <!-- TAEF.targets always sets INLINE_TEST_METHOD_MARKUP.  We don't want that defined so capture the value before the import and override it
+         back to the starting value afterwards. -->
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <BeforeTAEFPreprocessorDefinitions>%(PreprocessorDefinitions)</BeforeTAEFPreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <Import Project="$(TaefPkgDirectory)\build\Microsoft.Taef.targets"/>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <PreprocessorDefinitions>%(BeforeTAEFPreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <TestCode>true</TestCode>
+        <AppAnalysisPath>$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis</AppAnalysisPath>
+        <AppAnalysisObjPath>$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis</AppAnalysisObjPath>
+        <AppAnalysisTestPath>$(XamlSourcePath)\test\appanalysis</AppAnalysisTestPath>
+        <AppAnalysisTestObjPath>$(XamlBinaryPath)\test\appanalysis</AppAnalysisTestObjPath>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNICODE; _UNICODE; WIL_SUPPRESS_PRIVATE_API_USE; MIDL_NS_PREFIX;</ProjectPreprocessorDefinitions>
+        <ProjectIncludeDirectories>
+            $(AppAnalysisObjPath)\idl;
+            $(ProjectIncludeDirectories);
+            $(AppAnalysisPath)\common\;
+            $(AppAnalysisPath)\idl\;
+            $(AppAnalysisPath)\module\;
+            $(AppAnalysisPath)\runtime\framework\;
+            $(AppAnalysisPath)\runtime\rules\;
+            $(AppAnalysisPath)\runtime\common\;
+            $(AppAnalysisTestPath)\lib\;
+            $(AppAnalysisTestPath)\ruleSet\;
+            $(XamlSourcePath)\xcp\components\base\inc;
+            $(XamlSourcePath)\xcp\inc;
+            $(ExternalDependencies)
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{e1f36d19-f82d-474a-be26-fea52da5b6e6}'" Include="$(AppAnalysisPath)\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+    </ItemGroup>
+</Project>
