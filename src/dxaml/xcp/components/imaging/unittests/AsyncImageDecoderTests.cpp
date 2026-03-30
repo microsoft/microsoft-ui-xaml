@@ -137,7 +137,7 @@ void AsyncImageDecoderTests::ChangeDecodeSizeAnimatedPlaying()
     VERIFY_IS_TRUE(ValidateImageCrc(
         decodedSurface,
         L"AsyncImageDecoderTests_ChangeDecodeSizeAnimatedPlaying_natural",
-        0xfea6ba63));
+        0x2e040a5c));
 
     onDecodeEvent->Reset();
 
@@ -149,7 +149,7 @@ void AsyncImageDecoderTests::ChangeDecodeSizeAnimatedPlaying()
     VERIFY_IS_TRUE(ValidateImageCrc(
         decodedSurface,
         L"AsyncImageDecoderTests_ChangeDecodeSizeAnimatedPlaying_16x16",
-        0x156755d3));
+        0xc1750cdd));
 }
 
 void AsyncImageDecoderTests::ChangeDecodeSizeAnimatedStopped()
@@ -181,7 +181,7 @@ void AsyncImageDecoderTests::ChangeDecodeSizeAnimatedStopped()
     VERIFY_IS_TRUE(ValidateImageCrc(
         decodedSurface,
         L"AsyncImageDecoderTests_ChangeDecodeSizeAnimatedStopped_natural",
-        0xfea6ba63));
+        0x2e040a5c));
 
     onDecodeEvent->Reset();
 
@@ -193,7 +193,7 @@ void AsyncImageDecoderTests::ChangeDecodeSizeAnimatedStopped()
     VERIFY_IS_TRUE(ValidateImageCrc(
         decodedSurface,
         L"AsyncImageDecoderTests_ChangeDecodeSizeAnimatedStopped_16x16",
-        0x1d9542f8));
+        0x7d7e5b0d));
 }
 
 

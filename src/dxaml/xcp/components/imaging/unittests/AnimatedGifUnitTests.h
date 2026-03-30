@@ -28,6 +28,8 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
 
             BEGIN_TEST_METHOD(DeltaFramesImages)
                 TEST_METHOD_PROPERTY(L"Description", L"Validates the animated GIF delta frame images.")
+                // Ignored: requires master PNG reference images that don't exist. Use DeltaFramesCrc32 instead.
+                TEST_METHOD_PROPERTY(L"Ignore", L"True")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(DeltaFramesCrc32)

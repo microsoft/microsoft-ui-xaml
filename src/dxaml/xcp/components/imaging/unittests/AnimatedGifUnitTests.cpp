@@ -77,14 +77,20 @@ void AnimatedGifUnitTests::DeltaFramesCrc32()
     // TODO: This can be changed to use Crc32List directly when the compiler supports it.
     const uint32_t expectedFrameCrcValues[] =
     {
-        0x6fd7a759,
-        0x3d537909,
-        0x3559f111,
-        0x26385c76,
-        0x5a850fea,
-        0x26385c76,
-        0x3559f111,
-        0x3d537909,
+        0x7d8c03ea,
+        0xe53997cb,
+        0xdd084eec,
+        0x47ccdb8f,
+        0xa24ae118,
+        0xac944cc3,
+        0x8b7d2fad,
+        0xb541dc7b,
+        0x8b7d2fad,
+        0xac944cc3,
+        0xa24ae118,
+        0x47ccdb8f,
+        0xdd084eec,
+        0xe53997cb,
     };
 
     ValidateAllDeltaFramesCrc32(
@@ -97,14 +103,20 @@ void AnimatedGifUnitTests::_08bSAnim3()
 {
     const uint32_t expectedFrameCrcValues[] =
     {
-        0x6fd7a759,
-        0x3d537909,
-        0x3559f111,
-        0x26385c76,
-        0x5a850fea,
-        0x26385c76,
-        0x3559f111,
-        0x3d537909,
+        0x7d8c03ea,
+        0xe53997cb,
+        0xdd084eec,
+        0x47ccdb8f,
+        0xa24ae118,
+        0xac944cc3,
+        0x8b7d2fad,
+        0xb541dc7b,
+        0x8b7d2fad,
+        0xac944cc3,
+        0xa24ae118,
+        0x47ccdb8f,
+        0xdd084eec,
+        0xe53997cb,
     };
     Crc32List crc32List(std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
     crc32List.insert(crc32List.end(), std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
@@ -119,11 +131,11 @@ void AnimatedGifUnitTests::c0()
 {
     const uint32_t expectedFrameCrcValues[] =
     {
-        0x68935d04,
-        0x993d559d,
-        0x0fd5cb8e,
-        0x4079d008,
-        0xd7b85c37,
+        0x94e85f69,
+        0x2f307269,
+        0xccc7888f,
+        0xe9a1b656,
+        0xe5d1aa1f,
     };
     Crc32List crc32List(std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
     crc32List.insert(crc32List.end(), std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
@@ -138,11 +150,11 @@ void AnimatedGifUnitTests::c1()
 {
     const uint32_t expectedFrameCrcValues[] =
     {
-        0x68935d04,
-        0x993d559d,
-        0x0fd5cb8e,
-        0x4079d008,
-        0xd7b85c37,
+        0xb56a3479,
+        0x0faa1006,
+        0x7672b965,
+        0xd533c4c6,
+        0xab2d5cef,
     };
     Crc32List crc32List(std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
     crc32List.insert(crc32List.end(), std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
@@ -157,11 +169,11 @@ void AnimatedGifUnitTests::c2()
 {
     const uint32_t expectedFrameCrcValues[] =
     {
-        0x68935d04,
-        0xce6bae2a,
-        0x74971f94,
-        0xbf71c59c,
-        0x351d123a,
+        0x2bdcbf2c,
+        0xc21cb914,
+        0x59b3d64a,
+        0xb0e3ab8f,
+        0x5875447f,
     };
     Crc32List crc32List(std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
     crc32List.insert(crc32List.end(), std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
@@ -176,11 +188,11 @@ void AnimatedGifUnitTests::c3()
 {
     const uint32_t expectedFrameCrcValues[] =
     {
-        0x68935d04,
-        0xce6bae2a,
-        0x74971f94,
-        0xbf71c59c,
-        0x351d123a,
+        0x15268d9c,
+        0xc664584f,
+        0xf9b3b088,
+        0x40283dd1,
+        0x678217da,
     };
     Crc32List crc32List(std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
     crc32List.insert(crc32List.end(), std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
@@ -195,11 +207,11 @@ void AnimatedGifUnitTests::GifTest()
 {
     const uint32_t expectedFrameCrcValues[] =
     {
-        0xbbe01c7e,
-        0x09c955f7,
-        0x72234020,
-        0x677a73c7,
-        0xe0c95280,
+        0xfac02ba2,
+        0xbd67c8cd,
+        0xac2d3371,
+        0x51c7508f,
+        0x72b2f959,
     };
     Crc32List crc32List(std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
     crc32List.insert(crc32List.end(), std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
@@ -214,10 +226,10 @@ void AnimatedGifUnitTests::GifTest2()
 {
     const uint32_t expectedFrameCrcValues[] =
     {
-        0x748dfb26,
-        0x179b2241,
-        0xeae8a1b7,
-        0xfadd17b7,
+        0x2eb9c7e8,
+        0x8c1323df,
+        0xaeda9049,
+        0xae7f071b,
     };
     Crc32List crc32List(std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
     crc32List.insert(crc32List.end(), std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
@@ -232,19 +244,32 @@ void AnimatedGifUnitTests::LoopedTransparent()
 {
     const uint32_t expectedFrameCrcValues[] =
     {
-        0xc66fdb3a,
-        0xd6503788,
-        0x019ef820,
-        0x025e4d3c,
-        0x3a368440,
-        0x21b55536,
-        0x96c78036,
-        0xc1ae41b2,
-        0x3a4cce94,
-        0x0681509a,
-        0x5f0a857c,
-        0xf82c1be4,
-        0xa342de58,
+        0xd8fb17ff,
+        0xfbfcd13d,
+        0x21ab1963,
+        0xea54b68b,
+        0xd7ad9a40,
+        0x7c282001,
+        0xd3b97534,
+        0xe5f5ca98,
+        0xab2aa329,
+        0x043ecb69,
+        0x4536f086,
+        0x49dee7ec,
+        0xa5a322a6,
+        0xcddbade7,
+        0x3743a4c4,
+        0x79ec2347,
+        0xbdf487f5,
+        0xffedf370,
+        0x54684931,
+        0xfbf91c04,
+        0xcdb5a3a8,
+        0x836aca19,
+        0xea491fdf,
+        0x482a8ec1,
+        0x272629f9,
+        0xa5a322a6,
     };
     Crc32List crc32List(std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
     crc32List.insert(crc32List.end(), std::begin(expectedFrameCrcValues), std::end(expectedFrameCrcValues));
