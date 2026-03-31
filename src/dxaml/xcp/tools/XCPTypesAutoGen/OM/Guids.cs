@@ -140,6 +140,8 @@ namespace OM
         public static Guids ITransitionContextProvider => new InterfaceGuids("fede5b34-83bd-4bd7-9930-02e6a9f48cff");
 
         public static Guids ITreeBuilder => new InterfaceGuids("a28ba838-4842-42bd-abdd-8d271c1b6d3e");
+        
+        public static Guids IXamlPredicate => new InterfaceGuids("9d571fda-ed2c-42c7-9f0f-e201180fbb96");
 
         public static Guids IPaginatedPanel => new InterfaceGuids("a0830eb1-e2d3-4438-ae98-419a85b74936");
 

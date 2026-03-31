@@ -4,7 +4,6 @@
 #include "precomp.h"
 
 #include "XamlPredicateService.h"
-#include "windowscollections.h"
 #include "CValueBoxer.h"
 
 #include "ObjectWriterContext.h"
@@ -12,6 +11,7 @@
 #include "XamlParserContext.h"
 #include "MetadataApi.h"
 #include "StableXbfIndexes.g.h"
+#include "XamlTraceLogging.h"
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -33,31 +33,20 @@ std::vector<xstring_ptr> SplitArgumentsString(const xstring_ptr& args)
     unsigned int secondIndex = args.FindChar(CONDITIONAL_PREDICATE_ARG_DELIMITER);
 
     xstring_ptr arg;
+    xstring_ptr trimmedArg;
     while (secondIndex != xstring_ptr_view::npos)
     {
         THROW_IF_FAILED(args.SubString(firstIndex, secondIndex, &arg));
-        result.emplace_back(arg);
+        THROW_IF_FAILED(xstring_ptr::CloneBufferTrimWhitespace(arg.GetBuffer(), arg.GetCount(), &trimmedArg));
+        result.emplace_back(trimmedArg);
 
         firstIndex = secondIndex + 1;
         secondIndex = args.FindChar(CONDITIONAL_PREDICATE_ARG_DELIMITER, firstIndex);
     }
 
     THROW_IF_FAILED(args.SubString(firstIndex, args.GetCount(), &arg));
-    result.emplace_back(arg);
-
-    return result;
-}
-
-wrl::ComPtr<wfci_::Vector<HSTRING>> ConvertXStringPtrVectorToHStringVector(const std::vector<xstring_ptr>& stringPtrs)
-{
-    wrl::ComPtr<wfci_::Vector<HSTRING>> result;
-    THROW_IF_FAILED(wfci_::Vector<HSTRING>::Make(&result));
-    for (const auto& strPtr : stringPtrs)
-    {
-        wrl::Wrappers::HString hstr;
-        THROW_IF_FAILED(hstr.Set(strPtr.GetBuffer(), strPtr.GetCount()));
-        result->Append(hstr.Get());
-    }
+    THROW_IF_FAILED(xstring_ptr::CloneBufferTrimWhitespace(arg.GetBuffer(), arg.GetCount(), &trimmedArg));
+    result.emplace_back(trimmedArg);
 
     return result;
 }
@@ -242,8 +231,8 @@ bool XamlPredicateService::EvaluatePredicate(
         if (pObject)
         {
             bool result = false;
+            bool isCustomCondition = false;
 
-            auto argsVector = SplitArgumentsString(argsClone);
             if (pObject->GetTypeIndex() == KnownTypeIndex::IsApiContractPresent
                 || pObject->GetTypeIndex() == KnownTypeIndex::IsApiContractNotPresent
                 || pObject->GetTypeIndex() == KnownTypeIndex::IsPropertyPresent
@@ -251,29 +240,37 @@ bool XamlPredicateService::EvaluatePredicate(
                 || pObject->GetTypeIndex() == KnownTypeIndex::IsTypePresent
                 || pObject->GetTypeIndex() == KnownTypeIndex::IsTypeNotPresent)
             {
+                auto argsVector = SplitArgumentsString(argsClone);
                 // We know the built-in predicates derive from IXamlPredicate
-                 result = static_cast<IXamlPredicate*>(pObject)->Evaluate(argsVector);
+                result = static_cast<IXamlPredicate*>(pObject)->Evaluate(argsVector);
             }
             else
             {
-				wrl::ComPtr<wfci_::Vector<HSTRING>> hstringVector = ConvertXStringPtrVectorToHStringVector(argsVector);
-                boolean result2;
-
-                // Get the IVectorView from the vector
-                wrl::ComPtr<wfc::IVectorView<HSTRING>> spVectorView;
-                hstringVector->GetView(spVectorView.GetAddressOf());
+                isCustomCondition = true;
+                wrl::Wrappers::HString hstrArgs;
+                THROW_IF_FAILED(hstrArgs.Set(argsClone.GetBuffer(), argsClone.GetCount()));
 
                 wrl::ComPtr<IInspectable> spInspectable;
                 THROW_IF_FAILED(DirectUI::CValueBoxer::UnboxObjectValue(&predicateInstance->GetValue(), DirectUI::MetadataAPI::GetClassInfoByIndex(pObject->GetTypeIndex()), spInspectable.GetAddressOf()));
 
-                wrl::ComPtr<xaml_markup::IXamlPredicate> pXamlPredicate;
-                THROW_IF_FAILED(spInspectable.As(&pXamlPredicate));
+                wrl::ComPtr<xaml_markup::IXamlCondition> pXamlCondition;
+                THROW_IF_FAILED(spInspectable.As(&pXamlCondition));
 
-                THROW_IF_FAILED(pXamlPredicate->Evaluate(spVectorView.Get(), &result2));
+                boolean result2;
+                THROW_IF_FAILED(pXamlCondition->Evaluate(hstrArgs.Get(), &result2));
                 result = (result2 != FALSE);
             }
             
             tokenToArgsMap->emplace(argsClone, result);
+
+            TraceLoggingWrite(
+                g_hTraceProvider,
+                "XamlConditionEvaluated",
+                TraceLoggingBoolean(isCustomCondition, "IsCustomCondition"),
+                TraceLoggingBoolean(result, "Result"),
+                TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS),
+                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
 
             return result;
         }

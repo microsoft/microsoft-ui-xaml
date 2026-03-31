@@ -54,7 +54,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             // confirm nothing left unparsed at end of path string
             lexer.ConfirmInputFullyConsumed();
 
-            var parsedValues = new ConditionalNamespace(parsedObject.GetChild(0).GetText(), parsedObject.ApiInformation, parsedObject.TargetPlatform);
+            // Use the original input string to extract the unconditional namespace,
+            // since GetText() loses characters the lexer can't tokenize (e.g. digits in '2006').
+            int questionIndex = namespaceFullName.IndexOf('?');
+            string unconditionalNamespace = namespaceFullName.Substring(0, questionIndex);
+            var parsedValues = new ConditionalNamespace(unconditionalNamespace, parsedObject.ApiInformation, parsedObject.TargetPlatform);
             cache[namespaceFullName] = parsedValues;
             return parsedValues;
         }

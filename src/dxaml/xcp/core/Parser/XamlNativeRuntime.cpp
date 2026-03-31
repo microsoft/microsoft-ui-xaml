@@ -7,6 +7,7 @@
 #include "ThemeResource.h"
 #include "DeferredMapping.h"
 #include "XamlNativeRuntime_SimpleProperties.g.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 
@@ -600,6 +601,31 @@ _Check_return_ HRESULT XamlNativeRuntime::AddToDictionary(
     return S_OK;
 }
 
+// Empirically determined - the types that produced 100+ instances during the most expensive startup frame of WinUI 3 Gallery Dev
+const WCHAR* TypeIndexToType(KnownTypeIndex typeIndex)
+{
+    switch (typeIndex)
+    {
+        case KnownTypeIndex::Grid: return L"Grid";
+        case KnownTypeIndex::Setter: return L"Setter";
+        case KnownTypeIndex::ObjectAnimationUsingKeyFrames: return L"ObjectAnimationUsingKeyFrames";
+        case KnownTypeIndex::ColumnDefinition: return L"ColumnDefinition";
+        case KnownTypeIndex::DiscreteObjectKeyFrame: return L"DiscreteObjectKeyFrame";
+        case KnownTypeIndex::VisualState: return L"VisualState";
+        case KnownTypeIndex::RelativeSource: return L"RelativeSource";
+        case KnownTypeIndex::SolidColorBrush: return L"SolidColorBrush";
+        case KnownTypeIndex::Enumerated: return L"Enumerated";
+        case KnownTypeIndex::ContentPresenter: return L"ContentPresenter";
+        case KnownTypeIndex::TextBlock: return L"TextBlock";
+        case KnownTypeIndex::RowDefinition: return L"RowDefinition";
+        case KnownTypeIndex::Style: return L"Style";
+        case KnownTypeIndex::ControlTemplate: return L"ControlTemplate";
+        case KnownTypeIndex::Storyboard: return L"Storyboard";
+        case KnownTypeIndex::TemplateBinding: return L"TemplateBinding";
+    }
+    return nullptr;
+}
+
 _Check_return_ HRESULT XamlNativeRuntime::InitializationGuard(
     _In_ const std::shared_ptr<XamlType>& spXamlType,
     _In_ const std::shared_ptr<XamlQualifiedObject>& qoInstance,
@@ -612,6 +638,14 @@ _Check_return_ HRESULT XamlNativeRuntime::InitializationGuard(
     {
         if (fInitializing)
         {
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "XamlNativeRuntime_InitializationGuard",
+                TraceLoggingBoolean(true, "IsStart"),
+                TraceLoggingUInt32(pDependencyObject->GetContext()->GetFrameNumber(), "FrameNumber"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(pDependencyObject), "ObjectPointer"),
+                TraceLoggingUInt16(static_cast<uint16_t>(pDependencyObject->GetTypeIndex()), "TypeIndex"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
             pDependencyObject->SetIsParsing(TRUE);
             pDependencyObject->SetParserParentLock();
         }
@@ -620,6 +654,17 @@ _Check_return_ HRESULT XamlNativeRuntime::InitializationGuard(
             IFC_RETURN(pDependencyObject->CreationComplete());
             pDependencyObject->ResetParserParentLock();
             pDependencyObject->SetIsParsing(FALSE);
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "XamlNativeRuntime_InitializationGuard",
+                TraceLoggingBoolean(false, "IsStart"),
+                TraceLoggingUInt32(pDependencyObject->GetContext()->GetFrameNumber(), "FrameNumber"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(pDependencyObject), "ObjectPointer"),
+                TraceLoggingUInt16(static_cast<uint16_t>(pDependencyObject->GetTypeIndex()), "TypeIndex"),
+                TraceLoggingWideString(TypeIndexToType(pDependencyObject->GetTypeIndex()), "Type"),
+                TraceLoggingWideString(pDependencyObject->OfTypeByIndex<KnownTypeIndex::FrameworkElement>() ? static_cast<CFrameworkElement*>(pDependencyObject)->GetStrClassName().GetBuffer() : nullptr, "ClassName"),
+                TraceLoggingWideString(pDependencyObject->m_strName.GetBuffer(), "Name"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
         }
     }
 

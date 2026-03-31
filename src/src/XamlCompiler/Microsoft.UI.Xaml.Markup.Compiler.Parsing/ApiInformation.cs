@@ -9,7 +9,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 {
     public class ApiInformation
     {
-        private static Dictionary<string, ApiInformationMethod> SupportedApiInformation =
+        private static IReadOnlyDictionary<string, ApiInformationMethod> SupportedApiInformation =
             new Dictionary<string, ApiInformationMethod>()
         {
             { "IsApiContractPresent",       new ApiInformationMethod("IsApiContractPresent", true) },
@@ -20,7 +20,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             { "IsTypeNotPresent",           new ApiInformationMethod("IsTypePresent", false) },
         };
 
-        private static Dictionary<string, List<ApiInformationParameter>> SupportedApiInformationParameters =
+        private static IReadOnlyDictionary<string, List<ApiInformationParameter>> SupportedApiInformationParameters =
             new Dictionary<string, List<ApiInformationParameter>>()
         {
             { "IsApiContractPresent2",  new List<ApiInformationParameter>() { new ApiInformationParameter(typeof(string)), new ApiInformationParameter(typeof(ushort)) }},
@@ -67,9 +67,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         {
             if (Method.IsCustomAPI)
             {
-                for (int i = 0; i < parameters.Count; i++)
+                if(parameters != null)
                 {
-                    parameters[i].ParameterType = typeof(string);
+                    for (int i = 0; i < parameters.Count; i++)
+                    {
+                        parameters[i].ParameterType = typeof(string);
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid parameter count for method: " + Method.MethodName);
                 }
             }
             else

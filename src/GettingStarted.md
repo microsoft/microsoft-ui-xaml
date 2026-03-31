@@ -50,13 +50,6 @@ Starting with a command prompt or PowerShell at the root of your WinUI repo:
    .\init.ps1
    ```
 
-   Note: Package restore errors are currently expected for a couple projects:
-   `Microsoft.Taef`,
-   and `Microsoft.Windows.TestInProduction`. These packages are not required to build the WinUI
-   product binaries. You can ignore these errors for now. They will be addressed in future changes.
-   See the [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700)
-   for more details and updates on the OSS rollout.
-
 3. Build the project:
    ```
    .\build.cmd

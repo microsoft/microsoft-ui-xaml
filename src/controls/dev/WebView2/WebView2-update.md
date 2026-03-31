@@ -86,16 +86,16 @@ example, if an API was previously experimental before but is currently final, ol
      * `\dxaml\test\infra\taefhostappmanaged\TaefHostAppManaged.csproj`
        * This is the binplace logic
        * Note in this path, any terminating .0 gets dropped (ie. Use 80.0.333 rather than 8.0.333.0)
-     * `\dxaml\external\Microsoft.UI.DCPP.Dependencies.Edge.nuspec`
+     * `\dxaml\test\external\Microsoft.UI.DCPP.Dependencies.Edge.nuspec`
        * This points to the `mini_installer`s you will drop into the repo, to be packaged into a nuget package
    * Create directories where you will need to copy installers from the Edge Official Builds website
      * E.g.  
-       `<repo_root>\dxaml\test\edge\88.0.676.0\x64\mini_installer.exe`  
-       `<repo_root>\dxaml\test\edge\88.0.676.0\x86\mini_installer.exe`
+       `<repo_root>\dxaml\test\edge\144.0.3719.82\x64\mini_installer.exe`  
+       `<repo_root>\dxaml\test\edge\144.0.3719.82\x86\mini_installer.exe`
    * Give you detailed instructions about the following steps.
 
 2. Drop the Edge installers into the directories created in the previous step
-   * These should be retrieved from the correct version at https://edgeteam.ms/es/official-builds
+   * These should be retrieved from the correct version at https://edgeteam.ms/builds-and-branches
    * The links called Win64 and Win32 under "Installers" are mini_installer.exe files that must be dropped into the
      repo in the directories created by the script (Win64 goes under x64, Win32 goes under x86).
    * These files **should not** be checked in to the repo. Once the nuget package has been created and pushed per the 
@@ -103,7 +103,7 @@ example, if an API was previously experimental before but is currently final, ol
 
 3. Pack and push the Runtime installer nuget package
    * **The update script will tell you exactly what commands to run** to do this. You will need to obtain the API key 
-     from a team member.
+     from a team member. 
    * Packing is done by
      * `nuget pack <.nuspec path> -OutputDirectory <repo_root>\packages`
      * Example command and output:
@@ -116,6 +116,7 @@ example, if an API was previously experimental before but is currently final, ol
       ```
    * Pushing is done by
      * `nuget push <.nupkg path> -Source WinUI.Dependencies -apikey <ask_a_teammate_for_key>`
+     * You need to be part of [WinUI.Dependencies](https://microsoft.visualstudio.com/WinUI/_artifacts/feed/WinUI.Dependencies/settings/permissions) feed to be able to push using the command above.
      * Example command and output:
       ```
       > nuget push <repo_root>\packages\Microsoft.UI.DCPP.Dependencies.Edge\<created_nupkg> -Source WinUI.Dependencies -apikey <ask_a_teammate_for_key>

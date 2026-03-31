@@ -51,5 +51,5 @@
 ### WinAppSDK  Current
 | Package | Version |  Link to file |
 | :------ | :------ |  :----------- |
-| Microsoft.Web.WebView2              | 1.0.1185.39   | https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-lift?path=/controls/dev/dll/packages.config&version=GBmain |
-| Microsoft.UI.DCPP.Dependencies.Edge | 100.0.1185.39 | https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-lift?path=/packages.config&version=GBmain |
+| Microsoft.Web.WebView2              | 1.0.3719.77   | https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-lift?path=/controls/dev/dll/packages.config&version=GBmain |
+| Microsoft.UI.DCPP.Dependencies.Edge | 144.0.3719.82 | https://microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-lift?path=/packages.config&version=GBmain |

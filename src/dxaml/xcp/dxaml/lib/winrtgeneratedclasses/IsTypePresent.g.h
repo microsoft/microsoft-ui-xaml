@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "IXamlPredicate.g.h"
 
 #define __IsTypePresent_GUID "01da2943-8f8d-42ca-96ef-79cbc4d083ab"
 
@@ -20,14 +21,11 @@ namespace DirectUI
 
     class __declspec(novtable) IsTypePresentGenerated:
         public DirectUI::DependencyObject
-        , public ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate
+        , public DirectUI::IXamlPredicate
     {
         friend class DirectUI::IsTypePresent;
 
 
-        BEGIN_INTERFACE_MAP(IsTypePresentGenerated, DirectUI::DependencyObject)
-            INTERFACE_ENTRY(IsTypePresentGenerated, ABI::Microsoft::UI::Xaml::Markup::IXamlPredicate)
-        END_INTERFACE_MAP(IsTypePresentGenerated, DirectUI::DependencyObject)
 
     public:
         IsTypePresentGenerated();
@@ -50,7 +48,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
-        IFACEMETHOD(Evaluate)(_In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pArguments, _Out_ BOOLEAN* pResult) override;
+        IFACEMETHOD(Evaluate)(_In_ ABI::Windows::Foundation::Collections::IVectorView<HSTRING>* pArguments, _Out_ BOOLEAN* pReturnValue) override;
 
 
     protected:

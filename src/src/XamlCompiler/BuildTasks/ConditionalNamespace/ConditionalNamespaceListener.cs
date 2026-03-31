@@ -61,16 +61,6 @@ public interface IConditionalNamespaceListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitUri([NotNull] ConditionalNamespaceParser.UriContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="ConditionalNamespaceParser.unquoted_namespace"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterUnquoted_namespace([NotNull] ConditionalNamespaceParser.Unquoted_namespaceContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="ConditionalNamespaceParser.unquoted_namespace"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitUnquoted_namespace([NotNull] ConditionalNamespaceParser.Unquoted_namespaceContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="ConditionalNamespaceParser.api_information"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

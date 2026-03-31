@@ -388,6 +388,95 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        private static void WaitForNonEmptyTextBoxValue(Edit textbox)
+        {
+            // Wait for textbox to have any non-empty value
+            if (textbox.Value == string.Empty)
+            {
+                using (var waiter = new ValueChangedEventWaiter(textbox))
+                {
+                    waiter.Wait();
+                }
+            }
+        }
+
+        private static string WaitForDraggableElementsCoordinates()
+        {
+            var miscTextBox = new Edit(FindElement.ById("MiscTextBox"));
+            int maxAttempts = 10; // Allow up to 10 value changes or ~5 seconds
+            int attempts = 0;
+            
+            // Wait for the DraggableElements message using ValueChangedEventWaiter
+            while (!miscTextBox.Value.StartsWith("DraggableElements:") && attempts < maxAttempts)
+            {
+                using (var waiter = new ValueChangedEventWaiter(miscTextBox))
+                {
+                    // Wait up to 500ms for the next value change
+                    waiter.TryWait(TimeSpan.FromMilliseconds(500));
+                }
+                attempts++;
+            }
+            
+            string coordsMessage = miscTextBox.Value;
+            Verify.IsTrue(coordsMessage.StartsWith("DraggableElements:"), "Draggable elements information is available");
+            return coordsMessage;
+        }
+
+        private static Point ParseElementCoordinatesFromMessage(string coordsMessage, string elementType)
+        {
+            // Parse coordinates from "DraggableElements: Div(x,y) Link(x,y) Image(x,y)"
+            string searchString = elementType + "(";
+            int start = coordsMessage.IndexOf(searchString) + searchString.Length;
+            int end = coordsMessage.IndexOf(")", start);
+            string[] xy = coordsMessage.Substring(start, end - start).Split(',');
+            int centerX = (int)Math.Round(double.Parse(xy[0]));
+            int centerY = (int)Math.Round(double.Parse(xy[1]));
+            
+            return new Point(centerX, centerY);
+        }
+
+        private static Point GetDraggedElementStartPoint(string elementType)
+        {
+            var wv2 = FindElement.ById("MyWebView2");
+            Rectangle wv2_bounds = wv2.BoundingRectangle;
+            
+            string coordsMessage = WaitForDraggableElementsCoordinates();
+            Point elementCenter = ParseElementCoordinatesFromMessage(coordsMessage, elementType);
+            
+            return new Point(wv2_bounds.X + elementCenter.X, wv2_bounds.Y + elementCenter.Y);
+        }
+
+        private static Point GetDropTextBoxPoint()
+        {
+            var dropTargetTextBox = new Edit(FindElement.ById("DropTargetTextBox"));
+            Rectangle dropTarget_bounds = dropTargetTextBox.BoundingRectangle;
+            
+            return new Point(
+                dropTarget_bounds.X + dropTarget_bounds.Width / 2,
+                dropTarget_bounds.Y + dropTarget_bounds.Height / 2);
+        }
+
+        private static void PerformDrag(Point startPoint, Point endPoint)
+        {
+            PointerInput.Move(startPoint);
+            Wait.ForMilliseconds(200);
+
+            PointerInput.Press(PointerButtons.Primary);
+            Wait.ForMilliseconds(500);
+
+            Point dragThresholdPoint = new Point(startPoint.X + 20, startPoint.Y + 20);
+            PointerInput.Move(dragThresholdPoint);
+            Wait.ForMilliseconds(500);
+
+            PointerInput.Move(endPoint);
+            Wait.ForMilliseconds(500);
+
+            PointerInput.Release(PointerButtons.Primary);
+
+            Wait.ForIdle();
+            Wait.ForMilliseconds(1000);
+        }
+
         private static void DoSelectAllByKeyboard()
         {
             Log.Comment("Do Select All");
@@ -1063,6 +1152,134 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Done with drag and drop");
 
                 CompleteTestAndWaitForWebMessageResult("DragDropIntoWebView2Test");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void DragFromWebView2_DragStartEventTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("DragFromWebView2_DragStartEventTest");
+
+                Point startPoint = GetDraggedElementStartPoint("Div");
+                Point dragPoint = new Point(startPoint.X + 10, startPoint.Y + 10);
+
+                var miscTextBox = new Edit(FindElement.ById("MiscTextBox"));
+                miscTextBox.SetValue(string.Empty);
+
+                PerformDrag(startPoint, dragPoint);
+
+                WaitForNonEmptyTextBoxValue(miscTextBox);
+                string dragMessage = miscTextBox.Value;
+
+                // Verify we received the exact drag starting event message
+                Verify.AreEqual("DragStarting event fired with content: Draggable Content", dragMessage, 
+                    "Should receive exact DragStarting event message");
+                Log.Comment("DragStarting event detected successfully from WebView2");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void DragFromWebView2_DragContentTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("DragFromWebView2_DragContentTest");
+
+                Point startPoint = GetDraggedElementStartPoint("Div");
+                Point dragPoint = new Point(startPoint.X + 10, startPoint.Y + 10);
+
+                var miscTextBox = new Edit(FindElement.ById("MiscTextBox"));
+                miscTextBox.SetValue(string.Empty);
+
+                PerformDrag(startPoint, dragPoint);
+
+                // Wait for message with drag content information
+                WaitForNonEmptyTextBoxValue(miscTextBox);
+                string dragContentMessage = miscTextBox.Value;
+
+                // Verify message contains exact drag content
+                Verify.AreEqual("DragStarting event fired with content: Draggable Content", dragContentMessage,
+                    "Message should contain exact drag content");
+                Log.Comment("Drag content verified: {0}", dragContentMessage);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void DragFromWebView2_DropTextTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("DragFromWebView2_DropTextTest");
+
+                Point startPoint = GetDraggedElementStartPoint("Div");
+                Point endPoint = GetDropTextBoxPoint();
+
+                Log.Comment("Drag and drop from draggable div (Web) at ({0},{1}) to DropTargetTextBox (XAML) at ({2},{3})",
+                    startPoint.X, startPoint.Y, endPoint.X, endPoint.Y);
+
+                PerformDrag(startPoint, endPoint);
+
+                var dropTargetTextBox = new Edit(FindElement.ById("DropTargetTextBox"));
+                string droppedText = dropTargetTextBox.Value;
+                Verify.AreEqual("Draggable Content", droppedText, 
+                    "DropTargetTextBox should contain exact text 'Draggable Content'");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void DragFromWebView2_DropLinkTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("DragFromWebView2_DropLinkTest");
+
+                Point startPoint = GetDraggedElementStartPoint("Link");
+                Point endPoint = GetDropTextBoxPoint();
+
+                Log.Comment("Drag and drop link (Web) at ({0},{1}) to DropTargetTextBox (XAML) at ({2},{3})",
+                    startPoint.X, startPoint.Y, endPoint.X, endPoint.Y);
+
+                PerformDrag(startPoint, endPoint);
+
+                var dropTargetTextBox = new Edit(FindElement.ById("DropTargetTextBox"));
+                string droppedText = dropTargetTextBox.Value;
+                Verify.AreEqual("https://example.com/", droppedText, 
+                    "DropTargetTextBox should contain exact URL 'https://example.com/'");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void DragFromWebView2_DropImageTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("DragFromWebView2_DropImageTest");
+
+                Point startPoint = GetDraggedElementStartPoint("Image");
+                Point endPoint = GetDropTextBoxPoint();
+
+                Log.Comment("Drag and drop image (Web) at ({0},{1}) to DropTargetTextBox (XAML) at ({2},{3})",
+                    startPoint.X, startPoint.Y, endPoint.X, endPoint.Y);
+
+                PerformDrag(startPoint, endPoint);
+
+                var dropTargetTextBox = new Edit(FindElement.ById("DropTargetTextBox"));
+                string droppedText = dropTargetTextBox.Value;
+                
+                Verify.IsTrue(
+                    droppedText.Contains(".png") || 
+                    droppedText.Contains(".jpg") || 
+                    droppedText.Contains(".jpeg") ||
+                    droppedText.Contains("[Bitmap received]") || 
+                    droppedText.Contains("data:image"),
+                    $"DropTargetTextBox should contain image file path or data, actual: '{droppedText}'");
             }
         }
 

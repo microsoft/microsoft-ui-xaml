@@ -19,6 +19,7 @@
 #include <webview2.h>
 #include <WebView2EnvironmentOptions.h>
 #pragma warning( pop )
+#include <WebView2Interop.h>
 
 MIDL_INTERFACE("2EE738F4-402C-4F6E-9F93-DEDD89F09B49")
 IHwndComponentHost : public IUnknown
@@ -131,6 +132,11 @@ private:
     void UnregisterXamlEventHandlers();
     void RegisterCoreEventHandlers();
     void UnregisterCoreEventHandlers();
+    void RegisterDragStartingHandler() noexcept;
+    void UnRegisterDragStartingHandler() noexcept;
+    com_ptr<ICoreWebView2CompositionControllerInterop3> GetDragStartingInterop();
+    void DragStartingCallback(ICoreWebView2DragStartingEventArgs* args) noexcept;
+    void LogTelemetryDragStartingFailure(HRESULT hr, DWORD contentType) const;
 
     void HandlePointerPressed(const winrt::Windows::Foundation::IInspectable&, const winrt::PointerRoutedEventArgs& args);
     void HandlePointerReleased(const winrt::Windows::Foundation::IInspectable&, const winrt::PointerRoutedEventArgs& args);
@@ -257,6 +263,9 @@ private:
     winrt::UIElement::DragOver_revoker m_dragOverRevoker{};
     winrt::UIElement::DragLeave_revoker m_dragLeaveRevoker{};
     winrt::UIElement::Drop_revoker m_dropRevoker{};
+    Microsoft::WRL::ComPtr<ICoreWebView2DragStartingEventHandler> m_dragStartingHandler;
+    EventRegistrationToken m_dragStartingToken{};
+    winrt::Microsoft::UI::Input::PointerPoint m_lastPointerPoint{ nullptr };
 
     void OnAppWindowPositionChanged(const winrt::Microsoft::UI::Windowing::AppWindow& sender, const winrt::Microsoft::UI::Windowing::AppWindowChangedEventArgs& args);
     winrt::event_token m_appWindowPositionChangedToken{};
