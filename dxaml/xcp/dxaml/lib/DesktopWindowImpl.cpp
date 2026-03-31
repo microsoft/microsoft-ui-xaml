@@ -623,6 +623,54 @@ _Check_return_ HRESULT DesktopWindowImpl::SetClientSizeInDips(DOUBLE width, DOUB
     const int windowWidth = desiredWindowRect.right - desiredWindowRect.left;
     const int windowHeight = desiredWindowRect.bottom - desiredWindowRect.top;
 
+    WINDOWPLACEMENT placement = {};
+    placement.length = sizeof(placement);
+
+    bool updateRestoreBoundsOnly = false;
+    if (::GetWindowPlacement(m_hwnd.get(), &placement) != 0)
+    {
+        updateRestoreBoundsOnly = placement.showCmd == SW_SHOWMAXIMIZED;
+    }
+
+    if (!updateRestoreBoundsOnly)
+    {
+        ctl::ComPtr<ixp::IAppWindow> appWindow;
+        if (SUCCEEDED(get_AppWindowImpl(&appWindow)) && appWindow)
+        {
+            ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
+            if (SUCCEEDED(appWindow->get_Presenter(&presenter)) && presenter)
+            {
+                ixp::AppWindowPresenterKind presenterKind = ixp::AppWindowPresenterKind_Default;
+                if (SUCCEEDED(presenter->get_Kind(&presenterKind)))
+                {
+                    updateRestoreBoundsOnly = presenterKind == ixp::AppWindowPresenterKind_FullScreen;
+                }
+            }
+        }
+    }
+
+    if (updateRestoreBoundsOnly)
+    {
+        RECT restoreRect = placement.rcNormalPosition;
+        if (::IsRectEmpty(&restoreRect))
+        {
+            restoreRect = windowRect;
+        }
+
+        placement.rcNormalPosition.left = restoreRect.left;
+        placement.rcNormalPosition.top = restoreRect.top;
+        placement.rcNormalPosition.right = restoreRect.left + windowWidth;
+        placement.rcNormalPosition.bottom = restoreRect.top + windowHeight;
+
+        if (::SetWindowPlacement(m_hwnd.get(), &placement) == 0)
+        {
+            HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+            IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+        }
+
+        return S_OK;
+    }
+
     if (::SetWindowPos(m_hwnd.get(), nullptr, windowRect.left, windowRect.top, windowWidth, windowHeight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER) == 0)
     {
         HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
