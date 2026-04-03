@@ -124,12 +124,6 @@ if "%_targetTest%" == "1" if "%_targetProdTest%" == "1" (
     goto :eof
 )
 
-if "%_clean%"=="1" (
-    call :callScript clean.cmd /all
-    set _restore=1
-)
-
-
 if not "%_initFlavor%" == "" (
     if "%_quiet%"=="1" (
         call "%_scriptDir%init.cmd" %_initFlavor% /envcheck /notitle >nul
@@ -144,6 +138,11 @@ if not "%_initFlavor%" == "" (
 ) else if "%EnvironmentInitialized%" == "" (
     echo Please run init.cmd or use /i ^<flavor^> to initialize the build environment
     exit /b 1
+)
+
+if "%_clean%"=="1" (
+    call :callScript clean.cmd /all
+    set _restore=1
 )
 
 rem When we build the XAML compiler as part of the same build that consumes the XAML compiler,

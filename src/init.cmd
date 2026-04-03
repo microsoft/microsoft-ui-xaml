@@ -4,6 +4,39 @@ rem Hence to set enviroment variables, use SetEnviromentVariable
 
 if not "%winui_echo%" == "" @echo on
 
+goto :begin
+
+rem This function is used to set enviroment variables in Azure Pipelines
+rem It will call task.setVariable on top of the regular "set" command if /pipeline is passed in.
+rem See comment at top of file for reasoning
+:SetEnviromentVariable
+set _varName=%~1
+set _varValue=%~2
+set %_varName%=%_varValue%
+if not "%Pipeline%"=="true" (
+    set _varName=
+    set _varValue=
+    exit /b 0
+)
+echo ##vso[task.setVariable variable=%_varName%]%_varValue%
+set _varName=
+set _varValue=
+exit /b 0
+
+:AddPathIfExists
+set _ToAdd=%~1
+if not exist "%_ToAdd%" (
+    goto :PathNotFound
+)
+set PATH=%_ToAdd%;%PATH%
+set _ToAdd=
+exit /b 0
+
+:PathNotFound
+echo Could not find path: %~1
+exit /b 4
+
+:begin
 set RepoRoot=%~dp0
 rem Remove the trailing backslash
 set RepoRoot=%RepoRoot:~0,-1%
@@ -100,7 +133,7 @@ if /i "%1"=="" (
 )  else (
     echo Syntax:    %0 ^<arch^>^<flavor^> [^<options^>] [^<toolset^>]
     echo.
-    echo            ^<arch^> :          x86 ^| ^(x64^|amd64^) ^| ARM64
+    echo            ^<arch^> :          x86 ^| ^(x64^|amd64^) ^| arm64 ^| arm64ec
     echo            ^<flavor^> :        chk ^| fre
     echo            ^<options^> :       /verbose, /envonly, /envcheck, /notitle
     exit /b 1
@@ -108,8 +141,8 @@ if /i "%1"=="" (
 
 rem To set enviroment variables, use SetEnviromentVariable
 rem See top of file for reasoning
-call:SetEnviromentVariable _DotNetMoniker %_DotNetMoniker%
-call:SetEnviromentVariable RepoRoot "%RepoRoot%"
+call :SetEnviromentVariable _DotNetMoniker %_DotNetMoniker%
+call :SetEnviromentVariable RepoRoot "%RepoRoot%"
 
 shift
 goto:parseArgs
@@ -144,75 +177,81 @@ if "%_archIsSet%"=="" (
 set _archIsSet=
 
 if "%x86%"=="1" (
-    call:SetEnviromentVariable _BuildArch x86
-    call:SetEnviromentVariable Platform Win32
+    call :SetEnviromentVariable _BuildArch x86
+    call :SetEnviromentVariable Platform Win32
 )
 if "%amd64%"=="1" (
-    call:SetEnviromentVariable _BuildArch amd64
-    call:SetEnviromentVariable Platform x64
+    call :SetEnviromentVariable _BuildArch amd64
+    call :SetEnviromentVariable Platform x64
 )
 if "%ARM64%"=="1" (
-    call:SetEnviromentVariable _BuildArch ARM64
-    call:SetEnviromentVariable Platform ARM64
+    call :SetEnviromentVariable _BuildArch ARM64
+    call :SetEnviromentVariable Platform ARM64
 )
 if "%ARM64EC%"=="1" (
-    call:SetEnviromentVariable _BuildArch ARM64EC
-    call:SetEnviromentVariable Platform ARM64EC
+    call :SetEnviromentVariable _BuildArch ARM64EC
+    call :SetEnviromentVariable Platform ARM64EC
 )
 if not "%Pipeline%"=="true" (
-    call:SetEnviromentVariable BUILDPLATFORM %Platform%
+    call :SetEnviromentVariable BUILDPLATFORM %Platform%
 
     if "%x86%"=="1" (
-        call:SetEnviromentVariable BUILDPLATFORM x86
+        call :SetEnviromentVariable BUILDPLATFORM x86
     )
 )
 
 
 if "%fre%"=="1" (
-    call:SetEnviromentVariable _BuildType fre
-    call:SetEnviromentVariable Configuration Release
+    call :SetEnviromentVariable _BuildType fre
+    call :SetEnviromentVariable Configuration Release
 )
 if "%chk%"=="1" (
-    call:SetEnviromentVariable _BuildType chk
-    call:SetEnviromentVariable Configuration Debug
+    call :SetEnviromentVariable _BuildType chk
+    call :SetEnviromentVariable Configuration Debug
 )
 
-if "%DevEnvDir%" == "" (
-    echo DevEnvDir environment variable not set. Running DevCmd.cmd to get a developer command prompt...
+if "%DevEnvDir%" == "" goto :NeedDevCmd
+where msbuild >nul 2>&1
+if errorlevel 1 goto :NeedDevCmd
+goto :SkipDevCmd
+:NeedDevCmd
+    echo DevEnvDir environment variable not set or msbuild unavailable. Running DevCmd.cmd to get a developer command prompt...
     if "%ARM64EC%"=="1" (
         call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=amd64 -host_arch=amd64
+    ) else if "%ARM64%"=="1" (
+        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=arm64 -host_arch=amd64
     ) else (
         call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=%_BuildArch% -host_arch=amd64
     )
     if errorlevel 1 (echo Could not set up a developer command prompt && exit /b %ERRORLEVEL%)
-)
+:SkipDevCmd
 
 if "%VisualStudioVersion%" == "16.0" (echo Visual Studio 2019 is not supported. && exit /b /1)
 
 set PATH=%RepoRoot%\.buildtools\MSBuild\Current\Bin\amd64;%RepoRoot%\.tools;%RepoRoot%\.tools\VSS.NuGet.AuthHelper;%RepoRoot%\tools;%RepoRoot%\dxaml\scripts;%PATH%
 
 rem If we have init'd from a VS developer command prompt, we should use its tooling instead of the VS build tools installed with the repo
-call:AddPathIfExists "%VSINSTALLDIR%\MSBuild\Current\Bin\amd64"
+call :AddPathIfExists "%VSINSTALLDIR%\MSBuild\Current\Bin\amd64"
 
-call:SetEnviromentVariable BuildArtifactsDir %RepoRoot%\BuildOutput
+call :SetEnviromentVariable BuildArtifactsDir "%RepoRoot%\BuildOutput"
 
-call:SetEnviromentVariable BinRoot %BuildArtifactsDir%\Bin
+call :SetEnviromentVariable BinRoot "%BuildArtifactsDir%\Bin"
 
-call:SetEnviromentVariable BuildOutputRoot %BuildArtifactsDir%\Obj
+call :SetEnviromentVariable BuildOutputRoot "%BuildArtifactsDir%\Obj"
 
-call:SetEnviromentVariable TEMP %BuildArtifactsDir%\Temp\%_BuildArch%%_BuildType%
+call :SetEnviromentVariable TEMP "%BuildArtifactsDir%\Temp\%_BuildArch%%_BuildType%"
 
-call:SetEnviromentVariable TMP %TEMP%
+call :SetEnviromentVariable TMP "%TEMP%"
 
-if not exist %TEMP% mkdir %TEMP%
+if not exist "%TEMP%" mkdir "%TEMP%"
 
-call:SetEnviromentVariable DOTNET_ROOT %RepoRoot%\.dotnet
+call :SetEnviromentVariable DOTNET_ROOT "%RepoRoot%\.dotnet"
 
-call:SetEnviromentVariable DOTNET_ROOT_x86 %RepoRoot%\.dotnet\x86
+call :SetEnviromentVariable DOTNET_ROOT_x86 "%RepoRoot%\.dotnet\x86"
 
-call:SetEnviromentVariable DOTNET_INSTALL_DIR %RepoRoot%\.dotnet
+call :SetEnviromentVariable DOTNET_INSTALL_DIR "%RepoRoot%\.dotnet"
 
-call:SetEnviromentVariable DOTNET_MULTILEVEL_LOOKUP 0
+call :SetEnviromentVariable DOTNET_MULTILEVEL_LOOKUP 0
 
 set PATH=%DOTNET_ROOT%;%DOTNET_ROOT_x86%;%PATH%
 
@@ -242,34 +281,4 @@ if "%NoTitle%"=="" (
 )
 doskey /macrofile=%RepoRoot%\scripts\aliases
 
-goto:eof
-
-
-:AddPathIfExists
-rem Remove quotes we used above
-set _ToAdd=%1
-if not exist %_ToAdd%  (
-    goto:PathNotFound %1
-)
-set PATH=%_ToAdd:~1,-1%;%PATH%
-set _ToAdd=
-exit /b 0
-
-:PathNotFound
-set _A=%1
-echo Could not find path: %_A:~1,-1%
-set _A=
-exit /b 4
-
-rem This function is used to set enviroment variables in Azure Pipelines
-rem It will call task.setVariable on top of the regular "set" command if /pipeline is passed in.
-rem See comment at top of file for reasoning
-:SetEnviromentVariable
-set _varName=%~1
-set _varValue=%~2
-set %_varName%=%_varValue%
-if not "%Pipeline%"=="true" (
-    exit /b 0
-)
-echo ##vso[task.setVariable variable=%_varName%]%_varValue%
 exit /b 0

@@ -2,6 +2,32 @@
 rem Scripts cannot set enviroment variables because of an older handler in the agent that is not compatible with some pipeline containers
 rem Hence to set enviroment variables, use SetEnviromentVariable
 
+goto :begin
+
+:PrintVsWhere
+@echo on
+%vswhere% -products Microsoft.VisualStudio.Product.BuildTools -property InstallationPath %PrereleaseArg%
+%vswhere% -requires Microsoft.Component.MSBuild -property InstallationPath %PrereleaseArg%
+@echo off
+exit /b 0
+
+rem This function is used to set enviroment variables in Azure Pipelines
+:SetEnviromentVariable
+set _varName=%~1
+set _varValue=%~2
+set %_varName%=%_varValue%
+if not "%Pipeline%"=="true" (
+    @REM I don't know why but if I put the echo line in here, it modifies the value, just batch things
+    set _varName=
+    set _varValue=
+    exit /b 0
+)
+echo ##vso[task.setVariable variable=%_varName%]%_varValue%
+set _varName=
+set _varValue=
+exit /b 0
+
+:begin
 pushd %~dp0
 
 PATH %PATH%;%~dp0\tools
@@ -44,7 +70,7 @@ if "%MSBuildInstallPath%" EQU "" (
 if "%MSBuildInstallPath%" EQU "" (
     echo Could not find an MSBuild install, exiting
     if defined AGENT_NAME (
-        call:PrintVsWhere
+        call :PrintVsWhere
     )
     exit /b 2
 )
@@ -65,9 +91,9 @@ endlocal & (
 )
 
 rem These variables are set in VsDevCmd.bat but we need to set them again with SetEnviromentVariable to work in pipeline containers
-call:SetEnviromentVariable VCToolsInstallDir "%VCToolsInstallDir%"
-call:SetEnviromentVariable VCToolsRedistDir "%VCToolsRedistDir%"
-call:SetEnviromentVariable ExtensionSdkDir "%ExtensionSdkDir%"
+call :SetEnviromentVariable VCToolsInstallDir "%VCToolsInstallDir%"
+call :SetEnviromentVariable VCToolsRedistDir "%VCToolsRedistDir%"
+call :SetEnviromentVariable ExtensionSdkDir "%ExtensionSdkDir%"
 
 if not exist %temp%\WinUI.PreserveContext.marker (
     echo Starting cmd /k
@@ -76,24 +102,4 @@ if not exist %temp%\WinUI.PreserveContext.marker (
 
 if exist %temp%\WinUI.PreserveContext.marker (del %temp%\WinUI.PreserveContext.marker)
 
-goto:eof
-
-:PrintVsWhere
-echo on
-%vswhere% -products Microsoft.VisualStudio.Product.BuildTools -property InstallationPath %PrereleaseArg%
-%vswhere% -requires Microsoft.Component.MSBuild -property InstallationPath %PrereleaseArg%
-@echo off
-exit /b
-
-rem This function is used to set enviroment variables in Azure Pipelines
-rem It will call task.setVariable on top of the regular "set" command if /pipeline is passed in.
-:SetEnviromentVariable
-set _varName=%~1
-set _varValue=%~2
-set %_varName%=%_varValue%
-if not "%Pipeline%"=="true" (
-    @REM I don't know why but if I put the echo line in here, it modifies the value, just batch things
-    exit /b 0
-)
-echo ##vso[task.setVariable variable=%_varName%]%_varValue%
 exit /b 0
