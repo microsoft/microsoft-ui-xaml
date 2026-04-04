@@ -1544,12 +1544,29 @@ void CUIElement::PlayImplicitAnimation(ImplicitAnimationInfo& info, ImplicitAnim
         scopedBatch->End();
 
         // Listen for animation completion
-        auto callback = wrl::Callback <
-            wrl::Implements <
+        // Use weak reference in lambda to prevent crash if element is destroyed.
+        xref::weakref_ptr<CUIElement> wrThis = xref::get_weakref(this);
+        auto callback = wrl::Callback<
+            wrl::Implements<
             wrl::RuntimeClassFlags<wrl::ClassicCom>,
             wf::ITypedEventHandler<IInspectable*, WUComp::CompositionBatchCompletedEventArgs*>,
-            wrl::FtmBase >>
-            (this, iaType == ImplicitAnimationType::Show ? &CUIElement::OnImplicitShowAnimationCompleted : &CUIElement::OnImplicitHideAnimationCompleted);
+            wrl::FtmBase>>
+            ([wrThis, iaType](IInspectable* sender, WUComp::ICompositionBatchCompletedEventArgs* args) mutable -> HRESULT
+            {
+                xref_ptr<CUIElement> spThis = wrThis.lock();
+                if (spThis)
+                {
+                    if (iaType == ImplicitAnimationType::Show)
+                    {
+                        return spThis->OnImplicitShowAnimationCompleted(sender, args);
+                    }
+                    else
+                    {
+                        return spThis->OnImplicitHideAnimationCompleted(sender, args);
+                    }
+                }
+                return S_OK;
+            });
 
         EventRegistrationToken token;
         IFCFAILFAST(scopedBatch->add_Completed(callback.Get(), &token));
