@@ -166,8 +166,8 @@ void DesktopWindowImpl::OnCreate() noexcept
             // by project template), EnumResourceNamesW always finds the first icon group
             // regardless of its ID.
             // LR_SHARED lets the system manage the icon lifetime — no DestroyIcon needed.
-            struct IconSearchContext { HMODULE module; LPCWSTR resourceId; };
-            IconSearchContext ctx { hExeModule, nullptr };
+            struct IconSearchContext { LPCWSTR resourceId; };
+            IconSearchContext ctx { nullptr };
 
             ::EnumResourceNamesW(hExeModule, RT_GROUP_ICON,
                 [](HMODULE, LPCWSTR, LPWSTR lpName, LONG_PTR lParam) -> BOOL
@@ -180,14 +180,15 @@ void DesktopWindowImpl::OnCreate() noexcept
 
             if (ctx.resourceId)
             {
+                UINT dpi = ::GetDpiForWindow(m_hwnd.get());
                 HICON hIconLarge = static_cast<HICON>(::LoadImageW(
                     hExeModule, ctx.resourceId, IMAGE_ICON,
-                    ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON),
+                    ::GetSystemMetricsForDpi(SM_CXICON, dpi), ::GetSystemMetricsForDpi(SM_CYICON, dpi),
                     LR_DEFAULTCOLOR | LR_SHARED));
 
                 HICON hIconSmall = static_cast<HICON>(::LoadImageW(
                     hExeModule, ctx.resourceId, IMAGE_ICON,
-                    ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON),
+                    ::GetSystemMetricsForDpi(SM_CXSMICON, dpi), ::GetSystemMetricsForDpi(SM_CYSMICON, dpi),
                     LR_DEFAULTCOLOR | LR_SHARED));
 
                 if (hIconLarge)
