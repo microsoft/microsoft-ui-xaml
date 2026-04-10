@@ -176,6 +176,17 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
 
 
     // Process objects for final release.
+    //
+    // Pause XAML dispatch during final releases. Object release calls can trigger
+    // cross-apartment COM RPCs (e.g., RemoteReleaseRifRef for proxy teardown),
+    // which enter a COM modal loop that pumps messages via PeekMessage. Without
+    // pausing, CoreMessaging can fire the DispatcherQueueTimer re-entrantly during
+    // the pump, causing a CReentrancyGuard fail-fast in
+    // OnReentrancyProtectedWindowMessage. PauseDispatch sets m_state to Suspended,
+    // which MessageTimerCallback checks before dispatching — preventing the
+    // re-entrant dispatch. ResumeDispatch restarts the timer if there is pending
+    // work, so no messages are lost.
+    DXamlCore::GetCurrent()->PauseDispatchAtControl();
 
     *completed = TRUE;
     firstRelease = m_queuedObjectsForFinalRelease.begin();
@@ -262,6 +273,10 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     m_bInCleanup = FALSE;
 
 Cleanup:
+    // Resume dispatch — must happen on all paths (normal and error) to avoid
+    // permanently stalling the dispatcher. Paired with PauseDispatchAtControl above.
+    DXamlCore::GetCurrent()->ResumeDispatchAtControl();
+
     TraceReleaseQueueCleanupEnd();
 
     //Telemetry Notify ,UIFinalizer ended
