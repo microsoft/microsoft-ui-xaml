@@ -1,4 +1,4 @@
-XamlBindingHelper and Setter.ValueProperty
+XamlBindingHelper
 ===
 
 # Background
@@ -17,11 +17,11 @@ forward to WinUI 3 because it is a narrow, low-level API with a limited number o
 significant maintenance costs.
 
 However, there is a real performance gap: developers who need to configure `Setter.Value` with
-struct types - `Thickness`, `CornerRadius`, and `Windows.UI.Color` — currently have no option
+struct types - `Thickness`, `CornerRadius`, and `Windows.UI.Color` ï¿½ currently have no option
 other than boxing the value to `Object` first:
 
 ```cpp
-// WinUI 3 — current approach (boxing required)
+// WinUI 3 ï¿½ current approach (boxing required)
 auto widthSetter = Setter();
 widthSetter.Value(box_value(300));
 ```
@@ -32,16 +32,10 @@ This spec extends `XamlBindingHelper` with three new struct-typed overloads to c
 - `SetPropertyFromCornerRadius`
 - `SetPropertyFromColor`
 
-In addition, `Setter` is extended with a new static dependency property accessor,
-`Setter.ValueProperty`, which exposes the `DependencyProperty` identifier for `Setter.Value`.
-This accessor is necessary because all `XamlBindingHelper.SetPropertyFrom*` methods require a
-`DependencyProperty` as their second argument, and there was previously no public way to obtain
-this token for `Setter.Value`.
-
-With these two additions, developers can set struct-typed values on a `Setter` without any boxing:
+With these additions, developers can set struct-typed values on a `Setter` without any boxing:
 
 ```cpp
-// WinUI 3 — new approach (no boxing)
+// WinUI 3 ï¿½ new approach (no boxing)
 XamlBindingHelper::SetPropertyFromThickness(
     widthSetter,
     Setter::ValueProperty(),
@@ -52,7 +46,6 @@ XamlBindingHelper::SetPropertyFromThickness(
 
 * Provide boxing-free helpers for the three most commonly needed struct types when configuring `Setter.Value`.
 * Follow the established `SetPropertyFrom*` naming pattern already present on `XamlBindingHelper`.
-* Expose `Setter.ValueProperty` so callers have a `DependencyProperty` handle to pass as `propertyToSet`.
 
 ## Non-goals
 
@@ -82,20 +75,6 @@ XamlBindingHelper::SetPropertyFromThickness(setter, Setter::ValueProperty(), thi
 # API Pages
 
 _(Each level-two section below maps to a docs.microsoft.com API page.)_
-
-## Setter.ValueProperty property
-
-Gets the `DependencyProperty` identifier for the [`Setter.Value`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.setter.value) property.
-
-```idl
-static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
-```
-
-### Remarks
-
-* `ValueProperty` is a read-only static property that returns a singleton `DependencyProperty` instance.
-* Its primary purpose is to serve as the `propertyToSet` argument when calling
-  `XamlBindingHelper.SetPropertyFrom*` methods targeting `Setter.Value`.
 
 ## XamlBindingHelper.SetPropertyFromThickness method
 
@@ -254,22 +233,6 @@ DemoBorder().SetValue(Border::BorderBrushProperty(), brush);
 # API Details
 
 ```idl
-namespace Microsoft.UI.Xaml
-{
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-    [webhosthidden]
-    runtimeclass Setter : Microsoft.UI.Xaml.SetterBase
-    {
-        // Existing members omitted for brevity
-
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
-        [static_name("Microsoft.UI.Xaml.ISetterStatics2")]
-        {
-            static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
-        }
-    };
-}
-
 namespace Microsoft.UI.Xaml.Markup
 {
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
