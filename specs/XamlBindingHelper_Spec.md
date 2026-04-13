@@ -126,6 +126,8 @@ DemoBorder().SetValue(Border::BorderThicknessProperty(), thicknessSetter.Value()
 
 * If `dependencyObject` or `propertyToSet` is `null`, an exception is thrown by the WinRT layer from the underlying `E_POINTER` failure.
 
+## XamlBindingHelper.SetPropertyFromCornerRadius method
+
 Sets a `Microsoft.UI.Xaml.CornerRadius` value on the specified dependency property of an object,
 without requiring the caller to box the struct to `IInspectable`.
 

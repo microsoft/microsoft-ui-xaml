@@ -10,8 +10,7 @@ public `DependencyProperty` identifier exposed for it.
 
 All `XamlBindingHelper.SetPropertyFrom*` methods require a `DependencyProperty` as their second
 argument (`propertyToSet`). Without a public `DependencyProperty` handle for `Setter.Value`,
-callers cannot use `XamlBindingHelper` to set `Setter.Value` directly — they are forced to box the
-value to `Object` first:
+setting values on a `Setter` requires boxing the value to `Object` first:
 
 ```cpp
 // WinUI 3 — current approach (boxing required)
