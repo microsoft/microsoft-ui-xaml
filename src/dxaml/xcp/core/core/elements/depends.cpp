@@ -323,7 +323,7 @@ wrl::ComPtr<InputSiteHelper::IIslandInputSite> CDependencyObject::GetElementIsla
             return spPopup->GetIslandInputSite();
         }
 
-        if (coreServices->HasXamlIslandRoots())
+        if (coreServices && coreServices->HasXamlIslandRoots())
         {
             // If this element is in a XamlIslandRoot tree, return the IslandInputSite for that island.
             auto root = coreServices->GetRootForElement(this);
@@ -336,7 +336,15 @@ wrl::ComPtr<InputSiteHelper::IIslandInputSite> CDependencyObject::GetElementIsla
     }
 
     // By default, return the primary IslandInputSite that was registered with InputServices on startup.
-    return coreServices->GetInputServices()->GetPrimaryRegisteredIslandInputSite();
+    if (coreServices)
+    {
+        if (auto inputServices = coreServices->GetInputServices())
+        {
+            return inputServices->GetPrimaryRegisteredIslandInputSite();
+        }
+    }
+
+    return nullptr;
 }
 
 HWND CDependencyObject::GetElementPositioningWindow()
