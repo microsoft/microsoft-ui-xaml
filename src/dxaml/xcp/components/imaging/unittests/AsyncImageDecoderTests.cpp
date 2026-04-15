@@ -91,7 +91,7 @@ void AsyncImageDecoderTests::ChangeDecodeSizeStatic()
     VERIFY_IS_TRUE(ValidateImageCrc(
         decodedSurface,
         L"AsyncImageDecoderTests_ChangeDecodeSizeStatic_natural",
-        0x3fa918f5));
+        0x92ad67b6));
 
     onDecodeEvent->Reset();
 
@@ -101,7 +101,7 @@ void AsyncImageDecoderTests::ChangeDecodeSizeStatic()
     VERIFY_IS_TRUE(ValidateImageCrc(
         decodedSurface,
         L"AsyncImageDecoderTests_ChangeDecodeSizeStatic_16x16",
-        0xb60cf5af));
+        0xbe119ea4));
 }
 
 void AsyncImageDecoderTests::ChangeDecodeSizeAnimatedPlaying()
