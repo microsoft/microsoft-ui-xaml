@@ -6,11 +6,8 @@ Setter.ValueProperty
 [`Setter`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.setter)
 is a WinUI 3 class that associates a dependency property with a value inside a `Style`. The
 `Setter.Value` property holds the value that will be applied, but until now there has been no
-public `DependencyProperty` identifier exposed for it.
-
-All `XamlBindingHelper.SetPropertyFrom*` methods require a `DependencyProperty` as their second
-argument (`propertyToSet`). Without a public `DependencyProperty` handle for `Setter.Value`,
-setting values on a `Setter` requires boxing the value to `Object` first:
+public `DependencyProperty` identifier exposed for it. This means setting values on a `Setter`
+requires boxing the value to `Object` first:
 
 ```cpp
 // WinUI 3 — current approach (boxing required)
@@ -18,9 +15,10 @@ auto widthSetter = Setter();
 widthSetter.Value(box_value(300));
 ```
 
-This spec adds a new static property, `Setter.ValueProperty`, that returns the
-`DependencyProperty` identifier for `Setter.Value`. This unlocks `XamlBindingHelper` usage for
-`Setter.Value`, allowing developers to set values without boxing:
+This spec exposes the `DependencyProperty` identifier for `Setter.Value` through a new static
+property, `Setter.ValueProperty`. This unblocks the usage of the `Setter` class with
+`XamlBindingHelper.SetPropertyFrom*` APIs, which require a `DependencyProperty` as their second
+argument, allowing developers to set values without boxing:
 
 ```cpp
 // WinUI 3 — new approach (no boxing)
@@ -32,8 +30,7 @@ XamlBindingHelper::SetPropertyFromInt32(
 
 ## Goals
 
-* Expose `Setter.ValueProperty` so callers have a `DependencyProperty` handle to pass as
-  `propertyToSet` in `XamlBindingHelper.SetPropertyFrom*` methods.
+* Expose the `DependencyProperty` identifier for `Setter.Value`.
 * Follow the established pattern of other WinUI 3 classes that expose `DependencyProperty`
   identifiers for their properties.
 
@@ -47,8 +44,7 @@ XamlBindingHelper::SetPropertyFromInt32(
 ## Using Setter.ValueProperty with XamlBindingHelper
 
 Previously there was no public way to obtain a `DependencyProperty` token for `Setter.Value`. With
-`Setter.ValueProperty`, you can now pass it to any existing `XamlBindingHelper.SetPropertyFrom*`
-overload:
+`Setter.ValueProperty` exposed, this is now possible:
 
 ```cpp
 auto setter = Setter();
@@ -72,8 +68,6 @@ static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
 
 * `ValueProperty` is a read-only static property that returns a singleton `DependencyProperty`
   instance.
-* Its primary purpose is to serve as the `propertyToSet` argument when calling
-  `XamlBindingHelper.SetPropertyFrom*` methods targeting `Setter.Value`.
 
 ### Examples
 
