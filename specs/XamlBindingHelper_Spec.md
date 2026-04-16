@@ -16,14 +16,14 @@ set struct-typed property values directly without boxing. For example `SetThickn
 forward to WinUI 3 because it is a narrow, low-level API with a limited number of consumers and
 significant maintenance costs.
 
-However, there is a real performance gap: developers who need to configure `Setter.Value` with
-struct types - `Thickness`, `CornerRadius`, and `Windows.UI.Color` � currently have no option
-other than boxing the value to `Object` first:
+However, there is a real performance gap: when setting struct-typed dependency properties —
+`Thickness`, `CornerRadius`, and `Windows.UI.Color` — developers currently have no option other
+than boxing the value to `Object` first:
 
 ```cpp
-// WinUI 3 � current approach (boxing required)
-auto widthSetter = Setter();
-widthSetter.Value(box_value(300));
+// WinUI 3 — current approach (boxing required)
+auto border = Border();
+border.SetValue(Border::BorderThicknessProperty(), box_value(Thickness{ 2, 4, 2, 4 }));
 ```
 
 This spec extends `XamlBindingHelper` with three new struct-typed overloads to close that gap:
@@ -32,19 +32,21 @@ This spec extends `XamlBindingHelper` with three new struct-typed overloads to c
 - `SetPropertyFromCornerRadius`
 - `SetPropertyFromColor`
 
-With these additions, developers can set struct-typed values on a `Setter` without any boxing:
+With these additions, developers can set struct-typed values on dependency properties without any
+boxing:
 
 ```cpp
-// WinUI 3 � new approach (no boxing)
+// WinUI 3 — new approach (no boxing)
 XamlBindingHelper::SetPropertyFromThickness(
-    widthSetter,
-    Setter::ValueProperty(),
-    thickness);
+    border,
+    Border::BorderThicknessProperty(),
+    Thickness{ 2, 4, 2, 4 });
 ```
 
 ## Goals
 
-* Provide boxing-free helpers for the three most commonly needed struct types when configuring `Setter.Value`.
+* Provide boxing-free helpers for the three most commonly needed struct types: `Thickness`,
+  `CornerRadius`, and `Color`.
 * Follow the established `SetPropertyFrom*` naming pattern already present on `XamlBindingHelper`.
 
 ## Non-goals
@@ -54,22 +56,22 @@ XamlBindingHelper::SetPropertyFromThickness(
 
 # Conceptual pages (How To)
 
-## Setting Setter.Value without boxing
+## Setting struct-typed dependency properties without boxing
 
-Before these APIs, setting a struct-typed value on `Setter.Value` required boxing the value to
-`Object` first. For example, setting a `Thickness` on a `Setter` looked like this:
+Before these APIs, setting a struct-typed value on a dependency property required boxing the value
+to `Object` first:
 
 ```cpp
-auto setter = Setter();
-setter.Value(box_value(Thickness{ 2, 4, 2, 4 }));
+auto border = Border();
+border.SetValue(Border::BorderThicknessProperty(), box_value(Thickness{ 2, 4, 2, 4 }));
 ```
 
 With the new APIs, the struct can be passed directly and no boxing is needed in application code:
 
 ```cpp
-auto setter = Setter();
+auto border = Border();
 Thickness thickness{ 2, 4, 2, 4 };
-XamlBindingHelper::SetPropertyFromThickness(setter, Setter::ValueProperty(), thickness);
+XamlBindingHelper::SetPropertyFromThickness(border, Border::BorderThicknessProperty(), thickness);
 ```
 
 # API Pages
@@ -100,26 +102,24 @@ static void SetPropertyFromThickness(
 
 * C#:
 ```csharp
-var thicknessSetter = new Setter();
+var border = new Border();
 var thickness = new Thickness();
 thickness.Left = 2;
 thickness.Top = 4;
 thickness.Right = 2;
 thickness.Bottom = 4;
-XamlBindingHelper.SetPropertyFromThickness(thicknessSetter, Setter.ValueProperty, thickness);
-DemoBorder.SetValue(Border.BorderThicknessProperty, thicknessSetter.Value);
+XamlBindingHelper.SetPropertyFromThickness(border, Border.BorderThicknessProperty, thickness);
 ```
 
 * C++:
 ```cpp
-auto thicknessSetter = Setter();
+auto border = Border();
 Thickness thickness{};
 thickness.Left = 2;
 thickness.Top = 4;
 thickness.Right = 2;
 thickness.Bottom = 4;
-XamlBindingHelper::SetPropertyFromThickness(thicknessSetter, Setter::ValueProperty(), thickness);
-DemoBorder().SetValue(Border::BorderThicknessProperty(), thicknessSetter.Value());
+XamlBindingHelper::SetPropertyFromThickness(border, Border::BorderThicknessProperty(), thickness);
 ```
 
 ### Remarks
@@ -150,26 +150,24 @@ static void SetPropertyFromCornerRadius(
 
 * C#:
 ```csharp
-var cornerRadiusSetter = new Setter();
+var border = new Border();
 var cornerRadius = new CornerRadius();
 cornerRadius.TopLeft = 5;
 cornerRadius.TopRight = 10;
 cornerRadius.BottomRight = 15;
 cornerRadius.BottomLeft = 20;
-XamlBindingHelper.SetPropertyFromCornerRadius(cornerRadiusSetter, Setter.ValueProperty, cornerRadius);
-DemoBorder.SetValue(Border.CornerRadiusProperty, cornerRadiusSetter.Value);
+XamlBindingHelper.SetPropertyFromCornerRadius(border, Border.CornerRadiusProperty, cornerRadius);
 ```
 
 * C++:
 ```cpp
-auto cornerRadiusSetter = Setter();
+auto border = Border();
 CornerRadius cornerRadius{};
 cornerRadius.TopLeft = 5;
 cornerRadius.TopRight = 10;
 cornerRadius.BottomRight = 15;
 cornerRadius.BottomLeft = 20;
-XamlBindingHelper::SetPropertyFromCornerRadius(cornerRadiusSetter, Setter::ValueProperty(), cornerRadius);
-DemoBorder().SetValue(Border::CornerRadiusProperty(), cornerRadiusSetter.Value());
+XamlBindingHelper::SetPropertyFromCornerRadius(border, Border::CornerRadiusProperty(), cornerRadius);
 ```
 
 ### Remarks
@@ -197,19 +195,6 @@ static void SetPropertyFromColor(
 | `value` | `Windows.UI.Color` | The `Color` value to set. |
 
 ### Examples
-
-Setting `Setter.Value` to a color:
-
-* C#:
-```csharp
-var colorSetter = new Setter();
-XamlBindingHelper.SetPropertyFromColor(colorSetter, Setter.ValueProperty, Colors.BlueViolet);
-DemoBorder.SetValue(
-    Border.BorderBrushProperty,
-    new SolidColorBrush((Windows.UI.Color)colorSetter.Value));
-```
-
-Setting `SolidColorBrush.ColorProperty` directly on a brush:
 
 * C#:
 ```csharp
