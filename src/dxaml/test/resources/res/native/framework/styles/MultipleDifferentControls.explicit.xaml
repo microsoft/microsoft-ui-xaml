@@ -1,0 +1,18 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Tests.Native.External.Framework"
+        Background="Yellow">
+    <Canvas.Resources>
+        <Style x:Key="myStyle" TargetType="FrameworkElement">
+            <Setter Property="Width" Value="128"/>
+            <Setter Property="Height" Value="64"/>
+        </Style>
+    </Canvas.Resources>
+    <local:CustomControl Style="{StaticResource myStyle}"/>
+    <TextBox Style="{StaticResource myStyle}"/>
+    <local:CustomUserControl Style="{StaticResource myStyle}"/>
+    <TextBlock Style="{StaticResource myStyle}"/>
+    <StackPanel Style="{StaticResource myStyle}"/>
+    <Canvas Style="{StaticResource myStyle}"/>
+</Canvas>

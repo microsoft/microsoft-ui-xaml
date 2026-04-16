@@ -1,0 +1,31 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Margin="10,0,0,0">
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" TextReadingOrder="UseFlowDirection" TextAlignment="Left" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" TextReadingOrder="UseFlowDirection" TextAlignment="Right" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" TextReadingOrder="UseFlowDirection" TextAlignment="Center" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" TextReadingOrder="UseFlowDirection" TextAlignment="DetectFromContent" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" TextAlignment="Left" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" TextAlignment="Right" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" TextAlignment="Center" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" TextAlignment="DetectFromContent" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+        <RichTextBlock FontSize="15" FlowDirection="RightToLeft" Width="100"  FontFamily="Segoe UI">
+          <Paragraph>English</Paragraph>
+        </RichTextBlock>
+  </StackPanel>
+

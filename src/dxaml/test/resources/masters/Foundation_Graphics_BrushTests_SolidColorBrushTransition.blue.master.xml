@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+            <Color>
+              <KeyFrameAnimation Duration="0.5">
+                <KeyFrame Color="rgb {1, 0, 0}" />
+                <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                  <LinearEasingFunction />
+                </KeyFrame>
+              </KeyFrameAnimation>
+            </Color>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <Color>
+                  <KeyFrameAnimation Duration="0.5">
+                    <KeyFrame Color="rgb {1, 0, 0}" />
+                    <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                      <LinearEasingFunction />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Color>
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="7" TopInset="7" RightInset="7" BottomInset="7" isCenterHollow="False">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="1" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="rgb {0, 0.502, 0}" />
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="7" TopInset="7" RightInset="7" BottomInset="7" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="2" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="75" SizeY="75" BorderMode="Soft">
+            <Color>
+              <KeyFrameAnimation Duration="1">
+                <KeyFrame Color="rgb {1, 0, 0}" />
+                <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                  <LinearEasingFunction />
+                </KeyFrame>
+              </KeyFrameAnimation>
+            </Color>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="75" SizeY="75" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <Color>
+                  <KeyFrameAnimation Duration="1">
+                    <KeyFrame Color="rgb {1, 0, 0}" />
+                    <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                      <LinearEasingFunction />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Color>
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="7" TopInset="7" RightInset="7" BottomInset="7" isCenterHollow="False">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="3" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="75" SizeY="75" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="rgb {0, 0.502, 0}" />
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="7" TopInset="7" RightInset="7" BottomInset="7" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="4" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+            <Color>
+              <KeyFrameAnimation Duration="0.15">
+                <KeyFrame Color="rgb {1, 0, 0}" />
+                <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                  <LinearEasingFunction />
+                </KeyFrame>
+              </KeyFrameAnimation>
+            </Color>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <Color>
+                  <KeyFrameAnimation Duration="0.15">
+                    <KeyFrame Color="rgb {1, 0, 0}" />
+                    <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                      <LinearEasingFunction />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Color>
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="False">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="5" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="125" SizeY="125" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <Color>
+                  <KeyFrameAnimation Duration="1">
+                    <KeyFrame Color="rgb {1, 0, 0}" />
+                    <KeyFrame Time="1" Color="Argb {0, 0, 1, 0}">
+                      <LinearEasingFunction />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Color>
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="False">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="6" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="150" SizeY="150" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <Color>
+                  <KeyFrameAnimation Duration="1">
+                    <KeyFrame Color="Argb {0, 1, 0, 0}" />
+                    <KeyFrame Time="1" Color="rgb {0, 0, 1}">
+                      <LinearEasingFunction />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Color>
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="False">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="7" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="25" SizeY="25" BorderMode="Soft">
+            <ColorBrush Color="rgb {0, 0, 1}" />
+          </wucSpriteVisual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tt xml:lang="en"
+    xmlns="http://www.w3.org/ns/ttml"
+    xmlns:tts="http://www.w3.org/ns/ttml#styling"
+    xmlns:ttm="http://www.w3.org/ns/ttml#metadata">
+  <head>
+    <metadata> 
+      <ttm:title>Styling Test - DisplayAlign - 003</ttm:title>
+      <ttm:desc>Test tts:displayAlign attribute with the center value in the style element.</ttm:desc>
+      <ttm:copyright>Copyright (C) 2008 W3C (MIT, ERCIM, Keio).</ttm:copyright>
+    </metadata>
+    <ttp:profile use="dfxp-presentation" xmlns:ttp="http://www.w3.org/ns/ttml#parameter">
+      <ttp:features xml:base="http://www.w3.org/ns/ttml/feature/">
+        <ttp:feature>#displayAlign</ttp:feature>
+        <ttp:feature>#layout</ttp:feature>
+        <ttp:feature>#styling-nested</ttp:feature>
+      </ttp:features>
+    </ttp:profile>
+    <layout>
+      <region xml:id="r1">
+        <style tts:origin="0px 0px"/>
+        <style tts:extent="200px 170px"/>
+        <style tts:backgroundColor="white" />
+        <style tts:displayAlign="center"/>
+      </region>
+    </layout>
+  </head>
+  <body>
+    <div>
+      <p begin="0s" end="10s" region="r1">This text is aligned in<br />the center of the region.</p>
+    </div>
+  </body>
+</tt>

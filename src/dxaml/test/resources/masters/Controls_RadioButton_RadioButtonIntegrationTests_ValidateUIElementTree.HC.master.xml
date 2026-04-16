@@ -1,0 +1,1498 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <Property Name="ActualHeight" Value="600" />
+      <Property Name="ActualWidth" Value="400" />
+      <Property Name="Background" Value="#FF000000" />
+      <Property Name="IsHitTestVisible" Value="False" />
+      <Property Name="RenderSize" Value="400x600" />
+      <Property Name="RequestedTheme" Value="1" />
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="211" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Rest Unselected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusState" Value="1" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="restUnselectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="211x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="211" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="211x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF00FF00" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFFF0066" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="12" />
+              <Property Name="ActualWidth" Value="12" />
+              <Property Name="Fill" Value="#FFFF0066" />
+              <Property Name="Height" Value="12" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="12x12" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="12" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FFFF0066" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="183" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Rest Unselected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Rest Unselected Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="183x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="182.663" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="183x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Rest Unselected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Rest Unselected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="195" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Rest Selected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="restSelectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="195x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="195" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="195x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF00FF00" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFFF0066" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="12" />
+              <Property Name="ActualWidth" Value="12" />
+              <Property Name="Fill" Value="#FFFF0066" />
+              <Property Name="Height" Value="12" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="12x12" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="12" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FF00FF00" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="167" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Rest Selected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Rest Selected Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="167x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="166.619" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="167x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Rest Selected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Rest Selected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="222" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Hover Unselected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="hoverUnselectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="222x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="222" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="222x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFFF0066" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF00FF00" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="14" />
+              <Property Name="ActualWidth" Value="14" />
+              <Property Name="Fill" Value="#FF00FF00" />
+              <Property Name="Height" Value="14" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="14x14" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="14" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FFFF0066" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="194" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Hover Unselected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Hover Unselected Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="194x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="193.73" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="194x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Hover Unselected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Hover Unselected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="206" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Hover Selected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="hoverSelectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="206x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="206" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="206x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFFF0066" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF00FF00" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="14" />
+              <Property Name="ActualWidth" Value="14" />
+              <Property Name="Fill" Value="#FF00FF00" />
+              <Property Name="Height" Value="14" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="14x14" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="14" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FF00FF00" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="178" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Hover Selected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Hover Selected Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="178x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="177.687" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="178x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Hover Selected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Hover Selected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="239" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Disabled Unselected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="disabledUnselectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsEnabled" Value="False" />
+        <Property Name="IsPointerOver" Value="False" />
+        <Property Name="IsPressed" Value="False" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="239x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="239" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="239x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF00007F" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF8080FF" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF00007F" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF8080FF" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="14" />
+              <Property Name="ActualWidth" Value="14" />
+              <Property Name="Fill" Value="#FF8080FF" />
+              <Property Name="Height" Value="14" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="14x14" />
+              <Property Name="Stroke" Value="#FF8080FF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="14" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FFFF0066" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="211" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Disabled Unselected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Disabled Unselected Radio Button" />
+            <Property Name="Foreground" Value="#FF8080FF" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="211x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="210.15" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="211x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Disabled Unselected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Disabled Unselected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="223" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Disabled Selected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="disabledSelectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="IsEnabled" Value="False" />
+        <Property Name="IsPointerOver" Value="False" />
+        <Property Name="IsPressed" Value="False" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="223x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="223" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="223x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF00007F" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF8080FF" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF00007F" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF8080FF" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="14" />
+              <Property Name="ActualWidth" Value="14" />
+              <Property Name="Fill" Value="#FF8080FF" />
+              <Property Name="Height" Value="14" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="14x14" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="14" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FF00FF00" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="195" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Disabled Selected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Disabled Selected Radio Button" />
+            <Property Name="Foreground" Value="#FF8080FF" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="195x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="194.106" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="195x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Disabled Selected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Disabled Selected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="161" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Pressed Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="pressedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="161x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="161" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="161x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFC0C0C0" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF952AAB" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="10" />
+              <Property Name="ActualWidth" Value="10" />
+              <Property Name="Fill" Value="#FF00FF00" />
+              <Property Name="Height" Value="10" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="10x10" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="10" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="10" />
+              <Property Name="ActualWidth" Value="10" />
+              <Property Name="Background" Value="#FF00FF00" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="10" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="10x10" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="10" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="133" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Pressed Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Pressed Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="133x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="132.043" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="133x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Pressed Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Pressed Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="328" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Keyboard Focused Rest Unselected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="focusRestUnselectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="328x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="328" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="328x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF00FF00" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFFF0066" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="12" />
+              <Property Name="ActualWidth" Value="12" />
+              <Property Name="Fill" Value="#FFFF0066" />
+              <Property Name="Height" Value="12" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="12x12" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="12" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FFFF0066" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="300" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Keyboard Focused Rest Unselected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Keyboard Focused Rest Unselected Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="300x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="299.968" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="300x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Keyboard Focused Rest Unselected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Keyboard Focused Rest Unselected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="312" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Keyboard Focused Rest Selected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="focusRestSelectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="312x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="312" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="312x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF00FF00" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFFF0066" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="12" />
+              <Property Name="ActualWidth" Value="12" />
+              <Property Name="Fill" Value="#FFFF0066" />
+              <Property Name="Height" Value="12" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="12x12" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="12" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FF00FF00" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="284" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Keyboard Focused Rest Selected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Keyboard Focused Rest Selected Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="284x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="283.924" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="284x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Keyboard Focused Rest Selected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Keyboard Focused Rest Selected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="340" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Keyboard Focused Hover Unselected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="focusedHoverUnselectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="340x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="340" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="340x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFFF0066" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF00FF00" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="14" />
+              <Property Name="ActualWidth" Value="14" />
+              <Property Name="Fill" Value="#FF00FF00" />
+              <Property Name="Height" Value="14" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="14x14" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="14" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FFFF0066" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="312" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Keyboard Focused Hover Unselected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Keyboard Focused Hover Unselected Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="312x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="311.035" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="312x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Keyboard Focused Hover Unselected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Keyboard Focused Hover Unselected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="323" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Keyboard Focused Hover Selected Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="focusedHoverSelectedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="323x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="323" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="323x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFFF0066" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF00FF00" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="14" />
+              <Property Name="ActualWidth" Value="14" />
+              <Property Name="Fill" Value="#FF00FF00" />
+              <Property Name="Height" Value="14" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="14x14" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="14" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="4" />
+              <Property Name="ActualWidth" Value="4" />
+              <Property Name="Background" Value="#FF00FF00" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="4" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="4x4" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="4" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="295" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Keyboard Focused Hover Selected Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Keyboard Focused Hover Selected Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="295x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="294.991" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="295x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Keyboard Focused Hover Selected Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Keyboard Focused Hover Selected Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="278" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Keyboard Focused Pressed Radio Button" />
+        <Property Name="CornerRadius" Value="4,4,4,4" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="14" />
+        <Property Name="Foreground" Value="#FF00FF00" />
+        <Property Name="GroupName" Value="focusedPressedRadioButtonGroup" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="278x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="278" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="CornerRadius" Value="4,4,4,4" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="278x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FFC0C0C0" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FFC0C0C0" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF952AAB" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF952AAB" />
+              <Property Name="StrokeThickness" Value="1" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="10" />
+              <Property Name="ActualWidth" Value="10" />
+              <Property Name="Fill" Value="#FF00FF00" />
+              <Property Name="Height" Value="10" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="10x10" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="10" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="10" />
+              <Property Name="ActualWidth" Value="10" />
+              <Property Name="Background" Value="#FF00FF00" />
+              <Property Name="BackgroundSizing" Value="1" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="CornerRadius" Value="6,6,6,6" />
+              <Property Name="Height" Value="10" />
+              <Property Name="Name" Value="PressedCheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="10x10" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="10" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="19" />
+            <Property Name="ActualWidth" Value="250" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Keyboard Focused Pressed Radio Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Keyboard Focused Pressed Radio Button" />
+            <Property Name="Foreground" Value="#FF00FF00" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="250x19" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="18.6211" />
+              <Property Name="ActualWidth" Value="249.348" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="250x19" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Keyboard Focused Pressed Radio Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                <Property Name="Text" Value="Keyboard Focused Pressed Radio Button" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+    </Element>
+  </VisualRoot>
+</VisualTreeDump>

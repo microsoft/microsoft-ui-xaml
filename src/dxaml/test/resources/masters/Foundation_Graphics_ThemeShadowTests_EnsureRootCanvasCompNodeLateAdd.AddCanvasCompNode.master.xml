@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Compositor>
+  <ProjectedShadowScene SceneId="1" LightNumber="External" BlurRadiusMultiplier="0.225" MaxBlurRadius="86" MinxOpacity="0.18" MaxOpacity="0.18" OpacityFalloff="192">
+    <ProjectedShadowReceiver ReceiverVisualId="3" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowReceiver ReceiverVisualId="2" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowReceiver ReceiverVisualId="1" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowCaster CasterVisualId="2" Cutout="True" Policy="Rectangular" />
+  </ProjectedShadowScene>
+  <ProjectedShadowScene SceneId="2" LightNumber="External" BlurRadiusMultiplier="0.9" MaxBlurRadius="500" MinxOpacity="0.22" MaxOpacity="0.22" OpacityFalloff="192">
+    <ProjectedShadowReceiver ReceiverVisualId="3" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowReceiver ReceiverVisualId="2" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowReceiver ReceiverVisualId="1" Policy="Rectangular" DrawOrder="PostChildren" />
+    <ProjectedShadowCaster CasterVisualId="2" Cutout="True" Policy="Rectangular" />
+  </ProjectedShadowScene>
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <Visual Tag="ContentVisual">
+            <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+              <ColorBrush Color="#ff000000" />
+            </wucSpriteVisual>
+            <Visual Tag="PrependVisual">
+              <Visual VisualId="1" Tag="PrimaryVisual" SizeX="488" SizeY="388">
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="488" SizeY="388" BorderMode="Soft">
+                    <ColorBrush Color="rgb {0.6784, 0.8471, 0.902}" />
+                  </wucSpriteVisual>
+                </Visual>
+              </Visual>
+            </Visual>
+            <Visual TransformParentVisualId="1" Tag="PrependVisual">
+              <TransformMatrix>
+                <Translate Z="32" />
+              </TransformMatrix>
+              <WindowBackgroundTreatment>
+                <EffectBrush />
+              </WindowBackgroundTreatment>
+              <Visual Tag="PrimaryVisual">
+                <Visual Tag="ContentVisual">
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="100" SizeY="50">
+                      <Visual VisualId="2" Tag="ContentVisual" SizeX="100" SizeY="50">
+                        <wucSpriteVisual SizeX="100" SizeY="50" BorderMode="Soft">
+                          <ColorBrush Color="rgb {1, 0, 0}" />
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="40" SizeY="10" BorderMode="Hard" OffsetX="30" OffsetY="20" OffsetZ="0">
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="#ffffffff" />
+                            </Source>
+                            <Mask>
+                              <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+            <Visual TransformParentVisualId="1" Tag="PrependVisual">
+              <TransformMatrix>
+                <Translate Z="32" />
+              </TransformMatrix>
+              <WindowBackgroundTreatment>
+                <EffectBrush />
+              </WindowBackgroundTreatment>
+              <Visual Tag="PrimaryVisual">
+                <Visual Tag="ContentVisual">
+                  <Visual Tag="PrependVisual">
+                    <Visual VisualId="3" Tag="PrimaryVisual" SizeX="100" SizeY="50">
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="100" SizeY="50" BorderMode="Soft">
+                          <ColorBrush Color="rgb {1, 0, 0}" />
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="40" SizeY="10" BorderMode="Hard" OffsetX="30" OffsetY="20" OffsetZ="0">
+                          <MaskBrush>
+                            <Source>
+                              <ColorBrush Color="#ffffffff" />
+                            </Source>
+                            <Mask>
+                              <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                            </Mask>
+                          </MaskBrush>
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</Compositor>

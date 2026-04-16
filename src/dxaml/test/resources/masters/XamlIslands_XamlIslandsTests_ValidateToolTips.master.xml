@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Microsoft.UI.Xaml.Hosting.XamlIslandRoot">
+      <Properties>
+        <Property Name="Background" Value="#FF000000" />
+      </Properties>
+      <ChildElements>
+        <Element Type="Microsoft.UI.Xaml.Controls.Canvas">
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.ToolTip">
+              <Properties>
+                <Property Name="Background" Value="#FF2B2B2B" />
+                <Property Name="BorderBrush" Value="#FF000000(Opacity=0.36)" />
+                <Property Name="BorderThickness" Value="1,1,1,1" />
+                <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+                <Property Name="DataContext" Value="[NULL]" />
+                <Property Name="FontFamily" Value="Segoe UI" />
+                <Property Name="FontSize" Value="12" />
+                <Property Name="Foreground" Value="#FFFFFFFF" />
+                <Property Name="IsHitTestVisible" Value="False" />
+                <Property Name="IsOpen" Value="True" />
+                <Property Name="IsTabStop" Value="False" />
+                <Property Name="Padding" Value="8,5,8,7" />
+                <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+                <Property Name="RequestedTheme" Value="2" />
+                <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToolTipTemplateSettings]" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Properties>
+                    <Property Name="Background" Value="#FF2B2B2B" />
+                    <Property Name="BackgroundSizing" Value="1" />
+                    <Property Name="BorderBrush" Value="#FF000000(Opacity=0.36)" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+                    <Property Name="ContentTransitions" Value="[NULL]" />
+                    <Property Name="MaxWidth" Value="320" />
+                    <Property Name="Padding" Value="8,5,8,7" />
+                    <Property Name="Shadow" Value="[Microsoft.UI.Xaml.Media.ThemeShadow]" />
+                    <Property Name="TextWrapping" Value="2" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Properties>
+                        <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                        <Property Name="Text" Value="A ToolTip on an island" />
+                      </Properties>
+                      <ChildElements>
+                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                          <Properties>
+                            <Property Name="Text" Value="A ToolTip on an island" />
+                          </Properties>
+                        </Element>
+                      </ChildElements>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Canvas" />
+        <Element Type="Microsoft.UI.Xaml.Controls.ScrollViewer">
+          <Properties>
+            <Property Name="ComputedHorizontalScrollBarVisibility" Value="1" />
+            <Property Name="ComputedVerticalScrollBarVisibility" Value="1" />
+            <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.Border]" />
+            <Property Name="ExtentHeight" Value="300" />
+            <Property Name="ExtentWidth" Value="400" />
+            <Property Name="Height" Value="300" />
+            <Property Name="HorizontalContentAlignment" Value="0" />
+            <Property Name="IsTabStop" Value="True" />
+            <Property Name="ScrollViewer.HorizontalScrollBarVisibility" Value="2" />
+            <Property Name="ScrollViewer.HorizontalScrollMode" Value="0" />
+            <Property Name="ScrollViewer.VerticalScrollBarVisibility" Value="2" />
+            <Property Name="ScrollViewer.VerticalScrollMode" Value="0" />
+            <Property Name="ScrollViewer.ZoomMode" Value="0" />
+            <Property Name="ScrollableHeight" Value="0" />
+            <Property Name="ScrollableWidth" Value="0" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Property Name="VerticalContentAlignment" Value="0" />
+            <Property Name="ViewportHeight" Value="300" />
+            <Property Name="ViewportWidth" Value="400" />
+            <Property Name="Width" Value="400" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.ScrollContentPresenter">
+              <Properties>
+                <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+                <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.Border]" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                  <Properties>
+                    <Property Name="Background" Value="#00FFFFFF" />
+                    <Property Name="Height" Value="300" />
+                    <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.ScrollViewer]" />
+                    <Property Name="Width" Value="400" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                      <Properties>
+                        <Property Name="RequestedTheme" Value="2" />
+                      </Properties>
+                      <ChildElements>
+                        <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+                          <Properties>
+                            <Property Name="Margin" Value="5,5,5,5" />
+                          </Properties>
+                          <ChildElements>
+                            <Element Type="Microsoft.UI.Xaml.Controls.Button">
+                              <Properties>
+                                <Property Name="Background" Value="#33FFFFFF" />
+                                <Property Name="BackgroundSizing" Value="1" />
+                                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                                <Property Name="BorderThickness" Value="2,2,2,2" />
+                                <Property Name="Content" Value="My Button has a ToolTip" />
+                                <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+                                <Property Name="FontFamily" Value="Segoe UI" />
+                                <Property Name="FontSize" Value="14" />
+                                <Property Name="FontWeight" Value="400" />
+                                <Property Name="Foreground" Value="#FFFFFFFF" />
+                                <Property Name="HorizontalAlignment" Value="0" />
+                                <Property Name="Padding" Value="8,4,8,5" />
+                                <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                                <Property Name="ToolTipService.Placement" Value="2" />
+                                <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                                <Property Name="UseSystemFocusVisuals" Value="True" />
+                                <Property Name="VerticalAlignment" Value="1" />
+                              </Properties>
+                              <ChildElements>
+                                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                                  <Properties>
+                                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                    <Property Name="Background" Value="#33FFFFFF" />
+                                    <Property Name="BackgroundSizing" Value="1" />
+                                    <Property Name="BorderBrush" Value="#00FFFFFF" />
+                                    <Property Name="BorderThickness" Value="2,2,2,2" />
+                                    <Property Name="Content" Value="My Button has a ToolTip" />
+                                    <Property Name="ContentTransitions" Value="[NULL]" />
+                                    <Property Name="CornerRadius" Value="0,0,0,0" />
+                                    <Property Name="DataContext" Value="My Button has a ToolTip" />
+                                    <Property Name="HorizontalContentAlignment" Value="1" />
+                                    <Property Name="Padding" Value="8,4,8,5" />
+                                    <Property Name="VerticalContentAlignment" Value="1" />
+                                  </Properties>
+                                  <ChildElements>
+                                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                      <Properties>
+                                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                        <Property Name="HorizontalAlignment" Value="0" />
+                                        <Property Name="Text" Value="My Button has a ToolTip" />
+                                        <Property Name="VerticalAlignment" Value="0" />
+                                      </Properties>
+                                      <ChildElements>
+                                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                          <Properties>
+                                            <Property Name="Text" Value="My Button has a ToolTip" />
+                                          </Properties>
+                                        </Element>
+                                      </ChildElements>
+                                    </Element>
+                                  </ChildElements>
+                                </Element>
+                              </ChildElements>
+                            </Element>
+                          </ChildElements>
+                        </Element>
+                      </ChildElements>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </ChildElements>
+    </Element>
+  </VisualElements>
+</VisualTreeDump>

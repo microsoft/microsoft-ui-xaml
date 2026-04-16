@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="250" SizeY="250" OffsetX="0" OffsetY="100" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="1" M12="0" M13="0" M14="0" />
+                <Row2 M21="0" M22="1" M13="0" M14="0" />
+                <Row3 M31="-0.125" M32="-0.125" M33="1" M34="-0.001" />
+                <Row4 M41="0" M42="0" M43="0" M44="1" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="250" SizeY="250" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0, 0, 1}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="200" SizeY="200" OffsetX="25" OffsetY="25" OffsetZ="0">
+                    <TransformMatrix>
+                      <ExpressionAnimation String="LOCAL.Transform3D">
+                        <ReferenceParameter Name="LOCAL">
+                          <PropertySet>
+                            <Property Name="Transform3D" Type="Matrix4x4">
+                              <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(-vector3(PS.CenterX, PS.CenterY, PS.CenterZ)) * PS.Scale * PS.RotateX * PS.RotateY * PS.RotateZ * Matrix4x4.CreateFromTranslation(vector3(PS.CenterX, PS.CenterY, PS.CenterZ)) * PS.Translate">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="CenterX" Type="Scalar" />
+                                  <Property Name="CenterY" Type="Scalar" />
+                                  <Property Name="CenterZ" Type="Scalar" />
+                                  <Property Name="RotateX" Type="Matrix4x4" />
+                                  <Property Name="RotateY" Type="Matrix4x4" />
+                                  <Property Name="RotateZ" Type="Matrix4x4" />
+                                  <Property Name="Scale" Type="Matrix4x4" />
+                                  <Property Name="Translate" Type="Matrix4x4">
+                                    <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(vector3(PS.X, PS.Y, PS.Z))">
+                                      <ReferenceParameter Name="PS" />
+                                      <PropertySet>
+                                        <Property Name="X" Type="Scalar">
+                                          <KeyFrameAnimation Duration="1">
+                                            <KeyFrame />
+                                            <KeyFrame Time="1" Value="100">
+                                              <LinearEasingFunction />
+                                            </KeyFrame>
+                                          </KeyFrameAnimation>
+                                        </Property>
+                                        <Property Name="Y" Type="Scalar" />
+                                        <Property Name="Z" Type="Scalar" />
+                                      </PropertySet>
+                                    </ExpressionAnimation>
+                                  </Property>
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ReferenceParameter>
+                      </ExpressionAnimation>
+                    </TransformMatrix>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="200" SizeY="200" BorderMode="Soft">
+                        <ColorBrush Color="rgb {1, 0, 0}" />
+                      </wucSpriteVisual>
+                      <Visual Tag="PrependVisual">
+                        <Visual Tag="PrimaryVisual" SizeX="150" SizeY="150" OffsetX="25" OffsetY="25" OffsetZ="0">
+                          <Visual Tag="ContentVisual">
+                            <wucSpriteVisual SizeX="150" SizeY="150" BorderMode="Soft">
+                              <ColorBrush Color="rgb {0, 0.502, 0}" />
+                            </wucSpriteVisual>
+                          </Visual>
+                        </Visual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

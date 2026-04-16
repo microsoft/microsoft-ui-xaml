@@ -1,0 +1,19 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- 0x1a = 26 = 0.1*255, 0x33 = 51 = 0.2*255, 0x4d = 77 = 0.3*255 -->
+  <Canvas x:Name="c1" Width="10" Height="10" Background="#ff1a0000">
+    <Canvas x:Name="c1_1" Width="10" Height="10" Background="#ff1a1a00"/>
+    <Canvas x:Name="c1_2" Width="10" Height="10" Background="#ff1a3300" />
+    <Canvas x:Name="c1_3" Width="10" Height="10" Background="#ff1a4d00" />
+  </Canvas>
+  <Canvas x:Name="c2" Width="10" Height="10" Background="#ff330000">
+    <Canvas x:Name="c2_1" Width="10" Height="10" Background="#ff331a00" />
+    <Canvas x:Name="c2_2" Width="10" Height="10" Background="#ff333300" />
+    <Canvas x:Name="c2_3" Width="10" Height="10" Background="#ff334d00" />
+  </Canvas>
+  <Canvas x:Name="c3" Width="10" Height="10" Background="#ff4d0000">
+    <Canvas x:Name="c3_1" Width="10" Height="10" Background="#ff4d1a00" />
+    <Canvas x:Name="c3_2" Width="10" Height="10" Background="#ff4d3300" />
+    <Canvas x:Name="c3_3" Width="10" Height="10" Background="#ff4d4d00" />
+  </Canvas>
+</Canvas>

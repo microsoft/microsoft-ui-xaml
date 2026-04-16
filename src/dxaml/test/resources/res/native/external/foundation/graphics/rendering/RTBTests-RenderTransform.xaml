@@ -1,0 +1,53 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Canvas x:Name="RootTranslateRotate" Width="200" Height="200" Background="Blue">
+                <Rectangle Width="50" Height="50" Fill="Red" Margin="75">
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform X="10" Y="10" />
+                            <RotateTransform Angle="45" />
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+            </Canvas>
+            <Image x:Name="imgTranslateRotate" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Canvas x:Name="RootTranslateSkew" Width="200" Height="200" Background="Blue">
+                <Rectangle Width ="50" Height="50" Fill="Red" Margin="75">
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform X="10" Y="10" />
+                            <SkewTransform AngleX="20" AngleY="20" />
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+            </Canvas>
+            <Image x:Name="imgTranslateSkew" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Canvas x:Name="RootTranslateComposite" Width="200" Height="200" Background="Blue">
+                <Rectangle Width ="50" Height="50" Fill="Red" Margin="75">
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform X="10" Y="10" />
+                            <CompositeTransform
+                                CenterX="10"
+                                CenterY="10"
+                                Rotation="45"
+                                ScaleX=".8"
+                                ScaleY=".8"
+                                SkewX="20"
+                                SkewY="20"
+                                TranslateX="10"
+                                TranslateY="10"/>
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+            </Canvas>
+            <Image x:Name="imgTranslateComposite" />
+        </StackPanel>
+    </StackPanel>
+</StackPanel>

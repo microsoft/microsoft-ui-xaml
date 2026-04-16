@@ -1,0 +1,93 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <Grid.Resources>
+      <CollectionViewSource x:Name="cvs"/>
+    </Grid.Resources>
+
+    <Button
+      x:Name="BeforeButton"
+      Content="Before Button"
+      Tag="B"/>
+
+    <StackPanel Grid.Row="1">
+      <ListView x:Name="MainListView"
+        Visibility="Collapsed"
+        ItemsSource='{Binding Source={StaticResource cvs}}'>
+        <ListView.Header>
+          <Button Visibility="Collapsed" Tag="H" Content="MainListView Header"/>
+        </ListView.Header>
+        <ListView.Footer>
+          <Button Visibility="Collapsed" Tag="F" Content="MainListView Footer"/>
+        </ListView.Footer>
+        <ListView.ItemContainerStyle>
+          <Style TargetType="ListViewItem">
+            <Setter Property="IsTabStop" Value="False"/>
+          </Style>
+        </ListView.ItemContainerStyle>
+        <ListView.ItemTemplate>
+          <DataTemplate>
+            <Button Content="{Binding}" Tag="{Binding}"/>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+        <ListView.GroupStyle>
+          <GroupStyle>
+            <GroupStyle.HeaderTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding}" Foreground="Red"/>
+              </DataTemplate>
+            </GroupStyle.HeaderTemplate>
+          </GroupStyle>
+        </ListView.GroupStyle>
+      </ListView>
+
+      <ListView x:Name="MainListViewWithVirtualizingStackPanel"
+        Visibility="Collapsed"
+        ItemsSource='{Binding Source={StaticResource cvs}}'>
+        <ListView.Header>
+          <Button Visibility="Collapsed" Tag="H" Content="MainListView Header"/>
+        </ListView.Header>
+        <ListView.Footer>
+          <Button Visibility="Collapsed" Tag="F" Content="MainListView Footer"/>
+        </ListView.Footer>
+        <ListView.ItemContainerStyle>
+          <Style TargetType="ListViewItem">
+            <Setter Property="IsTabStop" Value="False"/>
+          </Style>
+        </ListView.ItemContainerStyle>
+        <ListView.ItemTemplate>
+          <DataTemplate>
+            <Button Content="{Binding}" Tag="{Binding}"/>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+        <ListView.GroupStyle>
+          <GroupStyle>
+            <GroupStyle.HeaderTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding}" Foreground="Red"/>
+              </DataTemplate>
+            </GroupStyle.HeaderTemplate>
+          </GroupStyle>
+        </ListView.GroupStyle>
+        <ListView.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel/>
+          </ItemsPanelTemplate>
+        </ListView.ItemsPanel>
+      </ListView>
+    </StackPanel>
+
+    <Button
+      x:Name="AfterButton"
+      Content="After Button"
+      Tag="A"
+      Grid.Row="2"/>
+  </Grid>
+</Page>
+

@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Microsoft.UI.Xaml.Controls.Page">
+      <Properties>
+        <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.StackPanel]" />
+      </Properties>
+      <ChildElements>
+        <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+          <Properties>
+            <Property Name="Margin" Value="20,20,20,20" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.Button">
+              <Properties>
+                <Property Name="AccessKey" Value="1" />
+                <Property Name="Background" Value="#33FFFFFF" />
+                <Property Name="BackgroundSizing" Value="1" />
+                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                <Property Name="BorderThickness" Value="2,2,2,2" />
+                <Property Name="Content" Value="button1" />
+                <Property Name="Flyout" Value="[Microsoft.UI.Xaml.Controls.MenuFlyout]" />
+                <Property Name="FocusState" Value="0" />
+                <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+                <Property Name="FontFamily" Value="Segoe UI" />
+                <Property Name="FontSize" Value="14" />
+                <Property Name="FontWeight" Value="400" />
+                <Property Name="Foreground" Value="#FFFFFFFF" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="IsAccessKeyScope" Value="True" />
+                <Property Name="IsPressed" Value="False" />
+                <Property Name="KeyTipPlacementMode" Value="4" />
+                <Property Name="Padding" Value="8,4,8,5" />
+                <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                <Property Name="UseSystemFocusVisuals" Value="True" />
+                <Property Name="VerticalAlignment" Value="1" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Properties>
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="Background" Value="#33FFFFFF" />
+                    <Property Name="BackgroundSizing" Value="1" />
+                    <Property Name="BorderBrush" Value="#00FFFFFF" />
+                    <Property Name="BorderThickness" Value="2,2,2,2" />
+                    <Property Name="Content" Value="button1" />
+                    <Property Name="ContentTransitions" Value="[NULL]" />
+                    <Property Name="CornerRadius" Value="0,0,0,0" />
+                    <Property Name="DataContext" Value="button1" />
+                    <Property Name="HorizontalContentAlignment" Value="1" />
+                    <Property Name="Padding" Value="8,4,8,5" />
+                    <Property Name="VerticalContentAlignment" Value="1" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Properties>
+                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                        <Property Name="HorizontalAlignment" Value="0" />
+                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                        <Property Name="Text" Value="button1" />
+                        <Property Name="VerticalAlignment" Value="0" />
+                      </Properties>
+                      <ChildElements>
+                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                          <Properties>
+                            <Property Name="Text" Value="button1" />
+                          </Properties>
+                        </Element>
+                      </ChildElements>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Button">
+              <Properties>
+                <Property Name="AccessKey" Value="2" />
+                <Property Name="Background" Value="#33FFFFFF" />
+                <Property Name="BackgroundSizing" Value="1" />
+                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                <Property Name="BorderThickness" Value="2,2,2,2" />
+                <Property Name="Content" Value="button2" />
+                <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+                <Property Name="FontFamily" Value="Segoe UI" />
+                <Property Name="FontSize" Value="14" />
+                <Property Name="FontWeight" Value="400" />
+                <Property Name="Foreground" Value="#FFFFFFFF" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="KeyTipPlacementMode" Value="4" />
+                <Property Name="Padding" Value="8,4,8,5" />
+                <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                <Property Name="UseSystemFocusVisuals" Value="True" />
+                <Property Name="VerticalAlignment" Value="1" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Properties>
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="Background" Value="#33FFFFFF" />
+                    <Property Name="BackgroundSizing" Value="1" />
+                    <Property Name="BorderBrush" Value="#00FFFFFF" />
+                    <Property Name="BorderThickness" Value="2,2,2,2" />
+                    <Property Name="Content" Value="button2" />
+                    <Property Name="ContentTransitions" Value="[NULL]" />
+                    <Property Name="CornerRadius" Value="0,0,0,0" />
+                    <Property Name="DataContext" Value="button2" />
+                    <Property Name="HorizontalContentAlignment" Value="1" />
+                    <Property Name="Padding" Value="8,4,8,5" />
+                    <Property Name="VerticalContentAlignment" Value="1" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Properties>
+                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                        <Property Name="HorizontalAlignment" Value="0" />
+                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                        <Property Name="Text" Value="button2" />
+                        <Property Name="VerticalAlignment" Value="0" />
+                      </Properties>
+                      <ChildElements>
+                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                          <Properties>
+                            <Property Name="Text" Value="button2" />
+                          </Properties>
+                        </Element>
+                      </ChildElements>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </ChildElements>
+    </Element>
+  </VisualElements>
+  <PopupElements>
+    <PopupElement>
+      <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+        <Properties>
+          <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Border]" />
+          <Property Name="HighContrastAdjustment" Value="0" />
+          <Property Name="HorizontalOffset" Value="103" />
+          <Property Name="IsHitTestVisible" Value="False" />
+          <Property Name="IsOpen" Value="True" />
+          <Property Name="VerticalOffset" Value="96" />
+        </Properties>
+      </Element>
+      <PopupElement.Child>
+        <Element Type="Microsoft.UI.Xaml.Controls.Border">
+          <Properties>
+            <Property Name="Background" Value="#FF767676" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="1,1,1,1" />
+            <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+            <Property Name="Padding" Value="4,4,4,4" />
+            <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Properties>
+                <Property Name="FontFamily" Value="Segoe UI" />
+                <Property Name="FontSize" Value="12" />
+                <Property Name="Foreground" Value="#FFFFFFFF" />
+                <Property Name="Text" Value="b" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Properties>
+                    <Property Name="Text" Value="b" />
+                  </Properties>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </PopupElement.Child>
+    </PopupElement>
+    <PopupElement>
+      <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+        <Properties>
+          <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Border]" />
+          <Property Name="HighContrastAdjustment" Value="0" />
+          <Property Name="HorizontalOffset" Value="103" />
+          <Property Name="IsHitTestVisible" Value="False" />
+          <Property Name="IsOpen" Value="True" />
+          <Property Name="VerticalOffset" Value="64" />
+        </Properties>
+      </Element>
+      <PopupElement.Child>
+        <Element Type="Microsoft.UI.Xaml.Controls.Border">
+          <Properties>
+            <Property Name="Background" Value="#FF767676" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="1,1,1,1" />
+            <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+            <Property Name="Padding" Value="4,4,4,4" />
+            <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Properties>
+                <Property Name="FontFamily" Value="Segoe UI" />
+                <Property Name="FontSize" Value="12" />
+                <Property Name="Foreground" Value="#FFFFFFFF" />
+                <Property Name="Text" Value="a" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Properties>
+                    <Property Name="Text" Value="a" />
+                  </Properties>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </PopupElement.Child>
+    </PopupElement>
+    <PopupElement>
+      <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+        <Properties>
+          <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.MenuFlyoutPresenter]" />
+          <Property Name="HorizontalOffset" Value="6" />
+          <Property Name="IsLightDismissEnabled" Value="True" />
+          <Property Name="IsOpen" Value="True" />
+          <Property Name="LightDismissOverlayMode" Value="2" />
+          <Property Name="Opacity" Value="1" />
+          <Property Name="ShouldConstrainToRootBounds" Value="False" />
+          <Property Name="VerticalOffset" Value="56" />
+        </Properties>
+      </Element>
+      <PopupElement.Child>
+        <Element Type="Microsoft.UI.Xaml.Controls.MenuFlyoutPresenter">
+          <Properties>
+            <Property Name="AllowFocusOnInteraction" Value="True" />
+            <Property Name="AllowFocusWhenDisabled" Value="False" />
+            <Property Name="Background" Value="#FF2B2B2B" />
+            <Property Name="BorderBrush" Value="#FF000000(Opacity=0.36)" />
+            <Property Name="BorderThickness" Value="1,1,1,1" />
+            <Property Name="DataContext" Value="[NULL]" />
+            <Property Name="FlowDirection" Value="0" />
+            <Property Name="FocusState" Value="0" />
+            <Property Name="GroupStyle" Value="[TrackerCollection&lt;T>]" />
+            <Property Name="Height" Value="Auto" />
+            <Property Name="ItemsSource" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+            <Property Name="Language" Value="en-US" />
+            <Property Name="MaxWidth" Value="456" />
+            <Property Name="MinHeight" Value="32" />
+            <Property Name="Padding" Value="1,1,1,1" />
+            <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+            <Property Name="ScrollViewer.HorizontalScrollBarVisibility" Value="0" />
+            <Property Name="ScrollViewer.HorizontalScrollMode" Value="0" />
+            <Property Name="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
+            <Property Name="ScrollViewer.IsVerticalRailEnabled" Value="False" />
+            <Property Name="ScrollViewer.VerticalScrollBarVisibility" Value="1" />
+            <Property Name="ScrollViewer.VerticalScrollMode" Value="2" />
+            <Property Name="ScrollViewer.ZoomMode" Value="0" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.MenuFlyoutPresenterTemplateSettings]" />
+            <Property Name="Width" Value="Auto" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Properties>
+                <Property Name="Background" Value="#FF2B2B2B" />
+                <Property Name="CornerRadius" Value="0,0,0,0" />
+                <Property Name="Shadow" Value="[Microsoft.UI.Xaml.Media.ThemeShadow]" />
+                <Property Name="Transitions" Value="[Microsoft.UI.Xaml.Media.Animation.TransitionCollection]" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.ScrollViewer">
+                  <Properties>
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="Background" Value="#00FFFFFF" />
+                    <Property Name="BorderBrush" Value="#00FFFFFF" />
+                    <Property Name="BorderThickness" Value="0,0,0,0" />
+                    <Property Name="ComputedHorizontalScrollBarVisibility" Value="1" />
+                    <Property Name="ComputedVerticalScrollBarVisibility" Value="1" />
+                    <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.ItemsPresenter]" />
+                    <Property Name="ExtentHeight" Value="72" />
+                    <Property Name="ExtentWidth" Value="96" />
+                    <Property Name="HorizontalContentAlignment" Value="0" />
+                    <Property Name="IsTabStop" Value="False" />
+                    <Property Name="Margin" Value="1,1,1,1" />
+                    <Property Name="MinWidth" Value="96" />
+                    <Property Name="Padding" Value="0,0,0,0" />
+                    <Property Name="ScrollViewer.HorizontalScrollBarVisibility" Value="0" />
+                    <Property Name="ScrollViewer.HorizontalScrollMode" Value="0" />
+                    <Property Name="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
+                    <Property Name="ScrollViewer.IsVerticalRailEnabled" Value="False" />
+                    <Property Name="ScrollViewer.VerticalScrollBarVisibility" Value="1" />
+                    <Property Name="ScrollViewer.VerticalScrollMode" Value="2" />
+                    <Property Name="ScrollViewer.ZoomMode" Value="0" />
+                    <Property Name="ScrollableHeight" Value="0" />
+                    <Property Name="ScrollableWidth" Value="0" />
+                    <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                    <Property Name="UseSystemFocusVisuals" Value="True" />
+                    <Property Name="VerticalContentAlignment" Value="0" />
+                    <Property Name="ViewportHeight" Value="72" />
+                    <Property Name="ViewportWidth" Value="96" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                      <Properties>
+                        <Property Name="BorderBrush" Value="#00FFFFFF" />
+                        <Property Name="BorderThickness" Value="0,0,0,0" />
+                        <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+                        <Property Name="CornerRadius" Value="0,0,0,0" />
+                      </Properties>
+                      <ChildElements>
+                        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                          <Properties>
+                            <Property Name="Background" Value="#00FFFFFF" />
+                          </Properties>
+                          <ChildElements>
+                            <Element Type="Microsoft.UI.Xaml.Controls.ScrollContentPresenter">
+                              <Properties>
+                                <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+                                <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.ItemsPresenter]" />
+                                <Property Name="Grid.ColumnSpan" Value="2" />
+                                <Property Name="Grid.RowSpan" Value="2" />
+                                <Property Name="Margin" Value="0,0,0,0" />
+                              </Properties>
+                              <ChildElements>
+                                <Element Type="Microsoft.UI.Xaml.Controls.ItemsPresenter">
+                                  <Properties>
+                                    <Property Name="Margin" Value="0,4,0,4" />
+                                    <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.ScrollViewer]" />
+                                  </Properties>
+                                  <ChildElements>
+                                    <Element Type="Microsoft.UI.Xaml.Controls.ContentControl">
+                                      <Properties>
+                                        <Property Name="HorizontalContentAlignment" Value="3" />
+                                        <Property Name="IsTabStop" Value="False" />
+                                        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                                        <Property Name="VerticalContentAlignment" Value="3" />
+                                        <Property Name="Visibility" Value="1" />
+                                      </Properties>
+                                    </Element>
+                                    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+                                      <Properties>
+                                        <Property Name="IsItemsHost" Value="True" />
+                                      </Properties>
+                                      <ChildElements>
+                                        <Element Type="Microsoft.UI.Xaml.Controls.MenuFlyoutItem">
+                                          <Properties>
+                                            <Property Name="AccessKey" Value="a" />
+                                            <Property Name="Background" Value="#00FFFFFF" />
+                                            <Property Name="BorderBrush" Value="#00FFFFFF" />
+                                            <Property Name="BorderThickness" Value="1,1,1,1" />
+                                            <Property Name="FocusState" Value="2" />
+                                            <Property Name="FontSize" Value="14" />
+                                            <Property Name="Foreground" Value="#FFFFFFFF" />
+                                            <Property Name="HorizontalContentAlignment" Value="3" />
+                                            <Property Name="KeyTipPlacementMode" Value="4" />
+                                            <Property Name="KeyboardAcceleratorPlacementMode" Value="1" />
+                                            <Property Name="Padding" Value="11,9,11,10" />
+                                            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                                            <Property Name="Text" Value="itemA" />
+                                            <Property Name="UseSystemFocusVisuals" Value="True" />
+                                            <Property Name="VerticalContentAlignment" Value="1" />
+                                          </Properties>
+                                          <ChildElements>
+                                            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                              <Properties>
+                                                <Property Name="Background" Value="#00FFFFFF" />
+                                                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                                                <Property Name="BorderThickness" Value="1,1,1,1" />
+                                                <Property Name="CornerRadius" Value="0,0,0,0" />
+                                                <Property Name="Padding" Value="11,4,11,7" />
+                                              </Properties>
+                                              <ChildElements>
+                                                <Element Type="Microsoft.UI.Xaml.Controls.Viewbox">
+                                                  <Properties>
+                                                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.ContentPresenter]" />
+                                                    <Property Name="Height" Value="16" />
+                                                    <Property Name="HorizontalAlignment" Value="0" />
+                                                    <Property Name="VerticalAlignment" Value="1" />
+                                                    <Property Name="Visibility" Value="1" />
+                                                    <Property Name="Width" Value="16" />
+                                                  </Properties>
+                                                  <ChildElements>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                                                      <Properties>
+                                                        <Property Name="RenderTransform" Value="ScaleTransform()" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                                                          <Properties>
+                                                            <Property Name="Content" Value="[NULL]" />
+                                                            <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Viewbox]" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                  </ChildElements>
+                                                </Element>
+                                                <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                  <Properties>
+                                                    <Property Name="Foreground" Value="#FFFFFFFF" />
+                                                    <Property Name="HorizontalAlignment" Value="3" />
+                                                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                    <Property Name="Text" Value="itemA" />
+                                                    <Property Name="TextTrimming" Value="3" />
+                                                    <Property Name="VerticalAlignment" Value="1" />
+                                                  </Properties>
+                                                  <ChildElements>
+                                                    <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                      <Properties>
+                                                        <Property Name="Text" Value="itemA" />
+                                                      </Properties>
+                                                    </Element>
+                                                  </ChildElements>
+                                                </Element>
+                                                <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                  <Properties>
+                                                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                                    <Property Name="FontFamily" Value="Segoe UI" />
+                                                    <Property Name="FontSize" Value="12" />
+                                                    <Property Name="FontWeight" Value="400" />
+                                                    <Property Name="Foreground" Value="#99FFFFFF" />
+                                                    <Property Name="Grid.Column" Value="1" />
+                                                    <Property Name="HorizontalAlignment" Value="2" />
+                                                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                    <Property Name="LineStackingStrategy" Value="0" />
+                                                    <Property Name="Margin" Value="24,0,0,0" />
+                                                    <Property Name="MinWidth" Value="0" />
+                                                    <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                                                    <Property Name="Text" Value="NULL" />
+                                                    <Property Name="TextLineBounds" Value="0" />
+                                                    <Property Name="TextTrimming" Value="0" />
+                                                    <Property Name="TextWrapping" Value="2" />
+                                                    <Property Name="VerticalAlignment" Value="1" />
+                                                    <Property Name="Visibility" Value="1" />
+                                                  </Properties>
+                                                  <ChildElements>
+                                                    <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                      <Properties>
+                                                        <Property Name="Text" Value="NULL" />
+                                                      </Properties>
+                                                    </Element>
+                                                  </ChildElements>
+                                                </Element>
+                                              </ChildElements>
+                                            </Element>
+                                          </ChildElements>
+                                        </Element>
+                                        <Element Type="Microsoft.UI.Xaml.Controls.MenuFlyoutItem">
+                                          <Properties>
+                                            <Property Name="AccessKey" Value="b" />
+                                            <Property Name="Background" Value="#00FFFFFF" />
+                                            <Property Name="BorderBrush" Value="#00FFFFFF" />
+                                            <Property Name="BorderThickness" Value="1,1,1,1" />
+                                            <Property Name="FontSize" Value="14" />
+                                            <Property Name="Foreground" Value="#FFFFFFFF" />
+                                            <Property Name="HorizontalContentAlignment" Value="3" />
+                                            <Property Name="KeyTipPlacementMode" Value="4" />
+                                            <Property Name="KeyboardAcceleratorPlacementMode" Value="1" />
+                                            <Property Name="Padding" Value="11,9,11,10" />
+                                            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                                            <Property Name="Text" Value="itemB" />
+                                            <Property Name="UseSystemFocusVisuals" Value="True" />
+                                            <Property Name="VerticalContentAlignment" Value="1" />
+                                          </Properties>
+                                          <ChildElements>
+                                            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                              <Properties>
+                                                <Property Name="Background" Value="#00FFFFFF" />
+                                                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                                                <Property Name="BorderThickness" Value="1,1,1,1" />
+                                                <Property Name="CornerRadius" Value="0,0,0,0" />
+                                                <Property Name="Padding" Value="11,4,11,7" />
+                                              </Properties>
+                                              <ChildElements>
+                                                <Element Type="Microsoft.UI.Xaml.Controls.Viewbox">
+                                                  <Properties>
+                                                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.ContentPresenter]" />
+                                                    <Property Name="Height" Value="16" />
+                                                    <Property Name="HorizontalAlignment" Value="0" />
+                                                    <Property Name="VerticalAlignment" Value="1" />
+                                                    <Property Name="Visibility" Value="1" />
+                                                    <Property Name="Width" Value="16" />
+                                                  </Properties>
+                                                  <ChildElements>
+                                                    <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                                                      <Properties>
+                                                        <Property Name="RenderTransform" Value="ScaleTransform()" />
+                                                      </Properties>
+                                                      <ChildElements>
+                                                        <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                                                          <Properties>
+                                                            <Property Name="Content" Value="[NULL]" />
+                                                            <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Viewbox]" />
+                                                          </Properties>
+                                                        </Element>
+                                                      </ChildElements>
+                                                    </Element>
+                                                  </ChildElements>
+                                                </Element>
+                                                <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                  <Properties>
+                                                    <Property Name="Foreground" Value="#FFFFFFFF" />
+                                                    <Property Name="HorizontalAlignment" Value="3" />
+                                                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                    <Property Name="Text" Value="itemB" />
+                                                    <Property Name="TextTrimming" Value="3" />
+                                                    <Property Name="VerticalAlignment" Value="1" />
+                                                  </Properties>
+                                                  <ChildElements>
+                                                    <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                      <Properties>
+                                                        <Property Name="Text" Value="itemB" />
+                                                      </Properties>
+                                                    </Element>
+                                                  </ChildElements>
+                                                </Element>
+                                                <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                  <Properties>
+                                                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                                    <Property Name="FontFamily" Value="Segoe UI" />
+                                                    <Property Name="FontSize" Value="12" />
+                                                    <Property Name="FontWeight" Value="400" />
+                                                    <Property Name="Foreground" Value="#99FFFFFF" />
+                                                    <Property Name="Grid.Column" Value="1" />
+                                                    <Property Name="HorizontalAlignment" Value="2" />
+                                                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                                    <Property Name="LineStackingStrategy" Value="0" />
+                                                    <Property Name="Margin" Value="24,0,0,0" />
+                                                    <Property Name="MinWidth" Value="0" />
+                                                    <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                                                    <Property Name="Text" Value="NULL" />
+                                                    <Property Name="TextLineBounds" Value="0" />
+                                                    <Property Name="TextTrimming" Value="0" />
+                                                    <Property Name="TextWrapping" Value="2" />
+                                                    <Property Name="VerticalAlignment" Value="1" />
+                                                    <Property Name="Visibility" Value="1" />
+                                                  </Properties>
+                                                  <ChildElements>
+                                                    <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                                      <Properties>
+                                                        <Property Name="Text" Value="NULL" />
+                                                      </Properties>
+                                                    </Element>
+                                                  </ChildElements>
+                                                </Element>
+                                              </ChildElements>
+                                            </Element>
+                                          </ChildElements>
+                                        </Element>
+                                      </ChildElements>
+                                    </Element>
+                                    <Element Type="Microsoft.UI.Xaml.Controls.ContentControl">
+                                      <Properties>
+                                        <Property Name="Canvas.ZIndex" Value="-1" />
+                                        <Property Name="Content" Value="[NULL]" />
+                                        <Property Name="HorizontalContentAlignment" Value="3" />
+                                        <Property Name="IsTabStop" Value="False" />
+                                        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                                        <Property Name="VerticalContentAlignment" Value="3" />
+                                        <Property Name="Visibility" Value="1" />
+                                      </Properties>
+                                    </Element>
+                                  </ChildElements>
+                                </Element>
+                              </ChildElements>
+                            </Element>
+                            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                              <Properties>
+                                <Property Name="Grid.ColumnSpan" Value="2" />
+                                <Property Name="Grid.RowSpan" Value="2" />
+                              </Properties>
+                            </Element>
+                            <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ScrollBar">
+                              <Properties>
+                                <Property Name="Background" Value="#00FFFFFF" />
+                                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                                <Property Name="Foreground" Value="#00FFFFFF" />
+                                <Property Name="Grid.Column" Value="1" />
+                                <Property Name="HorizontalAlignment" Value="2" />
+                                <Property Name="IsTabStop" Value="False" />
+                                <Property Name="Maximum" Value="0" />
+                                <Property Name="MinHeight" Value="16" />
+                                <Property Name="MinWidth" Value="16" />
+                                <Property Name="Minimum" Value="0" />
+                                <Property Name="Orientation" Value="0" />
+                                <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                                <Property Name="Value" Value="0" />
+                                <Property Name="ViewportSize" Value="72" />
+                                <Property Name="Visibility" Value="1" />
+                              </Properties>
+                            </Element>
+                            <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ScrollBar">
+                              <Properties>
+                                <Property Name="Background" Value="#00FFFFFF" />
+                                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                                <Property Name="Foreground" Value="#00FFFFFF" />
+                                <Property Name="Grid.Row" Value="1" />
+                                <Property Name="IsTabStop" Value="False" />
+                                <Property Name="Maximum" Value="0" />
+                                <Property Name="MinHeight" Value="16" />
+                                <Property Name="MinWidth" Value="16" />
+                                <Property Name="Minimum" Value="0" />
+                                <Property Name="Orientation" Value="1" />
+                                <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                                <Property Name="Value" Value="0" />
+                                <Property Name="ViewportSize" Value="96" />
+                                <Property Name="Visibility" Value="1" />
+                              </Properties>
+                            </Element>
+                            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                              <Properties>
+                                <Property Name="Background" Value="#FF1F1F1F(Opacity=0.90)" />
+                                <Property Name="Grid.Column" Value="1" />
+                                <Property Name="Grid.Row" Value="1" />
+                                <Property Name="Opacity" Value="0" />
+                                <Property Name="Visibility" Value="1" />
+                              </Properties>
+                            </Element>
+                          </ChildElements>
+                        </Element>
+                      </ChildElements>
+                    </Element>
+                  </ChildElements>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                  <Properties>
+                    <Property Name="BorderBrush" Value="#FF000000(Opacity=0.36)" />
+                    <Property Name="BorderThickness" Value="1,1,1,1" />
+                    <Property Name="CornerRadius" Value="0,0,0,0" />
+                  </Properties>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </PopupElement.Child>
+    </PopupElement>
+  </PopupElements>
+</VisualTreeDump>

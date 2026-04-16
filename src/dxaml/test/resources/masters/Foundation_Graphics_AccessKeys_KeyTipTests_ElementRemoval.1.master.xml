@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <Properties>
+        <Property Name="Margin" Value="10,10,10,10" />
+        <Property Name="Padding" Value="10,10,10,10" />
+      </Properties>
+    </Element>
+  </VisualElements>
+</VisualTreeDump>

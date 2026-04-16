@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10">
+              <Offset>
+                <ExpressionAnimation String="Vector3(PS.X, PS.Y, 0)">
+                  <ReferenceParameter Name="PS" />
+                  <PropertySet>
+                    <Property Name="X" Type="Scalar">
+                      <KeyFrameAnimation Duration="2">
+                        <KeyFrame Time="1" Value="100">
+                          <LinearEasingFunction />
+                        </KeyFrame>
+                      </KeyFrameAnimation>
+                    </Property>
+                    <Property Name="Y" Type="Scalar" Value="100" />
+                  </PropertySet>
+                </ExpressionAnimation>
+              </Offset>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

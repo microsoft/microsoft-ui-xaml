@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Condition="'$(BuildingWithBuildExe)'!='true'" Project="$([MSBuild]::GetPathOfFileAbove(Xaml.NTLegacy.Cpp.props))" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2908CFE7-EF42-44EC-B87A-D1A170B70E41}</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- We can't place the generated type metadata in the Windows namespace, so keeping with the convention
+      the private infrastructure uses to work around this we place it in the private namespace -->
+    <!-- Update these to the namespace used by your tests. -->
+    <RootNamespace>Private.Tests.Controls.CustomTypes</RootNamespace>
+    <ProjectName>Microsoft.UI.Xaml.Tests.External.Controls.CustomTypes</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(ProjectRoot)\dxaml\test\native\external\CustomTypeBase.props" />
+  <!-- This is temporary until we end up merging the custom types projects with the actual tests.  As  -->
+  <!-- an intermediate step we are converting our tests to use a pch.h precompiled header (instead of  -->
+  <!-- precomp.h) so that both the test code and Xaml generated files will use the same precompile     -->
+  <!-- header name.  Unfortunately, because some projects reference this directory as part of thier    -->
+  <!-- include paths they can pick up the pch.h in this directory rather than the generic              -->
+  <!-- native\external pch.h (which was previously precomp.h).  So to get around this, we move the     -->
+  <!-- pch.h for this directory into a sub directory.  Since this will all be going away anyway (when  -->
+  <!-- we merge the projects), this 'hack' will go away as well.                                       -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\pch;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_Desktop_CurrentPlatform_spectre);</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="pch\pch.h" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <!-- This magic group of includes is used to instruct the XamlCompiler to do everything
+      it needs to do for a type that is backed by XAML. It will generate the code needed to
+      load and apply the XAML to the custom type and perform XBF generation -->
+    <ClInclude Include="Controls.CustomPage.xaml.h">
+      <DependentUpon>Controls.CustomPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClCompile Include="Controls.CustomPage.xaml.cpp">
+      <DependentUpon>Controls.CustomPage.xaml</DependentUpon>
+    </ClCompile>
+    <Page Include="Controls.CustomPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <!-- This include will instruct the XamlCompiler to parse the following type
+      for WinRT goodness and add their information to the exported type info table. -->
+    <ClInclude Include="CustomListViewItemPresenter.h" />
+    <ClCompile Include="CustomListViewItemPresenter.cpp" />
+    <ClInclude Include="CustomListViewItemPanel.h" />
+    <ClCompile Include="CustomListViewItemPanel.cpp" />
+    <ClInclude Include="CustomAppBarButton.h" />
+    <ClCompile Include="CustomAppBarButton.cpp" />
+    <ClInclude Include="App.xaml.h">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="FirstTestPage.h" />
+    <ClCompile Include="FirstTestPage.cpp" />
+    <ClInclude Include="SecondTestPage.h" />
+    <ClCompile Include="SecondTestPage.cpp" />
+    <ClInclude Include="ThirdTestPage.h" />
+    <ClCompile Include="ThirdTestPage.cpp" />
+    <Page Include="App.xaml" />
+    <!-- This magic group of includes is used to instruct the XamlCompiler to do everything
+      it needs to do for a type that is backed by XAML. It will generate the code needed to
+      load and apply the XAML to the custom type and perform XBF generation -->
+    <ClInclude Include="Grid.CustomTypes.xaml.h">
+      <DependentUpon>Grid.CustomTypes.xaml</DependentUpon>
+    </ClInclude>
+    <ClCompile Include="Grid.CustomTypes.xaml.cpp">
+      <DependentUpon>Grid.CustomTypes.xaml</DependentUpon>
+    </ClCompile>
+    <Page Include="Grid.CustomTypes.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <!-- Templated Button -->
+    <Button Include="Grid.CustomTypes.xaml">
+      <SubType>Designer</SubType>
+    </Button>
+    <!-- This include will instruct the XamlCompiler to parse the following type
+      for WinRT goodness and add their information to the exported type info table. -->
+    <ClInclude Include="Grid.CustomTypes.h" />
+    <ClCompile Include="Grid.CustomTypes.cpp" />
+  </ItemGroup>
+  <Import Condition="'$(BuildingWithBuildExe)'!='true'" Project="$([MSBuild]::GetPathOfFileAbove(Xaml.NTLegacy.Cpp.targets))" />
+</Project>

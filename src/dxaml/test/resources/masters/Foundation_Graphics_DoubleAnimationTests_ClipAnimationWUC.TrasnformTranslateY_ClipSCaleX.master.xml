@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100" OffsetX="0" OffsetY="100" OffsetZ="0">
+              <Clip ClipLeft="0" ClipTop="0" ClipRight="90" ClipBottom="90">
+                <TransformMatrix>
+                  <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.CenterX, PS.CenterY)) * PS.Scale * PS.Skew * PS.Rotate * Matrix3x2.CreateFromTranslation(vector2(PS.CenterX, PS.CenterY)) * PS.Translate">
+                    <ReferenceParameter Name="PS" />
+                    <PropertySet>
+                      <Property Name="CenterX" Type="Scalar" />
+                      <Property Name="CenterY" Type="Scalar" />
+                      <Property Name="Rotate" Type="Matrix3x2" Value="Identity" />
+                      <Property Name="Scale" Type="Matrix3x2" Value="Identity" />
+                      <Property Name="Skew" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateSkew(PS.SkewAngleX * pi / 180.0f, PS.SkewAngleY * pi / 180.0f, Vector2(0, 0))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="SkewAngleX" Type="Scalar">
+                              <KeyFrameAnimation Duration="1">
+                                <KeyFrame />
+                                <KeyFrame Time="1" Value="45">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                            <Property Name="SkewAngleY" Type="Scalar" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                      <Property Name="Translate" Type="Matrix3x2" Value="Identity" />
+                    </PropertySet>
+                  </ExpressionAnimation>
+                </TransformMatrix>
+              </Clip>
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Render" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2(PS.ScaleX, 0, 0, PS.ScaleY, PS.X, PS.Y)">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="ScaleX" Type="Scalar" Value="1" />
+                            <Property Name="ScaleY" Type="Scalar" Value="1" />
+                            <Property Name="X" Type="Scalar" />
+                            <Property Name="Y" Type="Scalar">
+                              <KeyFrameAnimation Duration="1">
+                                <KeyFrame />
+                                <KeyFrame Time="1" Value="100">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

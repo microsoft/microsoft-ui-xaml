@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" ScaleX="2" ScaleY="2">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="25" ClipBottom="25" TransformMatrix="Identity" />
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual" SizeX="100" SizeY="100">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="25" ClipBottom="25">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(primaryVisual.Translation.X + PS.Translation.X, primaryVisual.Translation.Y + PS.Translation.Y))">
+                  <ReferenceParameter Name="PS">
+                    <PropertySet>
+                      <Property Name="Translation" Type="Vector3">
+                        <ExpressionAnimation String="vector3(10, 20, 30)" />
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="primaryVisual" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+            </Clip>
+            <Offset>
+              <ExpressionAnimation String="primaryVisual.Translation">
+                <ReferenceParameter Name="primaryVisual" />
+              </ExpressionAnimation>
+            </Offset>
+            <TransformMatrix>
+              <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(primaryVisual.Translation + PS.Translation) * prependVisual.PrependTransform * Matrix4x4.CreateFromTranslation(-1 * (primaryVisual.Translation))">
+                <ReferenceParameter Name="PS">
+                  <PropertySet>
+                    <Property Name="Translation" Type="Vector3">
+                      <ExpressionAnimation String="vector3(10, 20, 30)" />
+                    </Property>
+                  </PropertySet>
+                </ReferenceParameter>
+                <ReferenceParameter Name="prependVisual" />
+                <ReferenceParameter Name="primaryVisual" />
+              </ExpressionAnimation>
+            </TransformMatrix>
+            <PrependTransform>
+              <Scale ScaleX="2" ScaleY="2" />
+            </PrependTransform>
+            <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100">
+              <PropertySet>
+                <Translation X="15" Y="25" Z="35" />
+              </PropertySet>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

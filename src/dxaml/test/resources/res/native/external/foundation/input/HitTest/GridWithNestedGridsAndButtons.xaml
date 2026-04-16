@@ -1,0 +1,138 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      x:Name="RootGrid"
+      HorizontalAlignment="Left"
+      VerticalAlignment="Top"
+      Margin="50"
+      Width="300"
+      Height="300"
+      Background="#88FF0000">
+    <Grid.Resources>
+      <Style x:Key="NoAnimationStyle" TargetType="Button">
+          <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
+          <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
+          <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundTransparentBrush}"/>
+          <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}"/>
+          <Setter Property="Padding" Value="8,4,8,4"/>
+          <Setter Property="HorizontalAlignment" Value="Left"/>
+          <Setter Property="VerticalAlignment" Value="Center"/>
+          <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
+          <Setter Property="FontWeight" Value="Normal"/>
+          <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
+          <Setter Property="UseSystemFocusVisuals" Value="True"/>
+          <Setter Property="Template">
+              <Setter.Value>
+                  <ControlTemplate TargetType="Button">
+                      <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                          <VisualStateManager.VisualStateGroups>
+                              <VisualStateGroup x:Name="CommonStates">
+                                  <VisualState x:Name="Normal"/>
+                                  <VisualState x:Name="PointerOver">
+                                      <Storyboard>
+                                          <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="BorderBrush" Storyboard.TargetName="Border">
+                                              <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightBaseMediumLowBrush}"/>
+                                          </ObjectAnimationUsingKeyFrames>
+                                          <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
+                                              <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightBaseHighBrush}"/>
+                                          </ObjectAnimationUsingKeyFrames>
+                                      </Storyboard>
+                                  </VisualState>
+                                  <VisualState x:Name="Pressed">
+                                      <Storyboard>
+                                          <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="RootGrid">
+                                              <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlBackgroundBaseMediumLowBrush}"/>
+                                          </ObjectAnimationUsingKeyFrames>
+                                          <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="BorderBrush" Storyboard.TargetName="Border">
+                                              <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightTransparentBrush}"/>
+                                          </ObjectAnimationUsingKeyFrames>
+                                          <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
+                                              <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlHighlightBaseHighBrush}"/>
+                                          </ObjectAnimationUsingKeyFrames>
+                                      </Storyboard>
+                                  </VisualState>
+                                  <VisualState x:Name="Disabled">
+                                      <Storyboard>
+                                          <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Background" Storyboard.TargetName="RootGrid">
+                                              <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}"/>
+                                          </ObjectAnimationUsingKeyFrames>
+                                          <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Foreground" Storyboard.TargetName="ContentPresenter">
+                                              <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledBaseLowBrush}"/>
+                                          </ObjectAnimationUsingKeyFrames>
+                                          <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="BorderBrush" Storyboard.TargetName="Border">
+                                              <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlDisabledTransparentBrush}"/>
+                                          </ObjectAnimationUsingKeyFrames>
+                                      </Storyboard>
+                                  </VisualState>
+                              </VisualStateGroup>
+                          </VisualStateManager.VisualStateGroups>
+                          <Border x:Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                              <ContentPresenter x:Name="ContentPresenter" AutomationProperties.AccessibilityView="Raw" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Content="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                          </Border>
+                      </Grid>
+                  </ControlTemplate>
+              </Setter.Value>
+          </Setter>
+      </Style>
+    </Grid.Resources>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+    <Grid x:Name="TopLeftGrid"
+          Grid.Row="0"
+          Grid.Column="0">
+      <Button x:Name="TopLeftButton"
+              Width="150"
+              Height="150"
+              Background="#8800FF00"
+              Content="TopLeft">
+        <Button.Style>
+          <StaticResource ResourceKey="NoAnimationStyle" />
+        </Button.Style>
+      </Button>
+    </Grid>
+    <Grid x:Name="TopRightGrid"
+          Grid.Row="0"
+          Grid.Column="1">
+      <Button x:Name="TopRightButton"
+              Width="150"
+              Height="150"
+              Background="#8800FF00"
+              Content="TopRight">
+        <Button.Style>
+          <StaticResource ResourceKey="NoAnimationStyle" />
+        </Button.Style>
+      </Button>
+    </Grid>
+    <Grid x:Name="BottomLeftGrid"
+          Grid.Row="1"
+          Grid.Column="0">
+      <Button x:Name="BottomLeftButton"
+              Width="150"
+              Height="150"
+              Background="#8800FF00"
+              Content="BottomLeft">
+        <Button.Style>
+          <StaticResource ResourceKey="NoAnimationStyle" />
+        </Button.Style>
+      </Button>
+    </Grid>
+    <Grid x:Name="BottomRightGrid"
+          Grid.Row="1"
+          Grid.Column="1">
+      <Button x:Name="BottomRightButton"
+              Width="150"
+              Height="150"
+              Background="#8800FF00"
+              Content="BottomRight">
+        <Button.Style>
+          <StaticResource ResourceKey="NoAnimationStyle" />
+        </Button.Style>
+      </Button>
+    </Grid>
+</Grid>

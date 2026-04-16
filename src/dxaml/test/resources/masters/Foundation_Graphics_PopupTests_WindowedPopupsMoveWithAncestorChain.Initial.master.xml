@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MultiTargetTree>
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <Visual Tag="ContentVisual">
+            <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+              <ColorBrush Color="#ff000000" />
+            </wucSpriteVisual>
+            <Visual Tag="PrependVisual">
+              <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" OffsetX="100" OffsetY="100" OffsetZ="0">
+                <Visual Tag="ContentVisual" />
+              </Visual>
+            </Visual>
+            <Visual Tag="PopupPlaceholderVisual" />
+            <Visual Tag="PopupPlaceholderVisual" />
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+  <CompositionTarget HwndLeft="100" HwndTop="100">
+    <Visual>
+      <RawMatrixTransform Matrix="dxdy {-100, -100}" />
+      <WindowBackgroundTreatment>
+        <EffectBrush />
+      </WindowBackgroundTreatment>
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" OffsetX="100" OffsetY="0" OffsetZ="0">
+          <Visual Tag="ContentVisual">
+            <Visual Tag="PrependVisual">
+              <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10" OffsetX="0" OffsetY="100" OffsetZ="0">
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                    <ColorBrush Color="rgb {0, 0.502, 0}" />
+                  </wucSpriteVisual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+  <CompositionTarget HwndLeft="150" HwndTop="150">
+    <Visual>
+      <RawMatrixTransform Matrix="dxdy {-50, -50}" />
+      <WindowBackgroundTreatment>
+        <EffectBrush />
+      </WindowBackgroundTreatment>
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" OffsetX="50" OffsetY="0" OffsetZ="0">
+          <Visual Tag="ContentVisual">
+            <Visual Tag="PrependVisual">
+              <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10" OffsetX="0" OffsetY="50" OffsetZ="0">
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                    <ColorBrush Color="rgb {0, 0.502, 0}" />
+                  </wucSpriteVisual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</MultiTargetTree>

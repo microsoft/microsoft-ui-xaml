@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual" SizeX="400" SizeY="300">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+            <Visual PixelSnappingEnabled="True" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="DManip" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.Matrix">
+                          <ReferenceParameter Name="PS">
+                            <PropertySet>
+                              <Property Name="Matrix" Type="Matrix4x4">
+                                <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                  <ReferenceParameter Name="manipTransform">
+                                    <DuplicatedMatrixTransform>
+                                      <ManipulationTransform Transform="Identity" />
+                                    </DuplicatedMatrixTransform>
+                                  </ReferenceParameter>
+                                  <Property Name="transform" Type="Matrix4x4" />
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="V" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0, 0, 1}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual" Visible="False">
+                  <TransformMatrix>
+                    <Translate X="10" Y="10" />
+                  </TransformMatrix>
+                  <Visual VisualId="1" Tag="PrimaryVisual" SizeX="103" SizeY="20" OffsetX="0" OffsetY="260" OffsetZ="0">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="103" SizeY="11" BorderMode="Hard" OffsetX="0" OffsetY="5" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ffffffff" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <wucSpriteVisual SizeX="150" SizeY="11" BorderMode="Hard" OffsetX="11" OffsetY="145" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <ColorBrush Color="#ffffffff" />
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="150" SizeY="11" BorderMode="Hard" OffsetX="240" OffsetY="145" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <ColorBrush Color="#ffffffff" />
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual" Visible="False">
+                  <TransformMatrix>
+                    <Translate X="10" Y="10" />
+                  </TransformMatrix>
+                  <Visual VisualId="2" Tag="PrimaryVisual" SizeX="267" SizeY="40" OffsetX="113" OffsetY="0" OffsetZ="0">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="264" SizeY="23" BorderMode="Hard" OffsetX="2" OffsetY="9" OffsetZ="0">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="#ffffffff" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual">
+              <Visual Tag="ContentVisual" />
+              <wucSpriteVisual Tag="ConnectedAnimationSnapshotVisual" SizeX="102.7" SizeY="19.95">
+                <Offset>
+                  <KeyFrameAnimation Duration="0.001">
+                    <KeyFrame X="10" Y="270" />
+                    <KeyFrame Time="1" X="123" Y="10.1">
+                      <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Offset>
+                <Scale>
+                  <KeyFrameAnimation Duration="0.001">
+                    <KeyFrame X="1" Y="1" Z="1" />
+                    <KeyFrame Time="1" X="2.59" Y="2" Z="1">
+                      <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                    </KeyFrame>
+                  </KeyFrameAnimation>
+                </Scale>
+                <CrossFadeEffectBrush Name="Crossfade">
+                  <SurfaceBrush Stretch="Fill" Transform="Identity">
+                    <VisualSurface SourceRectangle="LTRB {0, 0.04883, 102.7, 20}" RealizationSizeX="102.7" RealizationSizeY="19.95" Stretch="Fill" SourceVisualId="1" />
+                  </SurfaceBrush>
+                  <SurfaceBrush Stretch="Fill" Transform="Identity">
+                    <VisualSurface SourceRectangle="LTRB {0, 0.09766, 266.1, 40}" RealizationSizeX="266.1" RealizationSizeY="39.9" Stretch="Fill" SourceVisualId="2" />
+                  </SurfaceBrush>
+                  <Crossfade.Weight>
+                    <KeyFrameAnimation Duration="0.001">
+                      <KeyFrame />
+                      <KeyFrame Time="1" Value="1">
+                        <CubicBezierEasingFunction Offset1X="0.8" Offset1Y="0" Offset2X="0.2" Offset2Y="1" />
+                      </KeyFrame>
+                    </KeyFrameAnimation>
+                  </Crossfade.Weight>
+                </CrossFadeEffectBrush>
+              </wucSpriteVisual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="-90" OffsetY="80" OffsetZ="0">
+            <ColorBrush Color="rgb {1, 0, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" ScaleX="2" ScaleY="-0.6" OffsetX="45" OffsetY="10" OffsetZ="0">
+            <ColorBrush Color="rgb {1, 0, 0}" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="110" OffsetY="10" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="0.866" M12="0.5" M13="0" M14="0" />
+                <Row2 M21="-0.5" M22="0.866" M13="0" M14="0" />
+                <Row3 M31="0" M32="0" M33="1" M34="0" />
+                <Row4 M41="11.34" M42="-2.321" M43="0" M44="1" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="160" OffsetY="10" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="1" M12="-1" M13="0" M14="0" />
+                <Row2 M21="0.5774" M22="1" M13="0" M14="0" />
+                <Row3 M31="0" M32="0" M33="1" M34="0" />
+                <Row4 M41="-11.55" M42="0" M43="0" M44="1" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="10" OffsetY="60" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="0.866" M12="0.5" M13="0" M14="0" />
+                <Row2 M21="0.183" M22="0.683" M13="0" M14="0" />
+                <Row3 M31="0" M32="0" M33="1" M34="0" />
+                <Row4 M41="20" M42="0" M43="0" M44="1" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="60" OffsetY="60" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="0.866" M12="0.5" M13="0" M14="0" />
+                <Row2 M21="0.183" M22="0.683" M13="0" M14="0" />
+                <Row3 M31="0" M32="0" M33="1" M34="0" />
+                <Row4 M41="20" M42="0" M43="0" M44="1" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="30" SizeY="30" OffsetX="110" OffsetY="60" OffsetZ="0">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>
