@@ -151,6 +151,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Let's ensure the window is visible prior to dragging on it.");
 
                 window.SetWindowVisualState(WindowVisualState.Normal);
+                Wait.ForIdle();
 
                 Log.Comment("Now we'll tear out the first tab.");
 
@@ -177,6 +178,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Let's ensure the second window is visible prior to dragging on it.");
 
                 newWindow.SetWindowVisualState(WindowVisualState.Normal);
+                Wait.ForIdle();
 
                 using (var closingWaiter = newWindow.GetWindowClosedWaiter())
                 {
@@ -327,26 +329,31 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Let's ensure the window is visible prior to clicking on it.");
 
                 window.SetWindowVisualState(WindowVisualState.Normal);
+                Wait.ForIdle();
 
                 Log.Comment("Now we'll click on tab 2. It should be selected.");
 
                 InputHelper.LeftClick(tabs[1]);
+                Wait.ForIdle();
 
                 Verify.IsFalse(tabs[0].IsSelected);
                 Verify.IsTrue(tabs[1].IsSelected);
                 Verify.IsFalse(tabs[2].IsSelected);
 
                 window.SetWindowVisualState(WindowVisualState.Normal);
+                Wait.ForIdle();
 
                 Log.Comment("Now we'll click on tab 3. It should be selected.");
 
                 InputHelper.LeftClick(tabs[2]);
+                Wait.ForIdle();
 
                 Verify.IsFalse(tabs[0].IsSelected);
                 Verify.IsFalse(tabs[1].IsSelected);
                 Verify.IsTrue(tabs[2].IsSelected);
 
                 window.SetWindowVisualState(WindowVisualState.Normal);
+                Wait.ForIdle();
 
                 Log.Comment("Now we'll click on tab 1. It should be selected.");
 

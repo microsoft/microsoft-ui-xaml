@@ -1121,6 +1121,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
 
                 ElementCache.Refresh();
+                Wait.ForIdle();
 
                 Log.Comment("Enumerating TabView's children again:");
                 EnumerateChildren(tabView);
