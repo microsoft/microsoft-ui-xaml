@@ -794,6 +794,8 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
         // Hide the popup, but only after LeavePCScene is called. This is because HideWindowForWindowedPopup
         // calls ReleaseDCompResourcesForWindowedPopup which would remove visuals from the tree that LeavePCScene
         // needs to access.
+        // Bug 45623892: HideWindowForWindowedPopup can pump messages via ShowWindow, causing reentrancy.
+        PauseNewDispatch deferReentrancy(GetContext());
         IFC_RETURN(HideWindowForWindowedPopup());
     }
 
@@ -2712,16 +2714,6 @@ CPopup::RemoveChild()
         {
             // m_pChild is walked for GC, so take GC lock before it is changed
             AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
-
-            // Bug 43647291: [Watson Failure] caused by NULL_CLASS_PTR_READ_c0000005_Microsoft.UI.Xaml.dll!CPopup::Close
-            // We have crashes where m_pChild is null when CPopup::Close goes to get the child's automation peer. Except
-            // CPopup::Close uses m_pChild earlier to call SetAssociated on it, and we didn't crash then, which suggests
-            // that something in the Close call is nulling out m_pChild between the two times it's referenced. This
-            // failfast will help us catch the place that's doing that.
-            if (m_isClosing)
-            {
-                IFCFAILFAST(E_UNEXPECTED);
-            }
 
             m_pChild = nullptr;
         }
