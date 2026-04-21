@@ -1445,13 +1445,8 @@ void ItemsView::ApplySelectionModelSelectionChange()
     if (auto const& itemsRepeater = m_itemsRepeater.get())
     {
         const auto count = winrt::VisualTreeHelper::GetChildrenCount(itemsRepeater);
-
-#ifdef DBG
-        if (const auto itemsSourceView = itemsRepeater.ItemsSourceView())
-        {
-            const auto itemsSourceViewCount = itemsSourceView.Count();
-        }
-#endif
+        const auto itemsSourceView = itemsRepeater.ItemsSourceView();
+        const int32_t itemsSourceViewCount = itemsSourceView ? itemsSourceView.Count() : 0;
 
         for (int32_t childIndex = 0; childIndex < count; childIndex++)
         {
@@ -1462,7 +1457,7 @@ void ItemsView::ApplySelectionModelSelectionChange()
             {
                 const int32_t itemIndex = itemsRepeater.GetElementIndex(itemContainer);
 
-                if (itemIndex >= 0)
+                if (itemIndex >= 0 && itemIndex < itemsSourceViewCount)
                 {
                     const winrt::IReference<bool> isItemContainerSelected = m_selectionModel.IsSelected(itemIndex);
                     const bool isSelected = isItemContainerSelected != nullptr && isItemContainerSelected.Value();
