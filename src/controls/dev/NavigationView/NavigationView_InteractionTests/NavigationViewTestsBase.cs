@@ -4,6 +4,7 @@ using Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
@@ -48,17 +49,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         //
         protected class OrientationResetHelper : IDisposable
         {
-            private readonly Button _flipButton;
             private int _flipCount;
-
-            public OrientationResetHelper()
-            {
-                _flipButton = new Button(FindElement.ByName("FlipOrientationButton"));
-            }
 
             public void Flip()
             {
-                _flipButton.Invoke();
+                InvokeFlipWithRetry();
                 Wait.ForIdle();
                 _flipCount++;
             }
@@ -68,8 +63,25 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 if (_flipCount % 2 != 0)
                 {
                     Log.Comment("Restoring original orientation.");
-                    _flipButton.Invoke();
+                    InvokeFlipWithRetry();
                     Wait.ForIdle();
+                }
+            }
+
+            private void InvokeFlipWithRetry()
+            {
+                try
+                {
+                    var flipButton = new Button(FindElement.ByName("FlipOrientationButton"));
+                    flipButton.Invoke();
+                }
+                catch (COMException ex)
+                {
+                    Log.Comment($"FlipOrientationButton invoke failed: 0x{ex.HResult:X8}. Clearing element cache and retrying...");
+                    ElementCache.Clear();
+                    Wait.ForIdle();
+                    var flipButton = new Button(FindElement.ByName("FlipOrientationButton"));
+                    flipButton.Invoke();
                 }
             }
         }
