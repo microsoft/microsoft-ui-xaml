@@ -3555,6 +3555,39 @@ void XamlIslandTests::ValidateDispatcherShutdownModeInDesktopApp()
     WaitForSingleObjectWithTimeout(uiThread);
 }
 
+void XamlIslandTests::ValidateCallbackErrorPropagatesInDesktopApp()
+{
+    // Regression test for Bug 39852717: When the app's ApplicationInitializationCallback
+    // fails (e.g. missing assembly, XAML parse error), the error should propagate back
+    // from Application.Start() rather than fail-fasting inside Microsoft.UI.Xaml.dll.
+    // This matches the UWP path (MainASTAInitialize) which uses IFC, not IFCFAILFAST.
+
+    HRESULT startResult = S_OK;
+
+    auto uiThread = RunOnNewThread([&]() {
+        VERIFY_SUCCEEDED(::RoInitialize(RO_INIT_SINGLETHREADED));
+
+        LOG_OUTPUT(L"Start an Application with a callback that fails.");
+        try
+        {
+            Application::Start(ref new ApplicationInitializationCallback(
+                [](ApplicationInitializationCallbackParams^) {
+                    LOG_OUTPUT(L"Inside callback - throwing E_FILENOTFOUND to simulate a missing assembly.");
+                    throw ref new Platform::COMException(HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND));
+                }));
+        }
+        catch (Platform::COMException^ e)
+        {
+            startResult = e->HResult;
+            LOG_OUTPUT(L"Application::Start threw exception with hr=0x%08x.", startResult);
+        }
+    });
+    WaitForSingleObjectWithTimeout(uiThread);
+
+    LOG_OUTPUT(L"Verifying Application::Start propagated the error (hr=0x%08x).", startResult);
+    VERIFY_ARE_EQUAL(startResult, HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND));
+}
+
 void XamlIslandTests::EffectiveViewportChangedInWindowedPopup()
 {
     XamlIslandTestHelper testHelper(this);

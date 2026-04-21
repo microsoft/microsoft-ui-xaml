@@ -198,6 +198,10 @@ public:
     TEST_METHOD(ValidateDispatcherShutdownModeInIslandsApp)
     TEST_METHOD(ValidateDispatcherShutdownModeInDesktopApp)
 
+    BEGIN_TEST_METHOD(ValidateCallbackErrorPropagatesInDesktopApp)
+        TEST_METHOD_PROPERTY(L"Description", L"Verify that an app callback failure in Application.Start propagates as an error return instead of fail-fasting inside WinUI.")
+    END_TEST_METHOD()
+
     TEST_METHOD(EffectiveViewportChangedInWindowedPopup)
 
     BEGIN_TEST_METHOD(ValidateUiaFindAllWithWindowedPopup)
