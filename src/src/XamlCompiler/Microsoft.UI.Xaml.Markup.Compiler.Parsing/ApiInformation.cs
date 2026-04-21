@@ -31,31 +31,66 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public ApiInformationMethod Method { get; }
         public IEnumerable<ApiInformationParameter> Parameters { get; private set; }
+        public bool IsCustomPredicate { get; private set; }
 
         public ApiInformation(string methodName)
         {
             if (!SupportedApiInformation.ContainsKey(methodName))
             {
-                throw new ArgumentException("methodName");
+                this.IsCustomPredicate = true;
+                Method = new ApiInformationMethod(methodName, true);
+                Method.IsCustomAPI = true;
             }
-            Method = SupportedApiInformation[methodName];
+            else
+            {
+                Method = SupportedApiInformation[methodName];
+            }
+        }
+
+        public ApiInformation(string methodName, string prefix)
+        {
+            if (!SupportedApiInformation.ContainsKey(methodName))
+            {
+                this.IsCustomPredicate = true;
+                Method = new ApiInformationMethod(methodName, true);
+                Method.IsCustomAPI = true;
+                Method.Prefix = prefix;
+            }
+            else
+            {
+                SupportedApiInformation[methodName].Prefix = prefix;
+                Method = SupportedApiInformation[methodName];
+            }
         }
 
         internal void SetParameters(List<ApiInformationParameter> parameters)
         {
-            if (!SupportedApiInformationParameters.ContainsKey(Method.MethodName + parameters.Count))
+            if (Method.IsCustomAPI)
             {
-                throw new ArgumentException("parameters");
+                if(parameters != null)
+                {
+                    for (int i = 0; i < parameters.Count; i++)
+                    {
+                        parameters[i].ParameterType = typeof(string);
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid parameter count for method: " + Method.MethodName);
+                }
             }
-            List<ApiInformationParameter> supportedParameters = SupportedApiInformationParameters[Method.MethodName + parameters.Count];
-            if (supportedParameters.Count != parameters.Count)
+            else
             {
-                throw new ArgumentException("parameters");
-            }
-
-            for (int i = 0; i < parameters.Count; i++)
-            {
-                parameters[i].ParameterType = supportedParameters[i].ParameterType;
+                string key = Method.MethodName + parameters.Count;
+                if (!SupportedApiInformationParameters.ContainsKey(key))
+                {
+                    throw new ArgumentException("Invalid parameter count for method: " + Method.MethodName);
+                }
+                List<ApiInformationParameter> supportedParameters = SupportedApiInformationParameters[Method.MethodName + parameters.Count];
+                for (int i = 0; i < parameters.Count; i++)
+                {
+                    parameters[i].ParameterType = supportedParameters[i].ParameterType;
+                }
             }
             Parameters = parameters;
         }

@@ -10,6 +10,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public bool Condition { get; }
         public string MethodName { get; }
+        public string Prefix { get; set; }
+        public bool IsCustomAPI { get; set; }
+        public string Namespace { get; set;}
 
         public ApiInformationMethod(string methodName, bool condition)
         {

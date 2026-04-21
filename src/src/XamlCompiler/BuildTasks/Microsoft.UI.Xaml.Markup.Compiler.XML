@@ -786,6 +786,11 @@
               Looks up a localized string similar to &apos;[Bindable]&apos; on generic type &apos;{0}&apos; is not supported.
             </summary>
         </member>
+        <member name="P:Microsoft.UI.Xaml.Markup.Compiler.Properties.XamlCompilerResources.DuiSchema_PredicateNotSupportedOnGeneric">
+            <summary>
+              Looks up a localized string similar to Implementing IXamlPredicate on generic type &apos;{0}&apos; is not supported.
+            </summary>
+        </member>
         <member name="P:Microsoft.UI.Xaml.Markup.Compiler.Properties.XamlCompilerResources.DuiSchema_CustomAttributesTypeLoadException">
             <summary>
               Looks up a localized string similar to Type Load Exception reading assembly attributes for &apos;{0}&apos;.

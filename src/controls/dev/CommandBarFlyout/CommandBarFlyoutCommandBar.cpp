@@ -9,6 +9,7 @@
 #include "ResourceAccessor.h"
 #include "TypeLogging.h"
 #include "Vector.h"
+#include "SharedHelpers.h"
 
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 {
@@ -685,12 +686,33 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
 
             auto compositor = popupPlacementVisual.Compositor();
             winrt::RectangleClip rectangleClip = compositor.CreateRectangleClip();
-            rectangleClip.Right(static_cast<float>(overflowContentRootV2.ActualWidth()));
-            rectangleClip.Bottom(static_cast<float>(overflowContentRootV2.ActualHeight()));
-            rectangleClip.TopLeftRadius({static_cast<float>(cornerRadius.TopLeft), static_cast<float>(cornerRadius.TopLeft)});
-            rectangleClip.TopRightRadius({static_cast<float>(cornerRadius.TopRight), static_cast<float>(cornerRadius.TopRight)});
-            rectangleClip.BottomLeftRadius({static_cast<float>(cornerRadius.BottomLeft), static_cast<float>(cornerRadius.BottomLeft)});
-            rectangleClip.BottomRightRadius({static_cast<float>(cornerRadius.BottomRight), static_cast<float>(cornerRadius.BottomRight)});
+            const float width = static_cast<float>(overflowContentRootV2.ActualWidth());
+            const float height = static_cast<float>(overflowContentRootV2.ActualHeight());
+            rectangleClip.Right(width);
+            rectangleClip.Bottom(height);
+            
+            // Clamp corner radii when they exceed the available space, following the same policy as
+            // HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual.
+            const float topLeft = static_cast<float>(cornerRadius.TopLeft);
+            const float topRight = static_cast<float>(cornerRadius.TopRight);
+            const float bottomLeft = static_cast<float>(cornerRadius.BottomLeft);
+            const float bottomRight = static_cast<float>(cornerRadius.BottomRight);
+            
+            float topLeftRadiusX, topRightRadiusX, bottomLeftRadiusX, bottomRightRadiusX;
+            float topLeftRadiusY, topRightRadiusY, bottomLeftRadiusY, bottomRightRadiusY;
+            
+            // Clamp X components against width
+            SharedHelpers::ClampCornerRadii(topLeft, topRight, width, &topLeftRadiusX, &topRightRadiusX);
+            SharedHelpers::ClampCornerRadii(bottomLeft, bottomRight, width, &bottomLeftRadiusX, &bottomRightRadiusX);
+            
+            // Clamp Y components against height
+            SharedHelpers::ClampCornerRadii(topLeft, bottomLeft, height, &topLeftRadiusY, &bottomLeftRadiusY);
+            SharedHelpers::ClampCornerRadii(topRight, bottomRight, height, &topRightRadiusY, &bottomRightRadiusY);
+            
+            rectangleClip.TopLeftRadius({topLeftRadiusX, topLeftRadiusY});
+            rectangleClip.TopRightRadius({topRightRadiusX, topRightRadiusY});
+            rectangleClip.BottomLeftRadius({bottomLeftRadiusX, bottomLeftRadiusY});
+            rectangleClip.BottomRightRadius({bottomRightRadiusX, bottomRightRadiusY});
             popupPlacementVisual.Clip(rectangleClip);
         }
 
@@ -729,12 +751,33 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         // Copy the rounded corner clip from the templated element with the rounded corner clip set on it
         auto compositor = placementVisual.Compositor();
         winrt::RectangleClip rectangleClip = compositor.CreateRectangleClip();
-        rectangleClip.Right(static_cast<float>(primaryItemsRoot.ActualWidth()));
-        rectangleClip.Bottom(static_cast<float>(primaryItemsRoot.ActualHeight()));
-        rectangleClip.TopLeftRadius({static_cast<float>(cornerRadius.TopLeft), static_cast<float>(cornerRadius.TopLeft)});
-        rectangleClip.TopRightRadius({static_cast<float>(cornerRadius.TopRight), static_cast<float>(cornerRadius.TopRight)});
-        rectangleClip.BottomLeftRadius({static_cast<float>(cornerRadius.BottomLeft), static_cast<float>(cornerRadius.BottomLeft)});
-        rectangleClip.BottomRightRadius({static_cast<float>(cornerRadius.BottomRight), static_cast<float>(cornerRadius.BottomRight)});
+        const float width = static_cast<float>(primaryItemsRoot.ActualWidth());
+        const float height = static_cast<float>(primaryItemsRoot.ActualHeight());
+        rectangleClip.Right(width);
+        rectangleClip.Bottom(height);
+        
+        // Clamp corner radii when they exceed the available space, following the same policy as
+        // HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual.
+        const float topLeft = static_cast<float>(cornerRadius.TopLeft);
+        const float topRight = static_cast<float>(cornerRadius.TopRight);
+        const float bottomLeft = static_cast<float>(cornerRadius.BottomLeft);
+        const float bottomRight = static_cast<float>(cornerRadius.BottomRight);
+        
+        float topLeftRadiusX, topRightRadiusX, bottomLeftRadiusX, bottomRightRadiusX;
+        float topLeftRadiusY, topRightRadiusY, bottomLeftRadiusY, bottomRightRadiusY;
+        
+        // Clamp X components against width
+        SharedHelpers::ClampCornerRadii(topLeft, topRight, width, &topLeftRadiusX, &topRightRadiusX);
+        SharedHelpers::ClampCornerRadii(bottomLeft, bottomRight, width, &bottomLeftRadiusX, &bottomRightRadiusX);
+        
+        // Clamp Y components against height
+        SharedHelpers::ClampCornerRadii(topLeft, bottomLeft, height, &topLeftRadiusY, &bottomLeftRadiusY);
+        SharedHelpers::ClampCornerRadii(topRight, bottomRight, height, &topRightRadiusY, &bottomRightRadiusY);
+        
+        rectangleClip.TopLeftRadius({topLeftRadiusX, topLeftRadiusY});
+        rectangleClip.TopRightRadius({topRightRadiusX, topRightRadiusY});
+        rectangleClip.BottomLeftRadius({bottomLeftRadiusX, bottomLeftRadiusY});
+        rectangleClip.BottomRightRadius({bottomRightRadiusX, bottomRightRadiusY});
         placementVisual.Clip(rectangleClip);
     }
 

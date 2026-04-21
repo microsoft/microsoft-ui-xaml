@@ -1209,6 +1209,7 @@ ModernCollectionBasePanel::ElectNewTrackedElement()
 
     ctl::ComPtr<IUIElement> spOldTrackedElement;
     ctl::ComPtr<IUIElement> spNewTrackedElement;
+    wf::Rect elementBounds;
     xaml_controls::ElementType elementType = xaml_controls::ElementType_ItemContainer;
     INT elementIndex = 0;
     wf::Rect windowStartingAtOldTrackedElement = m_windowState.GetVisibleWindow();
@@ -1226,7 +1227,7 @@ ModernCollectionBasePanel::ElectNewTrackedElement()
 
     IFC(GetFirstElementInWindow(windowStartingAtOldTrackedElement, &elementType, &elementIndex, &spNewTrackedElement, nullptr /* pAdjustedWindowForStickyHeaders */));
 
-    const wf::Rect elementBounds = spNewTrackedElement ? GetBoundsFromElement(spNewTrackedElement) : wf::Rect{};
+    elementBounds = spNewTrackedElement ? GetBoundsFromElement(spNewTrackedElement) : wf::Rect{};
 
     if (spNewTrackedElement &&
        !RectUtil::AreDisjoint(elementBounds, m_windowState.GetVisibleWindow()))

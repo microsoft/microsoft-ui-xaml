@@ -14,8 +14,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <ProjectGuid>{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}</ProjectGuid>
-    <!-- Don't warn about using experimental APIs -->
-    <NoWarn>$(NoWarn);8305</NoWarn>
+    <!-- Don't warn about using experimental, deprecated APIs (TODO: Task#60478355) -->
+    <NoWarn>$(NoWarn);8305;0618</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="$(MUXProjectRoot)\Samples\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj">

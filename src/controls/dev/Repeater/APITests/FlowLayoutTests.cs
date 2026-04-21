@@ -665,8 +665,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                         minItemSpacing = 10;
                         lineSpacing = 10;
-                        ((FlowLayout)panel.Layout).MinRowSpacing = minItemSpacing;
-                        ((FlowLayout)panel.Layout).MinColumnSpacing = lineSpacing;
+                        ((FlowLayout)panel.Layout).MinItemSpacing = minItemSpacing;
+                        ((FlowLayout)panel.Layout).LineSpacing = lineSpacing;
                         Content.UpdateLayout();
                         ValidateFlowLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], minItemSpacing, lineSpacing, panel.Children.Count, panel.DesiredSize);
                     }
@@ -729,8 +729,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     minItemSpacing = 10;
                     lineSpacing = 10;
-                    ((FlowLayout)panel.Layout).MinRowSpacing = minItemSpacing;
-                    ((FlowLayout)panel.Layout).MinColumnSpacing = lineSpacing;
+                    ((FlowLayout)panel.Layout).MinItemSpacing = minItemSpacing;
+                    ((FlowLayout)panel.Layout).LineSpacing = lineSpacing;
                     Content.UpdateLayout();
                     Log.Comment("Validate with spacing");
                     ValidateFlowLayoutChildrenLayoutBounds(
@@ -1123,7 +1123,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     {
                         new StackLayout { Spacing = 10, Orientation = scrollOrientation.ToLayoutOrientation() },
                         new UniformGridLayout { MinItemHeight = 40, MinItemWidth = 40, MinColumnSpacing = 10, MinRowSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() },
-                        new FlowLayout { MinColumnSpacing = 10, MinRowSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() }
+                        new FlowLayout { MinItemSpacing = 10, LineSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() }
                     };
 
                     var verifyDesiredSize = new Action<Size, Size>((expected, actual) =>
@@ -1166,7 +1166,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     {
                         new StackLayout { Spacing = 10, Orientation = scrollOrientation.ToLayoutOrientation() },
                         new UniformGridLayout { MinItemHeight = 40, MinItemWidth = 40, MinColumnSpacing = 10, MinRowSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() },
-                        new FlowLayout { MinColumnSpacing = 10, MinRowSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() }
+                        new FlowLayout { MinItemSpacing = 10, LineSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() }
                     };
                 });
                 return layouts;
@@ -1719,12 +1719,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     case LayoutChoice.Flow:
                         {
-                            var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
-                            var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
                             layout = new FlowLayoutDerived()
                             {
-                                MinRowSpacing = minRowSpacing,
-                                MinColumnSpacing = minColumnSpacing,
+                                // Only apply spacing between lines (major direction) for this test.
+                                MinItemSpacing = 0,
+                                LineSpacing = lineSpacing,
                                 OnLineArrangedFunc = (int startIndex, int countInLine, double lineSize, VirtualizingLayoutContext context) =>
                                 {
                                     Verify.AreEqual(0, startIndex % 4);

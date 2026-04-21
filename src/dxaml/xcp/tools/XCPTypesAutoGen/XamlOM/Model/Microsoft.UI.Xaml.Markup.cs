@@ -282,6 +282,15 @@ namespace Microsoft.UI.Xaml.Markup
         }
     }
 
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [TypeTable(IsExcludedFromNewTypeTable = true)]
+    [DXamlIdlGroup("coretypes2")]
+    public interface IXamlCondition
+    {
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        Windows.Foundation.Boolean Evaluate(Windows.Foundation.String argument);
+    }
+
     [DXamlIdlGroup("coretypes2")]
     internal interface IXamlPredicate
     {

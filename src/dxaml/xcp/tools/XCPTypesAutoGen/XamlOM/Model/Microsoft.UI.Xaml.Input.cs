@@ -121,6 +121,7 @@ namespace Microsoft.UI.Xaml.Input
         }
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [Deprecated("GetFocusedElement() is deprecated. Use GetFocusedElement(XamlRoot) instead to ensure correct behavior in multi-window scenarios.")]
         public static Windows.Foundation.Object GetFocusedElement()
         {
             return default(Windows.Foundation.Object);

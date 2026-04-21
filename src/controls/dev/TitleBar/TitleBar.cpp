@@ -39,6 +39,13 @@ TitleBar::~TitleBar()
         m_inputActivationListener.InputActivationChanged(m_inputActivationChangedToken);
         m_inputActivationChangedToken.value = 0;
     }
+
+    const auto appWindow = TryGetAppWindow();
+    if (appWindow)
+    {
+        // Safely restore default if the window title still matches what we last applied
+        ResetTitle(Title());
+    }
 }
 
 winrt::AutomationPeer TitleBar::OnCreateAutomationPeer()
@@ -80,6 +87,20 @@ void TitleBar::OnApplyTemplate()
     UpdateIconRegion();
 }
 
+void TitleBar::HandleTitleChange(const winrt::hstring& oldTitle, const winrt::hstring& newTitle)
+{
+    // If transitioning from non-empty to empty, prefer ResetTitle to avoid overwriting external titles.
+    if (!oldTitle.empty() && newTitle.empty())
+    {
+        ResetTitle(oldTitle);
+        GoToState(s_titleTextCollapsedVisualStateName, false);
+    }
+    else
+    {
+        UpdateTitle();
+    }
+}
+
 void TitleBar::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -102,7 +123,10 @@ void TitleBar::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const
     }
     else if (property == s_TitleProperty)
     {
-        UpdateTitle();
+        const auto oldTitle = winrt::unbox_value_or<winrt::hstring>(args.OldValue(), L"");
+        const auto newTitle = Title();
+
+        HandleTitleChange(oldTitle, newTitle);
     }
     else if (property == s_SubtitleProperty)
     {
@@ -366,15 +390,12 @@ void TitleBar::UpdatePadding()
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    auto appWindowId = GetAppWindowId();
-
-    if (appWindowId.Value != 0)
+    const auto appWindow = TryGetAppWindow();
+    if (appWindow)
     {
-        const winrt::Microsoft::UI::Windowing::AppWindow appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(appWindowId);
-
         // TODO 50724421: Bind to appTitleBar Left and Right inset changed event.
         if (const auto appTitleBar = appWindow.TitleBar())
-        {          
+        {
             if (const auto leftColumn = m_leftPaddingColumn.get())
             {
                 const auto leftColumnInset =
@@ -412,13 +433,56 @@ void TitleBar::UpdateTitle()
 
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, titleText.c_str());
 
+    const auto appWindow = TryGetAppWindow();
+
+    // Capture default title once.
+    if (appWindow && !m_hasDefaultAppWindowTitle)
+    {
+        m_defaultAppWindowTitle = appWindow.Title();
+        m_hasDefaultAppWindowTitle = true;
+    }
+
     if (titleText.empty())
     {
+        // Do not set appWindow.Title here. Reset is handled by ResetTitle via OnPropertyChanged.
         GoToState(s_titleTextCollapsedVisualStateName, false);
+        return;
     }
-    else
+
+    // Only set the window title if it actually needs to change.
+    if (appWindow)
     {
-        GoToState(s_titleTextVisibleVisualStateName, false);
+        const auto currentTitle = appWindow.Title();
+        if (currentTitle != titleText)
+        {
+            appWindow.Title(titleText);
+        }
+    }
+
+    GoToState(s_titleTextVisibleVisualStateName, false);
+}
+
+void TitleBar::ResetTitle(winrt::hstring const& lastAppliedTitle)
+{
+    TITLEBAR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, nullptr);
+
+    if (!m_hasDefaultAppWindowTitle)
+    {
+        return;
+    }
+
+    const auto appWindow = TryGetAppWindow();
+    if (!appWindow)
+    {
+        return;
+    }
+
+    // Restore only if the current title matches what we previously applied
+    const auto currentTitle = appWindow.Title();
+    if (lastAppliedTitle == currentTitle && currentTitle != m_defaultAppWindowTitle)
+    {
+        appWindow.Title(m_defaultAppWindowTitle);
+        m_hasDefaultAppWindowTitle = false;
     }
 }
 
@@ -734,6 +798,8 @@ winrt::WindowId TitleBar::GetAppWindowId()
         m_lastAppWindowId = appWindowId;
 
         m_inputNonClientPointerSource = nullptr;
+
+        m_appWindow = nullptr;
     }
 
     return appWindowId;
@@ -749,4 +815,23 @@ winrt::InputNonClientPointerSource const& TitleBar::GetInputNonClientPointerSour
     }
 
     return m_inputNonClientPointerSource;
+}
+
+// Helper to retrieve and cache AppWindow for current WindowId
+winrt::Microsoft::UI::Windowing::AppWindow TitleBar::TryGetAppWindow()
+{
+    const auto appWindowId = GetAppWindowId();
+    if (appWindowId.Value == 0)
+    {
+        m_appWindow = nullptr;
+        return nullptr;
+    }
+
+    // Refresh cache if WindowId changed or cache is empty
+    if (!m_appWindow)
+    {
+        m_appWindow = winrt::Microsoft::UI::Windowing::AppWindow::GetFromWindowId(appWindowId);
+    }
+
+    return m_appWindow;
 }

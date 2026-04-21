@@ -9,8 +9,14 @@ class WrapPanelProperties
 public:
     WrapPanelProperties();
 
-    void HorizontalSpacing(double value);
-    double HorizontalSpacing();
+    void ItemSpacing(double value);
+    double ItemSpacing();
+
+    void ItemsStretch(winrt::WrapPanelItemsStretch const& value);
+    winrt::WrapPanelItemsStretch ItemsStretch();
+
+    void LineSpacing(double value);
+    double LineSpacing();
 
     void Orientation(winrt::Orientation const& value);
     winrt::Orientation Orientation();
@@ -18,28 +24,30 @@ public:
     void Padding(winrt::Thickness const& value);
     winrt::Thickness Padding();
 
-    void StretchChild(winrt::StretchChild const& value);
-    winrt::StretchChild StretchChild();
-
-    void VerticalSpacing(double value);
-    double VerticalSpacing();
-
-    static winrt::DependencyProperty HorizontalSpacingProperty() { return s_HorizontalSpacingProperty; }
+    static winrt::DependencyProperty ItemSpacingProperty() { return s_ItemSpacingProperty; }
+    static winrt::DependencyProperty ItemsStretchProperty() { return s_ItemsStretchProperty; }
+    static winrt::DependencyProperty LineSpacingProperty() { return s_LineSpacingProperty; }
     static winrt::DependencyProperty OrientationProperty() { return s_OrientationProperty; }
     static winrt::DependencyProperty PaddingProperty() { return s_PaddingProperty; }
-    static winrt::DependencyProperty StretchChildProperty() { return s_StretchChildProperty; }
-    static winrt::DependencyProperty VerticalSpacingProperty() { return s_VerticalSpacingProperty; }
 
-    static GlobalDependencyProperty s_HorizontalSpacingProperty;
+    static GlobalDependencyProperty s_ItemSpacingProperty;
+    static GlobalDependencyProperty s_ItemsStretchProperty;
+    static GlobalDependencyProperty s_LineSpacingProperty;
     static GlobalDependencyProperty s_OrientationProperty;
     static GlobalDependencyProperty s_PaddingProperty;
-    static GlobalDependencyProperty s_StretchChildProperty;
-    static GlobalDependencyProperty s_VerticalSpacingProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnHorizontalSpacingPropertyChanged(
+    static void OnItemSpacingPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnItemsStretchPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnLineSpacingPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -48,14 +56,6 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnPaddingPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnStretchChildPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnVerticalSpacingPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

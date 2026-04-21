@@ -4,12 +4,14 @@
 #include "precomp.h"
 
 #include "XamlPredicateService.h"
+#include "CValueBoxer.h"
 
 #include "ObjectWriterContext.h"
 #include "XamlQualifiedObject.h"
 #include "XamlParserContext.h"
 #include "MetadataApi.h"
 #include "StableXbfIndexes.g.h"
+#include "XamlTraceLogging.h"
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -31,17 +33,20 @@ std::vector<xstring_ptr> SplitArgumentsString(const xstring_ptr& args)
     unsigned int secondIndex = args.FindChar(CONDITIONAL_PREDICATE_ARG_DELIMITER);
 
     xstring_ptr arg;
+    xstring_ptr trimmedArg;
     while (secondIndex != xstring_ptr_view::npos)
     {
         THROW_IF_FAILED(args.SubString(firstIndex, secondIndex, &arg));
-        result.emplace_back(arg);
+        THROW_IF_FAILED(xstring_ptr::CloneBufferTrimWhitespace(arg.GetBuffer(), arg.GetCount(), &trimmedArg));
+        result.emplace_back(trimmedArg);
 
         firstIndex = secondIndex + 1;
         secondIndex = args.FindChar(CONDITIONAL_PREDICATE_ARG_DELIMITER, firstIndex);
     }
 
     THROW_IF_FAILED(args.SubString(firstIndex, args.GetCount(), &arg));
-    result.emplace_back(arg);
+    THROW_IF_FAILED(xstring_ptr::CloneBufferTrimWhitespace(arg.GetBuffer(), arg.GetCount(), &trimmedArg));
+    result.emplace_back(trimmedArg);
 
     return result;
 }
@@ -129,29 +134,6 @@ void XamlPredicateService::CrackConditionalPredicate(
         xstring_ptr typeName;
         THROW_IF_FAILED(conditionalPredicateSubstring.SubString(0, parenIndex, &typeName));
 
-        // FUTURE: Because we do not yet support custom XamlPredicate types, the following code
-        // (which would enable support for them) is commented out, and instead we'll do a simple
-        // string lookup
-        //std::shared_ptr<XamlTypeName> xamlTypeName;
-        //XamlTypeNameParser typeNameParser(typeName);
-        //THROW_IF_FAILED(typeNameParser.ParseXamlTypeName(xamlTypeName));
-        //
-        //// If the predicate name has an ignored xmlns, then it's an error
-        //auto prefix = xamlTypeName->get_Prefix();
-        //std::shared_ptr<XamlNamespace> xamlNamespace;
-        //THROW_IF_FAILED(xamlContext->FindNamespaceByPrefix(prefix, xamlNamespace));
-        //if (!xamlContext->IsNamespaceUriIgnored(xamlNamespace->get_TargetNamespace()))
-        //{
-        //    THROW_IF_FAILED(xamlNamespace->GetXamlType(xamlTypeName->get_Name(), xamlType));
-        //    // Validate the returned type
-        //    THROW_HR_IF(E_FAIL, xamlType->IsUnknown());
-        //    
-        //    predicateType = xamlType;
-        //    conditionalPredicateSubstring.SubString(parenIndex + 1, conditionalPredicateSubstring.GetCount() - 1, &args);
-        //    
-        //    return;
-        //}
-
         std::shared_ptr<XamlSchemaContext> schemaContext;
         THROW_IF_FAILED(xamlContext->get_SchemaContext(schemaContext));
         XamlPredicateService& xpsInstance = GetInstance();
@@ -163,6 +145,27 @@ void XamlPredicateService::CrackConditionalPredicate(
             THROW_IF_FAILED(conditionalPredicateSubstring.SubString(parenIndex + 1, conditionalPredicateSubstring.GetCount() - 1, &args));
 
             return;
+        }
+        else
+        {
+            std::shared_ptr<XamlTypeName> xamlTypeName;
+            XamlTypeNameParser typeNameParser(typeName);
+            THROW_IF_FAILED(typeNameParser.ParseXamlTypeName(xamlTypeName));
+        
+            // If the predicate name has an ignored xmlns, then it's an error
+            auto prefix = xamlTypeName->get_Prefix();
+            std::shared_ptr<XamlNamespace> xamlNamespace;
+            xamlNamespace = xamlContext->FindNamespaceByPrefix(prefix);
+            if (!xamlContext->IsNamespaceUriIgnored(xamlNamespace->get_TargetNamespace()))
+            {
+                std::shared_ptr<XamlType> xamlType;
+                THROW_IF_FAILED(xamlNamespace->GetXamlType(xamlTypeName->get_Name(), xamlType));
+            
+                predicateType = xamlType;
+                conditionalPredicateSubstring.SubString(parenIndex + 1, conditionalPredicateSubstring.GetCount() - 1, &args);
+            
+                return;
+            }
         }
     }
 
@@ -227,17 +230,47 @@ bool XamlPredicateService::EvaluatePredicate(
         auto pObject = predicateInstance->GetDependencyObject();
         if (pObject)
         {
-            ASSERT(   pObject->GetTypeIndex() == KnownTypeIndex::IsApiContractPresent
-                   || pObject->GetTypeIndex() == KnownTypeIndex::IsApiContractNotPresent
-                   || pObject->GetTypeIndex() == KnownTypeIndex::IsPropertyPresent
-                   || pObject->GetTypeIndex() == KnownTypeIndex::IsPropertyNotPresent
-                   || pObject->GetTypeIndex() == KnownTypeIndex::IsTypePresent
-                   || pObject->GetTypeIndex() == KnownTypeIndex::IsTypeNotPresent);
+            bool result = false;
+            bool isCustomCondition = false;
 
-            auto argsVector = SplitArgumentsString(argsClone);
-            // We know the built-in predicates derive from IXamlPredicate
-            bool result = static_cast<IXamlPredicate*>(pObject)->Evaluate(argsVector);
+            if (pObject->GetTypeIndex() == KnownTypeIndex::IsApiContractPresent
+                || pObject->GetTypeIndex() == KnownTypeIndex::IsApiContractNotPresent
+                || pObject->GetTypeIndex() == KnownTypeIndex::IsPropertyPresent
+                || pObject->GetTypeIndex() == KnownTypeIndex::IsPropertyNotPresent
+                || pObject->GetTypeIndex() == KnownTypeIndex::IsTypePresent
+                || pObject->GetTypeIndex() == KnownTypeIndex::IsTypeNotPresent)
+            {
+                auto argsVector = SplitArgumentsString(argsClone);
+                // We know the built-in predicates derive from IXamlPredicate
+                result = static_cast<IXamlPredicate*>(pObject)->Evaluate(argsVector);
+            }
+            else
+            {
+                isCustomCondition = true;
+                wrl::Wrappers::HString hstrArgs;
+                THROW_IF_FAILED(hstrArgs.Set(argsClone.GetBuffer(), argsClone.GetCount()));
+
+                wrl::ComPtr<IInspectable> spInspectable;
+                THROW_IF_FAILED(DirectUI::CValueBoxer::UnboxObjectValue(&predicateInstance->GetValue(), DirectUI::MetadataAPI::GetClassInfoByIndex(pObject->GetTypeIndex()), spInspectable.GetAddressOf()));
+
+                wrl::ComPtr<xaml_markup::IXamlCondition> pXamlCondition;
+                THROW_IF_FAILED(spInspectable.As(&pXamlCondition));
+
+                boolean result2;
+                THROW_IF_FAILED(pXamlCondition->Evaluate(hstrArgs.Get(), &result2));
+                result = (result2 != FALSE);
+            }
+            
             tokenToArgsMap->emplace(argsClone, result);
+
+            TraceLoggingWrite(
+                g_hTraceProvider,
+                "XamlConditionEvaluated",
+                TraceLoggingBoolean(isCustomCondition, "IsCustomCondition"),
+                TraceLoggingBoolean(result, "Result"),
+                TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS),
+                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
 
             return result;
         }

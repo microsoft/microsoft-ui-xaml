@@ -17,6 +17,7 @@
 #include "ResourceGraph.h"
 #include "DXamlServices.h"
 #include "RootScale.h"
+#include "XamlTelemetry.h"
 
 using namespace Theming;
 using namespace DirectUI;
@@ -1204,6 +1205,15 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
     {
         IFC(EnsureClassName());
         TraceApplyTemplateBegin((UINT64)this, m_strClassName.GetBuffer());
+
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "FrameworkElement_ApplyTemplate",
+            TraceLoggingBoolean(true, "IsStart"),
+            TraceLoggingUInt32(GetContext()->GetFrameNumber(), "FrameNumber"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingWideString(m_strClassName.GetBuffer(), "ClassName"),
+            TraceLoggingWideString(m_strName.GetBuffer(), "Name"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     }
 
     IFC(ApplyTemplate(fAddedVisuals));
@@ -1249,6 +1259,12 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
     }
 
     TraceApplyTemplateEnd();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "FrameworkElement_ApplyTemplate",
+        TraceLoggingBoolean(false, "IsStart"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
 Cleanup:
     *bAddedVisuals = fAddedVisuals;

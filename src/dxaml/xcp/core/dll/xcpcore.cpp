@@ -75,6 +75,7 @@
 #include "JupiterWindow.h"
 #include "RefreshRateInfo.h"
 #include "GraphicsTelemetry.h"
+#include "XamlTelemetry.h"
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -6078,6 +6079,13 @@ CCoreServices::NWDrawTree(
     //
     TraceFrameBegin();
 
+    XUINT32 frameNumber = m_uFrameNumber;
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "CoreServices_Frame",
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingUInt32(frameNumber, "FrameNumber"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
     // tell framework about this time
     IFC(FxCallbacks::FrameworkCallbacks_BudgetService_StoreFrameTime(TRUE /* beginning of tick */));
 
@@ -6667,6 +6675,12 @@ Cleanup:
     //       of changing the data format.
     TraceFrameInfo(*pFrameDrawn);
     TraceFrameEnd();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "CoreServices_Frame",
+        TraceLoggingBoolean(false, "IsStart"),
+        TraceLoggingUInt32(frameNumber, "FrameNumber"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     if (m_pendingFirstFrameTraceLoggingEvent)
     {

@@ -29,6 +29,8 @@ public:
 
 private:
     void GoToState(std::wstring_view const& stateName, bool useTransitions);
+    void HandleTitleChange(const winrt::hstring& oldTitle, const winrt::hstring& newTitle);
+    void ResetTitle(winrt::hstring const& lastAppliedTitle);
     void UpdatePadding();
     void UpdateIcon();
     void UpdateBackButton();
@@ -58,13 +60,17 @@ private:
     winrt::InputNonClientPointerSource const& GetInputNonClientPointerSource();
     winrt::Windows::Graphics::RectInt32 const GetBounds(const winrt::FrameworkElement& element);
     winrt::WindowId GetAppWindowId();
+    winrt::Microsoft::UI::Windowing::AppWindow TryGetAppWindow();
 
     winrt::event_token m_inputActivationChangedToken{};
     winrt::event_token m_windowRectChangedToken{};
+    winrt::hstring m_defaultAppWindowTitle{};
     winrt::Button::Click_revoker m_backButtonClickRevoker{};
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_sizeChangedRevoker;
     winrt::FrameworkElement::LayoutUpdated_revoker m_iconLayoutUpdatedRevoker{};
+    // Add a cached AppWindow field to avoid repeated GetFromWindowId calls
+    winrt::Microsoft::UI::Windowing::AppWindow m_appWindow{ nullptr };
     PropertyChanged_revoker m_flowDirectionChangedRevoker{};
 
     std::list<winrt::FrameworkElement> m_interactableElementsList{};
@@ -84,6 +90,7 @@ private:
 
     double m_compactModeThresholdWidth{ 0.0 };
     bool m_isCompact{ false };
+    bool m_hasDefaultAppWindowTitle{ false };
 
     static constexpr std::wstring_view s_leftPaddingColumnName{ L"LeftPaddingColumn"sv };
     static constexpr std::wstring_view s_rightPaddingColumnName{ L"RightPaddingColumn"sv };

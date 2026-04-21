@@ -5248,7 +5248,7 @@ wrl::ComPtr<ixp::IPointerPoint> CDirectManipulationService::GetPointerPointFromP
 {
     if (m_pointerPointStatics == nullptr)
     {
-        IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(STR_LEN_PAIR(RuntimeClass_Microsoft_UI_Input_Experimental_ExpPointerPoint)).Get(), &m_pointerPointStatics));
+        IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(STR_LEN_PAIR(RuntimeClass_Microsoft_UI_Input_PointerPoint)).Get(), &m_pointerPointStatics));
     }
 
     wrl::ComPtr<ixp::IPointerPoint> pointerPoint;
