@@ -19,6 +19,11 @@
 #include "PropertyPathParser.h"
 #include "PropertyPath.h"
 #include "Callback.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 61499680: [1.8 Servicing] ListView/Selector: E_BOUNDS crash in OnGettingFocus after bulk item refresh
+
+#define WINAPPSDK_CHANGEID_61499680 61499680, WinAppSDK_1_8_7
 
 using namespace xaml_data;
 using namespace DirectUI;
@@ -2406,9 +2411,24 @@ _Check_return_
         shouldFocus = TRUE;
     }
 
-    if (shouldFocus)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61499680>())
     {
-        SetFocusedIndex(index);
+        if (shouldFocus || GetFocusedIndex() >= static_cast<INT>(nCount))
+        {
+            // Always update m_focusedIndex when we have focus. Also correct it when the Selector
+            // doesn't currently have focus (e.g. the focused container was recycled during an item
+            // removal) but m_focusedIndex is stale and points beyond the valid item range.
+            // In that case, if current focused index goes out of range, we should set the focused
+            // index to value asked by caller. Note that we have already verified that index is valid above.
+            SetFocusedIndex(index);
+        }
+    }
+    else
+    {
+        if (shouldFocus)
+        {
+            SetFocusedIndex(index);
+        }
     }
 
     if (GetFocusedIndex() == -1)
