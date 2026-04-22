@@ -35,6 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             TestEnvironment.Initialize(testContext);
         }
 
+        [TestCleanup]
         public void TestCleanup()
         {
             TestCleanupHelper.Cleanup();
