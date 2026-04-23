@@ -18,6 +18,21 @@ description: Build the WinUI repository. Use when asked to build, compile, or re
 .\initrun.ps1 -Flavor arm64fre .\build.cmd /q           # build for a different flavor
 ```
 
+## Prefer bt for inner-loop builds
+
+If the only changes are to **source files** (`.cpp`, `.h`, `.idl`, `.xaml`,
+`.appxmanifest`), use the **`bt-build` skill** instead of MSBuild. bt skips
+MSBuild entirely, replaying only the dirty compile/link steps in seconds.
+
+**Use MSBuild (this skill) when any of these are true:**
+- `.vcxproj` / `.vcxitems` files were added, removed, or edited
+- `.props` / `.targets` files were changed
+- NuGet package dependencies changed
+- WinRT runtime classes were added or removed
+- Packaging, signing, or AppX bundling is needed
+- First build (no binlog exists yet)
+- You are unsure whether bt covers the change
+
 **Rules:**
 - Always prefix with `.\initrun.ps1`
 - Always pass `/q` for quiet output (errors only)
@@ -70,9 +85,10 @@ If you get build errors that seem to indicate missing dependencies, try running 
 
 | Files changed in | Build command |
 |---|---|
-| `dxaml/xcp/**` | `.\initrun.ps1 msb /q "dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj"` |
-| `controls/dev/**` or `controls/idl/**` | `.\initrun.ps1 msb /q "controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj"` |
-| `dxaml/test/native/external/<area>/**` | `.\initrun.ps1 msb /q "dxaml\test\native\external\<area>\Microsoft.UI.Xaml.Tests.External.<Area>.vcxproj"` |
+| `dxaml/xcp/**` (source only) | **bt:** `bt build` · MSBuild: `.\initrun.ps1 msb /q "dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj"` |
+| `controls/dev/**` or `controls/idl/**` (source only) | **bt:** `bt build` · MSBuild: `.\initrun.ps1 msb /q "controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj"` |
+| `dxaml/test/native/external/<area>/**` (source only) | **bt:** `bt build` · MSBuild: `.\initrun.ps1 msb /q "dxaml\test\native\external\<area>\Microsoft.UI.Xaml.Tests.External.<Area>.vcxproj"` |
+| `.vcxproj`, `.vcxitems`, `.props`, `.targets`, NuGet deps | `.\initrun.ps1 .\build.cmd /q` (MSBuild only — do NOT use bt) |
 | Multiple areas or unsure | `.\initrun.ps1 .\build.cmd /q` |
 
 Test areas: `controls`, `foundation`, `framework`, `automation`
