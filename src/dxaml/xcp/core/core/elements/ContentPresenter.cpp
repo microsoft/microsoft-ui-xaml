@@ -1160,7 +1160,7 @@ Cleanup:
     {
         UnpegManagedPeer();
     }
-    return S_OK;
+    return hr;
 }
 
 _Check_return_ HRESULT CContentPresenter::CreateDefaultContent(
