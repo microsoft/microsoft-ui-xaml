@@ -1,0 +1,10 @@
+namespace AppTestAutomationHelpers
+{
+    [default_interface]
+    runtimeclass IdleSynchronizer
+    {
+        IdleSynchronizer(Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue);
+        
+        String TryWait();
+    }
+}

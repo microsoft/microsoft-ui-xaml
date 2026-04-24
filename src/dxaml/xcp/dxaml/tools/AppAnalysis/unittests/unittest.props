@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+    </PropertyGroup>
+
+    <Import Project="common.props"/>
+
+    <!-- TAEF.targets always sets INLINE_TEST_METHOD_MARKUP.  We don't want that defined so capture the value before the import and override it
+         back to the starting value afterwards. -->
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <BeforeTAEFPreprocessorDefinitions>%(PreprocessorDefinitions)</BeforeTAEFPreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <Import Project="$(TaefPkgDirectory)\build\Microsoft.Taef.targets"/>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <PreprocessorDefinitions>%(BeforeTAEFPreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>$(ProjectIncludeDirectories) $(AppAnalysisPath)\module;</ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <ModuleDefinitionFile></ModuleDefinitionFile>
+
+            <AdditionalDependencies>
+                %(AdditionalDependencies);
+                onecore.lib;
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{e1f36d19-f82d-474a-be26-fea52da5b6e6}'" Include="$(AppAnalysisPath)\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(ConfigurationType)'=='DynamicLibrary' or '$(ConfigurationType)'=='Application'">
+        <ProjectReference Condition="'$(ProjectGuid)'!='{2c455d44-4972-459e-9a78-6b8c5cd19c36}'" Include="$(AppAnalysisPath)\module\AppAnalysisModule.vcxproj" Project="{2c455d44-4972-459e-9a78-6b8c5cd19c36}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{0abd262a-c1d8-440a-ac58-99fd5997fbdd}'" Include="$(AppAnalysisPath)\runtime\framework\AppAnalysisRuntimeFramework.vcxproj" Project="{0abd262a-c1d8-440a-ac58-99fd5997fbdd}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{9bda9f6a-f3fb-4d5c-ba39-1101495c0029}'" Include="$(AppAnalysisPath)\runtime\rules\AppAnalysisRuntimeRules.vcxproj" Project="{9bda9f6a-f3fb-4d5c-ba39-1101495c0029}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{d4761272-8a6c-4015-a41a-aaff4bc1d728}'" Include="$(AppAnalysisPath)\runtime\common\AppAnalysisRuntimeCommon.vcxproj" Project="{d4761272-8a6c-4015-a41a-aaff4bc1d728}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{ec86ba0b-109c-4022-a575-c1ef0e5e64ee}'" Include="$(AppAnalysisTestPath)\lib\AppAnalysis.RuleTester.vcxproj" Project="{ec86ba0b-109c-4022-a575-c1ef0e5e64ee}"/>
+    </ItemGroup>
+</Project>

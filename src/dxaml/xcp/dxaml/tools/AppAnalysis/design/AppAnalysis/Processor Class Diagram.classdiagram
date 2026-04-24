@@ -1,0 +1,230 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<logicalClassDesignerModel xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm4="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/ModelStore" xmlns:dm9="http://schemas.microsoft.com/VisualStudio/TeamArchitect/SequenceDesigner" dslVersion="1.0.0.0" Id="7a91ed8c-5524-4cef-af55-1ed8a959ec8c" name="Processor Class Diagram" linkedPackageId="c6824d06-ecc2-44b5-99e1-56a8800cc8c5" xmlns="http://schemas.microsoft.com/dsltools/LogicalClassDesigner">
+  <packagedElements>
+    <packageHasNamedElement>
+      <referencedType Id="568d13c4-f312-4043-9cf4-ed21dd098c6f" name="USHORT" isAbstract="false" isLeaf="false" cachedFullName="USHORT">
+        <elementDefinition Id="e45d1002-7893-4c14-93ad-7c6757eec2f8" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="3bb4c84f-ed40-4203-982f-120a041d4527" name="GUID" isAbstract="false" isLeaf="false" cachedFullName="GUID">
+        <elementDefinition Id="c9c61dca-a8d7-4c3f-ade1-be68e9425b78" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="83eb6594-9abc-4316-ac2d-670967fb4235" name="GUID" isAbstract="false" isLeaf="false" cachedFullName="GUID">
+        <elementDefinition Id="c9c61dca-a8d7-4c3f-ade1-be68e9425b78" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="cf5e4121-3a6b-43f2-8eb7-b158ddd89e25" name="USHORT" isAbstract="false" isLeaf="false" cachedFullName="USHORT">
+        <elementDefinition Id="e45d1002-7893-4c14-93ad-7c6757eec2f8" />
+      </referencedType>
+    </packageHasNamedElement>
+    <packageHasNamedElement>
+      <referencedType Id="d331e6a8-f4f8-401d-a61b-c4d8f14e42e1" name="EVENT_RECORD" isAbstract="false" isLeaf="false" cachedFullName="EVENT_RECORD">
+        <elementDefinition Id="bc017914-5c77-4ae9-9e15-5e97946334ac" />
+      </referencedType>
+    </packageHasNamedElement>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="8f07eab6-dd0d-446d-9161-5db1981d63ae" name="EventProcessor" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="acf03d87-b980-457e-80fb-3207cb8c25b2" />
+        <suppliersInternal>
+          <interfaceRealization Id="617a3297-7f86-4377-a127-2ed63c5fbc72">
+            <interfaceMoniker Id="0fa40f29-f378-408d-b639-a9084fafd2a1" LastKnownName="IEventProcessor" />
+            <elementDefinition Id="0c5b5398-65f1-4068-8912-1327ece64cc9" />
+          </interfaceRealization>
+          <interfaceRealization Id="290cd653-cc9d-4665-9ac0-b0080515ac50">
+            <interfaceMoniker Id="f3ae465d-5876-40ae-8453-3ccbda8b84ae" LastKnownName="IEventProcessorCallback" />
+            <elementDefinition Id="2b4b9f2b-a901-47fd-bbf0-072a990fea08" />
+          </interfaceRealization>
+        </suppliersInternal>
+        <ownedOperationsInternal>
+          <operation Id="0581ff2d-fa83-4aea-997c-587c16f8e8bb" name="AddRule" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="0e708599-f848-439b-ab60-12b610fc10af" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="01f9a62c-0a29-410b-bcb8-ff7efb007bc8" name="IETWRule*" direction="In" isUnique="false">
+                  <elementDefinition Id="9a7f671e-54d3-4471-a27f-27aa74877d3f" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="b4bb07cf-841b-46ab-a521-98caa51b7729" name="ProcessEvent" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="7aa80939-8074-4137-8073-3b27796e5dc1" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="317e1297-88cb-4968-b805-46f59a0c7656" name="IETWEvent*" direction="In" isUnique="false">
+                  <elementDefinition Id="cffdbff6-a2bc-49cb-b6a4-6636f67c54d7" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="369fc9c4-ace5-4ffa-8b00-34e5d53bb867" name="AddService" isLeaf="false" isStatic="false" isAbstract="false" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="5400ef78-420e-47e0-ab44-074408571ea6" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="ebd0e215-df55-49aa-946a-90a55a157879" name="IRuleService*" direction="In" isUnique="false">
+                  <elementDefinition Id="cffdcd51-63c1-4014-bb22-bed035c5e055" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperationsInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="0fa40f29-f378-408d-b639-a9084fafd2a1" name="IEventProcessor" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="5ed6835e-6cf1-4a11-ad6d-dfa8567be329" />
+        <ownedOperations>
+          <operation Id="fc8086e6-1fe8-4691-8c0e-0a9fc0918728" name="AddRule" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="f1b809e0-1b8f-4149-afca-555122bdfcc0" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="ecaec49b-0655-4c59-ae62-c599fe7215f2" name="IETWRule*" direction="In" isUnique="false">
+                  <elementDefinition Id="6f2f8c39-c3c7-4aa5-bc00-86e65fddb784" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+          <operation Id="7c126972-721a-486b-9685-ca0470514c60" name="AddService" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="b80b628c-6c9c-4a79-9037-38b709b53362" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="d571192f-f87a-40cf-ac46-8c4feb26f5f7" name="IRuleService*" direction="In" isUnique="false">
+                  <elementDefinition Id="7dacaf6d-e5a1-43c1-a5ae-46bfb65fe876" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <class Id="71c26df1-548d-4c40-815e-4c9828d95158" name="ETWEvent" isAbstract="false" isLeaf="false" isActiveClass="false">
+        <elementDefinition Id="ef0e7371-7f37-4f9c-8c88-491d72db6a87" />
+        <suppliersInternal>
+          <interfaceRealization Id="776aa8e3-9c7f-4d96-bfea-7fbed1658364">
+            <interfaceMoniker Id="fc9be9b2-c0f7-4f94-a352-965ec48dcc08" LastKnownName="IETWEvent" />
+            <elementDefinition Id="08382612-022a-4e69-b43e-90ca078696a4" />
+          </interfaceRealization>
+        </suppliersInternal>
+        <ownedAttributesInternal>
+          <property Id="a54cf202-fd9a-4269-bc7c-ba36859f19f2" name="EventId" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="6f327d28-a45d-4dca-a04d-11e5912341fa" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="568d13c4-f312-4043-9cf4-ed21dd098c6f" LastKnownName="USHORT" />
+            </type_NamedElement>
+          </property>
+          <property Id="96e0304b-2d02-4cab-a696-651227d9b669" name="ProviderId" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="d2b11a69-7ba3-46a3-a636-2cfd3d7728d9" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="3bb4c84f-ed40-4203-982f-120a041d4527" LastKnownName="GUID" />
+            </type_NamedElement>
+          </property>
+          <property Id="8911c8ed-b4eb-48dd-aeb5-89a9f6679195" name="TimeStamp" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="15ba77bd-4eb6-46e0-ade9-338be50d4524" />
+          </property>
+        </ownedAttributesInternal>
+      </class>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="fc9be9b2-c0f7-4f94-a352-965ec48dcc08" name="IETWEvent" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="5a9f6141-3ef0-494b-8b8f-11038b113c4c" />
+        <targetEnds>
+          <association Id="9f19dc0c-4846-4ac7-bfb5-a56ed8b744fb" isDerived="false" sourceEndRoleName="IETWEvent" targetEndRoleName="IETWEventRecord" isLeaf="false" isAbstract="false">
+            <interfaceMoniker Id="5856e6f3-d2e6-4026-9fa8-7a5b3a6c23ae" LastKnownName="IETWEventRecord" />
+            <relationshipOwnedElementsInternal>
+              <associationHasOwnedEnds>
+                <memberEnd Id="6ac5c90e-56ff-4ec4-bfb7-c8f009c458bb" name="IETWEvent" isLeaf="false" isStatic="false" isReadOnly="false" isDerived="false" isDerivedUnion="false" aggregation="Composite" isComposite="false" isNavigableOwned="false">
+                  <elementDefinition Id="7a2d9da0-7466-4f3e-bf4e-9b27b16ae37d" />
+                </memberEnd>
+              </associationHasOwnedEnds>
+              <associationHasOwnedEnds>
+                <memberEnd Id="61fbd2f7-cb43-4640-893c-da53f0cb9552" name="IETWEventRecord" isLeaf="false" isStatic="false" isReadOnly="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="true">
+                  <elementDefinition Id="087bb41b-c08b-4642-a6e3-1b01e657d229" />
+                </memberEnd>
+              </associationHasOwnedEnds>
+            </relationshipOwnedElementsInternal>
+            <elementDefinition Id="ef97e883-6c68-487f-9426-45c6b07041dd" />
+          </association>
+        </targetEnds>
+        <ownedAttributes>
+          <property Id="151a195b-e86b-498f-81b1-e0e2bce197bc" name="ProviderId" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="7ee1032e-caef-4d24-9653-8902dba8c25e" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="83eb6594-9abc-4316-ac2d-670967fb4235" LastKnownName="GUID" />
+            </type_NamedElement>
+          </property>
+          <property Id="3b1de870-2523-4a34-9723-0f1182c27929" name="EventId" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="e0644773-36c9-443b-84ec-dc62d72562c4" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="cf5e4121-3a6b-43f2-8eb7-b158ddd89e25" LastKnownName="USHORT" />
+            </type_NamedElement>
+          </property>
+          <property Id="69923a34-8d95-451a-ab61-9301c5aa56b9" name="TimeStamp" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="275a9a1e-1234-4a7e-a8d0-e98f7aff252d" />
+          </property>
+        </ownedAttributes>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="5856e6f3-d2e6-4026-9fa8-7a5b3a6c23ae" name="IETWEventRecord" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="25f92e73-c6b7-4765-8811-b6845e9f8b89" />
+        <ownedAttributes>
+          <property Id="5c401e2c-a635-47d8-a583-2d54ab758a81" name="p" isLeaf="false" isStatic="false" isReadOnly="false" isUnique="false" isDerived="false" isDerivedUnion="false" aggregation="None" isComposite="false">
+            <elementDefinition Id="a7c92d0b-5825-4530-8509-0730e381289b" />
+            <type_NamedElement>
+              <referencedTypeMoniker Id="d331e6a8-f4f8-401d-a61b-c4d8f14e42e1" LastKnownName="EVENT_RECORD" />
+            </type_NamedElement>
+          </property>
+        </ownedAttributes>
+        <ownedOperations>
+          <operation Id="79812bc4-0998-4832-9e3b-100a13348eb6" name="SetEventRecord" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="96342ea0-4b25-4b60-8800-24423fb56e91" />
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+    <logicalClassDesignerModelHasTypes>
+      <Interface Id="f3ae465d-5876-40ae-8453-3ccbda8b84ae" name="IEventProcessorCallback" isAbstract="false" isLeaf="false">
+        <elementDefinition Id="d766577f-855f-4773-b2b8-5fd99a278283" />
+        <suppliersInternal>
+          <dependency Id="d81b71be-66aa-4b8b-8397-e6e9e8dea19b">
+            <interfaceMoniker Id="fc9be9b2-c0f7-4f94-a352-965ec48dcc08" LastKnownName="IETWEvent" />
+            <elementDefinition Id="a55ef094-56a8-4a95-ba21-a45ff53c0c24" />
+          </dependency>
+        </suppliersInternal>
+        <ownedOperations>
+          <operation Id="7d15b233-4078-4076-8a95-1cb40a2f8596" name="ProcessEvent" isLeaf="false" isStatic="false" isAbstract="true" concurrency="Sequential" isQuery="false">
+            <elementDefinition Id="988aa76f-74db-47f3-b806-8f4d4e7264aa" />
+            <ownedParameters>
+              <operationHasOwnedParameters>
+                <parameter Id="47ca38a6-dc9f-4392-b83a-2068664b1d47" name="IETWEvent*" direction="In" isUnique="false">
+                  <elementDefinition Id="9c67b020-dee4-494c-b210-c9cecec1f76e" />
+                </parameter>
+              </operationHasOwnedParameters>
+            </ownedParameters>
+          </operation>
+        </ownedOperations>
+      </Interface>
+    </logicalClassDesignerModelHasTypes>
+  </packagedElements>
+  <package Id="c6824d06-ecc2-44b5-99e1-56a8800cc8c5" name="AppAnalysis">
+    <elementDefinition Id="a7b56f6d-8099-4ac0-9e58-3623f8e5483d" />
+    <profileInstances>
+      <packageHasProfileInstances Id="e17816a5-5a53-4b67-906f-ed760688feb5">
+        <profileInstance Id="9761b424-d623-4bf7-8ded-f2ccaaa78d6a" name="StandardProfileL2">
+          <elementDefinition Id="e34d544e-0fea-4ed6-ac5e-1b74119ac791" />
+        </profileInstance>
+        <elementDefinition Id="0caec977-1f8c-4ba3-a7db-8cc9ad9cc73b" />
+      </packageHasProfileInstances>
+      <packageHasProfileInstances Id="9404f05c-7e6b-4371-b12e-6f632233576c">
+        <profileInstance Id="c8229c73-5d37-4cee-884e-402b57bcc697" name="StandardProfileL3">
+          <elementDefinition Id="532ea607-fb19-44b8-8502-3351b05452be" />
+        </profileInstance>
+        <elementDefinition Id="29349502-908c-4fda-9054-c48619c59ed0" />
+      </packageHasProfileInstances>
+    </profileInstances>
+  </package>
+</logicalClassDesignerModel>

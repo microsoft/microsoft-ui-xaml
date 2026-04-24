@@ -174,22 +174,10 @@ if "%_targetMux%" == "1" (
    call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
    call :buildMockPackage
 ) else if "%_targetProdTest%" == "1" (
-   rem If we have all files, build the full solution. Otherwise, build the one limited to OSS-
-   rem available projects.
-   if EXIST "%reporoot%\src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlTypeUniverse.cs" (
-      call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
-      if ERRORLEVEL 1 goto:showDurationAndExit
-      call :buildMockPackage
-      call :buildSolution %reporoot%\controls\MUXControls.sln /restore
-   ) else (
-      rem Build the smaller solution
-      call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.OSS.sln
-      if ERRORLEVEL 1 goto:showDurationAndExit
-      call :buildMockPackage
-      rem Can't yet build the test projects in MUXControls.sln
-      rem No samples yet in OSS
-      set _targetSamples=0
-   )
+   call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
+   if ERRORLEVEL 1 goto:showDurationAndExit
+   call :buildMockPackage
+   call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 ) else if "%_targetTest%" == "1" (
    call :buildMockPackage
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore

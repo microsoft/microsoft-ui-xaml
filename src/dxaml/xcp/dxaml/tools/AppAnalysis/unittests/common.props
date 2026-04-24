@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <Import Project="$(XamlSourcePath)\use-public-sdk.props"/>
+
+    <PropertyGroup>
+        <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+        <TestCode>true</TestCode>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+
+            <AdditionalOptions>%(AdditionalOptions) /Zm110</AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!-- Avoid polluting the global namespace with Started, Completed, Canceled, Error (from Microsoft-Windows-XAML-ETWEvents.h) -->
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions)_HIDE_GLOBAL_ASYNC_STATUS;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNICODE; _UNICODE; WIL_SUPPRESS_PRIVATE_API_USE; MIDL_NS_PREFIX;</ProjectPreprocessorDefinitions>
+
+        <AppAnalysisPath>$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis</AppAnalysisPath>
+        <AppAnalysisObjPath>$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis</AppAnalysisObjPath>
+        <AppAnalysisTestObjPath>$(XamlBinaryPath)\test\appanalysis</AppAnalysisTestObjPath>
+        <AppAnalysisTestPath>$(XamlSourcePath)\test\appanalysis</AppAnalysisTestPath>
+        <AppAnalysisTestPath>$(XamlSourcePath)\test\appanalysis</AppAnalysisTestPath>
+
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(AppAnalysisPath)\unittests\pch\;
+            $(AppAnalysisPath)\idl\;
+            $(AppAnalysisPath)\common;
+            $(AppAnalysisPath)\runtime\framework;
+            $(AppAnalysisPath)\runtime\rules;
+            $(AppAnalysisPath)\runtime\common;
+            $(AppAnalysisPath)\unittests;
+            $(AppAnalysisPath)\unittests\infra\rules;
+            $(AppAnalysisPath)\unittests\infra\dll;
+            $(AppAnalysisObjPath)\idl;
+            $(AppAnalysisTestPath)\lib;
+            $(AppAnalysisTestPath)\rules;
+            $(AppAnalysisTestObjPath)\idl;
+            $(AppAnalysisObjPath)\unittests\infra\idl;
+            $(XamlSourcePath)\test\native\inc;
+            $(XamlSourcePath)\xcp\components\base\inc;
+            $(XamlSourcePath)\xcp\inc;
+        </ProjectIncludeDirectories>
+
+        <!-- we can't share the pre-compiled header since the flag WIN_DLL is defined by our tests -->
+        <!-- i'm not exactly sure what defines that but for now we just won't share.               -->
+        <XamlPrecompiledInclude>$(AppAnalysisPath)\unittests\pch\precomp.h</XamlPrecompiledInclude>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{e1f36d19-f82d-474a-be26-fea52da5b6e6}'" Include="$(AppAnalysisPath)\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+    </ItemGroup>
+</Project>

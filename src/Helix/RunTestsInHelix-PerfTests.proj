@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+  <PropertyGroup>
+    <HelixSource>winui3/$(BUILD_SOURCEBRANCH)/</HelixSource>
+    <EnableXUnitReporter>true</EnableXUnitReporter>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+    <HelixTargetQueues>windows.10.amd64.client20h2.xaml</HelixTargetQueues>
+    <HelixPreCommands>$(HelixPreCommands);set testbuildplatform=$(Platform)</HelixPreCommands>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HelixCorrelationPayload Include="..\TestPayload\$(Platform)$(Configuration)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixWorkItem Include="PGOInstrument">
+      <Timeout>00:30:00</Timeout>
+      <Command>call %HELIX_CORRELATION_PAYLOAD%\RunPGOWorkItems.cmd</Command>
+    </HelixWorkItem>
+  </ItemGroup>
+</Project>

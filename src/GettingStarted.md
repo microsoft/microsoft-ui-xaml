@@ -185,16 +185,10 @@ restore the updated package.
 The WinUI OSS effort is still in progress. Phase 2 of the plan outlined in the
 [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) is now
 complete and Phase 3 is underway. Current limitations include:
-* Only the product binaries[^1] can be built. No tests or samples can be built yet, including
-  the test code already in the repo in the `controls\` subtree.
-* Related to the previous, various sln files and project files in the repo cannot yet be built,
-  including `Microsoft.UI.Xaml.sln` (`Microsoft.UI.Xaml.OSS.sln` is available instead) and
-  `MUXControls.sln`.
 * The product binaries built from source cannot yet be easily used during an app build without
   manually replacing the binaries in the app output folder as described above.
 * The XAML Compiler is not yet fully shared and therefore isn't buildable. The build uses a
-  prebuilt version instead.
-* Most unittest and integration test code is not yet open sourced, so cannot be built or run.
+  prebuilt version instead. XamlCompiler tests cannot be built or run.
 * There is no support yet to run any builds/tests in a CI system.
 
 [^1]: The product binaries built by this repo are the `Microsoft.UI.Xaml.*.dll` files,
