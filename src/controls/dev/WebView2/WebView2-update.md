@@ -4,7 +4,14 @@ When Edge releases a new WebView2 SDK, we may want to update the version that Xa
 product, we ship a WebView2 SDK. For test code only, we include WebView2 Runtime installers, in case the pipeline VMs 
 don't already have a runtime installed. This document will help you update these two components.
 
-[[_TOC_]]
+## Table of Contents
+
+- [Background](#background)
+  - [WebView2 SDK](#webview2-sdk)
+  - [WebView2 Runtime](#webview2-runtime)
+  - [How the SDK and Runtime work together](#how-the-sdk-and-runtime-work-together)
+- [Updating TL;DR](#updating-tldr)
+- [Detailed Updating Instructions](#detailed-updating-instructions)
 
 ## Background
 
