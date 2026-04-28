@@ -212,6 +212,10 @@ public:
 
     TEST_METHOD(BasicHwndlessIslandTest);
 
+    BEGIN_TEST_METHOD(WinUI3CohabitationWithWinUI2)
+        TEST_METHOD_PROPERTY(L"Description", L"Verify WinUI3 rendering works fine despite the WinUI2 module loaded in same process.")
+    END_TEST_METHOD()
+
     TEST_METHOD(ContentRendersInHwndlessIslands);
 
     TEST_METHOD(KeyboardInputWorksInHwndlessIslands);

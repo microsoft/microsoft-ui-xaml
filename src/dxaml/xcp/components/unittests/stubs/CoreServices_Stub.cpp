@@ -110,13 +110,6 @@ CCoreServices::UnregisterRedirectionElement(_In_ CUIElement *pRedirectionElement
     return S_OK;
 }
 
-HINSTANCE
-CCoreServices::GetInstanceHandle()
-{
-    ASSERT(false);
-    return nullptr;
-}
-
 DCompTreeHost* CCoreServices::GetDCompTreeHost()
 {
     return nullptr;

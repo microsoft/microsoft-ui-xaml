@@ -6,7 +6,23 @@
 #include "ExternalDependencyUnitTests.h"
 #include <ExternalDependency.h>
 #include <unittests\mocks\MockExternalDependency.h>
-#include "LoadLibraryAbs.h"
+#include <shlwapi.h>
+
+// Local helper to resolve a path relative to Microsoft.UI.Xaml.dll.
+// Unlike the product code (LoadLibraryAbs.cpp), this uses GetModuleHandle by name,
+// which is safe in unit tests where only one Microsoft.UI.Xaml.dll is loaded.
+static std::wstring GetTestAbsPath(_In_ LPCWSTR relativePath)
+{
+    WCHAR buffer[MAX_PATH];
+    GetModuleFileName(GetModuleHandle(L"Microsoft.UI.Xaml.dll"), buffer, MAX_PATH);
+    PathRemoveFileSpecW(buffer);
+    std::wstring result(buffer);
+    if (result.back() != L'\\')
+    {
+        result += L"\\";
+    }
+    return result + relativePath;
+}
 
 void STDAPICALLTYPE LoadStub(_In_opt_ const HMODULE hModule, _In_ const wchar_t * modulename)
 {
@@ -36,7 +52,7 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
         
         bool ExternalDependencyUnitTests::ClassSetup()
         {
-            m_mockDependencyPath = GetMuxAbsPath(L"Test\\ExternalTestMocks.dll");
+            m_mockDependencyPath = GetTestAbsPath(L"Test\\ExternalTestMocks.dll");
 
             return true;
         }

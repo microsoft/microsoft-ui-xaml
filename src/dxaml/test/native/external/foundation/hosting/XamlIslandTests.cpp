@@ -21,6 +21,7 @@
 #include <Microsoft.UI.Interop.h>
 
 #include <AutomationClient/AutomationClientManager.h>
+#include <shlwapi.h>
 
 using namespace Microsoft::UI;
 using namespace Microsoft::UI::Composition;
@@ -3845,6 +3846,74 @@ void XamlIslandTests::ValidateNavigationView()
 
     // Short sleep just to allow DWXS to be briefly visible.
     ::Sleep(500);
+}
+
+void XamlIslandTests::WinUI3CohabitationWithWinUI2()
+{
+    // This test verifies that WinUI3 works correctly when WinUI2's Microsoft.UI.Xaml.dll
+    // is also loaded in the same process, partially simulating the explorer.exe cohabitation scenario.
+
+    // Find and load WinUI2 CBS Microsoft.UI.Xaml.dll
+    WCHAR systemRoot[MAX_PATH];
+    GetEnvironmentVariable(L"SYSTEMROOT", systemRoot, MAX_PATH);
+    std::wstring winui2DllPath = std::wstring(systemRoot) +
+        L"\\SystemApps\\Microsoft.UI.Xaml.CBS_8wekyb3d8bbwe\\Microsoft.UI.Xaml.dll";
+
+    if (!PathFileExists(winui2DllPath.c_str()))
+    {
+        LOG_OUTPUT(L"WinUI2 CBS not found at: %s, skipping test.", winui2DllPath.c_str());
+        return;
+    }
+
+    LOG_OUTPUT(L"Loading WinUI2 DLL from: %s", winui2DllPath.c_str());
+    HMODULE winui2Module = LoadLibraryEx(winui2DllPath.c_str(), nullptr, 0);
+    if (!winui2Module)
+    {
+        LOG_OUTPUT(L"Failed to load WinUI2 DLL (error %d), skipping test.", GetLastError());
+        return;
+    }
+    auto freeWinUI2 = wil::scope_exit([&] { FreeLibrary(winui2Module); });
+
+    LOG_OUTPUT(L"WinUI2 DLL loaded. Two Microsoft.UI.Xaml.dll modules now in process.");
+
+    // Start WinUI3 XAML island and render content
+    XamlIslandTestHelper testHelper(this);
+    testHelper.StartAppOnCurrentThread();
+    testHelper.StartAndPrepNewUIThreadWithWindow();
+
+    IslandHelper^ islandHelper = nullptr;
+    Panel^ rootPanel = nullptr;
+
+    testHelper.RunOnIslandUIThread([&]()
+        {
+            islandHelper = IslandHelper::CreateOnCurrentThreadAndNewWindow(GetWindowClassAtom());
+        });
+
+    testHelper.RunOnIslandUIThread([&]()
+        {
+            LOG_OUTPUT(L"Creating WinUI3 content with WinUI2 also loaded...");
+
+            rootPanel = safe_cast<Panel^>(XamlReader::Load(
+                LR"(<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+                        <TextBlock x:Name="TestText" Text="WinUI3 rendering with WinUI2 loaded"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>)"));
+
+            DesktopWindowXamlSource^ dwxs = safe_cast<DesktopWindowXamlSource^>(islandHelper->DesktopWindowXamlSource);
+            dwxs->Content = rootPanel;
+        });
+
+    LowBudgetWaitForIdle(islandHelper);
+
+    testHelper.RunOnIslandUIThread([&]()
+        {
+            auto textBlock = safe_cast<TextBlock^>(rootPanel->FindName("TestText"));
+            VERIFY_IS_NOT_NULL(textBlock);
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"WinUI3 rendering with WinUI2 loaded"), textBlock->Text);
+            LOG_OUTPUT(L"WinUI3 content rendered successfully with WinUI2 also loaded.");
+        });
 }
 
 void XamlIslandTests::BasicHwndlessIslandTest()
