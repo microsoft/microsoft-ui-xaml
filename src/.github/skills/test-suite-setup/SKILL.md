@@ -10,6 +10,13 @@ It covers every step from environment initialization through running all ~8000 t
 
 ## AI Agent Instructions
 
+> **When something goes wrong, read these first.** This skill has accumulated reference material later in this document that will save hours of debugging:
+> - **HRESULT Decoder Table** — every crash code we've seen (`0xC0000602`, `0x8007007E`, `0x80000003`, etc.) with cause + first fix.
+> - **OSS Package Coherence** — symptom: cascading combase crashes / >10% External failures. Root cause is almost always an **incoherent OSS-pinned package set**, not your code.
+> - **CI Test Invocation Map** — what hosting mode each CI work item uses. Critical: Managed tests run with `/p:HostingMode=WPF`, **not** AppX. Missing this flag will look like "all 700+ Managed tests blocked" when nothing is actually broken.
+> - **Baseline Failure Catalog** — methodology for "is this my bug or pre-existing?" before treating any failure as a regression.
+> - **ADO ↔ GitHub Mirror Reference** — which clone to edit when the file exists in both.
+
 When this skill is invoked:
 
 1. **First, ensure the environment is ready** — check if TestPayload exists and is populated. If not, invoke the **`build` skill** to initialize and build the repo (product + tests), then run Steps 3-5 below (create payload, machine setup, install runtimes).
@@ -503,6 +510,170 @@ All test DLLs are in `TestPayload\<platform><config>\Test\`. Here is the complet
 | `dxaml/test/resources/` (GIF/image assets) | `Isolated.Foundation.Imaging`, `External.Foundation` |
 | `controls/test/**` | `MUXControls.Test.dll` |
 
+## OSS Package Coherence
+
+The OSS build of WinUI pins a small set of dependency packages directly in `eng/Versions.props` (the internal build ignores these and uses Maestro/Darc-managed versions instead). When those pins are not from the **same internal build run**, the symptoms are dramatic but the diagnosis is subtle.
+
+### Symptom recognition
+
+If you see **any** of these, suspect package incoherence before suspecting your code:
+
+- Mass `0xC0000602` (`RoFailFastWithErrorContext`) crashes on test startup — combase reports WinRT activation metadata mismatch.
+- External category pass rate drops below ~80% (healthy is ~91%).
+- Adaptability / Automation / Tools / Enterprise DLLs show cascading "Blocked" or crashes.
+- `Microsoft.UI.Xaml.dll` loads but a controls type fails to activate at runtime.
+- Same test passes in the internal CI but crashes locally on an OSS-restored build.
+
+### The `IsInternalWinUIBuild` gating pattern
+
+`eng/Versions.props` (around line 21) defines:
+
+```xml
+<IsInternalWinUIBuild Condition="'$(IsInternalWinUIBuild)' == '' AND Exists('..\.azuredevops\')">true</IsInternalWinUIBuild>
+```
+
+The flag is `true` whenever `..\.azuredevops\` exists (i.e., when the repo is cloned from the ADO mirror, not from GitHub). Lines under `Condition="'$(IsInternalWinUIBuild)' != 'true'"` are the **OSS-only pins** — typically 5–7 packages:
+
+- `Microsoft.Internal.FrameworkUdk`
+- `Microsoft.WindowsAppSDK.InteractiveExperiences` (IXP) and its transport package
+- `Microsoft.WindowsAppSDK.Foundation` and its transport package
+- `Microsoft.WindowsAppSDK.Base`
+- `Microsoft.WindowsAppSDK.WinUIDetails`
+
+Internal builds read versions from `eng/Version.Details.xml` (Maestro dep-flow). OSS builds read the literal pins.
+
+### What "coherent" means
+
+Two packages are coherent when their version strings prove they were produced by the **same internal build run** (byte-identical date stamp / build label, e.g. version suffixes ending in the same `YYMMDD-HHMM.B` token). Examples of incoherence that look fine to a human reviewer but break at runtime:
+
+- `FrameworkUdk` from build A combined with the `FrameworkUdk` DLL embedded inside the IXP package from build B — both packages claim the same nominal version, but the embedded DLL differs by KB.
+- MUX compiled against `WinUIDetails` headers from build A, then linked at deployment time against the runtime IXP from build B.
+- `Foundation` and `Base` snapped from different days.
+
+### `WinUIDetails` is the secret killer
+
+`WinUIDetails` is a headers-only NuGet package, but the headers ARE the compile-time ABI surface (vtable layouts, IIDs, struct sizes). If `WinUIDetails` is from a different build run than the runtime IXP / Foundation packages, MUX compiles successfully against one set of vtable layouts and then encounters a different set at activation time → `0xC0000602`.
+
+### How to find a coherent snapshot
+
+Two paths:
+
+1. **Dep-flow / BAR (preferred)** — query the BAR (Build Asset Registry) or use Darc to find a recent build that produced all the packages together. The build label suffix is the coherence proof.
+2. **Cache inspection** — check what's already on the machine: `packages\`, `packages_temp\`, `~\.nuget\packages\` for matching date stamps across the OSS-pinned package set.
+
+### Validating the snapshot is published to the OSS feed
+
+OSS builds restore from the `WinUI-Dependencies` feed on `dev.azure.com/shine-oss`. To verify a specific version is published before pinning:
+
+```powershell
+$tok = (az account get-access-token --resource '499b84ac-1321-427f-aa17-267ca6975798' --query accessToken -o tsv)
+$pkg = 'microsoft.internal.frameworkudk'  # lowercase
+Invoke-RestMethod -Uri "https://pkgs.dev.azure.com/shine-oss/microsoft-ui-xaml/_packaging/WinUI-Dependencies/nuget/v3-flatcontainer/$pkg/index.json" -Headers @{ Authorization = "Bearer $tok" }
+```
+
+A 200 with the version listed = ready to pin. A 404 = package needs to be promoted/published first.
+
+### The two-tier package consumption model
+
+- **Product DLL** (`Microsoft.UI.Xaml.dll`) consumes **transport** packages (`*TransportPackage`), gated by `IsInternalWinUIBuild`.
+- **Test/sample apps** consume the **flat** packages (`LiftedIXPPackageName`, `FoundationPackageName`) — and these versions are typically set **unconditionally**, not gated.
+
+Both tiers must be coherent or runtime DLLs in `TestPayload\` will conflict.
+
+### PR pattern when bumping OSS pins
+
+A PR that updates the OSS-pinned versions:
+
+- Touches only `eng/Versions.props` (and `eng/Version.Details.xml` if needed for OSS-feed mirroring).
+- All changes gated by `Condition="'$(IsInternalWinUIBuild)' != 'true'"` so internal CI is unaffected.
+- Must include a pass-rate validation table (see "PR + Validation Template" below).
+- Acceptance bar: zero new failures vs unchanged main.
+
+## CI Test Invocation Map
+
+When you need to know **what CI runs and how it runs it**, these two files are the source of truth:
+
+- **`build/AzurePipelinesTemplates/WinUI-CreateTestPayload-Job.yml`** — defines each test work item: `testFilePathPattern` (which DLL or AppX) + `hostingMode`.
+- **`Helix/GenerateHelixWorkItems.ps1`** — look for the line that generates the TAEF command:
+
+  ```powershell
+  $taefExtraParameters = "/p:HostingMode=$HostingMode"
+  ```
+
+  Every CI test invocation passes a `HostingMode` value to TAEF via `/p:`.
+
+### CI ↔ local mapping
+
+| CI work item | Test pattern | Hosting mode | Local equivalent |
+|---|---|---|---|
+| MUXControlsInteractionTests | `MUXControls.Test.dll` | Default | `runtests.cmd MUXControls.Test.dll` |
+| MUXControlsApiTests | `UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll` | Default | run from `UnpackagedApps\MUXControlsTestApp\` |
+| IXMPTests | `IXMPTestApp.appx` | Default | run from registered loose layout |
+| MUXCoreTests | `Microsoft.UI.Xaml.Tests.External.*.dll` | UAP | `runtests.cmd ... -HostingMode:UAP` |
+| MUXCoreTests-WPF | same | WPF | `-HostingMode:WPF` |
+| **MUXCoreManagedTests-WPF** | `Microsoft.UI.Xaml.Tests.Managed.*.dll` | **WPF** | **`te.exe ... /p:HostingMode=WPF`** |
+| MUXCoreTests-Win32Explicit | `Microsoft.UI.Xaml.Tests.External.*.dll` | Win32Explicit | `-HostingMode:Win32Explicit` |
+| UnitTests (static / Isolated) | `Microsoft.UI.Xaml.Tests.Isolated.*.dll` | None | `-HostingMode:None` |
+
+### The Managed-tests gotcha (READ THIS BEFORE DEBUGGING "BLOCKED" MANAGED TESTS)
+
+**Managed tests are not AppX-hosted in CI.** They run via `te.processhost.exe` with WPF XamlIsland hosting — i.e., they need `/p:HostingMode=WPF`.
+
+A local runner that omits this flag will appear to "block all 700+ Managed tests" with `0x80070002` / `0x8007007E` / `0x80000003` and lead the investigator down a `.rd.xml` / `.NET Native` rabbit hole that does not exist. The fix is one flag: `/p:HostingMode=WPF`.
+
+This was a multi-week false wall. Don't repeat it.
+
+## ADO ↔ GitHub Mirror Reference
+
+The WinUI3 source code lives in two clones, kept in sync by a one-way mirror:
+
+- **ADO** `microsoft.visualstudio.com/WinUI/_git/microsoft-ui-xaml-lift` (branch `main`) — source of truth for all mirrored content.
+- **GitHub** `github.com/microsoft/microsoft-ui-xaml` (branch `winui3/main`) — read-only mirror **for mirrored files**. A small set of GitHub-only files (typically OSS-only docs and samples not present in ADO) can and should be edited directly on GitHub.
+
+The mirror pipeline is `build/WinUI-MirrorMainSourceToExternalRepo-Official.yml`.
+
+### Layout difference
+
+The mirror uses `targetRepositorySubdirectory: "src"`. A file at ADO `eng/Versions.props` lands at GitHub `src/eng/Versions.props`. The GitHub repo's `main` branch is a legacy OSS-only branch — **do not edit it**; the mirror writes to `winui3/main`.
+
+### Exclusions
+
+`build/PipelineScripts/WinUISourceMirroringExclusions.txt` controls what does NOT mirror.
+
+| Syntax | Meaning |
+|---|---|
+| `:/path/` | Exclude this path from the mirror |
+| `:!/path/` | **Re-include** (negate) this path even if a parent is excluded |
+| `:(glob,top)*.md` | Top-level glob exclusion |
+
+Useful when re-enabling a small subset of an excluded tree (e.g., excluding `:/test/` but re-including `:!/test/scripts/` for the local runner scripts).
+
+### "Which clone do I edit?" decision rule
+
+- **File exists in ADO under any mirrored path** (most product/test source, this skill, etc.) → edit in **ADO**, create an ADO PR. Editing the GitHub copy will be silently overwritten on the next mirror sync.
+- **File exists only on GitHub** (rare — typically OSS-only docs or samples added directly to the GitHub repo) → edit on GitHub.
+- **Submodules** — `Samples/WinUIGallery` is a submodule pointer to a separate repo. The submodule contents are **not** mirrored as plain files; only the pointer commit is.
+
+## Cross-Category Pass-Rate Reference
+
+Expected pass-rate bands and approximate wall times for a healthy local validation run. Use these to calibrate "is my run healthy" before chasing failures.
+
+| Category | Expected pass rate | Approx. test count | Approx. wall time | Notes |
+|---|---|---|---|---|
+| Isolated (unit, hosting `None`) | ≥99% | ~720 | ~2 min | Fastest signal — run first |
+| IXMPTestApp | 100% | 1 | <1 min | Smoke test for AppX deployment |
+| MUXControlsTestApp | ~95% | ~600 | ~40 min | UI assertion drift expected |
+| MUXControls.Test (sample of ~50) | ~92% | ~50 | ~20 min | Full suite ~825 tests, multi-hour |
+| External (UAP + WPF + Win32Explicit) | ~91% | ~1,200 | ~3 h | Use 5s keepalive (see Reliability) |
+| Managed (`HostingMode=WPF`) | ~79–95% | ~720 | ~60–90 min | Requires `/p:HostingMode=WPF` |
+| **Combined OSS validation target** | **≥94%** | **~4,100** | **~4–5 h** | A healthy OSS validation hits this band |
+
+A pass rate that falls dramatically below the band for a category is almost always either:
+1. A package coherence issue (see OSS Package Coherence), or
+2. The runner being killed by idle-detection (see Reliability Tweaks).
+
+It is **rarely** "your code change broke 30% of tests."
+
 ## Troubleshooting & Known Issues
 
 ### Build Errors
@@ -603,3 +774,136 @@ cd <repo-root>\TestPayload\x64chk
 ### Init / Build Errors
 
 For init and build-related issues (PCH virtual memory exhaustion, stale precompiled headers, missing Spectre libs, NuGet authentication, dotnet-install failures, etc.), refer to the **`build` skill** (`/.github/skills/build/SKILL.md`) which covers all build and init troubleshooting.
+
+### HRESULT Decoder Table
+
+Every crash code we've encountered, what it actually means, and the first thing to try.
+
+| HRESULT | Symbolic name | Common cause | First fix |
+|---|---|---|---|
+| `0x80073CF6` / `0x80073CFB` / `0x80073D06` | `APPX_E_*` install conflicts | Same or newer version of an AppX is already registered | Benign in dev mode — loose layout still works. Uninstall the conflicting registration only if it actively prevents activation. |
+| `0x80070002` | `ERROR_FILE_NOT_FOUND` | TAEF `DeploymentItem` source missing in deployment root | Stage the missing file from `BuildOutput\bin\<flavor>\Test\` to the AppX deployment root (parent of the AppX folder). |
+| `0x8007007E` | `ERROR_MOD_NOT_FOUND` | Transitive DLL dependency missing at load time | Bulk-copy from `Test\UnpackagedApps\MUXControlsTestApp\` (or the equivalent staging dir) into the deployment root. |
+| `0x80080204` | AppX activation failure | Manifest/identity mismatch, or TAEF launching the wrong host EXE | Verify the registered AppX matches what TAEF is launching; confirm the AppX manifest entry point. |
+| `0x80000003` | `Wex.Common.dll` `DebugBreak` | Test framework hit a native breakpoint — usually because a test DLL is missing from inside the registered AppX | Re-stage test DLLs into the AppX install location (not just the deployment root parent). |
+| `0x8027025B` | AppX activation failed | `IApplicationActivationManager` couldn't activate the identity | Confirm AppX is registered AND the test cert is in `TrustedPeople`. |
+| `0xC0000602` | `RoFailFastWithErrorContext` | WinRT activation metadata mismatch — **almost always package incoherence** | See **OSS Package Coherence** section above. Don't debug your code first. |
+| `0x80004005` | `E_FAIL` from TAEF | TAEF received a target file type it doesn't accept (e.g. `.msix` instead of `.appx`, or a DLL outside its registered AppX install location) | Pass the test DLL **inside** the registered AppX install location, not the loose `BuildOutput` path. |
+
+### Baseline Failure Catalog
+
+Before treating any failure as "caused by my change", reproduce it on **unchanged main** with the same package pins and the same TestPayload state. If it reproduces, it's pre-existing baseline drift, not your bug.
+
+#### Categories of baseline failures we've consistently observed
+
+- **External (component) DLLs** — typically 80–110 pre-existing failures on a healthy ~91% pass rate. Distribution roughly:
+  - `Test`, `Win32`, `Convergence` — 3–4 failures each.
+  - `Adaptability` — ~6 failures.
+  - `Enterprise` — ~58–74 failures (largest contributor).
+  - `Tools` — ~4–11 failures.
+  - These persist across package version changes and across many weeks.
+- **MUXControlsTestApp** (~95% expected) — UI-assertion drift is expected. Examples we've reproduced on unchanged main: `RatingControlTests` tap-and-return offsets, asynchronous-timing assertions in animation tests.
+- **Isolated** — 1–2 single flakes (often clean on retry). Expected ≥99% pass.
+- **Managed** (`HostingMode=WPF`) — some `Win32.Common` deterministic failures show up in the ~79% pass-rate sample.
+
+#### What is NOT a baseline failure
+
+- Any cascading `0xC0000602` activation crash — that's package incoherence.
+- A sudden surge of "Blocked" results across multiple DLLs — that's the runner being killed by idle-detection (see Reliability Tweaks), not a real failure.
+- A whole category dropping below its expected band — investigate the package set, not the individual tests.
+
+### Test Runner Reliability Tweaks
+
+Patterns that prevent the most common run-time waste during long local validation runs.
+
+#### 5-second keepalive for long External runs
+
+Without keepalive, idle-detection kills External DLL runs after a period of no input — and produces hundreds of "Blocked" results instead of real pass/fail. Two options:
+
+1. Pass a TAEF foreground / idle-keepalive option appropriate for your TAEF version.
+2. Run a parallel mouse-wiggle script: move the cursor by 1 pixel every ~5–15 seconds. This keeps `SetForegroundWindow` permission alive on the active session, which the UI tests need.
+
+#### Background-shell pattern for long-running DLLs
+
+Anything that runs for ≥5 minutes (Controls = 7+ min, Enterprise / Tools / Framework, full External run) should be launched detached so it survives Copilot CLI / shell restart:
+
+```powershell
+Start-Process pwsh -WindowStyle Normal -ArgumentList '-NoExit','-Command',"<run command> *> '<per-DLL log>'; Add-Content '<csv>' '<dll>,<status>'"
+```
+
+Tee output to a per-DLL log file and append a one-line CSV summary at completion — that gives you an audit trail across the full multi-hour run.
+
+#### Crash dumps via WER LocalDumps
+
+Configure HKCU once so any test-host crash produces a dump:
+
+```
+HKCU\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\te.processhost.exe
+HKCU\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\TE.exe
+   DumpFolder = <writable path>
+   DumpType   = 2  (full dump)
+```
+
+Critical when chasing combase fast-fail crashes.
+
+#### TAEF `/select` filter is unreliable
+
+`TE.exe <dll> /select:"@Name='X' OR @Name='Y'"` sometimes runs the **full** suite anyway. When sampling for diagnostic signal:
+
+1. Enumerate first: `TE.exe <dll> /list` → capture the full test name list.
+2. Run the first N test names individually, not via `/select`.
+
+A 10-tests-per-DLL sample across all DLLs in a category gives ~80% of the diagnostic signal in 10–15% of the wall time. **Sample by running fewer DLLs, not by trying to filter inside a DLL.**
+
+#### TestPayload directory naming
+
+Build outputs land at `BuildOutput\bin\amd64chk\` but TestPayload lands at `TestPayload\x64chk\` — same architecture, different naming convention. This is normal; don't try to "fix" it.
+
+#### AppX-hosted tests need the right deployment root
+
+For AppX-hosted tests, target the test DLL **inside the registered loose layout**, not under the raw `TestPayload\` directory. The deployment root for `DeploymentItem` resolution is the **parent** of the AppX folder.
+
+### PR + Validation Template
+
+For changes that affect the OSS test pipeline (Versions.props pins, mirror exclusions, test infra scripts):
+
+#### Always include a pass-rate validation table
+
+```
+Category                    Total  Run    Pass   Fail   Pass%    Time
+Isolated (unit)               718   718    717      1   99.86%   ~2m
+IXMPTestApp                     1     1      1      0  100.00%   ~30s
+MUXControls.Test (sample)     825    54     50      4   92.59%   ~19m
+MUXControlsTestApp            601   543    517     26   95.21%   ~38m
+External (component)        1,225 1,225  1,121    104   91.51%   ~3h
+Managed (.NET, WPF host)      724   ...    ...    ...    ~79%   ~60-90m
+TOTAL                       4,094 ...    ...    ...    ≥94%    ~4.5h
+```
+
+#### Failure analysis paragraph
+
+State explicitly whether failures reproduce on unchanged main:
+
+- **Reproduces on unchanged main** → pre-existing baseline drift, not introduced by this PR.
+- **Does not reproduce on unchanged main** → real regression, must be investigated before merge.
+
+The acceptance bar is **"PR introduces zero new failures."**
+
+#### Gating note
+
+When the change is gated by `Condition="'$(IsInternalWinUIBuild)' != 'true'"`, say so explicitly so reviewers know the internal CI build is unaffected and only the GitHub OSS build picks up the change.
+
+#### ADO PR description size
+
+ADO PR descriptions have a **4000-character hard limit**. If your validation report is larger:
+
+- Truncate aggressively in the PR body.
+- Keep the validation table.
+- Drop per-test failure breakdowns; link instead.
+
+#### Which repo to PR to
+
+Per the **ADO ↔ GitHub Mirror Reference** above:
+- File exists in ADO under any mirrored path → ADO PR.
+- File exists only on GitHub → GitHub PR.
+- When in doubt, ADO PR — the mirror will propagate it.
