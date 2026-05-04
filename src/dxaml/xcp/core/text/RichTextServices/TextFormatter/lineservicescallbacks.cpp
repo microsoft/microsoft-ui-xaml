@@ -552,9 +552,9 @@ LSERR RichTextServices::LineServicesGetRunCharacterWidths(
             IFC_OOM_RTS(pGlyphProps = new PALText::ShapingGlyphProperties[glyphCount]);
             IFC_OOM_RTS(pSpaceabilityMap = new bool[glyphCount]);
 
-            for (XUINT16 i = 0; i < glyphCount; i++)
+            for (XUINT32 i = 0; i < glyphCount; i++)
             {
-                pClusterMap[i] = i;
+                pClusterMap[i] = static_cast<XUINT16>(i);
                 pGlyphProps[i].Justification = 2;   // SCRIPT_JUSTIFY_CHARACTER
                 pGlyphProps[i].IsClusterStart = TRUE;
                 pGlyphProps[i].IsDiacritic = 0;
