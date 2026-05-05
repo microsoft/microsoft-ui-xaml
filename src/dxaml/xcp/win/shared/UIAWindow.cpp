@@ -342,6 +342,11 @@ void CUIAWindow::Deinit()
 
 void CUIAWindow::UIADisconnectAllProviders()
 {
+    // UiaDisconnectProvider can trigger COM cross-apartment calls that pump messages.
+    IXcpBrowserHost* pBH = m_pHost ? m_pHost->GetBrowserHost() : nullptr;
+    CCoreServices* pCore = pBH ? pBH->GetContextInterface() : nullptr;
+    PauseNewDispatch deferReentrancy(pCore);
+
     // Disconnecting this window provider from UIAutomationCore to help prevent leaking.
     // We switched to UiaDisconnectProvider late in Win8 GA and could not take the risk of an unimportant HR crashing the app, hence the IGNOREHR.
     IGNOREHR(UiaDisconnectProvider(this));
