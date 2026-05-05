@@ -52,6 +52,7 @@
     <file src="$PACKAGEROOT$\runtimes-framework\**\Microsoft.UI.Xaml.*" target="runtimes-framework" />
     <file src="$PACKAGEROOT$\runtimes-framework\**\WinUIEdit.dll" target="runtimes-framework" />
     <file src="$PACKAGEROOT$\tools\**" target="tools" />
+    <file src="$PACKAGEROOT$\build\cmake\**" target="build\cmake" />
     <file src="$PACKAGEROOT$\Intellisense\Microsoft.WinUI.xml" target="lib\net6.0-windows10.0.17763.0" />
     <file src="$PACKAGEROOT$\Intellisense\Microsoft.UI.Text.xml" target="metadata" />
     <file src="$PACKAGEROOT$\Intellisense\Microsoft.UI.Xaml.xml" target="metadata" />
