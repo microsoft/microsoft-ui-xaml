@@ -328,8 +328,12 @@ unsigned int UniformGridLayout::GetItemsPerLine(
 
     if (std::isfinite(availableSizeMinor))
     {
+        // Floor the cast result at 1u: when the available minor size is finite but narrower
+        // than one item's minor stride, (availableSizeMinor + MinItemSpacing) /
+        // GetMinorItemSizeWithSpacing evaluates to < 1 and would cast to 0u, producing an
+        // integer divide-by-zero in callers (e.g. GetMajorSize, GetLayoutRectForDataIndex).
         return std::min(
-            static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorItemSizeWithSpacing(context)),
+            std::max(1u, static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorItemSizeWithSpacing(context))),
             maximumRowsOrColumns);
     }
 
