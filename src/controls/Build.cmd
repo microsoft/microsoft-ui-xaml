@@ -62,7 +62,7 @@ set _args=%*
 
 for %%i in (%_solution%) do set _title=%%~ni
 
-set _options=/restore /bl:%_title%.%_BuildArch%%_BuildType%.binlog %_args% /nr:false
+set _options=/restore /bl:%RepoRoot%\BuildOutput\%_title%.%_BuildArch%%_BuildType%.binlog %_args% /nr:false
 
 set _command=call msbuild !_options!
 

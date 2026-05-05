@@ -10,12 +10,14 @@ allowed-tools: shell
 
 # bt — Fast Inner-Loop Builds
 
-`bt` reads an MSBuild binary log, builds a file-level dependency graph, and
-replays only the dirty compile/link/MIDL/XAML/makepri steps directly — no
-MSBuild overhead.
+`bt` reads an MSBuild binary log and replays only the dirty
+compile/link/MIDL/XAML/makepri steps directly — no MSBuild overhead.
 
 **Use bt for the edit-build-debug cycle on source files only.**
 For anything else, use the `build` skill (MSBuild).
+
+Headers not yet in the tlog (newly added `#include`s) bt won't trigger rebuilds
+until the next `msbuild -bl`.
 
 ## Do NOT use bt when
 
@@ -35,111 +37,73 @@ When in doubt, use MSBuild.
 
 ### 1. Check if bt is installed
 
-Run `bt --version`.  If bt is not found, run the `install-bt.ps1` script from
-this skill's directory to download and install it from GitHub Releases.
+Run `bt --version`.  If bt is missing, run the `install-bt.ps1` script from
+this skill's directory to download and install it.  Periodically run it to
+update bt as well.
 
 ### 2. Pick the right binlog
 
-bt requires a binary log from a prior full build.  This repo produces several
-binlogs at the repo root, named by component and flavor:
+bt needs a binlog from a prior MSBuild build.  The repo's build scripts
+all write to `BuildOutput\` with names like:
 
-| Binlog | Component |
-|--------|-----------|
-| `msbuild.binlog` | Last MSBuild invocation (generic) |
-| `Microsoft.ui.xaml.<flavor>.binlog` | MUX (`Microsoft.UI.Xaml.dll`) |
-| `Microsoft.UI.Xaml.Controls.<flavor>.binlog` | Controls DLL |
-| `Microsoft.UI.Xaml-Product.<flavor>.binlog` | Full product build |
-| `MUXControls.<flavor>.binlog` | MUX Controls (product + tests) |
+| Binlog                                       | Scope                                                            |
+|----------------------------------------------|------------------------------------------------------------------|
+| `Microsoft.UI.Xaml.<flavor>.binlog`          | **full product** (incl. Controls DLL) — prefer for product code  |
+| `MUXControls.<flavor>.binlog`                | test apps + infra — prefer for test code                         |
+| `Microsoft.ui.xaml.<flavor>.binlog`          | `Microsoft.UI.Xaml.dll` only — **NOT** Controls (mux subset)     |
+| `Microsoft.UI.Xaml-Product.<flavor>.binlog`  | full product (alternate) — fallback for product code             |
+| `Microsoft.UI.Xaml.Controls.<flavor>.binlog` | Controls DLL only — narrow fallback                              |
+| `XamlCompilerPrerequisites.<flavor>.binlog`  | compiler tools — not used by bt                                  |
 
-Where `<flavor>` is e.g. `amd64chk`, `arm64fre`, `x64fre`.
+`<flavor>` is `amd64chk`, `arm64fre`, etc.  Single-project builds via
+`msb`/`build-clang` produce `<project>.<flavor>.binlog` next to these.
 
-**Default:** bt looks for `msbuild.binlog` in the current directory.
-Use `--binlog <path>` to point at a specific one.
+To pick:
 
-**Rule of thumb:** use the most specific binlog that covers your change.
-For example, if you only edited files under `dxaml/xcp/`, use
-`Microsoft.ui.xaml.amd64chk.binlog`.
+1. **Classify the change** by edited paths — test (table below) / mux
+   (`dxaml/xcp/` only) / **product** (everything else under `controls/dev`,
+   `controls/idl`, `dxaml/`, `src/`).
+2. **Pick the freshest binlog whose scope covers that classification**,
+   preferring broader scopes (product covers Controls, etc.).
+3. **Infer `<flavor>`** from the chosen filename.
+4. **Pass `--binlog BuildOutput\<chosen>`** to every bt invocation.
+   bt has no useful default to fall back to.
 
-If no binlog exists, use the `build` skill.  It produces the binlogs bt needs.
+Caveats:
+
+- On NTFS, `Microsoft.UI.Xaml.<flavor>.binlog` and
+  `Microsoft.ui.xaml.<flavor>.binlog` collide — content is whoever wrote
+  last; trust mtime + size, not casing.
+- If product and test binlogs exist with mtimes >1h apart, warn that the
+  set may be inconsistent.
+- If no binlog exists, run the `build` skill.
+
+#### Test path classification
+
+Anything under these directories is **test** scope:
+
+- `controls/test/MUXControls.Test/`
+- `controls/test/MUXControlsTestApp/`
+- `controls/test/TabViewTearOutApp/`
+- `controls/test/TestAppCX/`
+- `controls/test/IXMPTestApp/`
+- `controls/test/MUXTestInfra/` *(if present)*
+- `Samples/AppTestAutomationHelpers/`
 
 ## Common workflows
 
-### Build what's stale (most common)
+| Command | What it does |
+|---------|--------------|
+| `bt build` | Build everything dirty (always pass `--binlog BuildOutput\<x>.binlog`) |
+| `bt build MyFile.cpp` | Forward walk: compile + relink anything affected by this source |
+| `bt build MyApp.dll` | Backward walk: only what this target needs |
+| `bt build -c [target]` | Compile only — skip link/lib |
+| `bt build -n` | Dry run — print commands without executing |
+| `bt watch [--run <cmd>]` | Build on file change; optionally run a command after |
+| `bt [--binlog some.binlog] dirty [target]` | What needs building now? |
+| `bt bins MyHeader.h` | What rebuilds when this header changes? |
+| `bt srcs [--headers] MyApp.dll` | Sources (and optionally `#include`d headers) feeding this target |
 
-```
-bt build                      # mtime-based — build only dirty files
-```
-
-### Build a specific target
-
-```
-bt build MyFile.cpp            # forward walk — compile + relink affected targets
-bt build MyApp.dll             # backward walk — only what this target needs
-bt build MyLib.lib             # build only this library
-```
-
-### Compile only (skip link)
-
-```
-bt build -c                   # compile dirty sources, don't link
-bt build -c MyApp.dll         # compile only sources feeding this target
-```
-
-### Dry run — see what would build
-
-```
-bt build -n                   # print commands without executing
-```
-
-### Watch and build on save
-
-```
-bt watch                      # build on file change
-bt watch --run .\deploy.ps1   # build + run a command after
-```
-
-### Query the dependency graph
-
-```
-bt dirty                      # what needs rebuilding right now?
-bt dirty MyApp.dll            # build plan scoped to a target
-bt bins MyHeader.h            # what rebuilds when this header changes?
-bt srcs MyApp.dll             # what sources feed into this binary?
-bt srcs --headers MyFile.cpp  # upstream sources + all #include headers
-```
-
-## When to use bt vs MSBuild
-
-| Scenario | Use |
-|----------|-----|
-| Edited `.cpp`/`.h`/`.idl`/`.xaml`/`.appxmanifest` | `bt build` |
-| Edited resources tracked by makepri | `bt build` |
-| First build of a repo | MSBuild (`build` skill) |
-| Added/removed WinRT runtime classes | MSBuild (`build` skill) |
-| Changed `.vcxproj`/`.vcxitems` (including adding sources) | MSBuild (`build` skill) |
-| Changed `.props`/`.targets` imports | MSBuild (`build` skill) |
-| Changed NuGet dependencies | MSBuild (`build` skill) |
-| Need AppX packaging, signing, etc. | MSBuild (`build` skill) |
-| Per-file metadata (optimization overrides) | MSBuild, then `bt build` |
-
-## Key options
-
-| Option | Description |
-|--------|-------------|
-| `--binlog <path>` | Path to binary log (default: `msbuild.binlog`) |
-| `-j <N>` | Max parallel commands (default: CPU cores) |
-| `-n, --dry-run` | Print commands without executing |
-| `-c, --compile-only` | Compile only — skip link/lib |
-| `--debounce <ms>` | Debounce delay for `watch` (default: 300) |
-| `--run <cmd>` | Run command after each successful `watch` rebuild |
-
-## Important notes
-
-- bt replays `cl.exe`/`link.exe` directly — it does NOT invoke MSBuild
-  for those tools.  CompileXaml is the exception: it invokes
-  `msbuild /t:MarkupCompilePass1;SelectClCompile;MarkupCompilePass2`
-  since the standalone XAML compiler is broken (~2s per project).
-- The first run after a binlog change parses and caches the graph (~700ms).
-  Subsequent runs use the cache (~20ms).
-- Headers not yet in the tlog (newly added `#include`s) won't trigger
-  rebuilds until the next `msbuild -bl`.
+Run `bt --help` for command options (`--binlog <path>`),
+`bt <subcommand> --help` for subcommand options like `-j <N>`,
+`--debounce <ms>`, etc.

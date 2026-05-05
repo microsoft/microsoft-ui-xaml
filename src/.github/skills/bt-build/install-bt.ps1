@@ -9,11 +9,27 @@ param(
 $ErrorActionPreference = 'Stop'
 $btExe = Join-Path $InstallDir 'bt.exe'
 
-# Already on disk -- just add to PATH
+# Already on disk -- add to PATH and refresh if stale
 if (Test-Path $btExe) {
     if (-not ($env:PATH.Split(';') -contains $InstallDir)) {
         $env:PATH = "$InstallDir;$env:PATH"
     }
+
+    # Refresh if older than 7 days. `bt update` is idempotent: it downloads
+    # only when a newer release exists, otherwise it's a no-op.
+    try {
+        $ageDays = (New-TimeSpan -Start (Get-Item $btExe).LastWriteTime -End (Get-Date)).TotalDays
+        if ($ageDays -gt 7) {
+            Write-Host "bt is $([int]$ageDays) days old -- running 'bt update' ..." -ForegroundColor Cyan
+            & $btExe update
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "bt update returned exit $LASTEXITCODE -- continuing with existing install." -ForegroundColor Yellow
+            }
+        }
+    } catch {
+        Write-Host "bt update skipped ($($_.Exception.Message)) -- continuing with existing install." -ForegroundColor Yellow
+    }
+
     $version = & $btExe --version 2>&1
     Write-Host "bt $version (already installed at $InstallDir)" -ForegroundColor Green
     return

@@ -226,7 +226,7 @@ set _args=%*
 
 for %%i in (%_solution%) do set _title=%%~ni
 
-set _binlog=%_title%.%_BuildArch%%_BuildType%.binlog
+set _binlog=%RepoRoot%\BuildOutput\%_title%.%_BuildArch%%_BuildType%.binlog
 if "%_quiet%"=="1" (
     set _options=/bl:!_binlog! !_verbosity! /clp:ErrorsOnly /ds:false !_procCount! %_args% %_versionOption% /nr:false
 ) else (
