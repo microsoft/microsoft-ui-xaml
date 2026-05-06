@@ -2636,6 +2636,12 @@ namespace Microsoft.UI.Xaml
         Microsoft.UI.Xaml.DependencyProperty Property;
         Object Value;
         Microsoft.UI.Xaml.TargetPropertyPath Target;
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        [static_name("Microsoft.UI.Xaml.ISetterStatics2")]
+        {
+            static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

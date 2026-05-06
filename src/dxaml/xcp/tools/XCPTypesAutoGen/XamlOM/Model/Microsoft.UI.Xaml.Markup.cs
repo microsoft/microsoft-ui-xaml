@@ -167,6 +167,7 @@ namespace Microsoft.UI.Xaml.Markup
     }
 
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 1, ForcePrimaryInterfaceGeneration = true)]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     [PartialFactory]
     [DXamlIdlGroup("coretypes2")]
     [Guids(ClassGuid = "5907bcb4-ff97-47ad-8049-fa5b5da86032")]
@@ -278,6 +279,24 @@ namespace Microsoft.UI.Xaml.Markup
 
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public static void SetPropertyFromObject(Windows.Foundation.Object dependencyObject, DependencyProperty propertyToSet, Windows.Foundation.Object value)
+        {
+        }
+
+        [Version(2)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public static void SetPropertyFromThickness(Windows.Foundation.Object dependencyObject, DependencyProperty propertyToSet, Microsoft.UI.Xaml.Thickness value)
+        {
+        }
+
+        [Version(2)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public static void SetPropertyFromCornerRadius(Windows.Foundation.Object dependencyObject, DependencyProperty propertyToSet, Microsoft.UI.Xaml.CornerRadius value)
+        {
+        }
+
+        [Version(2)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public static void SetPropertyFromColor(Windows.Foundation.Object dependencyObject, DependencyProperty propertyToSet, Windows.UI.Color value)
         {
         }
     }

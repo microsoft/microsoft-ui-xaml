@@ -38,6 +38,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Validates that setting the color property on the grid background works from a color type that gets boxed by WinRT.")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(ValidateSetThicknessOnFrameworkElement)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that setting the Thickness property using SetPropertyFromThickness works correctly.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ValidateSetCornerRadiusOnControl)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that setting the CornerRadius property using SetPropertyFromCornerRadius works correctly.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ValidateSetColorOnShape)
+                TEST_METHOD_PROPERTY(L"Description", L"Validates that setting the Color property using SetPropertyFromColor works correctly.")
+            END_TEST_METHOD()
+
         private:
             void SetupTests();
 

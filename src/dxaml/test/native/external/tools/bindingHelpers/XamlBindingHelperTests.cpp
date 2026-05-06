@@ -139,6 +139,120 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
+        void XamlBindingHelperTests::ValidateSetThicknessOnFrameworkElement()
+        {
+            TestCleanupWrapper cleanup([]{
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+            });
+
+            RunOnUIThread([&]()
+            {
+                // Create a custom user control, where the markup has a ConnectionId on a Grid.  During LoadComponent, MyPage's
+                // Connect method will consequently be called, and in this method it sets a name on that Grid.
+                Page^ page1 = ref new MyPage();
+                Application::LoadComponent(
+                    page1,
+                    ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/XamlBindingHelperSetters.xaml"),
+                    Primitives::ComponentResourceLocation::Application);
+
+                auto connectedGrid = static_cast<Grid^>(page1->FindName(newGridName));
+                VERIFY_IS_NOT_NULL(connectedGrid);
+
+                LOG_OUTPUT(L"Setting thickness on Setter's Value property using SetPropertyFromThickness");
+                // Create a Thickness object and set it on a Setter via SetPropertyFromThickness using Setter::ValueProperty
+                auto setter = ref new Setter();
+                Platform::Object^ setterAsObject = setter;
+                Thickness marginThickness;
+                marginThickness.Left = 10;
+                marginThickness.Top = 20;
+                marginThickness.Right = 30;
+                marginThickness.Bottom = 40;
+                XamlBindingHelper::SetPropertyFromThickness(setterAsObject, Setter::ValueProperty, marginThickness);
+                // Apply Setter's Value to the grid and verify
+                connectedGrid->SetValue(Grid::MarginProperty, setter->Value);
+                VERIFY_IS_TRUE(connectedGrid->Margin.Left == marginThickness.Left);
+                VERIFY_IS_TRUE(connectedGrid->Margin.Top == marginThickness.Top);
+                VERIFY_IS_TRUE(connectedGrid->Margin.Right == marginThickness.Right);
+                VERIFY_IS_TRUE(connectedGrid->Margin.Bottom == marginThickness.Bottom);
+            });
+        }
+
+        void XamlBindingHelperTests::ValidateSetCornerRadiusOnControl()
+        {
+            TestCleanupWrapper cleanup([]{
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+            });
+
+            RunOnUIThread([&]()
+            {
+                // Create a custom user control, where the markup has a ConnectionId on a Grid.  During LoadComponent, MyPage's
+                // Connect method will consequently be called, and in this method it sets a name on that Grid.
+                Page^ page1 = ref new MyPage();
+                Application::LoadComponent(
+                    page1,
+                    ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/XamlBindingHelperSetters.xaml"),
+                    Primitives::ComponentResourceLocation::Application);
+
+                auto connectedGrid = static_cast<Grid^>(page1->FindName(newGridName));
+                VERIFY_IS_NOT_NULL(connectedGrid);
+
+                LOG_OUTPUT(L"Setting corner radius on Setter's Value property using SetPropertyFromCornerRadius");
+
+                auto border = ref new Border();
+                // Create a CornerRadius object and set it on a Setter via SetPropertyFromCornerRadius using Setter::ValueProperty
+                auto setter = ref new Setter();
+                Platform::Object^ setterAsObject = setter;
+                CornerRadius cornerRadius;
+                cornerRadius.TopLeft = 5;
+                cornerRadius.TopRight = 10;
+                cornerRadius.BottomRight = 15;
+                cornerRadius.BottomLeft = 20;
+                XamlBindingHelper::SetPropertyFromCornerRadius(setterAsObject, Setter::ValueProperty, cornerRadius);
+                // Apply Setter's Value to the border and verify
+                border->SetValue(Border::CornerRadiusProperty, setter->Value);
+                VERIFY_IS_TRUE(border->CornerRadius.TopLeft == cornerRadius.TopLeft);
+                VERIFY_IS_TRUE(border->CornerRadius.TopRight == cornerRadius.TopRight);
+                VERIFY_IS_TRUE(border->CornerRadius.BottomRight == cornerRadius.BottomRight);
+                VERIFY_IS_TRUE(border->CornerRadius.BottomLeft == cornerRadius.BottomLeft);
+            });
+        }
+
+        void XamlBindingHelperTests::ValidateSetColorOnShape()
+        {
+            TestCleanupWrapper cleanup([]{
+                TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+            });
+
+            RunOnUIThread([&]()
+            {
+                // Create a custom user control, where the markup has a ConnectionId on a Grid.  During LoadComponent, MyPage's
+                // Connect method will consequently be called, and in this method it sets a name on that Grid.
+                Page^ page1 = ref new MyPage();
+                Application::LoadComponent(
+                    page1,
+                    ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/tools/XamlBindingHelperSetters.xaml"),
+                    Primitives::ComponentResourceLocation::Application);
+
+                // We should be able to FindName for the name that was set during the Connect callback.
+                auto connectedGrid = static_cast<Grid^>(page1->FindName(newGridName));
+                VERIFY_IS_NOT_NULL(connectedGrid);
+
+                LOG_OUTPUT(L"Setting color on Setter's Value property using SetPropertyFromColor");
+                // Create a brush and set its color on a Setter via SetPropertyFromColor using Setter::ValueProperty
+                auto brush = ref new SolidColorBrush(Microsoft::UI::Colors::Red);
+                auto setter = ref new Setter();
+                Platform::Object^ setterAsObject = setter;
+                auto expectedColor = Microsoft::UI::Colors::Green;
+                XamlBindingHelper::SetPropertyFromColor(setterAsObject, Setter::ValueProperty, expectedColor);
+                // Apply Setter's Value to the brush and verify
+                brush->SetValue(SolidColorBrush::ColorProperty, setter->Value);
+                VERIFY_IS_NOT_NULL(brush);
+                VERIFY_IS_TRUE(brush->Color.R == expectedColor.R);
+                VERIFY_IS_TRUE(brush->Color.G == expectedColor.G);
+                VERIFY_IS_TRUE(brush->Color.B == expectedColor.B);
+            });
+        }
+
     }
 
 

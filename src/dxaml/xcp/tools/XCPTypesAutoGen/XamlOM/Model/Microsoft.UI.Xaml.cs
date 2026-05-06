@@ -3825,6 +3825,7 @@ namespace Microsoft.UI.Xaml
 
     [NativeName("CSetter")]
     [Guids(ClassGuid = "7c425f15-7da5-4f20-b7cc-39527248803b")]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     public sealed class Setter
      : Microsoft.UI.Xaml.SetterBase
     {
@@ -3839,7 +3840,7 @@ namespace Microsoft.UI.Xaml
             set;
         }
 
-        [DependencyPropertyModifier(Modifier.Private)]
+        [DependencyPropertyVersion(2)]
         [OffsetFieldName("m_vValue")]
         [PreserveThemeResourceExtension]
         public Windows.Foundation.Object Value

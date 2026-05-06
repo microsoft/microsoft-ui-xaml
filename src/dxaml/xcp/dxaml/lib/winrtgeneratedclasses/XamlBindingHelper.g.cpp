@@ -20,6 +20,10 @@ HRESULT DirectUI::XamlBindingHelperFactoryGenerated::QueryInterfaceImpl(_In_ REF
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IXamlBindingHelperStatics*>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::Markup::IXamlBindingHelperStatics2)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::Markup::IXamlBindingHelperStatics2*>(this);
+    }
     else
     {
         RRETURN(ctl::AbstractActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -424,6 +428,60 @@ Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
         XamlTelemetry::PublicApiCall(false, 0, "XamlBindingHelper_SetPropertyFromObject", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromThickness(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Microsoft::UI::Xaml::Thickness value)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, 0, "XamlBindingHelper_SetPropertyFromThickness", 0);
+    }
+    ARG_NOTNULL(pDependencyObject, "dependencyObject");
+    ARG_NOTNULL(pPropertyToSet, "propertyToSet");
+    IFC(CheckActivationAllowed());
+    IFC(SetPropertyFromThicknessImpl(pDependencyObject, pPropertyToSet, value));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, 0, "XamlBindingHelper_SetPropertyFromThickness", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromCornerRadius(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Microsoft::UI::Xaml::CornerRadius value)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, 0, "XamlBindingHelper_SetPropertyFromCornerRadius", 0);
+    }
+    ARG_NOTNULL(pDependencyObject, "dependencyObject");
+    ARG_NOTNULL(pPropertyToSet, "propertyToSet");
+    IFC(CheckActivationAllowed());
+    IFC(SetPropertyFromCornerRadiusImpl(pDependencyObject, pPropertyToSet, value));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, 0, "XamlBindingHelper_SetPropertyFromCornerRadius", hr);
+    }
+    RRETURN(hr);
+}
+IFACEMETHODIMP DirectUI::XamlBindingHelperFactoryGenerated::SetPropertyFromColor(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Windows::UI::Color value)
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, 0, "XamlBindingHelper_SetPropertyFromColor", 0);
+    }
+    ARG_NOTNULL(pDependencyObject, "dependencyObject");
+    ARG_NOTNULL(pPropertyToSet, "propertyToSet");
+    IFC(CheckActivationAllowed());
+    IFC(SetPropertyFromColorImpl(pDependencyObject, pPropertyToSet, value));
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, 0, "XamlBindingHelper_SetPropertyFromColor", hr);
     }
     RRETURN(hr);
 }
