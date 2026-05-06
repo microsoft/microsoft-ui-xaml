@@ -16,10 +16,18 @@ set struct-typed property values directly without boxing. For example `SetThickn
 forward to WinUI 3 because it is a narrow, low-level API with a limited number of consumers and
 significant maintenance costs.
 
-However, there is a real performance gap: when setting struct-typed dependency properties —
-`Thickness`, `CornerRadius`, and `Windows.UI.Color` — developers currently have no option other
+However, there is a gap: when setting struct-typed dependency properties —
+`Microsoft.UI.Xaml.Thickness`, `Microsoft.UI.Xaml.CornerRadius`, and `Windows.UI.Color` — developers currently have no option other
 than boxing the value to `Object` first:
 
+* C#:
+```csharp
+// WinUI 3 — current approach (boxing required)
+var border = new Border();
+border.SetValue(Border.BorderThicknessProperty, new Thickness(2, 4, 2, 4));
+```
+
+* C++:
 ```cpp
 // WinUI 3 — current approach (boxing required)
 auto border = Border();
@@ -35,6 +43,15 @@ This spec extends `XamlBindingHelper` with three new struct-typed overloads to c
 With these additions, developers can set struct-typed values on dependency properties without any
 boxing:
 
+* C#:
+```csharp
+// WinUI 3 — new approach (no boxing)
+var border = new Border();
+var thickness = new Thickness(2, 4, 2, 4);
+XamlBindingHelper.SetPropertyFromThickness(border, Border.BorderThicknessProperty, thickness);
+```
+
+* C++:
 ```cpp
 // WinUI 3 — new approach (no boxing)
 XamlBindingHelper::SetPropertyFromThickness(
@@ -43,17 +60,6 @@ XamlBindingHelper::SetPropertyFromThickness(
     Thickness{ 2, 4, 2, 4 });
 ```
 
-## Goals
-
-* Provide boxing-free helpers for the three most commonly needed struct types: `Thickness`,
-  `CornerRadius`, and `Color`.
-* Follow the established `SetPropertyFrom*` naming pattern already present on `XamlBindingHelper`.
-
-## Non-goals
-
-* Re-introducing `XamlDirect` or any part of its API surface into WinUI 3.
-* Adding `SetPropertyFrom*` overloads for every possible WinUI or Windows struct type.
-
 # Conceptual pages (How To)
 
 ## Setting struct-typed dependency properties without boxing
@@ -61,6 +67,13 @@ XamlBindingHelper::SetPropertyFromThickness(
 Before these APIs, setting a struct-typed value on a dependency property required boxing the value
 to `Object` first:
 
+* C#:
+```csharp
+var border = new Border();
+border.SetValue(Border.BorderThicknessProperty, new Thickness(2, 4, 2, 4));
+```
+
+* C++:
 ```cpp
 auto border = Border();
 border.SetValue(Border::BorderThicknessProperty(), box_value(Thickness{ 2, 4, 2, 4 }));
@@ -68,6 +81,14 @@ border.SetValue(Border::BorderThicknessProperty(), box_value(Thickness{ 2, 4, 2,
 
 With the new APIs, the struct can be passed directly and no boxing is needed in application code:
 
+* C#:
+```csharp
+var border = new Border();
+var thickness = new Thickness(2, 4, 2, 4);
+XamlBindingHelper.SetPropertyFromThickness(border, Border.BorderThicknessProperty, thickness);
+```
+
+* C++:
 ```cpp
 auto border = Border();
 Thickness thickness{ 2, 4, 2, 4 };
@@ -103,22 +124,14 @@ static void SetPropertyFromThickness(
 * C#:
 ```csharp
 var border = new Border();
-var thickness = new Thickness();
-thickness.Left = 2;
-thickness.Top = 4;
-thickness.Right = 2;
-thickness.Bottom = 4;
+var thickness = new Thickness(2, 4, 2, 4);
 XamlBindingHelper.SetPropertyFromThickness(border, Border.BorderThicknessProperty, thickness);
 ```
 
 * C++:
 ```cpp
 auto border = Border();
-Thickness thickness{};
-thickness.Left = 2;
-thickness.Top = 4;
-thickness.Right = 2;
-thickness.Bottom = 4;
+Thickness thickness{ 2, 4, 2, 4 };
 XamlBindingHelper::SetPropertyFromThickness(border, Border::BorderThicknessProperty(), thickness);
 ```
 
@@ -151,22 +164,14 @@ static void SetPropertyFromCornerRadius(
 * C#:
 ```csharp
 var border = new Border();
-var cornerRadius = new CornerRadius();
-cornerRadius.TopLeft = 5;
-cornerRadius.TopRight = 10;
-cornerRadius.BottomRight = 15;
-cornerRadius.BottomLeft = 20;
+var cornerRadius = new CornerRadius(5, 10, 15, 20);
 XamlBindingHelper.SetPropertyFromCornerRadius(border, Border.CornerRadiusProperty, cornerRadius);
 ```
 
 * C++:
 ```cpp
 auto border = Border();
-CornerRadius cornerRadius{};
-cornerRadius.TopLeft = 5;
-cornerRadius.TopRight = 10;
-cornerRadius.BottomRight = 15;
-cornerRadius.BottomLeft = 20;
+CornerRadius cornerRadius{ 5, 10, 15, 20 };
 XamlBindingHelper::SetPropertyFromCornerRadius(border, Border::CornerRadiusProperty(), cornerRadius);
 ```
 

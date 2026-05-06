@@ -9,6 +9,14 @@ is a WinUI 3 class that associates a dependency property with a value inside a `
 public `DependencyProperty` identifier exposed for it. This means setting values on a `Setter`
 requires boxing the value to `Object` first:
 
+* C#:
+```csharp
+// WinUI 3 — current approach (boxing required)
+var widthSetter = new Setter();
+widthSetter.Value = 300;
+```
+
+* C++:
 ```cpp
 // WinUI 3 — current approach (boxing required)
 auto widthSetter = Setter();
@@ -20,6 +28,13 @@ property, `Setter.ValueProperty`. This unblocks the usage of the `Setter` class 
 `XamlBindingHelper.SetPropertyFrom*` APIs, which require a `DependencyProperty` as their second
 argument, allowing developers to set values without boxing:
 
+* C#:
+```csharp
+// WinUI 3 — new approach (no boxing)
+XamlBindingHelper.SetPropertyFromInt32(widthSetter, Setter.ValueProperty, 300);
+```
+
+* C++:
 ```cpp
 // WinUI 3 — new approach (no boxing)
 XamlBindingHelper::SetPropertyFromInt32(
@@ -28,17 +43,6 @@ XamlBindingHelper::SetPropertyFromInt32(
     300);
 ```
 
-## Goals
-
-* Expose the `DependencyProperty` identifier for `Setter.Value`.
-* Follow the established pattern of other WinUI 3 classes that expose `DependencyProperty`
-  identifiers for their properties.
-
-## Non-goals
-
-* Changing the behavior or storage of `Setter.Value` itself.
-* Adding new overloads to `XamlBindingHelper` (covered in a separate spec).
-
 # Conceptual pages (How To)
 
 ## Using Setter.ValueProperty with XamlBindingHelper
@@ -46,6 +50,14 @@ XamlBindingHelper::SetPropertyFromInt32(
 Previously there was no public way to obtain a `DependencyProperty` token for `Setter.Value`. With
 `Setter.ValueProperty` exposed, this is now possible:
 
+* C#:
+```csharp
+var setter = new Setter();
+// Set an Int32 value without boxing
+XamlBindingHelper.SetPropertyFromInt32(setter, Setter.ValueProperty, 300);
+```
+
+* C++:
 ```cpp
 auto setter = Setter();
 // Set an Int32 value without boxing
@@ -97,7 +109,6 @@ namespace Microsoft.UI.Xaml
         // Existing members omitted for brevity
 
         [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
-        [static_name("Microsoft.UI.Xaml.ISetterStatics2")]
         {
             static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
         }
