@@ -102,13 +102,11 @@ XamlBindingHelper::SetPropertyFromDouble(setter, Setter::ValueProperty(), 16.0);
 ```idl
 namespace Microsoft.UI.Xaml
 {
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     runtimeclass Setter : Microsoft.UI.Xaml.SetterBase
     {
         // Existing members omitted for brevity
 
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
         {
             static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };
         }

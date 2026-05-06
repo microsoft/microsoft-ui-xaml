@@ -227,14 +227,12 @@ DemoBorder().SetValue(Border::BorderBrushProperty(), brush);
 ```idl
 namespace Microsoft.UI.Xaml.Markup
 {
-    [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     [default_interface]
     runtimeclass XamlBindingHelper
     {
         // Existing members omitted for brevity
 
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
         {
             static void SetPropertyFromThickness(
                 Object dependencyObject,
