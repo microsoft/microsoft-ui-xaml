@@ -4,7 +4,7 @@
 
 - [Scenario](#scenario)
 - [Step-by-step Instructions (Marketplace Image)](#step-by-step-instructions-marketplace-image)
-  - [Start Creating a New 1ES Image](#start-creating-a-new-1es-image)
+  - [Start Creating a New Test Pool Image](#start-creating-a-new-test-pool-image)
   - [Specify Basic Properties](#specify-basic-properties)
   - [Pick a Base Image from the Market Place](#pick-a-base-image-from-the-market-place)
   - [Customize Your Image](#customize-your-image)
@@ -15,7 +15,7 @@
 - [Using an Internal Branch Image from DevDiv Image Gallery](#using-an-internal-branch-image-from-devdiv-image-gallery)
   - [Get Access to DevDiv Image Gallery](#get-access-to-devdiv-image-gallery)
   - [Check If Your Required Image Is Available](#check-if-your-required-image-is-available)
-  - [Create the 1ES Image Using the Gallery Image](#create-the-1es-image-using-the-gallery-image)
+  - [Create the Test Pool Image Using the Gallery Image](#create-the-test-pool-image-using-the-gallery-image)
 
 ## Scenario
 
