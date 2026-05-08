@@ -149,7 +149,7 @@
     <PackageReference Include="Microsoft.TestPlatform.TestHost" />
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
     <PackageReference Include="Microsoft.Taef" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
     <PackageReference Include="DiffPlex">
       <NoWarn>
         NU1701; <!-- Package 'x' was restored using 'y' instead of the project target framework 'z'. This package may not be fully compatible with your project. -->
@@ -368,8 +368,10 @@
   </Target>
 
   <!-- API tests are run within the context of TE.ProcessHost.exe, whose SxS app manifest doesn't contain our types.
-       To fix that, we'll extract its SxS manifest, merge in the WinAppSDK self-contained manifest, and reapply the modified manifest. -->
-  <Target Name="ApplyManifestToTeProcessHostExe" DependsOnTargets="CreateWinRTRegistration" Inputs="$(ApplicationManifest)" Outputs="$(OutDir)TE.ProcessHost.exe">
+       To fix that, we'll extract its SxS manifest, merge in the WinAppSDK self-contained manifest, and reapply the modified manifest.
+       Only runs when CreateWinRTRegistration is available (i.e., mock WindowsAppSDK SelfContained targets are present). -->
+  <Target Name="ApplyManifestToTeProcessHostExe" DependsOnTargets="CreateWinRTRegistration" Inputs="$(ApplicationManifest)" Outputs="$(OutDir)TE.ProcessHost.exe"
+      Condition="'$(MicrosoftWindowsAppSDKPackageDir)' != '' or '@(WindowsAppSdkComponentPackages)' != ''">
     <PropertyGroup>
       <TeProcessHostExePath>$(OutDir)TE.ProcessHost.exe</TeProcessHostExePath>
       <TeProcessHostManifestPath>$(TempDir)\te.processhost.manifest</TeProcessHostManifestPath>
@@ -400,23 +402,6 @@
     <Copy SourceFiles="@(BinplaceItem)" DestinationFiles="@(BinplaceItem->'$(UnpackagedAppsDirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-  <!-- TODO: Remove this target once the fix for 45817705 is ingested into our WindowsAppSDKAggregator submodule. -->
-  <Target Name="AddExtraPayloadFiles" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix">
-    <ItemGroup>
-      <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xaml"/>
-      <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.xbf"/>
-      <AdditionalMicrosoftWindowsAppSDKFiles Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.html"/>
-    </ItemGroup>
-    <CreateItem Include="@(AdditionalMicrosoftWindowsAppSDKFiles)"
-        AdditionalMetadata="CopyToOutputDirectory=PreserveNewest;Link=%(AdditionalMicrosoftWindowsAppSDKFiles.RecursiveDir)%(AdditionalMicrosoftWindowsAppSDKFiles.Filename)%(AdditionalMicrosoftWindowsAppSDKFiles.Extension)" >
-      <Output TaskParameter="Include" ItemName="None"/>
-    </CreateItem>
-    <CreateItem Include="@(AdditionalMicrosoftWindowsAppSDKFiles)"
-        AdditionalMetadata="CopyToOutputDirectory=PreserveNewest;Link=%(AdditionalMicrosoftWindowsAppSDKFiles.RecursiveDir)%(AdditionalMicrosoftWindowsAppSDKFiles.Filename)%(AdditionalMicrosoftWindowsAppSDKFiles.Extension)" >
-      <Output TaskParameter="Include" ItemName="None"/>
-    </CreateItem>
-  </Target>
-  
   <Target Name="GenerateRunSettings" BeforeTargets="Build" Outputs="$(RunSettingsFilePath)">
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="%3CRunSettings%3E" Overwrite="true" />
     <WriteLinesToFile File="$(RunSettingsFilePath)" Lines="  %3CRunConfiguration%3E" />

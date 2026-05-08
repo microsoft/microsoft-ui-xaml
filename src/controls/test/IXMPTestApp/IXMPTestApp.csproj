@@ -15,7 +15,7 @@
   <PropertyGroup>
     <ProjectGuid>{74F24BC4-794D-4CB2-8420-80FF7FDACFE9}</ProjectGuid>
     <!-- Don't warn about using experimental, deprecated APIs (TODO: Task#60478355) -->
-    <NoWarn>$(NoWarn);8305;0618</NoWarn>
+    <NoWarn>$(NoWarn);8305;0618;NU1605</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="$(MUXProjectRoot)\Samples\AppTestAutomationHelpers\AppTestAutomationHelpers.vcxproj">
@@ -178,7 +178,12 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="$(WindowsAppSdkPackageVersion)" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="$(WinUIVersion)" />
+    <!-- Keep component package build targets (needed for SelfContained/adhocappreg pipeline).
+         The previous ExcludeAssets="build;buildTransitive" approach broke activatable class registration. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.Foundation" Version="$(FoundationPackageVersion)" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="$(IXPPackageVersion)" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Base" Version="$(BasePackageVersion)" />
     <!-- <PackageReference Include="Microsoft.Web.WebView2" Version="$(WebView2PackageVersion)" >
        <ExcludeAssets>all</ExcludeAssets>
     </PackageReference> -->
@@ -186,25 +191,6 @@
     <PackageReference Include="Microsoft.Taef" Version="$(TaefNugetPackageVersion)" />
     <PackageReference Include="MUXCustomBuildTasks" Version="$(MuxCustomBuildTasksPackageVersion)" />
   </ItemGroup>
-  <!-- Due to a recent change to include WinMDs when unpacking for WindowsAppSdkSelfContained
-    (https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator/pullrequest/9751288)
-    The build will fails
-    error APPX1112: Payload contains two or more files with the same destination path 'Microsoft.Foundation.winmd', but they have different content.
-    Source files:
-      [C:\__w\1\s\controls\test\IXMPTestApp\IXMPTestApp.csproj]
-    error APPX1112: C:\__w\1\s\perf\scenarios\packages\microsoft.windowsappsdk\999.0.0-mock-3.0.0-zmain.240214.1-nightly-x64-release\lib\uap10.0.17763\Microsoft.Foundation.winmd
-      [C:\__w\1\s\controls\test\IXMPTestApp\IXMPTestApp.csproj]
-    error APPX1112: C:\__w\1\s\BuildOutput\obj\x86chk\controls\test\IXMPTestApp\MsixContent\Microsoft.Foundation.winmd
-      [C:\__w\1\s\controls\test\IXMPTestApp\IXMPTestApp.csproj]
-    This error originated because the WindowsAppSDK FWP takes 18362 version of the winmd instead of 17763. But the apps targets 17763 hence the difference.
-    But we can use MicrosoftWindowsAppSDKFilesExcluded to exclude all the WinMDs from being unpacked preventing this issue. -->
-  <Target Name="ExcludeMicrosoftWindowsAppSDKPayloadFiles"
-      BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix"
-      DependsOnTargets="ExtractMicrosoftWindowsAppSDKMsixFiles" >
-    <ItemGroup>
-      <MicrosoftWindowsAppSDKFilesExcluded Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.winmd"/>
-    </ItemGroup>
-  </Target>
   <Import Project="$(MUXCProjectRoot)dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0' ">
     <VisualStudioVersion>15.0</VisualStudioVersion>
@@ -213,6 +199,32 @@
   <Import Project="..\RetargetCopyLocalFiles.targets" />
   <Import Project="$(MUXCProjectRoot)CustomInlineTasks.targets" />
   <Import Project="..\TestApp.targets" />
+  <!-- The WinUI component package's BeforeCommon.targets disables WindowsAppSDKSelfContained for UWP apps
+       via CustomBeforeMicrosoftCommonTargets. In this repo we build the framework from source, so we need
+       SelfContained mode to generate the fusion manifest with activatable class entries for the AppX manifest.
+       Re-enable it and import SelfContained.targets after all NuGet imports. -->
+  <PropertyGroup>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+  <Import Project="$(NuGetPackageRoot)\microsoft.windowsappsdk.base\$(BasePackageVersion)\build\Microsoft.WindowsAppSDK.SelfContained.targets" />
+  <!-- Exclude winmd files from the SelfContained payload to avoid duplicate winmd conflicts with MergedWinMD -->
+  <Target Name="ExcludeMicrosoftWindowsAppSDKPayloadWinMDs"
+      BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromComponents">
+    <ItemGroup>
+      <MicrosoftWindowsAppSDKFilesExcluded Include="%(WindowsAppSdkComponentPackages.Identity)\metadata\**\*.winmd"/>
+      <MicrosoftWindowsAppSDKFilesExcluded Include="%(WindowsAppSdkComponentPackages.Identity)\**\*.winmd"/>
+    </ItemGroup>
+  </Target>
+  <!-- Prevent _WireUpCoreRuntime from generating duplicate activatable class entries for types
+       that adhocappreg.targets will also generate (from the fusion manifest). Remove MergedWinMD
+       from the resolved references before _WireUpCoreRuntime processes them. -->
+  <Target Name="RemoveMergedWinMDFromWireUpCoreRuntime" BeforeTargets="_WireUpCoreRuntime">
+    <ItemGroup>
+      <ResolvedWinMDReferences Remove="@(ResolvedWinMDReferences)" Condition="'%(Filename)' == 'Microsoft.UI.Xaml'" />
+    </ItemGroup>
+  </Target>
+  <!-- Override WindowsAppSdkSelfContained target that removes WinMDs from appx manifest -->
+  <Target Name="_RemoveWinMDFromAppxManifest" />
   <Target Name="CustomAfterGenerateAppPackages" AfterTargets="_GenerateAppxPackage">
     <RunPowershellScript Path="$(MUXCProjectRoot)tools\ExtractPackageDependencies.ps1" Parameters="-sourceFile $(OutDir)\$(MSBuildProjectName).build.appxrecipe -platform $(PlatformName) -outputFile $(AppxPackageTestDir)$(AppxPackageName).dependencies.txt" FilesWritten="$(AppxPackageTestDir)$(AppxPackageName).dependencies.txt">
       <Output TaskParameter="MSBuildProcessId" ItemName="MSBuildProcessIdsToKill" />
@@ -243,6 +255,4 @@
       <Destination>$(TestDependenciesResourcesDestinationPath)\AppX</Destination>
     </BinplaceItem>
   </ItemGroup>
-  <!-- Override WindowsAppSdkSelfContained support that disables UWP -->
-  <Target Name="_RemoveWinMDFromAppxManifest" />
 </Project>
