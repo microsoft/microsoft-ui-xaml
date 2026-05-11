@@ -32,7 +32,7 @@ XAML resource references.
 Unfortunately, this is significantly easier said than done. XAML's `ResourceDictionary`s are fully mutable at 
 run-time which makes it impossible to statically determine ahead of time what resources will be reachable at
 run-time when the parser is attempting to resolve a resource reference. A concrete example of this scenario is 
-Shell: they use a Velocity key to determine what version of the WinUI 2 styles should be used at run-time, and 
+Shell: they use a configuration key to determine what version of the WinUI 2 styles should be used at run-time, and 
 dynamically insert an appropriately configured instance of [`XamlControlsResources`](https://docs.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.xamlcontrolsresources?view=winui-3.0) into `Application.Current().Resources`. 
 There is no way for a static analyzer to realize that this insertion of `XamlControlsResources` into the app's global resources is even happening, not to speak of guaranteeing that it will succeed before any attempts are made 
 to reference resources contained therein.

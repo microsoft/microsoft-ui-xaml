@@ -4,11 +4,9 @@ This page is a quick-start guide for folks who need to investigate a test failur
 
 Here's how you can repro the test failures, given a link to a pipeline:
 
-1. Download the TestPayload folder from the artifacts link.  The artifacts link is here on the pipeline page:
+1. Download the TestPayload folder from the artifacts link on the pipeline page.
 
-![](images/pipeline-run-header.jpg)
-
-2. Extract the zip on your test machine.  You can often use your dev machine for this, but for some tests it's most reliable to
+2. Extract the zip on your test machine.You can often use your dev machine for this, but for some tests it's most reliable to
 use a VM with resolution 1024x768.
 
 3. In an admin cmd prompt on your test machine, navigate to testpayload\x86chk, and run "testmachine-prerun.cmd".  (Note
@@ -19,10 +17,6 @@ use a VM with resolution 1024x768.
 
 If the test app crashes, the dmp will be in c:\dumps.
 
-See [testing-faq.md](testing/testing-faq.md) for more information.
-
-
-
-
+See [testing-FAQ.md](testing/testing-FAQ.md) for more information.
 
 

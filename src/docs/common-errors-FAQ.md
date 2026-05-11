@@ -4,7 +4,7 @@
 
 - [Setting up dev environment](#setting-up-dev-environment)
 - [Building WinUI](#building-winui)
-- [Building WinUI Gallery (XCG)](#building-winui-gallery-xcg)
+- [Building WinUI Gallery](#building-winui-gallery)
 - ["Modified" T4 (.tt) files which don't contain changes](#modified-t4-tt-files-which-dont-contain-changes)
 
 ## Setting up dev environment
@@ -80,7 +80,7 @@ Close the solution and build the solution using the following command.
 `buildsamples.cmd`
 After the build is successful, launch MuxControlsTestApp again.
 
-## Building WinUI Gallery (XCG)
+## Building WinUI Gallery
 
 If the build fails with missing nuget depdendencies, do `nuget restore WinUIGallery.slnx` (actual solution's name) 
 to restore all the missing nuget files.

@@ -255,7 +255,7 @@ public void OnMouseLeftButtonUp(Object sender, EventArgs e)
 ### Unfilled/Partially Filled Image Object
 
 ![](images/hit-testing-fig5-image-null-brush.png)
-* The image object has a stretch property that can transform the image to make it fit to the bounds of the image object. One of the stretch properties is the uniform stretch. As shown in figure 5, the actual picture of the couple is stretched to fit the smaller of the width and height of the bounds of the image object. The image is uniformly stretched only enough to fill the height but not to distort the image. As a result the image object is left with regions with a null-brush background. WPF handles the hit test scenario on the null region in a different manner that Silverlight should.
+* The image object has a stretch property that can transform the image to make it fit to the bounds of the image object. One of the stretch properties is the uniform stretch. The actual picture is stretched to fit the smaller of the width and height of the bounds of the image object. The image is uniformly stretched only enough to fill the height but not to distort the image. As a result the image object is left with regions with a null-brush background. WPF handles the hit test scenario on the null region in a different manner that Silverlight should.
 * We would not like hit testing on the null-brush regions to incorporate the image element in the result set. This behavior is consistent with that of WPF’s API.
 
 ### Text and Glyph
@@ -318,7 +318,7 @@ This hit test function returns all elements that are fully or partially containe
 ![](images/hit-testing-fig6-tree-structure-ordering.png)
 * The z-index property of elements only makes a difference on the visual appearance of elements only if they are siblings. The element with the highest z-index would visually sit on top of all other siblings.  The z-index value of each parent will have an effect on the visual depth of its children as well. For example, the sibling with the highest z-index is the top-most visual element amongst all the siblings. If that element has children, then the children of that element also sit on top of all other siblings of that parent. So the children of any parent always sit on top of the parent element. If the z-index of all items is set to equal values or they are all set to default, then the only way to determine their visual depth is by the tree structures.
 
-![](images/hit-testing-fig7-hit-test-collection-order)
+![](images/hit-testing-fig7-hit-test-collection-order.png)
 * Let’s consider the tree structure above with all the elements at each depth level having identical z-index values. Let’s also assume that all the elements in the tree above were hit with the exception of element B. The hit test would return a collection in the following order:
 * The figure above shows the order of the returned collection. A non-empty tree is traversed using the following rules:
   * Traverse the right-most node

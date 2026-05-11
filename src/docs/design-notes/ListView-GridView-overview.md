@@ -22,7 +22,7 @@ None
 
 - Active Work / Bugs / Active Backlog
 
-Listing active bugs I found, just to give you an idea of the scope:
+A sample of active bugs, to give an idea of the scope:
   * av in Windows.UI.Xaml.dll!DirectUI::ItemsControl::AddContainers in XAML designer
   * [GitHub] ListViewBase.SelectedItems.Add() performs poorly
   * Changing ListViewItem.Background in code doesn't take effect until pointer over
@@ -132,11 +132,11 @@ Listing active bugs I found, just to give you an idea of the scope:
   * Test Failure: Enterprise::GridView::GridViewIntegrationTests::ValidateNavigationDoesNotHorizontallyWrapWithGamepad
   * [BUG] UWP Grouped ListView Scroll Bug on Windows 1803 and later
   * ListView control should help users understand how to collapse list items
-  * Narrator Desktop : XAML Controls Gallery : Editable text boxes under "GridView with layout customization" header does not have name property.
-  * Narrator Desktop : XAML Controls Gallery : List items under "GridView with layout customization" header has wrong name property.
+  * Narrator Desktop : WinUI Gallery : Editable text boxes under "GridView with layout customization" header does not have name property.
+  * Narrator Desktop : WinUI Gallery : List items under "GridView with layout customization" header has wrong name property.
   * ListView Scrolling Randomly Breaks Down
-  * Desktop : XAML Controls Gallery : Sent messages are not clearly visible in ListView.
-  * Keyboard Desktop : XAML Controls Gallery : After activating "Listview" keyboard focus is going to selection mode combobox.
+  * Desktop : WinUI Gallery : Sent messages are not clearly visible in ListView.
+  * Keyboard Desktop : WinUI Gallery : After activating "Listview" keyboard focus is going to selection mode combobox.
   * Accessibility Insights: ListView does not report IsOffscreen correctly
   * [ListView] Keyboard reordering (Alt+Shift+arrow keys) does not match visual direction when RTL is enabled
   * [Move to GitHub] Using a StackPanel as the ItemsPanel for a ListView regresses drag-drop announcements in Narrator

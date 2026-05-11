@@ -9,7 +9,6 @@ This document describes steps that WinUI3 takes as part of the general WinAppSDK
 - [Completing a release](#completing-a-release)
   - [Tag and retain the build pipeline](#tag-and-retain-the-build-pipeline)
   - [Tag the final commit](#tag-the-final-commit)
-  - [Branch example](#branch-example)
   - [Release source code to the public](#release-source-code-to-the-public)
 
 ## Preparing for a release
@@ -42,9 +41,6 @@ For WinUI this is done using Visual Studio (for app building) and WinUI Gallery 
 WinUI Gallery lives in the xaml-lift repo and builds by default using the WinUI bits that are built there.
 But for validation we build it against the actual WinAppSDK bits instead.
 See [here](../building/building-sample-apps.md) for instructions on how to build XCG against WinAppSDK bits.
-
-To provide sufficient coverage using WinUI Gallery, see the
-manual validation process in the WinAppSDK aggregator repo.
 
 For non-experimental builds (preview and stable) we also run the `WinUI-Nightly` pipeline,
 even though it's the `WinUI-Xaml-Release` pipeline that builds the bits which are pushed up to WinAppSDK and shipped.
@@ -79,21 +75,6 @@ For example:
 
 Tag the _pipeline_ too, using the same menu as is used to retain the build, using the full name (including patch).
 For example `release/1.0.0`.
-
-![](../images/retain-and-tag-pipeline-run.png)
-
-### Branch example
-
-Here's an example that shows a release branch start,
-some updates cherry-picked from main,
-and then the final release.
-
-![](../images/release-branch-and-updates.jpg)
-
-This example shows some updates after the first 0.8 release and then a 0.8.1
-servicing update.
-
-![](../images/release-branch-with-servicing-updates.jpg)
 
 ### Release source code to the public
 

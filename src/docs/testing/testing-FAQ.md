@@ -377,8 +377,6 @@ download the TestPayload from the build. Go to the build report page. Click 'pub
 folder or the 'ScenarioTestSuitePayload' folder (for Tests or Scenario App Tests). Unzip this file and use it the same
 way as described above (`testmachine-setup.cmd` and the `runtests.cmd`).
 
-![](../images/pipeline-published-link.jpg)
-
 ![](../images/pipeline-testpayload-links.jpg)
 
 Note that these payloads do not contain symbols. If you want test failures to produce meaningful stacks from IFC
@@ -399,30 +397,25 @@ To find the error message for a failed test:
 * Expand a failed test to see the different run attempts.
 * Click on an attempt and the error message shows up in a Result Details pane.
 
-  ![](../images/finding-pipeline-test-failure-error.png)
-
 The test output can be seen in the "Run Tests Stage". The tricky part is that Xaml breaks tests into multiple parallel
 jobs, and it can be difficult to find the job that's running your test. Alternatively, you can download the log file
 along with the test output - see the section below.
 
 To see the test output directly in the pipeline run:
-* On the Pipeline page, click on the Summary tab, then click on a failed job
-  ![](../images/finding-pipeline-test-output-1.png)
+* On the Pipeline page, click on the Summary tab, then click on a failed job.
 
 * On the Jobs page, click on the "Run Tests" step. Then click on the output pane and Ctrl+F for the test you're looking
-  for ![](../images/finding-pipeline-test-output-2.png)
+  for.
 
 * Note that your test may be in a different job. Alternatively you can download the test output for the test you're
   interested in.
 
 To download the test output for a particular test:
-* On the Pipeline page, click on the "## published" link in the Summary tab, under the "Related" section:
-  ![](../images/pipeline-published-link.png)
+* On the Pipeline page, click on the "## published" link in the Summary tab, under the "Related" section.
 
-* On the Artifact page, go to TestOutput > Win10-22H2 > x86chk ![](../images/artifacts-testoutput.png)
+* On the Artifact page, go to TestOutput > Win10-22H2 > x86chk.
 
-* Scroll down to the test that you're interested in, and download the entire folder
-  ![](../images/artifacts-download.png)
+* Scroll down to the test that you're interested in, and download the entire folder.
 
 * In that folder will be the test log of the entire job (look for the name of your test or the `[Failed]` tag) as well
   as screenshots and baseline files if the test failed.
@@ -686,13 +679,13 @@ instructions on how to do this.
 The token will be locally cached in AppData, so you only need to explicitly specify the token the first time you run the
 script. To update the cached token (e.g. because the token has expired), just run the script again with a new token.
 
-If you get an error about the payload being too large, please send mail to **liftedxamldisc**.
+If you get an error about the payload being too large, please file an issue on the [WinUI GitHub Issues page](https://github.com/microsoft/microsoft-ui-xaml/issues).
 
 #### Limitations
 The nuget packages created by this script are quite large. Pushing to a Azure DevOps nuget will timeout unless you have
 a fast network connection. This works best when run from a network-connected machine rather than a vpn-connected machine.
 
 
->Problem?  Please mail **liftedxamldisc** for help.
+>Problem?  Please file an issue on the [WinUI GitHub Issues page](https://github.com/microsoft/microsoft-ui-xaml/issues) for help.
 >
 >Found a bug?  Please file a task and we'll triage it.
