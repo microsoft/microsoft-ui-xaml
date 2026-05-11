@@ -47,6 +47,10 @@ namespace Parser
     {
         auto typedIndex = static_cast<std::underlying_type<StableXbfTypeIndex>::type>(index);
         ASSERT(0 <= typedIndex && typedIndex < StableXbfTypeCount);
+        if (typedIndex >= StableXbfTypeCount)
+        {
+            return KnownTypeIndex::UnknownType;
+        }
         return c_aStableXbfTypeToKnownType[typedIndex];
     }
 
@@ -59,6 +63,10 @@ namespace Parser
     {
         auto typedIndex = static_cast<std::underlying_type<KnownTypeIndex>::type>(index);
         ASSERT(0 <= typedIndex && typedIndex < KnownTypeCount);
+        if (typedIndex >= KnownTypeCount)
+        {
+            return StableXbfTypeIndex::UnknownType;
+        }
         auto stableXbfIndex = c_aKnownTypeToStableXbfType[typedIndex];
         
         if (Parser::Versioning::GetStableXbfTypeIndexCountForTargetOSVersion(targetOSVersion) > static_cast<std::underlying_type<StableXbfTypeIndex>::type>(stableXbfIndex))
@@ -75,6 +83,10 @@ namespace Parser
     {
         auto typedIndex = static_cast<std::underlying_type<StableXbfPropertyIndex>::type>(index);
         ASSERT(0 <= typedIndex && typedIndex < StableXbfPropertyCount);
+        if (typedIndex >= StableXbfPropertyCount)
+        {
+            return KnownPropertyIndex::UnknownType_UnknownProperty;
+        }
         return c_aStableXbfPropertyToKnownProperty[typedIndex];
     }
 
@@ -87,6 +99,10 @@ namespace Parser
     {
         auto typedIndex = static_cast<std::underlying_type<KnownPropertyIndex>::type>(index);
         ASSERT(0 <= typedIndex && typedIndex < KnownPropertyCount);
+        if (typedIndex >= KnownPropertyCount)
+        {
+            return StableXbfPropertyIndex::UnknownType_UnknownProperty;
+        }
 
         auto stableXbfIndex = c_aKnownPropertyToStableXbfProperty[typedIndex];
 
@@ -104,6 +120,10 @@ namespace Parser
     {
         auto typedIndex = static_cast<std::underlying_type<StableEventIndex>::type>(index);
         ASSERT(0 <= typedIndex && typedIndex < StableEventCount);
+        if (typedIndex >= StableEventCount)
+        {
+            return KnownEventIndex::UnknownType_UnknownEvent;
+        }
         return c_aStableEventToKnownEvent[typedIndex];
     }
 
@@ -111,6 +131,10 @@ namespace Parser
     {
         auto typedIndex = static_cast<std::underlying_type<KnownEventIndex>::type>(index);
         ASSERT(0 <= typedIndex && typedIndex < KnownEventCount);
+        if (typedIndex >= KnownEventCount)
+        {
+            return StableEventIndex::UnknownType_UnknownEvent;
+        }
         return c_aKnownEventToStableEvent[typedIndex];
     }
 }
