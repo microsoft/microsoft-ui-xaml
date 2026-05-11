@@ -6,7 +6,7 @@ The WinUI repo is intended as a place for the WinUI team to gather community fee
 
 Feature requests and bugs are tracked as GitHub issues.
 
-For reporting security issues please see the [Security Policy](SECURITY.md).
+For reporting security issues please see the [Security Policy](../SECURITY.md).
 
 For all other bugs and general issues please [file a new issue](https://github.com/Microsoft/microsoft-ui-xaml/issues/new/choose) using the Bug Report template.
 
