@@ -119,7 +119,7 @@ private:
 
     _Check_return_ HRESULT ClearUCRemoveLogicalParentFlag(_In_ CUIElement* pChild);
 
-    _Check_return_ HRESULT UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpdate = false);
+    _Check_return_ HRESULT UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpdate = false, float rootScaleCompensation = 0.0f);
 
 protected:
     _Check_return_ HRESULT EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params) override;
@@ -447,7 +447,8 @@ private:
     _Check_return_ HRESULT AdjustWindowedPopupBoundsForDropShadow(_In_ const XRECTF* popupWindowBounds);
     bool ShouldPopupRendersDropShadow() const;
     XTHICKNESS GetInsetsForDropShadow();
-    float GetEffectiveRootScale();
+    float GetEffectiveRootScale() const;
+    float GetWindowedPopupRootVisualScaleCompensation() const;
     float DipsToPhysicalPixels(_In_ float dips);
     float PhysicalPixelsToDips(_In_ float physicalPixels);
     void DipsToPhysicalPixelsRect(_Inout_ XRECTF* rect);

@@ -30,6 +30,9 @@
 #include <microsoft.ui.composition.internal.h>
 #include <microsoft.ui.composition.internal.interop.h>
 #include <microsoft.ui.composition.private.interop.h>
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_61936248 61936248, WinAppSDK_1_8_8
 
 class CaptureAsyncCompletionState
 {
@@ -115,9 +118,21 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     HWCompTreeNode* elementCompNodeNoRef = m_uiElement->GetCompositionPeer();
     if (elementCompNodeNoRef == nullptr)
     {
-        // The element is being rendered with a LayoutTransitionElement, and doesn't have a comp node. Instead, get the comp node
-        // from the LTE itself. The LTE will contain all the SpriteVisual content in the element's subtree.
-        ASSERT(m_uiElement->IsHiddenForLayoutTransition());
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61936248>())
+        {
+            // The composition peer can be null for reasons other than layout transitions.
+            // Check for an LTE before dereferencing.
+            if (!m_uiElement->IsHiddenForLayoutTransition())
+            {
+                return E_FAIL;
+            }
+        }
+        else
+        {
+            // The element is being rendered with a LayoutTransitionElement, and doesn't have a comp node. Instead, get the comp node
+            // from the LTE itself. The LTE will contain all the SpriteVisual content in the element's subtree.
+            ASSERT(m_uiElement->IsHiddenForLayoutTransition());
+        }
         elementCompNodeNoRef = m_uiElement->GetFirstLTETargetingThis()->GetCompositionPeer();
     }
 
