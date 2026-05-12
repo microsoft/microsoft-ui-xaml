@@ -156,7 +156,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="$(MicrosoftNETCoreUniversalWindowsPlatformVersion)" />
     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="$(MicrosoftWindowsSDKContractsVersion)" />
-    <PackageReference Include="System.Private.Uri" Version="4.3.2" />
   </ItemGroup>
   <Import Project="$(XamlSourcePath)\test\managed\taef.managed.props" />
   <ItemGroup>
