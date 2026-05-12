@@ -19,8 +19,6 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.UI.Xaml.Markup.Co
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.UI.Xaml.Markup.Compiler.Parsing", "Microsoft.UI.Xaml.Markup.Compiler.Parsing\Microsoft.UI.Xaml.Markup.Compiler.Parsing.shproj", "{06974794-A0B0-4339-AF27-158E26F15A87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.UI.Xaml.Markup", "ReflectionLibrary\Microsoft.UI.Xaml.Markup.csproj", "{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{AFD448F5-3DED-4DF4-89F5-656AE4FAF216}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XamlCompilerUnitTests", "Tests\UnitTests\XamlCompilerUnitTests.csproj", "{6AC93711-0481-4941-A6B8-5C456D24A31F}"
@@ -181,20 +179,6 @@ Global
 		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|Win32.ActiveCfg = Release|Any CPU
 		{5A98F9F4-BB19-428C-96B7-87FBF8FB91FE}.Release|x64.ActiveCfg = Release|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Debug|ARM64.ActiveCfg = Debug|ARM64
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Debug|Win32.Build.0 = Debug|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Debug|x64.ActiveCfg = Debug|x64
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Debug|x64.Build.0 = Debug|x64
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Release|ARM64.ActiveCfg = Debug|ARM64
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Release|Win32.ActiveCfg = Release|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Release|Win32.Build.0 = Release|Any CPU
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Release|x64.ActiveCfg = Release|x64
-		{AAB997D1-4113-4B9F-A296-F4D07EC07F3A}.Release|x64.Build.0 = Release|x64
 		{6AC93711-0481-4941-A6B8-5C456D24A31F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6AC93711-0481-4941-A6B8-5C456D24A31F}.Debug|ARM64.ActiveCfg = Debug|Any CPU
 		{6AC93711-0481-4941-A6B8-5C456D24A31F}.Debug|Win32.ActiveCfg = Debug|Win32
