@@ -566,6 +566,12 @@ _Check_return_ HRESULT CPopup::Open()
             if (m_shouldTakeFocus && Focus::FocusSelection::ShouldUpdateFocus(m_pChild, m_savedFocusState))
             {
                 InitialFocusSIPSuspender setInitalFocusTrue(pFocusManager);
+                // SetFocus reaches CXamlIslandRoot::TrySetFocus, which calls InputFocusController::TrySetFocus.
+                // That makes a ZwUserSetFocus syscall, and the kernel pumps the message queue via KiUserCallbackDispatcherReturn
+                // while we are still on the reentrancy-protected Tick path (e.g. TeachingTip opening via CompositionTarget.Rendering).
+                // The pump fires the Xaml dispatcher timer, dispatches a queued message into ProcessMessage,
+                // and trips OnReentrancyProtectedWindowMessage -> XCP_FAULT_ON_FAILURE.
+                PauseNewDispatch deferReentrancy(GetContext());
                 IFC_RETURN(SetFocus(DirectUI::FocusState::Programmatic));
             }
 
