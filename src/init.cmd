@@ -68,6 +68,7 @@ set _BuildArch=
 set _BuildType=
 set _DotNetMoniker=net8.0
 set _archIsSet=
+set _noPgo=
 
 :parseArgs
 if /i "%1"=="" (
@@ -130,12 +131,14 @@ if /i "%1"=="" (
     set _DotNetMoniker=net7.0
 ) else if /i "%1"=="net8" (
     set _DotNetMoniker=net8.0
+) else if /i "%1"=="/nopgo" (
+    set _noPgo=1
 )  else (
     echo Syntax:    %0 ^<arch^>^<flavor^> [^<options^>] [^<toolset^>]
     echo.
     echo            ^<arch^> :          x86 ^| ^(x64^|amd64^) ^| arm64 ^| arm64ec
     echo            ^<flavor^> :        chk ^| fre
-    echo            ^<options^> :       /verbose, /envonly, /envcheck, /notitle
+    echo            ^<options^> :       /verbose, /envonly, /envcheck, /notitle, /nopgo
     exit /b 1
 )
 
@@ -209,6 +212,17 @@ if "%chk%"=="1" (
     call :SetEnviromentVariable _BuildType chk
     call :SetEnviromentVariable Configuration Debug
 )
+
+rem Enable PGO optimization by default for release (fre) builds.
+rem Developers can opt out by passing /nopgo to init.
+rem ARM64EC is excluded because no PGO training data exists for that architecture.
+rem Reset to Off so switching to chk or passing /nopgo disables PGO.
+rem Using "Off" instead of empty so Invoke-CmdScript (init.ps1) propagates the value.
+call:SetEnviromentVariable PGOBuildMode Off
+if "%fre%"=="1" if not "%_noPgo%"=="1" if not "%ARM64EC%"=="1" (
+    call:SetEnviromentVariable PGOBuildMode Optimize
+)
+set _noPgo=
 
 if "%DevEnvDir%" == "" goto :NeedDevCmd
 where msbuild >nul 2>&1

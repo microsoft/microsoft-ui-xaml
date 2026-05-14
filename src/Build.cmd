@@ -255,6 +255,7 @@ if "%_lowpriority%"=="1" (
 rem Define Configuration and Platform as global properties instead of just env vars to ensure consistent behavior with VS.
 if defined Configuration set _options=!_options! /p:Configuration=%Configuration%
 if defined Platform set _options=!_options! /p:Platform=%Platform%
+if defined PGOBuildMode set _options=!_options! /p:PGOBuildMode=%PGOBuildMode%
 
 if "%_muxfinal%"=="1" (
     if not "%_quiet%"=="1" echo Setting MUXFinalRelease...
