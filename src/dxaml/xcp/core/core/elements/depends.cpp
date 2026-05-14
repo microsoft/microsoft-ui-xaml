@@ -22,6 +22,7 @@
 #include <SimplePropertiesHelpers.h>
 #include <UIAWrapper.h>
 #include <string>
+#include "XamlTelemetry.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -776,6 +777,26 @@ _Check_return_ HRESULT CDependencyObject::TryReCreateUIAWrapper()
 // like downloads and animation.
 _Check_return_ HRESULT CDependencyObject::Enter(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams params)
 {
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "DependencyObject_Enter",
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingUInt32(GetContext()->GetFrameNumber(), "FrameNumber"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingWideString(m_strName.IsNull() ? L"" : m_strName.GetBuffer(), "Name"),
+        TraceLoggingWideString(CDependencyObject::TypeIndexToType(GetTypeIndex()), "Type"),
+        TraceLoggingUInt16(static_cast<uint16_t>(GetTypeIndex()), "TypeIndex"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    auto onExit = wil::scope_exit([this]()
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "DependencyObject_Enter",
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingUInt32(GetContext()->GetFrameNumber(), "FrameNumber"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    });
+
     // If IsProcessingEnterLeave is true, then this element is already part of the
     // Enter/Leave walk. This can happen, for instance, if a custom DP's value has
     // been set to some ancestor of this node.
@@ -1035,7 +1056,7 @@ _Check_return_ HRESULT CDependencyObject::EnterImpl(_In_ CDependencyObject *pNam
         {
             pParent = GetParentInternal(false /* public */);
         }
-        
+
         if (pParent && pParent->GetTheme() != Theming::Theme::None && pParent->GetTheme() != m_theme)
         {
             IFC_RETURN(NotifyThemeChanged(pParent->GetTheme()));
@@ -2678,7 +2699,7 @@ _Check_return_ HRESULT CDependencyObject::PegManagedPeer( bool isShutdownExcepti
     {
         return S_FALSE;
     }
-    
+
     // It isn't clear why this code to participate was added. Participating doesn't seem necessary,
     // because pegging a peer doesn't make it stateful. Keep this code to reduce risk and try
     // to remove it in the future after re-evaluation.
@@ -4088,7 +4109,7 @@ void CDependencyObject::SetVisualTree(_In_ VisualTree* visualTree)
         ASSERT(GetVisualTree() == nullptr);
     }
     else
-    {        
+    {
         if (IsActive())
         {
             // We don't expect an element to change trees while active. The exception is flyouts, on which Enter
@@ -4134,4 +4155,70 @@ bool CDependencyObject::StoreWarningContext(WarningContextLog::WarningContextTyp
     warningInfo.push_back(std::move(typeIndex));
 
     return OnWarningEncountered(type, &warningInfo, framesToSkip);
+}
+
+const WCHAR* CDependencyObject::TypeIndexToType(KnownTypeIndex typeIndex)
+{
+    switch (typeIndex)
+    {
+        case KnownTypeIndex::Grid: return L"Microsoft.UI.Xaml.Controls.Grid";
+        case KnownTypeIndex::Border: return L"Microsoft.UI.Xaml.Controls.Border";
+        case KnownTypeIndex::ContentPresenter: return L"Microsoft.UI.Xaml.Controls.ContentPresenter";
+        case KnownTypeIndex::ContentControl: return L"Microsoft.UI.Xaml.Controls.ContentControl";
+        case KnownTypeIndex::ControlTemplate: return L"Microsoft.UI.Xaml.Controls.ControlTemplate";
+        case KnownTypeIndex::ColumnDefinition: return L"Microsoft.UI.Xaml.Controls.ColumnDefinition";
+        case KnownTypeIndex::RowDefinition: return L"Microsoft.UI.Xaml.Controls.RowDefinition";
+        case KnownTypeIndex::Button: return L"Microsoft.UI.Xaml.Controls.Button";
+        case KnownTypeIndex::AppBarButton: return L"Microsoft.UI.Xaml.Controls.AppBarButton";
+        case KnownTypeIndex::FontIcon: return L"Microsoft.UI.Xaml.Controls.FontIcon";
+        case KnownTypeIndex::TextBlock: return L"Microsoft.UI.Xaml.Controls.TextBlock";
+
+        case KnownTypeIndex::Control: return L"Control";
+        case KnownTypeIndex::SolidColorBrush: return L"SolidColorBrush";
+        case KnownTypeIndex::Enumerated: return L"Enumerated";
+        case KnownTypeIndex::GridViewItem: return L"GridViewItem";
+        case KnownTypeIndex::UIElementCollection: return L"UIElementCollection";
+        case KnownTypeIndex::StackPanel: return L"StackPanel";
+        case KnownTypeIndex::Page: return L"Page";
+        case KnownTypeIndex::ListViewItemPresenter: return L"ListViewItemPresenter";
+        case KnownTypeIndex::SplitView: return L"SplitView";
+        case KnownTypeIndex::GridViewHeaderItem: return L"GridViewHeaderItem";
+        case KnownTypeIndex::XamlCompositionBrushBase: return L"XamlCompositionBrushBase";
+        case KnownTypeIndex::ScrollBar: return L"ScrollBar";
+        case KnownTypeIndex::CheckBox: return L"CheckBox";
+        case KnownTypeIndex::Flyout: return L"Flyout";
+        case KnownTypeIndex::Matrix: return L"Matrix";
+
+        case KnownTypeIndex::Binding: return L"Microsoft.UI.Xaml.Data.Binding";
+        case KnownTypeIndex::RelativeSource: return L"Microsoft.UI.Xaml.Data.RelativeSource";
+        case KnownTypeIndex::TemplateBinding: return L"Microsoft.UI.Xaml.Data.TemplateBinding";
+
+        case KnownTypeIndex::Style: return L"Microsoft.UI.Xaml.Style";
+        case KnownTypeIndex::Setter: return L"Microsoft.UI.Xaml.Setter";
+
+        case KnownTypeIndex::VisualState: return L"Microsoft.UI.Xaml.VisualState";
+        case KnownTypeIndex::VisualTransition: return L"Microsoft.UI.Xaml.VisualTransition";
+        case KnownTypeIndex::VisualStateGroup: return L"Microsoft.UI.Xaml.VisualStateGroup";
+        case KnownTypeIndex::VisualStateGroupCollection: return L"VisualStateGroupCollection";
+        case KnownTypeIndex::VisualTransitionCollection: return L"VisualTransitionCollection";
+        case KnownTypeIndex::VisualStateCollection: return L"VisualStateCollection";
+
+        case KnownTypeIndex::AddDeleteThemeTransition: return L"Microsoft.UI.Xaml.Media.Animation.AddDeleteThemeTransition";
+        case KnownTypeIndex::ContentThemeTransition: return L"Microsoft.UI.Xaml.Media.Animation.ContentThemeTransition";
+        case KnownTypeIndex::DiscreteDoubleKeyFrame: return L"Microsoft.UI.Xaml.Media.Animation.DiscreteDoubleKeyFrame";
+        case KnownTypeIndex::DiscreteObjectKeyFrame: return L"Microsoft.UI.Xaml.Media.Animation.DiscreteObjectKeyFrame";
+        case KnownTypeIndex::DoubleAnimationUsingKeyFrames: return L"Microsoft.UI.Xaml.Media.Animation.DoubleAnimationUsingKeyFrames";
+        case KnownTypeIndex::DoubleAnimation: return L"Microsoft.UI.Xaml.Media.Animation.DoubleAnimation";
+        case KnownTypeIndex::DragItemThemeAnimation: return L"Microsoft.UI.Xaml.Media.Animation.DragItemThemeAnimation";
+        case KnownTypeIndex::DragOverThemeAnimation: return L"Microsoft.UI.Xaml.Media.Animation.DragOverThemeAnimation";
+        case KnownTypeIndex::DropTargetItemThemeAnimation: return L"Microsoft.UI.Xaml.Media.Animation.DropTargetItemThemeAnimation";
+        case KnownTypeIndex::EntranceThemeTransition: return L"Microsoft.UI.Xaml.Media.Animation.EntranceThemeTransition";
+        case KnownTypeIndex::FadeOutThemeAnimation: return L"Microsoft.UI.Xaml.Media.Animation.FadeOutThemeAnimation";
+        case KnownTypeIndex::ObjectAnimationUsingKeyFrames: return L"Microsoft.UI.Xaml.Media.Animation.ObjectAnimationUsingKeyFrames";
+        case KnownTypeIndex::ReorderThemeTransition: return L"Microsoft.UI.Xaml.Media.Animation.ReorderThemeTransition";
+        case KnownTypeIndex::SplineDoubleKeyFrame: return L"Microsoft.UI.Xaml.Media.Animation.SplineDoubleKeyFrame";
+        case KnownTypeIndex::Storyboard: return L"Microsoft.UI.Xaml.Media.Animation.Storyboard";
+        case KnownTypeIndex::TransitionCollection: return L"Microsoft.UI.Xaml.Media.Animation.TransitionCollection";
+    }
+    return L"Unknown type";
 }
