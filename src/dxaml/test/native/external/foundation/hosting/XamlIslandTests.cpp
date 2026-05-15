@@ -3478,6 +3478,180 @@ void XamlIslandTests::ValidateUiaAfterVisualTreeReset()
     LowBudgetWaitForIdle(ih);
 }
 
+void XamlIslandTests::ValidateUiaConcurrentWithIslandClose()
+{
+    // Regression test: a re-entrant UIA call (bounding-rect / property fetch)
+    // could land in CXamlIslandRoot::GetScreenOffset() during the COM modal
+    // pump inside UIADisconnectAllProviders. By the time the pump dispatched
+    // the queued call, Dispose() had already nulled m_contentRoot but UIA
+    // had not yet been disconnected; the CUIAWindow validator was still
+    // valid. The dispatched call therefore reached GetScreenOffset() which
+    // dereferenced the null ContentIsland and AV'd.
+    //
+    // Fix (PR introducing this test):
+    //   1. XamlIsland::Close() calls CXamlIslandRoot::DisconnectUIA() at the
+    //      *top* of Close, so UIADisconnectAllProviders runs *before*
+    //      m_contentRoot is nulled. Any in-flight UIA call dispatched by
+    //      that modal pump still sees a live ContentIsland.
+    //   2. CUIAWindow::get_BoundingRectangle() returns E_FAIL when the
+    //      validator is no longer valid (defense-in-depth against any other
+    //      stale-call paths).
+    //   3. CXamlIslandRoot::GetScreenOffset() returns { 0, 0 } when the
+    //      ContentIsland is already torn down (defense-in-depth).
+    //
+    // Strategy: spin up a worker thread in an MTA apartment that hammers
+    // IUIAutomationElement::get_CurrentBoundingRectangle on the island's
+    // root in a tight loop. UIA cross-thread-marshals these calls onto the
+    // island UI thread's message queue. When XamlIsland::Close runs and
+    // pumps inside UIADisconnectAllProviders, queued calls are drained --
+    // pre-fix, at least one of those drained calls lands inside
+    // GetScreenOffset with a null ContentIsland and AVs the test process.
+    // Post-fix, UIA is disconnected before m_contentRoot is nulled, so the
+    // drained calls either complete cleanly or get short-circuited by the
+    // validator check. Either way, no AV.
+    //
+    // We do multiple iterations to amplify the race -- one Close may not be
+    // enough to align with the worker, but eight iterations make a pre-fix
+    // crash overwhelmingly likely.
+
+    constexpr int IterationCount = 8;
+
+    for (int iter = 0; iter < IterationCount; ++iter)
+    {
+        LOG_OUTPUT(L"=== ValidateUiaConcurrentWithIslandClose iteration %d ===", iter);
+
+        XamlIslandTestHelper testHelper(this);
+        testHelper.StartAppOnCurrentThread();
+        testHelper.StartAndPrepNewUIThreadWithWindow();
+
+        IslandHelper^ ih;
+        DesktopWindowXamlSource^ dwxs;
+        HWND dwxsHwnd {};
+
+        testHelper.RunOnIslandUIThread([&]()
+        {
+            ih = IslandHelper::CreateOnCurrentThreadAndNewWindow(m_windowClassAtom);
+        });
+
+        testHelper.RunOnIslandUIThread([&]()
+        {
+            dwxs = safe_cast<DesktopWindowXamlSource^>(ih->DesktopWindowXamlSource);
+
+            auto sp = ref new StackPanel();
+            sp->Width = 300;
+            sp->Height = 300;
+            sp->Background = ref new SolidColorBrush(ColorHelper::FromArgb(0xff, 0xff, 0xff, 0xff));
+            for (int i = 0; i < 8; ++i)
+            {
+                auto btn = ref new Button();
+                wchar_t nameBuf[32];
+                swprintf_s(nameBuf, L"Btn%d", i);
+                Platform::String^ name = ref new Platform::String(nameBuf);
+                btn->Content = name;
+                xaml_automation::AutomationProperties::SetName(btn, name);
+                sp->Children->Append(btn);
+            }
+            dwxs->Content = sp;
+
+            VERIFY_SUCCEEDED(ABI::Microsoft::UI::GetWindowFromWindowId(
+                ABI::Microsoft::UI::WindowId { dwxs->SiteBridge->WindowId.Value },
+                &dwxsHwnd));
+        });
+        LowBudgetWaitForIdle(ih);
+
+        // Sanity: hwnd was created.
+        VERIFY_IS_TRUE(dwxsHwnd != nullptr);
+
+        Event workerReady;
+        Event stopWorker;
+        LONG totalCalls = 0;
+        LONG successfulCalls = 0;
+        LONG failedCalls = 0;
+        HWND hwndForWorker = dwxsHwnd;
+
+        wil::unique_handle worker = RunOnNewThread([hwndForWorker, &workerReady, &stopWorker,
+                                                     &totalCalls, &successfulCalls, &failedCalls]()
+        {
+            VERIFY_SUCCEEDED(::CoInitializeEx(nullptr, COINIT_MULTITHREADED));
+
+            wrl::ComPtr<IUIAutomation> automation;
+            HRESULT hrCreate = ::CoCreateInstance(
+                CLSID_CUIAutomation8,
+                nullptr,
+                CLSCTX_INPROC_SERVER,
+                IID_PPV_ARGS(&automation));
+            if (FAILED(hrCreate))
+            {
+                LOG_OUTPUT(L"  Worker: CoCreateInstance(CUIAutomation8) failed hr=0x%08x", hrCreate);
+                workerReady.Set();
+                ::CoUninitialize();
+                return;
+            }
+
+            wrl::ComPtr<IUIAutomationElement> rootElement;
+            HRESULT hrEfh = automation->ElementFromHandle(hwndForWorker, &rootElement);
+            if (FAILED(hrEfh) || !rootElement)
+            {
+                LOG_OUTPUT(L"  Worker: ElementFromHandle failed hr=0x%08x", hrEfh);
+                workerReady.Set();
+                ::CoUninitialize();
+                return;
+            }
+
+            workerReady.Set();
+
+            while (!stopWorker.HasFired())
+            {
+                RECT r {};
+                HRESULT hr = rootElement->get_CurrentBoundingRectangle(&r);
+                ::InterlockedIncrement(&totalCalls);
+                if (SUCCEEDED(hr))
+                {
+                    ::InterlockedIncrement(&successfulCalls);
+                }
+                else
+                {
+                    ::InterlockedIncrement(&failedCalls);
+                }
+            }
+
+            rootElement.Reset();
+            automation.Reset();
+            ::CoUninitialize();
+        });
+
+        workerReady.WaitForDefault();
+
+        // Let the worker hammer for a bit so there are queued calls when
+        // Close runs.
+        ::Sleep(150);
+
+        // Close the island. Pre-fix: cross-thread UIA calls dispatched by
+        // UIADisconnectAllProviders' modal pump can AV in GetScreenOffset.
+        testHelper.RunOnIslandUIThread([&]()
+        {
+            LOG_OUTPUT(L"  Closing DesktopWindowXamlSource (iter %d).", iter);
+            CloseObject(dwxs);
+        });
+        LowBudgetWaitForIdle(ih);
+
+        // Let any racing calls drain, then stop the worker.
+        ::Sleep(50);
+        stopWorker.Set();
+        WaitForSingleObjectWithTimeout(worker);
+
+        LOG_OUTPUT(L"  Iter %d worker calls: total=%d succeeded=%d failed=%d",
+            iter,
+            static_cast<int>(::InterlockedAdd(&totalCalls, 0)),
+            static_cast<int>(::InterlockedAdd(&successfulCalls, 0)),
+            static_cast<int>(::InterlockedAdd(&failedCalls, 0)));
+
+        // Sanity: the worker did some work. (If it produced zero calls we'd
+        // be racing a no-op, which would weaken this regression test.)
+        VERIFY_IS_TRUE(totalCalls > 0, L"Worker should have produced at least one UIA call.");
+    }
+}
+
 void XamlIslandTests::ValidateDispatcherShutdownModeInIslandsApp()
 {
     XamlIslandTestHelper testHelper(this);

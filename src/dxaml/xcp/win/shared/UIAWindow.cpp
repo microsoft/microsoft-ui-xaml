@@ -523,6 +523,13 @@ HRESULT STDMETHODCALLTYPE CUIAWindow::get_BoundingRectangle(_Out_ UiaRect * pRet
 {
     UIA_TRACE(L"CUIAWindow::get_BoundingRectangle");
     if (pRetVal == nullptr) return E_INVALIDARG;
+
+    // Reject the call if the island this provider belongs to has been torn down.
+    if (!m_pUIAWindowValidator || !m_pUIAWindowValidator->IsValid())
+    {
+        return E_FAIL;
+    }
+
     HRESULT hr = E_NOTIMPL;
     XRECTF rect = { 0, 0, 0, 0 };
     if (ShouldFrameworkProvideWindowProperties())

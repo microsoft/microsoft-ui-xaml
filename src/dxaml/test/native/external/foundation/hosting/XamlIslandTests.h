@@ -194,6 +194,9 @@ public:
 
     TEST_METHOD(CloseIslandWhileAsbPopupOpening)
     TEST_METHOD(ValidateUiaAfterVisualTreeReset)
+    BEGIN_TEST_METHOD(ValidateUiaConcurrentWithIslandClose)
+        TEST_METHOD_PROPERTY(L"Description", L"Regression test: a UIA query racing with XamlIsland::Close must not AV inside CXamlIslandRoot::GetScreenOffset / CUIAWindow::get_BoundingRectangle.")
+    END_TEST_METHOD()
 
     TEST_METHOD(ValidateDispatcherShutdownModeInIslandsApp)
     TEST_METHOD(ValidateDispatcherShutdownModeInDesktopApp)

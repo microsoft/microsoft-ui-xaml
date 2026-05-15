@@ -379,6 +379,14 @@ IFACEMETHODIMP XamlIsland::Close()
 
     m_bClosed = true;
 
+    // Tell UIA Core we're going away BEFORE any island teardown
+    // that may pump messages and cause reentrancy. This will allow
+    // UIA Core to disconnect from us and avoid trying to talk to us during teardown.
+    if (m_pXamlIslandCore != nullptr)
+    {
+        m_pXamlIslandCore->DisconnectUIA();
+    }
+
     if (m_systemBackdrop.Get() != nullptr)
     {
         ctl::ComPtr<DirectUI::SystemBackdrop> systemBackdrop;
