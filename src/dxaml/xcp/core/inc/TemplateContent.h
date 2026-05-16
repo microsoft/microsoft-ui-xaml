@@ -102,7 +102,7 @@ private:
         _In_ CCoreServices *pCore,
         _In_ const std::shared_ptr<XamlServiceProviderContext>& spServiceProviderContext,
         _In_ const std::shared_ptr<XamlReader>& spReader,
-        _In_ xref_ptr<CResourceDictionary>& pResourceDictionary,
+        _Inout_ xref_ptr<CResourceDictionary>& pResourceDictionary,
         _Out_ bool* pbResourceFromReadOnlyDictionary);
 
     _Check_return_ static HRESULT ResolveReferenceAndAddToLocalDictionary(
@@ -110,7 +110,7 @@ private:
         _In_ const std::shared_ptr<XamlServiceProviderContext>& spServiceProviderContext,
         _In_ const xstring_ptr& strKey,
         _In_ const bool isStaticResource,
-        _In_ xref_ptr<CResourceDictionary>& pResourceDictionary,
+        _Inout_ xref_ptr<CResourceDictionary>& pResourceDictionary,
         _Out_ bool* pbResourceFromReadOnlyDictionary);
 
     _Check_return_ HRESULT RemoveObjectReferencesFromStack();

@@ -3,18 +3,12 @@
 
 #pragma once
 
-#include <powrprof.h>
-
 //
 // A class that returns the refresh rate and waits for a vblank.
 //
 // The refresh rate comes from DComp's GetFrameStatistics. The scheduling thread doesn't have the DComp device; the UI
 // thread does, so the UI thread queries it and sets it on this object. The schduling thread reads it off this object.
 //
-using unique_powerhpowernotify = wil::unique_any<
-    HPOWERNOTIFY,
-    decltype(&::PowerSettingUnregisterNotification),
-    ::PowerSettingUnregisterNotification>;
 
 class RefreshRateInfo
     : public CXcpObjectBase<CXcpObjectAddRefPolicy>
@@ -28,8 +22,6 @@ public:
 
     _Check_return_ HRESULT WaitForRefreshInterval();
 
-    void SetIsDisplayOn(bool isDisplayOn);
-
 private:
     RefreshRateInfo(_In_ IPALClock* clock);
     ~RefreshRateInfo();
@@ -40,7 +32,6 @@ private:
     // WaitForCompositorClock
     auto GetWaitForCompositorClockFn();
     _Check_return_ HRESULT TryWaitForCompositorClock(_Out_ bool* waitForCompositorClockFound);
-    void RegisterForPowerNotification();
 
 private:
 
@@ -48,7 +39,5 @@ private:
     wrl::ComPtr<IPALClock> m_clock;
 
     // WaitForCompositorClock
-    bool m_isDisplayOn {true};
-    unique_powerhpowernotify m_hOcclusion;
     HMODULE m_dcompModule = 0;
 };
