@@ -6,111 +6,53 @@
 namespace DirectUI
 {
     class PropertyPathListener;
+    class PropertyPathStep;
     
+    enum class PropertyPathStepDescriptorKind : XUINT8
+    {
+        None = 0,
+        SourceAccess,
+        PropertyAccess,
+        IntIndexer,
+        StringIndexer,
+        DependencyProperty,
+    };
+
     class PropertyPathStepDescriptor
     {
     public:
+        PropertyPathStepDescriptor() noexcept;
+        ~PropertyPathStepDescriptor() noexcept;
 
-        virtual ~PropertyPathStepDescriptor()
-        { }
-        
-    public:
+        // This is going in a vector and we want it to be move-only.
+        PropertyPathStepDescriptor(const PropertyPathStepDescriptor&) = delete;
+        PropertyPathStepDescriptor& operator=(const PropertyPathStepDescriptor&) = delete;
 
-        virtual _Check_return_ HRESULT CreateStep(
-            _In_ PropertyPathListener *pListener, 
-            bool fListenToChanges, 
-            _Outptr_ PropertyPathStep **ppStep) = 0;
-    };
+        PropertyPathStepDescriptor(PropertyPathStepDescriptor&& other) noexcept;
+        PropertyPathStepDescriptor& operator=(PropertyPathStepDescriptor&& other) noexcept;
 
-    class SourceAccessPathStepDescriptor:
-        public PropertyPathStepDescriptor
-    {
-    public:
-
-        _Check_return_ HRESULT CreateStep(
-            _In_ PropertyPathListener *pListener, 
-            bool fListenToChanges, 
-            _Outptr_ PropertyPathStep **ppStep) override;
-    };
-
-    class PropertyAccessPathStepDescriptor:
-        public PropertyPathStepDescriptor
-    {
-    public:
-
-        PropertyAccessPathStepDescriptor(_In_z_ WCHAR *szName);
-        ~PropertyAccessPathStepDescriptor() override;
-
-    public: 
+        static PropertyPathStepDescriptor CreateSourceAccess() noexcept;
+        static PropertyPathStepDescriptor CreatePropertyAccess(_In_z_ WCHAR* szName) noexcept; // takes ownership
+        static PropertyPathStepDescriptor CreateIntIndexer(XUINT32 nIndex) noexcept;
+        static PropertyPathStepDescriptor CreateStringIndexer(_In_z_ WCHAR* szIndex) noexcept; // takes ownership
+        static PropertyPathStepDescriptor CreateDependencyProperty(_In_ const CDependencyProperty* pDP) noexcept;
 
         _Check_return_ HRESULT CreateStep(
-            _In_ PropertyPathListener *pListener, 
-            bool fListenToChanges, 
-            _Outptr_ PropertyPathStep **ppStep) override;
+            _In_ PropertyPathListener* pListener,
+            bool fListenToChanges,
+            _Outptr_ PropertyPathStep** ppStep) const;
 
     private:
-
-        WCHAR *m_szName;
-    };
-
-    class IntIndexerPathStepDescriptor:
-        public PropertyPathStepDescriptor
-    {
-    public:
-
-        IntIndexerPathStepDescriptor(XUINT32 nIndex);
-        
-    public:
-
-        _Check_return_ HRESULT CreateStep(
-            _In_ PropertyPathListener *pListener, 
-            bool fListenToChanges, 
-            _Outptr_ PropertyPathStep **ppStep) override;
+        void Reset() noexcept;
+        void MoveFrom(_Inout_ PropertyPathStepDescriptor& other) noexcept;
 
     private:
-
-        XUINT32 m_nIndex;
-    };
-
-    class StringIndexerPathStepDescriptor:
-        public PropertyPathStepDescriptor
-    {
-    public:
-
-        StringIndexerPathStepDescriptor(_In_z_ WCHAR *szIndex);
-        ~StringIndexerPathStepDescriptor() override;
-
-    public:
-
-        _Check_return_ HRESULT CreateStep(
-            _In_ PropertyPathListener *pListener, 
-            bool fListenToChanges, 
-            _Outptr_ PropertyPathStep **ppStep) override;
-
-    private:
-
-        WCHAR *m_szIndex;
-    };
-
-
-    class DependencyPropertyPathStepDescriptor:
-        public PropertyPathStepDescriptor
-    {
-    public:
-
-        DependencyPropertyPathStepDescriptor(_In_ const CDependencyProperty *pDP);
-        ~DependencyPropertyPathStepDescriptor() override;
-
-    public:
-
-        _Check_return_ HRESULT CreateStep(
-            _In_ PropertyPathListener *pListener, 
-            bool fListenToChanges, 
-            _Outptr_ PropertyPathStep **ppStep) override;
-
-    private:
-
-        const CDependencyProperty *m_pDP;
-        
+        PropertyPathStepDescriptorKind m_kind;
+        union
+        {
+            WCHAR* m_szText;
+            XUINT32 m_nIndex;
+            const CDependencyProperty* m_pDP;
+        };
     };
 }
