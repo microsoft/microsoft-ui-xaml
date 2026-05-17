@@ -2021,13 +2021,34 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
     // Make sure we are tracking leaks for this test in case a previous test had disabled it.
     ErrorHandlingHelper::TrackLeaksForTest();
 
+    // Check for a Data:PerfOptIn light-weight data-driven parameter.  Tests declare
+    // TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{true}") or L"{false}" in the header,
+    // and TAEF makes the value available via TestData during TestSetup.
+    // Currently PerfOptIn defaults to true.
+    bool perfOptInValue = true;
+    {
+        WEX::Common::String value;
+        if (SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"PerfOptIn", value)))
+        {
+            perfOptInValue = (value.CompareNoCase(L"true") == 0);
+            LOG_OUTPUT(L"PerfOptIn test data found: \"%s\" -> %s", (const wchar_t*)value, perfOptInValue ? L"ON" : L"OFF");
+        }
+    }
+
     bool wasPreviouslyEnabled = false;
 
     wrl::ComPtr<IXamlTestHooks> windowTestHooks = nullptr;
 
     RunOnUIThread([&]() {
         windowTestHooks = WindowHelper::GetTestHooks();
+
         windowTestHooks->SetRuntimeEnabledFeatureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableCoreShutdown, true, &wasPreviouslyEnabled);
+
+        // Set PerfOptIn override if a test data parameter was specified.
+        windowTestHooks->SetRuntimeEnabledFeatureOverride(
+            RuntimeFeatureBehavior::RuntimeEnabledFeature::ForcePerfOptIn,
+            perfOptInValue,
+            nullptr);
         });
 
     HostingMode hostingMode = HostingMode::UAP;

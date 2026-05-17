@@ -75,6 +75,7 @@ namespace RuntimeFeatureBehavior
         DisableDWriteTypographicModel,
         ForceDWriteTypographicModel,        // overides DisableDWriteTypographicModel
         EnableReentrancyChecksAllowPaused, // If XAML dispatch is paused, then to allow process without creating the reentrancy guard, else to enable the reentrancy checks.
+        ForcePerfOptIn, // Opts in to perf optimizations gated behind this flag (e.g. inline DO accessor in PropertyAccessPathStep).
 
         // Insert new enum values before this one.
         // This is used to initialize the lengths of the
