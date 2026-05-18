@@ -28,26 +28,12 @@ public:
     static winrt::DependencyProperty ItemsStretchProperty() { return s_ItemsStretchProperty; }
     static winrt::DependencyProperty LineSpacingProperty() { return s_LineSpacingProperty; }
     static winrt::DependencyProperty OrientationProperty() { return s_OrientationProperty; }
-    static winrt::DependencyProperty PaddingProperty() { return s_PaddingProperty; }
 
     static GlobalDependencyProperty s_ItemSpacingProperty;
     static GlobalDependencyProperty s_ItemsStretchProperty;
     static GlobalDependencyProperty s_LineSpacingProperty;
     static GlobalDependencyProperty s_OrientationProperty;
     static GlobalDependencyProperty s_PaddingProperty;
-
-    static void EnsureProperties();
-    static void ClearProperties();
-
-    static void OnItemSpacingPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnItemsStretchPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnLineSpacingPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

@@ -145,6 +145,12 @@ if "%_clean%"=="1" (
     set _restore=1
 )
 
+
+if "%EnvironmentInitialized%" == "" (
+    echo Please run init.cmd to ensure environment is properly initialized
+    exit /b 1
+)
+
 rem When we build the XAML compiler as part of the same build that consumes the XAML compiler,
 rem we can hit build breaks caused by MSBuild instances trying to produce DLLs that it's
 rem already loaded.  To avoid that, we'll build the parts of the XAML compiler we need to build
