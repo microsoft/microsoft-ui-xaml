@@ -47,6 +47,15 @@
     <Page Include="$(MSBuildThisFileDirectory)ColorSpectrum.xaml">
       <Type>DefaultStyle</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ColorPicker.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ColorPicker_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ColorSpectrum.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)Common.idl" />

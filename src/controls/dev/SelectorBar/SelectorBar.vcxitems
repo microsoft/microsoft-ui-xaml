@@ -42,6 +42,14 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SelectorBar.xaml">
+      <Version>RS1</Version>
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SelectorBar_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)SelectorBar.idl" />

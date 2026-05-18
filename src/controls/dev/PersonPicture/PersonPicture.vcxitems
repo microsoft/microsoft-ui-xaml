@@ -36,6 +36,12 @@
     <Page Include="$(MSBuildThisFileDirectory)PersonPicture_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PersonPicture.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PersonPicture_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />

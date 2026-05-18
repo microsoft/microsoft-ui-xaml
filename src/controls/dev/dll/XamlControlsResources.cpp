@@ -50,13 +50,14 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
+    const bool isPerf2026Enabled = false; // TODO: Decide based on opt-in flag, task.ms/60958581
 
     // We choose the URI to use at runtime based on whether we want compact resources
     winrt::Uri uri{
-        [useCompactResources]() -> hstring {
+        [useCompactResources, isPerf2026Enabled]() -> hstring {
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-            hstring postfix = L"themeresources.xaml";
+            hstring postfix = isPerf2026Enabled && !useCompactResources ? L"themeresources_perf2026.xaml" : L"themeresources.xaml";
 
             return packagePrefix + compactPrefix + postfix;
         }()
@@ -174,7 +175,10 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
 
     if (auto control = controlProtected.try_as<winrt::IControl>())
     {
-        winrt::Uri uri{L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic.xaml"};
+        const bool isPerf2026Enabled = false; // TODO: Decide based on opt-in flag, task.ms/60958581
+        winrt::Uri uri{isPerf2026Enabled
+            ? L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic_perf2026.xaml"
+            : L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic.xaml"};
         control.DefaultStyleResourceUri(uri);
     }
 }
