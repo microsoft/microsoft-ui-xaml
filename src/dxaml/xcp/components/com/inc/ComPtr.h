@@ -14,6 +14,7 @@
 #include <ComUtils.h>
 #include <corerror.h>
 #include <mindebug.h>
+#include <MuxActivationFactory.h>
 
 namespace ctl
 {
@@ -985,7 +986,9 @@ namespace ctl
         _In_  HSTRING activatableClassId,
               Internal::ComPtrRef<T> factory)
     {
-        return wf::GetActivationFactory(activatableClassId, factory.ReleaseAndGetAddressOf());
+        return MuxGetActivationFactory(
+            activatableClassId,
+            factory.ReleaseAndGetAddressOf());
     }
 
     // This is to match the definition of GetActivationFactory from roapi.h. This way we can always use
@@ -995,7 +998,7 @@ namespace ctl
         _In_  HSTRING activatableClassId,
         _Out_ T** factory)
     {
-        return wf::GetActivationFactory(activatableClassId, factory);
+        return MuxGetActivationFactory(activatableClassId, factory);
     }
 
     template <class T>

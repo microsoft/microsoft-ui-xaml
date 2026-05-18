@@ -149,6 +149,7 @@
         <ClCompile Include="Utility_Stub.cpp"/>
         <ClCompile Include="RuntimeProfiler_unittests.cpp"/>
         <ClCompile Include="DebugOutput_Stub.cpp" />
+        <ClCompile Include="MuxActivationFactory_Stub.cpp"/>
     </ItemGroup>
 
     <ItemGroup>

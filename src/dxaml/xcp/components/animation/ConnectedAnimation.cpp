@@ -11,6 +11,7 @@
 #include <DependencyObjectTraits.g.h>
 #include "UIElement.h"
 #include "Corep.h"
+#include <MuxActivationFactory.h>
 #include "UIElementCollection.h"
 #include "DOPointerCast.h"
 #include "Transforms.h"
@@ -1001,7 +1002,7 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     effect->put_Name(wrl_wrappers::HStringReference(L"Crossfade").Get());
 
     Microsoft::WRL::ComPtr<WUComp::ICompositionEffectSourceParameterFactory> effectSourceFactory;
-    IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEffectSourceParameter).Get(), &effectSourceFactory));
+    IFC_RETURN(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEffectSourceParameter).Get(), &effectSourceFactory));
 
     // Create two graphics source parameters that we will use to set our brushes into the effect.
     {

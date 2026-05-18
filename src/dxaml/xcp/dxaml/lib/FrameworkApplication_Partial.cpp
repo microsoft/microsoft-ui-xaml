@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "FrameworkApplication.g.h"
+#include <MuxActivationFactory.h>
 #include "DebugSettings.g.h"
 #include "WindowCreatedEventArgs.g.h"
 #include "ApplicationInitializationCallbackParams.g.h"
@@ -199,7 +200,7 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     wrl::ComPtr<msy::IDispatcherQueueController> dispatcherQueueController;
     wrl::ComPtr<msy::IDispatcherQueueController2> dispatcherQueueController2;
 
-    IFCFAILFAST(wf::GetActivationFactory(
+    IFCFAILFAST(MuxGetActivationFactory(
         wrl::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueueController).Get(),
         &dispatcherQueueControllerStatics));
     IFCFAILFAST(dispatcherQueueControllerStatics->CreateOnCurrentThread(&dispatcherQueueController));
@@ -227,7 +228,7 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     }
 
     // Create WindowsXamlManager (WindowsXamlManager::Initialize will call FrameworkApplication::StartOnCurrentThread())
-    IFCFAILFAST(ctl::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Hosting_WindowsXamlManager).Get(), &windowsXamlManagerFactory));
+    IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Hosting_WindowsXamlManager).Get(), windowsXamlManagerFactory.ReleaseAndGetAddressOf()));
     IFCFAILFAST(windowsXamlManagerFactory->InitializeForCurrentThread(&windowsXamlManager));
 
     // We must have an XAML application instance at this point

@@ -14,6 +14,7 @@
 #include "DirectManipulationHelper.h"
 #include <d2d1.h>
 #include <RuntimeEnabledFeatures.h>
+#include <MuxActivationFactory.h>
 #include <DependencyLocator.h>
 #include <DMDeferredRelease.h>
 #include "RemapVirtualKey.h"
@@ -5248,7 +5249,7 @@ wrl::ComPtr<ixp::IPointerPoint> CDirectManipulationService::GetPointerPointFromP
 {
     if (m_pointerPointStatics == nullptr)
     {
-        IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(STR_LEN_PAIR(RuntimeClass_Microsoft_UI_Input_PointerPoint)).Get(), &m_pointerPointStatics));
+        IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(STR_LEN_PAIR(RuntimeClass_Microsoft_UI_Input_PointerPoint)).Get(), &m_pointerPointStatics));
     }
 
     wrl::ComPtr<ixp::IPointerPoint> pointerPoint;

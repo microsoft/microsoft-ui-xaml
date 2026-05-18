@@ -555,6 +555,8 @@ class __declspec(uuid("e57cf768-857d-4a33-9579-169799a10ed4")) ActivationFactory
 public:
     static std::shared_ptr<ActivationFactoryCache> GetActivationFactoryCache();
 
+    ~ActivationFactoryCache();
+
     void ResetCache();
 
     HRESULT GetDispatcherQueueStatics(_Outptr_ msy::IDispatcherQueueStatics** statics);
@@ -573,6 +575,32 @@ public:
     ixp::IInputPointerSourceStatics* GetInputPointerSourceStatics();
     ixp::IInputActivationListenerStatics2* GetInputActivationListenerStatics2();
     ixp::IInputNonClientPointerSourceStatics* GetInputNonClientPointerSourceStatics();
+
+    // Fast path for activation factory lookups. For known Microsoft.UI.*
+    // namespaces, calls DllGetActivationFactory directly on the target DLL
+    // instead of going through RoGetActivationFactory (which is expensive).
+    // Falls back to RoGetActivationFactory for unknown namespaces or on failure.
+    // See docs/design-notes/fast-activation-factory-lookup.md for details.
+    template <typename T>
+    HRESULT MuxGetActivationFactory(_In_ HSTRING activatableClassId, _COM_Outptr_ T** factory)
+    {
+        return MuxGetActivationFactoryImpl(activatableClassId, __uuidof(T), reinterpret_cast<void**>(factory));
+    }
+
+    template <typename T>
+    HRESULT MuxGetActivationFactory(_In_ HSTRING activatableClassId, wrl::Details::ComPtrRef<T> factory)
+    {
+        return MuxGetActivationFactoryImpl(activatableClassId,
+            __uuidof(typename T::InterfaceType),
+            reinterpret_cast<void**>(factory.ReleaseAndGetAddressOf()));
+    }
+
+    // Non-template implementation of the fast activation factory lookup.
+    // Public so the free-function wrapper (in MuxActivationFactory.h) can call it.
+    HRESULT MuxGetActivationFactoryImpl(
+        _In_ HSTRING activatableClassId,
+        _In_ REFIID iid,
+        _COM_Outptr_ void** factory);
 
 private:
     // Multiple threads can be accessing the activation factories stored here.
@@ -598,6 +626,39 @@ private:
     wrl::ComPtr<ixp::IInputPointerSourceStatics> m_inputPointerSourceStatics;
     wrl::ComPtr<ixp::IInputActivationListenerStatics2> m_inputActivationListenerStatics2;
     wrl::ComPtr<ixp::IInputNonClientPointerSourceStatics> m_inputNonClientPointerSourceStatics;
+
+    // Bundles a cached HMODULE with a flag tracking whether we already tried
+    // to load it, so we don't retry on every call if the DLL is missing.
+    struct CachedModule
+    {
+        wil::unique_hmodule handle;
+        bool loadAttempted = false;
+
+        HMODULE get() const { return handle.get(); }
+        explicit operator bool() const { return static_cast<bool>(handle); }
+        void reset() { handle.reset(); loadAttempted = false; }
+    };
+
+    // Cached HMODULEs for DLLs we call DllGetActivationFactory on directly.
+    // We hold these references so the DLLs stay loaded for our lifetime, since
+    // COM doesn't know we're using them (we bypass RoGetActivationFactory).
+    CachedModule m_dcompiModule;        // dcompi.dll (Microsoft.UI.Composition.*)
+    CachedModule m_muxcModule;          // Microsoft.UI.Xaml.Controls.dll
+    CachedModule m_inputModule;         // Microsoft.UI.Input.dll (Input.* and Content.*)
+    CachedModule m_dispatchingModule;   // CoreMessagingXP.dll (Microsoft.UI.Dispatching.*)
+
+
+
+    // Try to activate via DllGetActivationFactory on a specific module.
+    static HRESULT TryGetActivationFactoryFromModule(
+        _In_ HMODULE module,
+        _In_ HSTRING activatableClassId,
+        _In_ REFIID iid,
+        _COM_Outptr_ void** factory);
+
+    // Lazily load a DLL from our module directory via LoadLibraryExW.
+    // Uses double-checked locking. Returns the cached HMODULE (may be null).
+    HMODULE EnsureModuleLoaded(CachedModule& cachedModule, _In_z_ const WCHAR* dllName);
 };
 
 //------------------------------------------------------------------------
