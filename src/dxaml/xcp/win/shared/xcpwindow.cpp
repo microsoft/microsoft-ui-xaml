@@ -11,7 +11,9 @@
 #include "Microsoft.UI.Dispatching.h"
 
 #include "GraphicsTelemetry.h"
+#if __has_include("DXamlCoreTipTests.h")
 #include "DXamlCoreTipTests.h"
+#endif
 
 //------------------------------------------------------------------------
 //
@@ -470,10 +472,12 @@ CXcpDispatcher::Create(
 
     IFC(pWindow->Init(pSite));
 
+#if __has_include("DXamlCoreTipTests.h")
     // DXamlCore.cpp - Tip Test
     // Init is called once
     // DispatcherQueue created
     tip::open<DXamlInitializeCoreTest>().set_flag(TIP_reason(DXamlInitializeCoreTest::reason::created_dispatcher_xcpwindow));
+#endif
 
     *ppInterface = static_cast<IXcpDispatcher *>(pWindow);
     pWindow = NULL;
