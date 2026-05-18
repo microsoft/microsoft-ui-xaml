@@ -1816,16 +1816,20 @@ D2DTextDrawingContext::HWBuildGlyphRunTextures(
 
     ID2D1DeviceContext *pSharedD2DDeviceContextNoRef = nullptr;
 
-    {
-        CD3D11Device *pDeviceNoRef = pHWRenderParams->pRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
-        IFC_RETURN(pDeviceNoRef->EnsureD2DResources());
-        CD3D11SharedDeviceGuard guard;
-        IFC_RETURN(pDeviceNoRef->TakeLockAndCheckDeviceLost(&guard));
-        pSharedD2DDeviceContextNoRef = pDeviceNoRef->GetD2DDeviceContext(&guard);
+    // The shared D2D device context returned by GetD2DDeviceContext is only valid while the
+    // CD3D11SharedDeviceGuard is held. CD3D11DeviceInstance owns the ComPtr in m_d2dDeviceContexts
+    // and clears it under the same lock during device-lost recovery, so releasing the guard before
+    // we are done with the pointer creates a use-after-free window. Hold the guard for the entire
+    // duration of pSharedD2DDeviceContextNoRef use, including the batching loop below that calls
+    // GetGlyphRunTransformAndBounds (which calls SetTransform on the context).
+    CD3D11Device *pDeviceNoRef = pHWRenderParams->pRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+    IFC_RETURN(pDeviceNoRef->EnsureD2DResources());
+    CD3D11SharedDeviceGuard guard;
+    IFC_RETURN(pDeviceNoRef->TakeLockAndCheckDeviceLost(&guard));
+    pSharedD2DDeviceContextNoRef = pDeviceNoRef->GetD2DDeviceContext(&guard);
 
-        // Apply DPI settings to ID2D1DeviceContext in order to benefit from D2D rendering optimizations.
-        m_pTextCore->GetWinTextCore()->ApplyLogicalDpiSettings(pSharedD2DDeviceContextNoRef);
-    }
+    // Apply DPI settings to ID2D1DeviceContext in order to benefit from D2D rendering optimizations.
+    m_pTextCore->GetWinTextCore()->ApplyLogicalDpiSettings(pSharedD2DDeviceContextNoRef);
 
     //
     // Batch glyph runs together, where possible.
