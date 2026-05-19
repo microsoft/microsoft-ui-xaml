@@ -109,7 +109,7 @@ private:
 
     bool HasSortedChildren() const { return m_ppSortedUIElements != NULL; }
 
-    bool NeedsToSort(_In_ const std::vector<CDependencyObject*>& unsortedUIElements) const;
+    bool NeedsToSort(_In_ const CDOCollection::storage_type& unsortedUIElements) const;
 
     void DestroySortedCollection();
     UINT SortChildren(const std::vector<CUIElement*>& additionalElements, bool additionalElementsAboveChildren);

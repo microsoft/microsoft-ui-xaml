@@ -382,7 +382,7 @@ _Check_return_ HRESULT CAnimation::RequestNextTickForKeyFrames(
         ASSERT(durationType == DirectUI::DurationType::TimeSpan);
 
         const auto& sortedKeyFrames = m_pKeyFrames->GetSortedCollection();
-        const XUINT32 frameCount = sortedKeyFrames.size();
+        const XUINT32 frameCount = static_cast<XUINT32>(sortedKeyFrames.size());
 
         FAIL_FAST_ASSERT(frameCount == m_pKeyFrames->GetCount());
 

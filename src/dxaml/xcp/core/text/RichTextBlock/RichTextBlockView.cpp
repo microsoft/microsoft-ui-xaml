@@ -427,7 +427,7 @@ int RichTextBlockView::GetAdjustedPosition(int charIndex)
     else
     {
         CDependencyObject *previousBlock = nullptr;
-        auto blockCollection = owningRichTextBlock->m_pBlocks->GetCollection();
+        const auto& blockCollection = owningRichTextBlock->m_pBlocks->GetCollection();
         for (auto block : blockCollection)
         {
             // Account for the offset at the end of each paragraph before searching the next one
@@ -489,7 +489,7 @@ int RichTextBlockView::GetCharacterIndex(int position)
     else
     {
         CDependencyObject *previousBlock = nullptr;
-        auto blockCollection = owningRichTextBlock->m_pBlocks->GetCollection();
+        const auto& blockCollection = owningRichTextBlock->m_pBlocks->GetCollection();
         for (auto block : blockCollection)
         {
             // Account for the offset at the end of each paragraph before searching the next one

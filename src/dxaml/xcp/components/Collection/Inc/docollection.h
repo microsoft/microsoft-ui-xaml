@@ -5,6 +5,7 @@
 
 #include <xref_ptr.h>
 #include "collectionbase.h"
+#include "CompactInlineVector.h"
 
 struct ICollectionChangeCallback;
 
@@ -12,7 +13,28 @@ class CDOCollection
     : public CCollection
 {
 public:
-    typedef std::vector<CDependencyObject*> storage_type;
+    // Use CompactInlineVector with inline storage for 2 elements to reduce heap allocations
+    // for common small collections (16 bytes overhead vs 56+ for std::vector with stack_allocator).
+    // Here's what a histogram of collection sizes looks like on a real-world scenario:
+    //
+    //   Bucket       Count      %
+    //   --------  --------  -----
+    //   0              696  23.70
+    //   1             1229  41.85
+    //   2              503  17.13
+    //   3              144   4.90
+    //   4               87   2.96
+    //   5-7            137   4.66
+    //   8-15           100   3.40
+    //   16-31           26   0.89
+    //   32-63           11   0.37
+    //   64-127           1   0.03
+    //   128-255          0   0.00
+    //   256+             3   0.10
+    //
+    // Why 2? Because the % of collections with size 0-2 is 82.68%.
+    static constexpr size_t InlineStorageCapacity = 2;
+    using storage_type = CompactInlineVector<CDependencyObject*, InlineStorageCapacity>;
 
 #if defined(__XAML_UNITTESTS__)
     CDOCollection()  // !!! FOR UNIT TESTING ONLY !!!

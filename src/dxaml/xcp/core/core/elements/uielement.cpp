@@ -7757,7 +7757,7 @@ bool CUIElement::ReferenceTrackerWalkCore(
         {
             // Iterate using the actual CDOCollection::m_items instead of CDOCollection::GetCount/GetItem
             // because CDOCollection::GetCount will return 0 if it is processing Neat().
-            const std::vector<CDependencyObject*>& children = pChildren->GetCollection();
+            const auto& children = pChildren->GetCollection();
             for (unsigned int i = 0; i < children.size(); i++)
             {
                 CDependencyObject *pChildNoRef = children[i];

@@ -76,7 +76,7 @@ VALIDATE_TYPE_LAYOUT(                                CKeyTime,   64,   80,  104)
 VALIDATE_TYPE_LAYOUT(      CNoParentShareableDependencyObject,   56,   72,  104) // 3
 VALIDATE_TYPE_LAYOUT(                       CFrameworkElement,  304,  320,  440) // 3
 VALIDATE_TYPE_LAYOUT(                              CTextBlock,  424,  440,  640) // 4
-VALIDATE_TYPE_LAYOUT(                     CResourceDictionary,  188,  208,  352) // 4
+VALIDATE_TYPE_LAYOUT(                     CResourceDictionary,  196,  216,  360) // 4
 VALIDATE_TYPE_LAYOUT(                          CRichTextBlock,  444,  460,  672) // 4
 VALIDATE_TYPE_LAYOUT(          CObjectAnimationUsingKeyFrames,  288,  304,  456) // 4
 VALIDATE_TYPE_LAYOUT(                                CBinding,   52,   68,   96) // 4
@@ -85,7 +85,7 @@ VALIDATE_TYPE_LAYOUT(                 CManagedObjectReference,   72,   88,  128)
 VALIDATE_TYPE_LAYOUT(                       CContentPresenter,  344,  360,  504) // 4
 VALIDATE_TYPE_LAYOUT(                        CDoubleAnimation,  240,  256,  384) // 4
 VALIDATE_TYPE_LAYOUT(   CMultiParentShareableDependencyObject,   72,   88,  136) // 4
-VALIDATE_TYPE_LAYOUT(                     CTimelineCollection,   84,  100,  160) // 5
+VALIDATE_TYPE_LAYOUT(                     CTimelineCollection,   92,  108,  168) // 5
 VALIDATE_TYPE_LAYOUT(                                  CBrush,   80,   96,  152) // 5
 VALIDATE_TYPE_LAYOUT(                         CContentControl,  408,  424,  608) // 5
 VALIDATE_TYPE_LAYOUT(                             CStoryboard,  232,  248,  352) // 5
@@ -95,7 +95,7 @@ VALIDATE_TYPE_LAYOUT(                                   CGrid,  340,  356,  504)
 VALIDATE_TYPE_LAYOUT(                              CRectangle,  392,  408,  544) // 5
 VALIDATE_TYPE_LAYOUT(                             CStackPanel,  332,  348,  480) // 5
 VALIDATE_TYPE_LAYOUT(                                 CSetter,  108,  124,  200) // 6
-VALIDATE_TYPE_LAYOUT(               CDoubleKeyFrameCollection,   88,  104,  168) // 6
-VALIDATE_TYPE_LAYOUT(               CObjectKeyFrameCollection,   88,  104,  168) // 6
+VALIDATE_TYPE_LAYOUT(               CDoubleKeyFrameCollection,   96,  112,  176) // 6
+VALIDATE_TYPE_LAYOUT(               CObjectKeyFrameCollection,   96,  112,  176) // 6
 VALIDATE_TYPE_LAYOUT(                        CSolidColorBrush,   92,  108,  176) // 6
 VALIDATE_TYPE_LAYOUT(                        CMatrixTransform,   84,  100,  160) // 7

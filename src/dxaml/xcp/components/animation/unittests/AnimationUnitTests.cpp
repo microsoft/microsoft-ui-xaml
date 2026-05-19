@@ -10,6 +10,7 @@
 #include "Duration.h"
 #include "KeySpline.h"
 #include "DCompAnimationUnitTestHelper.h"
+#include "docollection.h"
 
 using namespace std::placeholders;
 
@@ -22,7 +23,7 @@ void AnimationUnitTests::ValidateGetNaturalDurationFromKeyFrames()
 
     {
         LOG_OUTPUT(L"Null KeyFrames");
-        std::vector<CDependencyObject*> emptyKeyFrames;
+        CDOCollection::storage_type emptyKeyFrames;
 
         CAnimation::GetNaturalDurationFromKeyFrames(
             emptyKeyFrames,
@@ -43,7 +44,7 @@ void AnimationUnitTests::ValidateGetNaturalDurationFromKeyFrames()
         CLinearDoubleKeyFrame frame1;
         CKeyTime time123(123.321); frame1.SetKeyTime(&time123);
 
-        std::vector<CDependencyObject*> keyFrames;
+        CDOCollection::storage_type keyFrames;
         keyFrames.push_back(&frame0);
         keyFrames.push_back(&frame1);
 
@@ -63,7 +64,7 @@ void AnimationUnitTests::ValidateGetNaturalDurationFromKeyFrames()
 
         CLinearDoubleKeyFrame noKeyTime;
 
-        std::vector<CDependencyObject*> keyFrames;
+        CDOCollection::storage_type keyFrames;
         keyFrames.push_back(&noKeyTime);
 
         CAnimation::GetNaturalDurationFromKeyFrames(
@@ -84,7 +85,7 @@ void AnimationUnitTests::ValidateGetNaturalDurationFromKeyFrames()
         CLinearDoubleKeyFrame frame1;
         CKeyTime time456(456.789); frame1.SetKeyTime(&time456);
 
-        std::vector<CDependencyObject*> keyFrames;
+        CDOCollection::storage_type keyFrames;
         keyFrames.push_back(&frame0);
         keyFrames.push_back(&frame1);
 
@@ -108,7 +109,7 @@ void AnimationUnitTests::ValidateGetNaturalDurationFromKeyFrames()
 
         CLinearDoubleKeyFrame frame1;
 
-        std::vector<CDependencyObject*> keyFrames;
+        CDOCollection::storage_type keyFrames;
         keyFrames.push_back(&frame0);
         keyFrames.push_back(&frame1);
 
