@@ -44,6 +44,7 @@
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
 #include "Geometry.h"
+#include <stack_vector.h>
 
 using namespace DirectUI;
 using namespace Focus;
@@ -4433,12 +4434,47 @@ bool CPopupRoot::ReplayPointerUpdate()
     UINT popupsThatReplayedPointerUpdate = 0;
     if (m_pOpenPopups != nullptr)
     {
+        // Snapshot the open popups before iterating.  Inside CPopup::ReplayPointerUpdate
+        // (-> WindowedPopupInputSiteAdapter::ReplayPointerUpdate) we synthesize a real
+        // pointer event and run it through the input pipeline, which executes app-side
+        // handlers that can synchronously close *other* popups (light-dismiss, cascading
+        // menus, focus-loss handlers, etc.).  Closing a popup runs RemoveFromOpenPopupList
+        // -> CXcpList::Remove, which `delete pTemp;` the XCPListNode regardless of the
+        // bDoDelete parameter (that flag only spares the data, not the node itself).
+        // Iterating m_pOpenPopups across that inner call therefore dereferences a freed
+        // XCPListNode leading to Access Violation.
+        //
+        // Holding strong refs (xref_ptr) is required, not just raw pointers, because
+        // CPopup::AsyncRelease only defers `delete this` -- the final-release path still
+        // runs CDependencyObject::start_destroying / ResetReferencesFromChildren
+        // synchronously, leaving a partially-destroyed CPopup that ReplayPointerUpdate
+        // would otherwise still walk.
+        //
+        // We re-check IsOpen() per-popup before replaying so a popup that prior
+        // iterations' reentrancy has already closed is skipped (m_fIsOpen is cleared in
+        // the IsOpen=false setter before Close() runs, so IsOpen() is a reliable
+        // post-reentrancy "still in m_pOpenPopups" proxy).
+        //
+        // 4 covers the typical 0..3 simultaneously-open popups (main popup +
+        // cascading sub-menu(s) / tooltip / focus visual) without heap allocation;
+        // stack_vector spills to the heap transparently if exceeded.
+
+        constexpr size_t typicalOpenPopupCount = 4;
+        Jupiter::stack_vector<xref_ptr<CPopup>, typicalOpenPopupCount> openPopupsSnapshot;
+        
         for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
         {
-            CPopup* pPopup = pNode->m_pData;
-            if (pPopup && !pPopup->IsUnloading())
+            if (CPopup* pPopup = pNode->m_pData)
             {
-                bool popupPointerUpdateReplayed = pPopup->ReplayPointerUpdate();
+                openPopupsSnapshot.m_vector.emplace_back(pPopup);
+            }
+        }
+
+        for (const auto& popup : openPopupsSnapshot.m_vector)
+        {
+            if (popup->IsOpen() && !popup->IsUnloading())
+            {
+                bool popupPointerUpdateReplayed = popup->ReplayPointerUpdate();
                 if (popupPointerUpdateReplayed)
                 {
                     popupsThatReplayedPointerUpdate++;

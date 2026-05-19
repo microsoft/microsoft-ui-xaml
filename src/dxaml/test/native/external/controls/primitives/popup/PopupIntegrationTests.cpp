@@ -239,6 +239,200 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         });
     }
 
+    void PopupIntegrationTests::ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash()
+    {
+        // Original 2-popup repro (popupA + popupB).  Snapshot fits within the inline
+        // stack_vector capacity (typicalOpenPopupCount = 4) so the inline arena is
+        // exercised, not the heap-allocated path.
+        ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrashHelper(0 /* extraOpenPopupCount */);
+    }
+
+    void PopupIntegrationTests::ReplayPointerUpdate_PopupClosedDuringReplay_WithManyOpenPopups_DoesNotCrash()
+    {
+        // 5 extra dummy popups + popupA + popupB = 7 total open popups when
+        // CPopupRoot::ReplayPointerUpdate iterates, exceeding typicalOpenPopupCount = 4
+        // and forcing the snapshot Jupiter::stack_vector to spill from its inline
+        // arena to the heap.  Exercises the same reentrant-close UAF path on the
+        // heap-allocated snapshot.
+        ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrashHelper(5 /* extraOpenPopupCount */);
+    }
+
+    void PopupIntegrationTests::ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrashHelper(size_t extraOpenPopupCount)
+    {
+        // The bug: CPopupRoot::ReplayPointerUpdate iterates m_pOpenPopups and calls
+        // CPopup::ReplayPointerUpdate per-popup, which delivers a synthesized pointer event.
+        // App-side handlers may synchronously close *other* popups during that delivery
+        // (light-dismiss, cascading menus, focus-loss handlers, etc.).  Closing a popup runs
+        // RemoveFromOpenPopupList -> CXcpList::Remove, which deletes the XCPListNode the outer
+        // iterator is referencing -> use-after-free on the next pNode = pNode->m_pNext step.
+        //
+        // The repro: open popupA, hover the mouse over its content, then open popupB at the
+        // same location.  Opening popupB triggers a layout-driven ReplayPreviousPointerUpdate.
+        // popupB is at the head of m_pOpenPopups (CXcpList::Add head-prepends, so head = most
+        // recently opened) so its replay fires first; buttonB's PointerEntered handler
+        // synchronously closes popupA, which frees popupA's XCPListNode -- the same node the
+        // outer iterator is about to advance to.
+        //
+        // When extraOpenPopupCount > 0, additional dummy popups are opened *before* popupA so
+        // they sit later in the head-prepend iteration order (after popupA).  They have no
+        // PointerEntered handlers and sit far outside the popupA/popupB hit-test zone, so
+        // their CPopup::ReplayPointerUpdate calls are no-ops (they never received a pointer
+        // message, so WindowedPopupInputSiteAdapter::ReplayPointerUpdate early-returns when
+        // m_previousPointerPoint is null).  Their only role is to inflate m_pOpenPopups: when
+        // (extraOpenPopupCount + 2) > typicalOpenPopupCount the snapshot Jupiter::stack_vector
+        // exceeds its inline arena capacity and spills to the heap.
+        TestCleanupWrapper cleanup;
+
+        xaml_primitives::Popup^ popupA = nullptr;
+        xaml_primitives::Popup^ popupB = nullptr;
+        xaml_controls::Button^ buttonA = nullptr;
+        xaml_controls::Button^ buttonB = nullptr;
+        std::vector<xaml_primitives::Popup^> dummyPopups(extraOpenPopupCount, nullptr);
+
+        auto popupAOpenedEvent = std::make_shared<Event>();
+        auto popupBOpenedEvent = std::make_shared<Event>();
+        auto popupAClosedEvent = std::make_shared<Event>();
+
+        auto popupAOpenedReg = CreateSafeEventRegistration(xaml_primitives::Popup, Opened);
+        auto popupBOpenedReg = CreateSafeEventRegistration(xaml_primitives::Popup, Opened);
+        auto popupAClosedReg = CreateSafeEventRegistration(xaml_primitives::Popup, Closed);
+        auto buttonBPointerEnteredReg = CreateSafeEventRegistration(xaml_controls::Button, PointerEntered);
+
+        RunOnUIThread([&]()
+        {
+            auto root = ref new xaml_controls::Grid();
+            root->Width = 600;
+            root->Height = 600;
+            root->Background = ref new xaml_media::SolidColorBrush(mu::Colors::Red);
+
+            buttonA = ref new xaml_controls::Button();
+            buttonA->Content = "A";
+            buttonA->Width = 200;
+            buttonA->Height = 200;
+
+            buttonB = ref new xaml_controls::Button();
+            buttonB->Content = "B";
+            buttonB->Width = 200;
+            buttonB->Height = 200;
+
+            popupA = ref new xaml_primitives::Popup();
+            popupA->Child = buttonA;
+            popupA->VerticalOffset = 10;
+            popupA->HorizontalOffset = 10;
+            popupA->IsLightDismissEnabled = true;
+
+            // popupB sits over the same logical region as popupA so that the still-hot
+            // pointer hits buttonB the moment popupB opens.
+            popupB = ref new xaml_primitives::Popup();
+            popupB->Child = buttonB;
+            popupB->VerticalOffset = 10;
+            popupB->HorizontalOffset = 10;
+            popupB->IsLightDismissEnabled = true;
+
+            // Dummy popups: a 1x1 Rectangle child at offset (400, 400), well outside the
+            // (10, 10)..(210, 210) buttonA/buttonB hit-test zone.  Non-light-dismiss so
+            // they stay open through the scenario and remain in m_pOpenPopups when
+            // CPopupRoot::ReplayPointerUpdate iterates.
+            for (size_t i = 0; i < dummyPopups.size(); ++i)
+            {
+                auto dummyChild = ref new xaml_shapes::Rectangle();
+                dummyChild->Width = 1;
+                dummyChild->Height = 1;
+
+                auto dummy = ref new xaml_primitives::Popup();
+                dummy->Child = dummyChild;
+                dummy->VerticalOffset = 400;
+                dummy->HorizontalOffset = 400;
+                dummy->IsLightDismissEnabled = false;
+                dummyPopups[i] = dummy;
+            }
+
+            popupAOpenedReg.Attach(popupA, ref new wf::EventHandler<Platform::Object^>(
+                [popupAOpenedEvent](Platform::Object^, Platform::Object^) { popupAOpenedEvent->Set(); }));
+            popupBOpenedReg.Attach(popupB, ref new wf::EventHandler<Platform::Object^>(
+                [popupBOpenedEvent](Platform::Object^, Platform::Object^) { popupBOpenedEvent->Set(); }));
+            popupAClosedReg.Attach(popupA, ref new wf::EventHandler<Platform::Object^>(
+                [popupAClosedEvent](Platform::Object^, Platform::Object^) { popupAClosedEvent->Set(); }));
+
+            TestServices::WindowHelper->WindowContent = root;
+
+            for (auto& dummy : dummyPopups)
+            {
+                dummy->XamlRoot = root->XamlRoot;
+            }
+            popupA->XamlRoot = root->XamlRoot;
+            popupB->XamlRoot = root->XamlRoot;
+
+            // Open dummies first so they're prepended to m_pOpenPopups before popupA.
+            // CXcpList::Add prepends at head, so post-open list order (head -> tail) becomes:
+            //     popupA, dummyN, dummyN-1, ..., dummy1
+            // After popupB opens later (head = most recent), it becomes:
+            //     popupB, popupA, dummyN, ..., dummy1
+            // i.e. popupA remains the next-iterated node after popupB.
+            for (auto& dummy : dummyPopups)
+            {
+                dummy->IsOpen = true;
+            }
+
+            popupA->IsOpen = true;
+        });
+
+        popupAOpenedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Move the mouse over popupA's button so the input system caches a "previous pointer"
+        // state that the subsequent layout-driven replay will use.
+        TestServices::InputHelper->MoveMouse(buttonA);
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Arm the reentrancy bomb on buttonB.  When buttonB receives PointerEntered during
+        // popupB's CPopup::ReplayPointerUpdate (head of m_pOpenPopups), close popupA
+        // synchronously.  popupA is the *next* node the outer iterator will advance to;
+        // closing it here frees that node's XCPListNode mid-iteration on unfixed code.
+        RunOnUIThread([&]()
+        {
+            buttonBPointerEnteredReg.Attach(buttonB,
+                ref new xaml_input::PointerEventHandler(
+                    [&popupA](Platform::Object^, xaml_input::PointerRoutedEventArgs^)
+                    {
+                        LOG_OUTPUT(L"buttonB PointerEntered fired during replay; closing popupA synchronously.");
+                        if (popupA != nullptr)
+                        {
+                            popupA->IsOpen = false;
+                        }
+                    }));
+        });
+
+        // Open popupB while the pointer is still hot.  Opening popupB mutates the visual tree
+        // under the hot pointer; the input pipeline responds with a
+        // CCoreServices::ReplayPreviousPointerUpdate that routes through
+        // CXamlIslandRoot::ReplayPointerUpdate -> CPopupRoot::ReplayPointerUpdate.
+        RunOnUIThread([&]()
+        {
+            popupB->IsOpen = true;
+        });
+
+        popupBOpenedEvent->WaitForDefault();
+        popupAClosedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        // The whole point of this test: we should reach this line at all (no AV).
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_FALSE(popupA->IsOpen);
+            VERIFY_IS_TRUE(popupB->IsOpen);
+
+            // Dummies were strong-ref'd in the snapshot, then their ReplayPointerUpdate ran
+            // as a no-op (no cached pointer message, so WindowedPopupInputSiteAdapter's
+            // early-return path was hit).  Verify they remained open through the iteration,
+            // which also confirms no cascading close happened during the replay.
+            for (auto& dummy : dummyPopups)
+            {
+                VERIFY_IS_TRUE(dummy->IsOpen);
+            }
+        });
+    }
+
     void PopupIntegrationTests::PopupTabStop()
     {
         TestCleanupWrapper cleanup;

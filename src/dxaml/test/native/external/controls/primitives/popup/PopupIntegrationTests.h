@@ -39,6 +39,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
           END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a popup synchronously closing a sibling popup during pointer-event replay does not free the XCPListNode the outer iterator is sitting on.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
+          END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ReplayPointerUpdate_PopupClosedDuringReplay_WithManyOpenPopups_DoesNotCrash)
+            TEST_METHOD_PROPERTY(L"Description", L"Same as ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrash but with enough additional open popups (>typicalOpenPopupCount=4) to force the snapshot Jupiter::stack_vector in CPopupRoot::ReplayPointerUpdate to spill to the heap, validating the reentrant-close fix on the heap-allocated path.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop") // Mouse injection is unreliable on OneCore
+          END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(PopupTabStop)
             TEST_METHOD_PROPERTY(L"Description", L"Verify that tab/shift tab on a LightDismiss Popup will update the focus for its children.")
         END_TEST_METHOD()
@@ -284,6 +296,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void WindowedPopupHWNDBounds1Helper(bool isParented, bool popupChildIsCanvas);
         void WindowedPopupHWNDBounds2Helper(bool isParented, bool popupChildIsCanvas);
         void WindowedPopupPointerInputCoordsHelper(bool isRTL);
+        void ReplayPointerUpdate_PopupClosedDuringReplay_DoesNotCrashHelper(size_t extraOpenPopupCount);
     };
 
 } } } } } } }
