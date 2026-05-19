@@ -11,7 +11,6 @@
 
 #include <RuntimeEnabledFeaturesEnum.h>
 #include <IVisualStateGroupCollectionTestHooks.h>
-#include <VisualStateGroupCollectionCustomRuntimeData.h>
 
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
@@ -124,6 +123,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         static const wchar_t* s_sampleVsg6 =
             L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x = 'http://schemas.microsoft.com/winfx/2006/xaml'>"
+            L" <Grid.Resources>"
+            L"   <x:String x:Key='ControlNormalAnimationDuration'>00:00:00.250</x:String>"
+            L" </Grid.Resources>"
             L"<VisualStateManager.VisualStateGroups>"
             L"    <VisualStateGroup>"
             L"        <VisualStateGroup.Name>VSG1</VisualStateGroup.Name>"
@@ -134,7 +136,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             L"        </VisualState>"
             L"        <VisualState x:Name='VS2'/>"
             L"        <VisualStateGroup.Transitions>"
-            L"            <VisualTransition GeneratedDuration='0:0:0.1' To='VS2' From='VS1'>"
+            L"            <VisualTransition GeneratedDuration='{StaticResource ControlNormalAnimationDuration}' To='VS2' From='VS1'>"
             L"                <Storyboard Duration='0:0:0.1'>"
             L"                    <DoubleAnimation Storyboard.TargetName='AnimationTarget' Storyboard.TargetProperty='Opacity' From='1' To='0'/>"
             L"                </Storyboard>"
@@ -182,6 +184,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 auto visualStateGroupNames = vsgcTestHooks->GetVisualStateGroupNames();
                 VERIFY_ARE_EQUAL(visualStateGroupNames->size(), static_cast<size_t>(1));
                 VERIFY_ARE_EQUAL((*visualStateGroupNames)[0], std::wstring(s_vsg1Name));
+
+                VERIFY_IS_FALSE(vsgcTestHooks->ShouldRuntimeDataBailOut());
             });
         }
 
@@ -198,6 +202,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 auto visualStateGroupNames = vsgcTestHooks->GetVisualStateGroupNames();
                 VERIFY_ARE_EQUAL(visualStateGroupNames->size(), static_cast<size_t>(1));
                 VERIFY_ARE_EQUAL((*visualStateGroupNames)[0], std::wstring(s_vsg1Name));
+
+                VERIFY_IS_FALSE(vsgcTestHooks->ShouldRuntimeDataBailOut());
             });
         }
 
@@ -214,6 +220,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 auto visualStateGroupNames = vsgcTestHooks->GetVisualStateGroupNames();
                 VERIFY_ARE_EQUAL(visualStateGroupNames->size(), static_cast<size_t>(1));
                 VERIFY_ARE_EQUAL((*visualStateGroupNames)[0], std::wstring(s_vsg1Name));
+
+                VERIFY_IS_FALSE(vsgcTestHooks->ShouldRuntimeDataBailOut());
             });
         }
 
@@ -231,6 +239,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VERIFY_ARE_EQUAL(visualStateNames->size(), static_cast<size_t>(2));
                 VERIFY_ARE_EQUAL((*visualStateNames)[0], std::wstring(s_vs1Name));
                 VERIFY_ARE_EQUAL((*visualStateNames)[1], std::wstring(s_vs2Name));
+
+                VERIFY_IS_FALSE(vsgcTestHooks->ShouldRuntimeDataBailOut());
             });
         }
 
@@ -248,6 +258,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 VERIFY_ARE_EQUAL(visualStateGroupNames->size(), static_cast<size_t>(2));
                 VERIFY_IS_TRUE(vsgcTestHooks->DoesVisualStateGroupHaveTransitions(0));
                 VERIFY_IS_TRUE(!vsgcTestHooks->DoesVisualStateGroupHaveTransitions(1));
+
+                VERIFY_IS_FALSE(vsgcTestHooks->ShouldRuntimeDataBailOut());
             });
         }
 
@@ -262,7 +274,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 GetVisualStateGroupTestHooksFromRootElement(vsgcContainingGrid, &vsgcTestHooks);
 
                 auto visualStateGroupNames = vsgcTestHooks->GetVisualStateGroupNames();
-                VERIFY_IS_FALSE(visualStateGroupNames);
+                VERIFY_IS_NULL(visualStateGroupNames);
+
+                VERIFY_IS_FALSE(vsgcTestHooks->ShouldRuntimeDataBailOut());
             });
         }
 
@@ -281,6 +295,22 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
                 xaml_animation::Storyboard^ createdStoryboard = dynamic_cast<xaml_animation::Storyboard^>(createdObjectInCX);
                 VERIFY_IS_NOT_NULL(createdStoryboard);
+
+                VERIFY_IS_FALSE(vsgcTestHooks->ShouldRuntimeDataBailOut());
+            });
+        }
+
+        void VisualStateGroupCollectionCustomWriterBasicTests::ValidateMarkupExtensionInTransitionPropertyDoesNotForceBailout()
+        {
+            TestCleanupWrapper cleanup;
+
+            RunOnUIThread([&]() {
+                auto vsgcContainingGrid = safe_cast<Grid^>(Markup::XamlReader::Load(
+                    Platform::StringReference(s_sampleVsg6)));
+                wrl::ComPtr<IVisualStateGroupCollectionTestHooks> vsgcTestHooks;
+                GetVisualStateGroupTestHooksFromRootElement(vsgcContainingGrid, &vsgcTestHooks);
+
+                VERIFY_IS_FALSE(vsgcTestHooks->ShouldRuntimeDataBailOut());
             });
         }
 

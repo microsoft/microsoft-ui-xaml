@@ -133,6 +133,11 @@ private:
         // up to ignore the tokens assosicated with the storyboard.
         WritingVisualTransitionStoryboard,
 
+        // Push/Popped at MemberBegin/MemberEnd, sets the CustomWriter
+        // up to ignore the tokens associated with the current VisualTransition's
+        // GeneratedDuration and GeneratedEasingFunction properties
+        WritingVisualTransitionDurationOrEasingFunction,
+
         // Push/Popped at MemberBegin/MemberEnd, indicates that the CustomWriter is currently
         // deferring the nodestream to collect the storyboard and will wait until it sees the 
         // MemberEnd tag at the correct depth and then leave this operation.

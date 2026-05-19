@@ -142,7 +142,8 @@
     <ClInclude Include="customTypes\XDeferCustomPageResourcesDT.xaml.h">
       <DependentUpon>customTypes\XDeferCustomPageResourcesDT.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="dataBinding\tests/BindingIntegrationTests.h" />
+    <ClInclude Include="dataBinding\tests\BindingIntegrationTests.h" />
+    <ClInclude Include="deferral\VisualStateGroupCollectionCustomWriterBasicTests.h" />
     <ClInclude Include="flyweight\FlyweightTests.h" />
     <ClInclude Include="layering\Layering.CustomTypes.h" />
     <ClInclude Include="layering\FrameworkElementExTests.h" />
@@ -211,6 +212,7 @@
     <ClCompile Include="customTypes\XDeferCustomPageNested.xaml.cpp" />
     <ClCompile Include="customTypes\XDeferCustomPageResourcesDT.xaml.cpp" />
     <ClCompile Include="dataBinding\tests\BindingIntegrationTests.cpp" />
+    <ClCompile Include="deferral\VisualStateGroupCollectionCustomWriterBasicTests.cpp" />
     <ClCompile Include="flyweight\FlyweightTests.cpp" />
     <ClCompile Include="layering\FrameworkElementExTests.cpp" />
     <ClCompile Include="layering\InteractionTests.cpp" />

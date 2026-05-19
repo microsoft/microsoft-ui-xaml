@@ -342,6 +342,18 @@ _Check_return_ HRESULT VisualStateGroupCollectionCustomWriter::WriteMember(
                 VSMLOG(L"[VSGCCW]: Beginning member write of VisualTransition storyboard.");
                 m_pendingOperations.push_back(std::make_pair(m_stackDepth, Operation::WritingVisualTransitionStoryboard));
             }
+            else if (spProperty->get_PropertyToken().Equals(
+                XamlPropertyToken(XamlTypeInfoProviderKind::tpkNative, KnownPropertyIndex::VisualTransition_GeneratedDuration)))
+            {
+                VSMLOG(L"[VSGCCW]: Beginning member write of VisualTransition GeneratedDuration.");
+                m_pendingOperations.push_back(std::make_pair(m_stackDepth, Operation::WritingVisualTransitionDurationOrEasingFunction));
+            }
+            else if (spProperty->get_PropertyToken().Equals(
+                XamlPropertyToken(XamlTypeInfoProviderKind::tpkNative, KnownPropertyIndex::VisualTransition_GeneratedEasingFunction)))
+            {
+                VSMLOG(L"[VSGCCW]: Beginning member write of VisualTransition GeneratedEasingFunction.");
+                m_pendingOperations.push_back(std::make_pair(m_stackDepth, Operation::WritingVisualTransitionDurationOrEasingFunction));
+            }
             else
             {
                 MarkAbortIfUnexpectedToken(
@@ -447,6 +459,7 @@ _Check_return_ HRESULT VisualStateGroupCollectionCustomWriter::WriteEndMember(_O
         case Operation::WritingVisualTransitionFromName:
         case Operation::WritingVisualTransitionToName:
         case Operation::WritingVisualTransitionStoryboard:
+        case Operation::WritingVisualTransitionDurationOrEasingFunction:
         case Operation::WritingAdaptiveTriggerMinWindowWidth:
         case Operation::WritingAdaptiveTriggerMinWindowHeight:
         case Operation::WritingStaticResourceTriggerResourceKey:
