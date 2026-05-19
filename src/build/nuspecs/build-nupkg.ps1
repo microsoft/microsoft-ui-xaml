@@ -134,6 +134,7 @@ if ($NoPackageAnalysis)
 $NugetCmdLine = "$env:NUGETCMD pack $Nuspec $NugetArgs"
 Write-Host $NugetCmdLine
 Invoke-Expression $NugetCmdLine
+
 if ($lastexitcode -ne 0)
 {
     Write-Host "Nuget returned $lastexitcode"
