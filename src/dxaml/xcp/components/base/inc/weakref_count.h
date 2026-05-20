@@ -152,10 +152,14 @@ namespace xref
             typedef control_block control_block_type;
 
             optional_ref_count() WI_NOEXCEPT
-                : m_count_and_flag(1 << flag_width)
             {
-                // Default to a local ref count
-                set_local_flag();
+                // Default to a local ref count of 1, which is the equivalent of:
+                //     m_count_and_flag(1 << flag_width)
+                //     set_local_flag();
+                // But set these union members in a single operation since the compiler isn't
+                // optimizing them
+                m_count_and_flag = (1 << flag_width) | flag_mask;
+                ASSERT(!has_control_block()); // Verify flag_mask set what set_local_flag() sets
             }
 
             ~optional_ref_count() WI_NOEXCEPT

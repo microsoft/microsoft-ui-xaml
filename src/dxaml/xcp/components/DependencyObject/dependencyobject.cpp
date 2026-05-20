@@ -33,14 +33,26 @@
 
 using namespace DirectUI;
 
+// pCore should never be null for CDependencyObject's constructor in real usage -- only
+// tests sometimes construct CDependencyObjects without a core. Optimize for the production
+// scenario by delaying the s_nullCoreDefaultSharedState to on-demand and don't inline this
+// function to minimize its impact on the constructor.
+__declspec(noinline) CDOSharedState::Wrapper* GetNullDefaultDOSharedStateNoRef()
+{
+    static thread_local CDOSharedState::Wrapper s_nullCoreDefaultSharedState(
+        CDOSharedState::s_defaultCoreServices,
+        CDOSharedState::s_defaultRenderChangedHandler,
+        CDOSharedState::s_defaultBaseUri,
+        xref::weakref_ptr<VisualTree>());
+
+    return &s_nullCoreDefaultSharedState;
+}
+
 CDependencyObject::CDependencyObject(_In_opt_ CCoreServices* pCore)
     : m_sharedState(
-        Flyweight::Create<CDOSharedState>(
-              pCore,
-              pCore,
-              CDOSharedState::s_defaultRenderChangedHandler,
-              CDOSharedState::s_defaultBaseUri,
-              xref::weakref_ptr<VisualTree>()))
+        pCore
+            ? pCore->GetDefaultDOSharedStateNoRef()
+            : GetNullDefaultDOSharedStateNoRef())
 
     , m_theme(Theming::Theme::None)
     , m_isProcessingInheritanceContextChanged(false)

@@ -71,6 +71,11 @@ namespace Flyweight
             {
                 m_bucket.Reset();
             }
+
+            wrapper_type* GetDefaultNoRef()
+            {
+                return &m_default;
+            }
         };
 
 #pragma warning(suppress: 28251 28253) // Prefast says this is not consistent with itself

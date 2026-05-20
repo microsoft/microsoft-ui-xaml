@@ -2316,6 +2316,11 @@ public:
         return m_flyweightState;
     }
 
+    CDOSharedState::Wrapper* GetDefaultDOSharedStateNoRef()
+    {
+        return m_flyweightState.m_CDOSharedState.GetDefaultNoRef();
+    }
+
 private:
     containers::vector_map<CFrameworkElement*, unsigned int> m_elementsWithThemeChangedListener;
     CoreState                           m_flyweightState;
