@@ -1,41 +1,52 @@
-<!--- Provide a general summary of your changes in the Title above -->
+## Fixes
 
-## Fixes #####
-<!-- Add the relevant issue number after the word 'Fixes' mentioned above. -->
-<!-- PRs without assigned issues will be closed unless minor changes to documentation/typos. -->
+<!-- Link the issue this PR addresses. Use "Fixes #xxx" or "Closes #xxx" so GitHub auto-closes it on merge. -->
+<!-- PRs without a linked issue may be closed unless they are minor documentation/typo fixes. -->
+
+Fixes #
 
 ## PR Type
-<!-- Please try to limit your pull request to one type, submit multiple pull requests if needed -->
 
-Please check the type of change your PR introduces:
+<!-- Check the type of change. Limit each PR to one type when possible. -->
 
 - [ ] Bugfix
 - [ ] Feature
 - [ ] Code style update (formatting, renaming)
-- [ ] Refactoring (no functional changes, no api changes)
+- [ ] Refactoring (no functional changes, no API changes)
 - [ ] Build related changes
 - [ ] Documentation content changes
 - [ ] Other (please describe):
 
 ## Description
-<!--- Describe your changes in detail -->
+
+<!-- Describe your changes in detail. -->
 
 ### Current Behavior
-<!-- How does this work currently atop the latest stable release? -->
+<!-- How does this work today? -->
 
 ### New Behavior
-<!-- How will it work now with this fix? -->
+<!-- How will it work after this PR? -->
 
-### Motivation and Context
-<!--- Why is this change required? What problem does it solve? -->
-<!--- If it fixes an open issue, please link to the issue here. -->
-<!--- Use the syntax "Closes #xxx" or "Fixes #xxx" so that GitHub will close the issue once the PR is complete. -->
+## Customer Impact
+
+<!-- How does this change affect end users? Is it user-facing or internal-only? -->
+
+## Regression Potential
+
+<!-- Could this change cause regressions? What areas might be affected? -->
+
+- [ ] Low risk — isolated change, limited scope
+- [ ] Medium risk — touches shared components or public APIs
+- [ ] High risk — architectural or breaking API change
 
 ## How Has This Been Tested?
-<!--- Please describe how you tested your changes and check off the boxes below. -->
+
+<!-- Describe how you validated your changes. -->
 
 - [ ] I have performed a self-review of my own code
 - [ ] I have added tests to cover my changes
+- [ ] Existing tests pass locally
 
-## Screenshots (if appropriate):
-<!--- If you are making visual changes to a Control or adding a new Control, please include screenshots showing the result. -->
+## Screenshots (if appropriate)
+
+<!-- If you are making visual changes, include before/after screenshots. -->
