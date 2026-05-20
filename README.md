@@ -31,22 +31,22 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 
 ## 📋 Getting started with WinUI
 
-For WinUI, your app's users must be on Windows 10 1809 - Build 17763 or newer (including Windows Insider Previews).
+For WinUI, your app's users must be on Windows 10 1809 - build 17763 or newer (including Windows Insider Previews).
 
 The full documentation of WinUI can be found on [Microsoft Learn](https://learn.microsoft.com/windows/apps/):
+
 - [Get started with WinUI](https://learn.microsoft.com/windows/apps/get-started/start-here)
 - [Build your first WinUI app](https://learn.microsoft.com/windows/apps/tutorials/winui-notes/)
 - [Migrate from UWP to the Windows App SDK](https://learn.microsoft.com/windows/apps/windows-app-sdk/migrate-to-windows-app-sdk/migrate-to-windows-app-sdk-ovw)
 - [Windows Runtime APIs not supported in desktop apps](https://learn.microsoft.com/windows/apps/desktop/modernize/desktop-to-uwp-supported-api)
 - [WinUI & Windows App SDK samples](https://learn.microsoft.com/windows/apps/get-started/samples)
 
-</br>
-
 ## 🖼️ WinUI 3 Gallery
+
 Make sure to also check out the [WinUI 3 Gallery](https://aka.ms/winui-gallery), our interactive sample experience showing everything you can do with WinUI.
 
 <p align="center">
-<img src="docs/images/winui-gallery.png" alt="WinUI 3 Gallery" width="400"/>
+    <img src="docs/images/winui-gallery.png" alt="WinUI 3 Gallery" width="400"/>
 </p>
 <p align="center">
   <a style="text-decoration:none" href="https://apps.microsoft.com/detail/9P3JFPWWDZRC?launch=true&mode=full">
@@ -57,6 +57,7 @@ Make sure to also check out the [WinUI 3 Gallery](https://aka.ms/winui-gallery),
 </p>
 
 ## 📺 WinUI Community Call
+
 The WinUI Community Call is your opportunity to learn about WinUI and to engage with the WinUI team and community. Join us online on YouTube at the [Windows Developer channel](https://www.youtube.com/playlist?list=PLI_J2v67C23ZqsolUDaHoFkF1GKvGrttB).
 
 ## 📢 Contributing to WinUI
@@ -73,16 +74,17 @@ For information on how to contribute, please see [Contributing to WinUI](CONTRIB
 > [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) to check the
 > latest status.
 >
-> For the latest code and updates, use the [`winui3/main`](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/main) branch.
+> For the latest code and updates, use the [winui3/main](https://github.com/microsoft/microsoft-ui-xaml/tree/winui3/main) branch.
 
 ## 🛣️ Roadmap
 
-For info on the WinUI release schedule and high level plans please see the [WinUI roadmap](https://aka.ms/winappsdk/plans).
+For info about the WinUI release schedule and high level plans please see the [WinUI roadmap](https://aka.ms/winappsdk/plans).
 
 ## 🔧 WinUI for UWP
-WinUI for UWP (WinUI 2) is a library of controls that provides Microsoft UI controls and features for [UWP apps](https://docs.microsoft.com/windows/uwp/index). Learn more about WinUI for UWP [here](https://aka.ms/winui2) or download the source code [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui2/main).
 
-You can get the WinUI 2 Gallery [on the Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT?ocid=pdpshare) and see the source code [here](https://github.com/microsoft/WinUI-Gallery/tree/winui2).
+WinUI for UWP (WinUI 2) is a library of controls that provides Microsoft UI controls and features for [UWP apps](https://learn.microsoft.com/windows/uwp/index). Learn more about WinUI for UWP [on MS Learn](https://aka.ms/winui2) or download the source code [on GitHub](https://github.com/microsoft/microsoft-ui-xaml/tree/winui2/main).
+
+You can get the WinUI 2 Gallery [in the Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT?ocid=pdpshare) and see the source code [on GitHub](https://github.com/microsoft/WinUI-Gallery/tree/winui2).
 
 ### Data/Telemetry
 
