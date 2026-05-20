@@ -3137,28 +3137,21 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 auto headerItemRoot = TreeHelper::GetVisualChildByName(safe_cast<xaml::FrameworkElement^>(headerPanel->Children->GetAt(i)), L"Grid");
                 auto headerItemRootVisualStateGroups = xaml::VisualStateManager::GetVisualStateGroups(headerItemRoot);
 
-                xaml_animation::Storyboard^ selectedStoryboard = nullptr;
+                bool isSelected = false;
 
                 for (unsigned int j = 0; j < headerItemRootVisualStateGroups->Size; j++)
                 {
                     auto currentGroup = headerItemRootVisualStateGroups->GetAt(j);
-                    auto states = currentGroup->States;
+                    auto currentState = currentGroup->CurrentState;
 
-                    if (states)
+                    if (currentState != nullptr && Platform::String::CompareOrdinal(currentState->Name, L"Selected") == 0)
                     {
-                        for (unsigned int k = 0; k < states->Size; k++)
-                        {
-                            auto state = states->GetAt(k);
-
-                            if (Platform::String::CompareOrdinal(state->Name, L"Selected") == 0)
-                            {
-                                selectedStoryboard = state->Storyboard;
-                            }
-                        }
+                        isSelected = true;
+                        break;
                     }
                 }
 
-                if (selectedStoryboard->GetCurrentState() != xaml_animation::ClockState::Stopped)
+                if (isSelected)
                 {
                     selectedIndex = i;
                     break;

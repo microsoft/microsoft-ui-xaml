@@ -28,7 +28,7 @@
     <Page Include="$(MSBuildThisFileDirectory)DropDownButton_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)DropDownButton.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)DropDownButton_perf2026.xaml">
       <Type>StylePerf2026</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)DropDownButton_themeresources.xaml">

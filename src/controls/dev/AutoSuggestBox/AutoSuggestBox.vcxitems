@@ -24,12 +24,12 @@
     </Page>
   </ItemGroup>
   <ItemGroup Condition="$(MUXFinalRelease) != 'true'">
-    <Page Include="$(MSBuildThisFileDirectory)AutoSuggestBox_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)AutoSuggestBox_themeresources_perf2026.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
   </ItemGroup>
   <ItemGroup Condition="$(MUXFinalRelease) == 'true'">
-    <Page Include="$(MUXProjectRoot)BuildOutput\Temp\ThemeResources\AutoSuggestBox_themeresources.xaml">
+    <Page Include="$(MUXProjectRoot)BuildOutput\Temp\ThemeResources\AutoSuggestBox_themeresources_perf2026.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
   </ItemGroup>
