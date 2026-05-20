@@ -1,0 +1,58 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.InkCanvasPage"
+    x:Name="InkCanvasTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Controls Row -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+            <ComboBox x:Name="ModeSelector" AutomationProperties.Name="ModeSelector" Header="Mode" Width="120" SelectionChanged="OnModeChanged">
+                <ComboBoxItem Content="Draw" IsSelected="True" />
+                <ComboBoxItem Content="Erase" />
+                <ComboBoxItem Content="Select" />
+            </ComboBox>
+
+            <StackPanel Orientation="Vertical">
+                <TextBlock Text="Input Types" FontSize="12" />
+                <CheckBox x:Name="PenInput" AutomationProperties.Name="PenInput" Content="Pen" IsChecked="True" Checked="OnInputTypeChanged" Unchecked="OnInputTypeChanged" />
+                <CheckBox x:Name="MouseInput" AutomationProperties.Name="MouseInput" Content="Mouse" IsChecked="True" Checked="OnInputTypeChanged" Unchecked="OnInputTypeChanged" />
+                <CheckBox x:Name="TouchInput" AutomationProperties.Name="TouchInput" Content="Touch" IsChecked="False" Checked="OnInputTypeChanged" Unchecked="OnInputTypeChanged" />
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <Button x:Name="ClearButton" AutomationProperties.Name="ClearButton" Content="Clear Strokes" Click="OnClearClicked" />
+                <Button x:Name="SaveButton" AutomationProperties.Name="SaveButton" Content="Save" Click="OnSaveClicked" />
+                <Button x:Name="LoadButton" AutomationProperties.Name="LoadButton" Content="Load" Click="OnLoadClicked" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Status -->
+        <TextBlock x:Name="StatusText" AutomationProperties.Name="StatusText" Grid.Row="1" Margin="0,0,0,4" Text="Ready" />
+
+        <!-- InkCanvas -->
+        <Border Grid.Row="2" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1">
+            <controls:InkCanvas x:Name="TestInkCanvas" AutomationProperties.Name="TestInkCanvas" />
+        </Border>
+
+        <!-- Info Panel -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+            <TextBlock x:Name="ModeText" AutomationProperties.Name="ModeText" Text="Mode: Draw" />
+            <TextBlock x:Name="InputTypesText" AutomationProperties.Name="InputTypesText" Text="Input: Pen, Mouse" />
+            <TextBlock x:Name="StrokeCountText" AutomationProperties.Name="StrokeCountText" Text="Strokes: 0" />
+        </StackPanel>
+    </Grid>
+</local:TestPage>
