@@ -32,6 +32,8 @@ Another great way to help is by voting and commenting on feature proposals:
 5. **Make your changes** and add tests where appropriate
 6. **Push** your branch to your fork and open a **Pull Request** against `main`
 
+> **Note:** If you are using the GitHub CLI, you can use the `build` and `bt-build` skills to build the project and run build tests directly from the command line.
+
 ### PR requirements
 
 All PRs targeting `main` or release branches require:
