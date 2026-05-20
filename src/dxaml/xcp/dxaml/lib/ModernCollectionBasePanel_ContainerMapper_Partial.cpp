@@ -1201,6 +1201,7 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ContainerManager::GetPinnedEle
     HRESULT hr = S_OK;
 
     pReturnValue->clear();
+    pReturnValue->reserve(m_pinnedElements[type].size());
 
     for (auto element : m_pinnedElements[type])
     {

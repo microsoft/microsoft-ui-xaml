@@ -561,27 +561,36 @@ CUIElementCollectionWrapper CUIElement::GetUnsortedChildren()
     return CUIElementCollectionWrapper(GetChildren());
 }
 
-wil::details::lambda_call<std::function<void()>> CUIElement::LockParent()
+CUIElement::ParentCollectionLock::ParentCollectionLock(CCollection* collection)
+    : m_collection(collection)
 {
-    xref_ptr<CCollection> pCollection;
+    if (m_collection) { m_collection->Lock(); }
+}
+
+CUIElement::ParentCollectionLock::~ParentCollectionLock()
+{
+    reset();
+}
+
+void CUIElement::ParentCollectionLock::reset()
+{
+    if (m_collection)
+    {
+        m_collection->Unlock();
+        m_collection = nullptr;
+    }
+}
+
+CUIElement::ParentCollectionLock CUIElement::LockParent()
+{
     CUIElement* pParent = GetUIElementParentInternal();
     if (pParent)
     {
-        pCollection = pParent->GetChildren();
-        if (pCollection)
-        {
-            pCollection->Lock();
-        }
+        // No AddRef needed - the parent's lifetime covers this operation,
+        // and Lock/Unlock are just counter increments/decrements.
+        return ParentCollectionLock(pParent->GetChildren());
     }
-
-    // make sure we unlock when we are done.
-    return wil::scope_exit<std::function<void()>>([pCollection]
-        {
-            if (pCollection)
-            {
-                pCollection->Unlock();
-            }
-        });
+    return ParentCollectionLock();
 }
 
 bool CUIElement::HasDepthLegacy() const

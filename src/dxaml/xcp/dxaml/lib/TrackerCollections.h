@@ -577,6 +577,7 @@ namespace DirectUI
             default:
                 {
                     std::vector<ctl::ComPtr<THandler>> handlers;
+                    handlers.reserve(m_handlers.Size());
 
                     // Copy the handlers first to avoid re-entrancy issues
                     std::for_each(m_handlers.Begin(), m_handlers.End(),

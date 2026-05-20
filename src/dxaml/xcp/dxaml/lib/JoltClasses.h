@@ -287,6 +287,7 @@ namespace DirectUI
                 {
                     // Multiple handlers... Copy to temporary list to avoid re-entrancy issues.
                     std::vector<ctl::ComPtr<THANDLER>> handlers;
+                    handlers.reserve(m_delegates.Size());
 
                     // Copy the list first to prevent re-entrancy problems
                     std::for_each(m_delegates.Begin(), m_delegates.End(),
@@ -955,6 +956,7 @@ namespace DirectUI
                 {
                     // Multiple handlers... Copy to temporary list to avoid re-entrancy issues.
                     std::vector<HandlerInfo> handlers;
+                    handlers.reserve(m_delegates.Size());
 
                     size_t itrHandledValue = 0;
 

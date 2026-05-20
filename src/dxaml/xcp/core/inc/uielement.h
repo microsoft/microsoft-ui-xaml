@@ -811,8 +811,42 @@ public:
     virtual void EvaluateIsRightToLeft();
 
     bool IsRightToLeft() override;
-  
-    wil::details::lambda_call<std::function<void()>> LockParent();
+
+    // Lightweight RAII guard for locking parent's children collection during layout.
+    // This prevents the collection from being modified while we're iterating over it.
+    // Optimized to avoid std::function heap allocation and unnecessary AddRef.
+    class ParentCollectionLock
+    {
+    public:
+        ParentCollectionLock() : m_collection(nullptr) {}
+        explicit ParentCollectionLock(CCollection* collection);
+        ~ParentCollectionLock();
+
+        // Move-only
+        ParentCollectionLock(ParentCollectionLock&& other) noexcept : m_collection(other.m_collection)
+        {
+            other.m_collection = nullptr;
+        }
+        ParentCollectionLock& operator=(ParentCollectionLock&& other) noexcept
+        {
+            if (this != &other)
+            {
+                reset();
+                m_collection = other.m_collection;
+                other.m_collection = nullptr;
+            }
+            return *this;
+        }
+        ParentCollectionLock(const ParentCollectionLock&) = delete;
+        ParentCollectionLock& operator=(const ParentCollectionLock&) = delete;
+
+        void reset();
+
+    private:
+        CCollection* m_collection;
+    };
+
+    ParentCollectionLock LockParent();
   
     _Check_return_ HRESULT Focus(_In_ DirectUI::FocusState focusState,
         _In_ bool animateIfBringIntoView,

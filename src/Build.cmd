@@ -15,6 +15,7 @@ set _targetSamples=
 set _targetMux=
 set _targetTest=
 set _clean=
+set _nomock=
 set _restore=
 set _graph=
 set _cache=
@@ -56,6 +57,8 @@ if "%1"=="/c" (
     set _cache=1
 ) else if "%1"=="/fake" (
     set _fake=1
+) else if "%1"=="/nomock" (
+    set _nomock=1
 ) else if "%1"=="/muxfinal" (
     set _muxfinal=1
 ) else if "%1" == "/lowpri" (
@@ -172,21 +175,21 @@ if "%_targetMux%" == "1" (
    call :buildSolution %reporoot%\Microsoft.UI.Xaml-Product.sln
    if ERRORLEVEL 1 goto:showDurationAndExit
    call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
-   call :buildMockPackage
+   if not "%_nomock%"=="1" call :buildMockPackage
 ) else if "%_targetProdTest%" == "1" (
    call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
    if ERRORLEVEL 1 goto:showDurationAndExit
-   call :buildMockPackage
+   if not "%_nomock%"=="1" call :buildMockPackage
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 ) else if "%_targetTest%" == "1" (
-   call :buildMockPackage
+   if not "%_nomock%"=="1" call :buildMockPackage
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 )
 if ERRORLEVEL 1 goto:showDurationAndExit
 
 if "%_targetSamples%" == "1" (
     rem If not fake and not building prodtest (so already built the mock), do so
-    if "%_fake%%_targetProdTest%"=="" call :buildMockPackage
+    if "%_fake%%_targetProdTest%%_nomock%"=="" call :buildMockPackage
 
     rem Note that buildsamples.cmd does it's own check for "fake", so we just call it directly.
     call :callScript buildsamples.cmd %_versionOption%
@@ -394,6 +397,7 @@ echo        /m              Passes the /m flag to msbuild. This will spawn as ma
 echo                        This could result in faster builds, but may result in failures due to out of memory. Do not combine with /b.
 echo        /muxfinal       Set MUXFinalRelease to true to simulate a release build
 echo        /fake           Don't actually do the build--just tell me what you're going to build.
+echo        /nomock         Skip building the mock package
 echo        /lowpri         Launch MSBuild using below normal priority (default if environment variable XAMLBUILD_LOWPRIORITY = 1)
 echo        /normalpri      Launch MSBuild using normal priority (default if environment variable XAMLBUILD_LOWPRIORITY ^^!= 1)
 echo        /version [ver]  Override WinUIVersion property (default is %_version%)

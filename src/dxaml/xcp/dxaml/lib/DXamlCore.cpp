@@ -2246,6 +2246,7 @@ DXamlCore::OnLayoutUpdated(_In_ IInspectable* pArgs)
     HRESULT hr = S_OK;
 
     std::vector<std::pair<HANDLE, ctl::WeakRefPtr>> handlers;
+    handlers.reserve(m_LayoutUpdatedEventSources.size());
 
     // Copy the list first to prevent re-entrancy problems
     std::for_each(m_LayoutUpdatedEventSources.cbegin(), m_LayoutUpdatedEventSources.cend(),

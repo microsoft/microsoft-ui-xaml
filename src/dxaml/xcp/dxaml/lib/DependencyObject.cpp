@@ -3603,6 +3603,7 @@ _Check_return_ HRESULT DependencyObject::MoveEventSourcesImpl(_In_ DependencyObj
     }
 
     std::vector<KnownEventIndex> events;
+    events.reserve(m_pEventMap->size());
 
     for (EventMapping::iterator iterEvent = m_pEventMap->begin();
         iterEvent != m_pEventMap->end();
