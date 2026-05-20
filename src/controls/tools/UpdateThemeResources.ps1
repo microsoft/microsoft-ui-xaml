@@ -6,11 +6,8 @@ $themesDir = "$($env:RepoRoot)\controls\dev"
 $outDir = "$($env:RepoRoot)\BuildOutput\Temp\ThemeResources"
 
 $AutoSuggestBox = "AutoSuggestBox_themeresources.xaml"
-$AutoSuggestBox_perf2026 = "AutoSuggestBox_themeresources_perf2026.xaml"
 $ComboBox = "ComboBox_themeresources.xaml"
-$ComboBox_perf2026 = "ComboBox_themeresources_perf2026.xaml"
 $TextBox = "TextBox_themeresources.xaml"
-$TextBox_perf2026 = "TextBox_themeresources_perf2026.xaml"
 
 Function DeleteLineFromFile($PathIn, $File, $ExperimentalApis)
 {
@@ -31,11 +28,8 @@ function Run-Main
     md $outDir
 
     DeleteLineFromFile "AutoSuggestBox" $AutoSuggestBox "InputValidation|ErrorTemplate|ValidationContext"
-    DeleteLineFromFile "AutoSuggestBox" $AutoSuggestBox_perf2026 "InputValidation|ErrorTemplate|ValidationContext"
     DeleteLineFromFile "ComboBox" $ComboBox "ErrorTemplate"
-    DeleteLineFromFile "ComboBox" $ComboBox_perf2026 "ErrorTemplate"
     DeleteLineFromFile "CommonStyles" $TextBox "ErrorTemplate"
-    DeleteLineFromFile "CommonStyles" $TextBox_perf2026 "ErrorTemplate"
 
     Write-Output("Output themeresources files are stored at : " + $outDir)
 }

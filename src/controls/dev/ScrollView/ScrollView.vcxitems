@@ -45,7 +45,7 @@
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollView_perf2026.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView.xaml">
       <IsPublic>false</IsPublic>
       <Type>StylePerf2026</Type>
       <FileType>Document</FileType>

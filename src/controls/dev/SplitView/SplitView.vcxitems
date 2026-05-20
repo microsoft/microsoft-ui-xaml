@@ -18,7 +18,7 @@
     <Page Include="$(MSBuildThisFileDirectory)SplitView_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)SplitView_themeresources_perf2026.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)SplitView_themeresources.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
   </ItemGroup>

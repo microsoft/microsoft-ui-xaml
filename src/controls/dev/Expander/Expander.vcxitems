@@ -35,10 +35,10 @@
     <Page Include="$(MSBuildThisFileDirectory)Expander_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Expander_perf2026.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Expander.xaml">
       <Type>StylePerf2026</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Expander_themeresources_perf2026.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)Expander_themeresources.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
   </ItemGroup>

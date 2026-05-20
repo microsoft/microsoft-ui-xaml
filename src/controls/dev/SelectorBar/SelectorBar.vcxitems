@@ -42,7 +42,7 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)SelectorBar_perf2026.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)SelectorBar.xaml">
       <Version>RS1</Version>
       <Type>StylePerf2026</Type>
     </Page>

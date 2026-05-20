@@ -33,7 +33,7 @@
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_themeresources_perf2026.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_themeresources.xaml">
       <Type>ThemeResourcesPerf2026</Type>
       <Priority>2</Priority>
     </Page>

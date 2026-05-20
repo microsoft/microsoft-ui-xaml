@@ -38,7 +38,7 @@
       <IsPublic>false</IsPublic>
       <Type>StylePerf2026</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_themeresources_perf2026.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TeachingTip_themeresources.xaml">
       <IsPublic>false</IsPublic>
       <Type>ThemeResourcesPerf2026</Type>
     </Page>

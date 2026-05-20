@@ -45,7 +45,7 @@
       <Version>RS1</Version>
       <Type>StylePerf2026</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TitleBar_themeresources_perf2026.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TitleBar_themeresources.xaml">
       <ControlsResourcesVersion>Any</ControlsResourcesVersion>
       <Version>RS1</Version>
       <Type>ThemeResourcesPerf2026</Type>
