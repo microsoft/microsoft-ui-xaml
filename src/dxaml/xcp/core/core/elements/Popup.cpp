@@ -67,7 +67,6 @@ CPopup::CPopup(_In_ CCoreServices *pCore)
     , m_vAdjustment(0.0f)
     , m_calculatedHOffset(0.0f)
     , m_calculatedVOffset(0.0f)
-    , m_cEventListenerCount(0)
     , m_pTransformer(nullptr)
     , m_fAsyncQueueOnRelease(FALSE)
     , m_fRemovingListeners(FALSE)
@@ -3124,86 +3123,6 @@ void CPopup::RaisePopupEvent(EventHandle hEvent)
     {
         pEventManager->Raise(hEvent, TRUE, this, NULL);
     }
-}
-
-
-//------------------------------------------------------------------------
-//
-//  Method:   Release
-//
-//  Synopsis:
-//      Making sure that all registered event handlers are removed and references from
-//      event manager to the popup are released. This is necessary as popup might not
-//      be a part of the tree and hence, this cleanup will not be done normally in Leave.
-//
-//------------------------------------------------------------------------
-void CPopup::ReleaseOverride()
-{
-    if(m_cEventListenerCount > 0
-        && GetRefCount() == (m_cEventListenerCount+1)
-        && !m_fRemovingListeners)
-    {
-        //setting a flag to prevent reentrancy
-        m_fRemovingListeners = TRUE;
-        IGNOREHR(CUIElement::RemoveAllEventListeners(false /* leaveUIEShownHiddenEventListenersAttached */));
-        m_fRemovingListeners = FALSE;
-        m_cEventListenerCount = 0;
-    }
-}
-
-
-//------------------------------------------------------------------------
-//
-//  Method: AddEventListener
-//
-//  Synopsis:
-//      Override to base AddEventListener. Maintains a count of listeners added
-//
-//------------------------------------------------------------------------
-_Check_return_
-HRESULT
-CPopup::AddEventListener(
-    _In_ EventHandle hEvent,
-    _In_ CValue *pValue,
-    _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
-    _In_ bool fHandledEventsToo)
-{
-    IFC_RETURN(CFrameworkElement::AddEventListener(hEvent, pValue, iListenerType, pResult, fHandledEventsToo));
-
-    ++m_cEventListenerCount;
-
-    return S_OK;
-}
-
-
-//------------------------------------------------------------------------
-//
-//  Method: RemoveEventListener
-//
-//  Synopsis:
-//      Override to base RemoveEventListener. Decrements the count of listeners added
-//
-//------------------------------------------------------------------------
-_Check_return_
-HRESULT
-CPopup::RemoveEventListener(
-    _In_ EventHandle hEvent,
-    _In_ CValue *pValue)
-{
-    // Sometimes we released all event handlers in CPopup::Release, before
-    // a client of this object removes one of its handlers. We don't want
-    // to fail in that case, but just no-op.
-    if (m_cEventListenerCount > 0)
-    {
-        m_fRemovingListeners = TRUE;
-        IFC_RETURN(CFrameworkElement::RemoveEventListener(hEvent, pValue));
-        m_fRemovingListeners = FALSE;
-
-        --m_cEventListenerCount;
-    }
-
-    return S_OK;
 }
 
 //------------------------------------------------------------------------

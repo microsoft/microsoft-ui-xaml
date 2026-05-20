@@ -18,7 +18,6 @@ CVisualStateGroup::CVisualStateGroup(_In_ CCoreServices *pCore)
     , m_pTransitions(nullptr)
     , m_pVisualStates(nullptr)
     , m_pCurrentState(nullptr)
-    , m_pEventList(nullptr)
 {}
 
 CVisualStateGroup::~CVisualStateGroup()
@@ -26,13 +25,6 @@ CVisualStateGroup::~CVisualStateGroup()
     ReleaseInterface(m_pVisualStates);
     ReleaseInterface(m_pTransitions);
     ReleaseInterface(m_pCurrentState);
-
-    if (m_pEventList)
-    {
-        m_pEventList->Clean();
-        delete m_pEventList;
-    }
-    m_pEventList = nullptr;
 
     m_CurrentlyRunningStoryboards.clear();
 }
@@ -44,11 +36,11 @@ CVisualStateGroup::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Enter
 
     // If there are events registered on this element, ask the
     // EventManager to extract them and a request for every event.
-    if (params.fIsLive && m_pEventList)
+    if (params.fIsLive && m_eventList)
     {
         CEventManager* pEventManager = GetContext()->GetEventManager();
         ASSERT(pEventManager);
-        IFC_RETURN(pEventManager->AddRequestsInOrder(this, m_pEventList));
+        IFC_RETURN(pEventManager->EnableEvents(this, m_eventList.get()));
     }
 
     return S_OK;
@@ -64,14 +56,9 @@ CVisualStateGroup::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Leave
 
     IFC_RETURN(CDependencyObject::LeaveImpl(pNamescopeOwner, params));
 
-    if (params.fIsLive && m_pEventList)
+    if (params.fIsLive && m_eventList)
     {
-        auto pTemp = m_pEventList->GetHead();
-        while (pTemp)
-        {
-            IFC_RETURN(GetContext()->GetEventManager()->RemoveRequest(this, pTemp->m_pData));
-            pTemp = pTemp->m_pNext;
-        }
+        IFC_RETURN(GetContext()->GetEventManager()->DisableEvents(this, m_eventList.get()));
     }
     return S_OK;
 }
@@ -81,10 +68,9 @@ CVisualStateGroup::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 _Check_return_ HRESULT
@@ -92,7 +78,7 @@ CVisualStateGroup::RemoveEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue)
 {
-    return CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue);
 }
 
 _Check_return_ HRESULT
@@ -189,7 +175,7 @@ _Check_return_ HRESULT CVisualStateGroup::CleanupRunningStoryboardsOnLeave()
                 {
                     IFC_RETURN(storyboard->RemoveEventListener(
                         EventHandle(KnownEventIndex::Timeline_Completed),
-                        &storyboard->m_pVisualTransitionCompletedData->m_EventListenerToken));
+                        &storyboard->m_pVisualTransitionCompletedData->m_EventListener));
                 }
             }
             storyboard->m_pVisualTransitionCompletedData.reset();
@@ -314,7 +300,7 @@ HRESULT _Check_return_ CVisualStateGroup::StartNewThenStopOld(
                 {
                     IFC(storyboard->RemoveEventListener(
                         EventHandle(KnownEventIndex::Timeline_Completed),
-                        &storyboard->m_pVisualTransitionCompletedData->m_EventListenerToken));
+                        &storyboard->m_pVisualTransitionCompletedData->m_EventListener));
                 }
             }
             storyboard->m_pVisualTransitionCompletedData.reset();

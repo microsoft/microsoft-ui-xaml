@@ -188,7 +188,7 @@ private:
 struct LayoutTransitionCompletedData
 {
     CUIElement*        m_pTarget;
-    CValue             m_EventListenerToken;
+    CValue             m_EventListener;
 
     LayoutTransitionCompletedData(
         _In_ CUIElement* pTarget)

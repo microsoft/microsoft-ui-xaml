@@ -67,11 +67,6 @@ CEventManager::~CEventManager()
     m_pSlowQueue = NULL;
     VERIFYHR(m_pFastQueue->Close());
     m_pFastQueue = NULL;
-
-    delete m_pRequest;
-    m_pRequest = NULL;
-    delete m_pLoadedEventList;
-    m_pLoadedEventList = NULL;
 }
 
 //------------------------------------------------------------------------
@@ -105,62 +100,15 @@ CEventManager::ClearRequests()
 {
     HRESULT hr = S_OK;
 
-    // Re-entrancy guard for this method.
-    ++m_uInClearRequests;
-    if(m_uInClearRequests != 1)
+    while (!m_loadedEventObjects.empty())
     {
-        ASSERT(FALSE);
-        goto Cleanup;
-    }
-
-    if(m_pRequest)
-    {
-        CEventRequestMap::iterator mapEndItr = m_pRequest->end();
-        for (CEventRequestMap::iterator mapItr = m_pRequest->begin();
-             mapItr != mapEndItr;
-             ++mapItr)
-        {
-            CRequestsForObjectList* pRequests = (*mapItr).second;
-            if(pRequests)
-            {
-                XUINT32 uRequestCtr = 0;
-                while(uRequestCtr < pRequests->size())
-                {
-                    // Set the request to NULL in the list before deleting it. Deleting the request
-                    // can release the contained DO, causing re-entrancy in the list and a double delete.
-                    REQUEST* pTemp = NULL;
-                    IFC(pRequests->get_item(uRequestCtr, pTemp));
-                    IFC(pRequests->set_item(uRequestCtr, NULL));
-                    delete pTemp;
-                    ++uRequestCtr;
-                }
-                pRequests->clear();
-                (*mapItr).second = NULL;
-                delete pRequests;
-                pRequests = NULL;
-            }
-        }
-        m_pRequest->Clear();
-    }
-
-    if(m_pLoadedEventList)
-    {
-        XUINT32 uElementCtr = 0;
-        while(uElementCtr < m_pLoadedEventList->size())
-        {
-            CDependencyObject* pTemp = NULL;
-            IFC(m_pLoadedEventList->get_item(uElementCtr, pTemp));
-            IFC(m_pLoadedEventList->set_item(uElementCtr, NULL));
-            ReleaseInterface(pTemp);
-            ++uElementCtr;
-        }
-        m_pLoadedEventList->clear();
+        CDependencyObjectVector currentLoadedEventObjects;
+        std::swap(currentLoadedEventObjects, m_loadedEventObjects);
     }
 
     IFC(FlushQueue());
 
 Cleanup:
-    --m_uInClearRequests;
     RRETURN(hr);
 }
 
@@ -240,26 +188,19 @@ CEventManager::Release()
 
 //------------------------------------------------------------------------
 //
-//  Method:   CEventManager::AddRequestsInOrder
+//  Method:   CEventManager::EnableEvents
 //
 //  Synopsis:
-//      Walks through the list of events and adds a request for every event.
+//      Walks through the list of events and enables events for the given object.
 //
 //------------------------------------------------------------------------
 
 _Check_return_
 HRESULT
-CEventManager::AddRequestsInOrder(
-                               _In_ CDependencyObject *pObject,
-                               _In_ CXcpList<REQUEST> *pEventList
-                               )
+CEventManager::EnableEvents(
+    _In_ CDependencyObject* pObject,
+    _In_ std::vector<REQUEST>* pEventList)
 {
-    HRESULT hr = S_OK;
-    CXcpList<REQUEST>* pEventListInCorrectOrder = NULL;
-    CXcpList<REQUEST>::XCPListNode *pTemp       = NULL;
-    REQUEST * pRequest                          = NULL;
-
-
     ASSERT(pObject && pEventList);
 
     // The events should be fired in this order:
@@ -267,69 +208,13 @@ CEventManager::AddRequestsInOrder(
     // (1) Events registered in the constructor.
     // (2) Events hooked up in XAML.
     // (3) Elsewhere! (Page_Loaded, LayoutUpdated, ...etc), using the "+=" syntax.
-    // But, When registered, an event is being added to the list of events
-    // (m_pEventList) at the head (This is how CXcpList behaves), we are reversing them
-    // here, so that, the event manager fires them in the correct order.
+    // Events are appended to the vector via push_back, so iterating
+    // forward gives us the correct registration order.
 
-    pEventListInCorrectOrder = new CXcpList<REQUEST>;
-    pEventList->GetReverse(pEventListInCorrectOrder);
-
-    // Get the head of the list.
-    pTemp = pEventListInCorrectOrder->GetHead();
-
-    // Walk the list, and AddRequest for every event.
-    while (pTemp)
+    for (auto& request : *pEventList)
     {
-        pRequest = (REQUEST *)pTemp->m_pData;
-
-        // Do not add requests that have the added flag set.
-        if(pRequest->m_bAdded == FALSE)
-        {
-            IFC( this->AddRequest(pObject, pRequest));
-        }
-
-        pTemp = pTemp->m_pNext;
-    }
-
-Cleanup:
-    // Get rid of the list, if it's there.
-    if(pEventListInCorrectOrder)
-    {
-        // Don't "delete" the data, we still need them.
-        pEventListInCorrectOrder->Clean(FALSE);
-        delete pEventListInCorrectOrder;
-        pEventListInCorrectOrder = NULL;
-    }
-
-    RRETURN(hr);
-}
-
-//------------------------------------------------------------------------
-//
-//  Method:   CEventManager::RemoveRequests
-//
-//  Synopsis:
-//      Walks through the list of events and removes a request for every event.
-//
-//      This is intended to be used as a mirror image to AddRequestsInOrder()
-//  but without the "InOrder" in the name because while add ordering matters,
-//  removal ordering does not.
-//
-//------------------------------------------------------------------------
-
-_Check_return_
-HRESULT
-CEventManager::RemoveRequests(
-                               _In_ CDependencyObject *pObject,
-                               _In_ CXcpList<REQUEST> *pEventList
-                               )
-{
-    CXcpList<REQUEST>::XCPListNode *pTemp = pEventList->GetHead();
-    while (pTemp)
-    {
-        REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-        IFC_RETURN( RemoveRequest(pObject, pRequest));
-        pTemp = pTemp->m_pNext;
+        AddToLoadedEventListIfNeeded(pObject, request.m_hEvent);
+        request.m_bActive = TRUE;
     }
 
     return S_OK;
@@ -337,344 +222,50 @@ CEventManager::RemoveRequests(
 
 //------------------------------------------------------------------------
 //
-//  Method:   CEventManager::RemoveObject
+//  Method:   CEventManager::DisableEvents
 //
 //  Synopsis:
-//      Removes the given DependencyObject from the EventRequestMap
+//      Walks through the list of events and disables events for the given object.
 //
-//      This is different from RemoveRequests which does not remove the map entry
+//      This is intended to be used as a mirror image to EnableEvents()
 //
 //------------------------------------------------------------------------
 
 _Check_return_
 HRESULT
-CEventManager::RemoveObject(_In_ CDependencyObject *pObject)
+CEventManager::DisableEvents(
+    _In_ CDependencyObject* pObject,
+    _In_ std::vector<REQUEST>* pEventList)
 {
-    CRequestsForObjectList* pObjRequests = NULL;
+    bool removedLoadedEvent = false;
+    bool hasLoadedEvent = false;
 
-    if (m_uInClearRequests > 0)
+    for (auto& request : *pEventList)
     {
-        // We need to no-op here when ClearRequests() is called because it could clean up
-        // a contained DO.  In that case, we would delete could requests here that ClearRequests()
-        // is still operating on.  ClearRequests() will clear all of this out anyway.
-        // We should be ok in this ClearRequests(CDependencyProperty*,CDependencyObject*)
-        // since the DO is passed in so presumably there is still something keeping it alive
-        return S_OK;
-    }
-
-    if (m_pRequest && pObject)
-    {
-        IFC_RETURN(m_pRequest->Remove(pObject, pObjRequests));
-        if (pObjRequests)
+        if (IsLoadedEvent(request.m_hEvent))
         {
-            // There shouldn't be any requests left because they should be removed by CUIElement::LeaveImpl
-            // or CPopup::Release but delete any existing requests just in case
-            XUINT32 uRequestCtr = 0;
-            while (uRequestCtr < pObjRequests->size())
+            if (request.m_bCanFireWhenInactive)
             {
-                // Set the request to NULL in the list before deleting it. Deleting the request
-                // can release the contained DO, causing re-entrancy in the list and a double delete.
-                REQUEST* pTemp = NULL;
-                IFC_RETURN(pObjRequests->get_item(uRequestCtr, pTemp));
-                IFC_RETURN(pObjRequests->set_item(uRequestCtr, NULL));
-                delete pTemp;
-                ++uRequestCtr;
+                hasLoadedEvent = true;
             }
-            pObjRequests->clear();
-            delete pObjRequests;
-        }
-    }
-
-    return S_OK;
-}
-
-//------------------------------------------------------------------------
-//
-//  Method:   CEventManager::AddRequest
-//
-//  Synopsis:
-//      Add an request to the event manager
-//
-//------------------------------------------------------------------------
-
-_Check_return_
-HRESULT
-CEventManager::AddRequest(
-                          _In_ CDependencyObject *pObject,
-                          _In_ REQUEST *pRequest
-                          )
-{
-    HRESULT hr = S_OK;
-    REQUEST* request = NULL;
-    CRequestsForObjectList* pObjRequests = NULL;
-    CRequestsForObjectList* pObjRequestsTemp = NULL;
-
-    ASSERT(pRequest);
-
-    // create and initialize a REQUEST object
-    request = new REQUEST();
-    request->m_pListener = pObject;
-    request->m_hEvent = pRequest->m_hEvent;
-    request->m_pObject = pObject;
-    request->m_pfnInternalEventDelegate = pRequest->m_pfnInternalEventDelegate;
-    request->m_iToken = pRequest->m_iToken;
-    request->m_bFired = FALSE;
-    request->m_bAdded = FALSE;
-    request->m_bHandledEventsToo = pRequest->m_bHandledEventsToo;
-
-    // create the event handler map if necessary
-    if(!m_pRequest)
-    {
-        m_pRequest = new CEventRequestMap();
-    }
-
-    // get the list of event handlers for this object, create if one doesn't exist
-    IFC(m_pRequest->Get(pObject, pObjRequests));
-    if(!pObjRequests)
-    {
-        pObjRequestsTemp = new CRequestsForObjectList();
-        IFC(m_pRequest->Add(pObject, pObjRequestsTemp));
-        pObjRequests = pObjRequestsTemp;
-        pObjRequestsTemp = NULL;
-    }
-    // Add the request to the list of event handlers for this object
-    IFC(pObjRequests->push_back(request));
-
-    AddRefInterface(request->m_pListener);
-    AddRefInterface(request->m_pObject);
-
-    // Loaded events are not fired on a per-element basis, rather on the entire tree at once.
-    // Also, Loaded events should be fired in the order in which their handlers were added.
-    // m_pRequest map maintains the order of events for each element but does not maintain
-    // the order among the elements themselves. As a result, we need to maintain a separate
-    // list for the order among elements for which Loaded event is pending.
-    if (IsLoadedEvent(pRequest->m_hEvent))
-    {
-        IFC(AddToLoadedEventList(pObject));
-    }
-
-    request = NULL;
-
-Cleanup:
-    delete pObjRequestsTemp;
-    delete request;
-    RRETURN(hr);
-}
-
-//------------------------------------------------------------------------
-//
-//  Method:   CEventManager::CreateRequest
-//
-//  Synopsis:
-//      Create a request  ... does NOT add it to the list ....
-//------------------------------------------------------------------------
-_Check_return_
-HRESULT
-CEventManager::CreateRequest(
-    _Outptr_ REQUEST **ppRequest,
-    _In_ EventHandle hEvent,
-    _In_ CDependencyObject *pObject,
-    _In_ CValue *pValue,
-    _In_ XINT32 iToken,
-    _In_ CCoreServices *pContext /* = NULL */,
-    _In_ XINT32 fHandledEventsToo
-   )
-{
-    REQUEST *pRequest = NULL;
-
-    ASSERT( pObject == NULL || pContext == NULL || pObject->GetContext() == pContext );
-
-    if (ppRequest == NULL || pValue == NULL)
-        IFC_RETURN(E_INVALIDARG);
-
-    *ppRequest = NULL;
-
-    if ((pValue->GetType() != valueObject) &&
-        (pValue->GetType() != valueAny) &&
-        (pValue->GetType() != valueInternalHandler))
-    {
-        IFC_RETURN(E_INVALIDARG);
-    }
-
-    pRequest = new REQUEST;
-
-
-    // Place the request in the array.
-
-    pRequest->m_hEvent = hEvent;
-    pRequest->m_pListener = NULL; // don't store the listener object till it is added to the eventmanager (AddRequest);
-    pRequest->m_pObject = NULL; // don't store the target object till it is added to the eventmanager (AddRequest);
-
-    pRequest->m_iToken = iToken;
-    pRequest->m_bHandledEventsToo = (XUINT8)fHandledEventsToo; // The requested event will be invoked even though event is handled
-
-    if (pValue->GetType() == valueInternalHandler)
-    {
-        pRequest->m_pfnInternalEventDelegate = pValue->AsInternalHandler();
-    }
-
-    *ppRequest = pRequest;
-
-    return S_OK;
-}
-
-//------------------------------------------------------------------------
-//
-//  Method:   CEventManager::ClearRequests
-//
-//  Synopsis:
-//      Remove all the specified requests associated with this object
-//
-//------------------------------------------------------------------------
-
-_Check_return_
-HRESULT
-CEventManager::ClearRequests(
-    _In_ EventHandle hEvent,
-    _In_ CDependencyObject *pObject
-)
-{
-    CRequestsForObjectList* pRequests = NULL;
-
-    if(m_pRequest)
-    {
-        // Get the list of REQUESTs for this object
-        IFC_RETURN(m_pRequest->Get(pObject, pRequests));
-
-        if(pRequests)
-        {
-            // Iterate through the list, removing entries corresponding to hEvent
-            XUINT32 uRequestCtr = 0;
-            while(uRequestCtr < pRequests->size())
+            else if (request.m_bActive)
             {
-                REQUEST* pNodeRequest = NULL;
-                IFC_RETURN(pRequests->get_item(uRequestCtr, pNodeRequest));
-
-                if (pNodeRequest
-                 && pNodeRequest->m_pObject == pObject
-                 && pNodeRequest->m_hEvent == hEvent)
-                {
-                    // Remove the request from the list before deleting it. Deleting the request
-                    // can release the contained DO, causing re-entrancy in the list and a double delete.
-                    IFC_RETURN(pRequests->erase(uRequestCtr));
-                    delete pNodeRequest;
-                    pNodeRequest = NULL;
-                }
-                else
-                {
-                    ++uRequestCtr;
-                }
-            }
-
-            // Do not delete the list even though it might be empty. This method call could be a re-entrant call
-            // in the event manager i.e. there could be code on the stack iterating over this list.
-
-
-            // All Loaded event have been removed. Remove the object from the loaded event list.
-            if(IsLoadedEvent(hEvent))
-            {
-                IFC_RETURN(RemoveFromLoadedEventList(pObject));
+                removedLoadedEvent = true;
             }
         }
-    }
 
-    return S_OK;
-}
-
-
-//------------------------------------------------------------------------
-//
-//  Method:   CEventManager::RemoveRequest
-//
-//  Synopsis:
-//      Remove the specific request associated with this object
-//
-//------------------------------------------------------------------------
-
-_Check_return_
-HRESULT
-CEventManager::RemoveRequest(
-    _In_ CDependencyObject *pObject,
-    _In_ REQUEST *pRequest
-)
-{
-    CRequestsForObjectList* pRegisteredRequests = NULL;
-    bool fHasLoadedEvent = false;
-    bool fRemovedLoadedEvent = false;
-
-    ASSERT(pRequest);
-
-    if(pObject && pObject->GetContext()->IsShuttingDown())
-    {
-        return S_OK;
-    }
-
-    if(m_pRequest)
-    {
-        // Get the list of REQUESTs for this object
-        IFC_RETURN(m_pRequest->Get(pObject, pRegisteredRequests));
-
-        // Ordinarily, pRegisteredRequests will not be NULL. However, this RemoveRequest call could be a
-        // re-entrant call with ClearRequests on the stack. In such a case, ClearRequests could have set some of
-        // the entries to NULL.
-        if(pRegisteredRequests)
+        if (!request.m_bCanFireWhenInactive)
         {
-            // Iterate through the list, removing entries corresponding to the REQUEST passed in
-            XUINT32 uRequestCtr = 0;
-            while(uRequestCtr < pRegisteredRequests->size())
-            {
-                REQUEST* pNodeRequest = NULL;
-                IFC_RETURN(pRegisteredRequests->get_item(uRequestCtr, pNodeRequest));
-
-                // Similar to the check for the pRegisteredRequests above, some nodes in the list may also be NULL
-                // when we re-enter this CEventManager method during execution of CEventManager::ClearRequests.
-                if (pNodeRequest != NULL)
-                {
-                    if ((pObject == pNodeRequest->m_pObject) &&
-                        (pNodeRequest->m_hEvent == pRequest->m_hEvent) &&
-                        (
-                            (pNodeRequest->m_pListener != NULL && pNodeRequest->m_pListener == pObject) ||
-                            (pNodeRequest->m_iToken >= 0 && pNodeRequest->m_iToken == pRequest->m_iToken) ||
-                            (pNodeRequest->m_pfnInternalEventDelegate != NULL && pNodeRequest->m_pfnInternalEventDelegate == pRequest->m_pfnInternalEventDelegate)
-                        )
-                       )
-                    {
-                        if(IsLoadedEvent(pNodeRequest->m_hEvent))
-                        {
-                            fRemovedLoadedEvent = TRUE;
-                        }
-                        // Remove the request from the list before deleting it. Deleting the request
-                        // can release the contained DO, causing re-entrancy in the list and a double delete.
-                        IFC_RETURN(pRegisteredRequests->erase(uRequestCtr));
-                        delete pNodeRequest;
-                        pNodeRequest = NULL;
-                    }
-                    else
-                    {
-                        if(IsLoadedEvent(pNodeRequest->m_hEvent))
-                        {
-                            fHasLoadedEvent = TRUE;
-                        }
-                        ++uRequestCtr;
-                    }
-                }
-                else
-                {
-                    ++uRequestCtr;
-                }
-            }
-
-            // Do not delete the list even though it might be empty. This method call could be a re-entrant call
-            // in the event manager i.e. there could be code on the stack iterating over this list.
-
-
-            // If we removed a Loaded event handler and there are no more Loaded event handlers, then
-            // remove the object from the Loaded event list.
-            if(fRemovedLoadedEvent && !fHasLoadedEvent)
-            {
-                IFC_RETURN(RemoveFromLoadedEventList(pObject));
-            }
+            request.m_bActive = false;
         }
+
+        // If/When it becomes reenabled, the event can fire again
+        request.m_bFired = FALSE;
+    }
+
+    if (removedLoadedEvent && !hasLoadedEvent)
+    {
+        RemoveFromLoadedEventList(pObject);
     }
 
     return S_OK;
@@ -704,58 +295,58 @@ _Check_return_ HRESULT CEventManager::RaiseLoadedEventForObject(_In_ CDependency
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     });
 
-    CRequestsForObjectList* pRegisteredRequests = nullptr;
-    // look up the registered requests for the current object
-    if (m_pRequest)
+    auto handlers = pLoadedEventObject->GetEventHandlers();
+    if (!handlers.empty())
     {
-        IFC_RETURN(m_pRequest->Get(pLoadedEventObject, pRegisteredRequests));
-        if (pRegisteredRequests)
+        bool bFired;
+        std::optional<bool> previousMessageReentrancyGuard;
+        CXcpDispatcher* dispatcher = nullptr;
+
+        auto messageReentrancyGuard = wil::scope_exit([&]
         {
-            bool bFired;
-            std::optional<bool> previousMessageReentrancyGuard;
-            CXcpDispatcher* dispatcher = nullptr;
-
-            auto messageReentrancyGuard = wil::scope_exit([&]
+            if (dispatcher && previousMessageReentrancyGuard.has_value())
             {
-                if (dispatcher && previousMessageReentrancyGuard.has_value())
-                {
-                    dispatcher->SetMessageReentrancyGuard(previousMessageReentrancyGuard.value());
-                }
-            });
+                dispatcher->SetMessageReentrancyGuard(previousMessageReentrancyGuard.value());
+            }
+        });
 
-            // WebView2.OnLoaded makes a call to EBWebView's put_isVisible,
-            // which calls ShowWindow and can cause reentrancy. Here, we check
-            // if the loaded event object is a WV2, and if so, we exempt it from
-            // reentrancy checks.
-            if (pLoadedEventObject->GetTypeIndex() == KnownTypeIndex::Panel)
+        // WebView2.OnLoaded makes a call to EBWebView's put_isVisible,
+        // which calls ShowWindow and can cause reentrancy. Here, we check
+        // if the loaded event object is a WV2, and if so, we exempt it from
+        // reentrancy checks.
+        if (pLoadedEventObject->GetTypeIndex() == KnownTypeIndex::Panel)
+        {
+            ctl::ComPtr<DirectUI::DependencyObject> peer;
+            IFC_RETURN(DirectUI::DXamlServices::TryGetPeer(pLoadedEventObject, &peer));
+            if (peer)
             {
-                ctl::ComPtr<DirectUI::DependencyObject> peer;
-                IFC_RETURN(DirectUI::DXamlServices::TryGetPeer(pLoadedEventObject, &peer));
-                if (peer)
+                ctl::ComPtr<IHwndComponentHost> host = peer.AsOrNull<IHwndComponentHost>();
+                if (host != nullptr)
                 {
-                    ctl::ComPtr<IHwndComponentHost> host = peer.AsOrNull<IHwndComponentHost>();
-                    if (host != nullptr)
+                    dispatcher = GetXcpDispatcher(pLoadedEventObject);
+                    if (dispatcher)
                     {
-                        dispatcher = GetXcpDispatcher(pLoadedEventObject);
-                        if (dispatcher)
-                        {
-                            previousMessageReentrancyGuard = dispatcher->GetMessageReentrancyGuard();
-                            dispatcher->SetMessageReentrancyGuard(false);
-                        }
+                        previousMessageReentrancyGuard = dispatcher->GetMessageReentrancyGuard();
+                        dispatcher->SetMessageReentrancyGuard(false);
                     }
                 }
             }
+        }
 
-            // raise the event for all registered requests for the current object
+        // Make a copy of the handlers to be invoked because the callback can cause reentrancy which can
+        // mutate the event list on the DO itself. Pre-allocate 2 items in the match collection,
+        // assuming we'll find an internal and a CLR handler.
+        TempRequests matches;
+        FilterEligibleHandlers(handlers, KnownEventIndex::FrameworkElement_Loaded, false /*refire*/, &matches);
+
+        if (!matches.empty())
+        {
             IFC_RETURN(RaiseHelper(
-                pRegisteredRequests,
-                EventHandle(KnownEventIndex::FrameworkElement_Loaded),
-                nullptr,                    // pSender
+                matches,
+                pLoadedEventObject,         // pSender
                 loadedArgs,
-                FALSE,                      // bRefire
                 m_pfnScriptCallbackSync,    // synchronous raise
                 bFired));
-
         }
     }
 
@@ -799,8 +390,8 @@ _Check_return_ HRESULT CEventManager::RaiseLoadedEvent()
     // Callers should check ShouldRaiseLoadedEvent() before calling RaiseLoadedEvent()
     ASSERT(m_fRaiseLoadedEventNeeded);
 
-    // If m_pLoadedEventList is NULL, no Loaded event listeners have been registered, so there's nothing to do.
-    if (!m_fRaiseLoadedEventNeeded || !m_pLoadedEventList)
+    // If m_loadedEventObjects is, no Loaded event listeners have been registered, so there's nothing to do.
+    if (!m_fRaiseLoadedEventNeeded || m_loadedEventObjects.empty())
     {
         return S_OK;
     }
@@ -811,25 +402,23 @@ _Check_return_ HRESULT CEventManager::RaiseLoadedEvent()
         IFC_RETURN(E_FAIL);
     }
 
-    if (m_pLoadedEventList->size() > 0)
-    {
-        xref_ptr<CEventArgs> spLoadedArgs = make_xref<CRoutedEventArgs>();
+    xref_ptr<CEventArgs> spLoadedArgs = make_xref<CRoutedEventArgs>();
 
-        for (XUINT32 iLoadedEventObject = 0;
-            iLoadedEventObject < m_pLoadedEventList->size();
-            ++iLoadedEventObject)
+    // Firing loaded events may add new objects to the loaded event list. To maintain historical
+    // behavior, we must raise events on them synchronously, in the current invocation of RaiseLoadedEvent.
+    // This loop continues until no new loaded event objects are added.
+    while (!m_loadedEventObjects.empty())
+    {
+        CDependencyObjectVector currentLoadedEventObjects;
+        std::swap(currentLoadedEventObjects, m_loadedEventObjects);
+
+        // Raise the Loaded event on the current set of objects.
+        for (auto& obj : currentLoadedEventObjects)
         {
-            xref_ptr<CDependencyObject> spLoadedEventObject;
-            IFC_RETURN(m_pLoadedEventList->get_item(iLoadedEventObject, *spLoadedEventObject.ReleaseAndGetAddressOf()));
-            if (!spLoadedEventObject)
-            {
-                continue;
-            }
-            // NULL out the list entry first to guard against reentrant removal.
-            IFC_RETURN(m_pLoadedEventList->set_item(iLoadedEventObject, nullptr));
-            IFC_RETURN(RaiseLoadedEventForObject(spLoadedEventObject, spLoadedArgs.get()));
+            IFC_RETURN(RaiseLoadedEventForObject(obj.get(), spLoadedArgs.get()));
         }
-        m_pLoadedEventList->clear();
+
+        // Current batch of loaded event DOs released here.
     }
 
     // reset the loaded event needed flag - we've now finished raising the event
@@ -862,23 +451,27 @@ CEventManager::Raise(
     _In_opt_ CDependencyObject *pSenderOverride)
 {
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
-    CRequestsForObjectList* pRegisteredRequests = NULL;
     bool bFired = false;
+    gsl::span<REQUEST> handlers;
 
     // Verify the sync input event.
     ASSERT((IsValidSyncInputEvent(hEvent, fInputEvent, fRaiseSync)) || !IsSyncInputEvent(hEvent));
 
-    if (pSender && !pSender->ShouldRaiseEvent(hEvent, fInputEvent, pArgs))
+    if (pSender)
     {
-        // Do not raise events when there are no listeners, unless there are implicit
-        // event listeners, such as RichTextBlock::OnTapped.
-        return;
-    }
+        if (pSender->GetContext()->IsShuttingDown())
+        {
+            // Do not raise events when shutting down.
+            return;
+        }
+        if (!pSender->ShouldRaiseEvent(hEvent, fInputEvent, pArgs))
+        {
+            // Do not raise events when there are no listeners, unless there are implicit
+            // event listeners, such as RichTextBlock::OnTapped.
+            return;
+        }
 
-    if (pSender && pSender->GetContext()->IsShuttingDown())
-    {
-        // Do not raise events when shutting down.
-        return;
+        handlers = pSender->GetEventHandlers();
     }
 
     // Do not use Raise to raise the Loaded event - see RequestRaiseLoadedEventOnNextTick() and RaiseLoadedEvent().
@@ -949,30 +542,19 @@ CEventManager::Raise(
             RaiseUIElementEvents(hEvent, pUIElement, pArgs, pfnScriptCallback);
         }
 
-        if(m_pRequest)
+        // If sender didn't provide any handlers, then ostensibly we've handled it as a
+        // static/control/uielement event above.
+        if (!handlers.empty())
         {
-            // If sender is known, get the list of event handlers for that sender. Else, raise the event for all objects.
-            if(pSender)
+            // Make a copy of the handlers to be invoked because the callback can cause reentrancy which can
+            // mutate the event list on the DO itself. Pre-allocate 2 items in the match collection,
+            // assuming we'll find an internal and a CLR handler.
+            TempRequests matches;
+            FilterEligibleHandlers(handlers, hEvent, !!bRefire, &matches);
+
+            if (!matches.empty())
             {
-                IFC(m_pRequest->Get(pSender, pRegisteredRequests));
-                if(pRegisteredRequests)
-                {
-                    IFC(RaiseHelper(pRegisteredRequests, hEvent, pSender, pArgs, bRefire, pfnScriptCallback, bFired, pSenderOverride));
-                }
-            }
-            else
-            {
-                CEventRequestMap::const_iterator endItr = m_pRequest->end();
-                for (CEventRequestMap::const_iterator mapItr = m_pRequest->begin();
-                        mapItr != endItr;
-                        ++mapItr)
-                {
-                    pRegisteredRequests = (*mapItr).second;
-                    if(pRegisteredRequests)
-                    {
-                        IFC(RaiseHelper(pRegisteredRequests, hEvent, pSender, pArgs, bRefire, pfnScriptCallback, bFired, pSenderOverride));
-                    }
-                }
+                IFC(RaiseHelper(matches, pSender, pArgs, pfnScriptCallback, bFired, pSenderOverride));
             }
         }
     }
@@ -1021,123 +603,122 @@ Cleanup:
 //      Scan the list of requests of a given sender and call those register for the specified  event.
 //------------------------------------------------------------------------
 
-HRESULT CEventManager::RaiseHelper(CRequestsForObjectList* pRegisteredRequests,
-                                _In_ EventHandle hEvent,
+HRESULT CEventManager::RaiseHelper(const gsl::span<const REQUEST>& requests,
                                 _In_ CDependencyObject *pSender,
                                 CEventArgs *pArgs,
-                                XINT32 bRefire,
                                 EVENTPFN pfnScriptCallback,
                                 bool& bFired,
                                 _In_opt_ CDependencyObject *pSenderOverride)
 {
     bFired = FALSE;
 
-    for (XUINT32 requestItr = 0; requestItr < pRegisteredRequests->size(); requestItr++)
+    for (const auto& request : requests)
     {
-        REQUEST* pRequest = NULL;
+#ifdef TRACE_EVENTS
+        const auto* pSenderTypeName = pSenderOverride ? 
+        DirectUI::MetadataAPI::GetClassInfoByIndex(pSenderOverride->GetTypeIndex())->GetFullName().GetBuffer() : 
+            pSender ? DirectUI::MetadataAPI::GetClassInfoByIndex(pSender->GetTypeIndex())->GetFullName().GetBuffer() : L"null";
 
-        IFC_RETURN(pRegisteredRequests->get_item(requestItr, pRequest));
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "CEventManager::RaiseHelper",
+            TraceLoggingUInt32(static_cast<uint32_t>(request.m_hEvent.index), "EventIndex"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(pSenderOverride ? pSenderOverride : pSender), "Sender Pointer"),
+            TraceLoggingWideString(pSenderTypeName, "Sender TypeName"),
+            TraceLoggingBoolean(true, "IsStart"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-        if (pRequest && hEvent == pRequest->m_hEvent)
+        auto endEvent = wil::scope_exit([request, pSender, pSenderOverride]
         {
-            // Prevent double firing of events
-            if (!bRefire && pRequest->m_bFired)
-            {
-                continue;
-            }
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "CEventManager::RaiseHelper",
+                TraceLoggingUInt32(static_cast<uint32_t>(request.m_hEvent.index), "EventIndex"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(pSenderOverride ? pSenderOverride : pSender), "Sender Pointer"),
+                TraceLoggingBoolean(false, "IsStart"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+        });
+#endif
+        // here we checking assuming we are in the scenario 2.
+        if (m_pfnScriptCallbackAsync)
+        {
+            XUINT32 flags = request.m_bHandledEventsToo ? EVENT_HANDLEDEVENTSTOO : 0;
+                    flags |= IsSyncInputEvent(request.m_hEvent) ? EVENT_SYNC_INPUT : 0;
+                    flags |= (IsLoadedEvent(request.m_hEvent) || IsLoadingEvent(request.m_hEvent)) ? EVENT_SYNC_LOADED : 0;
 
-            // Some events, such as VisualStateChanging/Changed need to arrive with a different sender specified.
-            // Callers can optionally set pSenderOverride to specify this different sender.
-            CDependencyObject* pActualSender = NULL;
-            if(pSenderOverride)
+            if (request.m_pfnInternalEventDelegate != NULL)
             {
-                pActualSender = pSenderOverride;
+                // if we are here we don't need to check pfnScriptCallback
+                // it will be at least m_pfnScriptCallbackAsync
+                (pfnScriptCallback)(
+                    m_pControl,
+                    NULL,
+                    request.m_hEvent,
+                    pSender,
+                    pArgs,
+                    flags,
+                    NULL,
+                    request.m_pfnInternalEventDelegate);
             }
             else
             {
-                pActualSender = pRequest->m_pObject == NULL ? pSender : pRequest->m_pObject;
-            }
+                bool isSenderPegged = false;
 
-            pRequest->m_bFired = TRUE;
+                // Some events, such as VisualStateChanging/Changed need to arrive with a different sender specified.
+                // Callers can optionally set pSenderOverride to specify this different sender.
+                CDependencyObject* pActualSender = (pSenderOverride != nullptr) ? pSenderOverride : pSender;
 
-            // here we checking assuming we are in the scenario 2.
-            if (m_pfnScriptCallbackAsync)
-            {
-                XUINT32 flags = pRequest->m_bHandledEventsToo ? EVENT_HANDLEDEVENTSTOO : 0;
-                        flags |= IsSyncInputEvent(hEvent) ? EVENT_SYNC_INPUT : 0;
-                        flags |= (IsLoadedEvent(hEvent) || IsLoadingEvent(hEvent)) ? EVENT_SYNC_LOADED : 0;
-
-                if (pRequest->m_pfnInternalEventDelegate != NULL)
+                // These pegs are legitimate shutdown exceptions because we peg the peers but shutdown could occur before
+                // the event is fired on the managed side.  In those cases, there are not actual leaks
+                if (pActualSender && pActualSender->HasManagedPeer())
                 {
-                    // if we are here we don't need to check pfnScriptCallback
-                    // it will be at least m_pfnScriptCallbackAsync
-                    (pfnScriptCallback)(
+                    if (pActualSender->PegManagedPeer(TRUE/*isShutdownException*/) == S_OK)
+                    {
+                        isSenderPegged = true;
+                    }
+                }
+
+                flags |= isSenderPegged ? EVENT_SENDER_PEGGED : 0;
+
+                if (FAILED((pfnScriptCallback)(
                         m_pControl,
-                        NULL,
-                        hEvent,
-                        pRequest->m_pObject,
+                        pSender,
+                        request.m_hEvent,
+                        pActualSender,
                         pArgs,
                         flags,
-                        NULL,
-                        pRequest->m_pfnInternalEventDelegate);
-                }
-                else
+                        nullptr,
+                        nullptr)) &&
+                    isSenderPegged)
                 {
-                    WCHAR* temp = NULL;
-
-                    if (!pRequest->m_pListener)
-                    {
-                        (m_pfnScriptCallbackAsync)(
-                            m_pControl,
-                            NULL,
-                            hEvent,
-                            pActualSender,
-                            pArgs,
-                            flags,
-                            NULL,
-                            NULL);
-                    }
-                    else
-                    {
-                        bool isSenderPegged = false;
-
-                        // These pegs are legitimate shutdown exceptions because we peg the peers but shutdown could occur before
-                        // the event is fired on the managed side.  In those cases, there are not actual leaks
-                        if (pActualSender && pActualSender->HasManagedPeer())
-                        {
-                            if (pActualSender->PegManagedPeer(TRUE/*isShutdownException*/) == S_OK)
-                            {
-                                isSenderPegged = true;
-                            }
-                        }
-
-                        flags |= isSenderPegged ? EVENT_SENDER_PEGGED : 0;
-
-                        if (FAILED((pfnScriptCallback)(
-                                m_pControl,
-                                pRequest->m_pListener,
-                                hEvent,
-                                pActualSender,
-                                pArgs,
-                                flags,
-                                nullptr,
-                                nullptr)) &&
-                            isSenderPegged)
-                        {
-                            pActualSender->UnpegManagedPeer(TRUE /*isShutdownException*/);
-                        }
-
-                    }
-                    delete [] temp;
+                    pActualSender->UnpegManagedPeer(TRUE /*isShutdownException*/);
                 }
-                bFired = TRUE;
             }
-       }
+            bFired = TRUE;
+        }
    }
-    return S_OK;
+
+   return S_OK;
 }
 
-
+/*static*/
+void CEventManager::FilterEligibleHandlers(
+    const gsl::span<REQUEST>& handlers,
+    EventHandle hEvent,
+    bool bRefire,
+    _Inout_ TempRequests* pMatches)
+{
+    for (auto& handler : handlers)
+    {
+        if (handler.m_bActive && (hEvent == handler.m_hEvent))
+        {
+            // Prevent double firing of events
+            if (!handler.m_bFired || bRefire)
+            {
+                handler.m_bFired = TRUE;
+                pMatches->push_back(handler);
+            }
+        }
+    }
+}
 
 //------------------------------------------------------------------------
 //
@@ -1494,32 +1075,6 @@ void CEventManager::RaiseRoutedEventTunnelling(
     }
 }
 
-bool CEventManager::IsRegisteredForEvent(_In_ CDependencyObject *pListener, _In_ EventHandle hEvent)
-{
-    CRequestsForObjectList* pRegisteredRequests = nullptr;
-
-    if (SUCCEEDED(m_pRequest->Get(pListener, pRegisteredRequests)))
-    {
-        if (pRegisteredRequests)
-        {
-            XUINT32 uRequestCtr = 0;
-            while (uRequestCtr < pRegisteredRequests->size())
-            {
-                REQUEST* pNodeRequest = NULL;
-                VERIFYHR(pRegisteredRequests->get_item(uRequestCtr, pNodeRequest));
-
-                if (pNodeRequest && pNodeRequest->m_hEvent == hEvent)
-                {
-                    return true;
-                }
-                ++uRequestCtr;
-            }
-        }
-    }
-
-    return false;
-}
-
 //------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -1698,20 +1253,26 @@ CEventManager::ProcessQueueImpl(_In_ IPALQueue *pQueue)
 _Check_return_
 HRESULT
 CEventManager::AddEventListener(
-_In_ CDependencyObject *pDO,
-_In_ CXcpList<REQUEST> **pEventList,
-_In_ EventHandle hEvent,
-_In_ CValue *pValue,
-_In_ XINT32 iListenerType,
-_Out_opt_ CValue *pResult,
-_In_ bool fHandledEventsToo,
-_In_ bool fSkipIsActiveCheck)
+    _In_ CDependencyObject *pDO,
+    _Inout_ std::unique_ptr<std::vector<REQUEST>>& pEventList,
+    _In_ EventHandle hEvent,
+    _In_ CValue *pValue,
+    _In_ XINT32 iListenerType,
+    _In_ bool fHandledEventsToo,
+    _In_ bool fSkipIsActiveCheck)
 {
-    REQUEST *p = NULL;
-    XINT32 iToken = 0;
-    CEventManager* pEventManager = NULL;
-
     IFCPTR_RETURN(pDO);
+
+    if ((iListenerType != EVENTLISTENER_CLR) && (iListenerType != EVENTLISTENER_INTERNAL))
+    {
+        IFC_RETURN(E_FAIL);
+    }
+
+    if ((pValue->GetType() != valueAny) &&
+        (pValue->GetType() != valueInternalHandler))
+    {
+        IFC_RETURN(E_INVALIDARG);
+    }
 
     // Some managed peers, such as Timelines, don't need to be protected from GC until
     // they have meaningful managed state.  For such types, attaching a managed event listener
@@ -1723,60 +1284,39 @@ _In_ bool fSkipIsActiveCheck)
         IFC_RETURN(pDO->SetParticipatesInManagedTreeDefault());
     }
 
-    // Obtain an instance of CEventManager matching the DependencyObject under discussion.
-    pEventManager = pDO->GetContext()->GetEventManager();
-
-    // Determine the token value appropriate to the listener type.
-    if (iListenerType == EVENTLISTENER_CLR)
+    if (!pEventList)
     {
-        // Same token value is used for all listeners attached via the CLR.
-        iToken = REQUEST_CLR;
-    }
-    else if (iListenerType == EVENTLISTENER_INTERNAL)
-    {
-        iToken = REQUEST_INTERNAL;
-    }
-    else
-    {
-        // Not a known listener type - unable to assign a token until this code
-        //  knows what to do with this listener type.
-        IFC_RETURN(E_FAIL);
+        pEventList = std::make_unique<std::vector<REQUEST>>();
     }
 
-    // Create a new REQUEST to store information about the new event listener.
-    IFC_RETURN(pEventManager->CreateRequest(&p, hEvent, pDO, pValue, iToken, NULL, fHandledEventsToo));
-
-    IFCEXPECT_RETURN(p);
-
-    if (*pEventList == NULL)
+    pEventList->emplace_back(hEvent, fHandledEventsToo);
+    if (pValue->GetType() == valueInternalHandler)
     {
-        *pEventList = new CXcpList<REQUEST>;
+        pEventList->back().m_pfnInternalEventDelegate = pValue->AsInternalHandler();
     }
-    // Add it to our list of Events...
-    (*pEventList)->Add(p);
 
-    fSkipIsActiveCheck |= pDO->AllowsHandlerWhenNotLive(iListenerType, hEvent.index);
-
+    bool fIgnoreIsActive = pDO->AllowsHandlerWhenNotLive(iListenerType, hEvent.index);
     //popup does not need to be in the tree for its events to be fired.
     //adding a one off special case. for any more such types, consider adding
     //a flag to metadata instead. there is a corresponding check in RemoveEventListener.
 
-    // We should add a request for this listener if the DO currently has requests
-    if (pDO->IsFiringEvents() || fSkipIsActiveCheck)
+    if (fSkipIsActiveCheck || fIgnoreIsActive || pDO->IsFiringEvents())
     {
-        // if we are active add it to the EventManager
-        IFC_RETURN(pEventManager->AddRequest(pDO, p));
-
-        if (fSkipIsActiveCheck)
+        auto* pEventManager = pDO->GetContext()->GetEventManager();
+        if (pEventManager != nullptr)
         {
-            p->m_bAdded = TRUE;
+            pEventManager->AddToLoadedEventListIfNeeded(pDO, hEvent);
         }
-    }
 
-    // Copy the REQUEST token value when requested.
-    if (NULL != pResult)
-    {
-        pResult->SetSigned(iToken);
+        // If we are active (can fire events), mark the handler so
+        pEventList->back().m_bActive = TRUE;
+        if (fIgnoreIsActive)
+        {
+            // The passed-in fSkipIsActiveCheck applies only to
+            // this addition, it does not mean the handler should remain
+            // active if handlers for the DO are disabled.
+            pEventList->back().m_bCanFireWhenInactive = TRUE;
+        }
     }
 
     return S_OK;
@@ -1786,107 +1326,101 @@ _Check_return_
 HRESULT
 CEventManager::RemoveEventListener(
     _In_ CDependencyObject *pDO,
-    _In_ CXcpList<REQUEST> *pEventList,
+    _In_ std::vector<REQUEST> *pEventList,
     _In_ EventHandle hEvent,
-    _In_ CValue *pValue,
-    _In_ bool fSkipIsActiveCheck)
+    _In_ CValue *pValue)
 {
-    CXcpList<REQUEST>::XCPListNode *pTemp = NULL;
-
     IFCPTR_RETURN(pDO);
 
     // Remove this from our internal list...
-    if (pEventList == NULL)
+    if (pEventList == nullptr)
     {
         // Trying to remove something that isn't there is treated as a success.
         return S_OK;
     }
 
-    // Find the right one
-    pTemp = pEventList->GetHead();
+    // Look through the entire list to determine whether we should remove the DO
+    // from the list of loaded event objects.
+    bool hasLoadedEvent = false;
+    bool removedLoadedEvent = false;
+    auto eraseIt = pEventList->end();
 
-    while (pTemp)
+    for (auto it = pEventList->begin(); it != pEventList->end(); ++it)
     {
-        REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-        IFCEXPECT_ASSERT_RETURN(pRequest);
+        const REQUEST& request = *it;
+        bool shouldErase = false;
 
-        if( pRequest->m_hEvent == hEvent)
+        // We will remove at most one listener but need to examine the entire list to determine
+        // whether we need to remove from the loaded event list.
+        if (eraseIt == pEventList->end())
         {
-            if (pValue->GetType() == valueSigned)
+            if (request.m_hEvent == hEvent)
             {
-                // Removal specified by token value.  Code upstream is responsible for
-                //  verifying that the value is valid here.  (For example, negative
-                //  values may not be passed in via browser script APIs.)
-                if (pValue->AsSigned() == pRequest->m_iToken)
+                if (pValue->GetType() == valueInternalHandler)
                 {
-                    // We should remove a request for this listener if the DO currently has requests
-                    if (pDO->IsFiringEvents())
+                    // This REQUEST was placed from internal code to call back to a
+                    //  static method pointer.
+                    if (pValue->AsInternalHandler() == request.m_pfnInternalEventDelegate)
                     {
-                        IFC_RETURN(pDO->GetContext()->GetEventManager()->RemoveRequest(pDO, pRequest));
+                        shouldErase = true;
                     }
-
-                    pEventList->Remove(pRequest);
-                    break;
                 }
-            }
-            else if (pRequest->m_pListener == pValue->AsObject())
-            {
-                // RS5 Bug #17784006:
-                // The policy to not call CEventManager::RemoveRequest() if pDO->IsFiringEvents() returns false will leak
-                // the REQUEST object for this DO and along with it two strong references on the DO, causing the DO to leak as well.
-                // The fix is to always call RemoveRequest() to avoid this memory leak.
-                // Note that the other blocks of code in this function continue to check for IsFiringEvents(), to reduce risk.
-                if (pDO->GetContext()->GetEventManager() != nullptr)
+                else if (pValue->GetType() == valueAny)
                 {
-                    IFC_RETURN(pDO->GetContext()->GetEventManager()->RemoveRequest(pDO, pRequest));
-                }
-                pEventList->Remove(pRequest);
-                break;
-            }
-            else if (pRequest->m_pfnInternalEventDelegate && pValue->AsInternalHandler())
-            {
-                // This REQUEST was placed from internal code to call back to a
-                //  static method pointer.
-                if (pValue->AsInternalHandler() == pRequest->m_pfnInternalEventDelegate)
-                {
-                    // We should remove a request for this listener if the DO currently has requests
-                    if (pDO->IsFiringEvents() || pDO->OfTypeByIndex<KnownTypeIndex::RootVisual>())
+                    if (request.m_pfnInternalEventDelegate == nullptr)
                     {
-                        IFC_RETURN(pDO->GetContext()->GetEventManager()->RemoveRequest(pDO, pRequest));
+                        shouldErase = true;
                     }
-
-                    pEventList->Remove(pRequest);
+                }
+                else
+                {
+                    XAML_FAIL_FAST();
                     break;
                 }
             }
         }
-        pTemp = pTemp->m_pNext;
+
+        if (shouldErase)
+        {
+            eraseIt = it;
+            removedLoadedEvent = IsLoadedEvent(request.m_hEvent);
+        }
+        else
+        {
+            hasLoadedEvent |= IsLoadedEvent(request.m_hEvent);
+        }
+    }
+
+    if (eraseIt != pEventList->end())
+    {
+        pEventList->erase(eraseIt);
+    }
+
+    if (removedLoadedEvent && !hasLoadedEvent)
+    {
+        auto* pEventManager = pDO->GetContext()->GetEventManager();
+        if (pEventManager != nullptr)
+        {
+            pEventManager->RemoveFromLoadedEventList(pDO);
+        }
     }
 
     return S_OK;
 }
 
-
-//------------------------------------------------------------------------
-//
-//  Method:   CEventManager::AddToLoadedEventList
-//
-//  Synopsis:
-//      Add to list of objects on which Loaded event is yet to be fired.
-//
-//------------------------------------------------------------------------
-_Check_return_ HRESULT CEventManager::AddToLoadedEventList(_In_ CDependencyObject* pElement)
+void CEventManager::AddToLoadedEventListIfNeeded(
+    _In_ CDependencyObject* pDO,
+    _In_ EventHandle hEvent)
 {
-    IFCPTR_RETURN(pElement);
-
-    if(!m_pLoadedEventList)
+    // Loaded events are not fired on a per-element basis, rather on the entire tree at once.
+    // Also, Loaded events should be fired in the order in which their handlers were added.
+    // Each DO maintains its event handlers in the order added, but does not maintain
+    // the order among the elements themselves. As a result, we need to maintain a separate
+    // list for the order among elements for which Loaded event is pending.
+    if (IsLoadedEvent(hEvent) && !IsLoadedEventPending(pDO))
     {
-        m_pLoadedEventList = new CDependencyObjectVector();
+        m_loadedEventObjects.emplace_back(pDO);
     }
-    IFC_RETURN(m_pLoadedEventList->push_back(pElement));
-    AddRefInterface(pElement);
-
-    return S_OK;
 }
 
 //------------------------------------------------------------------------
@@ -1897,63 +1431,18 @@ _Check_return_ HRESULT CEventManager::AddToLoadedEventList(_In_ CDependencyObjec
 //      Remove from list of objects on which Loaded event is yet to be fired.
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CEventManager::RemoveFromLoadedEventList(_In_ CDependencyObject* pElement, _Inout_opt_ bool *pLoadedEventRemoved)
+void CEventManager::RemoveFromLoadedEventList(_In_ CDependencyObject* pElement)
 {
-    IFCPTR_RETURN(pElement);
-
-    if (pLoadedEventRemoved)
+    auto it = std::find(m_loadedEventObjects.begin(), m_loadedEventObjects.end(), pElement);
+    if (it != m_loadedEventObjects.end())
     {
-        *pLoadedEventRemoved = false;
-    }
-
-    if (m_pLoadedEventList)
-    {
-        XUINT32 uObjCtr = 0;
-        while (uObjCtr < m_pLoadedEventList->size())
-        {
-            xref_ptr<CDependencyObject> spCurObject;
-            CDependencyObject *pCurObject = nullptr;
-            IFC_RETURN(m_pLoadedEventList->get_item(uObjCtr, pCurObject));
-            if (pCurObject == pElement)
-            {
-                spCurObject.attach(pCurObject);
-                IFC_RETURN(m_pLoadedEventList->erase(uObjCtr));
-                if (pLoadedEventRemoved)
-                {
-                    *pLoadedEventRemoved = true;
-                }
-            }
-            else
-            {
-                uObjCtr++;
-            }
-        }
-    }
-
-    return S_OK;
+        m_loadedEventObjects.erase(it);
+   }
 }
 
 bool CEventManager::IsLoadedEventPending(_In_ CDependencyObject* pElement)
 {
-    if (m_pLoadedEventList)
-    {
-        XUINT32 uObjCtr = 0;
-        while (uObjCtr < m_pLoadedEventList->size())
-        {
-            CDependencyObject* pCurObject = nullptr;
-            IFCFAILFAST(m_pLoadedEventList->get_item(uObjCtr, pCurObject));
-            if (pCurObject == pElement)
-            {
-                return true;
-            }
-            else
-            {
-                uObjCtr++;
-            }
-        }
-    }
-
-    return false;
+    return std::find(m_loadedEventObjects.begin(), m_loadedEventObjects.end(), pElement) != m_loadedEventObjects.end();
 }
 
 //------------------------------------------------------------------------

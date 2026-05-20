@@ -63,7 +63,6 @@ CConnectedAnimation::CConnectedAnimation(_In_ CCoreServices *pCore, _In_ CConnec
 CConnectedAnimation::~CConnectedAnimation()
 {
     VERIFYHR(Reset());
-    delete m_pEventList;
 }
 
 KnownTypeIndex CConnectedAnimation::GetTypeIndex() const
@@ -1325,7 +1324,7 @@ _Check_return_ HRESULT CConnectedAnimation::ClearElementInfo(_In_ ConnectedAnima
 
 void CConnectedAnimation::FireCompletedEvent()
 {
-    if (m_pEventList)
+    if (m_eventList)
     {
         CEventManager *pEventManager = GetContext()->GetEventManager();
         if (pEventManager)
@@ -1339,10 +1338,9 @@ _Check_return_ HRESULT CConnectedAnimation::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 
@@ -1350,7 +1348,7 @@ _Check_return_ HRESULT CConnectedAnimation::RemoveEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue)
 {
-    return CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue);
 }
 
 _Check_return_ HRESULT CConnectedAnimation::StartCustomAnimation(

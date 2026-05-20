@@ -342,26 +342,6 @@ CUIElement::~CUIElement()
         GetDCompObjectRegistry()->UnregisterObject(this);
     }
 
-    IGNOREHR(RemoveAllEventListeners(false /* leaveUIEHiddenEventListenersAttached */));
-
-    if (m_pEventList)
-    {
-        // Remove this UIElement's entry from the EventManager's EventRequestMap.  Otherwise,
-        // we will leak that entry until the app shuts down.
-        if (core)
-        {
-            CEventManager* pEventManager = core->GetEventManager();
-
-            if (pEventManager)
-            {
-                IGNOREHR(pEventManager->RemoveObject(this));
-            }
-        }
-
-        m_pEventList->Clean();
-        delete m_pEventList;
-    }
-
     if (m_pChildren)
     {
         IGNOREHR(m_pChildren->RemoveAllElements(FALSE));
@@ -1209,7 +1189,7 @@ bool CUIElement::ShouldRaiseEvent(_In_ EventHandle hEvent, _In_ bool fInputEvent
     }
 
     // If our list is NULL, there are no listeners yet.
-    if (m_pEventList == NULL)
+    if (m_eventList == NULL)
     {
         return false;
     }
@@ -1410,13 +1390,13 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
     {
         // If there are events registered on this element, ask the
         // EventManager to extract them and a request for every event.
-        if (m_pEventList)
+        if (m_eventList)
         {
             // Get the event manager.
             IFCPTR_RETURN(core);
             CEventManager* pEventManager = core->GetEventManager();
             IFCPTR_RETURN(pEventManager);
-            IFC_RETURN(pEventManager->AddRequestsInOrder(this, m_pEventList));
+            IFC_RETURN(pEventManager->EnableEvents(this, m_eventList.get()));
         }
 
         // Make sure that we propagate OnDirtyPath bits to the new parent.
@@ -1845,10 +1825,9 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
     {
         // If we are leaving the Live tree and there are events.
         // Popup can live outside the live tree. Do not remove event handlers for Popup when it leaves the tree.
-        // Popup's event handlers will be removed when it gets deleted.
         if (!OfTypeByIndex<KnownTypeIndex::Popup>())
         {
-            IFC_RETURN(RemoveAllEventListeners(true /* leaveUIEShownHiddenEventListenersAttached */));
+            IFC_RETURN(RemoveAllEventListeners());
         }
 
         // Let this DirectManipulation container know that it no longer lives in the tree
@@ -1894,7 +1873,6 @@ CUIElement::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
     bool isThemeChangedEvent = (hEvent.index == KnownEventIndex::FrameworkElement_ActualThemeChanged);
@@ -1905,7 +1883,7 @@ CUIElement::AddEventListener(
         PropagateOnContributesToViewport();
     }
 
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo, isThemeChangedEvent);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo, isThemeChangedEvent);
 }
 
 //------------------------------------------------------------------------
@@ -1927,14 +1905,20 @@ CUIElement::RemoveEventListener(
     {
         // If we just removed the last registration of the EffectiveViewportChanged
         // event, then clear the flag on this element.
-        if (hEvent.index == KnownEventIndex::FrameworkElement_EffectiveViewportChanged
-            && !GetContext()->GetEventManager()->IsRegisteredForEvent(this, hEvent))
+        if (m_eventList && (hEvent.index == KnownEventIndex::FrameworkElement_EffectiveViewportChanged))
         {
-            SetWantsViewport(FALSE);
+            if (m_eventList->end() == std::find_if(m_eventList->begin(), m_eventList->end(),
+                [hEvent](const auto& request)
+                {
+                    return request.m_hEvent == hEvent;
+                }))
+            {
+                SetWantsViewport(FALSE);
+            }
         }
     });
 
-    IFC_RETURN(CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue));
+    IFC_RETURN(CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue));
 
     return S_OK;
 }
@@ -1943,29 +1927,16 @@ CUIElement::RemoveEventListener(
 //
 //  Method:   RemoveAllEventListeners
 //
-//  Synopsis:  Removes all the event listeners attached for events on this object.
-//      EventManager does an AddRef on the object for each request. If we dont
-//      clean up, we will leak.
+//  Synopsis:  Disables all the event listeners attached for events on this object.
 //
 //------------------------------------------------------------------------
-_Check_return_ HRESULT CUIElement::RemoveAllEventListeners(bool leaveUIEShownHiddenEventListenersAttached)
+_Check_return_ HRESULT CUIElement::RemoveAllEventListeners()
 {
     CEventManager *pEventManager = GetContext()->GetEventManager();
 
-    if (pEventManager && m_pEventList)
+    if (pEventManager && m_eventList)
     {
-        // Add the events in...
-        CXcpList<REQUEST>::XCPListNode *pTemp = m_pEventList->GetHead();
-        while (pTemp)
-        {
-            REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-            if (!leaveUIEShownHiddenEventListenersAttached
-                || (pRequest->m_hEvent.index != KnownEventIndex::UIElement_Hidden && pRequest->m_hEvent.index != KnownEventIndex::UIElement_Shown))
-            {
-                IFC_RETURN(pEventManager->RemoveRequest(this, pRequest));
-            }
-            pTemp = pTemp->m_pNext;
-        }
+        IFC_RETURN(pEventManager->DisableEvents(this, m_eventList.get()));
     }
     return S_OK;
 }
@@ -15211,7 +15182,7 @@ void CUIElement::FireShownHiddenEvent(KnownEventIndex eventIndex)
     // effective visibility. In the ECP implicit show/hide animation scenario we'll also get here after detecting
     // an effective visibility change, and in that case we don't want to stop monitoring effective visibility on
     // this element because we see that there are no Shown/Hidden handlers attached - there weren't any to begin with.
-    if (m_pEventList && HasShownHiddenHandlers())
+    if (m_eventList && HasShownHiddenHandlers())
     {
         auto core = GetContext();
         CEventManager* pEventManager = core->GetEventManager();

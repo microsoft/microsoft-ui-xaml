@@ -401,7 +401,7 @@ HRESULT __stdcall CVisualStateManager2::OnStoryboardCompleted(_In_ CDependencyOb
     if (!data) return S_OK;
 
     IFC_RETURN(storyboard->RemoveEventListener(EventHandle(KnownEventIndex::Timeline_Completed),
-        &data->m_EventListenerToken));
+        &data->m_EventListener));
 
     // Option 1: We are a transition storyboard and we have a VisualTransition parent, which
     // has a parent chain that looks like this:

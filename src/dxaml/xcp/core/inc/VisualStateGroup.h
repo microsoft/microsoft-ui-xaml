@@ -25,7 +25,7 @@ public:
 
     bool ShouldRaiseEvent(_In_ EventHandle hEvent, _In_ bool fInputEvent = false, _In_opt_ CEventArgs* pArgs = nullptr) override
     {
-        return (m_pEventList != NULL);
+        return (m_eventList != NULL);
     }
 
     KnownTypeIndex GetTypeIndex() const override
@@ -33,8 +33,13 @@ public:
         return DependencyObjectTraits<CVisualStateGroup>::Index;
     }
 
-    _Check_return_ HRESULT AddEventListener(_In_ EventHandle hEvent, _In_ CValue * pValue, _In_ XINT32 iListenerType, _Out_opt_ CValue * pResult, _In_ bool fHandledEventsToo) final;
+    _Check_return_ HRESULT AddEventListener(_In_ EventHandle hEvent, _In_ CValue * pValue, _In_ XINT32 iListenerType, _In_ bool fHandledEventsToo) final;
     _Check_return_ HRESULT RemoveEventListener(_In_ EventHandle hEvent, _In_ CValue * pValue) override;
+
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
 
     _Check_return_ HRESULT GetCurrentVisualState(_Outptr_result_maybenull_ CVisualState **ppVisualState);
     _Check_return_ HRESULT SetCurrentVisualState(_In_opt_ CVisualState *pVisualState);
@@ -53,7 +58,7 @@ public:
 
 private:
     CVisualState *m_pCurrentState;
-    CXcpList<REQUEST> *m_pEventList;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
 
 #pragma region Legacy VSM
 public:

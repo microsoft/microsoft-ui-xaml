@@ -3626,18 +3626,15 @@ _Check_return_ HRESULT DependencyObject::MoveEventSources(_In_ DependencyObject*
 
     IFC_RETURN(this->MoveEventSourcesImpl(pTarget));
 
-    if (this->GetHandle()->OfTypeByIndex<KnownTypeIndex::UIElement>())
+    CDependencyObject* pCoreThis = static_cast<CDependencyObject*>(GetHandle());
+    CDependencyObject* pCoreTarget = static_cast<CDependencyObject*>(pTarget->GetHandle());
+
+    if (pCoreTarget->OfTypeByIndex<KnownTypeIndex::UIElement>() &&
+        pCoreThis->OfTypeByIndex<KnownTypeIndex::UIElement>())
     {
-        CUIElement* pCoreThis = static_cast<CUIElement*>(this->GetHandle());
-        CEventManager* pEventManager = pCoreThis->GetContext()->GetEventManager();
-        if (pEventManager)
-        {
-            CDependencyObject* pCoreTarget = static_cast<CDependencyObject*>(pTarget->GetHandle());
-            if (pCoreThis->m_pEventList!=nullptr)
-            {
-                IFC_RETURN(pEventManager->AddRequestsInOrder(pCoreTarget, pCoreThis->m_pEventList));
-            }
-        }
+        CUIElement* pElementTarget = static_cast<CUIElement*>(pCoreTarget);
+        CUIElement* pElementThis = static_cast<CUIElement*>(pCoreThis);
+        pElementTarget->m_eventList = std::move(pElementThis->m_eventList);
     }
 
     return S_OK;
@@ -3649,11 +3646,15 @@ _Check_return_ HRESULT DependencyObject::RestoreEventSources(_In_ DependencyObje
 
     IFC_RETURN(pSource->MoveEventSourcesImpl(this));
 
+    CDependencyObject* pCoreThis = static_cast<CDependencyObject*>(GetHandle());
     CDependencyObject* pCoreSource = static_cast<CDependencyObject*>(pSource->GetHandle());
-    CEventManager* pEventManager = pCoreSource->GetContext()->GetEventManager();
-    if (pEventManager)
+
+    if (pCoreSource->OfTypeByIndex<KnownTypeIndex::UIElement>() &&
+        pCoreThis->OfTypeByIndex<KnownTypeIndex::UIElement>())
     {
-        IFC_RETURN(pEventManager->RemoveObject(pCoreSource));
+        CUIElement* pElementSource = static_cast<CUIElement*>(pCoreSource);
+        CUIElement* pElementThis = static_cast<CUIElement*>(pCoreThis);
+        pElementThis->m_eventList = std::move(pElementSource->m_eventList);
     }
 
     return S_OK;

@@ -298,7 +298,7 @@ _Check_return_ HRESULT LayoutTransitionStorage::CleanupStoryboard(_In_ CStoryboa
         pData = pStoryboard->m_pLayoutTransitionCompletedData;
         if (pData)  // pData is null if we failed in SetupTransition before assigning a pData
         {
-            IFC(pStoryboard->RemoveEventListener(EventHandle(KnownEventIndex::Timeline_Completed), &pData->m_EventListenerToken));
+            IFC(pStoryboard->RemoveEventListener(EventHandle(KnownEventIndex::Timeline_Completed), &pData->m_EventListener));
             delete pStoryboard->m_pLayoutTransitionCompletedData;
             pStoryboard->m_pLayoutTransitionCompletedData = NULL;
         }
@@ -1007,7 +1007,6 @@ CTransition::SetupTransition(
     LayoutTransitionCompletedData* pData = NULL;
     LayoutTransitionStorage* pStorage = NULL;
     CLayoutTransitionElement* pDestinationElement = NULL;
-    CValue Handler;
     CTimeSpan* pBeginTime = NULL;
     auto core = pTarget->GetContext();
     bool coreAllowedTransitionTargetCreation = core->IsAllowingTransitionTargetCreations();
@@ -1167,9 +1166,9 @@ CTransition::SetupTransition(
 
         // manage storyboard instance - beginning and cancellation
         pData = new LayoutTransitionCompletedData(pTarget);
+        pData->m_EventListener.SetInternalHandler(OnTransitionCompleted);
         IFCEXPECT_ASSERT(!pStoryboard->m_pLayoutTransitionCompletedData);
-        Handler.SetInternalHandler(OnTransitionCompleted);
-        IFC(pStoryboard->AddEventListener(EventHandle(KnownEventIndex::Timeline_Completed), &Handler, EVENTLISTENER_INTERNAL, &pData->m_EventListenerToken));
+        IFC(pStoryboard->AddEventListener(EventHandle(KnownEventIndex::Timeline_Completed), &pData->m_EventListener, EVENTLISTENER_INTERNAL));
         pStoryboard->m_pLayoutTransitionCompletedData = pData;
         pData = NULL;
 

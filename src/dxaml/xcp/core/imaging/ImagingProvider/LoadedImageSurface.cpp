@@ -80,9 +80,6 @@ CLoadedImageSurface::CLoadedImageSurface(_In_ CCoreServices* core)
 
 CLoadedImageSurface::~CLoadedImageSurface()
 {
-    delete m_eventList;
-    m_eventList = nullptr;
-
     if (!m_closed)
     {
         VERIFYHR(Close());
@@ -104,17 +101,16 @@ _Check_return_ HRESULT CLoadedImageSurface::AddEventListener(
     _In_ EventHandle event,
     _In_ CValue* value,
     _In_ XINT32 listenerType,
-    _Out_opt_ CValue* result,
     _In_ bool handledEventsToo)
 {
     IFCEXPECTRC_RETURN(!m_closed, RO_E_CLOSED);
 
-    return CEventManager::AddEventListener(this, &m_eventList, event, value, listenerType, result, handledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, event, value, listenerType, handledEventsToo);
 }
 
 _Check_return_ HRESULT CLoadedImageSurface::RemoveEventListener(_In_ EventHandle event, _In_ CValue* value)
 {
-    return CEventManager::RemoveEventListener(this, m_eventList, event, value);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), event, value);
 }
 
 bool CLoadedImageSurface::AllowsHandlerWhenNotLive(XINT32 /* listenerType */, KnownEventIndex) const

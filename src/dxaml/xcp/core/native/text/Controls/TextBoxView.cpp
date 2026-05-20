@@ -2861,14 +2861,14 @@ _Check_return_ HRESULT CTextBoxView::SetupCaretBlinkAnimation()
     IFC_RETURN(m_spCaretTimer->AddEventListener(
         EventHandle(KnownEventIndex::DispatcherTimer_Tick),
         &value,
-        EVENTLISTENER_INTERNAL, nullptr, FALSE));
+        EVENTLISTENER_INTERNAL, FALSE));
 
     IFC_RETURN(CreateDO(m_spCaretStartTimer.ReleaseAndGetAddressOf(), &cp));
     value.SetInternalHandler(OnCaretStart);
     IFC_RETURN(m_spCaretStartTimer->AddEventListener(
         EventHandle(KnownEventIndex::DispatcherTimer_Tick),
         &value,
-        EVENTLISTENER_INTERNAL, nullptr, FALSE));
+        EVENTLISTENER_INTERNAL, FALSE));
 
     IFC_RETURN(CreateDO(pTimeSpan.ReleaseAndGetAddressOf(), &cp));
     pTimeSpan->m_rTimeSpan = CheckCaretBlinkTimeout();

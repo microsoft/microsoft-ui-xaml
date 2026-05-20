@@ -170,7 +170,6 @@ CImageSource::CImageSource(_In_ CCoreServices *pCore)
     m_fDecodeToRenderSize   = FALSE;
     m_fDecodeToRenderSizeForcedOff = FALSE;
     m_pendingDecodeForLostSoftwareSurface = FALSE;
-    m_pEventList = nullptr;
     m_downloadProgress = 0;
     m_nCreateOptions = DirectUI::BitmapCreateOptions::None;
     m_decodePixelWidth = 0;
@@ -274,12 +273,6 @@ CImageSource::~CImageSource()
     core->RemoveImageUpdateRequest(m_pImageSurfaceWrapper);
 
     VERIFYHR(UnregisterWithReloadManager());
-
-    if (m_pEventList)
-    {
-        delete m_pEventList;
-        m_pEventList = NULL;
-    }
 
     VERIFYHR(core->RemoveImageDecodeRequest(this));
     VERIFYHR(core->StopTrackingImageForRenderWalk(this));
@@ -1015,10 +1008,9 @@ CImageSource::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 
@@ -1033,7 +1025,7 @@ CImageSource::RemoveEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue)
 {
-    return CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue);
 }
 
 static _Check_return_ HRESULT GetAbsoluteUri(CDependencyObject &base, const xstring_ptr& sourceUri, _Outptr_ IPALUri** absoluteUri)
@@ -1769,7 +1761,7 @@ CImageSource::FireImageFailed(_In_ XUINT32 iErrorCode)
     if (ShouldFirePublicBitmapImageEvents())
     {
         // If the event handler is not registered, it will fall back to OnError handler
-        // so there is no need to do the m_pEventList check here.
+        // so there is no need to do the m_eventList check here.
         if (pEventManager)
         {
             if (OfTypeByIndex<KnownTypeIndex::BitmapImage>())

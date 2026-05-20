@@ -46,7 +46,7 @@ private:
     xref::weakref_ptr<CVisualStateGroup> m_pGroupWeakRef;
 
 public:
-    CValue m_EventListenerToken;
+    CValue m_EventListener;
     ~VisualTransitionCompletedData();
 
     static _Check_return_ HRESULT Create(

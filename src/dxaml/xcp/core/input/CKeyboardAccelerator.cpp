@@ -19,13 +19,13 @@ _Check_return_ HRESULT CKeyboardAccelerator::EnterImpl(
         // If there are events registered on this element, ask the
         // EventManager to extract them and create a request for every event.
         auto core = GetContext();
-        if (m_pEventList)
+        if (m_eventList)
         {
             // Get the event manager.
             IFCEXPECT_ASSERT_RETURN(core);
             CEventManager* const pEventManager = core->GetEventManager();
             IFCEXPECT_ASSERT_RETURN(pEventManager);
-            IFC_RETURN(pEventManager->AddRequestsInOrder(this, m_pEventList));
+            IFC_RETURN(pEventManager->EnableEvents(this, m_eventList.get()));
         }
         CKeyboardAcceleratorCollection* const pCollection = do_pointer_cast<CKeyboardAcceleratorCollection>(this->GetParentInternal(false /* publicParentOnly */));
         IFCPTR_RETURN(pCollection);
@@ -81,14 +81,14 @@ _Check_return_ HRESULT CKeyboardAccelerator::LeaveImpl(
 
     if (params.fIsLive)
     {
-        // Reverse of the Add() operation in EnterImpl().
-        if (m_pEventList)
+        // Reverse of the EnableEvents() operation in EnterImpl().
+        if (m_eventList)
         {
             auto core = GetContext();
             IFCEXPECT_ASSERT_RETURN(core);
             CEventManager* const pEventManager = core->GetEventManager();
             IFCEXPECT_ASSERT_RETURN(pEventManager);
-            IFC_RETURN(pEventManager->RemoveRequests(this, m_pEventList));
+            IFC_RETURN(pEventManager->DisableEvents(this, m_eventList.get()));
         }
     }
 
@@ -106,13 +106,6 @@ _Check_return_ HRESULT CKeyboardAccelerator::Create(
 
 CKeyboardAccelerator::~CKeyboardAccelerator()
 {
-    // Clear event list
-    if (m_pEventList)
-    {
-        m_pEventList->Clean();
-        delete m_pEventList;
-        m_pEventList = nullptr;
-    }
 }
 
 _Check_return_
@@ -121,10 +114,9 @@ CKeyboardAccelerator::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 _Check_return_
@@ -133,5 +125,5 @@ CKeyboardAccelerator::RemoveEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue)
 {
-    return CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue);
 }

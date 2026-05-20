@@ -48,14 +48,6 @@ CDependencyObject::~CDependencyObject()
         // If this core object was marked as a GC root, unmark it,
         core->UnpegNoRefCoreObjectWithoutPeer(this);
 
-        // Remove any remaining requests from the event manager.  (Even if all the requests have been
-        // removed already, there will still be an empty entry for this object in the map.)
-        CEventManager* pEventManager = core->GetEventManager();
-        if (pEventManager)
-        {
-            IGNOREHR(pEventManager->RemoveObject(this));
-        }
-
         if (HasDeferred())
         {
             IGNOREHR(CDeferredMapping::NotifyDestroyed(this));
@@ -1602,7 +1594,6 @@ _Check_return_ HRESULT CDependencyObject::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
     RRETURN(E_NOTIMPL);

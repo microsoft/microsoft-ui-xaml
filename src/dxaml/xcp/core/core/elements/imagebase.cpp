@@ -204,7 +204,7 @@ _Check_return_ HRESULT CImageBase::FireImageFailed(_In_ XUINT32 iErrorCode)
     EventHandle hFailedEvent(KnownEventIndex::Image_ImageFailed);
 
     // If the eventhandler is not registered, it will fall back to OnError handler
-    // so there is no need to do the m_pEventList check here.
+    // so there is no need to do the m_eventList check here.
 
     if (pEventManager)
     {

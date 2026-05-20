@@ -15,7 +15,7 @@ public:
 
     bool ShouldRaiseEvent(_In_ EventHandle hEvent, _In_ bool fInputEvent = false, _In_opt_ CEventArgs *pArgs = NULL) override
     {
-        return m_pEventList != nullptr;
+        return m_eventList != nullptr;
     }
 
     XUINT32 ParticipatesInManagedTreeInternal() override
@@ -28,17 +28,21 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult,
         _In_ bool fHandledEventsToo = false) final;
 
     _Check_return_ HRESULT RemoveEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue) final;
 
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
+
 private:
     ~CKeyboardAccelerator() override;
 
-    CXcpList<REQUEST> *m_pEventList = nullptr;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
 
 public:
 

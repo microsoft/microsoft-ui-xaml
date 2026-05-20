@@ -38,8 +38,6 @@ public:
         return DependencyObjectTraits<CRootVisual>::Index;
     }
 
-    bool AllowsHandlerWhenNotLive(XINT32 iListenerType, KnownEventIndex eventIndex) const final;
-
     XUINT32 ParticipatesInManagedTreeInternal() override
     {
         // The internal root element does not have a managed counterpart.

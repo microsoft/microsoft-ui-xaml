@@ -36,22 +36,6 @@ CDispatcherTimer::~CDispatcherTimer()
     auto core = GetContext();
 
     CTimeManager *pTimeManager = core->GetTimeManager();
-    CEventManager *pEventManager = core->GetEventManager();
-
-    if (m_pEventList && pEventManager)
-    {
-        // Add the events in...
-        CXcpList<REQUEST>::XCPListNode *pTemp = m_pEventList->GetHead();
-        while (pTemp)
-        {
-            REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-            VERIFYHR(pEventManager->RemoveRequest(this, pRequest));
-            pTemp = pTemp->m_pNext;
-        }
-        m_pEventList->Clean();
-        delete m_pEventList;
-        m_pEventList = NULL;
-    }
 
     // ... and remove ourselves from the timing tree if we are not already removed.
     if (( pTimeManager != NULL ) && ( GetTimingParent() != NULL ))
@@ -80,7 +64,7 @@ _Check_return_ HRESULT CDispatcherTimer::ComputeStateImpl(
     // when Start was called. If someone attached an event handler while the DispatcherTimer is running, we'll be able
     // to continue ticking and fire the Tick event at the appropriate time, rather than effectively restarting the timer
     // when the Tick event handler was added.
-    if (m_pEventList && m_fRunning && !m_fWorkPending)
+    if (m_eventList && m_fRunning && !m_fWorkPending)
     {
         // Dispatcher timers are root timelines, so the parent time should always be provided.
         ASSERT(parentParams.hasTime);
@@ -124,7 +108,7 @@ _Check_return_ HRESULT CDispatcherTimer::ComputeStateImpl(
 // Call the event manager to fire this event when the interval hits.
 void CDispatcherTimer::FireTickEvent()
 {
-    ASSERT(m_pEventList);
+    ASSERT(m_eventList);
 
     CEventManager *pEventManager = GetContext()->GetEventManager();
     if (pEventManager)
@@ -138,22 +122,20 @@ _Check_return_ HRESULT CDispatcherTimer::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 _Check_return_ HRESULT CDispatcherTimer::RemoveEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue)
 {
-    IFC_RETURN(CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue));
-    if (m_pEventList->GetHead() == NULL)
+    IFC_RETURN(CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue));
+    if (m_eventList && m_eventList->empty())
     {
         // we have no listeners
-        delete m_pEventList;
-        m_pEventList = NULL;
+        m_eventList.reset();
     }
 
     return S_OK;

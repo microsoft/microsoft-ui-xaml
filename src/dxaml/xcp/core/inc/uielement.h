@@ -186,20 +186,18 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult,
         _In_ bool fHandledEventsToo = false) override;
 
     _Check_return_ HRESULT RemoveEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue) override;
 
-    // Typically a UIElement removes all its event listers from the event manager when it leaves the tree. One exception
-    // is popups, which can still render even if they're not in the live tree (via parentless popups). The other exceptions
-    // are the UIElement.Shown and UIE.Hidden events, which should fire for an element that isn't live if it just entered
-    // or left the tree. The param lets us leave Shown and Hidden event handlers on the element. These will be removed
-    // later when the UIElement is deleted. If this element enters the tree again, these events won't be added back, because
-    // they'll be guarded by the REQUEST::m_bAdded flag.
-    _Check_return_ HRESULT RemoveAllEventListeners(bool leaveUIEShownHiddenEventListenersAttached);
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
+
+    _Check_return_ HRESULT RemoveAllEventListeners();
 
     bool IsLoadedEventPending();
 
@@ -3025,7 +3023,7 @@ protected:
 // CUIElement fields
 
 public:
-    CXcpList<REQUEST> *m_pEventList;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
 
 // Other public storage
     TextFormatting *m_pTextFormatting;

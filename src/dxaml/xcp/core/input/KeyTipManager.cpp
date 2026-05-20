@@ -580,7 +580,6 @@ void KeyTipManager::StartStateTimer(_In_ CCoreServices* core, int milliseconds)
         EventHandle(KnownEventIndex::DispatcherTimer_Tick),
         &handler,
         EVENTLISTENER_INTERNAL,
-        nullptr /*pResult*/,
         false /*fHandledEventsToo*/));
 
     xref_ptr<CTimeSpan> timeoutTimeSpan;

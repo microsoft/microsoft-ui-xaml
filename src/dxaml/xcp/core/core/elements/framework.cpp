@@ -2366,21 +2366,15 @@ CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Enter
     IFCPTR_RETURN(core);
 
     // Walk the list of events (if any) to keep watch of loaded events.
-    if (params.fIsLive && m_pEventList)
+    if (params.fIsLive && m_eventList)
     {
-        CXcpList<REQUEST>::XCPListNode *pTemp = m_pEventList->GetHead();
-        while (pTemp)
+        for (const auto& request : *m_eventList)
         {
-            REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-            if (pRequest && pRequest->m_hEvent.index != KnownEventIndex::UnknownType_UnknownEvent)
+            if (request.m_hEvent.index == KnownEventIndex::FrameworkElement_Loaded)
             {
-                if (pRequest->m_hEvent.index == KnownEventIndex::FrameworkElement_Loaded)
-                {
-                    // Take note of the fact we added a loaded event to the event manager.
-                    core->KeepWatch(WATCH_LOADED_EVENTS);
-                }
+                // Take note of the fact we added a loaded event to the event manager.
+                core->KeepWatch(WATCH_LOADED_EVENTS);
             }
-            pTemp = pTemp->m_pNext;
         }
      }
 
@@ -3997,7 +3991,6 @@ _Check_return_ HRESULT CFrameworkElement::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue* pValue,
     _In_ INT32 iListenerType,
-    _Out_opt_ CValue* pResult,
     _In_ bool fHandledEventsToo)
 {
     if (hEvent.index == KnownEventIndex::FrameworkElement_ActualThemeChanged)
@@ -4008,7 +4001,7 @@ _Check_return_ HRESULT CFrameworkElement::AddEventListener(
         GetContext()->AddThemeChangedListener(this);
     }
 
-    IFC_RETURN(CUIElement::AddEventListener(hEvent, pValue, iListenerType, pResult, fHandledEventsToo));
+    IFC_RETURN(CUIElement::AddEventListener(hEvent, pValue, iListenerType, fHandledEventsToo));
 
     return S_OK;
 }

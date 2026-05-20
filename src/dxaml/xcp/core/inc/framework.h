@@ -426,7 +426,6 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue* pValue,
         _In_ INT32 iListenerType,
-        _Out_opt_ CValue* pResult,
         _In_ bool fHandledEventsToo = false) override;
 
     _Check_return_ HRESULT RemoveEventListener(

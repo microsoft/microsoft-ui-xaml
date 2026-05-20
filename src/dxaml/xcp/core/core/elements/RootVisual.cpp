@@ -43,11 +43,6 @@ Cleanup:
     RRETURN(hr);
 }
 
-bool CRootVisual::AllowsHandlerWhenNotLive(XINT32 iListenerType, KnownEventIndex eventIndex) const
-{
-    return (iListenerType == REQUEST_INTERNAL) || __super::AllowsHandlerWhenNotLive(iListenerType, eventIndex);
-}
-
 //------------------------------------------------------------------------
 //
 //  Synopsis:

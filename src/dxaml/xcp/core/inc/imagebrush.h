@@ -60,7 +60,6 @@ protected:
         : CTileBrush(pCore)
         , m_pImageSource(NULL)
         , m_cLockCount(0)
-        , m_pEventList(NULL)
         , m_pBitmapImageReportCallback(NULL)
         , m_pImageReportCallback(NULL)
         , m_decodeToRenderSizeForcedOff(false)
@@ -77,7 +76,7 @@ public:
 
     bool ShouldRaiseEvent(_In_ EventHandle hEvent, _In_ bool fInputEvent = false, _In_opt_ CEventArgs *pArgs = NULL) final
     {
-        return (m_pEventList != NULL);
+        return (m_eventList != NULL);
     }
 
     KnownTypeIndex GetTypeIndex() const override
@@ -92,12 +91,16 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult ,
         _In_ bool fHandledEventsToo = false) final;
 
     _Check_return_ HRESULT RemoveEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue) final;
+
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
 
 protected:
 
@@ -195,7 +198,7 @@ private:
 // above, never directly.
 
     // Events
-    CXcpList<REQUEST> *m_pEventList;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
 
     CBitmapImageReportCallback *m_pBitmapImageReportCallback;
     IImageReportCallback *m_pImageReportCallback;

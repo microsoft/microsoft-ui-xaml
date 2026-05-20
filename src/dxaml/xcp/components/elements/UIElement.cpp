@@ -60,7 +60,6 @@ const wchar_t* const CUIElement::s_translationString = L"Translation";
 
 CUIElement::CUIElement(_In_ CCoreServices* core)
     : CDependencyObject(core)
-    , m_pEventList(nullptr)
     , m_eOpacityPrivate(1.0f)
     , m_pTextFormatting(nullptr)
     , m_pLayoutTransitionStorage(nullptr)
@@ -3509,8 +3508,15 @@ void CUIElement::AllShownHiddenHandlersRemoved()
 
 bool CUIElement::AllowsHandlerWhenNotLive(XINT32 iListenerType, KnownEventIndex eventIndex) const
 {
-    // The shown/hidden events are allowed to fire on inactive UIElements.
-    return eventIndex == KnownEventIndex::UIElement_Shown ||eventIndex == KnownEventIndex::UIElement_Hidden;
+    switch (eventIndex)
+    {   
+        case KnownEventIndex::UIElement_Shown:
+        case KnownEventIndex::UIElement_Hidden:
+        case KnownEventIndex::UIElement_PointerExited:
+            return true;
+    }
+
+    return false;
 }
 
 bool CUIElement::HasKeepAliveCount() const

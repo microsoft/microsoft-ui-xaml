@@ -36,13 +36,6 @@ CImageBrush::~CImageBrush()
     // source to remove it from its list of callbacks.
     RemoveCallback();
 
-    if (m_pEventList)
-    {
-        m_pEventList->Clean();
-        delete m_pEventList;
-        m_pEventList = NULL;
-    }
-
     ReleaseInterface(m_pImageSource);
     ReleaseInterface(m_pImageReportCallback);
 }
@@ -421,14 +414,14 @@ CImageBrush::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams
 
     // If there are events registered on this element, ask the
     // EventManager to extract them and a request for every event.
-    if (params.fIsLive && m_pEventList)
+    if (params.fIsLive && m_eventList)
     {
         auto core = GetContext();
         // Get the event manager.
         IFCPTR_RETURN(core);
         pEventManager = core->GetEventManager();
         IFCPTR_RETURN(pEventManager);
-        IFC_RETURN(pEventManager->AddRequestsInOrder(this, m_pEventList));
+        IFC_RETURN(pEventManager->EnableEvents(this, m_eventList.get()));
     }
 
     if (params.fIsLive)
@@ -459,16 +452,9 @@ CImageBrush::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParams
     IFC_RETURN(CTileBrush::LeaveImpl(pNamescopeOwner, params));
 
     // If we are Leaving the Live tree and there are events.
-    if (params.fIsLive && m_pEventList)
+    if (params.fIsLive && m_eventList)
     {
-        // Remove the events from EventManager
-        CXcpList<REQUEST>::XCPListNode *pTemp = m_pEventList->GetHead();
-        while (pTemp)
-        {
-            REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-            IFC_RETURN(GetContext()->GetEventManager()->RemoveRequest(this, pRequest));
-            pTemp = pTemp->m_pNext;
-        }
+        IFC_RETURN(GetContext()->GetEventManager()->DisableEvents(this, m_eventList.get()));
     }
 
     return S_OK;
@@ -486,10 +472,9 @@ CImageBrush::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 //------------------------------------------------------------------------
@@ -504,7 +489,7 @@ CImageBrush::RemoveEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue)
 {
-    return CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue);
 }
 
 

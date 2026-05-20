@@ -66,14 +66,6 @@ CTimeline::~CTimeline()
     ReleaseTarget();
 
     ReleaseInterface(m_pDynamicTimelineParent);
-
-    if (m_pEventList)
-    {
-        // Remove existing events...
-        m_pEventList->Clean();
-        delete m_pEventList;
-        m_pEventList = NULL;
-    }
 }
 
 KnownTypeIndex CTimeline::GetTypeIndex() const
@@ -123,7 +115,6 @@ _Check_return_ HRESULT CTimeline::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
     if (KnownEventIndex::Timeline_Completed == hEvent.index)
@@ -131,7 +122,7 @@ _Check_return_ HRESULT CTimeline::AddEventListener(
         m_completedHandlerRegisteredCount++;
     }
 
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 _Check_return_ HRESULT CTimeline::RemoveEventListener(
@@ -143,7 +134,7 @@ _Check_return_ HRESULT CTimeline::RemoveEventListener(
         m_completedHandlerRegisteredCount--;
     }
 
-    return CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue);
 }
 
 _Check_return_ HRESULT CTimeline::ComputeState(
@@ -293,14 +284,14 @@ _Check_return_ HRESULT CTimeline::OnAddToTimeManager()
 
     // If there are events registered on this element, ask the
     // EventManager to extract them and a request for every event.
-    if (m_pEventList)
+    if (m_eventList)
     {
         auto core = GetContext();
         // Get the event manager.
         IFCPTR_RETURN(core);
         pEventManager = core->GetEventManager();
         IFCPTR_RETURN(pEventManager);
-        IFC_RETURN(pEventManager->AddRequestsInOrder(this, m_pEventList));
+        IFC_RETURN(pEventManager->EnableEvents(this, m_eventList.get()));
     }
 
     // If we have a managed peer, then the time manager is now acting
@@ -322,16 +313,9 @@ _Check_return_ HRESULT CTimeline::OnRemoveFromTimeManager()
     m_hasIndependentAnimation = FALSE;
 
     // If we are becoming Inactive and there are events.
-    if (m_pEventList)
+    if (m_eventList)
     {
-        // Remove the events...
-        CXcpList<REQUEST>::XCPListNode *pTemp = m_pEventList->GetHead();
-        while (pTemp)
-        {
-            REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-            IFC_RETURN( GetContext()->GetEventManager()->RemoveRequest(this, pRequest));
-            pTemp = pTemp->m_pNext;
-        }
+        IFC_RETURN(GetContext()->GetEventManager()->DisableEvents(this, m_eventList.get()));
     }
 
     // If we have a managed peer, then we can turn its lifetime management
@@ -1059,7 +1043,7 @@ HRESULT CTimeline::FireCompletedEvent()
 
     HRESULT hr = S_OK;
     // See if we have an event handler for "Completed"
-    if (m_pEventList)
+    if (m_eventList)
     {
         CEventManager *pEventManager = GetContext()->GetEventManager();
         if (pEventManager)

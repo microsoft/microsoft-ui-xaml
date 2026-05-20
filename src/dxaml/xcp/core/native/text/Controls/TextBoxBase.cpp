@@ -958,7 +958,7 @@ _Check_return_ HRESULT CTextBoxBase::PostAsyncEnsureRectVisibleCall()
         IFC_RETURN(m_spEnsureRectVisibleTimer->AddEventListener(
             EventHandle(KnownEventIndex::DispatcherTimer_Tick),
             &value,
-            EVENTLISTENER_INTERNAL, nullptr));
+            EVENTLISTENER_INTERNAL));
 
         IFC_RETURN(CreateDO(pTimeSpan.ReleaseAndGetAddressOf(), &cp));
         pTimeSpan->m_rTimeSpan = 0.0f;
@@ -1780,7 +1780,7 @@ _Check_return_ HRESULT CTextBoxBase::Initialize()
         IFC_RETURN(m_spShowGrippersTimer->AddEventListener(
             EventHandle(KnownEventIndex::DispatcherTimer_Tick),
             &value,
-            EVENTLISTENER_INTERNAL, nullptr, false));
+            EVENTLISTENER_INTERNAL, false));
 
         IFC_RETURN(CreateDO(pTimeSpan.ReleaseAndGetAddressOf(), &cp));
         pTimeSpan->m_rTimeSpan = 0.2f;

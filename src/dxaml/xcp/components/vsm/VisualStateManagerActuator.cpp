@@ -161,15 +161,13 @@ _Check_return_ HRESULT VisualStateManagerActuator::ChangeVisualState(_In_ int gr
     {
         ASSERT(dynamicStoryboard || transition->m_pStoryboard);
 
-        CValue handlerCValue;
-        handlerCValue.SetInternalHandler(CVisualStateManager2::OnStoryboardCompleted);
-
         auto subscribeFunc = [&](CStoryboard* storyboard) {
             VisualTransitionCompletedData* pData = nullptr;
             IFC_RETURN(VisualTransitionCompletedData::Create(groupIndex, endIndex, transition.get(), &pData));
+            pData->m_EventListener.SetInternalHandler(CVisualStateManager2::OnStoryboardCompleted);
             storyboard->m_pVisualTransitionCompletedData = std::unique_ptr<VisualTransitionCompletedData>(pData);
             IFC_RETURN(storyboard->AddEventListener(EventHandle(KnownEventIndex::Timeline_Completed),
-                &handlerCValue, EVENTLISTENER_INTERNAL, &pData->m_EventListenerToken));
+                &pData->m_EventListener, EVENTLISTENER_INTERNAL));
             m_dataSource->IncrementPendingStoryboardCompletionCallbackCounter(groupIndex);
             return S_OK;
         };
@@ -523,7 +521,7 @@ _Check_return_ HRESULT VisualStateManagerActuator::StopAndRemoveStoryboard(_In_ 
         // if this code was removed.
         IFC_RETURN(storyboard->RemoveEventListener(
             EventHandle(KnownEventIndex::Timeline_Completed),
-            &storyboard->m_pVisualTransitionCompletedData->m_EventListenerToken));
+            &storyboard->m_pVisualTransitionCompletedData->m_EventListener));
     }
 
     IFC_RETURN(storyboard->StopPrivate());

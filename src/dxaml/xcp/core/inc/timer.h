@@ -35,7 +35,6 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult,
         _In_ bool fHandledEventsToo = false) final;
 
     _Check_return_ HRESULT RemoveEventListener(

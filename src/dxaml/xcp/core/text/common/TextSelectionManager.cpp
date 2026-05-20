@@ -3564,7 +3564,7 @@ void TextSelectionManager::SetupCaretBlinkAnimation()
         IFCFAILFAST(m_caretTimer->AddEventListener(
             EventHandle(KnownEventIndex::DispatcherTimer_Tick),
             &value,
-            EVENTLISTENER_INTERNAL, nullptr, FALSE));
+            EVENTLISTENER_INTERNAL, FALSE));
         IFCFAILFAST(CreateDO(timeSpan.ReleaseAndGetAddressOf(), &cp));
         timeSpan->m_rTimeSpan = caretBlinkingTimeout;
         IFCFAILFAST(m_caretTimer->SetValueByKnownIndex(KnownPropertyIndex::DispatcherTimer_Interval, timeSpan.get()));

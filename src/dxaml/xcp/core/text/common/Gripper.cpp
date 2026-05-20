@@ -243,10 +243,10 @@ _Check_return_ HRESULT CTextSelectionGripper::InitializeGripper(
     // Wrap handler into a CValue and assign it to the animation complete event
     //
     v.SetInternalHandler(OnHideAnimationComplete);
-    IFC(pHideAnimation->AddEventListener(EventHandle(KnownEventIndex::Timeline_Completed), &v, EVENTLISTENER_INTERNAL, NULL, FALSE));
+    IFC(pHideAnimation->AddEventListener(EventHandle(KnownEventIndex::Timeline_Completed), &v, EVENTLISTENER_INTERNAL, FALSE));
 
     v.SetInternalHandler(OnShowAnimationComplete);
-    IFC(pShowAnimation->AddEventListener(EventHandle(KnownEventIndex::Timeline_Completed), &v, EVENTLISTENER_INTERNAL, NULL, FALSE));
+    IFC(pShowAnimation->AddEventListener(EventHandle(KnownEventIndex::Timeline_Completed), &v, EVENTLISTENER_INTERNAL, FALSE));
 
     SetVisibility(DirectUI::Visibility::Collapsed);
 

@@ -71,19 +71,23 @@ public:
         UNREFERENCED_PARAMETER(hEvent);
         UNREFERENCED_PARAMETER(fInputEvent);
         UNREFERENCED_PARAMETER(pArgs);
-        return (m_pEventList != nullptr);
+        return (m_eventList != nullptr);
     }
 
     _Check_return_ HRESULT AddEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult,
         _In_ bool fHandledEventsToo = false) override;
 
     _Check_return_ HRESULT RemoveEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue) override;
+
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
 
     // COD overrides, this is required for event manager to add request for this animation, see CEventManager::AddEventListener.
     bool IsActive() const override { return m_state != ConnectedAnimationState::Idle; }
@@ -167,7 +171,7 @@ private:
     wrl::ComPtr<WUComp::ICompositionAnimation> m_componentAnimation[4];
     wrl::ComPtr<IConnectedAnimationCoreConfiguration> m_configuration;
 
-    CXcpList<REQUEST> *m_pEventList = nullptr;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
 
     // We need to keep a reference to any property sets we use because DComp only keeps
     // a weak ref when they are used.

@@ -8,10 +8,9 @@ element, regardless of whether the element is live in the tree.
 * **FrameworkElement.Loaded:** The Loaded event is **special asynchronous**, sometime after the element has been 
 inserted into the live tree. The event is queued as soon as the element goes live, and is raised from 
 `CEventManager::RaiseLoadedEvent()` on the next Tick. The call sequence to raise this event goes like this:
-  * Someone adds a handler to the Loaded event, which adds to `CUIElement::m_pEventList`.
-  * In `CUIElement::EnterImpl()`, if the element is going live its `m_pEventList` is passed to 
-  `CEventManager::AddRequestsInOrder()`, which in turn calls `CEventManager::AddRequest()` for each queued event registration.
-  * `CEventManager::AddRequest()` special-cases the Loaded event by calling `CEventManager::AddToLoadedEventList()`. 
+  * Someone adds a handler to the Loaded event, which adds to `CUIElement::m_eventList`.
+  * In `CUIElement::EnterImpl()`, if the element is going live its `m_eventList` is passed to 
+  `CEventManager::EnableEvents()`, which special-cases the Loaded event by calling `CEventManager::AddToLoadedEventList()`. 
   That adds the element to `m_pLoadedEventList`.
   * On the next Tick, `CCoreServices::NWDrawTree()` calls `CEventManager::RaiseLoadedEvent()` to raise the event.
   * NOTE: If addition elements are added to the live tree during a Loaded event handler, those elements will be added to 

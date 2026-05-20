@@ -10533,7 +10533,7 @@ HRESULT CCoreServices::EnsureBackgroundTimer()
 
         CValue handler;
         handler.SetInternalHandler(&OnBackgroundResourceTimeout);
-        IFC_RETURN(m_pBackgroundResourceTimer->AddEventListener(EventHandle(KnownEventIndex::DispatcherTimer_Tick), &handler, EVENTLISTENER_INTERNAL, NULL, FALSE));
+        IFC_RETURN(m_pBackgroundResourceTimer->AddEventListener(EventHandle(KnownEventIndex::DispatcherTimer_Tick), &handler, EVENTLISTENER_INTERNAL, FALSE));
     }
 
     return S_OK;

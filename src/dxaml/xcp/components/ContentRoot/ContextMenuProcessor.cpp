@@ -92,7 +92,7 @@ _Check_return_ HRESULT ContextMenuProcessor::ProcessContextRequestOnHoldingGestu
         IFC_RETURN(m_contextMenuTimer->AddEventListener(
             EventHandle(KnownEventIndex::DispatcherTimer_Tick),
             &value,
-            EVENTLISTENER_INTERNAL, nullptr, FALSE));
+            EVENTLISTENER_INTERNAL, FALSE));
 
         xref_ptr<CTimeSpan> timeSpan;
         IFC_RETURN(CreateDO(timeSpan.ReleaseAndGetAddressOf(), &cp));

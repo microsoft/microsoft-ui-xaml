@@ -24,12 +24,6 @@
 
 CApplication::~CApplication()
 {
-    if (m_pEventList)
-    {
-        m_pEventList->Clean();
-        delete m_pEventList;
-    }
-
     ReleaseInterface(m_pRootVisual);
     ReleaseInterface(m_pRootScrollViewer);
     ReleaseInterface(m_pRootContentPresenter);
@@ -56,10 +50,9 @@ CApplication::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 //------------------------------------------------------------------------
@@ -77,7 +70,7 @@ CApplication::RemoveEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue)
 {
-    return CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue);
 }
 
 
@@ -99,14 +92,14 @@ CApplication::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParam
 
     // If there are events registered on this element, ask the
     // EventManager to extract them and a request for every event.
-    if (params.fIsLive && m_pEventList)
+    if (params.fIsLive && m_eventList)
     {
         auto core = GetContext();
         // Get the event manager.
         IFCPTR_RETURN(core);
         pEventManager = core->GetEventManager();
         IFCPTR_RETURN(pEventManager);
-        IFC_RETURN(pEventManager->AddRequestsInOrder(this, m_pEventList));
+        IFC_RETURN(pEventManager->EnableEvents(this, m_eventList.get()));
     }
 
     return S_OK;
@@ -127,16 +120,9 @@ CApplication::LeaveImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ LeaveParam
     IFC_RETURN(CDependencyObject::LeaveImpl(pNamescopeOwner, params));
 
     // If we are leaving the Live tree and there are events.
-    if (params.fIsLive && m_pEventList)
+    if (params.fIsLive && m_eventList)
     {
-        // Add the events in...
-        CXcpList<REQUEST>::XCPListNode *pTemp = m_pEventList->GetHead();
-        while (pTemp)
-        {
-            REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-            IFC_RETURN( GetContext()->GetEventManager()->RemoveRequest(this, pRequest));
-            pTemp = pTemp->m_pNext;
-        }
+        IFC_RETURN(GetContext()->GetEventManager()->DisableEvents(this, m_eventList.get()));
     }
 
     return S_OK;
@@ -154,7 +140,7 @@ void
 CApplication::FireStartupEvent()
 {
     // See if we have an event handler for "Startup"
-    if (m_pEventList)
+    if (m_eventList)
     {
         CEventManager *pEventManager = GetContext()->GetEventManager();
         if (pEventManager)
@@ -182,45 +168,36 @@ void
 CApplication::FireExitEvent()
 {
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
-    REQUEST * pRequest = NULL;
-    CXcpList<REQUEST>* pTempEventList = NULL;
+    std::unique_ptr<std::vector<REQUEST>> tempEventList;
 
     // Fire Exiting event to notify application services that
     // the application is exiting
     FireExitingEvent();
 
-    if (m_pEventList)
+    if (m_eventList)
     {
         EventHandle hExitEvent = EventHandle(KnownEventIndex::Application_Exit);
-        CXcpList<REQUEST>::XCPListNode *pTemp;
 
-        pTemp = m_pEventList->GetHead();
-        IFCEXPECT(pTemp);
+        IFCEXPECT(!m_eventList->empty());
 
-        pTempEventList = m_pEventList;
-        m_pEventList = NULL;
+        tempEventList = std::move(m_eventList);
 
-        while (pTemp != NULL)
+        for (const auto& request : *tempEventList)
         {
-            pRequest = (REQUEST *)pTemp->m_pData;
-
             // Is this an exit event?
-            if (hExitEvent == pRequest->m_hEvent && pRequest->m_pListener)
+            if (hExitEvent == request.m_hEvent)
             {
                 // Fire exit event. This is a synchronous call, so
                 // can reenter CApplication.
                 IFC(GetContext()->CLR_FireEvent(
-                    pRequest->m_pListener,
+                    this,
                     hExitEvent,
                     this,
                     NULL));
             }
-
-            pTemp = pTemp->m_pNext;
         }
 
-        m_pEventList = pTempEventList;
-        pTempEventList = NULL;
+        m_eventList = std::move(tempEventList);
     }
 
     // Fire exited event to notify application services that the
@@ -228,12 +205,7 @@ CApplication::FireExitEvent()
     FireExitedEvent();
 
 Cleanup:
-    if (pTempEventList)
-    {
-        // Make sure that the event list doesn't leak
-        m_pEventList = pTempEventList;
-    }
-
+    return;
 }
 
 //------------------------------------------------------------------------
@@ -249,7 +221,7 @@ CApplication::FireStartingEvent()
 {
     // See if we have an event handler for "Started"
 
-    if (m_pEventList)
+    if (m_eventList)
     {
         CEventManager *pEventManager = GetContext()->GetEventManager();
         if (pEventManager)
@@ -275,7 +247,7 @@ CApplication::FireStartedEvent()
 {
     // See if we have an event handler for "Started"
 
-    if (m_pEventList)
+    if (m_eventList)
     {
         CEventManager *pEventManager = GetContext()->GetEventManager();
         if (pEventManager)
@@ -304,50 +276,36 @@ void
 CApplication::FireExitingEvent()
 {
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
-    REQUEST * pRequest = NULL;
-    CXcpList<REQUEST>* pTempEventList = NULL;
+    std::unique_ptr<std::vector<REQUEST>> tempEventList;
 
-    if (m_pEventList)
+    if (m_eventList)
     {
         EventHandle hExitEvent(KnownEventIndex::Application_Exiting);
-        CXcpList<REQUEST>::XCPListNode *pTemp;
 
-        pTemp = m_pEventList->GetHead();
-        IFCEXPECT(pTemp);
+        IFCEXPECT(!m_eventList->empty());
 
-        pTempEventList = m_pEventList;
-        m_pEventList = NULL;
+        tempEventList = std::move(m_eventList);
 
-        while (pTemp != NULL)
+        for (const auto& request : *tempEventList)
         {
-            pRequest = (REQUEST *)pTemp->m_pData;
-
             // Is this an exit event?
-            if (hExitEvent == pRequest->m_hEvent && pRequest->m_pListener)
+            if (hExitEvent == request.m_hEvent)
             {
                 // Fire exiting event. This is a synchronous call, so
                 // can reenter CApplication.
                 IFC(GetContext()->CLR_FireEvent(
-                    pRequest->m_pListener,
+                    this,
                     hExitEvent,
                     this,
                     NULL));
             }
-
-            pTemp = pTemp->m_pNext;
         }
 
-        m_pEventList = pTempEventList;
-        pTempEventList = NULL;
+        m_eventList = std::move(tempEventList);
     }
 
 Cleanup:
-    if (pTempEventList)
-    {
-        // Make sure that the event list doesn't leak
-        m_pEventList = pTempEventList;
-    }
-
+    return;
 }
 
 //------------------------------------------------------------------------
@@ -362,50 +320,36 @@ void
 CApplication::FireExitedEvent()
 {
     HRESULT hr = S_OK; // WARNING_IGNORES_FAILURES
-    REQUEST * pRequest = NULL;
-    CXcpList<REQUEST>* pTempEventList = NULL;
+    std::unique_ptr<std::vector<REQUEST>> tempEventList;
 
-    if (m_pEventList)
+    if (m_eventList)
     {
         EventHandle hExitEvent(KnownEventIndex::Application_Exited);
-        CXcpList<REQUEST>::XCPListNode *pTemp;
 
-        pTemp = m_pEventList->GetHead();
-        IFCEXPECT(pTemp);
+        IFCEXPECT(!m_eventList->empty());
 
-        pTempEventList = m_pEventList;
-        m_pEventList = NULL;
+        tempEventList = std::move(m_eventList);
 
-        while (pTemp != NULL)
+        for (const auto& request : *tempEventList)
         {
-            pRequest = (REQUEST *)pTemp->m_pData;
-
             // Is this an exit event?
-            if (hExitEvent == pRequest->m_hEvent && pRequest->m_pListener)
+            if (hExitEvent == request.m_hEvent)
             {
                 // Fire exited event. This is a synchronous call, so
                 // can reenter CApplication.
                 IFC(GetContext()->CLR_FireEvent(
-                    pRequest->m_pListener,
+                    this,
                     hExitEvent,
                     this,
                     NULL));
             }
-
-            pTemp = pTemp->m_pNext;
         }
 
-        m_pEventList = pTempEventList;
-        pTempEventList = NULL;
+        m_eventList = std::move(tempEventList);
     }
 
 Cleanup:
-    if (pTempEventList)
-    {
-        // Make sure that the event list doesn't leak
-        m_pEventList = pTempEventList;
-    }
-
+    return;
 }
 
 //------------------------------------------------------------------------

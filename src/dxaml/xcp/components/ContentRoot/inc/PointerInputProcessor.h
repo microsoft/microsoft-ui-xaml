@@ -71,7 +71,6 @@ namespace ContentRootInput
             _In_ bool bForceRaisePointerEntered,
             _In_ bool bIgnoreHitTestVisibleForPointerExited = false,
             _In_ bool bAsyncEvent = false,
-            _In_ bool bAddEventRequest = false,
             _Out_opt_ bool* enterLeaveFound = nullptr);
 
         _Check_return_ HRESULT ProcessPointerLeave(
@@ -79,7 +78,6 @@ namespace ContentRootInput
             _In_ XUINT32 pointerId,
             _In_ CPointerEventArgs *pPointerArgs,
             _In_ bool bAsyncEvent = false,
-            _In_ bool bAddEventRequest = false,
             _In_opt_ CDependencyObject *pNewEnteredElement = NULL,
             _In_ bool bRaiseOnce = false);
 
@@ -94,11 +92,6 @@ namespace ContentRootInput
     private:
         bool ShouldEventAlwaysPassThroughPopupLightDismissLayer(_In_ MessageMap message, _In_opt_ PointerInfo *pointerInfo);
         static bool ShouldEventCloseFlyout(_In_ MessageMap message);
-
-        static _Check_return_ HRESULT GetRemovedPointerExitedEventRequest(
-            _In_ EventHandle hPointerExited,
-            _In_ CXcpList<REQUEST>* pEventList,
-            _Out_ REQUEST** pEventRequestPointerExited);
 
         _Check_return_ HRESULT SetPointerFromPointerMessage(_In_ InputMessage *pMsg, _In_ CPointerEventArgs* pPointerEventArgs);
 

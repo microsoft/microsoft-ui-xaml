@@ -576,7 +576,6 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerInput(
                 FALSE /* bForceRaisePointerEntered*/,
                 FALSE /* bIgnoreHitTestVisibleForPointerExited */,
                 FALSE /* bAsyncEvent */,
-                FALSE /* bAddEventRequest */,
                 &enterLeaveFound));
             // If this is a replay and we didn't actually change our entered elements, then don't raise the update event.
             if (!enterLeaveFound && pMsg->IsReplayedMessage())
@@ -1248,8 +1247,7 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerExitedState(_In_ XIN
                         FALSE /* bSkipLeave */,
                         FALSE /* bForceRaisePointerEntered */,
                         TRUE /* bIgnoreHitTestVisibleForPointerExited */,
-                        FALSE /* bAsyncEvent */,
-                        TRUE /* bAddEventRequest */));
+                        FALSE /* bAsyncEvent */));
                 }
                 else
                 {
@@ -1262,7 +1260,6 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerExitedState(_In_ XIN
                         pointerId,
                         pPointerEventArgs,
                         FALSE /* bAsyncEvent */,
-                        TRUE /* bAddEventRequest */,
                         static_cast<CDependencyObject*>(pNewPointerEnteredDO),
                         pNewPointerEnteredDO ? FALSE : TRUE /* bRaiseOnce */));
                 }
@@ -1292,14 +1289,10 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerEnterLeave(
     _In_ bool bForceRaisePointerEntered,
     _In_ bool bIgnoreHitTestVisibleForPointerExited,
     _In_ bool bAsyncEvent,
-    _In_ bool bAddEventRequest,
     _Out_opt_ bool* enterLeaveFound)
 {
     CDependencyObject *pVisual = pPointerEnterDO;
     xref_ptr<CDependencyObject> pReleaseVisual;
-    CUIElement* pPointerExitedAsUIENoRef = nullptr;
-    REQUEST* pEventRequestPointerExited = nullptr;
-    bool bEventPointerExitedAdded = false;
     bool enterLeaveEventFired = false;
     std::shared_ptr<CPointerState> pointerState;
     const auto contentRoot = m_inputManager.GetContentRoot();
@@ -1379,21 +1372,6 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerEnterLeave(
                 IFC_RETURN(pointerState->SetEnterDO(pVisual->GetParentInternal()));
             }
 
-            // To fire PointerExited event on the removed(leaving the tree) element, add the event request manually.
-            if (bAddEventRequest && !pVisual->IsActive())
-            {
-                pPointerExitedAsUIENoRef = do_pointer_cast<CUIElement>(pVisual);
-                if (pPointerExitedAsUIENoRef && pPointerExitedAsUIENoRef->m_pEventList)
-                {
-                    IFC_RETURN(GetRemovedPointerExitedEventRequest(EventHandle(KnownEventIndex::UIElement_PointerExited), pPointerExitedAsUIENoRef->m_pEventList, &pEventRequestPointerExited));
-                    if (pEventRequestPointerExited)
-                    {
-                        IFC_RETURN(m_inputManager.m_coreServices.GetEventManager()->AddRequest(pPointerExitedAsUIENoRef, pEventRequestPointerExited));
-                        bEventPointerExitedAdded = TRUE;
-                    }
-                }
-            }
-
             // SYNC_CALL_TO_APP - This is a synchronous callout to application code that allows the application to re-enter
             // XAML. The application could change state and release objects, so protect against reentrancy by ensuring that
             // objects are alive and state is re-validated after return.
@@ -1405,13 +1383,6 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerEnterLeave(
                 bAsyncEvent ? FALSE : TRUE /* fRaiseSync */,
                 TRUE /* fInputEvent */);
             enterLeaveEventFired = true;
-
-            if (bEventPointerExitedAdded)
-            {
-                ASSERT(pEventRequestPointerExited);
-                bEventPointerExitedAdded = FALSE;
-                IFC_RETURN(m_inputManager.m_coreServices.GetEventManager()->RemoveRequest(pPointerExitedAsUIENoRef, pEventRequestPointerExited));
-            }
         }
         pVisual = pVisual->GetParentInternal();
     }
@@ -1471,14 +1442,10 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerLeave(
     _In_ XUINT32 pointerId,
     _In_ CPointerEventArgs *pPointerArgs,
     _In_ bool bAsyncEvent,
-    _In_ bool bAddEventRequest,
     _In_opt_ CDependencyObject *pNewEnteredElement,
     _In_ bool bRaiseOnce)
 {
     CDependencyObject *pVisual = NULL;
-    CUIElement* pPointerExitedAsUIENoRef = NULL;
-    REQUEST* pEventRequestPointerExited = NULL;
-    bool bEventPointerExitedAdded = false;
     const auto contentRoot = m_inputManager.GetContentRoot();
 
     // Source shouldn't be the hidden root since it doesn't have a managed peer.
@@ -1503,21 +1470,6 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerLeave(
     {
         if (static_cast<CUIElement*>(pVisual)->IsHitTestVisible())
         {
-            // To fire PointerExited event on the removed(leaving the tree) element, add the event request manually.
-            if (bAddEventRequest && !pVisual->IsActive())
-            {
-                pPointerExitedAsUIENoRef = do_pointer_cast<CUIElement>(pVisual);
-                if (pPointerExitedAsUIENoRef && pPointerExitedAsUIENoRef->m_pEventList)
-                {
-                    IFC_RETURN(GetRemovedPointerExitedEventRequest(EventHandle(KnownEventIndex::UIElement_PointerExited), pPointerExitedAsUIENoRef->m_pEventList, &pEventRequestPointerExited));
-                    if (pEventRequestPointerExited)
-                    {
-                        IFC_RETURN(m_inputManager.m_coreServices.GetEventManager()->AddRequest(pPointerExitedAsUIENoRef, pEventRequestPointerExited));
-                        bEventPointerExitedAdded = TRUE;
-                    }
-                }
-            }
-
             // SYNC_CALL_TO_APP - This is a synchronous callout to application code that allows the application to re-enter
             // XAML. The application could change state and release objects, so protect against reentrancy by ensuring that
             // objects are alive and state is re-validated after return.
@@ -1528,13 +1480,6 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerLeave(
                 pPointerArgs,
                 bAsyncEvent ? FALSE : TRUE /* fRaiseSync */,
                 TRUE /* fInputEvent */);
-
-            if (bEventPointerExitedAdded)
-            {
-                ASSERT(pEventRequestPointerExited);
-                bEventPointerExitedAdded = FALSE;
-                IFC_RETURN(m_inputManager.m_coreServices.GetEventManager()->RemoveRequest(pPointerExitedAsUIENoRef, pEventRequestPointerExited));
-            }
         }
         pVisual = pVisual->GetParentInternal();
         if (bRaiseOnce || (pNewEnteredElement && pNewEnteredElement == pVisual))
@@ -1544,36 +1489,6 @@ _Check_return_ HRESULT PointerInputProcessor::ProcessPointerLeave(
     }
 
     return S_OK;
-}
-
-_Check_return_ HRESULT PointerInputProcessor::GetRemovedPointerExitedEventRequest(
-    _In_ EventHandle hEventPointerExited,
-    _In_ CXcpList<REQUEST>* pEventList,
-    _Out_ REQUEST** pEventRequestPointerExited)
-{
-    CXcpList<REQUEST>::XCPListNode *pEventTemp = NULL;
-    REQUEST* pEventRequestTemp = NULL;
-    *pEventRequestPointerExited = NULL;
-
-    pEventTemp = pEventList->GetHead();
-
-    // Find the removed PointerExited event request in the event list.
-    while (pEventTemp)
-    {
-        pEventRequestTemp = static_cast<REQUEST*>(pEventTemp->m_pData);
-
-        if (pEventRequestTemp &&
-            pEventRequestTemp->m_hEvent == hEventPointerExited &&
-            !pEventRequestTemp->m_bAdded)
-        {
-            *pEventRequestPointerExited = pEventRequestTemp;
-            break;
-        }
-
-        pEventTemp = pEventTemp->m_pNext;
-    }
-
-    return S_OK; //RRETURN_REMOVAL
 }
 
 _Check_return_ HRESULT PointerInputProcessor::ReleasePointerCapture(_In_ CDependencyObject *pObject, _In_ CPointer* pPointer, _In_ ixp::IPointerPoint* pointerPoint)

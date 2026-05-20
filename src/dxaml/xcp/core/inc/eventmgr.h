@@ -4,6 +4,10 @@
 #pragma once
 
 #include "palnetwork.h"
+#include <xref_ptr.h>
+#include <vector_map.h>
+#include <vector>
+#include <CompactInlineVector.h>
 
 // Need to forward reference the args
 class CEventArgs;
@@ -46,37 +50,13 @@ public:
 
 // CEventManager methods
 
-    _Check_return_ HRESULT AddRequestsInOrder(
+    _Check_return_ HRESULT EnableEvents(
         _In_ CDependencyObject *pObject,
-        _In_ CXcpList<REQUEST> *m_pEventList);
+        _In_ std::vector<REQUEST> *pEventList);
 
-    _Check_return_ HRESULT RemoveRequests(
+    _Check_return_ HRESULT DisableEvents(
         _In_ CDependencyObject *pObject,
-        _In_ CXcpList<REQUEST> *m_pEventList);
-
-    _Check_return_ HRESULT AddRequest(
-        _In_ CDependencyObject *pObject,
-        _In_ REQUEST *pRequest);
-
-    _Check_return_ HRESULT RemoveRequest(
-        _In_ CDependencyObject *pObject,
-        _In_ REQUEST *pRequest);
-
-    _Check_return_ HRESULT RemoveObject(
-        _In_ CDependencyObject *pObject);
-
-    _Check_return_ HRESULT CreateRequest(
-        _Outptr_ REQUEST **ppRequest,
-        _In_ EventHandle hEvent,
-        _In_ CDependencyObject *pObject,
-        _In_ CValue *pValue,
-        _In_ XINT32 iToken,
-        _In_ CCoreServices *pContext = NULL,
-        _In_ XINT32 fHandledEventsToo = FALSE);
-
-    _Check_return_ HRESULT ClearRequests(
-        _In_ EventHandle hEvent,
-        _In_ CDependencyObject *pObject);
+        _In_ std::vector<REQUEST> *pEventList);
 
     _Check_return_ HRESULT ClearRequests();
 
@@ -111,6 +91,7 @@ public:
     void RaiseCallback(
         _In_ CEventArgs *pArgs);
 
+private:
     void TraceInputEventBegin(
         _In_ const CDependencyObject *pSender,
         _In_ CEventArgs *pInputArgs,
@@ -120,6 +101,13 @@ public:
         _In_ CEventArgs *pInputArgs,
         _In_ const EventHandle &hEvent);
 
+    void AddToLoadedEventListIfNeeded(
+        _In_ CDependencyObject* pDO,
+        _In_ EventHandle hEvent);
+
+    void RemoveFromLoadedEventList(_In_ CDependencyObject* pElement);
+
+public:
     _Check_return_ HRESULT ProcessQueue(_In_ bool fProcessFastQueue = false);
 
     _Check_return_ HRESULT FlushQueue();
@@ -148,23 +136,17 @@ public:
 
 // Static methods
     _Check_return_ HRESULT static AddEventListener(_In_ CDependencyObject *pDO,
-                                    _In_ CXcpList<REQUEST> **pEventList,
+                                    _Inout_ std::unique_ptr<std::vector<REQUEST>>& pEventList,
                                     _In_ EventHandle hEvent,
                                     _In_ CValue *pValue,
                                     _In_ XINT32 iListenerType,
-                                    _Out_opt_ CValue *pResult,
                                     _In_ bool fHandledEventsToo = false,
                                     _In_ bool fSkipIsActiveCheck = false);
 
     _Check_return_ HRESULT static RemoveEventListener(_In_ CDependencyObject *pDO,
-                                    _In_ CXcpList<REQUEST> *pEventList,
+                                    _In_ std::vector<REQUEST> *pEventList,
                                     _In_ EventHandle hEvent,
-                                    _In_ CValue *pValue,
-                                    _In_ bool fSkipIsActiveCheck = false);
-
-    bool IsRegisteredForEvent(_In_ CDependencyObject *pListener, _In_ EventHandle hEvent);
-
-    _Check_return_ HRESULT RemoveFromLoadedEventList(_In_ CDependencyObject* pElement, _Inout_opt_ bool *pLoadedEventRemoved = nullptr);
+                                    _In_ CValue *pValue);
 
     bool IsLoadedEventPending(_In_ CDependencyObject* pElement);
 
@@ -179,22 +161,18 @@ public:
     void *   m_pControl;
 
 private:
-    typedef xvector<REQUEST*> CRequestsForObjectList;
-    typedef xchainedmap<CDependencyObject*, CRequestsForObjectList*> CEventRequestMap;
-    typedef xvector<CDependencyObject*> CDependencyObjectVector;
+    typedef std::vector<xref_ptr<CDependencyObject>> CDependencyObjectVector;
+    using TempRequests = CompactInlineVector<REQUEST, 2>;
 
     CEventManager()
     {
         m_cRef = 1;
-        m_pRequest = NULL;
         XCP_WEAK(&m_pControl);
         m_pControl =  NULL;
         m_pfnScriptCallbackAsync = NULL;
         m_pfnScriptCallbackSync = NULL;
         m_pSlowQueue = NULL;
         m_pFastQueue = NULL;
-        m_pLoadedEventList = NULL;
-        m_uInClearRequests = 0;
         XCP_WEAK(&m_pCore);
         m_pCore = NULL;
         m_fRaiseLoadedEventNeeded = FALSE;
@@ -236,22 +214,24 @@ private:
         _In_opt_ CEventArgs *pArgs,
         _In_ EVENTPFN pfnScriptCallback);
 
-    HRESULT RaiseHelper(CRequestsForObjectList* pRegisteredRequests,
-                        _In_ EventHandle hEvent,
+    HRESULT RaiseHelper(const gsl::span<const REQUEST>& requests,
                         _In_ CDependencyObject *pSender,
                         CEventArgs *pArgs,
-                        XINT32 bRefire,
                         EVENTPFN pfnScriptCallback,
                         bool& bFired,
-                        _In_opt_ CDependencyObject *pSenderOverride = NULL);
+                        _In_opt_ CDependencyObject *pSenderOverride = nullptr);
 
-    _Check_return_ HRESULT AddToLoadedEventList(_In_ CDependencyObject* pElement);
+    static void FilterEligibleHandlers(
+        const gsl::span<REQUEST>& handlers,
+        EventHandle hEvent,
+        bool bRefire,
+        _Inout_ TempRequests* pMatches);
 
-    bool IsLoadedEvent(_In_ EventHandle hEvent) const { return hEvent.index == KnownEventIndex::FrameworkElement_Loaded; }
-    bool IsLoadingEvent(_In_ EventHandle hEvent) const { return hEvent.index == KnownEventIndex::FrameworkElement_Loading; }
-    bool IsUnloadedEvent(_In_ EventHandle hEvent) const { return hEvent.index == KnownEventIndex::FrameworkElement_Unloaded; }
+    static bool IsLoadedEvent(_In_ EventHandle hEvent) { return hEvent.index == KnownEventIndex::FrameworkElement_Loaded; }
+    static bool IsLoadingEvent(_In_ EventHandle hEvent) { return hEvent.index == KnownEventIndex::FrameworkElement_Loading; }
+    static bool IsUnloadedEvent(_In_ EventHandle hEvent) { return hEvent.index == KnownEventIndex::FrameworkElement_Unloaded; }
 
-    bool IsSyncInputEvent(_In_ EventHandle hEvent) const
+    static bool IsSyncInputEvent(_In_ EventHandle hEvent)
     {
         // These input events are fired synchronously to the application, without taking
         // the reentrancy guard, because the code path to fire the event has been hardened
@@ -287,7 +267,7 @@ private:
             hEvent.index == KnownEventIndex::KeyboardAccelerator_Invoked;
     }
 
-    bool IsValidSyncInputEvent(_In_ EventHandle hEvent, _In_ bool fInputEvent, _In_ bool fRaiseSync) const
+    static bool IsValidSyncInputEvent(_In_ EventHandle hEvent, _In_ bool fInputEvent, _In_ bool fRaiseSync)
     {
         // PointerEntered and PointerExited can be raised as the async if the sync input event
         // is in the middle of processing.
@@ -296,7 +276,7 @@ private:
                 (fRaiseSync || hEvent.index == KnownEventIndex::UIElement_PointerEntered || hEvent.index == KnownEventIndex::UIElement_PointerExited));
     }
 
-    bool IsKeyEvent(_In_ EventHandle hEvent) const
+    static bool IsKeyEvent(_In_ EventHandle hEvent)
     {
         return hEvent.index == KnownEventIndex::UIElement_KeyDown ||
             hEvent.index == KnownEventIndex::UIElement_KeyUp ||
@@ -310,7 +290,7 @@ private:
 
     _Check_return_ HRESULT RequestAdditionalFrame();
 
-    bool IsValidStaticEventDelegate(_In_ EventHandle hEvent);
+    static bool IsValidStaticEventDelegate(_In_ EventHandle hEvent);
 
     _Check_return_ HRESULT RaiseLoadedEventForObject(_In_ CDependencyObject* pLoadedEventObject, _In_ CEventArgs* loadedArgs);
 
@@ -322,11 +302,9 @@ private:
     std::vector<xref_ptr<CUIElement>> m_topDownPathToSource;
 
     XUINT32                     m_cRef;
-    CEventRequestMap           *m_pRequest;
     IPALQueue                  *m_pSlowQueue;
     IPALQueue                  *m_pFastQueue;
-    CDependencyObjectVector*    m_pLoadedEventList;
-    XUINT32                     m_uInClearRequests;
+    CDependencyObjectVector     m_loadedEventObjects;
     CCoreServices*              m_pCore;
     bool                       m_fRaiseLoadedEventNeeded;
 

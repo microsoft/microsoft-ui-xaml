@@ -415,7 +415,6 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult ,
         _In_ bool fHandledEventsToo = false
         ) final;
 
@@ -423,6 +422,11 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue
         ) override;
+
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
 
     _Check_return_ HRESULT AddCallback(
         _In_ CBitmapImageReportCallback* pImageErrorCallback
@@ -583,7 +587,7 @@ private:
 
     std::uint64_t GetEstimatedSurfaceCommitSize() const;
 
-    CXcpList<REQUEST>* m_pEventList;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
 
     //
     // ImageBrushes attach handlers for download progress, opened, and failed. An ImageBrush

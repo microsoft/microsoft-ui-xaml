@@ -40,42 +40,38 @@ _Check_return_ HRESULT CHyperlink::Create(
     IFC(pHyperlink->UpdateForegroundColor(HYPERLINK_NORMAL));
     IFC(pHyperlink->UpdateUnderline());
 
-    // NOTE: AddEventListener() will allocate m_pEventList, which needs to be freed in destructor.
+    // NOTE: AddEventListener() will allocate m_eventList, which needs to be freed in destructor.
     cValue.SetInternalHandler(&CHyperlink::GotFocusEventListener);
     IFC(CEventManager::AddEventListener(
         pHyperlink,
-        &(pHyperlink->m_pEventList),
+        pHyperlink->m_eventList,
         EventHandle(KnownEventIndex::UIElement_GotFocus),
         &cValue,
-        EVENTLISTENER_INTERNAL,
-        nullptr));
+        EVENTLISTENER_INTERNAL));
 
     cValue.SetInternalHandler(&CHyperlink::LostFocusEventListener);
     IFC(CEventManager::AddEventListener(
         pHyperlink,
-        &(pHyperlink->m_pEventList),
+        pHyperlink->m_eventList,
         EventHandle(KnownEventIndex::UIElement_LostFocus),
         &cValue,
-        EVENTLISTENER_INTERNAL,
-        nullptr));
+        EVENTLISTENER_INTERNAL));
 
     cValue.SetInternalHandler(&CHyperlink::KeyUpEventListener);
     IFC(CEventManager::AddEventListener(
         pHyperlink,
-        &(pHyperlink->m_pEventList),
+        pHyperlink->m_eventList,
         EventHandle(KnownEventIndex::UIElement_KeyUp),
         &cValue,
-        EVENTLISTENER_INTERNAL,
-        nullptr));
+        EVENTLISTENER_INTERNAL));
 
     cValue.SetInternalHandler(&CHyperlink::KeyDownEventListener);
     IFC(CEventManager::AddEventListener(
         pHyperlink,
-        &(pHyperlink->m_pEventList),
+        pHyperlink->m_eventList,
         EventHandle(KnownEventIndex::UIElement_KeyDown),
         &cValue,
-        EVENTLISTENER_INTERNAL,
-        nullptr));
+        EVENTLISTENER_INTERNAL));
 
     *ppObject = pHyperlink;
     pHyperlink = nullptr;
@@ -93,7 +89,6 @@ Cleanup:
 //------------------------------------------------------------------------
 CHyperlink::CHyperlink(_In_ CCoreServices *pCore)
     : CSpan(pCore)
-    , m_pEventList(nullptr)
     , m_strNavigateUri()
     , m_pAP(nullptr)
     , m_state(HYPERLINK_NORMAL)
@@ -104,14 +99,6 @@ CHyperlink::CHyperlink(_In_ CCoreServices *pCore)
 
 CHyperlink::~CHyperlink()
 {
-    // Clear event list
-    if (m_pEventList)
-    {
-        m_pEventList->Clean();
-        delete m_pEventList;
-        m_pEventList = nullptr;
-    }
-
     if (m_pAP)
     {
         m_pAP->InvalidateOwner();   // The automation peer can outlive this element, so detach it.
@@ -174,10 +161,9 @@ _Check_return_ HRESULT CHyperlink::AddEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue,
     _In_ XINT32 iListenerType,
-    _Out_opt_ CValue *pResult,
     _In_ bool fHandledEventsToo)
 {
-    return CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo);
+    return CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo);
 }
 
 //------------------------------------------------------------------------
@@ -190,7 +176,7 @@ _Check_return_ HRESULT CHyperlink::RemoveEventListener(
     _In_ EventHandle hEvent,
     _In_ CValue *pValue)
 {
-    return CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue);
+    return CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue);
 }
 
 //------------------------------------------------------------------------
@@ -453,13 +439,13 @@ _Check_return_ HRESULT CHyperlink::EnterImpl(
 
         // If there are events registered on this element, ask the
         // EventManager to extract them and create a request for every event.
-        if (m_pEventList)
+        if (m_eventList)
         {
             // Get the event manager.
             IFCEXPECT_ASSERT_RETURN(core);
             pEventManager = core->GetEventManager();
             IFCEXPECT_ASSERT_RETURN(pEventManager);
-            IFC_RETURN(pEventManager->AddRequestsInOrder(this, m_pEventList));
+            IFC_RETURN(pEventManager->EnableEvents(this, m_eventList.get()));
         }
 
         const auto contentRoot = VisualTree::GetContentRootForElement(this);
@@ -493,14 +479,14 @@ _Check_return_ HRESULT CHyperlink::LeaveImpl(
 
     if (params.fIsLive)
     {
-        // Reverse of the Add() operation in EnterImpl().
-        if (m_pEventList)
+        // Reverse of the EnableEvents() operation in EnterImpl().
+        if (m_eventList)
         {
             auto core = GetContext();
             IFCEXPECT_ASSERT_RETURN(core);
             pEventManager = core->GetEventManager();
             IFCEXPECT_ASSERT_RETURN(pEventManager);
-            IFC_RETURN(pEventManager->RemoveRequests(this, m_pEventList));
+            IFC_RETURN(pEventManager->DisableEvents(this, m_eventList.get()));
         }
     }
 

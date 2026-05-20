@@ -18,12 +18,12 @@ struct EventHandle
         index = eventIndex;
     }
 
-    bool operator==(const EventHandle &other)
+    bool operator==(const EventHandle &other) const
     {
         return index == other.index;
     }
 
-    bool operator!=(const EventHandle &other)
+    bool operator!=(const EventHandle &other) const
     {
         return !operator==(other);
     }

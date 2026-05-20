@@ -45,10 +45,14 @@ public:
         _In_ EventHandle event,
         _In_ CValue *value,
         _In_ XINT32 listenerType,
-        _Out_opt_ CValue *result,
         _In_ bool handledEventsToo) override;
 
     _Check_return_ HRESULT RemoveEventListener(_In_ EventHandle event, _In_ CValue* value) override;
+
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
 
     bool AllowsHandlerWhenNotLive(XINT32 listenerType, KnownEventIndex eventIndex) const override;
 
@@ -86,7 +90,7 @@ private:
     _Check_return_ HRESULT OnImageViewUpdated(ImageViewBase& sender) override;
 
     friend class CLoadedImageSurfaceImageAvailableCallback;
-    CXcpList<REQUEST>* m_eventList = nullptr;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
     xref_ptr<ImageSurfaceWrapper> m_imageSurfaceWrapper;
     xref_ptr<ImageCache> m_imageCache;
     xref_ptr<IAbortableImageOperation> m_abortableImageOperation;

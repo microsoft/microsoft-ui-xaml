@@ -6,7 +6,6 @@
 #include "CDependencyObject.h"
 #include "EnumDefs.g.h"
 #include "XcpList.h"
-#include "Request.h"
 #include <ComputeStateParams.h>
 #include "Duration.h"
 #include "RepeatBehavior.h"
@@ -71,7 +70,7 @@ public:
         UNREFERENCED_PARAMETER(hEvent);
         UNREFERENCED_PARAMETER(fInputEvent);
         UNREFERENCED_PARAMETER(pArgs);
-        return (m_pEventList != NULL);
+        return (m_eventList != NULL);
     }
 
     KnownTypeIndex GetTypeIndex() const override;
@@ -80,12 +79,16 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult,
         _In_ bool fHandledEventsToo = false) override;
 
     _Check_return_ HRESULT RemoveEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue) override;
+
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
 
     CDependencyObject* GetTemplatedParent() final;
 
@@ -402,7 +405,7 @@ public:    double                                             m_rCurrentTime;
 protected: double                                             m_pendingDCompSeekTime;
 
 protected: EventRegistrationToken                             m_wucAnimationCompletedToken;
-public:    CXcpList<REQUEST>*                                 m_pEventList;
+public:    std::unique_ptr<std::vector<REQUEST>>              m_eventList;
 public:    xref_ptr<RepeatBehaviorVO::Wrapper>                m_repeatBehavior;
 public:    CTimeSpan*                                         m_pBeginTime;
 public:    xref_ptr<DurationVO::Wrapper>                      m_duration;

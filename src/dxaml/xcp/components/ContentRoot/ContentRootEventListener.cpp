@@ -54,7 +54,7 @@ _Check_return_ HRESULT ContentRootEventListener::RegisterTabProcessEventHandler(
 
     EventHandle hEventProperty(KnownEventIndex::UIElement_TabProcessing);
     handler.SetInternalHandler(&TabProcessingEventListener);
-    IFC_RETURN(CEventManager::AddEventListener(m_element.get(), &m_element->m_pEventList, hEventProperty, &handler, EVENTLISTENER_INTERNAL, nullptr, false, true));
+    IFC_RETURN(CEventManager::AddEventListener(m_element.get(), m_element->m_eventList, hEventProperty, &handler, EVENTLISTENER_INTERNAL, false, true));
 
     return S_OK;
 }
@@ -65,7 +65,7 @@ _Check_return_ HRESULT ContentRootEventListener::UnregisterTabProcessEventHandle
 
     EventHandle hEventProperty(KnownEventIndex::UIElement_TabProcessing);
     handler.SetInternalHandler(&TabProcessingEventListener);
-    IFC_RETURN(CEventManager::RemoveEventListener(m_element.get(), m_element->m_pEventList, hEventProperty, &handler));
+    IFC_RETURN(CEventManager::RemoveEventListener(m_element.get(), m_element->m_eventList.get(), hEventProperty, &handler));
 
     return S_OK;
 }
@@ -95,7 +95,7 @@ _Check_return_ HRESULT ContentRootEventListener::RegisterContextMenuOpeningEvent
     {
         EventHandle hEventProperty(textControlEventsTypes[i]);
         handler.SetInternalHandler(&ContextMenuOpeningEventListener);
-        IFC_RETURN(CEventManager::AddEventListener(m_element.get(), &m_element->m_pEventList, hEventProperty, &handler, EVENTLISTENER_INTERNAL, nullptr, false, true));
+        IFC_RETURN(CEventManager::AddEventListener(m_element.get(), m_element->m_eventList, hEventProperty, &handler, EVENTLISTENER_INTERNAL, false, true));
     }
 
     return S_OK;
@@ -109,7 +109,7 @@ _Check_return_ HRESULT ContentRootEventListener::UnregisterContextMenuOpeningEve
     {
         EventHandle hEventProperty(textControlEventsTypes[i]);
         handler.SetInternalHandler(&ContextMenuOpeningEventListener);
-        IFC_RETURN(CEventManager::RemoveEventListener(m_element.get(), m_element->m_pEventList, hEventProperty, &handler));
+        IFC_RETURN(CEventManager::RemoveEventListener(m_element.get(), m_element->m_eventList.get(), hEventProperty, &handler));
     }
 
     return S_OK;
@@ -155,7 +155,7 @@ _Check_return_ HRESULT ContentRootEventListener::RegisterManipulationInertiaProc
         ManipulationInertiaProcessingEventListener(pSender, pEventArgs);
         return S_OK;
     });
-    IFC_RETURN(CEventManager::AddEventListener(m_element.get(), &m_element->m_pEventList, hEventProperty, &handler, EVENTLISTENER_INTERNAL, nullptr, false, true));
+    IFC_RETURN(CEventManager::AddEventListener(m_element.get(), m_element->m_eventList, hEventProperty, &handler, EVENTLISTENER_INTERNAL, false, true));
 
     return S_OK;
 }
@@ -170,7 +170,7 @@ _Check_return_ HRESULT ContentRootEventListener::UnregisterManipulationInertiaPr
         ManipulationInertiaProcessingEventListener(pSender, pEventArgs);
         return S_OK;
     });
-    IFC_RETURN(CEventManager::RemoveEventListener(m_element.get(), m_element->m_pEventList, hEventProperty, &handler));
+    IFC_RETURN(CEventManager::RemoveEventListener(m_element.get(), m_element->m_eventList.get(), hEventProperty, &handler));
 
     return S_OK;
 }
@@ -188,7 +188,7 @@ _Check_return_ HRESULT ContentRootEventListener::RegisterRightTappedEventHandler
 
     EventHandle hEventProperty(KnownEventIndex::UIElement_RightTapped);
     handler.SetInternalHandler(&RightTappedEventListener);
-    IFC_RETURN(CEventManager::AddEventListener(m_element.get(), &m_element->m_pEventList, hEventProperty, &handler, EVENTLISTENER_INTERNAL, nullptr/*pResult*/, false/*fHandledEventsToo*/, true/*fSkipIsActiveCheck*/));
+    IFC_RETURN(CEventManager::AddEventListener(m_element.get(), m_element->m_eventList, hEventProperty, &handler, EVENTLISTENER_INTERNAL, false/*fHandledEventsToo*/, true/*fSkipIsActiveCheck*/));
 
     return S_OK;
 }
@@ -199,7 +199,7 @@ _Check_return_ HRESULT ContentRootEventListener::UnregisterRightTappedEventHandl
 
     EventHandle hEventProperty(KnownEventIndex::UIElement_RightTapped);
     handler.SetInternalHandler(&RightTappedEventListener);
-    IFC_RETURN(CEventManager::RemoveEventListener(m_element.get(), m_element->m_pEventList, hEventProperty, &handler));
+    IFC_RETURN(CEventManager::RemoveEventListener(m_element.get(), m_element->m_eventList.get(), hEventProperty, &handler));
 
     return S_OK;
 }

@@ -42,7 +42,7 @@ public:
         _In_opt_ CEventArgs *pArgs = nullptr
         ) override
     {
-        return (m_pEventList != nullptr);
+        return (m_eventList != nullptr);
     }
 
     KnownTypeIndex GetTypeIndex() const override
@@ -62,12 +62,16 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult ,
         _In_ bool fHandledEventsToo = false) final;
 
     _Check_return_ HRESULT RemoveEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue) override;
+
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
 
     _Check_return_ HRESULT UpdateForegroundColor(_In_ HyperlinkStates state)
     {
@@ -123,7 +127,7 @@ protected:
     _Check_return_ HRESULT OnPropertyChanged(_In_ const PropertyChangedParams& args) override;
 
 private:
-    CXcpList<REQUEST> *m_pEventList;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
     CAutomationPeer *m_pAP;
     HyperlinkStates m_state;
     bool m_isLinkNavigationKeyDown;

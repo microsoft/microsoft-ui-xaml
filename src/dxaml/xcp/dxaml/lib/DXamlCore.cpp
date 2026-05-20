@@ -2028,7 +2028,7 @@ DXamlCore::RegisterEventSource(_In_ IUntypedEventSource* pEventSource, _In_ bool
 
         if(pObject)
         {
-            IFC_RETURN(pObject->AddEventListener(EventHandle(eventIndex), &notUsed, EVENTLISTENER_CLR, nullptr, /* fHandledEventsToo */ true));
+            IFC_RETURN(pObject->AddEventListener(EventHandle(eventIndex), &notUsed, EVENTLISTENER_CLR, /* fHandledEventsToo */ true));
         }
     }
 

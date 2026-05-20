@@ -547,19 +547,10 @@ CPrintDocument::UnregisterEvents()
 
     IFCPTR_RETURN(pEventManager);
 
-    if (m_pEventList)
+    if (m_eventList)
     {
-        CXcpList<REQUEST>::XCPListNode *pTemp = m_pEventList->GetHead();
-        while (pTemp)
-        {
-            REQUEST * pRequest = (REQUEST *)pTemp->m_pData;
-            IFC_RETURN( pEventManager->RemoveRequest(this, pRequest));
-            pTemp = pTemp->m_pNext;
-        }
-
-        m_pEventList->Clean();
-        delete m_pEventList;
-        m_pEventList = NULL;
+        IFC_RETURN(pEventManager->DisableEvents(this, m_eventList.get()));
+        m_eventList.reset();
     }
     return S_OK;
 }
@@ -578,10 +569,9 @@ CPrintDocument::AddEventListener(
                                  _In_ EventHandle hEvent,
                                  _In_ CValue *pValue,
                                  _In_ XINT32 iListenerType,
-                                 _Out_opt_ CValue *pResult,
                                  _In_ bool fHandledEventsToo)
 {
-    RRETURN(CEventManager::AddEventListener(this, &m_pEventList, hEvent, pValue, iListenerType, pResult, fHandledEventsToo));
+    RRETURN(CEventManager::AddEventListener(this, m_eventList, hEvent, pValue, iListenerType, fHandledEventsToo));
 }
 
 //------------------------------------------------------------------------
@@ -598,7 +588,7 @@ CPrintDocument::RemoveEventListener(
                                     _In_ EventHandle hEvent,
                                     _In_ CValue *pValue)
 {
-    RRETURN(CEventManager::RemoveEventListener(this, m_pEventList, hEvent, pValue));
+    RRETURN(CEventManager::RemoveEventListener(this, m_eventList.get(), hEvent, pValue));
 }
 
 //------------------------------------------------------------------------

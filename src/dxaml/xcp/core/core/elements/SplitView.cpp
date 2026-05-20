@@ -385,8 +385,7 @@ CSplitView::RegisterEventHandlers()
     IFC_RETURN(AddEventListener(
         EventHandle(KnownEventIndex::UIElement_KeyDown),
         &handler,
-        EVENTLISTENER_INTERNAL,
-        nullptr)
+        EVENTLISTENER_INTERNAL)
         );
 
     if (m_spLightDismissLayer)
@@ -395,8 +394,7 @@ CSplitView::RegisterEventHandlers()
         IFC_RETURN(m_spLightDismissLayer->AddEventListener(
             EventHandle(KnownEventIndex::UIElement_PointerReleased),
             &handler,
-            EVENTLISTENER_INTERNAL,
-            nullptr)
+            EVENTLISTENER_INTERNAL)
             );
     }
 

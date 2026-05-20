@@ -20,6 +20,7 @@
 #include "ErrorType.h"
 #include "xmap.h"
 #include "XcpList.h"
+#include "Request.h"
 #include "CreateParameters.h"
 #include <unordered_set>
 #include <Microsoft.UI.Xaml.hosting.referencetracker.h>
@@ -493,12 +494,16 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult,
         _In_ bool fHandledEventsToo = false);
 
     virtual _Check_return_ HRESULT RemoveEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue);
+
+    virtual gsl::span<REQUEST> GetEventHandlers()
+    {
+        return {};
+    }
 
     _Check_return_ HRESULT ReadLocalValue(
         _In_ const CDependencyProperty* dp,

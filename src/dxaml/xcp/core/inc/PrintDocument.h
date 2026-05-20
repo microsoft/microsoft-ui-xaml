@@ -73,12 +73,16 @@ public:
         _In_ EventHandle hEvent,
         _In_ CValue *pValue,
         _In_ XINT32 iListenerType,
-        _Out_opt_ CValue *pResult ,
         _In_ bool fHandledEventsToo = false) final;
 
     _Check_return_ HRESULT RemoveEventListener(
         _In_ EventHandle hEvent,
         _In_ CValue *pValue) override;
+
+    gsl::span<REQUEST> GetEventHandlers() override
+    {
+        return (m_eventList) ? gsl::span<REQUEST>(*m_eventList) : gsl::span<REQUEST>();
+    }
 
     _Check_return_ HRESULT BeginPreview(_In_ void* pPreviewPackageTarget);
     void EndPreview();
@@ -109,7 +113,7 @@ public:
 
 private:
     // Events
-    CXcpList<REQUEST>   *m_pEventList       = nullptr;
+    std::unique_ptr<std::vector<REQUEST>> m_eventList;
     CMatrixTransform    *m_pFinalTransform  = nullptr; // RenderTransform (on element) + ScaleTransform (printing)
     CScaleTransform     *m_pScaleTransform  = nullptr;
     CWriteableBitmap    *m_pWriteableBitmap = nullptr;
