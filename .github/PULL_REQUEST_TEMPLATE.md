@@ -29,7 +29,7 @@ Fixes #
 
 ## Customer Impact
 
-<!-- How does this change affect end users? Is it user-facing or internal-only? -->
+<!-- How does this change affect end users? Is it user-facing or infra changes? -->
 
 ## Regression Potential
 
