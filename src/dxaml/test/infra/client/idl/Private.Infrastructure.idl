@@ -899,6 +899,11 @@ namespace Private.Infrastructure
         HRESULT GetErrorHandlingTestHooks([out, retval] IXamlErrorTestHooks** errorTestHooks);
 
         HRESULT GCCollect();
+
+        // Allocation statistics for memory tracking tests
+        HRESULT GetAllocationCount([out, retval] UINT64* count);
+        HRESULT GetAllocationSize([out, retval] UINT64* size);
+        HRESULT GetDeallocationCount([out, retval] UINT64* count);
     }
 
     [version(NTDDI_WIN10_RS3)]

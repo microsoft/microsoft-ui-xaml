@@ -356,4 +356,9 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
 
     IFACEMETHOD(PauseNewDispatchForTest)() = 0;
     IFACEMETHOD(ResumeNewDispatchForTest)() = 0;
+
+    // Allocation statistics test hooks
+    IFACEMETHOD_(size_t, GetAllocationCount)() = 0;
+    IFACEMETHOD_(size_t, GetAllocationSize)() = 0;
+    IFACEMETHOD_(size_t, GetDeallocationCount)() = 0;
 };

@@ -3530,4 +3530,31 @@ HRESULT WindowHelper::GetErrorHandlingTestHooks(_Outptr_opt_ test_infra::IXamlEr
     COM_END
 }
 
+HRESULT WindowHelper::GetAllocationCount(_Out_ UINT64* count)
+{
+    COM_START
+    {
+        *count = static_cast<UINT64>(GetTestHooks()->GetAllocationCount());
+    }
+    COM_END
+}
+
+HRESULT WindowHelper::GetAllocationSize(_Out_ UINT64* size)
+{
+    COM_START
+    {
+        *size = static_cast<UINT64>(GetTestHooks()->GetAllocationSize());
+    }
+    COM_END
+}
+
+HRESULT WindowHelper::GetDeallocationCount(_Out_ UINT64* count)
+{
+    COM_START
+    {
+        *count = static_cast<UINT64>(GetTestHooks()->GetDeallocationCount());
+    }
+    COM_END
+}
+
 } }

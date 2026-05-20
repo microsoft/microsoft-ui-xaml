@@ -18,7 +18,9 @@ param(
 
     [switch]$SkipSymbols,
 
-    [switch]$Clean
+    [switch]$Clean,
+
+    [switch]$Quiet
 )
 
 if (-not $Platform)
@@ -51,6 +53,7 @@ $genxbfPath = "$BinSourceRoot\GenXBF\$Platform"
 
 function Print-Config
 {
+    if ($Quiet) { return }
     $modes = [System.Collections.ArrayList]::new()
     [void]$modes.Add('DevTestSuite')
     [void]$modes.Add('ScenarioTestSuite')
@@ -103,7 +106,7 @@ function Publish-Item {
 
     if ((-not $IfExists) -or (Test-Path $source))
     {
-        Write-Host "Copy from '$source' to '$destinationDir'"
+        if (-not $Quiet) { Write-Host "Copy from '$source' to '$destinationDir'" }
 
         $sourceDirectory = [System.IO.Path]::GetDirectoryName($source).Trim()
         $sourceFileName = [System.IO.Path]::GetFileName($source).Trim()
@@ -141,7 +144,7 @@ function Publish-Item {
     }
     else
     {
-        Write-Host "Not copying '$source' to '$destinationDir' because it did not exist."
+        if (-not $Quiet) { Write-Host "Not copying '$source' to '$destinationDir' because it did not exist." }
     }
 }
 
@@ -265,14 +268,18 @@ if ($ShowPayload)
     Get-ChildItem *.* -Recurse
 }
 
-Write-Host
-Write-Host "Log file: $logFile"
-Write-Host
+if (-not $Quiet) {
+    Write-Host
+    Write-Host "Log file: $logFile"
+    Write-Host
+}
 
 Print-Config
 
-Write-Host
-Write-Host "Exit code: $global:LASTEXITCODE"
-Write-Host
+if (-not $Quiet) {
+    Write-Host
+    Write-Host "Exit code: $global:LASTEXITCODE"
+    Write-Host
+}
 
 exit $global:LASTEXITCODE

@@ -291,6 +291,11 @@ namespace Private { namespace Infrastructure {
 
         static wrl::ComPtr<IXamlTestHooks> GetTestHooks();
         static wrl::ComPtr<xaml::IWindow> GetXamlWindow();
+
+        // IWindowHelper - Allocation statistics
+        IFACEMETHOD(GetAllocationCount)(_Out_ UINT64* count) override;
+        IFACEMETHOD(GetAllocationSize)(_Out_ UINT64* size) override;
+        IFACEMETHOD(GetDeallocationCount)(_Out_ UINT64* count) override;
         static wrl::ComPtr<xaml::IWindowPrivate> GetXamlWindowPrivate();
 
         // Returns the handle of the current CoreWindow.

@@ -116,6 +116,7 @@
     <ClInclude Include="combobox\ComboBoxIntegrationTests.h" />
     <ClInclude Include="combobox\ComboBoxTypeAheadTests.h" />
     <ClInclude Include="combobox\ComboBoxTypeAheadTestsTypes.h" />
+    <ClInclude Include="commandbar\ControlAllocationTests.h" />
     <ClInclude Include="commandbar\CommandBarAutomationIntegrationTests.h" />
     <ClInclude Include="commandbar\CommandBarGamepadOrRemoteTests.h" />
     <ClInclude Include="commandbar\CommandBarIntegrationTests.h" />
@@ -230,6 +231,7 @@
     <ClCompile Include="combobox\ComboBoxIntegrationTests.cpp" />
     <ClCompile Include="combobox\ComboBoxTypeAheadTests.cpp" />
     <ClCompile Include="combobox\ComboBoxTypeAheadTestsTypes.cpp" />
+    <ClCompile Include="commandbar\ControlAllocationTests.cpp" />
     <ClCompile Include="commandbar\CommandBarIntegrationTests.cpp" />
     <ClCompile Include="commandbar\CommandBarAutomationIntegrationTests.cpp" />
     <ClCompile Include="commandbar\CommandBarGamepadOrRemoteTests.cpp" />

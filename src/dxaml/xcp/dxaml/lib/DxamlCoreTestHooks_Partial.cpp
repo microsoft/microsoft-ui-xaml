@@ -2051,3 +2051,18 @@ IFACEMETHODIMP DxamlCoreTestHooks::ResumeNewDispatchForTest()
     PauseNewDispatchForTest::Resume(dxamlCore->GetHandle());
     return S_OK;
 }
+
+IFACEMETHODIMP_(size_t) DxamlCoreTestHooks::GetAllocationCount()
+{
+    return XcpAllocation::GetAllocationCount();
+}
+
+IFACEMETHODIMP_(size_t) DxamlCoreTestHooks::GetAllocationSize()
+{
+    return XcpAllocation::GetAllocationSize();
+}
+
+IFACEMETHODIMP_(size_t) DxamlCoreTestHooks::GetDeallocationCount()
+{
+    return XcpAllocation::GetDeallocationCount();
+}

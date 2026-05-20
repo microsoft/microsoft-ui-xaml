@@ -29,6 +29,11 @@ namespace XcpAllocation {
     _Check_return_ __declspec(allocator) void *OSMemoryResize(_Frees_ptr_opt_ void *pAddress, _In_ size_t cSize);
     void __stdcall OSMemoryFree(_Frees_ptr_opt_ void *pAddress);
 
+    // Test hooks to expose allocation statistics
+    size_t GetAllocationCount();
+    size_t GetAllocationSize();
+    size_t GetDeallocationCount();
+
     // An allocator that allows STL to hook into the XcpDebugSetLeakDetectionFlag() machinery
     template <typename T>
     struct LeakIgnoringAllocator

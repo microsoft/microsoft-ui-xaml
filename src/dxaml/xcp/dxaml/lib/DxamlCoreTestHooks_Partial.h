@@ -299,6 +299,11 @@ namespace DirectUI
         IFACEMETHOD(PauseNewDispatchForTest)() override;
         IFACEMETHOD(ResumeNewDispatchForTest)() override;
 
+        // Allocation statistics test hooks
+        IFACEMETHOD_(size_t, GetAllocationCount)() override;
+        IFACEMETHOD_(size_t, GetAllocationSize)() override;
+        IFACEMETHOD_(size_t, GetDeallocationCount)() override;
+
     protected:
         _Check_return_ HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Outptr_ void **ppvObject) override;
 
