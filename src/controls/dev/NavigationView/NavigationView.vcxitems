@@ -92,7 +92,7 @@
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_themeresources.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_perf2026.xaml">
       <Type>StylePerf2026</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_themeresources.xaml">

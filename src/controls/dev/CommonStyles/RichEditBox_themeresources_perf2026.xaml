@@ -1,0 +1,74 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Thickness x:Key="RichEditBoxTopHeaderMargin">0,0,0,8</Thickness>
+  <Style TargetType="RichEditBox" BasedOn="{StaticResource DefaultRichEditBoxStyle}" />
+  <Style x:Key="DefaultRichEditBoxStyle" TargetType="RichEditBox">
+    <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
+    <Setter Property="Background" Value="{ThemeResource TextControlBackground}" />
+    <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
+    <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
+    <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+    <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+    <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
+    <Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
+    <Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
+    <Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
+    <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="RichEditBox">
+          <Grid>
+            <VisualStateManager.VisualStateGroups>
+              <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Disabled">
+                  <VisualState.Setters>
+                    <Setter Target="HeaderContentPresenter.Foreground" Value="{ThemeResource TextControlHeaderForegroundDisabled}" />
+                    <Setter Target="BorderElement.Background" Value="{ThemeResource TextControlBackgroundDisabled}" />
+                    <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource TextControlBorderBrushDisabled}" />
+                    <Setter Target="ContentElement.Foreground" Value="{ThemeResource TextControlForegroundDisabled}" />
+                    <Setter Target="PlaceholderTextContentPresenter.Foreground" Value="{ThemeResource TextControlPlaceholderForegroundDisabled}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="PointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource TextControlBorderBrushPointerOver}" />
+                    <Setter Target="BorderElement.Background" Value="{ThemeResource TextControlBackgroundPointerOver}" />
+                    <Setter Target="PlaceholderTextContentPresenter.Foreground" Value="{ThemeResource TextControlPlaceholderForegroundPointerOver}" />
+                    <Setter Target="ContentElement.Foreground" Value="{ThemeResource TextControlForegroundPointerOver}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Focused">
+                  <VisualState.Setters>
+                    <Setter Target="PlaceholderTextContentPresenter.Foreground" Value="{ThemeResource TextControlPlaceholderForegroundFocused}" />
+                    <Setter Target="BorderElement.Background" Value="{ThemeResource TextControlBackgroundFocused}" />
+                    <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource TextControlBorderBrushFocused}" />
+                    <Setter Target="BorderElement.BorderThickness" Value="{ThemeResource TextControlBorderThemeThicknessFocused}" />
+                    <Setter Target="ContentElement.Foreground" Value="{ThemeResource TextControlForegroundFocused}" />
+                  </VisualState.Setters>
+                </VisualState>
+              </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ContentPresenter x:Name="HeaderContentPresenter" Grid.Row="0" Foreground="{ThemeResource TextControlHeaderForeground}" Margin="{ThemeResource RichEditBoxTopHeaderMargin}" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" FontWeight="Normal" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Collapsed" x:DeferLoadStrategy="Lazy" />
+            <Border x:Name="BorderElement" Grid.Row="1" Grid.RowSpan="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" MinWidth="{ThemeResource TextControlThemeMinWidth}" MinHeight="{ThemeResource TextControlThemeMinHeight}" />
+            <ScrollViewer x:Name="ContentElement" Grid.Row="1" HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}" HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}" VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}" VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}" IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}" IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}" IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Foreground="{TemplateBinding Foreground}" IsTabStop="False" ZoomMode="Disabled" AutomationProperties.AccessibilityView="Raw" />
+            <TextBlock x:Name="PlaceholderTextContentPresenter" Grid.Row="1" Foreground="{ThemeResource TextControlPlaceholderForeground}" Margin="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" Text="{TemplateBinding PlaceholderText}" TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}" IsHitTestVisible="False" />
+            <ContentPresenter x:Name="DescriptionPresenter" Grid.Row="2" Content="{TemplateBinding Description}" Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}" AutomationProperties.AccessibilityView="Raw" x:Load="False" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

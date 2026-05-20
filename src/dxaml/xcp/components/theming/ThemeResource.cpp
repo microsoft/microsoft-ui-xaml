@@ -9,6 +9,7 @@
 #include <ThemeResource.h>
 #include <ThemeResourceExtension.h>
 #include <ThemeWalkResourceCache.h>
+#include <ResourceDictionaryKey.h>
 #include "DependencyObjectTraits.h"
 #include "DependencyObjectTraits.g.h"
 #include "Resources.h"
@@ -73,7 +74,7 @@ CThemeResource::RefreshValue()
     {
         if (m_themeWalkResourceCache)
         {
-            pValueDO = m_themeWalkResourceCache->TryGetCachedResource(pTargetDictionaryNoRef, m_strResourceKey);
+            pValueDO = m_themeWalkResourceCache->TryGetCachedResource(pTargetDictionaryNoRef, ResourceKey(m_strResourceKey, false));
         }
 
         if (pValueDO == nullptr)
@@ -88,7 +89,7 @@ CThemeResource::RefreshValue()
             // for other theme resources with the same key.
             if (m_themeWalkResourceCache)
             {
-                m_themeWalkResourceCache->AddCachedResource(pTargetDictionaryNoRef, m_strResourceKey, pValueDO);
+                m_themeWalkResourceCache->AddCachedResource(pTargetDictionaryNoRef, ResourceKey(m_strResourceKey, false), pValueDO);
             }
         }
 

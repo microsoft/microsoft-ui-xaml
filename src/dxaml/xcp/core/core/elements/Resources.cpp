@@ -460,11 +460,18 @@ CResourceDictionary::GetKeyNoRefImpl(
         // So reset the GlobalTheme flag to indicate we can skip over it.
         for (XINT32 i = m_pMergedDictionaries->GetCount() - 1; i >= 0 && !value; i--)
         {
+            const bool isLogging = loggerNoRef->IsLogging(); // avoid the function call overhead if not logging
             auto mergedDictionaryLookupGuard = wil::scope_exit([&]
             {
-                TRACE_HR_NORETURN(loggerNoRef->OnLeaveMergedDictionary(i));
+                if (isLogging)
+                {
+                    TRACE_HR_NORETURN(loggerNoRef->OnLeaveMergedDictionary(i));
+                }
             });
-            IFC_RETURN(loggerNoRef->OnEnterMergedDictionary(i, key.GetKey()));
+            if (isLogging)
+            {
+                IFC_RETURN(loggerNoRef->OnEnterMergedDictionary(i, key.GetKey()));
+            }
 
             xref_ptr<CResourceDictionary> currentDictionary;
             currentDictionary.attach(static_cast<CResourceDictionary*>(m_pMergedDictionaries->GetItemWithAddRef(i)));

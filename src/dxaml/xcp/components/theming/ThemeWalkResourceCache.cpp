@@ -32,11 +32,13 @@ void ThemeWalkResourceCache::RemoveThemeResourceCacheEntry(_In_ const xstring_pt
 {
     if (m_isCachingThemeResources && m_resourceCache.size() > 0)
     {
+        auto keyToRemove = ResourceKey(resourceKey, false);
+
         m_resourceCache.erase(
             std::remove_if(m_resourceCache.begin(), m_resourceCache.end(),
                 [&](const CacheItemType& item)
                 {
-                    return std::get<2>(item).Equals(resourceKey);
+                    return std::get<2>(item) == keyToRemove;
                 }),
             m_resourceCache.end());
     }
@@ -50,7 +52,7 @@ void ThemeWalkResourceCache::SetSubTreeTheme(Theming::Theme theme)
 _Check_return_ CDependencyObject*
 ThemeWalkResourceCache::TryGetCachedResource(
     _In_ CResourceDictionary* targetDictionary,
-    _In_ const xstring_ptr& resourceKey
+    _In_ const ResourceKey& resourceKey
     )
 {
     CDependencyObject* resource = nullptr;
@@ -61,7 +63,7 @@ ThemeWalkResourceCache::TryGetCachedResource(
         auto iter = std::find_if(m_resourceCache.begin(), m_resourceCache.end(),
             [&](const CacheItemType& item)
             {
-                return (std::get<0>(item) == targetDictionary && std::get<1>(item) == subTreeTheme && std::get<2>(item).Equals(resourceKey));
+                return (std::get<0>(item) == targetDictionary && std::get<1>(item) == subTreeTheme && std::get<2>(item) == resourceKey);
             });
 
         if (iter != m_resourceCache.end())
@@ -76,7 +78,7 @@ ThemeWalkResourceCache::TryGetCachedResource(
 void
 ThemeWalkResourceCache::AddCachedResource(
     _In_ CResourceDictionary* targetDictionary,
-    _In_ const xstring_ptr& resourceKey,
+    _In_ const ResourceKey& resourceKey,
     _In_ CDependencyObject* resource
     )
 {
@@ -86,13 +88,13 @@ ThemeWalkResourceCache::AddCachedResource(
         auto iter = std::find_if(m_resourceCache.begin(), m_resourceCache.end(),
             [&](const CacheItemType& item)
             {
-                return (std::get<0>(item) == targetDictionary && std::get<1>(item) == subTreeTheme && std::get<2>(item).Equals(resourceKey));
+                return (std::get<0>(item) == targetDictionary && std::get<1>(item) == subTreeTheme && std::get<2>(item) == resourceKey);
             });
 
         // Only add an entry if one isn't already in there.
         if (iter == m_resourceCache.end())
         {
-            m_resourceCache.push_back(std::make_tuple(targetDictionary, subTreeTheme, resourceKey, xref::get_weakref(resource)));
+            m_resourceCache.push_back(std::make_tuple(targetDictionary, subTreeTheme, resourceKey.ToStorage(), xref::get_weakref(resource)));
         }
     }
 }

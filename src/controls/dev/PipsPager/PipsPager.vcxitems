@@ -37,7 +37,7 @@
     <Page Include="$(MSBuildThisFileDirectory)PipsPager.xaml">
       <Type>StylePerf2026</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)PipsPager_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)PipsPager_themeresources_perf2026.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
   </ItemGroup>

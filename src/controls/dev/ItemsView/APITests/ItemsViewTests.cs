@@ -765,6 +765,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 3));
                     itemsView.ItemsSource = itemsSource;
                     Verify.AreEqual(3, itemsSource.Count);
+                });
+
+                // Let the layout system fully process the ItemsSource replacement
+                // before modifying the collection.
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
                     Log.Comment("Removing first item");
                     itemsSource.RemoveAt(0);
                     Verify.AreEqual(2, itemsSource.Count);
@@ -774,6 +782,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
+                    Log.Comment("Re-extracting ItemsRepeater after ItemsSource change");
+                    itemsRepeater = itemsView.ScrollView.Content as ItemsRepeater;
+                    Verify.IsNotNull(itemsRepeater);
+
+                    itemsRepeater.UpdateLayout();
                     int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
                     Log.Comment($"Extracting last ItemContainer, children count: {childrenCount}");
                     ItemContainer itemContainer = itemsRepeater.TryGetElement(1) as ItemContainer;
@@ -797,6 +810,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
+                    itemsRepeater.UpdateLayout();
                     int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
                     Log.Comment($"Extracting remaining ItemContainer, children count: {childrenCount}");
                     ItemContainer itemContainer = itemsRepeater.TryGetElement(0) as ItemContainer;
