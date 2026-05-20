@@ -14,10 +14,7 @@ public:
     XamlControlsResources();
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  args);
-    void UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary);
-    void UpdateAcrylicBrushesDarkTheme(const winrt::IInspectable themeDictionary);
     static void EnsureRevealLights(winrt::UIElement const& element);
 private:
     void UpdateSource();
-    void UpdateTintLuminosityOpacity(winrt::Microsoft::UI::Xaml::Media::AcrylicBrush brush, double luminosityValue);
 };

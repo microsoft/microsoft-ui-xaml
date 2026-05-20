@@ -7,17 +7,6 @@
 #include "RevealBrush.h"
 #include "MUXControlsFactory.h"
 
-static constexpr auto c_AcrylicBackgroundFillColorDefaultBrush = L"AcrylicBackgroundFillColorDefaultBrush"sv;
-static constexpr auto c_AcrylicInAppFillColorDefaultBrush = L"AcrylicInAppFillColorDefaultBrush"sv;
-static constexpr auto c_AcrylicBackgroundFillColorDefaultInverseBrush = L"AcrylicBackgroundFillColorDefaultInverseBrush"sv;
-static constexpr auto c_AcrylicInAppFillColorDefaultInverseBrush = L"AcrylicInAppFillColorDefaultInverseBrush"sv;
-static constexpr auto c_AcrylicBackgroundFillColorBaseBrush = L"AcrylicBackgroundFillColorBaseBrush"sv;
-static constexpr auto c_AcrylicInAppFillColorBaseBrush = L"AcrylicInAppFillColorBaseBrush"sv;
-static constexpr auto c_AccentAcrylicBackgroundFillColorDefaultBrush = L"AccentAcrylicBackgroundFillColorDefaultBrush"sv;
-static constexpr auto c_AccentAcrylicInAppFillColorDefaultBrush = L"AccentAcrylicInAppFillColorDefaultBrush"sv;
-static constexpr auto c_AccentAcrylicBackgroundFillColorBaseBrush = L"AccentAcrylicBackgroundFillColorBaseBrush"sv;
-static constexpr auto c_AccentAcrylicInAppFillColorBaseBrush = L"AccentAcrylicInAppFillColorBaseBrush"sv;
-
 XamlControlsResources::XamlControlsResources()
 {
     // On Windows, we need to add theme resources manually.  We'll still add an instance of this element to get the rest of
@@ -67,106 +56,12 @@ void XamlControlsResources::UpdateSource()
     // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
     Source(uri);
-    
-    UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
-    UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
-}
 
-void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
-{
-    const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>();
-    if (const auto acrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(acrylicBackgroundFillColorDefaultBrush, 0.85);
-    }
-    if (const auto acrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(acrylicInAppFillColorDefaultBrush, 0.85);
-    }
-    if (const auto acrylicBackgroundFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(acrylicBackgroundFillColorDefaultInverseBrush, 0.96);
-    }
-    if (const auto acrylicInAppFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultInverseBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(acrylicInAppFillColorDefaultInverseBrush, 0.96);
-    }
-    if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(acrylicBackgroundFillColorBaseBrush, 0.9);
-    }
-    if (const auto acrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(acrylicInAppFillColorBaseBrush, 0.9);
-    }
-    if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(accentAcrylicBackgroundFillColorDefaultBrush, 0.9);
-    }
-    if (const auto accentAcrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorDefaultBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(accentAcrylicInAppFillColorDefaultBrush, 0.9);
-    }
-    if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(accentAcrylicBackgroundFillColorBaseBrush, 0.9);
-    }
-    if (const auto accentAcrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorBaseBrush)).as<winrt::AcrylicBrush>())
-    {
-        UpdateTintLuminosityOpacity(accentAcrylicInAppFillColorBaseBrush, 0.9);
-    }
-}
-
-void XamlControlsResources::UpdateAcrylicBrushesDarkTheme(const winrt::IInspectable themeDictionary)
-{
-    if (const auto dictionary = themeDictionary.try_as<winrt::ResourceDictionary>())
-    {
-        if (const auto acrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(acrylicBackgroundFillColorDefaultBrush, 0.96);
-        }
-        if (const auto acrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(acrylicInAppFillColorDefaultBrush, 0.96);
-        }
-        if (const auto acrylicBackgroundFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorDefaultInverseBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(acrylicBackgroundFillColorDefaultInverseBrush, 0.85);
-        }
-        if (const auto acrylicInAppFillColorDefaultInverseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorDefaultInverseBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(acrylicInAppFillColorDefaultInverseBrush, 0.85);
-        }
-        if (const auto acrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicBackgroundFillColorBaseBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(acrylicBackgroundFillColorBaseBrush, 0.96);
-        }
-        if (const auto acrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AcrylicInAppFillColorBaseBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(acrylicInAppFillColorBaseBrush, 0.96);
-        }
-        if (const auto accentAcrylicBackgroundFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorDefaultBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(accentAcrylicBackgroundFillColorDefaultBrush, 0.8);
-        }
-        if (const auto accentAcrylicInAppFillColorDefaultBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorDefaultBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(accentAcrylicInAppFillColorDefaultBrush, 0.8);
-        }
-        if (const auto accentAcrylicBackgroundFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicBackgroundFillColorBaseBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(accentAcrylicBackgroundFillColorBaseBrush, 0.8);
-        }
-        if (const auto accentAcrylicInAppFillColorBaseBrush = dictionary.Lookup(box_value(c_AccentAcrylicInAppFillColorBaseBrush)).as<winrt::AcrylicBrush>())
-        {
-            UpdateTintLuminosityOpacity(accentAcrylicInAppFillColorBaseBrush, 0.8);
-        }
-    }
-}
-
-void XamlControlsResources::UpdateTintLuminosityOpacity(winrt::Microsoft::UI::Xaml::Media::AcrylicBrush brush, double luminosityValue)
-{
-    brush.TintLuminosityOpacity(luminosityValue);
+    // FUTURE: This remaining AcrylicBrush lookup is a workaround to force the Nullable<Double> type to be
+    // registered as a known type, which somehow doesn't otherwise get registered for some apps which need it.
+    // At some point, the underlying issue should be investigated and fixed.
+    constexpr auto c_AcrylicBackgroundFillColorDefaultBrush = L"AcrylicBackgroundFillColorDefaultBrush"sv;
+    ThemeDictionaries().Lookup(box_value(L"Default")).as<winrt::ResourceDictionary>().Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush));
 }
 
 void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className) 
