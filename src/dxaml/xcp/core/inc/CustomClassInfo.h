@@ -41,6 +41,11 @@ public:
 
     const CClassInfo* GetBoxedType() const;
 
+    void Invalidate()
+    {
+        m_spXamlType = nullptr;
+    }
+
 private:
     CCustomClassInfo() = default;
 

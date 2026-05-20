@@ -12,6 +12,7 @@
 #include <SubObjectWriterResult.h>
 
 #include <MetadataAPI.h>
+#include "XamlTelemetry.h"
 
 #include <DXamlServices.h>
 #include <dependencyLocator\inc\DependencyLocator.h>
@@ -63,6 +64,8 @@ _Check_return_ HRESULT ObjectWriterRuntime::PopScopeImpl(
     return S_OK;
 }
 
+static UINT32 s_objectId = 0;
+
 _Check_return_ HRESULT ObjectWriterRuntime::CreateTypeImpl(
     _In_ const XamlLineInfo& lineInfo,
     _In_ const std::shared_ptr<XamlType>& spType,
@@ -71,8 +74,34 @@ _Check_return_ HRESULT ObjectWriterRuntime::CreateTypeImpl(
     _Out_ std::shared_ptr<XamlQualifiedObject>& spInstance)
 {
     HRESULT xr = S_OK;
+    UINT32 objectNumber = s_objectId++;
+
+    {
+        xstring_ptr spTypeName;
+        IFC_RETURN(spType->get_FullName(&spTypeName));
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "ObjectWriterRuntime_CreateTypeImpl",
+            TraceLoggingBoolean(true, "IsStart"),
+            TraceLoggingUInt32(objectNumber, "ObjectNumber"),
+            TraceLoggingWideString(spTypeName.GetBuffer(), "TypeName"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    }
 
     xr = spType->CreateInstance(spInstance);
+
+    auto logEndEvent = wil::scope_exit([&]
+    {
+        CDependencyObject* pDependencyObject = spInstance->GetDependencyObject();
+
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "ObjectWriterRuntime_CreateTypeImpl",
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingUInt32(pDependencyObject->GetContext()->GetFrameNumber(), "FrameNumber"),
+            TraceLoggingUInt32(objectNumber, "ObjectNumber"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(pDependencyObject), "ObjectPointer"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    });
+
     IFC_RETURN(m_spErrorService->WrapErrorWithParserErrorAndRethrow(xr, lineInfo));
     if (FAILED(xr))
     {

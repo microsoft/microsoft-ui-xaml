@@ -12,16 +12,10 @@
 #pragma once
 
 #include "FrameworkElementAutomationPeer.g.h"
-#include <FeatureFlags.h>
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
-#else
-#define FEATURE_EXPERIMENTALAPI_OVERRIDE
-#endif
+
 #define __SplitMenuFlyoutItemAutomationPeer_GUID "2c98dfdf-824c-5f27-b882-eb3031b9889b"
 
 #pragma region forwarders
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
 namespace ctl
 {
     template<typename impl_type>
@@ -31,7 +25,6 @@ namespace ctl
         impl_type* This() { return this->This_helper<impl_type>(); }
     };
 }
-#endif
 #pragma endregion
 
 namespace DirectUI
@@ -40,24 +33,18 @@ namespace DirectUI
 
     class __declspec(novtable) SplitMenuFlyoutItemAutomationPeerGenerated:
         public DirectUI::FrameworkElementAutomationPeer
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeer, SplitMenuFlyoutItemAutomationPeerGenerated >
         , public ABI::Microsoft::UI::Xaml::Automation::Provider::IExpandCollapseProvider
         , public ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider
-#endif
     {
         friend class DirectUI::SplitMenuFlyoutItemAutomationPeer;
 
         INSPECTABLE_CLASS(L"Microsoft.UI.Xaml.Automation.Peers.SplitMenuFlyoutItemAutomationPeer");
 
         BEGIN_INTERFACE_MAP(SplitMenuFlyoutItemAutomationPeerGenerated, DirectUI::FrameworkElementAutomationPeer)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(SplitMenuFlyoutItemAutomationPeerGenerated, ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeer)
             INTERFACE_ENTRY(SplitMenuFlyoutItemAutomationPeerGenerated, ABI::Microsoft::UI::Xaml::Automation::Provider::IExpandCollapseProvider)
             INTERFACE_ENTRY(SplitMenuFlyoutItemAutomationPeerGenerated, ABI::Microsoft::UI::Xaml::Automation::Provider::IInvokeProvider)
-#else
-            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
-#endif
         END_INTERFACE_MAP(SplitMenuFlyoutItemAutomationPeerGenerated, DirectUI::FrameworkElementAutomationPeer)
 
     public:
@@ -108,16 +95,10 @@ namespace DirectUI
     // care.
     class __declspec(novtable) SplitMenuFlyoutItemAutomationPeerFactory:
        public ctl::BetterAggregableCoreObjectActivationFactory
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeerFactory
-#endif
     {
         BEGIN_INTERFACE_MAP(SplitMenuFlyoutItemAutomationPeerFactory, ctl::BetterAggregableCoreObjectActivationFactory)
-#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(SplitMenuFlyoutItemAutomationPeerFactory, ABI::Microsoft::UI::Xaml::Automation::Peers::ISplitMenuFlyoutItemAutomationPeerFactory)
-#else
-            INTERFACE_ENTRY(DUMMYINTERFACE, IUnknown)
-#endif
         END_INTERFACE_MAP(SplitMenuFlyoutItemAutomationPeerFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:

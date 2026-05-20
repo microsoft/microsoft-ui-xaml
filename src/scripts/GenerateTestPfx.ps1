@@ -28,18 +28,33 @@ if($shouldGenerate)
 {
     Write-Host "Generating $PfxPath..."
 
-    $CertificateFriendlyName = "WinUITest"
-    $Publisher = "CN=WinUITest"
+    # Ensure we use the Windows PowerShell 5.1 modules, not PowerShell 7 modules.
+    # The PS7 version of Microsoft.PowerShell.Security lacks the Certificate PSProvider
+    # (Cert: drive) needed by New-SelfSignedCertificate.
+    $systemModulePath = Join-Path $env:SystemRoot 'system32\WindowsPowerShell\v1.0\Modules'
+    $originalPSModulePath = $env:PSModulePath
+    if ($env:PSModulePath -notlike "$systemModulePath*")
+    {
+        $env:PSModulePath = "$systemModulePath;$env:PSModulePath"
+    }
 
-    $cert = New-SelfSignedCertificate -Type Custom `
-        -Subject $Publisher `
-        -KeyUsage DigitalSignature `
-        -FriendlyName $CertificateFriendlyName `
-        -CertStoreLocation "Cert:\CurrentUser\My" `
-        -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+    try {
+        $CertificateFriendlyName = "WinUITest"
+        $Publisher = "CN=WinUITest"
 
-    $certificateBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pkcs12)
-    [System.IO.File]::WriteAllBytes($PfxPath, $certificateBytes)
+        $cert = New-SelfSignedCertificate -Type Custom `
+            -Subject $Publisher `
+            -KeyUsage DigitalSignature `
+            -FriendlyName $CertificateFriendlyName `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
 
-    Get-PfxCertificate -FilePath $PfxPath | Export-Certificate -FilePath $cerPath -Type CERT | Out-Null
+        $certificateBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pkcs12)
+        [System.IO.File]::WriteAllBytes($PfxPath, $certificateBytes)
+
+        Get-PfxCertificate -FilePath $PfxPath | Export-Certificate -FilePath $cerPath -Type CERT | Out-Null
+    }
+    finally {
+        $env:PSModulePath = $originalPSModulePath
+    }
 }

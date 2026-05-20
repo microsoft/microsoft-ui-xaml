@@ -331,7 +331,7 @@ CUIElementCollection::GetChildrenInRenderOrderInternal(
 //------------------------------------------------------------------------
 bool
 CUIElementCollection::NeedsToSort(
-    _In_ const std::vector<CDependencyObject*>& unsortedUIElements) const
+    _In_ const CDOCollection::storage_type& unsortedUIElements) const
 {
     for (XUINT32 i = 0; i < unsortedUIElements.size(); i++)
     {

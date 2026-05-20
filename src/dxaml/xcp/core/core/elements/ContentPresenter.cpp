@@ -1138,13 +1138,29 @@ _Check_return_
 HRESULT
 CContentPresenter::RemoveTemplateChild()
 {
+    HRESULT hr = S_OK;
     CCollection* pChildren = GetChildren();
+    bool peggedPeer = false;
+    bool peerIsPendingDelete = false;
     if (pChildren)
     {
-        IFC_RETURN(GetChildren()->Clear());
-        IFC_RETURN(FxCallbacks::ContentPresenter_OnChildrenCleared(this));
+        TryPegPeer(&peggedPeer, &peerIsPendingDelete);
+
+        IFC(GetChildren()->Clear());
+
+        if (!peerIsPendingDelete)
+        {
+            IFC(FxCallbacks::ContentPresenter_OnChildrenCleared(this));
+        }
     }
-    return S_OK;
+
+Cleanup:
+
+    if (peggedPeer)
+    {
+        UnpegManagedPeer();
+    }
+    return hr;
 }
 
 _Check_return_ HRESULT CContentPresenter::CreateDefaultContent(

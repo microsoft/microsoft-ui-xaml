@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="rgb {1, 0, 0}" />
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="80" TopInset="80" RightInset="80" BottomInset="80" LeftInsetScale="0.5" TopInsetScale="0.5" RightInsetScale="0.5" BottomInsetScale="0.5" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="1" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+            <MaskBrush>
+              <Source>
+                <ColorBrush Color="Argb {0.502, 1, 0, 0}" />
+              </Source>
+              <Mask>
+                <NineGridBrush LeftInset="80" TopInset="80" RightInset="80" BottomInset="80" LeftInsetScale="0.5" TopInsetScale="0.5" RightInsetScale="0.5" BottomInsetScale="0.5" isCenterHollow="True">
+                  <Source>
+                    <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="2" />
+                  </Source>
+                </NineGridBrush>
+              </Mask>
+            </MaskBrush>
+          </wucSpriteVisual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

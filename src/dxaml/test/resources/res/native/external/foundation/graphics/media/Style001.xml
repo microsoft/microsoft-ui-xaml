@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tt xml:lang="en"
+    xmlns="http://www.w3.org/ns/ttml"
+    xmlns:tts="http://www.w3.org/ns/ttml#styling"
+    xmlns:ttm="http://www.w3.org/ns/ttml#metadata">
+  <head>
+    <metadata> 
+      <ttm:title>Styling Test - style element - 001</ttm:title>
+      <ttm:desc>Test style attributes in the style element.</ttm:desc>
+      <ttm:copyright>Copyright (C) 2008 W3C (MIT, ERCIM, Keio).</ttm:copyright>
+    </metadata>
+    <ttp:profile use="dfxp-presentation" xmlns:ttp="http://www.w3.org/ns/ttml#parameter">
+      <ttp:features xml:base="http://www.w3.org/ns/ttml/feature/">
+        <ttp:feature>#color</ttp:feature>
+        <ttp:feature>#backgroundColor</ttp:feature>
+        <ttp:feature>#textAlign-relative</ttp:feature>
+        <ttp:feature>#styling-referential</ttp:feature>
+        <ttp:feature>#styling-inheritance-content</ttp:feature>
+      </ttp:features>
+    </ttp:profile>
+    <styling>
+      <style xml:id="s1" tts:color="yellow" tts:textDecoration="none" tts:textAlign="center" tts:backgroundColor="blue" />
+    </styling>
+  </head>
+  <body>
+    <div style="s1">
+      <p begin="0s" end="10s">This caption is aligned in the center, has a blue background and undecorated yellow text.</p>
+    </div>
+  </body>
+</tt>

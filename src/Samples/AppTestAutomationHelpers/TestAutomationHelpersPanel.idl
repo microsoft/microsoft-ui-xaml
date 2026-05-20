@@ -1,0 +1,8 @@
+namespace AppTestAutomationHelpers
+{
+    [default_interface]
+    runtimeclass TestAutomationHelpersPanel : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        TestAutomationHelpersPanel();
+    }
+}

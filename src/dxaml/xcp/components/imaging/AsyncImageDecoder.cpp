@@ -397,6 +397,19 @@ void AsyncImageDecoder::CleanupDeviceRelatedResources()
     }
     m_spSharedState->CancelPresent();
     m_spSharedState->m_suspended = true;
+
+    // If a decode completed on the background thread but the result hasn't been
+    // delivered yet, deliver it now before suspending. The decoded bitmap
+    // (m_spNextBitmapSource) is a WIC software bitmap with no GPU dependency,
+    // so it is safe to present during device-loss cleanup. Without this, the
+    // CImageSource remains stuck in HasEncodedImageOnly and the image stays blank.
+    if (m_spSharedState->m_hasDecodingResult && !m_spSharedState->m_decodeInProgress)
+    {
+        m_spSharedState->m_hasDecodingResult = false;
+        ImagingTelemetry::PresentBitmapDuringDeviceLoss(
+            m_spSharedState->m_spDecodeParams ? m_spSharedState->m_spDecodeParams->GetImageId() : 0);
+        VERIFYHR(PresentAndProceedToNextFrame(m_spSharedState));
+    }
 }
 
 bool AsyncImageDecoder::IsDecodeInProgress()

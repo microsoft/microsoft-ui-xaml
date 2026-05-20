@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- XAML Adapatibility MultiXAML tests-->
+<Data>
+<Table Id="PackageResourceIndex0">
+        <ParameterTypes>
+                <ParameterType Name="ResourceUris" Array="true">String</ParameterType>
+        </ParameterTypes>
+        <Row>
+                <Parameter Name="ResourceUris">
+                    <!-- Root -->
+                    <Value>ms-resource:///Files/page.xaml</Value>
+                    <Value>ms-resource:///Files/page2.xaml</Value>
+                    <Value>ms-resource:///Files/page3.xaml</Value>
+                    <Value>ms-resource:///Files/file.xbf</Value>
+                    <Value>ms-resource:///Files/file2.MinWidth1024.xbf</Value>
+                    <Value>ms-resource:///Files/file2.MinWidth512.xbf</Value>
+                    <Value>ms-resource:///Files/file2.MinWidth256.xbf</Value>
+                    <Value>ms-resource:///Files/file2.MinWidth128.xbf</Value>
+                    <Value>ms-resource:///Files/file2.MinWidth2048.xbf</Value>
+                    <Value>ms-resource:///Files/file2.MinWidth100.xbf</Value>
+                    <Value>ms-resource:///Files/file2.MinWidth200.xbf</Value>
+                    <Value>ms-resource:///Files/file2.MinWidth5.xbf</Value>
+                    <Value>ms-resource:///Files/Themes/red.xaml</Value>
+                    <Value>ms-resource:///Files/Themes/blue.xaml</Value>
+
+                    <!-- Mixed case (MRT ResourceMap path match is case-sensitive, file names are not -->
+                    <Value>ms-resource:///Files/fIlE4.minwidth1024.xbf</Value>
+                    <Value>ms-resource:///Files/fIle4.minwidth512.xbf</Value>
+                    <Value>ms-resource:///Files/fiLe4.MINWIDTH256.XBF</Value>
+                    <Value>ms-resource:///Files/FILE4.mINWIDTH128.Xbf</Value>
+                    <Value>ms-resource:///Files/fILe4.MinWidth2048.xBF</Value>
+                    <Value>ms-resource:///Files/fILe4.MinwIdth100.XBF</Value>
+                    <Value>ms-resource:///Files/File4.minWidth200.xbf</Value>
+                    <Value>ms-resource:///Files/file4.Minwidth5.xbf</Value>
+                    <Value>ms-resource:///Files/file4.Minwidth0.xbf</Value>
+                    <Value>ms-resource:///Files/file4.Minwidth1.xbf</Value>
+                    <Value>ms-resource:///Files/file4.Minwidth9999999999.xbf</Value>
+
+                    <!-- Nested -->
+                    <Value>ms-resource:///Files/foo/blue.xaml</Value>
+                    <Value>ms-resource:///Files/foo/bar/page.xaml</Value>
+                    <Value>ms-resource:///Files/foo/bar/page2.xaml</Value>
+                    <Value>ms-resource:///Files/foo/bar/page3.xaml</Value>
+                    <Value>ms-resource:///Files/foo/bar/file.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file3.MinWidth1.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file3.MinWidth100.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file3.MinWidth200.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file3.MinWidth201.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file3.MinWidth300.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file3.MinWidth400.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file3.MinWidth1000.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file3.MinWidth20000.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/file4.xbf</Value>
+                    <Value>ms-resource:///Files/foo/bar/Themes/red.xaml</Value>
+                    <Value>ms-resource:///Files/foo/bar/Themes/blue.xaml</Value>
+                    <Value>ms-resource:///Files/foo/bar/foo/blue.xaml</Value>
+
+                    <!-- Nested 2, xbf/xaml -->
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth1024.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth512.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth256.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth128.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth2048.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth100.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.WinWidth200.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth1024.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth512.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth256.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth128.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth2048.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth100.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth200.xaml</Value>
+
+                    <!-- Other -->
+                    <Value>ms-resource:///Files/S ect ions/Pa ges/ Com po nent.MinWidth1024.xbf</Value>
+                    <Value>ms-resource:///Files/Se123123ctions/Pa12313---ges/Coasffmponent.MinWidth512.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages////////////////////////////////////////////////Component.MinWidth256.xbf</Value>
+                    <Value>ms-resource:///Files/S       ect                  asdfl ions/Pages/Component.Mi..............nWidth128.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth20489999999999999999999999999.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Co                  mponent.MinWidth100.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.WinWidthllllllllll200.xbf</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth1024.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth512.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth256.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth128.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth2048.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.MinWidth100.xaml</Value>
+                    <Value>ms-resource:///Files/Sections/Pages/Component.WinWidth200.xaml</Value>
+
+                    <!-- Path -->
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth1024.xbf</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth512.xbf</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth256.xbf</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth128.xbf</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth2048.xbf</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth100.xbf</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.WinWidth200.xbf</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth1024.xaml</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth512.xaml</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth256.xaml</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth128.xaml</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth2048.xaml</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.MinWidth100.xaml</Value>
+                    <Value>ms-resource:///Files/xbox/drivers/graphics/SCinc/boost/numeric/conversion/detail/preprocessed/numeric_cast_traits_long_long/Component.WinWidth200.xaml</Value>
+                </Parameter>
+        </Row>
+</Table>
+</Data>

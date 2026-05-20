@@ -142,7 +142,6 @@ BOOL InitializeDll()
     // application, the MUX DLLs can sometimes be binplaced to a subdirectory, while the executable
     // loading them is binplaced to a separate subdirectory.  To account for this circumstance,
     // we'll add the directory path for Microsoft.UI.Xaml.dll to our DLL search path.
-    WCHAR muxPath[MAX_PATH];
 
     HMODULE muxModule;
     if (!GetModuleHandleEx(
@@ -152,9 +151,13 @@ BOOL InitializeDll()
         IFC(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    GetModuleFileName(GetModuleHandle(L"Microsoft.UI.Xaml.dll"), muxPath, MAX_PATH);
-    FAIL_FAST_ASSERT(PathRemoveFileSpec(muxPath) != 0);
-    muxDllDirectoryCookie = AddDllDirectory(muxPath);
+    {
+        std::wstring muxPathStr = GetModuleFileNameHelper(muxModule);
+        auto lastSlash = muxPathStr.find_last_of(L'\\');
+        FAIL_FAST_ASSERT(lastSlash != std::wstring::npos);
+        muxPathStr.resize(lastSlash);
+        muxDllDirectoryCookie = AddDllDirectory(muxPathStr.c_str());
+    }
 
 Cleanup:
     return SUCCEEDED(hr) ? TRUE : FALSE;

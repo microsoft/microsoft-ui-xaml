@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual VisualId="1" Tag="PrimaryVisual" SizeX="400" SizeY="400">
+        <Visual Tag="ContentVisual">
+          <Visual TransformParentVisualId="1" Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual">
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual">
+                    <Visual Tag="ContentVisual">
+                      <Visual Tag="PrependVisual">
+                        <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+                          <Opacity>
+                            <KeyFrameAnimation Duration="1000">
+                              <KeyFrame Value="0.5">
+                                <LinearEasingFunction />
+                              </KeyFrame>
+                              <KeyFrame Time="1" Value="0.5">
+                                <LinearEasingFunction />
+                              </KeyFrame>
+                            </KeyFrameAnimation>
+                          </Opacity>
+                          <Visual Tag="ContentVisual">
+                            <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft" TransparentForInput="True">
+                              <ColorBrush Color="rgb {0.502, 0, 0.502}" />
+                            </wucSpriteVisual>
+                          </Visual>
+                        </Visual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

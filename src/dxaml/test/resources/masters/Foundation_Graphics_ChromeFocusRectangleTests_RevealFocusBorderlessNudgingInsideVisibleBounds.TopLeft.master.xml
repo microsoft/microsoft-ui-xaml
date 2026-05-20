@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Compositor>
+  <Light Number="1" TargetCount="1" HasCoordinateSpace="False">
+    <Intensity>
+      <KeyFrameAnimation Duration="1">
+        <KeyFrame Value="0.4" />
+        <KeyFrame Time="0.1" Value="1" />
+        <KeyFrame Time="1" Value="0.5" />
+      </KeyFrameAnimation>
+    </Intensity>
+  </Light>
+  <Light Number="2" TargetCount="1" HasCoordinateSpace="False">
+    <Intensity>
+      <KeyFrameAnimation Duration="6" DelayTime="2" IterationCount="Forever">
+        <KeyFrame Value="0.1" />
+        <KeyFrame Time="0.5" Value="0.4" />
+        <KeyFrame Time="1" />
+      </KeyFrameAnimation>
+    </Intensity>
+  </Light>
+  <Light Number="3" TargetCount="1" HasCoordinateSpace="True" />
+  <Light Number="4" TargetCount="1" HasCoordinateSpace="False" />
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual VisualId="1" Tag="PrimaryVisual" SizeX="800" SizeY="600">
+          <Visual Tag="ContentVisual">
+            <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft" OffsetX="100" OffsetY="40" OffsetZ="0">
+              <ColorBrush Color="rgb {0, 0, 0.502}" />
+            </wucSpriteVisual>
+            <Visual Tag="PrependVisual">
+              <Visual Tag="PrimaryVisual">
+                <Visual Tag="ContentVisual">
+                  <Visual TransformParentVisualId="1" Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="74" SizeY="74">
+                      <TransformMatrix>
+                        <Translate X="88" Y="28" />
+                      </TransformMatrix>
+                      <Visual Tag="ContentVisual">
+                        <Visual Tag="PrependVisual">
+                          <Visual Tag="PrimaryVisual" SizeX="74" SizeY="74">
+                            <Visual Tag="ContentVisual">
+                              <wucSpriteVisual SizeX="74" SizeY="74" BorderMode="Soft" TransparentForInput="True">
+                                <NineGridBrush LeftInset="12" TopInset="12" RightInset="12" BottomInset="12" isCenterHollow="True">
+                                  <Source>
+                                    <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                                  </Source>
+                                </NineGridBrush>
+                              </wucSpriteVisual>
+                            </Visual>
+                            <wucSpriteVisual>
+                              <TargetedByLight LightNumber="1" />
+                              <TargetedByLight LightNumber="2" />
+                              <TargetedByLight LightNumber="3" />
+                              <TargetedByLight LightNumber="4" />
+                              <CoodinateSpaceFor LightNumber="3" />
+                              <Offset.x>
+                                <ExpressionAnimation String="hostVisual.Offset.x + colorGlowOffsetXAdjustment">
+                                  <ReferenceParameter Name="hostVisual" />
+                                </ExpressionAnimation>
+                              </Offset.x>
+                              <Offset.y>
+                                <ExpressionAnimation String="hostVisual.Offset.y + colorGlowOffsetYAdjustment">
+                                  <ReferenceParameter Name="hostVisual" />
+                                </ExpressionAnimation>
+                              </Offset.y>
+                              <EffectBrush />
+                            </wucSpriteVisual>
+                          </Visual>
+                        </Visual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</Compositor>

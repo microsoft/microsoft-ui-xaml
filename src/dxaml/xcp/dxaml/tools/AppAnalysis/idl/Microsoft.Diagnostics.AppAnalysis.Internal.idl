@@ -1,0 +1,182 @@
+// Copyright (c) Microsoft Corporation.  All rights reserved.
+
+#include <sdkddkver.h>
+
+import "Microsoft.Diagnostics.AppAnalysis.idl";
+
+namespace Microsoft.Diagnostics.AppAnalysis
+{
+    ////////////////////////////////////////////////////////////////////////////////
+    // SourceInfo [STRUCT]
+    [version(NTDDI_WIN10_RS1)]
+    typedef struct SourceInfo {
+        HSTRING FileName;
+        unsigned int LineNumber;
+        unsigned int ColumnNumber;
+        HSTRING FileHash;
+    } SourceInfo;
+
+    // TODO: If we make the rule services part of the public API surface, we will want a better
+    // story of how a rule can declare these. Since we aren't shipping them publicly, and app analysis
+    // can only be consumed from native c++, this is OK for now.
+    interface IRuleServiceProviderStatics;
+    interface IRuleService;
+
+    runtimeclass RuleServiceProvider;
+    runtimeclass EventProcessor;
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // IEtwEventWatcherPrivate [INTERFACE]
+    //  
+    [version(NTDDI_WIN10_RS1)]
+    [uuid(97EBFE18-E919-491E-A5AE-A15CB438D74B)]
+    interface IEtwEventWatcherPrivate : IInspectable
+    {
+        // Calling Start() will cause the EtwEventWatcher to begin watching for events. At this point,
+        // no more events can be added. It is required that the user calls Stop().
+        HRESULT Start();
+        HRESULT Stop();
+
+        [propget] HRESULT RegisteredEvents(
+            [out, retval] Windows.Foundation.Collections.IVectorView<EtwEvent*>** registeredEvents
+            );
+    };
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // IRuleServiceProviderStatics [INTERFACE]
+    [
+        version(NTDDI_WIN10_RS1),
+        uuid(BC440967-86AD-4F7E-A59A-D0F1A69A4147),
+        exclusiveto(RuleServiceProvider)
+    ]
+    interface IRuleServiceProviderStatics : IInspectable
+    {
+        HRESULT RegisterService(
+            [in] GUID serviceId
+            );
+
+        HRESULT UnregisterService(
+            [in] GUID serviceId
+        );
+
+        HRESULT GetService(
+            [in] GUID serviceId,
+            [out, retval] IRuleService** instance
+            );
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // IRuleServiceProvider [INTERFACE]
+    [
+        version(NTDDI_WIN10_RS1),
+        uuid(EFE3C0FB-59E0-426A-AA38-E0106DF44014)
+    ]
+    interface IRuleServiceProvider : IInspectable
+    {
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // IRuleService [INTERFACE]
+    [
+        version(NTDDI_WIN10_RS1),
+        uuid(13B8740D-4864-4467-B160-50C45EEFDEFD)
+    ]
+    interface IRuleService : IInspectable
+    {
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ISourceInfoRuleService [INTERFACE]
+    [
+        version(NTDDI_WIN10_RS1),
+        uuid(C97B8B9A-2F17-4286-B148-A22DE84414CD)
+    ]
+    interface ISourceInfoRuleService : IInspectable 
+        requires IRuleService
+    {
+        HRESULT GetSourceInfo(
+            [in] UINT64 elementId,
+            [out, retval] SourceInfo* sourceInfo
+            );
+
+        HRESULT GetVisualTreeId(
+            [in] UINT64 elementId,
+            [out, retval] UINT64* visualTreeId
+            );
+
+        HRESULT GetElementName(
+            [in] UINT64 elementId,
+            [out, retval] HSTRING* elementName
+            );
+
+        HRESULT GetElementTypeName(
+            [in] UINT64 elementId,
+            [out, retval] HSTRING* typeName
+            );
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // RuleServiceProvider [RUNTIMECLASS]
+    [
+        version(NTDDI_WIN10_RS1),
+        marshaling_behavior(agile),
+        static(IRuleServiceProviderStatics, NTDDI_WIN10_RS1)
+    ]
+    runtimeclass RuleServiceProvider
+    {
+        [default] interface IRuleServiceProvider;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // IEventProcessor [INTERFACE]
+    [version(NTDDI_WIN10_RS1)]
+    [uuid(758D21E0-DAAD-4B54-8D58-6BB25BC43947)]
+    [exclusiveto(EventProcessor)]
+    interface IEventProcessorStatics : IInspectable
+    {
+        // IEtwEvent are registered with a respective callback with the EventProcessor 
+        // so that the EventProcessor can correctly dispatch event it recieves inside of ProcessEvent to the right
+        // consumer.
+        HRESULT RegisterEvent(
+            [in] EtwEvent* @event,
+            [in] EtwEventRecordCallback* eventCallback
+            );
+
+        HRESULT UnregisterEvent(
+            [in] EtwEvent* @event,
+            [in] EtwEventRecordCallback* eventCallback
+            );
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    //// IEventProcessor [INTERFACE]
+    [
+        version(NTDDI_WIN10_RS1),
+        uuid(7F8620EB-68EC-42B5-A88A-5F7F566D03B7)
+    ]
+    interface IEventProcessor : IInspectable
+    {
+    };
+    ////////////////////////////////////////////////////////////////////////////////
+    // RuleServiceProvider [RUNTIMECLASS]
+    [
+        version(NTDDI_WIN10_RS1),
+        marshaling_behavior(agile),
+        static(IEventProcessorStatics, NTDDI_WIN10_RS1)
+    ]
+    runtimeclass EventProcessor
+    {
+        [default] interface IEventProcessor;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Private Collections - we don't declare these publically because the collide
+    // with the definitions in Windows.Foundation.idl when consumed from the sdk, 
+    // however we need them to compile internally
+    //
+    declare
+    {
+        interface Windows.Foundation.Collections.IMap<EtwEvent*, EtwEventRecordCallback*>;
+    }
+}

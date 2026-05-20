@@ -1,0 +1,47 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Margin="25">
+  <TextBlock
+      x:Name="textBlock"
+      Margin="25"
+      FontFamily="Consolas"
+      FontSize="25"
+      Height="30"
+      Text="THIS IS SOME TEXT"
+      IsTextSelectionEnabled="True"
+      ContextFlyout="{x:Null}" 
+      SelectionFlyout="{x:Null}" 
+        />
+  <TextBlock
+      x:Name="textBlockSlowPath"
+      Margin="25"
+      FontFamily="Consolas"
+      FontSize="25"
+      Height="30"
+      IsTextSelectionEnabled="True"
+      ContextFlyout="{x:Null}" 
+      SelectionFlyout="{x:Null}">
+    <Run>THIS IS SOME TEXT</Run>
+  </TextBlock>
+  <RichTextBlock
+      x:Name="richTextBlock"
+      Margin="25"
+      FontFamily="Consolas"
+      FontSize="25"
+      Height="30"
+      IsTextSelectionEnabled="True"
+      OverflowContentTarget="{Binding ElementName=richTextBlockOverflow}"
+      ContextFlyout="{x:Null}" 
+      SelectionFlyout="{x:Null}">
+    <Paragraph>
+      THIS IS SOME TEXT
+    </Paragraph>
+  </RichTextBlock>
+  <RichTextBlockOverflow
+      x:Name="richTextBlockOverflow"
+      Margin="25"
+      Height="30">
+  </RichTextBlockOverflow>
+</StackPanel>

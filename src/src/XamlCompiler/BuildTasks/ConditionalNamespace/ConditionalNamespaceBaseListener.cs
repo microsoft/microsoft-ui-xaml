@@ -71,18 +71,6 @@ public partial class ConditionalNamespaceBaseListener : IConditionalNamespaceLis
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitUri([NotNull] ConditionalNamespaceParser.UriContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="ConditionalNamespaceParser.unquoted_namespace"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterUnquoted_namespace([NotNull] ConditionalNamespaceParser.Unquoted_namespaceContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="ConditionalNamespaceParser.unquoted_namespace"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitUnquoted_namespace([NotNull] ConditionalNamespaceParser.Unquoted_namespaceContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="ConditionalNamespaceParser.api_information"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

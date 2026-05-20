@@ -37,7 +37,7 @@ namespace DependencyLocator {
                     auto moduleInstance = LoadLibraryExWAbs(moduleName, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
                     if (!moduleInstance)
                     {
-#pragma prefast( suppress: 26498 "IFCFAILFAST() isn't always being passed a constant everywhere, so the __HR in there can't be constexpr."
+#pragma warning( suppress: 26498 )  // IFCFAILFAST() isn't always being passed a constant everywhere, so the __HR in there can't be constexpr.
                         IFCFAILFAST(E_NOT_FOUND);
                     }
 
@@ -49,7 +49,7 @@ namespace DependencyLocator {
                         IFCFAILFAST(E_NOT_FOUND);
                     }
 
-#pragma prefast( suppress: 6011 "PREfast does not understand if pfnStorage is bad we couldn't have passed the check above."
+#pragma warning( suppress: 6011 )  // PREfast does not understand if pfnStorage is bad we couldn't have passed the check above.
                     auto storage = pfnStorage();
                     if (!storage)
                     {

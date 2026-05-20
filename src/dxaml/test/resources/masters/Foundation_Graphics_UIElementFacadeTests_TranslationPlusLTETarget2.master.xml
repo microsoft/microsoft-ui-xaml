@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="50" OffsetY="50" OffsetZ="0">
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="-100" ClipBottom="-100" TransformMatrix="dxdy {10, 20}" />
+            <TransformMatrix>
+              <Translate X="40" Y="30" Z="30" />
+            </TransformMatrix>
+            <Visual Tag="PrimaryVisual">
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <TransformMatrix>
+                    <Translate X="20" Y="40" Z="30" />
+                  </TransformMatrix>
+                  <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                        <ColorBrush Color="rgb {1, 0, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

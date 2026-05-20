@@ -24,7 +24,7 @@ public:
     bool IsSelectionRequired() { return true; };
     winrt::com_array<winrt::Microsoft::UI::Xaml::Automation::Provider::IRawElementProviderSimple> GetSelection();
 
-    void RaiseSelectionChanged(double oldIndex, double newIndex);
+    void RaiseSelectionChanged();
 
 private:
     com_ptr<PipsPager> GetImpl();

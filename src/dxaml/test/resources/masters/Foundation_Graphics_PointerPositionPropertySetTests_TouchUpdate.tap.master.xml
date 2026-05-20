@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="10" SizeY="10">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(vector3(pointer.Position.x, pointer.Position.y, 0))">
+                  <ReferenceParameter Name="pointer">
+                    <PropertySet>
+                      <Property Name="Position" Type="Vector3">
+                        <ExpressionAnimation String="Vector3(hover.Point.x, hover.Point.y, 0)">
+                          <ReferenceParameter Name="hover">
+                            <PropertySet>
+                              <Property Name="Point" Type="Vector2">
+                                <ExpressionAnimation String="hover.Point" />
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0, 0, 1}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="200" SizeY="200">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="200" SizeY="200" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

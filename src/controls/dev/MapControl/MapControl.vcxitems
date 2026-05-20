@@ -43,6 +43,9 @@
     <Page Include="$(MSBuildThisFileDirectory)MapControl.xaml">
       <Type>DefaultStyle</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MapControl.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)MapControl.idl" />

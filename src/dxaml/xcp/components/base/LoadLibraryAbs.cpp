@@ -9,17 +9,44 @@
 #include <shlwapi.h>
 #include <strsafe.h>
 
+std::wstring GetModuleFileNameHelper(_In_ HMODULE hModule)
+{
+    WCHAR buffer[MAX_PATH];
+    DWORD len = GetModuleFileNameW(hModule, buffer, MAX_PATH);
+    IFCW32FAILFAST(len);
+
+    if (len < MAX_PATH)
+    {
+        return std::wstring(buffer, len);
+    }
+
+    std::wstring largeBuffer(UNICODE_STRING_MAX_CHARS, L'\0');
+    len = GetModuleFileNameW(hModule, largeBuffer.data(), UNICODE_STRING_MAX_CHARS);
+    if (len == 0 || len == UNICODE_STRING_MAX_CHARS)
+    {
+        IFCFAILFAST(HRESULT_FROM_WIN32(GetLastError()));
+    }
+    largeBuffer.resize(len);
+    return largeBuffer;
+}
+
 static const std::wstring& GetMuxPath()
 {
     static const std::wstring muxPath = [] {
-        WCHAR muxPathBuffer[MAX_PATH];
-        GetModuleFileName(GetModuleHandle(L"Microsoft.UI.Xaml.dll"), muxPathBuffer, MAX_PATH);
-        FAIL_FAST_ASSERT(PathRemoveFileSpecW(muxPathBuffer) != 0);
-        std::wstring result(muxPathBuffer);
-        if (result.back() != L'\\')
-        {
-            result += L"\\";
-        }
+        // Use GetModuleHandleEx with FROM_ADDRESS to avoid ambiguity when multiple
+        // modules named Microsoft.UI.Xaml.dll are loaded (e.g. WinUI2 and WinUI3).
+        HMODULE hModule = nullptr;
+
+        IFCW32FAILFAST(GetModuleHandleExW(
+                GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                reinterpret_cast<LPCWSTR>(&GetMuxPath),
+                &hModule));
+
+        std::wstring result = GetModuleFileNameHelper(hModule);
+        // Remove the filename to get the directory path.
+        auto lastSlash = result.find_last_of(L'\\');
+        FAIL_FAST_ASSERT(lastSlash != std::wstring::npos);
+        result.resize(lastSlash + 1); // Keep trailing backslash — caller(s) append filenames directly.
         return result;
     }();
 

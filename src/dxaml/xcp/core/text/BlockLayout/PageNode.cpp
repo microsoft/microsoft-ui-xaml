@@ -224,7 +224,7 @@ uint32_t PageNode::FindInlineUIContainerOffset(_In_ CInlineUIContainer* iuc)
     CBlockCollection *pBlocks = static_cast<CBlockCollection*>(m_pElement);
 
     CDependencyObject *previousBlock = nullptr;
-    auto blockCollection = pBlocks->GetCollection();
+    const auto& blockCollection = pBlocks->GetCollection();
     for (auto block : blockCollection)
     {
         // Account for the offset at the end of each paragraph before searching the next one

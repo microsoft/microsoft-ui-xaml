@@ -1,0 +1,1 @@
+c:\debuggers\windbg %OBJECT_ROOT%\windows\dxaml\xcp\dxaml\tools\appanalysis\tool\%_BuildAlt%\appanalysistool.exe -e c:\temp\merged.etl

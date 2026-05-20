@@ -187,4 +187,10 @@ public:
         uint64_t, Id,
         uint32_t, decodeResult,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    // A completed software bitmap decode result is delivered during device loss cleanup,
+    // preventing CImageSource from getting stuck in HasEncodedImageOnly state.
+    DEFINE_TRACELOGGING_EVENT_PARAM1(PresentBitmapDuringDeviceLoss,
+        uint64_t, Id,
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 };

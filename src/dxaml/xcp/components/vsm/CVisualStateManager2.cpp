@@ -31,6 +31,7 @@
 #include <FxCallbacks.h>
 
 #include "MUX-ETWEvents.h"
+#include "XamlTelemetry.h"
 
 //#define VSMLOG(...) LOG(__VA_ARGS__)
 #define VSMLOG(...)
@@ -93,8 +94,29 @@ _Check_return_ HRESULT CVisualStateManager2::GoToStateOptimizedImpl(
             foundVisualState = dataSource->TryGetVisualState(token, &stateIndex, &groupIndex);
         }
 
-        if(foundVisualState)
+        if (foundVisualState)
         {
+            auto traceGuard = wil::scope_exit([&]
+            {
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "VisualStateManager_GoToStateOptimized",
+                    TraceLoggingBoolean(false, "IsStart"),
+                    TraceLoggingUInt32(pControl->GetContext()->GetFrameNumber(), "FrameNumber"),
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(pControl), "ObjectPointer"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+            });
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "VisualStateManager_GoToStateOptimized",
+                TraceLoggingBoolean(true, "IsStart"),
+                TraceLoggingUInt32(pControl->GetContext()->GetFrameNumber(), "FrameNumber"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(pControl), "ObjectPointer"),
+                TraceLoggingWideString(pStateName, "StateName"),
+                TraceLoggingWideString(pControl->m_strName.GetBuffer(), "Name"),
+                TraceLoggingWideString(CDependencyObject::TypeIndexToType(pControl->GetTypeIndex()), "Type"),
+                TraceLoggingUInt16(static_cast<uint16_t>(pControl->GetTypeIndex()), "TypeIndex"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
             ASSERT(stateIndex != -1 && groupIndex != -1);
 
             VisualStateManagerActuator actuator(

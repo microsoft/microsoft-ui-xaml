@@ -552,9 +552,9 @@ LSERR RichTextServices::LineServicesGetRunCharacterWidths(
             IFC_OOM_RTS(pGlyphProps = new PALText::ShapingGlyphProperties[glyphCount]);
             IFC_OOM_RTS(pSpaceabilityMap = new bool[glyphCount]);
 
-            for (XUINT16 i = 0; i < glyphCount; i++)
+            for (XUINT32 i = 0; i < glyphCount; i++)
             {
-                pClusterMap[i] = i;
+                pClusterMap[i] = static_cast<XUINT16>(i);
                 pGlyphProps[i].Justification = 2;   // SCRIPT_JUSTIFY_CHARACTER
                 pGlyphProps[i].IsClusterStart = TRUE;
                 pGlyphProps[i].IsDiacritic = 0;
@@ -1178,8 +1178,8 @@ LSERR RichTextServices::LineServicesFInterruptShaping(
     return LSErrFromResult(txhr);
 }
 
-#pragma prefast(push)
-#pragma prefast(disable: 26030, "Disable prefast false positive on assignment of prggprop and prcindex")
+#pragma warning(push)
+#pragma warning(disable: 26030)  // Disable prefast false positive on assignment of prggprop and prcindex
 //---------------------------------------------------------------------------
 //
 //  Member:
@@ -1320,7 +1320,7 @@ Cleanup:
 
     return LSErrFromResult(txhr);
 }
-#pragma prefast(pop)
+#pragma warning(pop)
 
 //---------------------------------------------------------------------------
 //

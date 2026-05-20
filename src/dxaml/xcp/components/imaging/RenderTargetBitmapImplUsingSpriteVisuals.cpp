@@ -113,9 +113,12 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     HWCompTreeNode* elementCompNodeNoRef = m_uiElement->GetCompositionPeer();
     if (elementCompNodeNoRef == nullptr)
     {
-        // The element is being rendered with a LayoutTransitionElement, and doesn't have a comp node. Instead, get the comp node
-        // from the LTE itself. The LTE will contain all the SpriteVisual content in the element's subtree.
-        ASSERT(m_uiElement->IsHiddenForLayoutTransition());
+        // The composition peer can be null for reasons other than layout transitions.
+        // Check for an LTE before dereferencing.
+        if (!m_uiElement->IsHiddenForLayoutTransition())
+        {
+            return E_FAIL;
+        }
         elementCompNodeNoRef = m_uiElement->GetFirstLTETargetingThis()->GetCompositionPeer();
     }
 

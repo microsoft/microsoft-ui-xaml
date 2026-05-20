@@ -107,7 +107,10 @@ void TabViewItem::UpdateTabGeometry()
     auto data = L"<Geometry xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>F1 M0,%f  a 4,4 0 0 0 4,-4  L 4,%f  a %f,%f 0 0 1 %f,-%f  l %f,0  a %f,%f 0 0 1 %f,%f  l 0,%f  a 4,4 0 0 0 4,4 Z</Geometry>";
 
     WCHAR strOut[1024];
-    StringCchPrintf(strOut, ARRAYSIZE(strOut), data,
+    // Use locale-invariant formatting to ensure decimal separator is always '.' regardless of system locale
+    // This prevents issues in European locales where ',' is used as the decimal separator
+    static _locale_t cLocale = _wcreate_locale(LC_ALL, L"C");
+    _swprintf_s_l(strOut, ARRAYSIZE(strOut), data, cLocale,
         height,
         leftCorner, leftCorner, leftCorner, leftCorner, leftCorner,
         ActualWidth() - (leftCorner + rightCorner),

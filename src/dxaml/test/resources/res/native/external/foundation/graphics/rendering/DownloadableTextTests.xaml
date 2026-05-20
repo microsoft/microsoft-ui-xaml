@@ -1,0 +1,10 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="20" >
+  <TextBlock Text="Button: Kootenay" FontFamily="Kootenay" FontSize="20" />
+  <TextBlock Text="TextBlock: Pericles ゆにこおど يونِكو यूनिकोड" FontFamily="Pericles" FontSize="20" />
+  <RichTextBlock FontFamily="Pericles" FontSize="20">
+    <Paragraph>
+      RichTextBlock:<LineBreak/>ゆにこおど<LineBreak/>يونِكو<LineBreak/>यूनिकोड<LineBreak/><Bold>P</Bold>e<Bold>r</Bold>i<Bold>c</Bold>l<Bold>e</Bold>s
+    </Paragraph>
+  </RichTextBlock>
+</StackPanel>

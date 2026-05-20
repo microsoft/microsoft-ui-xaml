@@ -665,8 +665,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                         minItemSpacing = 10;
                         lineSpacing = 10;
-                        ((FlowLayout)panel.Layout).MinRowSpacing = minItemSpacing;
-                        ((FlowLayout)panel.Layout).MinColumnSpacing = lineSpacing;
+                        ((FlowLayout)panel.Layout).MinItemSpacing = minItemSpacing;
+                        ((FlowLayout)panel.Layout).LineSpacing = lineSpacing;
                         Content.UpdateLayout();
                         ValidateFlowLayoutChildrenLayoutBounds(om, (i) => panel.Children[i], minItemSpacing, lineSpacing, panel.Children.Count, panel.DesiredSize);
                     }
@@ -729,8 +729,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     minItemSpacing = 10;
                     lineSpacing = 10;
-                    ((FlowLayout)panel.Layout).MinRowSpacing = minItemSpacing;
-                    ((FlowLayout)panel.Layout).MinColumnSpacing = lineSpacing;
+                    ((FlowLayout)panel.Layout).MinItemSpacing = minItemSpacing;
+                    ((FlowLayout)panel.Layout).LineSpacing = lineSpacing;
                     Content.UpdateLayout();
                     Log.Comment("Validate with spacing");
                     ValidateFlowLayoutChildrenLayoutBounds(
@@ -1123,7 +1123,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     {
                         new StackLayout { Spacing = 10, Orientation = scrollOrientation.ToLayoutOrientation() },
                         new UniformGridLayout { MinItemHeight = 40, MinItemWidth = 40, MinColumnSpacing = 10, MinRowSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() },
-                        new FlowLayout { MinColumnSpacing = 10, MinRowSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() }
+                        new FlowLayout { MinItemSpacing = 10, LineSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() }
                     };
 
                     var verifyDesiredSize = new Action<Size, Size>((expected, actual) =>
@@ -1166,7 +1166,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     {
                         new StackLayout { Spacing = 10, Orientation = scrollOrientation.ToLayoutOrientation() },
                         new UniformGridLayout { MinItemHeight = 40, MinItemWidth = 40, MinColumnSpacing = 10, MinRowSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() },
-                        new FlowLayout { MinColumnSpacing = 10, MinRowSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() }
+                        new FlowLayout { MinItemSpacing = 10, LineSpacing = 10, Orientation = scrollOrientation.ToOrthogonalLayoutOrientation() }
                     };
                 });
                 return layouts;
@@ -1230,6 +1230,42 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Verify.IsTrue(rangeRealizedEvent.WaitOne(DefaultWaitTimeInMS), "Waiting for all items to be realized as the realization window expands.");
                 }
             }
+        }
+
+        [TestMethod]
+        public void ValidateUniformGridWithAvailableWidthNarrowerThanOneItem()
+        {
+            // Watson #61810783: when a UniformGridLayout receives a finite available minor
+            // size that is narrower than one item's minor stride, GetItemsPerLine used to
+            // return 0, causing a divide-by-zero in GetMajorSize during anchor evaluation.
+            // Verify that the layout pass completes without crashing and produces a sane
+            // (>= 1 item per line) layout instead.
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater()
+                {
+                    ItemsSource = Enumerable.Range(0, 6).Select(i => i.ToString()).ToList(),
+                    Layout = new UniformGridLayout()
+                    {
+                        Orientation = Orientation.Horizontal,
+                        MinItemWidth = 100,
+                        MinItemHeight = 50
+                    },
+                };
+
+                // Constrain the repeater to a width narrower than MinItemWidth.
+                var host = new Grid() { Width = 5, Height = 200 };
+                host.Children.Add(repeater);
+
+                Content = host;
+                Content.UpdateLayout();
+
+                // The fix should produce a non-crashing layout. We don't validate exact
+                // dimensions because the policy when a single item is wider than the
+                // available width is "still lay out one item per line", which produces a
+                // non-zero major extent.
+                Verify.IsTrue(repeater.DesiredSize.Height >= 0);
+            });
         }
 
         [TestMethod]
@@ -1719,12 +1755,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     case LayoutChoice.Flow:
                         {
-                            var minRowSpacing = om.ScrollOrientation == ScrollOrientation.Vertical ? lineSpacing : 0;
-                            var minColumnSpacing = om.ScrollOrientation == ScrollOrientation.Horizontal ? lineSpacing : 0;
                             layout = new FlowLayoutDerived()
                             {
-                                MinRowSpacing = minRowSpacing,
-                                MinColumnSpacing = minColumnSpacing,
+                                // Only apply spacing between lines (major direction) for this test.
+                                MinItemSpacing = 0,
+                                LineSpacing = lineSpacing,
                                 OnLineArrangedFunc = (int startIndex, int countInLine, double lineSize, VirtualizingLayoutContext context) =>
                                 {
                                     Verify.AreEqual(0, startIndex % 4);

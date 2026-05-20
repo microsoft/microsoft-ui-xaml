@@ -79,23 +79,76 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
             context.TargetPlatform = (Platform)(Enum.Parse(typeof(Platform), targetPlatformString));
         }
 
+        public override void ExitFunction_param([NotNull] ConditionalNamespaceParser.Function_paramContext context)
+        {
+            // Compute Value using ( and ) character positions from the parent api_information context.
+            // The grammar's function_param rule cannot tokenize digits or commas, so we read
+            // directly from the character stream between the parentheses to capture all characters.
+            var parentCtx = context.Parent as ConditionalNamespaceParser.Api_informationContext;
+            if (parentCtx != null)
+            {
+                var openParen = parentCtx.GetToken(ConditionalNamespaceParser.LPAREN, 0);  // '('
+                var closeParen = parentCtx.GetTokens(ConditionalNamespaceParser.RPAREN).LastOrDefault(); // last ')'
+                if (openParen != null && closeParen != null)
+                {
+                    int startPos = openParen.Symbol.StopIndex + 1;
+                    int endPos = closeParen.Symbol.StartIndex - 1;
+                    if (endPos >= startPos)
+                    {
+                        context.Value = openParen.Symbol.InputStream.GetText(
+                            new Interval(startPos, endPos));
+                    }
+                    else
+                    {
+                        context.Value = string.Empty;
+                    }
+                }
+            }
+        }
+
         public override void ExitApi_information([NotNull] global::ConditionalNamespaceParser.Api_informationContext context)
         {
-            var methodName = context.IDENTIFIER().GetText();
-            var paramArray = context.function_param();
+            var identifiers = context.IDENTIFIER();
+            string prefix, methodName;
 
+            if (identifiers.Length == 2)
+            {
+                prefix = identifiers[0].GetText();
+                methodName = identifiers[1].GetText();
+            }
+            else
+            {
+                prefix = string.Empty;
+                methodName = identifiers[0].GetText();
+            }
+            var functionParam = context.function_param();
             List<ApiInformationParameter> parameters = null;
-            if (paramArray.Any())
+            if (functionParam != null && !string.IsNullOrEmpty(functionParam.Value))
             {
                 parameters = new List<ApiInformationParameter>();
-                foreach (var param in paramArray)
+                if(string.IsNullOrEmpty(prefix))
                 {
-                    parameters.Add(param.ApiInformationParameter);
+                    var functionParamValues = functionParam.Value.Split(',');
+                    foreach (var value in functionParamValues)
+                    {
+                        parameters.Add(new ApiInformationParameter(value.Trim()));
+                    }
+                }
+                else
+                {
+                    parameters.Add(new ApiInformationParameter(functionParam.Value));
                 }
             }
             try
             {
-                context.ApiInformation = new ApiInformation(methodName);
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    context.ApiInformation = new ApiInformation(methodName, prefix);
+                }
+                else
+                {
+                    context.ApiInformation = new ApiInformation(methodName);
+                }
             }
             catch (ArgumentException)
             {
@@ -112,10 +165,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Parsing
             }
         }
 
-        public override void ExitFunction_param([NotNull] ConditionalNamespaceParser.Function_paramContext context)
-        {
-            var paramValue = context.GetText();
-            context.ApiInformationParameter = new ApiInformationParameter(paramValue);
-        }
+
     }
 }

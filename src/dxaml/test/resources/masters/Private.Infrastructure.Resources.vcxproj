@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{b0a4d3c3-c3cd-44a3-a762-dc0c9ff4e897}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\project-lift.props"/>
+    <Import Project="$(ProjectRoot)eng\winui-version.props" />
+
+    <!-- ******************************** File Header ******************************\ -->
+    <!-- Copyright (c) Microsoft Corporation.  All rights reserved.                   -->
+    <!--                                                                              -->
+    <!-- Project specific SOURCES file.                                               -->
+    <!--                                                                              -->
+    <!-- ***************************************************************************/ -->
+    <PropertyGroup>
+        <ResourceOnlyDll>true</ResourceOnlyDll>
+        <Mui>false</Mui>
+        <ProjectIncludeDirectories>$(ProjectIncludeDirectories);$(XcpPath)\inc;$(XamlBuildPath);</ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <GenerateTestResources Include="*.xml"/>
+        <GenerateTestResources Include="*.png"/>
+        <GenerateTestResources Include="*.pdf"/>
+
+        <ClInclude Include="TestResource.h"/>
+
+        <ResourceCompile Include="Resources.rc"/>
+    </ItemGroup>
+
+    <!-- In cases where we're producing a release build, some masters can be different if there's a type
+         that isn't in the release WinMD.  In those cases, we'll want to grab the masters from the release
+         folder, not the base folder, to allow for differences between the two. -->
+    <ItemGroup Condition="'$(MUXFinalRelease)' == 'true'">
+        <GenerateReleaseTestResources Include="release\*.xml"/>
+        <GenerateReleaseTestResources Include="release\*.png"/>
+        <GenerateReleaseTestResources Include="release\*.pdf"/>
+        <GenerateTestResources Remove="@(GenerateReleaseTestResources -> '%(Filename)%(Extension)')"/>
+        <GenerateTestResources Include="@(GenerateReleaseTestResources)"/>
+    </ItemGroup>
+
+    <Import Project="$(XamlSourcePath)\MSBuild\BuildSettings\GenerateTestResources.Targets" />
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

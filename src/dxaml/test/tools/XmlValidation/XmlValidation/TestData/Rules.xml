@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Rules>
+  <Rule Applicability="//Element[@Type='Microsoft.UI.Xaml.Controls.Border']">
+    <Property Name="BorderBrush" />
+  </Rule>
+
+  <Rule Applicability="//Element" Inclusion="Blacklist">
+    <Property Name="Background" />
+  </Rule>
+
+</Rules>

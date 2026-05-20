@@ -355,15 +355,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetFocusToFirstBreadcrumbBarItem(breadcrumb, true);
 
                 KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
                 Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
                 Verify.IsTrue(breadcrumbItems[5].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
                 Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus back");
 
                 KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
                 Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbBarItem should have focus back");
             }
         }
@@ -382,15 +386,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetFocusToFirstBreadcrumbBarItem(breadcrumb, true);
 
                 KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
                 Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Left);
+                Wait.ForIdle();
                 Verify.IsTrue(breadcrumbItems[5].HasKeyboardFocus, "'Node A_2_3_1' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
                 Verify.IsTrue(breadcrumbItems[4].HasKeyboardFocus, "'Node A_2_3' BreadcrumbBarItem should have focus");
 
                 KeyboardHelper.PressKey(Key.Right);
+                Wait.ForIdle();
                 Verify.IsTrue(breadcrumbItems[0].HasKeyboardFocus, "Ellipsis BreadcrumbBarItem should have focus");
             }
         }

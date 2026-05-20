@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <vector>
+#include <stack_vector.h>
 #include "PropertyPathStepDescriptor.h"
 class XamlServiceProviderContext;
 namespace DirectUI
@@ -19,7 +19,7 @@ namespace DirectUI
 
         _Check_return_ HRESULT SetSource(_In_opt_z_ const WCHAR *szPath, _In_opt_ XamlServiceProviderContext* context);
             
-        std::vector<PropertyPathStepDescriptor *>& Descriptors() 
+        Jupiter::stack_vector<PropertyPathStepDescriptor, 2>& Descriptors()
         { return m_descriptors; }
 
     private:
@@ -28,13 +28,13 @@ namespace DirectUI
 
         bool IsNumericIndex(_In_z_ const WCHAR *szIndex);
         
-        _Check_return_ HRESULT AppendStepDescriptor(_In_ PropertyPathStepDescriptor *pDescriptor);
+        _Check_return_ HRESULT AppendStepDescriptor(_In_ PropertyPathStepDescriptor&& descriptor);
 
         _Check_return_ HRESULT CreateDependencyPropertyPathStepDescriptor(
             _In_ XUINT32 nPropertyLength,
             _In_reads_(nPropertyLength + 1) const WCHAR *pchProperty,
             _In_opt_ XamlServiceProviderContext* context,
-            _Outptr_ PropertyPathStepDescriptor **ppDescriptor);
+            _Out_ PropertyPathStepDescriptor *pDescriptor);
 
         _Check_return_ HRESULT GetDPFromName(
             _In_ XUINT32 nPropertyLength,
@@ -44,7 +44,8 @@ namespace DirectUI
 
     private:
 
-        std::vector<PropertyPathStepDescriptor *> m_descriptors;
+        // This vector usually holds 0-2 items, so let's try to avoid heap allocations in the common case by using a stack vector.
+        Jupiter::stack_vector<PropertyPathStepDescriptor, 2> m_descriptors;
     };
 
 }

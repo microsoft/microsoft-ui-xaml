@@ -297,6 +297,7 @@ namespace System.Xaml
             _context.AddNamespacePrefix(KnownStrings.XmlPrefix, XamlLanguage.Xml1998Namespace);
 
             Func<string, string> namespaceResolver = myXmlReader.LookupNamespace;
+            schemaContext.XmlNamespaceResolver = namespaceResolver;
             _context.XmlNamespaceResolver = namespaceResolver;
 
             XamlScanner xamlScanner = new XamlScanner(_context, myXmlReader, _mergedSettings);

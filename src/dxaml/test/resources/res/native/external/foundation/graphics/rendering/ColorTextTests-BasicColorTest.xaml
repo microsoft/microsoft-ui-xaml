@@ -1,0 +1,28 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Margin="10,0,0,0">
+
+    <!--
+        Note:  This file sets CompositeMode to force DComp Visuals to be created for each
+               element, so it is easier to see which primitives are generated for each element.
+    -->
+
+    <!-- Test regular TextBlock with default Segoe UI Emoji font fallback for a smiley face glyph, both with and without color. -->
+    <TextBlock Text="Color &#x1F601;" FontSize="20" CompositeMode="SourceOver"/>
+    <TextBlock Text="B&amp;W &#x1F601;" FontSize="20" CompositeMode="SourceOver" IsColorFontEnabled="false"/>
+
+    <!-- Test the same strings with a built-in copy of the Segoe UI Emoji font. -->
+    <TextBlock Text="Color &#x1F601;" FontSize="20" CompositeMode="SourceOver" FontFamily="./seguiemj.ttf"/>
+    <TextBlock Text="B&amp;W &#x1F601;" FontSize="20" CompositeMode="SourceOver" IsColorFontEnabled="false" FontFamily="./seguiemj.ttf"/>
+
+    <!-- Test Glyphs with a simple smiley face glyph, both with and without color. -->
+    <Glyphs Indices="2093" FontRenderingEmSize="20" CompositeMode="SourceOver" FontUri="./resources/native/external/foundation/graphics/rendering/seguiemj.ttf" Fill="White"/>
+    <Glyphs Indices="2093" FontRenderingEmSize="20" CompositeMode="SourceOver" IsColorFontEnabled="false" FontUri="./resources/native/external/foundation/graphics/rendering/seguiemj.ttf" Fill="White"/>
+
+    <!-- Test IsColorFontEnabled="true", basic ColorFontPaletteIndex property, and semi-complex Indices value. -->
+    <Glyphs Indices="2093;2093,0;1615;1059" FontRenderingEmSize="20" CompositeMode="SourceOver" FontUri="./resources/native/external/foundation/graphics/rendering/seguiemj.ttf" Fill="White" IsColorFontEnabled="true" ColorFontPaletteIndex="0"/>
+    <Glyphs Indices="2093;2093,0;1615;1059" FontRenderingEmSize="20" CompositeMode="SourceOver" FontUri="./resources/native/external/foundation/graphics/rendering/seguiemj.ttf" Fill="White" IsColorFontEnabled="true" ColorFontPaletteIndex="1"/>
+
+    <!-- Test a glyph with more than 4 color layers. -->
+    <Glyphs Indices="161" FontRenderingEmSize="20" CompositeMode="SourceOver" FontUri="./resources/native/external/foundation/graphics/rendering/colortest2_m.ttf" Fill="White"/>
+</StackPanel>
+

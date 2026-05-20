@@ -1,0 +1,4 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="20">
+     <Path Width="10" Height="10" Fill="Red" Data="M0,0 L1,0 L1,1 L0,1 Z" Stretch="Fill" />
+</StackPanel>

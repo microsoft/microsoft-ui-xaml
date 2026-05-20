@@ -590,6 +590,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         public void VerifyTopNavigationMinimalVisualStateOnTopNav()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            using (var orientation = new OrientationResetHelper())
             {
                 Log.Comment("To Minimal mode");
                 SetNavViewWidth(ControlWidth.Narrow);
@@ -607,9 +608,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 SetNavViewWidth(ControlWidth.Wide);
 
                 Log.Comment("Flipping orientation: Left -> Top.");
-                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
+                orientation.Flip();
 
                 Log.Comment("Get NavView Active VisualStates");
                 getNavViewActiveVisualStatesButton.Invoke();

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="10" OffsetY="10" OffsetZ="0">
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="60" OffsetY="10" OffsetZ="0">
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="160" OffsetY="10" OffsetZ="0">
+            <Clip ClipLeft="15" ClipTop="15" ClipRight="-15" ClipBottom="-15" TransformMatrix="Identity" />
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="210" OffsetY="10" OffsetZ="0">
+            <Clip ClipLeft="-100" ClipTop="-100" ClipRight="10" ClipBottom="10" TransformMatrix="Identity" />
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="10" OffsetY="60" OffsetZ="0">
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="60" OffsetY="60" OffsetZ="0">
+              <Clip ClipLeft="0" ClipTop="0" ClipRight="-20" ClipBottom="-20" TransformMatrix="1112_2122 dxdy {0.7071, 0.7071, -0.7071, 0.7071, 0, 0}" />
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0, 0.502, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="110" OffsetY="60" OffsetZ="0">
+            <Clip ClipLeft="-10" ClipTop="10" ClipRight="10" ClipBottom="-10" TransformMatrix="Identity" />
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="160" OffsetY="60" OffsetZ="0">
+            <ColorBrush Color="rgb {0, 0.502, 0}" />
+          </wucSpriteVisual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

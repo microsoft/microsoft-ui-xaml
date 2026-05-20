@@ -60,6 +60,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Classification", "ScenarioTestSuite")]
         [TestProperty("Platform", "Any")]
         [TestProperty("IsolationLevel", "Class")]
+        [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext, WinUIGalleryDesktopApp);

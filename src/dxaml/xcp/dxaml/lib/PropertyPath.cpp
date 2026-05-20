@@ -34,14 +34,14 @@ PropertyPathListener::Initialize(
     _In_ bool fUseWeakReferenceForSource)
 {
     HRESULT hr = S_OK;
-    auto itrDescriptor = pPropertyPathParser->Descriptors().begin();
+    auto itrDescriptor = pPropertyPathParser->Descriptors().m_vector.begin();
     ctl::ComPtr<PropertyPathStep> spStep;
 
     m_pOwner = pOwner;
 
-    for (; itrDescriptor != pPropertyPathParser->Descriptors().end(); itrDescriptor++)
+    for (; itrDescriptor != pPropertyPathParser->Descriptors().m_vector.end(); itrDescriptor++)
     {
-        IFC((*itrDescriptor)->CreateStep(this, fListenToChanges, spStep.ReleaseAndGetAddressOf()));
+        IFC(itrDescriptor->CreateStep(this, fListenToChanges, spStep.ReleaseAndGetAddressOf()));
         AppendStep(spStep.Get());
     }
 

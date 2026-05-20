@@ -830,6 +830,7 @@ namespace Microsoft.UI.Xaml
         void Activate();
         void Close();
         void SetTitleBar(Microsoft.UI.Xaml.UIElement titleBar);
+        [deprecated("Window.Current is deprecated and always returns null in WinUI Desktop apps. For alternate ways to track instances of Window in your app code, visit https://aka.ms/win.current.alt", deprecate, Microsoft.UI.Xaml.WinUIContract, 1)]
         static Microsoft.UI.Xaml.Window Current{ get; };
     
         [contract(Microsoft.UI.Xaml.WinUIContract, 4)]
@@ -2101,6 +2102,13 @@ namespace Microsoft.UI.Xaml.Markup
         void Disable(Int32 lineNumber, Int32 columnNumber);
     };
 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+    [webhosthidden]
+    interface IXamlCondition 
+    {
+        Boolean Evaluate(String argument);
+    };
+
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
     [webhosthidden]
     interface IXamlMember 
@@ -2212,6 +2220,13 @@ namespace Microsoft.UI.Xaml.Markup
         static void SetPropertyFromByte(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, UInt8 value);
         static void SetPropertyFromUri(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Windows.Foundation.Uri value);
         static void SetPropertyFromObject(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Object value);
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        {
+            static void SetPropertyFromThickness(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Microsoft.UI.Xaml.Thickness value);
+            static void SetPropertyFromCornerRadius(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Microsoft.UI.Xaml.CornerRadius value);
+            static void SetPropertyFromColor(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Windows.UI.Color value);
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

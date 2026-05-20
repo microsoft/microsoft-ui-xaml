@@ -83,5 +83,6 @@ namespace RuntimeFeatureBehavior
         { L"ForceDWriteTypographicModel", RuntimeEnabledFeature::ForceDWriteTypographicModel, false, 0, 0 },
         // If XAML dispatch is paused, then to allow process without creating the reentrancy guard, else to enable the reentrancy checks.
         { L"EnableReentrancyChecksAllowPaused", RuntimeEnabledFeature::EnableReentrancyChecksAllowPaused, false, 0, 0 },
+        { L"ForcePerfOptIn", RuntimeEnabledFeature::ForcePerfOptIn, true /*opt-in by default in perf branch for now*/, 0, 1 },
     };
 }

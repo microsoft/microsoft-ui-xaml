@@ -348,10 +348,10 @@ void PagerControl::OnSelectedPageIndexChange(const int oldValue)
         UpdateNumberPanel(NumberOfPages());
     }
 
-    // Fire value property change for UIA
+    // Notify UIA that the selection has changed
     if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::PagerControlAutomationPeer>())
     {
-        winrt::get_self<PagerControlAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
+        winrt::get_self<PagerControlAutomationPeer>(peer)->RaiseSelectionChanged();
     }
     RaiseSelectedIndexChanged();
 }

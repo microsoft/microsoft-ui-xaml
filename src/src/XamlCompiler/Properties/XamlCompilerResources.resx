@@ -268,6 +268,9 @@
   <data name="DuiSchema_BindableNotSupportedOnGeneric" xml:space="preserve">
     <value>'[Bindable]' on generic type '{0}' is not supported</value>
   </data>
+  <data name="DuiSchema_PredicateNotSupportedOnGeneric" xml:space="preserve">
+    <value>Implementing IXamlPredicate on generic type '{0}' is not supported</value>
+  </data>
   <data name="XamlCompiler_CantAssignTextToProperty" xml:space="preserve">
     <value>Cannot assign text value '{0}' into property '{1}' of type '{2}'</value>
   </data>

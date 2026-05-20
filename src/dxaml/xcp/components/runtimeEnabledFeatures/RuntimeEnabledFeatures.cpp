@@ -5,6 +5,7 @@
 
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
+#include <PerfOptIn.h>
 #include <type_traits>
 
 namespace RuntimeFeatureBehavior
@@ -119,24 +120,38 @@ namespace RuntimeFeatureBehavior
         }
         state.OverrideValue = enabled;
         state.IsOverrideSet = true;
+
+        if (feature == RuntimeEnabledFeature::ForcePerfOptIn)
+        {
+            InvalidatePerfOptInCache();
+        }
     }
 
     void RuntimeEnabledFeatureDetector::ClearFeatureOverride(_In_ RuntimeEnabledFeature feature)
     {
         RuntimeEnabledFeatureState& state = GetFeatureState(feature);
         state.IsOverrideSet = false;
+
+        if (feature == RuntimeEnabledFeature::ForcePerfOptIn)
+        {
+            InvalidatePerfOptInCache();
+        }
     }
 
     void RuntimeEnabledFeatureDetector::ClearAllFeatureOverrides()
     {
         for (unsigned int i = 0; i < s_runtimeFeatureLength; i++)
             m_runtimeFeatureStates[i].IsOverrideSet = false;
+
+        InvalidatePerfOptInCache();
     }
 
     void RuntimeEnabledFeatureDetector::ClearCache()
     {
         for (unsigned int i = 0; i < s_runtimeFeatureLength; i++)
             m_runtimeFeatureStates[i].IsCacheSet = false;
+
+        InvalidatePerfOptInCache();
     }
 
     void RuntimeEnabledFeatureDetector::ClearDwordDataCache()

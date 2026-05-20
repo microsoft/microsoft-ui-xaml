@@ -6,6 +6,8 @@ if "%1"=="/?" goto :usage
 
 rem  This command file expects to be run from the same directory that contains it
 pushd %~dp0
+rem Save script dir before arg parsing since 'shift' changes %~dp0
+set _scriptDir=%~dp0
 
 set _targetProduct=
 set _targetProdTest=
@@ -26,6 +28,8 @@ set _version=3.0.0-dev
 set _lowpriority=%XAMLBUILD_LOWPRIORITY%
 set _verbosity=/verbosity:minimal
 set _analyze=
+set _quiet=
+set _initFlavor=
 
 :parseArgs
 if "%1"=="/c" (
@@ -58,9 +62,19 @@ if "%1"=="/c" (
     set _lowpriority=1
 ) else if "%1" == "/normalpri" (
     set _lowpriority=0
+) else if "%1" == "/q" (
+    rem Quiet mode: suppress informational output, show only errors and elapsed time.
+    rem Useful for AI agents and CI/CD pipelines.
+    set _quiet=1
+    set _verbosity=/verbosity:quiet
+) else if "%1" == "/i" (
+    rem Inline init: run init.cmd <flavor> /envcheck before building.
+    rem Allows building without a persistent shell session (e.g. from AI agents).
+    set _initFlavor=%2
+    shift
 ) else if "%1" == "/verbose" (
-    :: Normal is still pretty far from full verbosity but it can have more useful details than minimal and is not 
-    :: nearly as verbose as detailed or diagnostic.
+    rem Normal is still pretty far from full verbosity but it can have more useful details than minimal and is not
+    rem nearly as verbose as detailed or diagnostic.
     set _verbosity=/verbosity:normal
 ) else if "%1"=="/b" (
     set _procCount=/m:2
@@ -110,15 +124,25 @@ if "%_targetTest%" == "1" if "%_targetProdTest%" == "1" (
     goto :eof
 )
 
+if not "%_initFlavor%" == "" (
+    if "%_quiet%"=="1" (
+        call "%_scriptDir%init.cmd" %_initFlavor% /envcheck /notitle >nul
+    ) else (
+        echo Initializing build environment for %_initFlavor%...
+        call "%_scriptDir%init.cmd" %_initFlavor% /envcheck /notitle
+    )
+    if ERRORLEVEL 1 (
+        echo ERROR: init.cmd %_initFlavor% /envcheck failed
+        exit /b 1
+    )
+) else if "%EnvironmentInitialized%" == "" (
+    echo Please run init.cmd or use /i ^<flavor^> to initialize the build environment
+    exit /b 1
+)
+
 if "%_clean%"=="1" (
     call :callScript clean.cmd /all
     set _restore=1
-)
-
-
-if "%EnvironmentInitialized%" == "" (
-    echo Please run init.cmd to ensure environment is properly initialized
-    exit /b 1
 )
 
 rem When we build the XAML compiler as part of the same build that consumes the XAML compiler,
@@ -150,22 +174,10 @@ if "%_targetMux%" == "1" (
    call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
    call :buildMockPackage
 ) else if "%_targetProdTest%" == "1" (
-   rem If we have all files, build the full solution. Otherwise, build the one limited to OSS-
-   rem available projects.
-   if EXIST "%reporoot%\src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlTypeUniverse.cs" (
-      call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
-      if ERRORLEVEL 1 goto:showDurationAndExit
-      call :buildMockPackage
-      call :buildSolution %reporoot%\controls\MUXControls.sln /restore
-   ) else (
-      rem Build the smaller solution
-      call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.OSS.sln
-      if ERRORLEVEL 1 goto:showDurationAndExit
-      call :buildMockPackage
-      rem Can't yet build the test projects in MUXControls.sln
-      rem No samples yet in OSS
-      set _targetSamples=0
-   )
+   call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
+   if ERRORLEVEL 1 goto:showDurationAndExit
+   call :buildMockPackage
+   call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 ) else if "%_targetTest%" == "1" (
    call :buildMockPackage
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
@@ -185,8 +197,10 @@ if "%_targetSamples%" == "1" (
     )
     if ERRORLEVEL 1 goto :showDurationAndExit
 )
-echo ---
-echo BUILD SUCCEEDED.
+if not "%_quiet%"=="1" (
+    echo ---
+    echo BUILD SUCCEEDED.
+)
 
 git diff --exit-code "controls/dev/dll/XamlMetadataProviderGenerated.h" > nul
 if ERRORLEVEL 1 (
@@ -212,21 +226,25 @@ set _args=%*
 
 for %%i in (%_solution%) do set _title=%%~ni
 
-set _binlog=%_title%.%_BuildArch%%_BuildType%.binlog
-set _options=/bl:!_binlog! !_verbosity! /clp:Summary,ForceNoAlign /ds:false !_procCount! %_args% %_versionOption% /nr:false
+set _binlog=%RepoRoot%\BuildOutput\%_title%.%_BuildArch%%_BuildType%.binlog
+if "%_quiet%"=="1" (
+    set _options=/bl:!_binlog! !_verbosity! /clp:ErrorsOnly /ds:false !_procCount! %_args% %_versionOption% /nr:false
+) else (
+    set _options=/bl:!_binlog! !_verbosity! /clp:Summary,ForceNoAlign /ds:false !_procCount! %_args% %_versionOption% /nr:false
+)
 
 if "%_restore%"=="1" (
-    echo Adding restore option...
+    if not "%_quiet%"=="1" echo Adding restore option...
     set _options=/restore /p:DisableWarnForInvalidRestoreProjects=true !_options!
 )
 
 if "%_graph%"=="1" (
-    echo Adding graph option...
+    if not "%_quiet%"=="1" echo Adding graph option...
     set _options=!_options! /graph
 )
 
 if "%_cache%"=="1" (
-    echo Enabling project cache
+    if not "%_quiet%"=="1" echo Enabling project cache
     set _options=!_options! /reportfileaccesses /p:MSBuildCacheEnabled=true /p:MSBuildCacheLogDirectory=%reporoot%\MSBuildCacheLogs\%_title%.%_BuildArch%%_BuildType%
 )
 
@@ -237,14 +255,15 @@ if "%_lowpriority%"=="1" (
 rem Define Configuration and Platform as global properties instead of just env vars to ensure consistent behavior with VS.
 if defined Configuration set _options=!_options! /p:Configuration=%Configuration%
 if defined Platform set _options=!_options! /p:Platform=%Platform%
+if defined PGOBuildMode set _options=!_options! /p:PGOBuildMode=%PGOBuildMode%
 
 if "%_muxfinal%"=="1" (
-    echo Setting MUXFinalRelease...
+    if not "%_quiet%"=="1" echo Setting MUXFinalRelease...
     set _options=!_options! /p:MUXFinalRelease=true
 )
 
 if "%_analyze%"=="1" (
-    echo Turning on Code Analysis...
+    if not "%_quiet%"=="1" echo Turning on Code Analysis...
     set _options=!_options! /p:ExperimentalAnalysis=true
 )
 
@@ -293,9 +312,11 @@ goto :eof
 if EXIST "%RepoRoot%\pack.cmd" (
     if "%_fake%"=="1" (
         echo COMMAND: call %RepoRoot%\pack.cmd /version %_version%
+        echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
         goto :eof
     )
     call %RepoRoot%\pack.cmd /version %_version%
+    call %RepoRoot%\pack.component.cmd /version %_version%
 ) else (
     if "%_fake%"=="1" (
         echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
@@ -338,8 +359,10 @@ set BUILDDURATION_HRS=0%BUILDDURATION_HRS%
 set BUILDDURATION_MIN=0%BUILDDURATION_MIN%
 set BUILDDURATION_SEC=0%BUILDDURATION_SEC%
 set BUILDDURATION_HSC=0%BUILDDURATION_HSC%
-echo ---
-echo Start time: %BUILDCMDSTARTTIME%. End time: %BUILDCMDENDTIME%
+if not "%_quiet%"=="1" (
+    echo ---
+    echo Start time: %BUILDCMDSTARTTIME%. End time: %BUILDCMDENDTIME%
+)
 echo    Elapsed: %BUILDDURATION_HRS:~-2%:%BUILDDURATION_MIN:~-2%:%BUILDDURATION_SEC:~-2%.%BUILDDURATION_HSC:~-2%
 endlocal
 goto :eof
@@ -357,6 +380,10 @@ echo        samples             Builds sample apps
 echo        all                 Builds the world
 echo.
 echo    Options:
+echo        /q              Quiet mode. Minimal output, only errors are shown. Useful for AI/automation.
+echo        /i [flavor]     Initialize build environment inline (e.g. /i amd64chk, /i arm64fre).
+echo                        Runs init.cmd with /envcheck so no restore is performed. Use when
+echo                        the build environment has not been initialized in the current session.
 echo        /c              Deletes bin, obj, temp, and packaging directories before building. 
 echo                        Kills all existing instances of msbuild.exe, so should not be run alongside another build
 echo        /restore        Add the Nuget restore option

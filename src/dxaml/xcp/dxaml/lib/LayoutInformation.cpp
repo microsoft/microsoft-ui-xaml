@@ -59,8 +59,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-#pragma prefast( push )
-#pragma prefast( disable: 26007 "prefast doesn't understand pFloats is an array of floating point numbers ")
+#pragma warning( push )
+#pragma warning( disable: 26007 )  // prefast doesn't understand pFloats is an array of floating point numbers
 
 IFACEMETHODIMP
 LayoutInformation::GetLayoutSlot(
@@ -143,4 +143,4 @@ namespace DirectUI
 }
 
 
-#pragma prefast( pop )
+#pragma warning( pop )

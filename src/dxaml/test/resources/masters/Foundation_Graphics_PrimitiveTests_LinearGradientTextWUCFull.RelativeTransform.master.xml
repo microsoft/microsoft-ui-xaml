@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual" SizeX="400" SizeY="300">
+            <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+            <Visual PixelSnappingEnabled="True" Tag="PrimaryVisual" SizeX="400" SizeY="300">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="DManip" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.Matrix">
+                          <ReferenceParameter Name="PS">
+                            <PropertySet>
+                              <Property Name="Matrix" Type="Matrix4x4">
+                                <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                  <ReferenceParameter Name="manipTransform">
+                                    <DuplicatedMatrixTransform>
+                                      <ManipulationTransform Transform="Identity" />
+                                    </DuplicatedMatrixTransform>
+                                  </ReferenceParameter>
+                                  <Property Name="transform" Type="Matrix4x4" />
+                                </ExpressionAnimation>
+                              </Property>
+                            </PropertySet>
+                          </ReferenceParameter>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                  <ReferenceParameter Name="V" />
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+                  <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="74" SizeY="14" BorderMode="Hard" OffsetX="100" OffsetY="5" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="dxdy {-29.6, 0.05859}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="31" SizeY="13" BorderMode="Hard" OffsetX="105" OffsetY="30" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {6.452, 0, 0, 1.842, -85, -5.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="42" SizeY="14" BorderMode="Hard" OffsetX="147" OffsetY="29" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {4.762, 0, 0, 1.71, -127, -4.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="107" SizeY="14" BorderMode="Hard" OffsetX="101" OffsetY="53" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {1.869, 0, 0, 1.71, -81, -4.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="32" SizeY="14" BorderMode="Hard" OffsetX="106" OffsetY="77" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {6.25, 0, 0, 1.71, -86, -4.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="32" SizeY="13" BorderMode="Hard" OffsetX="148" OffsetY="78" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {6.25, 0, 0, 1.842, -128, -5.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="42" SizeY="14" BorderMode="Hard" OffsetX="191" OffsetY="77" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {4.762, 0, 0, 1.71, -171, -4.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="74" SizeY="14" BorderMode="Hard" OffsetX="100" OffsetY="101" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {-0.5, 0, 0, 1, 55.5, 0.05859}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="31" SizeY="13" BorderMode="Hard" OffsetX="105" OffsetY="126" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {-3.226, 0, 0, 1.842, 145, -5.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="42" SizeY="14" BorderMode="Hard" OffsetX="147" OffsetY="125" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {-2.381, 0, 0, 1.71, 103, -4.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="107" SizeY="14" BorderMode="Hard" OffsetX="101" OffsetY="149" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {-0.9346, 0, 0, 1.71, 149, -4.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="32" SizeY="14" BorderMode="Hard" OffsetX="106" OffsetY="173" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {-3.125, 0, 0, 1.71, 144, -4.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="32" SizeY="13" BorderMode="Hard" OffsetX="148" OffsetY="174" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {-3.125, 0, 0, 1.842, 102, -5.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="42" SizeY="14" BorderMode="Hard" OffsetX="191" OffsetY="173" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {-2.381, 0, 0, 1.71, 59, -4.94}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="74" SizeY="14" BorderMode="Hard" OffsetX="100" OffsetY="197" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {0, -0.1892, 5.286, 0, -74, 39.06}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="31" SizeY="13" BorderMode="Hard" OffsetX="105" OffsetY="222" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {0, -0.7723, 15.38, 0, -205, 43}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="42" SizeY="14" BorderMode="Hard" OffsetX="147" OffsetY="221" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {0, -0.57, 14.29, 0, -247, 44}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="107" SizeY="14" BorderMode="Hard" OffsetX="101" OffsetY="245" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {0, -0.2237, 14.29, 0, -201, 44}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="32" SizeY="14" BorderMode="Hard" OffsetX="106" OffsetY="269" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {0, -0.7481, 14.29, 0, -206, 44}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="32" SizeY="13" BorderMode="Hard" OffsetX="148" OffsetY="270" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {0, -0.7481, 15.38, 0, -248, 43}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+                <wucSpriteVisual SizeX="42" SizeY="14" BorderMode="Hard" OffsetX="191" OffsetY="269" OffsetZ="0">
+                  <MaskBrush>
+                    <Source>
+                      <LinearGradientBrush StartPointX="0.1" StartPointY="0" EndPointX="0.9" EndPointY="0" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="1112_2122 dxdy {0, -0.57, 14.29, 0, -291, 44}">
+                        <GradientStop Offset="0.2" Color="Argb {ff008000}" />
+                        <GradientStop Offset="0.8" Color="Argb {ffff0000}" />
+                      </LinearGradientBrush>
+                    </Source>
+                    <Mask>
+                      <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                    </Mask>
+                  </MaskBrush>
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

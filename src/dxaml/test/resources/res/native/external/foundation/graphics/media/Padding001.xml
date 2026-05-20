@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tt xml:lang="en"
+    xmlns="http://www.w3.org/ns/ttml"
+    xmlns:tts="http://www.w3.org/ns/ttml#styling"
+    xmlns:ttm="http://www.w3.org/ns/ttml#metadata">
+  <head>
+    <metadata> 
+      <ttm:title>Styling Test - Padding - 001</ttm:title>
+      <ttm:desc>Test tts:padding attribute with one value.</ttm:desc>
+      <ttm:copyright>Copyright (C) 2008 W3C (MIT, ERCIM, Keio).</ttm:copyright>
+    </metadata>
+    <ttp:profile use="dfxp-presentation" xmlns:ttp="http://www.w3.org/ns/ttml#parameter">
+      <ttp:features xml:base="http://www.w3.org/ns/ttml/feature/">
+        <ttp:feature>#layout</ttp:feature>
+        <ttp:feature>#padding-2</ttp:feature>
+        <ttp:feature>#length-px</ttp:feature>
+        <ttp:feature>#styling-nested</ttp:feature>
+      </ttp:features>
+    </ttp:profile>
+    <layout>
+      <region xml:id="r1">
+        <style tts:origin="0px 0px"/>
+        <style tts:extent="200px 100px"/>
+        <style tts:padding="10%"/>
+      </region>
+    </layout>
+  </head>
+  <body>
+    <div region="r1" tts:backgroundColor="green">
+      <p begin="0s" end="10s" tts:textAlign='left'>All the edges are padded <br />by 20 pixels.</p>
+    </div>
+  </body>
+</tt>

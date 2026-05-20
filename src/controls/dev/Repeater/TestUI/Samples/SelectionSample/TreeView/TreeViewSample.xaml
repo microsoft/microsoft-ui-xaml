@@ -13,7 +13,7 @@
             <local:BoolToVisibilityConverter x:Name="boolToVisibilityConterter" />
 
             <!--<controls:StackLayout x:Name="layout" />-->
-            <controls:FlowLayout x:Name="layout" MinRowSpacing="10" MinColumnSpacing="0" />
+            <controls:FlowLayout x:Name="layout" LineSpacing="10" MinItemSpacing="0" />
             <controls:RecyclePool x:Name="recyclePool" />
             <controls:RecyclingElementFactory x:Name="elementFactory"
                                              RecyclePool="{StaticResource recyclePool}"

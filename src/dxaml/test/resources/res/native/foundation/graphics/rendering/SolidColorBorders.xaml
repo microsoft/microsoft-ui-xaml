@@ -1,0 +1,32 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+    <!-- Background only -->
+    <Border Canvas.Left="10" Canvas.Top="10" Background="Red" Width="30" Height="30" />
+
+    <!-- Border area only -->
+    <Border Canvas.Left="60" Canvas.Top="10" BorderBrush="Green" BorderThickness="5" Width="30" Height="30" />
+
+    <!-- Lopsided borders -->
+    <Border Canvas.Left="110" Canvas.Top="10" BorderBrush="Blue" BorderThickness="0,0,5,10" Width="30" Height="30" />
+
+    <!-- Inner rect should be expanded to avoid seams with border area -->
+    <Border Canvas.Left="160" Canvas.Top="10" Background="Yellow" BorderBrush="Blue" BorderThickness="5" Width="30" Height="30" />
+
+    <!-- Can't expand inner rect - border area should be transparent -->
+    <Border Canvas.Left="210" Canvas.Top="10" Background="Yellow" BorderThickness="5" Width="30" Height="30" />
+
+    <!-- Can't expand inner rect - border itself has transparency, so the background would show through -->
+    <Border Canvas.Left="260" Canvas.Top="10" Background="Yellow" BorderBrush="Blue" BorderThickness="5" Width="30" Height="30" Opacity="0.5" />
+
+    <!-- Drawn with masks - BorderBrush has alpha, so using ninegrids would give AA artifact on the inner corners of the border -->
+    <Border Canvas.Left="10" Canvas.Top="60" Background="Yellow" BorderBrush="#400000ff" BorderThickness="5" Width="30" Height="30" />
+
+    <!-- Border optimization - the background and border brushes are the same and everything is opaque, so draw an expanded background -->
+    <Border Canvas.Left="60" Canvas.Top="60" Background="Green" BorderBrush="Green" BorderThickness="5" Width="30" Height="30" />
+
+    <!-- No border optimization - there are rounded corners, so draw a distinct border and background even though they have the same brush.
+         Everything is solid color, so the background rect should be expanded -->
+    <Border Canvas.Left="110" Canvas.Top="60" Background="Green" BorderBrush="Green" BorderThickness="5" Width="30" Height="30" CornerRadius="4" />
+
+</Canvas>

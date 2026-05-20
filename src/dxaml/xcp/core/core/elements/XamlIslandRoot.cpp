@@ -57,6 +57,16 @@ CXamlIslandRoot::~CXamlIslandRoot()
     Dispose();
 }
 
+void CXamlIslandRoot::DisconnectUIA()
+{
+    if (m_uiaWindow)
+    {
+        m_uiaWindow->UIADisconnectAllProviders();
+        m_uiaWindow->Deinit();
+        m_uiaWindow = nullptr;
+    }
+}
+
 // Order of cleanup should be :
 //  1. Input state and resources
 //  2. Content
@@ -85,12 +95,7 @@ void CXamlIslandRoot::Dispose()
         m_contentRoot = nullptr;
     }
 
-    if (m_uiaWindow)
-    {
-        m_uiaWindow->UIADisconnectAllProviders();
-        m_uiaWindow->Deinit();
-        m_uiaWindow = nullptr;
-    }
+    DisconnectUIA();
 
     // Let CCoreServices evaluate visibility again, in case this was the last visible content and it was just closed.
     m_isVisible = false;
@@ -1174,7 +1179,11 @@ void CXamlIslandRoot::HandleContentIslandConnectionChange(bool isConnected)
         // Ask the system, via the IslandInputSite whether focus rectangles should be visible.
         // If not, this can be extrapolated to assume the last input device used according to the system was not the keyboard.
         // This, in turn, instructs XAML to not draw focus rectangles.
-        bool showFocusRectangles = InputSiteHelper::GetShouldShowFocusRectangles(m_islandInputSite.Get());
+        wrl::ComPtr<ixp::IInputFocusController3> focusController3;
+        IFCFAILFAST(m_inputFocusController.As(&focusController3));
+
+        boolean showFocusRectangles{};
+        IFCFAILFAST(focusController3->get_ShouldShowKeyboardCues(&showFocusRectangles));
         if (!showFocusRectangles)
         {
             m_contentRoot->GetInputManager().SetLastInputDeviceType(DirectUI::InputDeviceType::None);
@@ -1239,6 +1248,14 @@ POINT CXamlIslandRoot::GetScreenOffset()
     // Due to an IXP bug, we cannot cache the coordinate converter and need to retrieve it from the ContentIsland.
     // https://task.ms/48700073 ContentIsland final state does not propagate to its satellite objects in time.
     auto contentIsland = GetContentIsland();
+
+    // A re-entrant UIA call (hit-test, bounding-rect, property fetch) can
+    // land here after the ContentIsland has been torn down. Return {0,0},
+    // same shape as the isClosed=true path below.
+    if (!contentIsland)
+    {
+        return { 0, 0 };
+    }
 
     ctl::ComPtr<mu::IClosableNotifier> closableNotifier;
     IFCFAILFAST(ctl::do_query_interface(closableNotifier, contentIsland));

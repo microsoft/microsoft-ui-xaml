@@ -1,0 +1,21 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name = "parent">
+  <Grid.Resources>
+    <x:String x:Key="MyString">Hello World</x:String>
+    <x:Double x:Key="MyDouble">13.1859</x:Double>
+    <x:Boolean x:Key="MyBool">True</x:Boolean>
+    <x:Int32 x:Key="MyInt">1</x:Int32>
+    <Style x:Key="MyStyle" TargetType="Button">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border>
+              <TextBlock x:Name="texty" Text="{StaticResource MyString}" Width="{StaticResource MyDouble}" AllowDrop="{StaticResource MyBool}" CharacterSpacing="{StaticResource MyInt}"/>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Grid.Resources>
+  <Button Style="{StaticResource MyStyle}" Width="100" Height="100" />
+</Grid>

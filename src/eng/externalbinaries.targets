@@ -20,7 +20,9 @@
       <ExternalBinaries Include="@(IXPBinaries_Normal_Minus_Instrumented)" />
     </ItemGroup>
     <ItemGroup Condition="'$(PGOBuildMode)' != 'Instrument'">
-      <ExternalBinaries Include="$(LiftedIXPRuntimePath)\*.dll" />
+      <!-- Exclude FrameworkUdk DLL from IXP wildcard — it's already included from the FrameworkUdk package (line 7).
+           The IXP and FrameworkUdk packages may ship different builds of this DLL, causing APPX1111 duplicate errors. -->
+      <ExternalBinaries Include="$(LiftedIXPRuntimePath)\*.dll" Exclude="$(LiftedIXPRuntimePath)\Microsoft.Internal.FrameworkUdk.dll" />
     </ItemGroup>
   </Target>
 </Project>

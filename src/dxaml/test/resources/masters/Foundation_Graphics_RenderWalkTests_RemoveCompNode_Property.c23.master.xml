@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0.102, 0, 0}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0.102, 0.102, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0.102, 0.2, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0.102, 0.302, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0.2, 0, 0}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0.2, 0.102, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0.2, 0.2, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0.2, 0.302, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0.302, 0, 0}" />
+                </wucSpriteVisual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0.302, 0.102, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0.302, 0.2, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" CompositeMode="SourceOver" SizeX="10" SizeY="10">
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="10" SizeY="10" BorderMode="Soft">
+                        <ColorBrush Color="rgb {0.302, 0.302, 0}" />
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

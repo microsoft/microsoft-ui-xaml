@@ -1,0 +1,17 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <StackPanel.Resources>
+    <ResourceDictionary>
+      <!-- We define 2 styles here to make sure the dictionary has custom runtime data via XBF -->
+      <Style TargetType="Button" x:Key="BlueButtonStyle">
+        <Setter Property="Background" Value="Blue" />
+      </Style>
+      <Style TargetType="Button" x:Key="RedButtonStyle">
+        <Setter Property="Background" Value="Red" />
+      </Style>
+    </ResourceDictionary>
+  </StackPanel.Resources>
+  <Button Style="{StaticResource BlueButtonStyle}" Content="Blue Button" />
+  <Button Style="{StaticResource RedButtonStyle}" Content="Red Button" />
+</StackPanel>

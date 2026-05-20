@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <Properties>
+        <Property Name="Margin" Value="10,10,10,10" />
+        <Property Name="Padding" Value="10,10,10,10" />
+      </Properties>
+      <ChildElements>
+        <Element Type="Microsoft.UI.Xaml.Controls.Button">
+          <Properties>
+            <Property Name="AccessKey" Value="1" />
+            <Property Name="Background" Value="#33FFFFFF" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Content" Value="button 1" />
+            <Property Name="FocusState" Value="1" />
+            <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+            <Property Name="FontFamily" Value="Segoe UI" />
+            <Property Name="FontSize" Value="15" />
+            <Property Name="FontWeight" Value="400" />
+            <Property Name="Foreground" Value="#FFFFFFFF" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Padding" Value="8,4,8,4" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="True" />
+            <Property Name="VerticalAlignment" Value="1" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Properties>
+                <Property Name="Background" Value="#33FFFFFF" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Properties>
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="BorderBrush" Value="#00FFFFFF" />
+                    <Property Name="BorderThickness" Value="2,2,2,2" />
+                    <Property Name="Content" Value="button 1" />
+                    <Property Name="ContentTransitions" Value="[NULL]" />
+                    <Property Name="DataContext" Value="button 1" />
+                    <Property Name="HorizontalContentAlignment" Value="1" />
+                    <Property Name="Padding" Value="8,4,8,4" />
+                    <Property Name="VerticalContentAlignment" Value="1" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Properties>
+                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                        <Property Name="HorizontalAlignment" Value="0" />
+                        <Property Name="Text" Value="button 1" />
+                        <Property Name="VerticalAlignment" Value="0" />
+                      </Properties>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Button">
+          <Properties>
+            <Property Name="AccessKey" Value="2" />
+            <Property Name="Background" Value="#33FFFFFF" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Content" Value="button 2" />
+            <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+            <Property Name="FontFamily" Value="Segoe UI" />
+            <Property Name="FontSize" Value="15" />
+            <Property Name="FontWeight" Value="400" />
+            <Property Name="Foreground" Value="#FFFFFFFF" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Padding" Value="8,4,8,4" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="True" />
+            <Property Name="VerticalAlignment" Value="1" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Properties>
+                <Property Name="Background" Value="#33FFFFFF" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Properties>
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="BorderBrush" Value="#00FFFFFF" />
+                    <Property Name="BorderThickness" Value="2,2,2,2" />
+                    <Property Name="Content" Value="button 2" />
+                    <Property Name="ContentTransitions" Value="[NULL]" />
+                    <Property Name="DataContext" Value="button 2" />
+                    <Property Name="HorizontalContentAlignment" Value="1" />
+                    <Property Name="Padding" Value="8,4,8,4" />
+                    <Property Name="VerticalContentAlignment" Value="1" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Properties>
+                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                        <Property Name="HorizontalAlignment" Value="0" />
+                        <Property Name="Text" Value="button 2" />
+                        <Property Name="VerticalAlignment" Value="0" />
+                      </Properties>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Controls.Button">
+          <Properties>
+            <Property Name="AccessKey" Value="3" />
+            <Property Name="Background" Value="#33FFFFFF" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Content" Value="button 3" />
+            <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+            <Property Name="FontFamily" Value="Segoe UI" />
+            <Property Name="FontSize" Value="15" />
+            <Property Name="FontWeight" Value="400" />
+            <Property Name="Foreground" Value="#FFFFFFFF" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Padding" Value="8,4,8,4" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="True" />
+            <Property Name="VerticalAlignment" Value="1" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Properties>
+                <Property Name="Background" Value="#33FFFFFF" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Properties>
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="BorderBrush" Value="#00FFFFFF" />
+                    <Property Name="BorderThickness" Value="2,2,2,2" />
+                    <Property Name="Content" Value="button 3" />
+                    <Property Name="ContentTransitions" Value="[NULL]" />
+                    <Property Name="DataContext" Value="button 3" />
+                    <Property Name="HorizontalContentAlignment" Value="1" />
+                    <Property Name="Padding" Value="8,4,8,4" />
+                    <Property Name="VerticalContentAlignment" Value="1" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Properties>
+                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                        <Property Name="HorizontalAlignment" Value="0" />
+                        <Property Name="Text" Value="button 3" />
+                        <Property Name="VerticalAlignment" Value="0" />
+                      </Properties>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </ChildElements>
+    </Element>
+  </VisualElements>
+</VisualTreeDump>

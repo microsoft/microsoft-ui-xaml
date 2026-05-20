@@ -73,6 +73,7 @@
     <CompileFiles Include="Builders\CoreBaseType.cs" />
     <CompileFiles Include="Builders\NameAttributes.cs" />
     <CompileFiles Include="Builders\DependencyPropertyModifier.cs" />
+    <CompileFiles Include="Builders\DependencyPropertyVersion.cs" />
     <CompileFiles Include="Builders\PropertyKind.cs" />
     <CompileFiles Include="Builders\NativeStorageType.cs" />
     <CompileFiles Include="Builders\EventFlags.cs" />

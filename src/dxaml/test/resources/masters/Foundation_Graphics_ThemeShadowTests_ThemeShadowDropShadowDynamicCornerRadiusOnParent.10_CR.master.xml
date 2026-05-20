@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="300" SizeY="300" BorderMode="Soft">
+            <ColorBrush Color="#ffffffff" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100">
+              <Visual Tag="RoundedCornerClipVisual">
+                <Clip ClipLeft="0" ClipTop="0" ClipRight="100" ClipBottom="100" ClipTopLeftRadiusX="10" ClipTopLeftRadiusY="10" ClipTopRightRadiusX="10" ClipTopRightRadiusY="10" ClipBottomLeftRadiusX="10" ClipBottomLeftRadiusY="10" ClipBottomRightRadiusX="10" ClipBottomRightRadiusY="10" TransformMatrix="Identity" />
+                <Visual Tag="ContentVisual">
+                  <Visual Tag="PrependVisual">
+                    <TransformMatrix>
+                      <Translate Z="32" />
+                    </TransformMatrix>
+                    <Visual TransformParentVisualId="2" Tag="DropShadowVisual" TransparentForInput="True">
+                      <wucSpriteVisual SizeX="132" SizeY="132" OffsetX="-16" OffsetY="-8" OffsetZ="0">
+                        <NineGridBrush LeftInset="27" TopInset="19" RightInset="27" BottomInset="35" isCenterHollow="True">
+                          <Source>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity">
+                              <VisualSurface SourceRectangle="RB {96, 96}" RealizationSizeX="96" RealizationSizeY="96" SourceVisualId="1" />
+                            </SurfaceBrush>
+                          </Source>
+                        </NineGridBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                    <Visual VisualId="2" Tag="PrimaryVisual" SizeX="100" SizeY="100">
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                          <ColorBrush Color="#ff000000" />
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

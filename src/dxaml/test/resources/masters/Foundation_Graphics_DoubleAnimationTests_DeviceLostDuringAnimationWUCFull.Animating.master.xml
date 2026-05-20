@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Render" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="X" Type="Scalar">
+                              <KeyFrameAnimation Duration="600">
+                                <KeyFrame Value="100" />
+                                <KeyFrame Time="1" Value="200">
+                                  <LinearEasingFunction />
+                                </KeyFrame>
+                              </KeyFrameAnimation>
+                            </Property>
+                            <Property Name="Y" Type="Scalar" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                  <ColorBrush Color="rgb {0, 0.502, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

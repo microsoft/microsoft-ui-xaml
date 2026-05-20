@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. -->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" /> 
+    <Import Project="$(ConsumeBinariesTargets)"/>
+    <!-- DIY binplacing to avoid including Microsoft.UI.Xaml.Build.Publish.targets.  This will copy the produced .appx + necessary files to install it
+        to the bin folder so it will show up in the build's artifact, under bin\Test\[project's name]-->
+    <Target Name="_AddBinplaceAdhocApp" AfterTargets="Build">
+        <ItemGroup>
+            <BinplaceAppItems Include="$(AppxPackageTestDir)**\*.*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(BinplaceAppItems)" DestinationFolder="$(BinDir)\Test\$(ProjectName)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    </Target>
+</Project>

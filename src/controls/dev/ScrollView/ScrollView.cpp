@@ -1766,7 +1766,27 @@ void ScrollView::HideIndicatorsAfterDelay()
         {
             m_hideIndicatorsTimer = winrt::DispatcherTimer();
             m_hideIndicatorsTimer.Interval(winrt::TimeSpan::duration(s_noIndicatorCountdown));
-            m_hideIndicatorsTimer.Tick({ this, &ScrollView::OnHideIndicatorsTimerTick });
+            // The DispatcherTimer keeps a reference to its Tick handler. Binding via
+            // { this, ... } captures a raw pointer to this ScrollView; if a tick is
+            // dispatched after the ScrollView has been destroyed (e.g. window closed
+            // before Stop() takes effect), invoking the handler would deref freed
+            // memory. Capture a weak reference instead and resolve it on tick.
+            // get_weak() can hit a refcount issue with ReferenceTracker, so use the
+            // make_weak(projected) pattern used elsewhere in this codebase.
+            auto weakThis{ winrt::make_weak(static_cast<winrt::ScrollView>(*this)) };
+            m_hideIndicatorsTimer.Tick([weakThis](auto const& sender, auto const& args)
+            {
+                if (auto strongThis = weakThis.get())
+                {
+                    ScrollView* rawThis = winrt::get_self<ScrollView>(strongThis);
+                    rawThis->OnHideIndicatorsTimerTick(sender, args);
+                }
+                else
+                {
+                    auto timer = sender.as<winrt::DispatcherTimer>();
+                    timer.Stop();
+                }
+            });
         }
 
         m_hideIndicatorsTimer.Start();
