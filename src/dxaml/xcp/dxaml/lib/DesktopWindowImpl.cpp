@@ -491,6 +491,36 @@ _Check_return_ HRESULT DesktopWindowImpl::get_CompositorImpl(_Outptr_result_mayb
     return S_OK;
 }
 
+_Check_return_ HRESULT DesktopWindowImpl::get_WidthImpl(_Out_ DOUBLE* pValue)
+{
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    *pValue = bounds.Width;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_WidthImpl(DOUBLE value)
+{
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    return SetClientSizeInDips(value, bounds.Height);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_HeightImpl(_Out_ DOUBLE* pValue)
+{
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    *pValue = bounds.Height;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_HeightImpl(DOUBLE value)
+{
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    return SetClientSizeInDips(bounds.Width, value);
+}
+
 // ----------------------------------------------------------------------
 //                          IWindowPrivate
 // ----------------------------------------------------------------------
@@ -550,6 +580,101 @@ _Check_return_ HRESULT DesktopWindowImpl::MoveWindowImpl(_In_ INT x, _In_ INT y,
         }
 
         IFC_RETURN(hr);
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::SetClientSizeInDips(DOUBLE width, DOUBLE height)
+{
+    IFC_RETURN(CheckIsWindowClosed());
+
+    if (width < 0.0 || height < 0.0 || DoubleUtil::IsNaN(width) || DoubleUtil::IsNaN(height) || DoubleUtil::IsInfinity(width) || DoubleUtil::IsInfinity(height))
+    {
+        IFC_RETURN(E_INVALIDARG);
+    }
+
+    RECT windowRect{};
+    if (::GetWindowRect(m_hwnd.get(), &windowRect) == 0)
+    {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+    }
+
+    const UINT dpi = ::GetDpiForWindow(m_hwnd.get());
+    const float scale = static_cast<float>(dpi) / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
+
+    RECT desiredWindowRect
+    {
+        0,
+        0,
+        static_cast<LONG>(std::round(width * scale)),
+        static_cast<LONG>(std::round(height * scale))
+    };
+
+    const DWORD style = static_cast<DWORD>(::GetWindowLongPtrW(m_hwnd.get(), GWL_STYLE));
+    const DWORD exStyle = static_cast<DWORD>(::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE));
+    if (::AdjustWindowRectExForDpi(&desiredWindowRect, style, ::GetMenu(m_hwnd.get()) != nullptr, exStyle, dpi) == 0)
+    {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+    }
+
+    const int windowWidth = desiredWindowRect.right - desiredWindowRect.left;
+    const int windowHeight = desiredWindowRect.bottom - desiredWindowRect.top;
+
+    WINDOWPLACEMENT placement = {};
+    placement.length = sizeof(placement);
+
+    bool updateRestoreBoundsOnly = false;
+    if (::GetWindowPlacement(m_hwnd.get(), &placement) != 0)
+    {
+        updateRestoreBoundsOnly = placement.showCmd == SW_SHOWMAXIMIZED;
+    }
+
+    if (!updateRestoreBoundsOnly)
+    {
+        ctl::ComPtr<ixp::IAppWindow> appWindow;
+        if (SUCCEEDED(get_AppWindowImpl(&appWindow)) && appWindow)
+        {
+            ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
+            if (SUCCEEDED(appWindow->get_Presenter(&presenter)) && presenter)
+            {
+                ixp::AppWindowPresenterKind presenterKind = ixp::AppWindowPresenterKind_Default;
+                if (SUCCEEDED(presenter->get_Kind(&presenterKind)))
+                {
+                    updateRestoreBoundsOnly = presenterKind == ixp::AppWindowPresenterKind_FullScreen;
+                }
+            }
+        }
+    }
+
+    if (updateRestoreBoundsOnly)
+    {
+        RECT restoreRect = placement.rcNormalPosition;
+        if (::IsRectEmpty(&restoreRect))
+        {
+            restoreRect = windowRect;
+        }
+
+        placement.rcNormalPosition.left = restoreRect.left;
+        placement.rcNormalPosition.top = restoreRect.top;
+        placement.rcNormalPosition.right = restoreRect.left + windowWidth;
+        placement.rcNormalPosition.bottom = restoreRect.top + windowHeight;
+
+        if (::SetWindowPlacement(m_hwnd.get(), &placement) == 0)
+        {
+            HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+            IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+        }
+
+        return S_OK;
+    }
+
+    if (::SetWindowPos(m_hwnd.get(), nullptr, windowRect.left, windowRect.top, windowWidth, windowHeight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER) == 0)
+    {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
     }
 
     return S_OK;

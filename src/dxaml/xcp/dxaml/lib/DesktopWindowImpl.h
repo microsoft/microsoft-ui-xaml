@@ -43,6 +43,10 @@ namespace DirectUI
         _Check_return_ HRESULT CloseImpl() override;
 
         _Check_return_ HRESULT get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor) override;
+        _Check_return_ HRESULT get_WidthImpl(_Out_ DOUBLE* pValue) override;
+        _Check_return_ HRESULT put_WidthImpl(DOUBLE value) override;
+        _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue) override;
+        _Check_return_ HRESULT put_HeightImpl(DOUBLE value) override;
 
         _Check_return_ HRESULT get_ExtendsContentIntoTitleBarImpl(_Out_ BOOLEAN* pValue) final;
         _Check_return_ HRESULT put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN value) final;
@@ -130,6 +134,7 @@ namespace DirectUI
         _Check_return_ HRESULT RaiseWindowSizeChangedEvent();
         _Check_return_ HRESULT RaiseWindowActivatedEvent(_In_ const xaml::WindowActivationState state);
         _Check_return_ HRESULT RaiseWindowVisibilityChangedEvent(_In_ const BOOLEAN visible);
+        _Check_return_ HRESULT SetClientSizeInDips(DOUBLE width, DOUBLE height);
         void ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
         void RepositionWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
         void Shutdown();
