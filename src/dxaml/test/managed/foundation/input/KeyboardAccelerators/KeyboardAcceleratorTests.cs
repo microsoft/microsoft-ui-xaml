@@ -26,6 +26,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Shapes;
 
 using System.Runtime.InteropServices.WindowsRuntime;
 
@@ -2335,6 +2336,71 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
                 focusButton = (Button)rootPanel.FindName("focusButton");
                 ctrl1Accelerator = (KeyboardAccelerator)rootPanel.FindName("flyoutAccelerator");
                 FlyoutItem2 = (MenuFlyoutItem)rootPanel.FindName("FlyoutItem2");
+
+                TestServices.WindowHelper.WindowContent = rootPanel;
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            FocusHelper.EnsureFocus(focusButton, FocusState.Keyboard);
+
+            using (var keyboardAcceleratorInvoked = new EventTester<KeyboardAccelerator, KeyboardAcceleratorInvokedEventArgs>(ctrl1Accelerator, "Invoked", keyboardAcceleratorInvokedHandler))
+            {
+                Log.Comment("Press accelerator sequence: Ctrl + 1");
+                TestServices.KeyboardHelper.PressKeySequence("$d$_ctrlscan#$d$_1#$u$_1#$u$_ctrlscan");
+                keyboardAcceleratorInvoked.Wait();
+            }
+
+            TestServices.WindowHelper.WaitForIdle();
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Validates that a UIElement (Rectangle) fires the accelerators on its ContextFlyout MenuFlyout.")]
+        [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
+        public void VerifyUIElementContextFlyoutWithMenuFlyoutCanInvokeAcceleratorDefinedOnMenuItem()
+        {
+            const string rootPanelXaml =
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <Rectangle x:Name='rectangle' Width='100' Height='100' Fill='Red' />
+                        <Button x:Name='focusButton' Content='FocusButton' />
+                    </StackPanel>";
+
+            StackPanel rootPanel = null;
+
+            Button focusButton = null;
+            Rectangle rectangle = null;
+            KeyboardAccelerator ctrl1Accelerator = null;
+            MenuFlyoutItem FlyoutItem2 = null;
+
+            var keyboardAcceleratorInvokedHandler = new Action<object, KeyboardAcceleratorInvokedEventArgs>((source, args) =>
+            {
+                VerifyKeyboardAcceleratorInvokedEventArgs(
+                    source,
+                    args,
+                    global::Windows.System.VirtualKey.Number1,
+                    global::Windows.System.VirtualKeyModifiers.Control,
+                    FlyoutItem2,
+                    false /*handled*/);
+            });
+
+            UIExecutor.Execute(() =>
+            {
+                rootPanel = (StackPanel)XamlMarkup.XamlReader.Load(rootPanelXaml);
+                focusButton = (Button)rootPanel.FindName("focusButton");
+                rectangle = (Rectangle)rootPanel.FindName("rectangle");
+
+                // Create the MenuFlyout and its items in code to avoid entering during XAML load.
+                var myMenuFlyout = new MenuFlyout();
+                var flyoutItem1 = new MenuFlyoutItem { Text = "FlyoutItem1" };
+                FlyoutItem2 = new MenuFlyoutItem { Text = "FlyoutItem2" };
+                ctrl1Accelerator = new KeyboardAccelerator
+                {
+                    Modifiers = global::Windows.System.VirtualKeyModifiers.Control,
+                    Key = global::Windows.System.VirtualKey.Number1
+                };
+                FlyoutItem2.KeyboardAccelerators.Add(ctrl1Accelerator);
+                myMenuFlyout.Items.Add(flyoutItem1);
+                myMenuFlyout.Items.Add(FlyoutItem2);
+                rectangle.ContextFlyout = myMenuFlyout;
 
                 TestServices.WindowHelper.WindowContent = rootPanel;
             });

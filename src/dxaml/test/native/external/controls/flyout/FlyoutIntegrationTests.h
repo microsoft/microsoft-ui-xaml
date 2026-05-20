@@ -292,6 +292,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Verify that a flyout opened near the left side of the screen with FlyoutPlacementMode = LeftEdgeAlignedTop is nudged back into view.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(VerifyAppResourceOverrideContextFlyoutAcceleratorsPerfOptInOn)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that keyboard accelerators on a custom default TextBlock ContextFlyout work with PerfOptIn enabled.")
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{true}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(VerifyAppResourceOverrideContextFlyoutAcceleratorsPerfOptInOff)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify that keyboard accelerators on a custom default TextBlock ContextFlyout work with PerfOptIn disabled.")
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+        END_TEST_METHOD()
+
     private:
         template <class DateTimePickerType>
         static void CanOpenDateTimePickerWorker();
@@ -315,6 +325,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         void ValidateUIETreeWorker(Theme theme, Platform::String^ variation);
         void CanFlyoutOpenClose();
+        void VerifyAppResourceOverrideContextFlyoutAcceleratorsHelper();
     };
 
 } } } } } }

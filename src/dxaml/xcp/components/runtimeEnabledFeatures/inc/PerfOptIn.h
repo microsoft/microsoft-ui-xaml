@@ -9,6 +9,7 @@
 
 #pragma once
 
+
 // IMPORTANT CONVENTION WHEN CALLING THIS FUNCTION:
 // The check should be on its own line to make it easy to read and remove later if needed.
 // So, canonical usage should look like:

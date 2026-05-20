@@ -4114,5 +4114,125 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
+    void FlyoutIntegrationTests::VerifyAppResourceOverrideContextFlyoutAcceleratorsPerfOptInOn()
+    {
+        // PerfOptIn=true is set via Data:PerfOptIn in the header.
+        // WindowHelper::InitializeXamlCore reads it during TestSetup and sets the override.
+        VerifyAppResourceOverrideContextFlyoutAcceleratorsHelper();
+    }
+
+    void FlyoutIntegrationTests::VerifyAppResourceOverrideContextFlyoutAcceleratorsPerfOptInOff()
+    {
+        // PerfOptIn=false is set via Data:PerfOptIn in the header.
+        // WindowHelper::InitializeXamlCore reads it during TestSetup and sets the override.
+        VerifyAppResourceOverrideContextFlyoutAcceleratorsHelper();
+    }
+
+    void FlyoutIntegrationTests::VerifyAppResourceOverrideContextFlyoutAcceleratorsHelper()
+    {
+        TestCleanupWrapper cleanup;
+
+        xaml_controls::StackPanel^ root;
+        xaml_controls::TextBlock^ textBlock;
+        xaml_controls::Button^ focusButton;
+        xaml_controls::MenuFlyout^ customFlyout;
+        xaml_controls::MenuFlyoutItem^ flyoutItem;
+        xaml_input::KeyboardAccelerator^ accelerator;
+
+        Event clickEvent;
+        auto clickRegistration = CreateSafeEventRegistration(xaml_controls::MenuFlyoutItem, Click);
+
+        RunOnUIThread([&]()
+        {
+            // Create a MenuFlyout with two items. The keyboard accelerator (Ctrl+2) is on the
+            // SECOND item, not the first. This is important: when the flyout opens, the first
+            // item gets focus and ProcessLocalAccelerators checks accelerators on the focused
+            // element. By putting the accelerator on the second item, we ensure it can only be
+            // found via the global live accelerator collection (AddToLiveKeyboardAccelerators),
+            // which exposes the visualTree=nullptr / wrong-ContentRoot bug.
+            customFlyout = ref new xaml_controls::MenuFlyout();
+
+            auto dummyItem = ref new xaml_controls::MenuFlyoutItem();
+            dummyItem->Text = L"Dummy First Item";
+            customFlyout->Items->Append(dummyItem);
+
+            flyoutItem = ref new xaml_controls::MenuFlyoutItem();
+            flyoutItem->Text = L"Custom Action";
+
+            accelerator = ref new xaml_input::KeyboardAccelerator();
+            accelerator->Key = ::Windows::System::VirtualKey::Number2;
+            accelerator->Modifiers = ::Windows::System::VirtualKeyModifiers::Control;
+            flyoutItem->KeyboardAccelerators->Append(accelerator);
+
+            customFlyout->Items->Append(flyoutItem);
+
+            // Override the default TextControlCommandBarContextFlyout in Application.Resources.
+            xaml::Application::Current->Resources->Insert(L"TextControlCommandBarContextFlyout", customFlyout);
+
+            root = dynamic_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"    <TextBlock x:Name='textBlock' Text='Hello World' IsTextSelectionEnabled='True' />"
+                L"    <Button x:Name='focusButton' Content='FocusButton' />"
+                L"</StackPanel>"));
+
+            textBlock = safe_cast<xaml_controls::TextBlock^>(root->FindName(L"textBlock"));
+            focusButton = safe_cast<xaml_controls::Button^>(root->FindName(L"focusButton"));
+
+            // Verify the TextBlock picks up our custom flyout as its default ContextFlyout.
+            auto contextFlyout = textBlock->ContextFlyout;
+            VERIFY_IS_NOT_NULL(contextFlyout, L"TextBlock should have a ContextFlyout");
+            VERIFY_ARE_EQUAL(customFlyout, contextFlyout, L"TextBlock should use our custom flyout from Application.Resources");
+
+            clickRegistration.Attach(flyoutItem, [&clickEvent]() {
+                LOG_OUTPUT(L"MenuFlyoutItem Click event fired!");
+
+                clickEvent.Set(); 
+            });
+
+            TestServices::WindowHelper->WindowContent = root;
+        });
+
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Focus the button so keyboard input is routed into the XAML tree.
+        RunOnUIThread([&]()
+        {
+            focusButton->Focus(xaml::FocusState::Keyboard);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Before opening the flyout, the accelerator does NOT fire. This is a known limitation
+        // (https://github.com/microsoft/microsoft-ui-xaml/issues/11025):
+        // CUIElement::EnterImpl passes visualTree=nullptr when entering the
+        // ContextFlyout, so accelerators are registered on the vestigial CoreWindow ContentRoot
+        // instead of the island's ContentRoot where keyboard input is actually processed.
+        // See docs/design-notes/context-flyout.md ("The visualTree=nullptr Problem").
+        LOG_OUTPUT(L"==> Press accelerator sequence before flyout has been opened: Ctrl + 2 (expect no invocation)");
+        TestServices::KeyboardHelper->PressKeySequence(L"$d$_ctrlscan#$d$_2#$u$_2#$u$_ctrlscan");
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_IS_FALSE(clickEvent.HasFired(), L"Accelerator should not fire when flyout has never been opened - accelerators are on the wrong ContentRoot (known limitation)");
+
+        // Right click on textBlock to open the ContextFlyout, then try the accelerator while
+        // the flyout is open. The accelerator is on the second MenuFlyoutItem, which does NOT
+        // have focus (the first item gets focus). ProcessLocalAccelerators won't find it, and
+        // the global collection has it on the wrong ContentRoot, so it still doesn't fire.
+        LOG_OUTPUT(L"==> Right-click the TextBlock to open the ContextFlyout.");
+        TestServices::InputHelper->ClickMouseButton(MouseButton::Right, textBlock);
+        TestServices::WindowHelper->WaitForIdle();
+
+        clickEvent.Reset();
+        LOG_OUTPUT(L"==> Press accelerator sequence while flyout is open: Ctrl + 2 (expect no invocation)");
+        TestServices::KeyboardHelper->PressKeySequence(L"$d$_ctrlscan#$d$_2#$u$_2#$u$_ctrlscan");
+        TestServices::WindowHelper->WaitForIdle();
+        VERIFY_IS_FALSE(clickEvent.HasFired(), L"Accelerator should not fire even with flyout open - it's on the second item (not focused) and global registration is on wrong ContentRoot");
+
+        // Clean up: remove the override from Application.Resources.
+        RunOnUIThread([&]()
+        {
+            xaml::Application::Current->Resources->Remove(L"TextControlCommandBarContextFlyout");
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::Flyout
 

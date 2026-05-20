@@ -9,6 +9,7 @@
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <FrameworkTheming.h>
+#include <PerfOptIn.h>
 #include "Transform3D.h"
 #include "HitTestParams.h"
 #include <GeneralTransformHelper.h>
@@ -1335,16 +1336,43 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
     // Pass updated params to children.
     IFC_RETURN(CDependencyObject::EnterImpl(pNamescopeOwner, params));
 
-    // Extends EnterImpl to the ContextFlyout
-    CFlyoutBase* pFlyoutBase = GetContextFlyout();
-    if (pFlyoutBase)
+    if (IsPerfOptInEnabled())
     {
-        // This FlyoutBase can be shared between ContentRoots -- remove the VisualTree
-        // pointer here for this enter.  TODO: figure out why this happens
-        // Bug 19548424: Investigate places where an element entering the tree doesn't have a unique VisualTree ptr
-        EnterParams newParams(params);
-        newParams.visualTree = nullptr;
-        IFC_RETURN(pFlyoutBase->Enter(pNamescopeOwner, newParams/*EnterParams*/));
+        // PR 655767 (July 2017) added the GetContextFlyout() + Enter here so that keyboard
+        // accelerators on flyout menu items could register with the live accelerator
+        // collection.  We skip this when the perf optimization is enabled because:
+        //
+        // 1. It's redundant for locally-set flyouts: EnterSparseProperties (called from
+        //    CDependencyObject::EnterImpl above) already enters them.
+        //
+        // 2. It's expensive for TextBlock/RichTextBlock: their ContextFlyout is a default
+        //    property (resolved by GetDefaultTextControlContextFlyout via a resource-
+        //    dictionary walk), not a locally-set value in sparse storage.  So
+        //    EnterSparseProperties never sees it, and this was the only path that entered
+        //    it.  But even so, the default TextControlCommandBarContextFlyout doesn't carry
+        //    user-defined keyboard accelerators, so entering it served no purpose -- and the
+        //    GetContextFlyout() call triggers that expensive lookup on every tree entry for
+        //    every text element (PR 1818094, May 2018).
+        //
+        // 3. The Enter below uses visualTree=nullptr, which causes keyboard accelerators
+        //    to register on the vestigial CoreWindow ContentRoot instead of the island's
+        //    ContentRoot where keyboard input is dispatched.  So the accelerators never
+        //    fire anyway (https://github.com/microsoft/microsoft-ui-xaml/issues/11025).
+        //    When we fix that bug, we'll want to investigate this area again.
+    }
+    else
+    {
+        // Extends EnterImpl to the ContextFlyout
+        CFlyoutBase* pFlyoutBase = GetContextFlyout();
+        if (pFlyoutBase)
+        {
+            // This FlyoutBase can be shared between ContentRoots -- remove the VisualTree
+            // pointer here for this enter.
+            // Bug 19548424: Investigate places where an element entering the tree doesn't have a unique VisualTree ptr
+            EnterParams newParams(params);
+            newParams.visualTree = nullptr;
+            IFC_RETURN(pFlyoutBase->Enter(pNamescopeOwner, newParams/*EnterParams*/));
+        }
     }
 
     // Work on the children
@@ -1789,12 +1817,20 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
 
     IFC_RETURN(CDependencyObject::LeaveImpl(pNamescopeOwner, params));
 
-    // Extends LeaveImpl to the ContextFlyout.
-    CFlyoutBase* pFlyoutBase = GetContextFlyout();
-    if (pFlyoutBase)
+    if (IsPerfOptInEnabled())
     {
-        IFC_RETURN(pFlyoutBase->Leave(pNamescopeOwner, params /*LeaveParams*/));
+        // See the comment in EnterImpl for why this GetContextFlyout() + Leave is skipped.
     }
+    else
+    {
+        // Extends LeaveImpl to the ContextFlyout.
+        CFlyoutBase* pFlyoutBase = GetContextFlyout();
+        if (pFlyoutBase)
+        {
+            IFC_RETURN(pFlyoutBase->Leave(pNamescopeOwner, params /*LeaveParams*/));
+        }
+    }
+
 
     if (EventEnabledElementRemovedInfo() && params.fIsLive)
     {
