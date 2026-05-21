@@ -8,27 +8,39 @@
 class XamlServiceProviderContext;
 namespace DirectUI
 {
+    // This type is part of every DirectUI::Binding, and also created stand-alone by other types.
     class PropertyPathParser
     {
     public:
-
-        PropertyPathParser();
-        ~PropertyPathParser();
         
-    public:
+        PropertyPathParser() noexcept = default;
+        ~PropertyPathParser() = default;
+
+        // Move only (descriptors are move-only)
+        PropertyPathParser(PropertyPathParser&&) = default;
+        PropertyPathParser& operator=(PropertyPathParser&&) = default;
+        PropertyPathParser(const PropertyPathParser&) = delete;
+        PropertyPathParser& operator=(const PropertyPathParser&) = delete;
 
         _Check_return_ HRESULT SetSource(_In_opt_z_ const WCHAR *szPath, _In_opt_ XamlServiceProviderContext* context);
-            
-        Jupiter::stack_vector<PropertyPathStepDescriptor, 2>& Descriptors()
-        { return m_descriptors; }
+
+        // Iteration support - handles both inline and heap storage transparently
+        PropertyPathStepDescriptor* begin() noexcept;
+        PropertyPathStepDescriptor* end() noexcept;
+
+        size_t size() const noexcept;
+        bool empty() const noexcept { return m_descriptors[0].GetKind() == PropertyPathStepDescriptorKind::None; }
+        bool HasParsedPath() const noexcept { return !empty(); }
 
     private:
 
         _Check_return_ HRESULT Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ XamlServiceProviderContext* context);
 
-        bool IsNumericIndex(_In_z_ const WCHAR *szIndex);
-        
-        _Check_return_ HRESULT AppendStepDescriptor(_In_ PropertyPathStepDescriptor&& descriptor);
+        // Transfers parsed descriptors from the temporary vector to our storage
+        void FinalizeDescriptors(Jupiter::stack_vector<PropertyPathStepDescriptor, 2>& source);
+
+        // Helper function that works with strings that may not be null-terminated
+        static bool IsNumericIndex(_In_reads_(length) const WCHAR* pIndex, size_t length);
 
         _Check_return_ HRESULT CreateDependencyPropertyPathStepDescriptor(
             _In_ XUINT32 nPropertyLength,
@@ -43,9 +55,10 @@ namespace DirectUI
             _Outptr_result_maybenull_ const CDependencyProperty **ppDP);
 
     private:
-
-        // This vector usually holds 0-2 items, so let's try to avoid heap allocations in the common case by using a stack vector.
-        Jupiter::stack_vector<PropertyPathStepDescriptor, 2> m_descriptors;
+        // Inline storage for 0-2 descriptors (common case).
+        // If we have more than 2, m_descriptors[0] becomes a HeapStorage descriptor
+        // pointing to all descriptors, and m_descriptors[1] is unused.
+        PropertyPathStepDescriptor m_descriptors[2];
     };
 
 }

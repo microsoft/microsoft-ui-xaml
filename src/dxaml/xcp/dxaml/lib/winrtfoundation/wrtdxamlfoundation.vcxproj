@@ -142,6 +142,7 @@
         <ClCompile Include="..\IncrementalLoading.cpp"/>
         <ClCompile Include="..\PropertyPathStepDescriptor.cpp"/>
         <ClCompile Include="..\PropertyPathParser.cpp"/>
+        <ClCompile Include="..\PropertyPathCommonNames.cpp"/>
         <ClCompile Include="..\Point_Partial.cpp"/>
         <ClCompile Include="..\Rect_Partial.cpp"/>
         <ClCompile Include="..\Size_Partial.cpp"/>

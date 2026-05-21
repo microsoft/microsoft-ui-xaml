@@ -11,8 +11,44 @@
 using namespace DirectUI;
 using namespace xaml_data;
 
+// ============================================================================
+// HeapDescriptorStorage implementation
+// ============================================================================
+
+PropertyPathStepDescriptor* HeapDescriptorStorage::begin() noexcept
+{
+    return descriptors;
+}
+
+PropertyPathStepDescriptor* HeapDescriptorStorage::end() noexcept
+{
+    return descriptors + count;
+}
+
+HeapDescriptorStorage* HeapDescriptorStorage::Allocate(size_t descriptorCount)
+{
+    auto* storage = new HeapDescriptorStorage();
+    storage->count = descriptorCount;
+    storage->descriptors = new PropertyPathStepDescriptor[descriptorCount]();
+    return storage;
+}
+
+void HeapDescriptorStorage::Free(HeapDescriptorStorage* storage) noexcept
+{
+    if (storage)
+    {
+        delete[] storage->descriptors;
+        delete storage;
+    }
+}
+
+// ============================================================================
+// PropertyPathStepDescriptor implementation
+// ============================================================================
+
 PropertyPathStepDescriptor::PropertyPathStepDescriptor() noexcept
     : m_kind(PropertyPathStepDescriptorKind::None)
+    , m_ownsText(false)
     , m_szText(nullptr)
 {
 }
@@ -24,6 +60,7 @@ PropertyPathStepDescriptor::~PropertyPathStepDescriptor() noexcept
 
 PropertyPathStepDescriptor::PropertyPathStepDescriptor(PropertyPathStepDescriptor&& other) noexcept
     : m_kind(PropertyPathStepDescriptorKind::None)
+    , m_ownsText(false)
     , m_szText(nullptr)
 {
     MoveFrom(other);
@@ -45,19 +82,27 @@ void PropertyPathStepDescriptor::Reset() noexcept
     {
     case PropertyPathStepDescriptorKind::PropertyAccess:
     case PropertyPathStepDescriptorKind::StringIndexer:
-        delete[] m_szText;
+        if (m_ownsText)
+        {
+            delete[] m_szText;
+        }
+        break;
+    case PropertyPathStepDescriptorKind::HeapStorage:
+        HeapDescriptorStorage::Free(m_pHeapStorage);
         break;
     default:
         break;
     }
 
     m_kind = PropertyPathStepDescriptorKind::None;
+    m_ownsText = false;
     m_szText = nullptr;
 }
 
 void PropertyPathStepDescriptor::MoveFrom(_Inout_ PropertyPathStepDescriptor& other) noexcept
 {
     m_kind = other.m_kind;
+    m_ownsText = other.m_ownsText;
 
     switch (m_kind)
     {
@@ -65,12 +110,18 @@ void PropertyPathStepDescriptor::MoveFrom(_Inout_ PropertyPathStepDescriptor& ot
     case PropertyPathStepDescriptorKind::StringIndexer:
         m_szText = other.m_szText;
         other.m_szText = nullptr;
+        other.m_ownsText = false;
         break;
     case PropertyPathStepDescriptorKind::IntIndexer:
         m_nIndex = other.m_nIndex;
         break;
     case PropertyPathStepDescriptorKind::DependencyProperty:
         m_pDP = other.m_pDP;
+        break;
+    case PropertyPathStepDescriptorKind::HeapStorage:
+        // Ownership of the heap storage is transferred to "this".
+        m_pHeapStorage = other.m_pHeapStorage;
+        other.m_pHeapStorage = nullptr;
         break;
     default:
         m_szText = nullptr;
@@ -92,6 +143,16 @@ PropertyPathStepDescriptor PropertyPathStepDescriptor::CreatePropertyAccess(_In_
     PropertyPathStepDescriptor d;
     d.m_kind = PropertyPathStepDescriptorKind::PropertyAccess;
     d.m_szText = szName;
+    d.m_ownsText = true;
+    return d;
+}
+
+PropertyPathStepDescriptor PropertyPathStepDescriptor::CreatePropertyAccessShared(_In_z_ const WCHAR* szName) noexcept
+{
+    PropertyPathStepDescriptor d;
+    d.m_kind = PropertyPathStepDescriptorKind::PropertyAccess;
+    d.m_szText = szName;
+    d.m_ownsText = false;
     return d;
 }
 
@@ -108,6 +169,7 @@ PropertyPathStepDescriptor PropertyPathStepDescriptor::CreateStringIndexer(_In_z
     PropertyPathStepDescriptor d;
     d.m_kind = PropertyPathStepDescriptorKind::StringIndexer;
     d.m_szText = szIndex;
+    d.m_ownsText = true;
     return d;
 }
 
@@ -116,6 +178,14 @@ PropertyPathStepDescriptor PropertyPathStepDescriptor::CreateDependencyProperty(
     PropertyPathStepDescriptor d;
     d.m_kind = PropertyPathStepDescriptorKind::DependencyProperty;
     d.m_pDP = pDP;
+    return d;
+}
+
+PropertyPathStepDescriptor PropertyPathStepDescriptor::CreateHeapStorage(_In_ HeapDescriptorStorage* pStorage) noexcept
+{
+    PropertyPathStepDescriptor d;
+    d.m_kind = PropertyPathStepDescriptorKind::HeapStorage;
+    d.m_pHeapStorage = pStorage;
     return d;
 }
 

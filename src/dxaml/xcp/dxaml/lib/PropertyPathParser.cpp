@@ -3,23 +3,106 @@
 
 #include "precomp.h"
 #include "PropertyPathParser.h"
+#include "PropertyPathCommonNames.h"
+#include <new>
 
 using namespace DirectUI;
 using namespace xaml_data;
 
-PropertyPathParser::PropertyPathParser()
-{ }
+// ============================================================================
+// PropertyPathParser - Iterator support
+// ============================================================================
 
-PropertyPathParser::~PropertyPathParser()
+size_t PropertyPathParser::size() const noexcept
 {
+    if (m_descriptors[0].GetKind() == PropertyPathStepDescriptorKind::None)
+    {
+        return 0;
+    }
+    if (m_descriptors[0].GetKind() == PropertyPathStepDescriptorKind::HeapStorage)
+    {
+        return m_descriptors[0].GetHeapStorage()->count;
+    }
+    // Inline storage: 1 or 2 elements
+    return m_descriptors[1].GetKind() == PropertyPathStepDescriptorKind::None ? 1 : 2;
 }
+
+PropertyPathStepDescriptor* PropertyPathParser::begin() noexcept
+{
+    if (empty())
+    {
+        return nullptr;
+    }
+    // If first descriptor is HeapStorage, iterate over the heap array
+    if (m_descriptors[0].GetKind() == PropertyPathStepDescriptorKind::HeapStorage)
+    {
+        return m_descriptors[0].GetHeapStorage()->begin();
+    }
+    // Otherwise iterate over inline array
+    return &m_descriptors[0];
+}
+
+PropertyPathStepDescriptor* PropertyPathParser::end() noexcept
+{
+    if (empty())
+    {
+        return nullptr;
+    }
+    if (m_descriptors[0].GetKind() == PropertyPathStepDescriptorKind::HeapStorage)
+    {
+        return m_descriptors[0].GetHeapStorage()->end();
+    }
+    return &m_descriptors[0] + size();
+}
+
+// Called from PropertyPathParser::Parse to move descriptors from stack storage into the object.
+// Must only be called once per object.
+void PropertyPathParser::FinalizeDescriptors(Jupiter::stack_vector<PropertyPathStepDescriptor, 2>& source)
+{
+    // Assert this hasn't been called for the object yet
+    ASSERT(size() == 0);
+
+    const size_t count = source.m_vector.size();
+
+    if (count == 0)
+    {
+        return;
+    }
+
+    if (count <= 2)
+    {
+        // Move directly into inline storage
+        for (size_t i = 0; i < count; ++i)
+        {
+            m_descriptors[i] = std::move(source.m_vector[i]);
+        }
+    }
+    else
+    {
+        // Allocate heap storage and move all descriptors there
+        HeapDescriptorStorage* heapStorage = HeapDescriptorStorage::Allocate(count);
+        PropertyPathStepDescriptor* heapDescriptors = heapStorage->begin();
+        for (size_t i = 0; i < count; ++i)
+        {
+            heapDescriptors[i] = std::move(source.m_vector[i]);
+        }
+        // Store the heap storage pointer in the first inline slot
+        m_descriptors[0] = PropertyPathStepDescriptor::CreateHeapStorage(heapStorage);
+    }
+
+    source.m_vector.clear();
+}
+
+// ============================================================================
+// PropertyPathParser implementation
+// ============================================================================
 
 _Check_return_ 
 HRESULT 
 PropertyPathParser::SetSource(_In_opt_z_ const WCHAR *szPath, _In_opt_ ::XamlServiceProviderContext* context)
 {
     // The source can only be called once
-    IFCEXPECT_RETURN(m_descriptors.m_vector.empty());
+    IFCEXPECT_RETURN(!HasParsedPath());
     IFC_RETURN(Parse(szPath, context));
 
     return S_OK;
@@ -37,12 +120,16 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
     PropertyPathStepDescriptor currentStep;
     bool fExpectingProperty = false;
 
+    // Build up descriptors in a local stack_vector during parsing.
+    // At the end, we'll transfer to our storage with FinalizeDescriptors.
+    Jupiter::stack_vector<PropertyPathStepDescriptor, 2> localDescriptors;
+
     // If the property path is empty or NULL then this means that we're binding
     // directly to the source
     if (szPropertyPath == NULL || szPropertyPath[0] == L'\0')
     {
         currentStep = PropertyPathStepDescriptor::CreateSourceAccess();
-        IFC(AppendStepDescriptor(std::move(currentStep)));
+        localDescriptors.m_vector.emplace_back(std::move(currentStep));
         goto Cleanup;
     }
 
@@ -75,7 +162,7 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
             }
 
             IFC(CreateDependencyPropertyPathStepDescriptor(cProperty - 1, pProperty, context, &currentStep));
-            IFC(AppendStepDescriptor(std::move(currentStep)));
+            localDescriptors.m_vector.emplace_back(std::move(currentStep));
 
             // Go to the next character
             fExpectingProperty = FALSE;
@@ -116,19 +203,30 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
             // will not be any characters to collect and thus no PropertyAccessPathStep to create
             if (cProperty > 0)
             {
-                szCurrentProperty = new WCHAR[cProperty + 1];   // +1 for the 0 at the end
+                // Check if this is a common property name we can use without allocation
+                const WCHAR* commonName = TryGetCommonPropertyName(pProperty, cProperty);
+                if (commonName != nullptr)
+                {
+                    // Use the shared static string - no heap allocation needed
+                    currentStep = PropertyPathStepDescriptor::CreatePropertyAccessShared(commonName);
+                }
+                else
+                {
+                    szCurrentProperty = new WCHAR[cProperty + 1];   // +1 for the 0 at the end
 
-                // Fill the string with the current property name, which will be from the last 
-                // separator until the '.'
-                wcsncpy_s(szCurrentProperty, cProperty + 1, pProperty, cProperty);
+                    // Fill the string with the current property name, which will be from the last 
+                    // separator until the '.'
+                    wcsncpy_s(szCurrentProperty, cProperty + 1, pProperty, cProperty);
+
+                    // Now we can create a property path step
+                    currentStep = PropertyPathStepDescriptor::CreatePropertyAccess(szCurrentProperty);
+                    szCurrentProperty = NULL; // Descriptor owns the string now
+                }
 
                 // Update the pointer for the current property
                 pCurrentProperty = pPropertyPath + 1;
 
-                // Now we can create a property path step
-                currentStep = PropertyPathStepDescriptor::CreatePropertyAccess(szCurrentProperty);
-                szCurrentProperty = NULL; // Descriptor owns the string now
-                IFC(AppendStepDescriptor(std::move(currentStep)));
+                localDescriptors.m_vector.emplace_back(std::move(currentStep));
 
                 // If the separator found was a '.' then the next 
                 // step must be a property otherwise it is an indexer
@@ -151,7 +249,7 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
             }
 
             // If we are now inside of an indexer, separated by a '[', let's extract the 
-            // index, looking for the matching ']' and analize it
+            // index, looking for the matching ']' and analyze it
             // We know that at this point we're not at the end of the string, the previous 
             // condition makes sure of that
             if (fHitIndexer)
@@ -160,7 +258,7 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
                 XUINT32 cIndex = 0;
 
                 // Look for the matching ']' or the end of the string, whatever
-                // happends first
+                // happens first
                 while (*pPropertyPath != L'\0' && *pPropertyPath != L']')
                 {
                     pPropertyPath++;
@@ -174,34 +272,31 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
 
                 cIndex = (XUINT32) (pPropertyPath - pIndex);
 
-                szIndex = new WCHAR[cIndex + 1];
-
-                // Fill the string with the index
-                if (0 != wcsncpy_s(szIndex, cIndex + 1, pIndex, cIndex))
+                // Check if this is a numeric index without allocating
+                if (IsNumericIndex(pIndex, cIndex))
                 {
-                    IFC(E_INVALIDARG);
-                }
-
-#pragma warning(push)
-                // wcsncpy_s will always null-terminate szIndex on success
-#pragma warning(disable: 6385)  // Read overflow of null terminated buffer using expression '(WCHAR *)szIndex'
-                // Create the right type of indexer
-                if (IsNumericIndex(szIndex))
-                {
-                    currentStep = PropertyPathStepDescriptor::CreateIntIndexer(_wtoi(szIndex));
-                    delete[] szIndex;
-                    szIndex = NULL;
+                    // _wtoi stops at first non-digit (should be something like ']'), so no copy needed
+                    currentStep = PropertyPathStepDescriptor::CreateIntIndexer(_wtoi(pIndex));
                 }
                 else
                 {
+                    // String indexer - need to allocate and copy
+                    szIndex = new WCHAR[cIndex + 1];
+
+                    // Fill the string with the index
+                    if (0 != wcsncpy_s(szIndex, cIndex + 1, pIndex, cIndex))
+                    {
+                        IFC(E_INVALIDARG);
+                    }
+
                     // TODO: Implement the string index, perhaps it is redundant?
                     currentStep = PropertyPathStepDescriptor::CreateStringIndexer(szIndex);
                     szIndex = NULL; // The descriptor now owns the string
                 }
-#pragma warning(pop)
+
 
                 // Now add the step to the list
-                IFC(AppendStepDescriptor(std::move(currentStep)));
+                localDescriptors.m_vector.emplace_back(std::move(currentStep));
 
                 // Move the char pointer to the begining of the next step
                 pPropertyPath++;
@@ -240,29 +335,30 @@ Cleanup:
 
     delete[] szCurrentProperty;
     delete[] szIndex;
+
+    // Transfer descriptors to optimal storage if parsing succeeded
+    if (SUCCEEDED(hr))
+    {
+        FinalizeDescriptors(localDescriptors);
+    }
+
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
-PropertyPathParser::AppendStepDescriptor(_In_ PropertyPathStepDescriptor&& descriptor)
+// pIndex might not be null-terminated
+bool PropertyPathParser::IsNumericIndex(_In_reads_(length) const WCHAR* pIndex, size_t length)
 {
-    HRESULT hr = S_OK;
-
-    m_descriptors.m_vector.emplace_back(std::move(descriptor));
-
-    RRETURN(hr);//RRETURN_REMOVAL
-}
-
-bool PropertyPathParser::IsNumericIndex(_In_z_ const WCHAR *szIndex)
-{
-    while (*szIndex != L'\0')
+    if (length == 0)
     {
-        if (!iswdigit(*szIndex))
+        return false;
+    }
+
+    for (size_t i = 0; i < length; ++i)
+    {
+        if (!iswdigit(pIndex[i]))
         {
             return false;
         }
-        szIndex++;
     }
 
     return true;

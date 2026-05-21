@@ -15,23 +15,16 @@
 using namespace DirectUI;
 using namespace DirectUISynonyms;
 
-Binding::~Binding()
-{
-    delete m_pPropertyPathParser;
-}
-
 _Check_return_ HRESULT Binding::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
 {
-    HRESULT hr = S_OK;
-
-    IFC(BindingGenerated::OnPropertyChanged2(args));
+    IFC_RETURN(BindingGenerated::OnPropertyChanged2(args));
 
     switch (args.m_pDP->GetIndex())
     {
     case KnownPropertyIndex::Binding_Path:
         if (!GetHandle()->ParserOwnsParent())
         {
-            IFC(UpdatePropertyPathParser());
+            IFC_RETURN(UpdatePropertyPathParser());
         }
         break;
     case KnownPropertyIndex::Binding_Converter:
@@ -42,9 +35,7 @@ _Check_return_ HRESULT Binding::OnPropertyChanged2(_In_ const PropertyChangedPar
         break;
     }
 
-Cleanup:
-
-    RRETURN(hr);
+    return S_OK;
 }
 
 // IBinding interface 
@@ -243,39 +234,29 @@ _Check_return_
 HRESULT 
 Binding::UpdatePropertyPathParser()
 {
-    HRESULT hr = S_OK;
-    HSTRING hPath = NULL;
-    LPCWSTR szNewPath = NULL;
+    wrl_wrappers::HString strPath;
+    IFC_RETURN(GetPathString(strPath.GetAddressOf()));
+    LPCWSTR szNewPath = strPath.GetRawBuffer(nullptr);
 
-    // Get rid of the old property path
-    delete m_pPropertyPathParser;
-    m_pPropertyPathParser = NULL;
+    // Create a new parser and move it in (PropertyPathParser only supports parsing once)
+    PropertyPathParser newParser;
+    IFC_RETURN(newParser.SetSource(szNewPath, nullptr));
+    m_propertyPathParser = std::move(newParser);
 
-    IFC(GetPathString(&hPath));
-
-    szNewPath = WindowsGetStringRawBuffer(hPath, NULL);
-
-    m_pPropertyPathParser = new PropertyPathParser();
-    IFC(m_pPropertyPathParser->SetSource(szNewPath, nullptr));
-
-Cleanup:
-    DELETE_STRING(hPath);
-    RRETURN(hr);
+    return S_OK;
 }
 
 _Check_return_ 
 HRESULT 
 Binding::EnsurePropertyPathParser(_In_opt_ DirectUI::XamlServiceProviderContext* context)
 {
-    if (m_pPropertyPathParser == nullptr)
+    if (!m_propertyPathParser.HasParsedPath())
     {
-        m_pPropertyPathParser = new PropertyPathParser();
-
         wrl_wrappers::HString strPath;
         IFC_RETURN(GetPathString(strPath.GetAddressOf()));
         LPCWSTR szPath = strPath.GetRawBuffer(nullptr);
 
-        IFC_RETURN(m_pPropertyPathParser->SetSource(szPath, context));
+        IFC_RETURN(m_propertyPathParser.SetSource(szPath, context));
     }
 
     return S_OK;
@@ -287,7 +268,7 @@ HRESULT
 Binding::GetPropertyPathParser(_Outptr_ PropertyPathParser **ppPropertyPath)
 {
     IFC_RETURN(EnsurePropertyPathParser(/* context */ nullptr));
-    *ppPropertyPath = m_pPropertyPathParser;
+    *ppPropertyPath = &m_propertyPathParser;
 
     return S_OK;
 }

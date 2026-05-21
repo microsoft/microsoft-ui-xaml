@@ -10,11 +10,10 @@
 #pragma once
 
 #include "Binding.g.h"
+#include "PropertyPathParser.h"
 
 namespace DirectUI
 {
-    class PropertyPathParser;
-    
     PARTIAL_CLASS(Binding)
     {
     protected:
@@ -22,11 +21,10 @@ namespace DirectUI
         Binding(): 
             m_fIsFrozen(FALSE),
             m_fHasConverter(FALSE),
-            m_fHasExplicitMode(FALSE),
-            m_pPropertyPathParser(NULL)
+            m_fHasExplicitMode(FALSE)
         { }
 
-        ~Binding() override;
+        ~Binding() override = default;
 
     public:
 
@@ -89,7 +87,7 @@ namespace DirectUI
         BOOLEAN m_fIsFrozen : 1;
         BOOLEAN __padding : 1;
 
-        PropertyPathParser *m_pPropertyPathParser;
+        PropertyPathParser m_propertyPathParser;
 
         friend class BindingExpression;
     };
