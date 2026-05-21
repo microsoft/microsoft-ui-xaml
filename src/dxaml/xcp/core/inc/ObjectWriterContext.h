@@ -9,6 +9,7 @@
 #include "XamlContext.h"
 #include "XamlProperty.h"
 #include "XamlBinaryMetadata.h"
+#include "XamlServiceProviderContext.h"
 #include <stack_vector.h>
 #include <utility>
 
@@ -17,12 +18,12 @@ class XamlProperty;
 class XamlSavedContext;
 class XamlSchemaContext;
 class ObjectWriter;
-class XamlServiceProviderContext;
 class XamlType;
 class XamlNamespace;
 
 class ObjectWriterContext final
-    : public XamlContext
+    : public XamlServiceProviderContext
+    , public XamlContext
     , public std::enable_shared_from_this<ObjectWriterContext>
 {
 private:
@@ -177,7 +178,7 @@ public:
 
     std::shared_ptr<XamlServiceProviderContext> get_TextSyntaxContext();
 
-    const std::shared_ptr<XamlServiceProviderContext> get_MarkupExtensionContext();
+    std::shared_ptr<XamlServiceProviderContext> get_MarkupExtensionContext();
 
     void PushScope();
     void PopScope();

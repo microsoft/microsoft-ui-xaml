@@ -6,11 +6,6 @@
 #include <ObjectWriterContext.h>
 #include "INamescope.h"
 
-XamlServiceProviderContext::XamlServiceProviderContext(_In_ const std::shared_ptr<ObjectWriterContext>& spObjectWriterContext)
-    : m_spObjectWriterContext(spObjectWriterContext)
-{
-}
-
 _Check_return_ HRESULT XamlServiceProviderContext::GetSchemaContext(
     _Out_ std::shared_ptr<XamlSchemaContext>& rspSchemaContext)
 {
@@ -194,3 +189,9 @@ _Check_return_ HRESULT XamlServiceProviderContext::ResolveProperty(
 
     return S_OK;
 }
+
+ObjectWriterContext* XamlServiceProviderContext::GetObjectWriterContext()
+{
+    return static_cast<ObjectWriterContext*>(this);
+}
+

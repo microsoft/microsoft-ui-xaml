@@ -502,12 +502,12 @@ Cleanup:
 
 std::shared_ptr<XamlServiceProviderContext> ObjectWriterContext::get_TextSyntaxContext()
 {
-    return std::make_shared<XamlServiceProviderContext>(shared_from_this());
+    return std::static_pointer_cast<XamlServiceProviderContext>(shared_from_this());
 }
 
-const std::shared_ptr<XamlServiceProviderContext> ObjectWriterContext::get_MarkupExtensionContext()
+std::shared_ptr<XamlServiceProviderContext> ObjectWriterContext::get_MarkupExtensionContext()
 {
-    return std::make_shared<XamlServiceProviderContext>(shared_from_this());
+    return std::static_pointer_cast<XamlServiceProviderContext>(shared_from_this());
 }
 
 xref_ptr<CDependencyObject> ObjectWriterContext::AmbientValue::GetDo() const

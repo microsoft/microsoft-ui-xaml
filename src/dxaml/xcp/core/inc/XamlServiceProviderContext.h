@@ -13,17 +13,16 @@ class ObjectWriterFrame;
 class CompressedObjectWriterStack;
 
 // Stores context from the XAML parser to be used by type converters and
-// markup extensions.
+// markup extensions. This class is used to isolate ObjectWriterContext from
+// general public view (both for purposes of implementation hiding and pruning
+// include dependencies). The class is not creatable or deletable.
 class XamlServiceProviderContext
 {
-private:
-    std::shared_ptr<ObjectWriterContext> m_spObjectWriterContext;
-
-public:
-    XamlServiceProviderContext(_In_ const std::shared_ptr<ObjectWriterContext>& spObjectWriterContext);
-
+protected:
+    XamlServiceProviderContext() = default;
     ~XamlServiceProviderContext() = default;
 
+public:
     _Check_return_ HRESULT GetSchemaContext(
         _Out_ std::shared_ptr<XamlSchemaContext>& rspSchemaContext);
 
@@ -96,10 +95,7 @@ public:
     void GetMarkupExtensionTargetProperty(_Out_ std::shared_ptr<XamlProperty>& spPropertyInfo);
 
 private:
-    std::shared_ptr<ObjectWriterContext> GetObjectWriterContext()
-    {
-        return m_spObjectWriterContext;
-    }
+    ObjectWriterContext* GetObjectWriterContext();
 
     _Check_return_ HRESULT ExtractTargetTypeAndPropertyName(
         _In_ const xstring_ptr_view& propertyName,
