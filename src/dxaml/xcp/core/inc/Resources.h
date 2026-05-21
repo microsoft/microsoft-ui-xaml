@@ -22,6 +22,7 @@ namespace Theming {
 namespace Diagnostics {
     class DiagnosticsInterop;
     class ResourceGraph;
+    class ResourceLookupLogger;
 }
 
 namespace Resources {
@@ -542,6 +543,9 @@ public:
     xstring_ptr m_strSource;
     CResourceDictionaryCollection * m_pMergedDictionaries;
     CResourceDictionary * m_pThemeDictionaries;
+
+private:
+    Diagnostics::ResourceLookupLogger* m_pResourceLookupLoggerNoRef; // cached for performance
 };
 
 // Class used to represent StaticResource extension.

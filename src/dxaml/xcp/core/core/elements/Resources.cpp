@@ -61,6 +61,7 @@ CResourceDictionary::CResourceDictionary(_In_ CCoreServices* pCore)
 #if DBG
     , m_processingBulkUndeferral(false)
 #endif
+    , m_pResourceLookupLoggerNoRef(pCore->GetResourceLookupLogger())
 {}
 
 HRESULT CResourceDictionary::CreateSystemColors(
@@ -389,13 +390,7 @@ CResourceDictionary::GetKeyNoRefImpl(
     _Outptr_ CDependencyObject** keyNoRef,
     _Out_opt_ xref_ptr<CResourceDictionary>* dictionaryReadFrom)
 {
-    Diagnostics::ResourceLookupLogger* loggerNoRef = GetContext()->GetResourceLookupLogger();
-
-    auto resourceLookupGuard = wil::scope_exit([&]
-    {
-        TRACE_HR_NORETURN(loggerNoRef->OnLeaveDictionary(this));
-    });
-    IFC_RETURN(loggerNoRef->OnEnterDictionary(this, key.GetKey()));
+    Diagnostics::EnterLeaveDictionaryLogger logger(m_pResourceLookupLoggerNoRef, this, key.GetKey());
 
     ResourceKey modifiedKey(key);
 
@@ -414,7 +409,7 @@ CResourceDictionary::GetKeyNoRefImpl(
     const bool useKeysNotFoundCache =
         (scope == Resources::LookupScope::LocalOnly) &&
         key.ShouldFilter() &&
-        !loggerNoRef->IsLogging();
+        !m_pResourceLookupLoggerNoRef->IsLogging();
 
     if (useKeysNotFoundCache)
     {
@@ -460,18 +455,7 @@ CResourceDictionary::GetKeyNoRefImpl(
         // So reset the GlobalTheme flag to indicate we can skip over it.
         for (XINT32 i = m_pMergedDictionaries->GetCount() - 1; i >= 0 && !value; i--)
         {
-            const bool isLogging = loggerNoRef->IsLogging(); // avoid the function call overhead if not logging
-            auto mergedDictionaryLookupGuard = wil::scope_exit([&]
-            {
-                if (isLogging)
-                {
-                    TRACE_HR_NORETURN(loggerNoRef->OnLeaveMergedDictionary(i));
-                }
-            });
-            if (isLogging)
-            {
-                IFC_RETURN(loggerNoRef->OnEnterMergedDictionary(i, key.GetKey()));
-            }
+            Diagnostics::EnterLeaveMergedDictionaryLogger mergedDictionaryLogger(m_pResourceLookupLoggerNoRef, i, key.GetKey());
 
             xref_ptr<CResourceDictionary> currentDictionary;
             currentDictionary.attach(static_cast<CResourceDictionary*>(m_pMergedDictionaries->GetItemWithAddRef(i)));
@@ -661,13 +645,7 @@ _Check_return_ HRESULT CResourceDictionary::GetKeyFromThemeDictionariesNoRef(
 
     if (m_pActiveThemeDictionary)
     {
-        Diagnostics::ResourceLookupLogger* loggerNoRef = GetContext()->GetResourceLookupLogger();
-
-        auto themeDictionaryLookupGuard = wil::scope_exit([&]
-        {
-            TRACE_HR_NORETURN(loggerNoRef->OnLeaveThemeDictionary(m_activeTheme));
-        });
-        IFC_RETURN(loggerNoRef->OnEnterThemeDictionary(m_activeTheme, key.GetKey()));
+        Diagnostics::EnterLeaveThemeDictionaryLogger themeDictionaryLogger(m_pResourceLookupLoggerNoRef, m_activeTheme, key.GetKey());
 
         auto core = GetContext();
 
