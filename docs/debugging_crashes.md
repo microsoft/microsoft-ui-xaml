@@ -19,14 +19,14 @@ This type of crash might manifest as a crash in your app, usually with a functio
 
 ### Using WinDbg
 
-In [WinDbg](https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools), use `.dump /ma <filename>` to save a full memory dump to the specified file when the crash happens.
+In [WinDbg](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools), use `.dump /ma <filename>` to save a full memory dump to the specified file when the crash happens.
 * If the crash happens sometime after app launch, then you can launch the app, attach to the app with WinDbg, and then do the repro steps to hit the crash.
 * If the crash happens on launch, then [WinDbg Preview](https://www.microsoft.com/store/p/windbg/9pgjgd53tn86) is recommended, since it contains a "Launch app package" option in
 "Start Debugging" which can launch and debug UWP and packaged apps from launch.
 
 ### Other options
 
-Another option is to set some regkeys to tell Windows to keep some crash dumps locally (see https://docs.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps).
+Another option is to set some regkeys to tell Windows to keep some crash dumps locally (see https://learn.microsoft.com/en-us/windows/win32/wer/collecting-user-mode-dumps).
 For example, running these commands in an administrative command prompt will set regkeys to tell Windows to save full (type=2) dumps into `C:\dumps`:
 
     reg add "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps" /v DumpFolder /d "C:\dumps"
@@ -53,12 +53,9 @@ But if it is a stowed exception crash, which has exception code: 0xc000027b, the
 
 Stowed exception crashes save away a possible error, which gets used later if no one handles the exception.
 XAML sometimes decides the error is fatal immediately, in which case the direct crash stack may be good, but more frequently the stack has unwound before it was determined to be fatal.
-This channel9 talk describes stowed exceptions in more detail: https://channel9.msdn.com/Shows/Inside/C000027B?term=stowed%20exception&lang-en=true.
-
 For stowed exception crashes, you can get more info on the crash by loading a crash dump in WinDbg and then using !pde.dse to dump the stowed exceptions.
-The !pde debugger extension is available [here](https://onedrive.live.com/?authkey=%21AJeSzeiu8SQ7T4w&id=DAE128BD454CF957%217152&cid=DAE128BD454CF957) in the PDE*.zip.
-(It is linked off the channel9 page above.)
-Put the appropiate x64 or x86 dll in that zip in the winext directory of a WinDbg install, and then "!pde.dse" should work on stowed exception crash dumps.
+The PDE debugger extension is included in modern versions of [WinDbg](https://learn.microsoft.com/en-us/windows-hardware/drivers/debugger/debugger-download-tools).
+Load it with `.load pde` and then run `!pde.dse` to dump stowed exception information.
 
 Frequently there will be multiple stowed exceptions, with some at the end which got handled/ignored.
 Most commonly, the first stowed exception is the interesting one.
