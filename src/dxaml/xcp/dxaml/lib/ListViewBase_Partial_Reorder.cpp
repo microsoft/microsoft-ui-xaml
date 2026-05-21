@@ -701,6 +701,7 @@ _Check_return_ HRESULT ListViewBase::GetDraggedItems(
 
         // create the list
         IFC(ctl::make<TrackerCollection<IInspectable*>>(&spGeneratedItemsListImpl));
+        spGeneratedItemsListImpl->Reserve(static_cast<UINT32>(selectedItemIndices.size()));
         spGeneratedItemsList = spGeneratedItemsListImpl;
 
         IFC(get_Items(&spItems));

@@ -463,6 +463,11 @@ namespace DirectUI
             RRETURN(S_OK);
         }
 
+        void Reserve(_In_ uint32_t capacity)
+        {
+            m_vector.Reserve(capacity);
+        }
+        
     protected:
 
         void OnReferenceTrackerWalk(INT walkType) override

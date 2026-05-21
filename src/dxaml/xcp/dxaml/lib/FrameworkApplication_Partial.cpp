@@ -1219,6 +1219,7 @@ _Check_return_ HRESULT FrameworkApplication::get_WindowsImpl(_Outptr_result_mayb
 
     ctl::ComPtr<TrackerCollection<xaml::Window*>> windowCollection;
     IFC_RETURN(ctl::make(&windowCollection));
+    windowCollection->Reserve(static_cast<UINT32>(windowVector.size()));
     for (auto window : windowVector)
     {
         // DirectUI::Window is implicitly cast to xaml::Window*

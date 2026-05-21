@@ -2186,6 +2186,7 @@ _Check_return_
         IFC(ctl::make<TrackerCollection<xaml::UIElement*>>(&spRealizedChildren));
 
         IFC(spChildren->get_Size(&nCount));
+        spRealizedChildren->Reserve(nCount);
         for (UINT i = 0; i < nCount; i++)
         {
             ctl::ComPtr<xaml::IUIElement> spChild;

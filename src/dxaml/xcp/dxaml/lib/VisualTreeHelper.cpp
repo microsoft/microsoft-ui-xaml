@@ -622,6 +622,7 @@ VisualTreeHelper::MakeUIElementList(
     ctl::ComPtr<TrackerCollection<xaml::UIElement*>> spUIEC;
 
     IFC(ctl::make(&spUIEC));
+    spUIEC->Reserve(nCount);
     for (XUINT32 i = 0; i < nCount; i++)
     {
         ctl::ComPtr<DependencyObject> spDO;
@@ -679,6 +680,7 @@ VisualTreeHelper::GetOpenPopupsStatic(
         if (pPopupRoot)
         {
             IFC(pPopupRoot->GetOpenPopups(&nCountOpenedPopups, &ppOpenedPopups));
+            spPopupCollection->Reserve(nCountOpenedPopups);
 
             for (XINT32 i = 0; i < nCountOpenedPopups; i++)
             {

@@ -1233,6 +1233,7 @@ TimePicker::GenerateHours()
     IFC(m_tpCalendar->put_Hour(firstHourInThisPeriod));
 
     IFC(m_tpHourSource->Clear());
+    m_tpHourSource->Reserve(numberOfHours);
 
     for (INT32 hourOffset = 0; hourOffset < numberOfHours; hourOffset++)
     {
@@ -1309,6 +1310,7 @@ TimePicker::GeneratePeriods()
     IFC(SetSentinelDate(m_tpCalendar.Get()));
 
     IFC(m_tpPeriodSource->Clear());
+    m_tpPeriodSource->Reserve(2);
 
     IFC(m_tpCalendar->get_FirstPeriodInThisDay(&firstPeriodInThisDay));
     IFC(m_tpCalendar->put_Period(firstPeriodInThisDay));
