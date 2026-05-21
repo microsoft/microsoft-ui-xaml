@@ -88,6 +88,7 @@
 #include "Binding.g.h"
 #include "BindingExpression.g.h"
 #include "PropertyPath.g.h"
+#include "DirectSourceBindingExpression.h"
 #include "Callback.h"
 #include "DxamlCoreTestHooks.g.h"
 #include "NullKeyedResource.g.h"
@@ -4705,6 +4706,30 @@ bool DXamlCore::TryGetXamlIslandBoundsForElement(_In_opt_ CDependencyObject* dep
     IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(target, &targetDO));
 
     IFC_RETURN(SetBinding(ctl::as_iinspectable(sourceDO.Get()), path, targetDO.Get(), targetPropertyIndex));
+    return S_OK;
+}
+
+/* static */ _Check_return_ HRESULT DXamlCore::SetDirectBinding(
+    _In_ DependencyObject* source,
+    KnownPropertyIndex sourcePropertyIndex,
+    _In_ DependencyObject* target,
+    KnownPropertyIndex targetPropertyIndex,
+    _In_opt_ xaml_data::IValueConverter* converter)
+{
+    // Create the lightweight DirectSourceBindingExpression (modeled after TemplateBindingExpression)
+    const auto* pSourceProperty = MetadataAPI::GetDependencyPropertyByIndex(sourcePropertyIndex);
+    const auto* pTargetProperty = MetadataAPI::GetDependencyPropertyByIndex(targetPropertyIndex);
+
+    ctl::ComPtr<DirectSourceBindingExpression> spExpression;
+    IFC_RETURN(DirectSourceBindingExpression::Create(
+        source,
+        pSourceProperty,
+        converter,
+        spExpression.ReleaseAndGetAddressOf()));
+
+    // Attach the expression to the target using the public SetExpressionCore method
+    IFC_RETURN(target->SetExpressionCore(pTargetProperty, spExpression.Get(), ::BaseValueSourceUnknown));
+
     return S_OK;
 }
 

@@ -425,6 +425,8 @@ namespace DirectUI
     public:
         // Internal SetBinding
         _Check_return_ HRESULT SetBindingCore(_In_ const CDependencyProperty* pProperty, _In_ Binding* pBinding);
+        // Internal SetExpression (for DirectSourceBindingExpression and similar lightweight expressions)
+        _Check_return_ HRESULT SetExpressionCore(_In_ const CDependencyProperty* pProperty, _In_ BindingExpressionBase* pExpression, _In_::BaseValueSource baseValueSource = ::BaseValueSourceUnknown);
         _Ret_maybenull_ EffectiveValueEntry* TryGetEffectiveValueEntry(_In_ KnownPropertyIndex nPropertyIndex);
 
         _Check_return_ HRESULT GetDefaultValueInternal(_In_ const CDependencyProperty* pDP, _Out_ IInspectable** ppValue);

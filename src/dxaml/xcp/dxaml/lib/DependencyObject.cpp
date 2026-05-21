@@ -1348,6 +1348,15 @@ Cleanup:
     RRETURN(hr);
 }
 
+_Check_return_ HRESULT
+DependencyObject::SetExpressionCore(_In_ const CDependencyProperty* pProperty, _In_ BindingExpressionBase* pExpression, _In_::BaseValueSource baseValueSource)
+{
+    // Directly set the expression to the target property
+    // This is used by DirectSourceBindingExpression and other lightweight binding expressions
+    IFC_RETURN(SetValueExpression(pProperty, pExpression, baseValueSource));
+    return S_OK;
+}
+
 // This method will wrap the incoming IInspectable into a MOR if needed
 // or it will just let the values go.
 // The wrapping into a MOR will be done for now based on whether the incoming IPV

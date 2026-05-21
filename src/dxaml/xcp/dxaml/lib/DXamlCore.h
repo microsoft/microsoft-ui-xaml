@@ -637,6 +637,15 @@ namespace DirectUI
             KnownPropertyIndex targetPropertyIndex,
             _In_opt_ xaml_data::IValueConverter* converter = nullptr);
 
+        // Lightweight binding using DirectSourceBindingExpression
+        // This avoids the overhead of full Binding/BindingExpression infrastructure
+        static _Check_return_ HRESULT SetDirectBinding(
+            _In_ DependencyObject* source,
+            KnownPropertyIndex sourcePropertyIndex,
+            _In_ DependencyObject* target,
+            KnownPropertyIndex targetPropertyIndex,
+            _In_opt_ xaml_data::IValueConverter* converter = nullptr);
+
         static _Check_return_ HRESULT SetBindingCore(
             _In_ CDependencyObject* source,
             _In_ HSTRING path,

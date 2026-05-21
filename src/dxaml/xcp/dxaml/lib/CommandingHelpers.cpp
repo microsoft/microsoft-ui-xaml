@@ -5,6 +5,8 @@
 #include "CommandingHelpers.h"
 #include "AutomationProperties.h"
 #include "BindingExpression.g.h"
+#include "BindingExpressionBase_Partial.h"
+#include "DirectSourceBindingExpression.h"
 #include "IconElement.g.h"
 #include "IconSource.g.h"
 #include "IconSourceElement.g.h"
@@ -111,10 +113,14 @@ public:
                 ctl::ComPtr<KeyboardAccelerator> keyboardAcceleratorCopy;
                 IFC_RETURN(ctl::make(&keyboardAcceleratorCopy));
 
-                IFC_RETURN(DXamlCore::SetBinding(keyboardAccelerator.Get(), wrl_wrappers::HStringReference(L"IsEnabled").Get(), keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_IsEnabled));
-                IFC_RETURN(DXamlCore::SetBinding(keyboardAccelerator.Get(), wrl_wrappers::HStringReference(L"Key").Get(), keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_Key));
-                IFC_RETURN(DXamlCore::SetBinding(keyboardAccelerator.Get(), wrl_wrappers::HStringReference(L"Modifiers").Get(), keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_Modifiers));
-                IFC_RETURN(DXamlCore::SetBinding(keyboardAccelerator.Get(), wrl_wrappers::HStringReference(L"ScopeOwner").Get(), keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_ScopeOwner));
+                // Use lightweight DirectSourceBindingExpression for the property bindings
+                if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(keyboardAccelerator.Get()))
+                {
+                    IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::KeyboardAccelerator_IsEnabled, keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_IsEnabled));
+                    IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::KeyboardAccelerator_Key, keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_Key));
+                    IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::KeyboardAccelerator_Modifiers, keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_Modifiers));
+                    IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::KeyboardAccelerator_ScopeOwner, keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_ScopeOwner));
+                }
                 IFC_RETURN(returnValueAsKeyboardAcceleratorCollection->Append(keyboardAcceleratorCopy.Get()));
             }
 
@@ -171,7 +177,11 @@ _Check_return_ HRESULT CommandingHelpers::BindToLabelPropertyIfUnset(
 
     if (!localLabel || localLabel.IsEmpty())
     {
-        IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"Label").Get(), target, labelPropertyIndex));
+        // Use lightweight DirectSourceBindingExpression instead of full Binding infrastructure
+        if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+        {
+            IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_Label, target, labelPropertyIndex));
+        }
     }
 
     return S_OK;
@@ -190,9 +200,13 @@ _Check_return_ HRESULT CommandingHelpers::BindToIconPropertyIfUnset(
 
     if (!localIcon)
     {
-        ctl::ComPtr<IconSourceToIconSourceElementConverter> converter;
-        IFC_RETURN(ctl::make(&converter));
-        IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"IconSource").Get(), target, iconPropertyIndex, converter.Get()));
+        // Use lightweight DirectSourceBindingExpression with converter
+        if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+        {
+            ctl::ComPtr<IconSourceToIconSourceElementConverter> converter;
+            IFC_RETURN(ctl::make(&converter));
+            IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_IconSource, target, iconPropertyIndex, converter.Get()));
+        }
     }
 
     return S_OK;
@@ -211,7 +225,11 @@ _Check_return_ HRESULT CommandingHelpers::BindToIconSourcePropertyIfUnset(
 
     if (!localIconSource)
     {
-        IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"IconSource").Get(), target, iconSourcePropertyIndex));
+        // Use lightweight DirectSourceBindingExpression
+        if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+        {
+            IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_IconSource, target, iconSourcePropertyIndex));
+        }
     }
 
     return S_OK;
@@ -229,9 +247,14 @@ _Check_return_ HRESULT CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
 
     if (targetKeyboardAcceleratorCount == 0)
     {
-        ctl::ComPtr<KeyboardAcceleratorCopyConverter> converter;
-        IFC_RETURN(ctl::make(&converter));
-        IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"KeyboardAccelerators").Get(), target, KnownPropertyIndex::UIElement_KeyboardAccelerators, converter.Get()));
+        // Use lightweight DirectSourceBindingExpression with converter
+        // The KeyboardAcceleratorCopyConverter creates copies and internal bindings
+        if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+        {
+            ctl::ComPtr<KeyboardAcceleratorCopyConverter> converter;
+            IFC_RETURN(ctl::make(&converter));
+            IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_KeyboardAccelerators, target, KnownPropertyIndex::UIElement_KeyboardAccelerators, converter.Get()));
+        }
     }
 
     return S_OK;
@@ -246,7 +269,11 @@ _Check_return_ HRESULT CommandingHelpers::BindToAccessKeyIfUnset(
 
     if (!localAccessKey || localAccessKey.IsEmpty())
     {
-        IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"AccessKey").Get(), target, KnownPropertyIndex::UIElement_AccessKey));
+        // Use lightweight DirectSourceBindingExpression
+        if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+        {
+            IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_AccessKey, target, KnownPropertyIndex::UIElement_AccessKey));
+        }
     }
 
     return S_OK;
@@ -262,26 +289,30 @@ _Check_return_ HRESULT CommandingHelpers::BindToDescriptionPropertiesIfUnset(
     wrl_wrappers::HString localHelpText;
     IFC_RETURN(AutomationProperties::GetHelpTextStatic(target, localHelpText.ReleaseAndGetAddressOf()));
 
-    if (!localHelpText || localHelpText.IsEmpty())
+    // Use lightweight DirectSourceBindingExpression
+    if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
     {
-        IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"Description").Get(), target, KnownPropertyIndex::AutomationProperties_HelpText));
-    }
+        if (!localHelpText || localHelpText.IsEmpty())
+        {
+            IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_Description, target, KnownPropertyIndex::AutomationProperties_HelpText));
+        }
 
-    ctl::ComPtr<IInspectable> localToolTipAsI;
-    IFC_RETURN(ToolTipServiceFactory::GetToolTipStatic(target, &localToolTipAsI));
+        ctl::ComPtr<IInspectable> localToolTipAsI;
+        IFC_RETURN(ToolTipServiceFactory::GetToolTipStatic(target, &localToolTipAsI));
 
-    wrl_wrappers::HString localToolTipAsString;
-    ctl::ComPtr<IToolTip> localToolTip;
+        wrl_wrappers::HString localToolTipAsString;
+        ctl::ComPtr<IToolTip> localToolTip;
 
-    if (localToolTipAsI)
-    {
-        IFC_RETURN(FrameworkElement::GetStringFromObject(localToolTipAsI.Get(), localToolTipAsString.ReleaseAndGetAddressOf()));
-        localToolTip = localToolTipAsI.AsOrNull<IToolTip>();
-    }
+        if (localToolTipAsI)
+        {
+            IFC_RETURN(FrameworkElement::GetStringFromObject(localToolTipAsI.Get(), localToolTipAsString.ReleaseAndGetAddressOf()));
+            localToolTip = localToolTipAsI.AsOrNull<IToolTip>();
+        }
 
-    if ((!localToolTipAsString || localToolTipAsString.IsEmpty()) && !localToolTip)
-    {
-        IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"Description").Get(), target, KnownPropertyIndex::ToolTipService_ToolTip));
+        if ((!localToolTipAsString || localToolTipAsString.IsEmpty()) && !localToolTip)
+        {
+            IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_Description, target, KnownPropertyIndex::ToolTipService_ToolTip));
+        }
     }
 
     return S_OK;
@@ -292,8 +323,10 @@ _Check_return_ HRESULT CommandingHelpers::ClearBindingIfSet(
     _In_ FrameworkElement* target,
     _In_ KnownPropertyIndex targetPropertyIndex)
 {
+    const auto* pProperty = MetadataAPI::GetDependencyPropertyByIndex(targetPropertyIndex);
+
     ctl::ComPtr<IBindingExpression> bindingExpression;
-    IFC_RETURN(target->GetBindingExpression(MetadataAPI::GetDependencyPropertyByIndex(targetPropertyIndex), &bindingExpression));
+    IFC_RETURN(target->GetBindingExpression(pProperty, &bindingExpression));
 
     if (bindingExpression)
     {
@@ -302,7 +335,23 @@ _Check_return_ HRESULT CommandingHelpers::ClearBindingIfSet(
 
         if (bindingSource && ctl::are_equal(bindingSource.Get(), uiCommand))
         {
-            IFC_RETURN(target->ClearValue(MetadataAPI::GetDependencyPropertyByIndex(targetPropertyIndex)));
+            IFC_RETURN(target->ClearValue(pProperty));
+        }
+    }
+    else
+    {
+        // GetBindingExpression only finds BindingExpression (IBindingExpression).
+        // Also check for DirectSourceBindingExpression which extends BindingExpressionBase
+        // but does not implement IBindingExpression.
+        ctl::ComPtr<IInspectable> localValue;
+        IFC_RETURN(target->ReadLocalValue(pProperty, &localValue));
+
+        ctl::ComPtr<IExpressionBase> expressionBase;
+        if (localValue && SUCCEEDED(localValue.As(&expressionBase)) && expressionBase)
+        {
+            // This is an internally-set binding expression (DirectSourceBindingExpression).
+            // Since only our commanding code creates these, it's safe to clear it.
+            IFC_RETURN(target->ClearValue(pProperty));
         }
     }
 

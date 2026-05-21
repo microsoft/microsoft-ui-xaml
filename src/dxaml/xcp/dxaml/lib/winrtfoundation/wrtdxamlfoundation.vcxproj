@@ -91,6 +91,7 @@
         <ClCompile Include="..\XamlReader.cpp"/>
         <ClCompile Include="..\LayoutInformation.cpp"/>
         <ClCompile Include="..\TemplateBindingExpression.cpp"/>
+        <ClCompile Include="..\DirectSourceBindingExpression.cpp"/>
         <ClCompile Include="..\ThemeResourceExpression.cpp"/>
         <ClCompile Include="..\KeyboardNavigation.cpp"/>
         <ClCompile Include="..\DefaultStyles.cpp"/>
