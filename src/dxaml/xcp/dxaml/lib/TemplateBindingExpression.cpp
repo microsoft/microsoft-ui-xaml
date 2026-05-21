@@ -13,7 +13,10 @@ TemplateBindingExpression::~TemplateBindingExpression()
 {
     ReleaseInterface(m_pSource);
     m_pTarget = nullptr;
-    ReleaseInterface(m_pCustomHandler);
+    // Note: If m_bRegisteredForPropertyChanges is true here, we're leaking the
+    // registration with the source's event source. This shouldn't happen in
+    // normal operation as OnDetach should be called first.
+    ASSERT(!m_bRegisteredForPropertyChanges);
 }
 
 // Initializes a new instance of the TemplateBindingExpression class.
@@ -69,14 +72,13 @@ _Check_return_ HRESULT TemplateBindingExpression::OnAttach(
 {
     HRESULT hr = S_OK;
     IDPChangedEventSource* pCustomEventSource = NULL;
-    TemplateBindingExpressionCustomPropertyChangedHandler* pCustomHandler = NULL;
     Control* pSource = NULL;
 
     IFCPTR(pTarget);
     IFCPTR(pTargetProperty);
 
-    // We shouldn't have any event handlers at this point
-    IFCEXPECT(!m_pCustomHandler);
+    // We shouldn't be registered at this point
+    IFCEXPECT(!m_bRegisteredForPropertyChanges);
 
     m_pTarget = pTarget;    // m_pTarget is a weak reference so we don't AddRef
     m_pTargetProperty = pTargetProperty;
@@ -87,16 +89,11 @@ _Check_return_ HRESULT TemplateBindingExpression::OnAttach(
         IFC(CoreImports::ContentControl_SetContentIsTemplateBoundManaged(static_cast<CContentControl*>(m_pTarget->GetHandle()), true));
     }
 
-    // Attach the custom property changed handler
+    // Register this expression directly as a property changed handler
     IFC(get_Source(&pSource));
     IFC(pSource->GetDPChangedEventSource(&pCustomEventSource));
-
-    pCustomHandler = new TemplateBindingExpressionCustomPropertyChangedHandler();
-    IFC( pCustomHandler->Initialize(this));
-
-    m_pCustomHandler = pCustomHandler;
-    pCustomHandler = NULL;
-    IFC(pCustomEventSource->AddHandler(m_pCustomHandler));
+    IFC(pCustomEventSource->AddHandler(this));
+    m_bRegisteredForPropertyChanges = true;
 
 Cleanup:
     if (FAILED(hr))
@@ -105,7 +102,6 @@ Cleanup:
         m_pTarget = NULL;
     }
     ReleaseInterface(pCustomEventSource);
-    ReleaseInterface(pCustomHandler);
     ctl::release_interface(pSource);
     RRETURN(hr);
 }
@@ -135,7 +131,7 @@ _Check_return_ HRESULT TemplateBindingExpression::OnDetach()
     if (m_pTarget == NULL && m_pTargetProperty == NULL)
     {
         // Already detached.
-        ASSERT(m_pCustomHandler == NULL);
+        ASSERT(!m_bRegisteredForPropertyChanges);
         goto Cleanup;
     }
 
@@ -149,22 +145,22 @@ _Check_return_ HRESULT TemplateBindingExpression::OnDetach()
     m_pTarget = NULL;
     m_pTargetProperty = nullptr;
 
-    // The event handlers should already be attached
-    IFCEXPECT(m_pCustomHandler);
-
-    // Detach the custom property changed event handler
-    if (SUCCEEDED(get_Source(&pSource)))
+    // Unregister from property changed events if we were registered
+    if (m_bRegisteredForPropertyChanges)
     {
-        IFC(pSource->TryGetDPChangedEventSource(&pCustomEventSource));
-        if (pCustomEventSource != NULL)
+        if (SUCCEEDED(get_Source(&pSource)))
         {
-            IFC(pCustomEventSource->RemoveHandler(m_pCustomHandler));
+            IFC(pSource->TryGetDPChangedEventSource(&pCustomEventSource));
+            if (pCustomEventSource != NULL)
+            {
+                IFC(pCustomEventSource->RemoveHandler(this));
+            }
         }
+        m_bRegisteredForPropertyChanges = false;
     }
 
 Cleanup:
     ReleaseInterface(pCustomEventSource);
-    ReleaseInterface(m_pCustomHandler);
     ctl::release_interface(pSource);
     RRETURN(hr);
 }
@@ -419,30 +415,30 @@ Cleanup:
 
 // Handle the custom DependencyProperty changed event for the source property
 // and refresh the TemplateBindingExpression.
-IFACEMETHODIMP TemplateBindingExpressionCustomPropertyChangedHandler::Invoke(
+IFACEMETHODIMP TemplateBindingExpression::Invoke(
     _In_ xaml::IDependencyObject* pSender,
     _In_ const CDependencyProperty* pDP)
 {
-    HRESULT hr = S_OK;
-    TemplateBindingExpression *pExpression = NULL;
-    IExpressionBase *pExpressionBase = NULL;
-
-    IFCEXPECT(m_pExpressionRef);
-
-    IFC(ctl::resolve_weakref(m_pExpressionRef, pExpressionBase));
-    if (pExpressionBase == NULL)
+    if (pDP->GetIndex() == m_pSourceProperty->GetIndex())
     {
-        goto Cleanup;
-    }
-    pExpression = static_cast<TemplateBindingExpression*>(pExpressionBase);
-
-    if (pDP->GetIndex() == pExpression->m_pSourceProperty->GetIndex())
-    {
-        IFC(pExpression->OnSourcePropertyChanged());
+        IFC_RETURN(OnSourcePropertyChanged());
     }
 
-Cleanup:
+    return S_OK;
+}
 
-    ReleaseInterface(pExpressionBase);
-    RRETURN(hr);
+// QueryInterfaceImpl override to expose IDPChangedEventHandler
+HRESULT TemplateBindingExpression::QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject)
+{
+    if (InlineIsEqualGUID(riid, __uuidof(IDPChangedEventHandler)))
+    {
+        *ppObject = static_cast<IDPChangedEventHandler*>(this);
+    }
+    else
+    {
+        return BindingExpressionBase::QueryInterfaceImpl(riid, ppObject);
+    }
+
+    AddRefOuter();
+    return S_OK;
 }

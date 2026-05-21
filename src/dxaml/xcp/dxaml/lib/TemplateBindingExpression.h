@@ -11,18 +11,24 @@
 namespace DirectUI
 {
     class Control;
-    class TemplateBindingExpressionCustomPropertyChangedHandler;
 
     // Expression used to evaluate template bindings.  The core will create
     // TemplateBindingExpressions by calling the SetTemplateBinding callbacks
     // that are also defined below on TemplateBindingExpression.
+    //
+    // Reference ownership notes:
+    // This class implements IDPChangedEventHandler directly (rather than using a
+    // separate handler object) to save one heap allocation per template binding.
+    // When attached, the source Control's DPChangedEventSource holds a strong
+    // reference to this expression via its TrackerPtr handler list. This does NOT
+    // create a reference cycle because m_pSource is a weak reference back to the
+    // Control. The expression stays alive as long as it's registered with the
+    // event source, which is correct - OnDetach must be called to unregister
+    // before the expression can be destroyed.
     class TemplateBindingExpression :
-        public BindingExpressionBase
+        public BindingExpressionBase,
+        public IDPChangedEventHandler
     {
-        // Grant friend access to the dependency property changed handlers so
-        // they can refresh the value of the experssion when the source
-        // property is changed.
-        friend class TemplateBindingExpressionCustomPropertyChangedHandler;
 
     protected:
         TemplateBindingExpression() = default;
@@ -35,8 +41,8 @@ namespace DirectUI
         const CDependencyProperty* m_pSourceProperty = nullptr;  // The source property
         DependencyObject* m_pTarget = nullptr;                // The target instance (this is a weak reference)
         const CDependencyProperty* m_pTargetProperty = nullptr;  // The target property
-        TemplateBindingExpressionCustomPropertyChangedHandler* m_pCustomHandler = nullptr; // Custom DependencyProperty changed handler
         bool m_bRequiresRuntimeTypeCheck = false;          // Flag indicating whether a runtime type check is required when getting the value from the target
+        bool m_bRegisteredForPropertyChanges = false;      // Flag indicating whether we've registered with the source's property changed event
         // Flag indicating whether we should ignore source updates.
         // If the effective source property is an on-demand property, then retrieving its value
         // can cause it to be created, which will then trigger a property changed notification
@@ -119,40 +125,15 @@ namespace DirectUI
             _In_ const CDependencyProperty* sourceProperty,
             _In_ CDependencyObject* target,
             _In_ const CDependencyProperty* targetProperty);
-    };
 
-    // Event handler for custom DependencyProperty change events that need to
-    // refresh the TemplateBindingExpression when the source property changes.
-    class TemplateBindingExpressionCustomPropertyChangedHandler
-        : public ctl::implements<IDPChangedEventHandler>
-    {
-    private:
-
-        ~TemplateBindingExpressionCustomPropertyChangedHandler() override
-        {
-            ReleaseInterface(m_pExpressionRef);
-        }
-        
-        // The TemplateBindingExpression to update when the property is changed
-        IWeakReference * m_pExpressionRef;
-
-    public:
-        // Initializes a new instance of the
-        // TemplateBindingExpressionCustomPropertyChangedHandler class.
-        TemplateBindingExpressionCustomPropertyChangedHandler()
-            : m_pExpressionRef(NULL)
-        {
-        }
-
-        _Check_return_ HRESULT Initialize( _In_ TemplateBindingExpression *pExpression)
-        {
-            return pExpression->GetWeakReference( &m_pExpressionRef );
-        }
-
-        // Handle the custom DependencyProperty changed event for the source
-        // property and refresh the TemplateBindingExpression.
-        IFACEMETHOD(Invoke)(
+    // IDPChangedEventHandler
+        IFACEMETHODIMP Invoke(
             _In_ xaml::IDependencyObject* pSender,
             _In_ const CDependencyProperty* pDP) override;
+
+    protected:
+        // Supports the IDPChangedEventHandler interface.
+        HRESULT QueryInterfaceImpl(_In_ REFIID riid, _Out_ void** ppObject) override;
     };
+
 }
