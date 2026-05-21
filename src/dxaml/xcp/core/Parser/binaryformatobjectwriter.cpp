@@ -89,18 +89,178 @@ void BinaryFormatObjectWriter::SetActiveObject(_In_ std::shared_ptr<XamlQualifie
     m_spContext->Current().set_Type(std::shared_ptr<XamlType>());
 }
 
+#if TRACE_PARSER_COMMANDS
+static UINT32 s_nodeNumber = 0;
+#endif
+
+#if TRACE_PARSER_COMMANDS
+// Problem - we need to know the object pointer before it's created.
+//
+// We want a region of interest in WPA that marks object creation + initialization, which is the region between a
+// CreateTypeBeginInit and the matching EndInit[PopScope]. We log 4 events here:
+//      1. CreateType start event
+//      2. CreateType end event
+//      3. EndInit start event
+//      4. EndInit end event
+//
+// The region spans from 1 to 4, which we can define in the region of interest file by matching the object pointer,
+// but the object pointer isn't available until 2. We invent an "objectId" to work around this. Each CreateType
+// increments the objectId before event 1. Event 2 maps the object pointer to the objectId. Events 3 and 4 can then
+// look up the objectId from the object pointer, which allows the objectId to be matched in the regions of interest file.
+//
+// There's overhead in keeping the objectId-to-pointer map. This map is expected to be small since the parser builds
+// objects in a stack. Once an object is fully initialized, it's popped from the stack and can be removed from the map.
+
+static UINT32 s_objectId = 1;
+std::vector<std::tuple<UINT32, uint64_t, size_t, size_t>> s_objectIdToPointerMap;
+
+void AddObjectIdPointerMapping(UINT32 objectId, uint64_t pointer, size_t allocCount, size_t freeCount)
+{
+    s_objectIdToPointerMap.emplace_back(objectId, pointer, allocCount, freeCount);
+    if (s_objectIdToPointerMap.size() > 30)
+    {
+        // Log the unexpected logging overhead as an event. Sigh.
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "BinaryFormatObjectWriter - ObjectIdMapTooBig",
+            TraceLoggingUInt64(s_objectIdToPointerMap.size(), "MapSize"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    }
+}
+
+UINT32 GetObjectIdFromPointer(uint64_t pointer)
+{
+    auto it = std::find_if(s_objectIdToPointerMap.begin(), s_objectIdToPointerMap.end(), [pointer](const std::tuple<UINT32, uint64_t, size_t, size_t>& tuple)
+    {
+        return std::get<1>(tuple) == pointer;
+    });
+
+    if (it != s_objectIdToPointerMap.end())
+    {
+        return std::get<0>(*it);
+    }
+
+    return 0;
+}
+
+std::tuple<UINT32, uint64_t, size_t, size_t> RemoveObjectIdMapping(uint64_t pointer)
+{
+    auto it = std::find_if(s_objectIdToPointerMap.begin(), s_objectIdToPointerMap.end(), [pointer](const std::tuple<UINT32, uint64_t, size_t, size_t>& tuple)
+    {
+        return std::get<1>(tuple) == pointer;
+    });
+
+    if (it != s_objectIdToPointerMap.end())
+    {
+        auto entry = *it;
+        s_objectIdToPointerMap.erase(it);
+        return entry;
+    }
+
+    return std::make_tuple(0, 0, 0, 0);
+}
+
+// Copied from ObjectWriterRuntime::SetNameImpl
+_Ret_z_ const WCHAR* GetNameFromNode(_In_ const ObjectWriterNode& node)
+{
+    CValue* pName = node.GetValue()->GetCValuePtr();
+
+    switch (pName->GetType())
+    {
+        case valueString:
+        {
+            return pName->AsString().GetBuffer();
+        }
+        case valueObject:
+        {
+            CString* pString = do_pointer_cast<CString>(pName->AsObject());
+            if (pString != nullptr)
+            {
+                return pString->m_strString.GetBuffer();
+            }
+            else
+            {
+                return L"{Markup extension}";
+            }
+        }
+    }
+
+    return L"{Unknown}";
+}
+
+// Copied from BinaryFormatObjectWriter::AddToDictionaryOnCurrentInstance
+xstring_ptr GetDictionaryKeyFromNode(_In_ const ObjectWriterNode& node, _In_ std::shared_ptr<XamlType> lastType, _In_ std::shared_ptr<XamlQualifiedObject>& lastInstance)
+{
+    std::shared_ptr<XamlQualifiedObject> spValue = node.GetValue();
+    xstring_ptr ssKey;
+
+    // if there was no provided key property, look for it
+    // by retrieving members
+    if (!spValue)
+    {
+        std::shared_ptr<XamlProperty> spKeyProperty;
+        XamlQualifiedObject value;
+
+        IFCFAILFAST(lastType->get_DictionaryKeyProperty(spKeyProperty));
+        if (spKeyProperty)
+        {
+            IGNOREHR(spKeyProperty->GetValue(*lastInstance, value));
+        }
+
+        if (value.IsUnset())
+        {
+            IFCFAILFAST(lastType->get_RuntimeNameProperty(spKeyProperty));
+            if (spKeyProperty)
+            {
+                IGNOREHR(spKeyProperty->GetValue(*lastInstance, value));
+            }
+        }
+        spValue = std::make_shared<XamlQualifiedObject>(std::move(value));
+    }
+    ASSERT(spValue);
+
+    // Currently we only support strings as keys to native ResourceDictionary.
+    IFCFAILFAST(spValue->GetCopyAsString(&ssKey));
+
+    return ssKey;
+}
+
+
+#endif
+
 _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWriterNode& inNode)
 {
+#if TRACE_PARSER_COMMANDS
+    UINT32 nodeNumber = s_nodeNumber++;
+
+    std::shared_ptr<XamlSchemaContext> spSchemaContext;
+    IFCFAILFAST(m_spContext->get_SchemaContext(spSchemaContext));
+    UINT32 frameNumber = spSchemaContext->GetCore()->GetFrameNumber();
+    UINT64 originalAllocs = XcpAllocation::GetAllocationCount();
+    UINT64 originalFrees = XcpAllocation::GetDeallocationCount();
+#endif
+
     auto nodeType = inNode.GetNodeType();
 
     IFC_RETURN(PushScopeIfRequired(inNode));
 
     if (nodeType == ObjectWriterNodeType::BeginConditionalScope)
     {
+#if TRACE_PARSER_COMMANDS
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+            TraceLoggingString("BeginConditionalScope", "NodeType"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
         IFC_RETURN(BeginConditionalScope(inNode));
     }
     else if (nodeType == ObjectWriterNodeType::EndConditionalScope)
     {
+#if TRACE_PARSER_COMMANDS
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+            TraceLoggingString("EndConditionalScope", "NodeType"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
         IFC_RETURN(EndConditionalScope(inNode));
     }
     else if (!IsSkippingForConditionalScope())
@@ -110,24 +270,78 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
             case ObjectWriterNodeType::AddNamespace:
             case ObjectWriterNodeType::PushScopeAddNamespace:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("AddNamespace / PushScopeAddNamespace", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 IFC_RETURN(AddNamespacePrefix(inNode));
             }
             break;
 
             case ObjectWriterNodeType::SetDeferredProperty:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetDeferredProperty", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 IFC_RETURN(SetDeferredPropertyOnCurrentInstance(inNode));
             }
             break;
 
             case ObjectWriterNodeType::SetCustomRuntimeData:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetCustomRuntimeData", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 IFC_RETURN(SetCustomRuntimeDataOnCurrentInstance(inNode));
             }
             break;
 
             case ObjectWriterNodeType::CreateType:
             {
+#if TRACE_PARSER_COMMANDS
+                UINT objectId = s_objectId++;
+
+                xstring_ptr typeFullName;
+                IFCFAILFAST(inNode.GetXamlType()->get_FullName(&typeFullName));
+
+                size_t allocs = XcpAllocation::GetAllocationCount();
+                size_t frees = XcpAllocation::GetDeallocationCount();
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("CreateType", "NodeType"),
+                    TraceLoggingWideString(typeFullName.GetBuffer(), "TypeFullName"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([this, typeFullName, nodeNumber, objectId, allocs, frees]
+                {
+                    uint64_t objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                    AddObjectIdPointerMapping(objectId, objectPointer, allocs, frees);
+
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("CreateType", "NodeType"),
+                        TraceLoggingWideString(typeFullName.GetBuffer(), "TypeFullName"),
+                        TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                        TraceLoggingUInt32(objectId, "ObjectId"),
+                        TraceLoggingUInt64(allocs, "OriginalAllocs"),
+                        TraceLoggingUInt64(frees, "OriginalFrees"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(CreateInstanceFromType(inNode));
             }
             break;
@@ -135,6 +349,44 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
             case ObjectWriterNodeType::PushScopeCreateTypeBeginInit:
             case ObjectWriterNodeType::CreateTypeBeginInit:
             {
+#if TRACE_PARSER_COMMANDS
+                UINT objectId = s_objectId++;
+
+                xstring_ptr typeFullName;
+                IFCFAILFAST(inNode.GetXamlType()->get_FullName(&typeFullName));
+
+                size_t allocs = XcpAllocation::GetAllocationCount();
+                size_t frees = XcpAllocation::GetDeallocationCount();
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("CreateTypeBeginInit", "NodeType"),
+                    TraceLoggingWideString(typeFullName.GetBuffer(), "TypeFullName"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt64(originalAllocs, "Allocs"),
+                    TraceLoggingUInt64(originalFrees, "Frees"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([this, typeFullName, nodeNumber, objectId, allocs, frees]
+                {
+                    uint64_t objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                    AddObjectIdPointerMapping(objectId, objectPointer, allocs, frees);
+
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("CreateTypeBeginInit", "NodeType"),
+                        TraceLoggingWideString(typeFullName.GetBuffer(), "TypeFullName"),
+                        TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                        TraceLoggingUInt32(objectId, "ObjectId"),
+                        TraceLoggingUInt64(allocs, "OriginalAllocs"),
+                        TraceLoggingUInt64(frees, "OriginalFrees"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(CreateInstanceFromType(inNode));
                 IFC_RETURN(BeginInitOnCurrentInstance(inNode));
             }
@@ -142,6 +394,12 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::BeginInit:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("BeginInit", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 IFC_RETURN(BeginInitOnCurrentInstance(inNode));
             }
             break;
@@ -149,6 +407,44 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
             case ObjectWriterNodeType::EndInitPopScope:
             case ObjectWriterNodeType::EndInit:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("EndInit", "NodeType"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([this, nodeNumber]
+                {
+                    CDependencyObject* dependencyObject = m_spContext->Current().get_Instance()->GetDependencyObject();
+                    auto entry = RemoveObjectIdMapping(reinterpret_cast<uint64_t>(dependencyObject));
+                    UINT32 objectId = std::get<0>(entry);
+                    UINT64 objectPointer = std::get<1>(entry);
+                    size_t originalAllocs = std::get<2>(entry);
+                    size_t originalFrees = std::get<3>(entry);
+                    size_t originalPersistents = originalAllocs - originalFrees;
+                    size_t originalTransients = originalFrees;
+                    size_t newAllocs = XcpAllocation::GetAllocationCount();
+                    size_t newFrees = XcpAllocation::GetDeallocationCount();
+                    size_t newPersistents = newAllocs - newFrees;
+                    size_t newTransients = newFrees;
+
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("EndInit", "NodeType"),
+                        TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                        TraceLoggingUInt32(objectId, "ObjectId"),
+                        TraceLoggingWideString(dependencyObject->OfTypeByIndex<KnownTypeIndex::FrameworkElement>() ? static_cast<CFrameworkElement*>(dependencyObject)->GetStrClassName().GetBuffer() : nullptr, "ClassName"),
+                        TraceLoggingUInt64(newPersistents - originalPersistents, "PersistentsDelta"),
+                        TraceLoggingUInt64(newTransients - originalTransients, "TransientsDelta"),
+                        TraceLoggingUInt64(newAllocs, "Allocs"),
+                        TraceLoggingUInt64(newFrees, "Frees"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(EndInitOnCurrentInstance(inNode));
             }
             break;
@@ -156,24 +452,89 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
             case ObjectWriterNodeType::GetValue:
             case ObjectWriterNodeType::PushScopeGetValue:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Parent().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("GetValue / PushScopeGetValue", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([this, nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("GetValue / PushScopeGetValue", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(GetValueFromMemberOnParentInstance(inNode));
             }
             break;
 
             case ObjectWriterNodeType::SetName:
             {
+#if TRACE_PARSER_COMMANDS
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                const WCHAR* name = GetNameFromNode(inNode);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetName", "NodeType"),
+                    TraceLoggingWideString(name, "Name"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetName", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(SetNameOnCurrentInstance(inNode));
             }
             break;
 
             case ObjectWriterNodeType::SetConnectionId:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetConnectionId", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 IFC_RETURN(SetConnectionIdOnCurrentInstance(inNode));
             }
             break;
 
             case ObjectWriterNodeType::PushConstant:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("PushConstant", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 // TODO: Are there any valid cases for an optimized stream to have an orphan PushConstant?
                 IFC_RETURN(PushConstant(inNode));
             }
@@ -181,18 +542,102 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::SetValue:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValue", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValue", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(SetValueOnCurrentInstance(inNode, m_qoLastInstance));
             }
             break;
 
             case ObjectWriterNodeType::SetValueConstant:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValueConstant", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValueConstant", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(SetValueOnCurrentInstance(inNode, inNode.GetValue()));
             }
             break;
 
             case ObjectWriterNodeType::SetValueTypeConvertedConstant:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValueTypeConvertedConstant", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValueTypeConvertedConstant", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 std::shared_ptr<XamlQualifiedObject> typeConvertedValue;
                 std::shared_ptr<XamlType> propertyType;
                 IFC_RETURN(inNode.GetXamlProperty()->get_Type(propertyType));
@@ -203,6 +648,34 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::SetValueTypeConvertedResolvedType:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValueTypeConvertedResolvedType", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValueTypeConvertedResolvedType", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 std::shared_ptr<XamlQualifiedObject> typeConvertedValue;
                 IFC_RETURN(TypeConvertResolvedType(inNode, m_spContext->Current().get_Type(), inNode.GetTypeConverter(), false, typeConvertedValue));
                 IFC_RETURN(SetValueOnCurrentInstance(inNode, typeConvertedValue));
@@ -211,6 +684,34 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::SetValueTypeConvertedResolvedProperty:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValueTypeConvertedResolvedProperty", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValueTypeConvertedResolvedProperty", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 std::shared_ptr<XamlQualifiedObject> typeConvertedValue;
                 IFC_RETURN(TypeConvertResolvedProperty(inNode, m_spContext->Current().get_Type(), inNode.GetTypeConverter(), false, typeConvertedValue));
                 IFC_RETURN(SetValueOnCurrentInstance(inNode, typeConvertedValue));
@@ -220,6 +721,46 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
             case ObjectWriterNodeType::PushScopeCreateTypeWithConstantBeginInit:
             case ObjectWriterNodeType::CreateTypeWithConstantBeginInit:
             {
+#if TRACE_PARSER_COMMANDS
+                UINT objectId = s_objectId++;
+
+                xstring_ptr typeFullName;
+                IFCFAILFAST(inNode.GetXamlType()->get_FullName(&typeFullName));
+
+                size_t allocs = XcpAllocation::GetAllocationCount();
+                size_t frees = XcpAllocation::GetDeallocationCount();
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("CreateTypeBeginInit", "NodeType"),
+                    TraceLoggingWideString(typeFullName.GetBuffer(), "TypeFullName"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt64(originalAllocs, "Allocs"),
+                    TraceLoggingUInt64(originalFrees, "Frees"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingString("WithConstant", "Variant"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([this, typeFullName, nodeNumber, objectId, allocs, frees]
+                {
+                    uint64_t objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                    AddObjectIdPointerMapping(objectId, objectPointer, allocs, frees);
+
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("CreateTypeBeginInit", "NodeType"),
+                        TraceLoggingWideString(typeFullName.GetBuffer(), "TypeFullName"),
+                        TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                        TraceLoggingUInt32(objectId, "ObjectId"),
+                        TraceLoggingUInt64(allocs, "OriginalAllocs"),
+                        TraceLoggingUInt64(frees, "OriginalFrees"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingString("WithConstant", "Variant"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 std::shared_ptr<XamlQualifiedObject> typeConvertedValue;
                 std::shared_ptr<XamlTextSyntax> typeConverter;
                 IFC_RETURN(inNode.GetXamlType()->get_TextSyntax(typeConverter));
@@ -235,6 +776,46 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
             case ObjectWriterNodeType::PushScopeCreateTypeWithTypeConvertedConstantBeginInit:
             case ObjectWriterNodeType::CreateTypeWithTypeConvertedConstantBeginInit:
             {
+#if TRACE_PARSER_COMMANDS
+                UINT objectId = s_objectId++;
+
+                xstring_ptr typeFullName;
+                IFCFAILFAST(inNode.GetXamlType()->get_FullName(&typeFullName));
+
+                size_t allocs = XcpAllocation::GetAllocationCount();
+                size_t frees = XcpAllocation::GetDeallocationCount();
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("CreateTypeBeginInit", "NodeType"),
+                    TraceLoggingWideString(typeFullName.GetBuffer(), "TypeFullName"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt64(originalAllocs, "Allocs"),
+                    TraceLoggingUInt64(originalFrees, "Frees"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingString("WithTypeConvertedConstant", "Variant"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([this, typeFullName, nodeNumber, objectId, allocs, frees]
+                {
+                    uint64_t objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                    AddObjectIdPointerMapping(objectId, objectPointer, allocs, frees);
+
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("CreateTypeBeginInit", "NodeType"),
+                        TraceLoggingWideString(typeFullName.GetBuffer(), "TypeFullName"),
+                        TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                        TraceLoggingUInt32(objectId, "ObjectId"),
+                        TraceLoggingUInt64(allocs, "OriginalAllocs"),
+                        TraceLoggingUInt64(frees, "OriginalFrees"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingString("WithTypeConvertedConstant", "Variant"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 std::shared_ptr<XamlQualifiedObject> typeConvertedValue;
 
                 // type convert but also create the instance
@@ -247,6 +828,32 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::AddToCollection:
             {
+#if TRACE_PARSER_COMMANDS
+                CDependencyObject* collection = m_spContext->Current().get_Instance()->GetDependencyObject();
+                CDependencyObject* collectionOwner = collection->GetParentInternal(false);
+                UINT32 collectionOwnerId = GetObjectIdFromPointer(reinterpret_cast<uint64_t>(collectionOwner));
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("AddToCollection", "NodeType"),
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(m_qoLastInstance->GetDependencyObject()), "Element"),
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(collection), "Collection"),
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(collectionOwner), "CollectionOwner"),
+                    TraceLoggingUInt32(collectionOwnerId, "CollectionOwnerId"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("AddToCollection", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(AddToCollectionOnCurrentInstance(inNode));
             }
             break;
@@ -254,12 +861,64 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
             case ObjectWriterNodeType::AddToDictionary:
             case ObjectWriterNodeType::AddToDictionaryWithKey:
             {
+#if TRACE_PARSER_COMMANDS
+                CDependencyObject* resourceDictionary = m_spContext->Current().get_Instance()->GetDependencyObject();
+                CDependencyObject* resourceDictionaryOwner = resourceDictionary->GetParentInternal(false);
+                UINT32 resourceDictionaryOwnerId = GetObjectIdFromPointer(reinterpret_cast<uint64_t>(resourceDictionaryOwner));
+
+                xstring_ptr resourceKey = GetDictionaryKeyFromNode(inNode, m_qoLastType, m_qoLastInstance);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("AddToDictionary / AddToDictionaryWithKey", "NodeType"),
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(m_qoLastInstance->GetDependencyObject()), "Element"),
+                    TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(resourceDictionary), "ResourceDictionary"),
+                    TraceLoggingUInt64(reinterpret_cast<uint64_t>(resourceDictionaryOwner), "ResourceDictionaryOwner"),
+                    TraceLoggingUInt32(resourceDictionaryOwnerId, "ResourceDictionaryOwnerId"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("AddToDictionary / AddToDictionaryWithKey", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(AddToDictionaryOnCurrentInstance(inNode));
             }
             break;
 
             case ObjectWriterNodeType::ProvideStaticResourceValue:
             {
+#if TRACE_PARSER_COMMANDS
+                auto& staticResourceValue = inNode.GetValue()->GetValue();
+                ASSERT(staticResourceValue.GetType() == valueString);
+                auto staticResourceKey = staticResourceValue.AsString();
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("ProvideStaticResourceValue", "NodeType"),
+                    TraceLoggingWideString(staticResourceKey.GetBuffer(), "ResourceKey"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("ProvideStaticResourceValue", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 m_spContext->Current().clear_Member();
                 IFC_RETURN(m_spRuntime->PushScope(inNode.GetLineInfo()));
                 IFC_RETURN(ProvideStaticResourceReference(inNode));
@@ -269,6 +928,12 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::ProvideThemeResourceValue:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("ProvideThemeResourceValue", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 m_spContext->Current().clear_Member();
                 IFC_RETURN(m_spRuntime->PushScope(inNode.GetLineInfo()));
                 IFC_RETURN(ProvideThemeResourceValue(inNode));
@@ -278,6 +943,38 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::SetValueFromStaticResource:
             {
+#if TRACE_PARSER_COMMANDS
+                auto& staticResourceValue = inNode.GetValue()->GetValue();
+                ASSERT(staticResourceValue.GetType() == valueString);
+                auto staticResourceKey = staticResourceValue.AsString();
+
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValueFromStaticResource", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingWideString(staticResourceKey.GetBuffer(), "ResourceKey"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValueFromStaticResource", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 if (m_spContext->IsInConditionalScope(false))
                 {
                     IFC_RETURN(m_spErrorService->ValidateIsKnown(inNode.GetXamlProperty(), inNode.GetLineInfo()));
@@ -295,12 +992,46 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::SetValueFromTemplateBinding:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValueFromTemplateBinding", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([this, nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValueFromTemplateBinding", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 IFC_RETURN(SetTemplateBindingOnCurrentInstance(inNode));
             }
             break;
 
             case ObjectWriterNodeType::EndInitProvideValuePopScope:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("EndInitProvideValuePopScope", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 IFC_RETURN(EndInitOnCurrentInstance(inNode));
                 IFC_RETURN(m_spRuntime->PushScope(inNode.GetLineInfo()));
                 IFC_RETURN(ProvideValueForMarkupExtension(inNode));
@@ -313,6 +1044,34 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::SetValueFromMarkupExtension:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValueFromMarkupExtension", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValueFromMarkupExtension", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 if (m_spContext->IsInConditionalScope(false))
                 {
                     IFC_RETURN(m_spErrorService->ValidateIsKnown(inNode.GetXamlProperty(), inNode.GetLineInfo()));
@@ -330,6 +1089,34 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::SetValueFromThemeResource:
             {
+#if TRACE_PARSER_COMMANDS
+                xstring_ptr propertyFullName;
+                IFCFAILFAST(inNode.GetXamlProperty()->get_FullName(&propertyFullName));
+
+                UINT64 objectPointer = reinterpret_cast<uint64_t>(m_spContext->Current().get_Instance()->GetDependencyObject());
+                UINT32 objectId = GetObjectIdFromPointer(objectPointer);
+
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("SetValueFromThemeResource", "NodeType"),
+                    TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
+                    TraceLoggingUInt64(objectPointer, "ObjectPointer"),
+                    TraceLoggingUInt32(objectId, "ObjectId"),
+                    TraceLoggingUInt32(frameNumber, "FrameNumber"),
+                    TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                    TraceLoggingBoolean(true, "IsStart"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+                auto endEvent = wil::scope_exit([nodeNumber]
+                {
+                    TraceLoggingProviderWrite(
+                        XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                        TraceLoggingString("SetValueFromThemeResource", "NodeType"),
+                        TraceLoggingUInt32(nodeNumber, "NodeNumber"),
+                        TraceLoggingBoolean(false, "IsStart"),
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+                });
+#endif
                 if (m_spContext->IsInConditionalScope(false))
                 {
                     IFC_RETURN(m_spErrorService->ValidateIsKnown(inNode.GetXamlProperty(), inNode.GetLineInfo()));
@@ -347,12 +1134,24 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
 
             case ObjectWriterNodeType::CheckPeerType:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("CheckPeerType", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 // TODO: Handle these cases.
             }
             break;
 
             case ObjectWriterNodeType::GetResourcePropertyBag:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("GetResourcePropertyBag", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 IFC_RETURN(GetResourcePropertyBagForCurrentInstance(inNode));
             }
             break;
@@ -360,6 +1159,12 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::WriteNode(_In_ const ObjectWrit
             case ObjectWriterNodeType::PushScope:
             case ObjectWriterNodeType::PopScope:
             {
+#if TRACE_PARSER_COMMANDS
+                TraceLoggingProviderWrite(
+                    XamlTelemetry, "BinaryFormatObjectWriter::WriteNode",
+                    TraceLoggingString("PushScope / PopScope", "NodeType"),
+                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
                 // noop, handled by PushScopeIfRequired/PopScopeIfRequired()
             }
             break;
@@ -675,16 +1480,8 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::PushConstant(_In_ const ObjectW
 _Check_return_ HRESULT BinaryFormatObjectWriter::SetValueOnCurrentInstance(_In_ const ObjectWriterNode& node, _In_ const std::shared_ptr<XamlQualifiedObject>& spValue)
 {
     auto instance = m_spContext->Current().get_Instance();
-    auto dependencyObject = instance->GetDependencyObject();
 
     TraceSetValueOnCurrentInstanceBegin();
-
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "BinaryFormatObjectWriter_SetValueOnCurrentInstance",
-        TraceLoggingBoolean(true, "IsStart"),
-        TraceLoggingUInt32(dependencyObject->GetContext()->GetFrameNumber(), "FrameNumber"),
-        TraceLoggingUInt64(reinterpret_cast<uint64_t>(dependencyObject), "ObjectPointer"),
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     if (m_spContext->IsInConditionalScope(false))
     {
@@ -699,21 +1496,11 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::SetValueOnCurrentInstance(_In_ 
 
     if (EventEnabledSetValueOnCurrentInstanceEnd())
     {
-        xstring_ptr typeFullName, propertyTypeFullName, propertyFullName;
+        xstring_ptr typeFullName, propertyTypeFullName;
         std::shared_ptr<XamlType> propertyType;
         IFC_RETURN(node.GetXamlProperty()->get_Type(propertyType));
         propertyType->get_FullName(&propertyTypeFullName);
         m_spContext->Current().get_Type()->get_FullName(&typeFullName);
-
-        IFC_RETURN(node.GetXamlProperty()->get_FullName(&propertyFullName));
-
-        TraceLoggingProviderWrite(
-            XamlTelemetry, "BinaryFormatObjectWriter_SetValueOnCurrentInstance",
-            TraceLoggingBoolean(false, "IsStart"),
-            TraceLoggingUInt32(instance->GetDependencyObject()->GetContext()->GetFrameNumber(), "FrameNumber"),
-            TraceLoggingUInt64(reinterpret_cast<uint64_t>(dependencyObject), "ObjectPointer"),
-            TraceLoggingWideString(propertyFullName.GetBuffer(), "PropertyFullName"),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
         TraceSetValueOnCurrentInstanceEnd(typeFullName.GetBuffer(), propertyTypeFullName.GetBuffer());
     }
@@ -912,12 +1699,13 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
             {
                 TraceProvideStaticResourceReferenceEnd(L"Failed to find Resource");
 
+#if TRACE_PARSER_COMMANDS
                 TraceLoggingProviderWrite(
-                    XamlTelemetry, "BinaryFormatObjectWriter_ProvideStaticResourceReference",
-                    TraceLoggingBoolean(false, "IsStart"),
+                    XamlTelemetry, "BinaryFormatObjectWriter::ProvideStaticResourceReference",
                     TraceLoggingWideString(staticResourceKey.GetBuffer(), "ResourceKey"),
                     TraceLoggingBoolean(false, "WasFound"),
                     TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
             }
             else
             {
@@ -925,13 +1713,14 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
                 m_qoLastType->get_FullName(&fullName);
                 TraceProvideStaticResourceReferenceEnd(fullName.GetBuffer());
 
+#if TRACE_PARSER_COMMANDS
                 TraceLoggingProviderWrite(
-                    XamlTelemetry, "BinaryFormatObjectWriter_ProvideStaticResourceReference",
-                    TraceLoggingBoolean(false, "IsStart"),
+                    XamlTelemetry, "BinaryFormatObjectWriter::ProvideStaticResourceReference",
                     TraceLoggingWideString(staticResourceKey.GetBuffer(), "ResourceKey"),
                     TraceLoggingBoolean(true, "WasFound"),
                     TraceLoggingWideString(fullName.GetBuffer(), "Name"),
                     TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
             }
         }
     });
@@ -940,13 +1729,6 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::ProvideStaticResourceReference(
     CCoreServices* const core = spSchemaContext->GetCore();
 
     TraceProvideStaticResourceReferenceBegin();
-
-    TraceLoggingProviderWrite(
-        XamlTelemetry, "BinaryFormatObjectWriter_ProvideStaticResourceReference",
-        TraceLoggingBoolean(true, "IsStart"),
-        TraceLoggingUInt32(core->GetFrameNumber(), "FrameNumber"),
-        TraceLoggingWideString(staticResourceKey.GetBuffer(), "ResourceKey"),
-        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     IFC_RETURN(CStaticResourceExtension::LookupResourceNoRef(staticResourceKey, m_spContext->get_MarkupExtensionContext(), core, &pObjectNoRef, TRUE, optimizedStyleParent, stylePropertyIndex));
     // If we can't find an object that corresponds to the key, raise an error

@@ -25,9 +25,6 @@ void EnsureHeap()
 #define COUNT_ALLOC 1
 #endif
 
-// Uncomment to trace allocations via ETW
-//#define TRACE_ALLOC 1
-
 #if TRACE_ALLOC
 #define COUNT_ALLOC 1
 #endif
@@ -179,6 +176,7 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
 void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
 {
     EnsureHeap();
+
     HeapFree(ghHeap, 0, pAddress);
 
 #if COUNT_ALLOC
