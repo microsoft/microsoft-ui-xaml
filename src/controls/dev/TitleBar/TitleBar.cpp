@@ -9,6 +9,10 @@
 #include "ResourceAccessor.h"
 #include "TypeLogging.h"
 #include "RuntimeProfiler.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 61831627: [2.0 Servicing] Titlebar Content Custom Drag Regions
+#define WINAPPSDK_CHANGEID_61831627 61831627, WinAppSDK_2_1_0
 
 bool TitleBarTrace::s_IsDebugOutputEnabled{ false };
 bool TitleBarTrace::s_IsVerboseDebugOutputEnabled{ false };
@@ -105,44 +109,94 @@ void TitleBar::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const
 {
     winrt::IDependencyProperty property = args.Property();
 
-    if (property == s_IsBackButtonVisibleProperty)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
     {
-        UpdateBackButton();
-    }
-    else if (property == s_IsBackButtonEnabledProperty)
-    {
-        UpdateInteractableElementsList();
-    }
-    else if (property == s_IsPaneToggleButtonVisibleProperty)
-    {
-        UpdatePaneToggleButton();
-    }
-    if (property == s_IconSourceProperty)
-    {
-        UpdateIcon();
-    }
-    else if (property == s_TitleProperty)
-    {
-        const auto oldTitle = winrt::unbox_value_or<winrt::hstring>(args.OldValue(), L"");
-        const auto newTitle = Title();
+        if (property == s_AutoRefreshDragRegionsProperty)
+        {
+            UpdateAutoRefreshDragRegions();
+        }
+        else if (property == s_IsBackButtonVisibleProperty)
+        {
+            UpdateBackButton();
+        }
+        else if (property == s_IsBackButtonEnabledProperty)
+        {
+            UpdateInteractableElementsList();
+        }
+        else if (property == s_IsPaneToggleButtonVisibleProperty)
+        {
+            UpdatePaneToggleButton();
+        }
+        else if (property == s_IconSourceProperty)
+        {
+            UpdateIcon();
+        }
+        else if (property == s_TitleProperty)
+        {
+            const auto oldTitle = winrt::unbox_value_or<winrt::hstring>(args.OldValue(), L"");
+            const auto newTitle = Title();
 
-        HandleTitleChange(oldTitle, newTitle);
+            HandleTitleChange(oldTitle, newTitle);
+        }
+        else if (property == s_SubtitleProperty)
+        {
+            UpdateSubtitle();
+        }
+        else if (property == s_LeftHeaderProperty)
+        {
+            UpdateLeftHeader();
+        }
+        else if (property == s_ContentProperty)
+        {
+            UpdateContent();
+        }
+        else if (property == s_RightHeaderProperty)
+        {
+            UpdateRightHeader();
+        }
     }
-    else if (property == s_SubtitleProperty)
+    else
     {
-        UpdateSubtitle();
-    }
-    if (property == s_LeftHeaderProperty)
-    {
-        UpdateLeftHeader();
-    }
-    else if (property == s_ContentProperty)
-    {
-        UpdateContent();
-    }
-    else if (property == s_RightHeaderProperty)
-    {
-        UpdateRightHeader();
+        // Old code path: original if/else if chain without AutoRefreshDragRegions
+        if (property == s_IsBackButtonVisibleProperty)
+        {
+            UpdateBackButton();
+        }
+        else if (property == s_IsBackButtonEnabledProperty)
+        {
+            UpdateInteractableElementsList();
+        }
+        else if (property == s_IsPaneToggleButtonVisibleProperty)
+        {
+            UpdatePaneToggleButton();
+        }
+        if (property == s_IconSourceProperty)
+        {
+            UpdateIcon();
+        }
+        else if (property == s_TitleProperty)
+        {
+            const auto oldTitle = winrt::unbox_value_or<winrt::hstring>(args.OldValue(), L"");
+            const auto newTitle = Title();
+
+            HandleTitleChange(oldTitle, newTitle);
+        }
+        else if (property == s_SubtitleProperty)
+        {
+            UpdateSubtitle();
+        }
+        if (property == s_LeftHeaderProperty)
+        {
+            UpdateLeftHeader();
+        }
+        else if (property == s_ContentProperty)
+        {
+            UpdateContent();
+        }
+        else if (property == s_RightHeaderProperty)
+        {
+            UpdateRightHeader();
+        }
     }
 
     UpdateDragRegion();
@@ -331,6 +385,65 @@ void TitleBar::OnIconLayoutUpdated(const winrt::IInspectable& sender, const winr
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
     UpdateIconRegion();
+}
+
+void TitleBar::OnContentLayoutUpdated(const winrt::IInspectable& /*sender*/, const winrt::IInspectable& /*args*/)
+{
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+    {
+        return;
+    }
+
+    TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    // Content layout has changed (children added/removed/resized at runtime).
+    // Refresh the interactable elements list and drag region.
+    UpdateInteractableElementsList();
+    UpdateDragRegion();
+
+    // If auto-refresh is disabled, unsubscribe after the first update.
+    // This gives us one-shot behavior: the initial layout pass updates
+    // drag regions, then we stop listening to avoid repeated tree walks.
+    if (!AutoRefreshDragRegions())
+    {
+        m_contentLayoutUpdatedRevoker.revoke();
+    }
+}
+
+// Static callback for IsDragRegion attached property changes.
+// Walks up the visual tree to find the parent TitleBar and triggers an update of its drag regions.
+// This handles dynamic changes to IsDragRegion at runtime (including hot reload scenarios).
+// 
+// Note: If element is not yet in the visual tree (e.g., during initial XAML parsing),
+// GetParent returns null and we exit immediately. The TitleBar will discover the
+// IsDragRegion value later via FindInteractableElements() during layout updates.
+void TitleBar::OnIsDragRegionPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& /*args*/)
+{
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+    {
+        return;
+    }
+
+    // Walk up from sender to find the owning TitleBar and refresh its drag regions.
+    // Note: If multiple elements have their IsDragRegion changed at the same time,
+    // this will result in duplicate work. A future optimization could defer the update
+    // using CompositionTarget.Rendered to coalesce multiple changes into a single pass.
+    auto current = sender.try_as<winrt::DependencyObject>();
+    while (current)
+    {
+        if (auto titleBar = current.try_as<winrt::TitleBar>())
+        {
+            if (auto titleBarImpl = winrt::get_self<TitleBar>(titleBar))
+            {
+                titleBarImpl->UpdateInteractableElementsList();
+                titleBarImpl->UpdateDragRegion();
+            }
+            return;
+        }
+        current = winrt::VisualTreeHelper::GetParent(current);
+    }
 }
 
 void TitleBar::UpdateBackButton()
@@ -527,6 +640,12 @@ void TitleBar::UpdateContent()
 {
     TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+    {
+        // Revoke previous handler
+        m_contentLayoutUpdatedRevoker.revoke();
+    }
+
     if (Content() == nullptr)
     {
         GoToState(s_contentCollapsedVisualStateName, false);
@@ -539,6 +658,17 @@ void TitleBar::UpdateContent()
 
             m_contentAreaGrid.set(GetTemplateChildT<winrt::Grid>(s_contentPresenterGridPartName, controlProtected));
             m_contentArea.set(GetTemplateChildT<winrt::FrameworkElement>(s_contentPresenterPartName, controlProtected));
+        }
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+        {
+            // Always subscribe to LayoutUpdated which fires after Loaded + Measure + Arrange,
+            // ensuring elements have valid bounds. If AutoRefreshDragRegions is false, the
+            // handler will self-unregister after the first update (one-shot behavior).
+            if (const auto content = Content().try_as<winrt::FrameworkElement>())
+            {
+                m_contentLayoutUpdatedRevoker = content.LayoutUpdated(winrt::auto_revoke, { this, &TitleBar::OnContentLayoutUpdated });
+            }
         }
 
         GoToState(s_contentVisibleVisualStateName, false);
@@ -617,6 +747,24 @@ void TitleBar::UpdateDragRegion()
                 }
             }
 
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+            {
+                // Skip the SetRegionRects call if the rects haven't changed since last update.
+                if (passthroughRects.size() == m_previousPassthroughRects.size() &&
+                    std::equal(passthroughRects.begin(), passthroughRects.end(),
+                        m_previousPassthroughRects.begin(),
+                        [](const winrt::Windows::Graphics::RectInt32& a, const winrt::Windows::Graphics::RectInt32& b)
+                        {
+                            return a.X == b.X && a.Y == b.Y && a.Width == b.Width && a.Height == b.Height;
+                        }))
+                {
+                    TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Passthrough rects unchanged, skipping SetRegionRects");
+                    return;
+                }
+
+                m_previousPassthroughRects = passthroughRects;
+            }
+
             TITLEBAR_TRACE_VERBOSE_DBG(*this, L"%s[0x%p](SetRegionRects - Size: %d)\n", METH_NAME, this, passthroughRects.size());
 
             // Set list of rects as passthrough regions for the non-client area.
@@ -624,6 +772,17 @@ void TitleBar::UpdateDragRegion()
         }
         else
         {
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+            {
+                // Skip if we already had no rects previously.
+                if (m_previousPassthroughRects.empty())
+                {
+                    return;
+                }
+
+                m_previousPassthroughRects.clear();
+            }
+
             TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Clear Passthrough RegionRects");
 
             // There is no interactable areas. Clear previous passthrough rects.
@@ -701,9 +860,19 @@ void TitleBar::UpdateInteractableElementsList()
     {
         if (const auto contentArea = m_contentArea.get())
         {
-            TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Append contentArea to m_interactableElementsList");
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+            {
+                TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Find controls in contentArea");
 
-            m_interactableElementsList.push_back(contentArea);
+                // Recursively find interactive controls, respecting IsDragRegion
+                FindInteractableElements(contentArea, false);
+            }
+            else
+            {
+                TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Append contentArea to m_interactableElementsList");
+
+                m_interactableElementsList.push_back(contentArea);
+            }
         }
     }
 
@@ -730,6 +899,56 @@ void TitleBar::UpdateLeftHeaderSpacing()
         IsBackButtonVisible() == IsPaneToggleButtonVisible() ?
         s_defaultSpacingVisualStateName : s_negativeInsetVisualStateName,
         false);
+}
+
+void TitleBar::RecomputeDragRegions()
+{
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+    {
+        return; // New API — no-op when change is disabled
+    }
+
+    TITLEBAR_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    // Force a synchronous layout pass so the visual tree reflects any
+    // recently added/removed children and elements have valid bounds.
+    UpdateLayout();
+
+    UpdateInteractableElementsList();
+    UpdateDragRegion();
+}
+
+void TitleBar::UpdateAutoRefreshDragRegions()
+{
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+    {
+        return; // New API — no-op when change is disabled
+    }
+
+    TITLEBAR_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (AutoRefreshDragRegions())
+    {
+        // Re-subscribe to LayoutUpdated if not already subscribed
+        // (it may have been revoked by the one-shot unregister in OnContentLayoutUpdated).
+        if (Content() != nullptr)
+        {
+            if (const auto content = Content().try_as<winrt::FrameworkElement>())
+            {
+                m_contentLayoutUpdatedRevoker = content.LayoutUpdated(winrt::auto_revoke, { this, &TitleBar::OnContentLayoutUpdated });
+            }
+        }
+
+        // Recompute interactable elements now so drag regions are current immediately.
+        // Note: UpdateDragRegion() is not called here because OnPropertyChanged already
+        // calls it unconditionally after this method returns.
+        UpdateInteractableElementsList();
+    }
+    else
+    {
+        // App opted out of automatic refresh — stop listening.
+        m_contentLayoutUpdatedRevoker.revoke();
+    }
 }
 
 void TitleBar::LoadBackButton()
@@ -834,4 +1053,95 @@ winrt::Microsoft::UI::Windowing::AppWindow TitleBar::TryGetAppWindow()
     }
 
     return m_appWindow;
+}
+
+void TitleBar::FindInteractableElements(const winrt::DependencyObject& element, bool parentIsDragRegion)
+{
+    // This method is only called from contained code paths, but guard for safety.
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61831627>())
+    {
+        return;
+    }
+
+    if (!element)
+    {
+        return;
+    }
+
+    auto const uiElement = element.try_as<winrt::UIElement>();
+
+    // All children from VisualTreeHelper should be UIElements; bail out if not.
+    if (!uiElement)
+    {
+        return;
+    }
+
+    // Skip elements that are not visible or not hit-testable.
+    // Note: UIElement.IsHitTestVisible() is a separate property and does NOT reflect Visibility.
+    // We must check Visibility explicitly to skip Collapsed elements.
+    if (uiElement.Visibility() != winrt::Visibility::Visible || !uiElement.IsHitTestVisible())
+    {
+        return;
+    }
+
+    bool currentIsDragRegion = parentIsDragRegion;
+
+    // Check if IsDragRegion is explicitly set (non-null) on this element.
+    // IReference<bool>: null = unset, false = clickable, true = draggable.
+    auto const isDragRegion = winrt::TitleBar::GetIsDragRegion(uiElement);
+    if (isDragRegion != nullptr)
+    {
+        if (!isDragRegion.Value())
+        {
+            // IsDragRegion=false: Add this entire element as interactable and stop recursing
+            // into its children (the element's bounds cover all its internal elements).
+            if (auto const fe = uiElement.try_as<winrt::FrameworkElement>())
+            {
+                TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+                    fe.Name().empty() ? L"(element with IsDragRegion=false)" : fe.Name().c_str());
+                m_interactableElementsList.push_back(fe);
+            }
+            return;
+        }
+
+        // IsDragRegion=true: This element is explicitly marked as a drag region.
+        // If it's a Control, treat the entire control as draggable — don't recurse
+        // into its template children. Only recurse for non-Control containers (e.g. Panel)
+        // where children may override with IsDragRegion=false.
+        if (uiElement.try_as<winrt::Control>())
+        {
+            TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Control with IsDragRegion=true, skipping subtree");
+            return;
+        }
+
+        TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Element with IsDragRegion=true, recursing children");
+        currentIsDragRegion = true;
+    }
+
+    // Check if this element is an interactive control (Button, TextBox, ComboBox, etc.)
+    // Only apply auto-detection when not inside a parent with IsDragRegion=true.
+    if (!currentIsDragRegion)
+    {
+        if (auto const control = uiElement.try_as<winrt::Control>())
+        {
+            if (control.IsEnabled())
+            {
+                // Add enabled control as interactable. Don't recurse into children —
+                // the control's bounds already cover all its internal elements.
+                TITLEBAR_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+                    control.Name().empty() ? L"(unnamed control)" : control.Name().c_str());
+                m_interactableElementsList.push_back(control);
+                return;
+            }
+            // Disabled controls: fall through to recurse into children,
+            // propagating currentIsDragRegion to preserve ancestor intent.
+        }
+    }
+
+    // Recursively process all children in the visual tree (for Panels, disabled controls, etc.)
+    const auto childCount = winrt::VisualTreeHelper::GetChildrenCount(element);
+    for (int i = 0; i < childCount; i++)
+    {
+        FindInteractableElements(winrt::VisualTreeHelper::GetChild(element, i), currentIsDragRegion);
+    }
 }

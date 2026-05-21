@@ -15,6 +15,10 @@
 #include <XamlTraceLogging.h>
 #include "XamlTelemetry.h"
 #include "LoadLibraryAbs.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62040515: [2.0 Servicing] Fix GetModuleHandle ambiguity in WinUI causing FailFast when same-named multiple modules are loaded
+#define WINAPPSDK_CHANGEID_62040515 62040515, WinAppSDK_2_1_0
 
 #include <WinUIrc.ver>           //  To define VER_FILEVERSION_STR
 
@@ -142,7 +146,6 @@ BOOL InitializeDll()
     // application, the MUX DLLs can sometimes be binplaced to a subdirectory, while the executable
     // loading them is binplaced to a separate subdirectory.  To account for this circumstance,
     // we'll add the directory path for Microsoft.UI.Xaml.dll to our DLL search path.
-    WCHAR muxPath[MAX_PATH];
 
     HMODULE muxModule;
     if (!GetModuleHandleEx(
@@ -152,9 +155,21 @@ BOOL InitializeDll()
         IFC(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    GetModuleFileName(GetModuleHandle(L"Microsoft.UI.Xaml.dll"), muxPath, MAX_PATH);
-    FAIL_FAST_ASSERT(PathRemoveFileSpec(muxPath) != 0);
-    muxDllDirectoryCookie = AddDllDirectory(muxPath);
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62040515>())
+    {
+        std::wstring muxPathStr = GetModuleFileNameHelper(muxModule);
+        auto lastSlash = muxPathStr.find_last_of(L'\\');
+        FAIL_FAST_ASSERT(lastSlash != std::wstring::npos);
+        muxPathStr.resize(lastSlash);
+        muxDllDirectoryCookie = AddDllDirectory(muxPathStr.c_str());
+    }
+    else
+    {
+        WCHAR muxPath[MAX_PATH];
+        GetModuleFileName(GetModuleHandle(L"Microsoft.UI.Xaml.dll"), muxPath, MAX_PATH);
+        FAIL_FAST_ASSERT(PathRemoveFileSpec(muxPath) != 0);
+        muxDllDirectoryCookie = AddDllDirectory(muxPath);
+    }
 
 Cleanup:
     return SUCCEEDED(hr) ? TRUE : FALSE;

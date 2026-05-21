@@ -40,6 +40,9 @@
 #include "XamlRoot_Partial.h"
 #include <Microsoft.UI.Composition.h>
 #include <FrameworkUdk/Theming.h>
+#include <FrameworkUdk/Containment.h>
+
+#define WINAPPSDK_CHANGEID_61847252 61847252, WinAppSDK_2_1_0
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
@@ -1352,6 +1355,27 @@ float CPopup::GetWindowedPopupRasterizationScale() const
     return rasterizationScale;
 }
 
+float CPopup::GetWindowedPopupRootVisualScaleCompensation() const
+{
+    // Windowed popups render in a separate ContentIsland whose RasterizationScale is driven by the system (popup HWND DPI).
+    // For XAML Islands, the effective XamlRoot scale may be overridden (e.g. DesktopWindowXamlSource.OverrideScale).
+    // The main island cancels/adjusts system scale via RootScale. Windowed popups need the same compensation.
+    if (!m_contentIsland)
+    {
+        return 1.0f;
+    }
+
+    const float systemScaleForPopupIsland = GetWindowedPopupRasterizationScale();
+    const float effectiveScaleForPopup = GetEffectiveRootScale();
+
+    if (systemScaleForPopupIsland <= 0.0f || effectiveScaleForPopup <= 0.0f)
+    {
+        return 1.0f;
+    }
+
+    return effectiveScaleForPopup / systemScaleForPopupIsland;
+}
+
 wrl::ComPtr<ixp::IPointerPoint> CPopup::GetPreviousPointerPoint()
 {
     return m_inputSiteAdapter->GetPreviousPointerPoint();
@@ -1651,12 +1675,26 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
         undoY += insets.top;
     }
 
+    float rootScaleCompensation = 1.0f;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+    {
+        rootScaleCompensation = GetWindowedPopupRootVisualScaleCompensation();
+    }
+
     if (m_contentIslandRootVisual)
     {
         // Set any scale inherited from the ancestor chain
         CMILMatrix rootTransform(true);
-        rootTransform.SetM11(scaleX);
-        rootTransform.SetM22(scaleY);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+        {
+            rootTransform.SetM11(scaleX * rootScaleCompensation);
+            rootTransform.SetM22(scaleY * rootScaleCompensation);
+        }
+        else
+        {
+            rootTransform.SetM11(scaleX);
+            rootTransform.SetM22(scaleY);
+        }
 
         // Set premultiplied "undo" transform on the window's root visual
         CMILMatrix undo(true);
@@ -1706,11 +1744,26 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     // Tell the windowed popup inputsite adapter the offset of the popup window from the content
     // root. We do this by using the position passed to MoveAndSize (either earlier in this function
     // or updated by AdjustWindowedPopupBoundsForDropShadow), converted to island coords in dips.
-    wf::Point transformedOffset{
-        PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.X - rootOffsetPhysical.x)),
-        PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.Y - rootOffsetPhysical.y))};
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+    {
+        const float popupIslandRasterizationScale = m_contentIsland ? GetWindowedPopupRasterizationScale() : 0.0f;
+        const float offsetXPhysical = static_cast<float>(m_windowedPopupMoveAndResizeRect.X - rootOffsetPhysical.x);
+        const float offsetYPhysical = static_cast<float>(m_windowedPopupMoveAndResizeRect.Y - rootOffsetPhysical.y);
 
-    IFC_RETURN(UpdateTranslationFromContentRoot(transformedOffset, /*forceUpdate*/ false));
+        wf::Point transformedOffset{
+            popupIslandRasterizationScale > 0.0f ? (offsetXPhysical / popupIslandRasterizationScale) : PhysicalPixelsToDips(offsetXPhysical),
+            popupIslandRasterizationScale > 0.0f ? (offsetYPhysical / popupIslandRasterizationScale) : PhysicalPixelsToDips(offsetYPhysical)};
+
+        IFC_RETURN(UpdateTranslationFromContentRoot(transformedOffset, /*forceUpdate*/ false, rootScaleCompensation));
+    }
+    else
+    {
+        wf::Point transformedOffset{
+            PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.X - rootOffsetPhysical.x)),
+            PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.Y - rootOffsetPhysical.y))};
+
+        IFC_RETURN(UpdateTranslationFromContentRoot(transformedOffset, /*forceUpdate*/ false));
+    }
 
     // Play the MenuPopupThemeTransition, if we have one
     if (m_animationRootVisual && m_secretTransitionTarget && m_secretTransitionTarget->IsDirty())
@@ -2340,9 +2393,9 @@ HWND CPopup::GetPopupPositioningWindow() const
 }
 
 // Converts between logical and physical pixels
-float CPopup::GetEffectiveRootScale()
+float CPopup::GetEffectiveRootScale() const
 {
-    const auto scale = RootScale::GetRasterizationScaleForElement(this);
+    const auto scale = RootScale::GetRasterizationScaleForElement(const_cast<CPopup*>(this));
     return scale;
 }
 
@@ -2758,7 +2811,7 @@ CPopup::ClearUCRemoveLogicalParentFlag(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpdate)
+CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpdate, float rootScaleCompensation)
 {
     IFCEXPECT_RETURN(m_inputSiteAdapter);
 
@@ -2769,6 +2822,16 @@ CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpda
         m_offsetFromMainWindow.X = offset.X;
         m_offsetFromMainWindow.Y = offset.Y;
 
+        // Pointer points for windowed popups are delivered in the coordinate space of the popup's content island.
+        // When DesktopWindowXamlSource.OverrideScale is used, the popup island's rasterization scale (system DPI)
+        // can differ from the XamlRoot effective scale. We compensate the visuals by scaling the island root visual;
+        // mirror that compensation for input by scaling pointer coordinates by the inverse ratio.
+        float inputScaleCompensation = 1.0f;
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+        {
+            inputScaleCompensation = (rootScaleCompensation != 0.0f) ? (1.0f / rootScaleCompensation) : 1.0f;
+        }
+
         auto dxamlCore = DXamlCore::GetCurrent();
         auto coreServices = dxamlCore->GetHandle();
         CREATEPARAMETERS cp(coreServices);
@@ -2777,6 +2840,12 @@ CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpda
         CMILMatrix matTransform(/*fInitialize*/ true);
         xref_ptr<CMatrix> matrix;
         xref_ptr<CMatrixTransform> matrixTransform;
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+        {
+            matTransform.SetM11(inputScaleCompensation);
+            matTransform.SetM22(inputScaleCompensation);
+        }
 
         IFC_RETURN(CMatrixTransform::Create(reinterpret_cast<CDependencyObject**>(matrixTransform.ReleaseAndGetAddressOf()), &cp));
         IFC_RETURN(CMatrix::Create(reinterpret_cast<CDependencyObject**>(matrix.ReleaseAndGetAddressOf()), &cp));

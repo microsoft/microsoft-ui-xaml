@@ -8,6 +8,10 @@
 #include "MUX-ETWEvents.h"
 #include "BuildTreeService.g.h"
 #include "BudgetManager.g.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 61855278: [2.0 Servicing][WASDK] Fix re-entrancy crash: PauseDispatch during UIAffinityReleaseQueue::DoCleanup
+#define WINAPPSDK_CHANGEID_61855278 61855278, WinAppSDK_2_1_0
 
 using namespace DirectUI;
 using namespace Instrumentation;
@@ -176,6 +180,20 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
 
 
     // Process objects for final release.
+    //
+    // Pause XAML dispatch during final releases. Object release calls can trigger
+    // cross-apartment COM RPCs (e.g., RemoteReleaseRifRef for proxy teardown),
+    // which enter a COM modal loop that pumps messages via PeekMessage. Without
+    // pausing, CoreMessaging can fire the DispatcherQueueTimer re-entrantly during
+    // the pump, causing a CReentrancyGuard fail-fast in
+    // OnReentrancyProtectedWindowMessage. PauseDispatch sets m_state to Suspended,
+    // which MessageTimerCallback checks before dispatching — preventing the
+    // re-entrant dispatch. ResumeDispatch restarts the timer if there is pending
+    // work, so no messages are lost.
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61855278>())
+    {
+        DXamlCore::GetCurrent()->PauseDispatchAtControl();
+    }
 
     *completed = TRUE;
     firstRelease = m_queuedObjectsForFinalRelease.begin();
@@ -262,6 +280,13 @@ HRESULT UIAffinityReleaseQueue::DoCleanup( _In_ BOOLEAN bSync, _Out_ BOOLEAN *co
     m_bInCleanup = FALSE;
 
 Cleanup:
+    // Resume dispatch — must happen on all paths (normal and error) to avoid
+    // permanently stalling the dispatcher. Paired with PauseDispatchAtControl above.
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61855278>())
+    {
+        DXamlCore::GetCurrent()->ResumeDispatchAtControl();
+    }
+
     TraceReleaseQueueCleanupEnd();
 
     //Telemetry Notify ,UIFinalizer ended

@@ -9,6 +9,10 @@
 #include "UniformGridLayout.h"
 #include "RuntimeProfiler.h"
 #include "VirtualizingLayoutContext.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62147120: [2.0 Servicing] Floor UniformGridLayout::GetItemsPerLine at 1u to prevent integer divide-by-zero (Watson 61810783)
+#define WINAPPSDK_CHANGEID_62147120 62147120, WinAppSDK_2_1_0
 
 #pragma region IUniformGridLayout
 
@@ -328,9 +332,26 @@ unsigned int UniformGridLayout::GetItemsPerLine(
 
     if (std::isfinite(availableSizeMinor))
     {
-        return std::min(
-            static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorItemSizeWithSpacing(context)),
-            maximumRowsOrColumns);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62147120>())
+        {
+            // Floor the cast result at 1u: when the available minor size is finite but narrower
+            // than one item's minor stride, (availableSizeMinor + MinItemSpacing) /
+            // GetMinorItemSizeWithSpacing evaluates to < 1 and would cast to 0u, producing an
+            // integer divide-by-zero in callers (e.g. GetMajorSize, GetLayoutRectForDataIndex).
+            return std::min(
+                std::max(1u, static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorItemSizeWithSpacing(context))),
+                maximumRowsOrColumns);
+        }
+        else
+        {
+            // Original (pre-fix) behavior: can return 0 when availableSizeMinor is narrower
+            // than one item's minor stride, leading to a divide-by-zero in GetMajorSize /
+            // GetLayoutRectForDataIndex. Preserved here for CBS consumers that have not yet
+            // opted in via KIR (Feature_Velocity_WinAppSdk_62147120).
+            return std::min(
+                static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorItemSizeWithSpacing(context)),
+                maximumRowsOrColumns);
+        }
     }
 
     return maximumRowsOrColumns;
