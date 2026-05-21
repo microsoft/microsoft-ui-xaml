@@ -13,6 +13,7 @@
 #include "INamescope.h"
 #include <weakref_ptr.h>
 #include <bit_vector.h>
+#include "stack_vector.h"
 
 struct XamlQualifiedObject;
 struct FrameOverflowStorage;
@@ -67,7 +68,6 @@ class ObjectWriterFrame final
     {
         std::shared_ptr<XamlQualifiedObject> m_qoCollection;
         std::shared_ptr<XamlQualifiedObject> m_qoValue;
-        std::shared_ptr<std::vector<std::shared_ptr<XamlProperty>>> m_spAssignedProperties;
         std::shared_ptr<MapDirectiveToQO> m_spDirectiveValuesMap;
         bool m_fIsObjectFromMember = false;
 
@@ -79,10 +79,10 @@ class ObjectWriterFrame final
         FrameLegacyStorage(FrameLegacyStorage&& other) noexcept
             : m_qoCollection(std::move(other.m_qoCollection))
             , m_qoValue(std::move(other.m_qoValue))
-            , m_spAssignedProperties(std::move(other.m_spAssignedProperties))
             , m_spDirectiveValuesMap(std::move(other.m_spDirectiveValuesMap))
             , m_fIsObjectFromMember(std::move(other.m_fIsObjectFromMember))
-        {}
+        {
+        }
 
         FrameLegacyStorage& operator=(FrameLegacyStorage&& other) noexcept
         {
@@ -90,7 +90,6 @@ class ObjectWriterFrame final
             {
                 m_qoCollection = std::move(other.m_qoCollection);
                 m_qoValue = std::move(other.m_qoValue);
-                m_spAssignedProperties = std::move(other.m_spAssignedProperties);
                 m_spDirectiveValuesMap = std::move(other.m_spDirectiveValuesMap);
                 m_fIsObjectFromMember = std::move(other.m_fIsObjectFromMember);
             }
@@ -101,7 +100,7 @@ class ObjectWriterFrame final
 
 public:
 
-    ObjectWriterFrame();
+    ObjectWriterFrame() = default;
 
     ObjectWriterFrame(const ObjectWriterFrame& other)
         : m_spType(other.m_spType)
@@ -117,6 +116,8 @@ public:
         {
             m_spFrameLegacyStorage.reset(new FrameLegacyStorage(*other.m_spFrameLegacyStorage));
         }
+
+        m_assignedProperties.m_vector = other.m_assignedProperties.m_vector;
     }
 
     ObjectWriterFrame& operator=(const ObjectWriterFrame& other)
@@ -136,6 +137,8 @@ public:
             {
                 m_spFrameLegacyStorage.reset(new FrameLegacyStorage(*other.m_spFrameLegacyStorage));
             }
+
+            m_assignedProperties.m_vector = other.m_assignedProperties.m_vector;
         }
         return *this;
     }
@@ -147,16 +150,19 @@ public:
         , m_spFrameOverflowStorage(std::move(other.m_spFrameOverflowStorage))
         , m_spFrameLegacyStorage(std::move(other.m_spFrameLegacyStorage))
     {
+        m_assignedProperties.m_vector = std::move(other.m_assignedProperties.m_vector);
     }
 
     ObjectWriterFrame& operator=(ObjectWriterFrame&& other) noexcept
     {
-        if (this != &other) {
+        if (this != &other)
+        {
             m_spType = std::move(other.m_spType);
             m_spMember = std::move(other.m_spMember);
             m_qoInstance = std::move(other.m_qoInstance);
             m_spFrameOverflowStorage = std::move(other.m_spFrameOverflowStorage);
             m_spFrameLegacyStorage = std::move(other.m_spFrameLegacyStorage);
+            m_assignedProperties.m_vector = std::move(other.m_assignedProperties.m_vector);
         }
         return *this;
     }
@@ -288,9 +294,7 @@ public:
         // We're setting a strongref to an instance, so clear the existing
         // weakref instance
         clear_WeakRefInstance();
-        if (   m_spFrameLegacyStorage
-            && m_spFrameLegacyStorage->m_spAssignedProperties
-            && m_qoInstance
+        if (   m_qoInstance
             && qoInstance != m_qoInstance)
         {
             // MSFT:10437264/10520955: GenXbf is doing something screwy whereby it
@@ -303,7 +307,7 @@ public:
             // We only do this for non-null old instances because in typical operation
             // the ObjectWriter will set all the members first *then* create/set the
             // instance object.
-            m_spFrameLegacyStorage->m_spAssignedProperties->clear();
+            m_assignedProperties.m_vector.clear();
         }
         m_qoInstance = qoInstance;
     }
@@ -480,4 +484,5 @@ private:
     std::shared_ptr<XamlQualifiedObject> m_qoInstance;
     std::unique_ptr<FrameOverflowStorage> m_spFrameOverflowStorage;
     std::unique_ptr<FrameLegacyStorage> m_spFrameLegacyStorage;
+    Jupiter::stack_vector<std::shared_ptr<XamlProperty>, 3> m_assignedProperties;
 };

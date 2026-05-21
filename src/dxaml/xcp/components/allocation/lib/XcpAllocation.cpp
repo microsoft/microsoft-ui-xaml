@@ -5,9 +5,9 @@
 #include "XcpAllocation.h"
 #include "XAMLTerminateProcessOnOOM.h"
 #include <cstdlib>
-#if DBG
 #include <atomic>
-#endif
+
+#include "XamlTelemetry.h"
 
 using namespace XcpAllocation;
 
@@ -22,6 +22,17 @@ void EnsureHeap()
 }
 
 #if DBG
+#define COUNT_ALLOC 1
+#endif
+
+// Uncomment to trace allocations via ETW
+//#define TRACE_ALLOC 1
+
+#if TRACE_ALLOC
+#define COUNT_ALLOC 1
+#endif
+
+#if COUNT_ALLOC
 std::atomic<size_t> g_allocCount = 0;
 std::atomic<size_t> g_allocSize = 0;
 std::atomic<size_t> g_deallocCount = 0;
@@ -29,7 +40,7 @@ std::atomic<size_t> g_deallocCount = 0;
 
 size_t XcpAllocation::GetAllocationCount()
 {
-#if DBG
+#if COUNT_ALLOC
     return g_allocCount.load(std::memory_order_relaxed);
 #else
     return 0;
@@ -38,7 +49,7 @@ size_t XcpAllocation::GetAllocationCount()
 
 size_t XcpAllocation::GetAllocationSize()
 {
-#if DBG
+#if COUNT_ALLOC
     return g_allocSize.load(std::memory_order_relaxed);
 #else
     return 0;
@@ -47,7 +58,7 @@ size_t XcpAllocation::GetAllocationSize()
 
 size_t XcpAllocation::GetDeallocationCount()
 {
-#if DBG
+#if COUNT_ALLOC
     return g_deallocCount.load(std::memory_order_relaxed);
 #else
     return 0;
@@ -69,9 +80,18 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateFailFast(_In_ size_t cSize)
         XAMLTerminateProcessOnMemoryExhaustion(cSize);
     }
 
-#if DBG
+#if COUNT_ALLOC
     g_allocCount.fetch_add(1, std::memory_order_relaxed);
     g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
+#endif
+
+#if TRACE_ALLOC
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "HeapAlloc_OSMemoryAllocateFailFast",
+        TraceLoggingUInt64(cSize, "cSize"),
+        TraceLoggingUInt64(GetAllocationCount(), "AllocCount"),
+        TraceLoggingUInt64(GetAllocationSize(), "AllocSize"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 #endif
 
     return pAddress;
@@ -92,9 +112,18 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateZeroMemoryFailFast(_In_ size
         XAMLTerminateProcessOnMemoryExhaustion(cSize);
     }
 
-#if DBG
+#if COUNT_ALLOC
     g_allocCount.fetch_add(1, std::memory_order_relaxed);
     g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
+#endif
+
+#if TRACE_ALLOC
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "HeapAlloc_OSMemoryAllocateZeroMemoryFailFast",
+        TraceLoggingUInt64(cSize, "cSize"),
+        TraceLoggingUInt64(GetAllocationCount(), "AllocCount"),
+        TraceLoggingUInt64(GetAllocationSize(), "AllocSize"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 #endif
 
     return pAddress;
@@ -104,9 +133,18 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
 {
     EnsureHeap();
 
-#if DBG
+#if COUNT_ALLOC
     g_allocCount.fetch_add(1, std::memory_order_relaxed);
     g_allocSize.fetch_add(cSize, std::memory_order_relaxed);
+#endif
+
+#if TRACE_ALLOC
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "HeapAlloc_OSMemoryAllocateNoFailFast",
+        TraceLoggingUInt64(cSize, "cSize"),
+        TraceLoggingUInt64(GetAllocationCount(), "AllocCount"),
+        TraceLoggingUInt64(GetAllocationSize(), "AllocSize"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 #endif
 
     return HeapAlloc(ghHeap, 0, cSize);
@@ -115,6 +153,13 @@ _Check_return_ void *XcpAllocation::OSMemoryAllocateNoFailFast(_In_ size_t cSize
 _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddress, _In_ size_t cSize)
 {
     EnsureHeap();
+
+#if TRACE_ALLOC
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "HeapReAlloc_OSMemoryResize",
+        TraceLoggingUInt64(cSize, "cSize"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 
     void* newAddress = HeapReAlloc(ghHeap, 0, pAddress, cSize);
 
@@ -132,10 +177,19 @@ _Check_return_ void *XcpAllocation::OSMemoryResize(_Frees_ptr_opt_ void *pAddres
 }
 
 void XcpAllocation::OSMemoryFree(_Frees_ptr_opt_ void *pAddress)
-{   
+{
     EnsureHeap();
     HeapFree(ghHeap, 0, pAddress);
-#if DBG
+
+#if COUNT_ALLOC
     g_deallocCount.fetch_add(1, std::memory_order_relaxed);
 #endif
+
+#if TRACE_ALLOC
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "HeapFree_OSMemoryFree",
+        TraceLoggingUInt64(GetDeallocationCount(), "DeallocCount"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
+
 }
