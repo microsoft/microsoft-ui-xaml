@@ -57,9 +57,9 @@ _Check_return_ HRESULT CDeferredElement::SetCustomWriterRuntimeData(
     return E_NOTIMPL;
 }
 
-_Check_return_ HRESULT CDeferredElement::LoadContent(_Out_ std::shared_ptr<CDependencyObject>* pOut)
+_Check_return_ HRESULT CDeferredElement::LoadContent(_Out_ xref_ptr<CDependencyObject>* pOut)
 {
-    *pOut = std::shared_ptr<CDependencyObject>();
+    *pOut = nullptr;
     return E_NOTIMPL;
 }
 

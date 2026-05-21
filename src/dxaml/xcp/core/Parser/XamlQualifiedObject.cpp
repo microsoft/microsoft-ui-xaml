@@ -209,40 +209,10 @@ _Check_return_ HRESULT XamlQualifiedObject::CreateFromXStringPtr(_In_ xstring_pt
     return S_OK;
 }
 
-std::shared_ptr<CDependencyObject> XamlQualifiedObject::GetOwnedDependencyObject()
-{
-    if (CDependencyObject* asObject = m_value.AsObject())
-    {
-        asObject->AddRef();
-
-        // If the object has been pegged we want to transfer a ref to that peg
-        // to the caller of this API too, and pass a guarantee that the peg will
-        // be unpegged when the smart pointer goes out of scope.
-        if (GetHasPeggedManagedPeer() && asObject->HasManagedPeer())
-        {
-            VERIFYHR(asObject->PegManagedPeer());
-
-            return std::shared_ptr<CDependencyObject>(
-                asObject, 
-                [](CDependencyObject* obj) {
-                    obj->UnpegManagedPeer();
-                    obj->Release(); });
-        }
-        else
-        {
-            return std::shared_ptr<CDependencyObject>(
-                asObject,
-                [](CDependencyObject* obj) { obj->Release(); });
-        }
-    }
-
-    return std::shared_ptr<CDependencyObject>();
-}
-
-std::shared_ptr<CDependencyObject> XamlQualifiedObject::GetAndTransferDependencyObjectOwnership()
+CDependencyObject* XamlQualifiedObject::GetAndTransferDependencyObjectOwnership()
 {
     ClearHasPeggedManagedPeer();
-    return GetOwnedDependencyObject();
+    return GetDependencyObject();
 }
 
 void XamlQualifiedObject::Tidy()

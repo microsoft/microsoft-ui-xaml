@@ -226,13 +226,13 @@ void VisualStateManagerDataSource::ClearActiveTransitions(_In_ int groupIndex)
     m_pGroupCollection->GetGroupContext()[groupIndex].ActiveTransitions().clear();
 }
 
-_Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreateTransition(_In_ int fromIndex, _In_ int toIndex, _Out_ std::shared_ptr<CVisualTransition>* pTransition)
+_Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreateTransition(_In_ int fromIndex, _In_ int toIndex, _Out_ xref_ptr<CVisualTransition>* pTransition)
 {
     IFC_RETURN(TryGetOrCreateTransitionImpl(fromIndex, toIndex, pTransition));
     return S_OK;
 }
 
-_Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreateStoryboardForVisualState(_In_ int index, _Out_ std::shared_ptr<CStoryboard>* pStoryboard)
+_Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreateStoryboardForVisualState(_In_ int index, _Out_ xref_ptr<CStoryboard>* pStoryboard)
 {
     IFC_RETURN(TryGetOrCreateStoryboardForVisualStateImpl(index, pStoryboard));
     return S_OK;
@@ -244,7 +244,7 @@ _Check_return_ HRESULT VisualStateManagerDataSource::TryGetOrCreatePropertySette
     xref_ptr<CDependencyObject> targetPropertyOwner;
     const CDependencyProperty* targetProperty;
     CValue setterValue;
-    std::vector<std::shared_ptr<CSetter>> setters;
+    std::vector<xref_ptr<CSetter>> setters;
     IFC_RETURN(TryGetOrCreatePropertySettersForVisualStateImpl(index, &setters));
 
     VisualStateSetterHelper::ResolvedVisualStateSetterCollection resolvedSetters;

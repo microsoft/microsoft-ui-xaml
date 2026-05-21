@@ -751,7 +751,7 @@ _Check_return_ HRESULT ObjectWriterRuntime::SetCustomRuntimeDataImpl(
         std::shared_ptr<XamlSchemaContext> schemaContext;
         IFC_RETURN(m_spContext->get_SchemaContext(schemaContext));
 
-        xref::weakref_ptr<CDependencyObject> weakRefToRootInstance(m_spContext->get_RootInstance()->GetOwnedDependencyObject().get());
+        xref::weakref_ptr<CDependencyObject> weakRefToRootInstance(m_spContext->get_RootInstance()->GetDependencyObject());
 
         // Get saved stack for the writer to use when looking up static resources later.
         std::shared_ptr<ObjectWriterStack> spSavedStack;
@@ -832,7 +832,7 @@ void ObjectWriterRuntime::RemoveObjectReferencesFromStack(
         // Replace the instances with weakrefs
         if ((*it).exists_Instance())
         {
-            auto weakRefToInstance = xref::get_weakref(it->get_Instance()->GetOwnedDependencyObject().get());
+            auto weakRefToInstance = xref::get_weakref(it->get_Instance()->GetDependencyObject());
             if (weakRefToInstance)
             {
                 it->set_WeakRefInstance(std::move(weakRefToInstance));

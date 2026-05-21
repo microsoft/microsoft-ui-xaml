@@ -1888,7 +1888,7 @@ CResourceDictionary::TryLoadDeferredResource(
     });
 
     bool keyFound = false;
-    std::shared_ptr<CDependencyObject> resource;
+    xref_ptr<CDependencyObject> resource;
 
     IFC_RETURN(m_pDeferredResources->LoadValueIfExists(keyStorage.GetKey(), keyStorage.IsKeyType(), keyFound, resource));
 
@@ -1934,8 +1934,8 @@ CResourceDictionary::LoadAllDeferredResources()
         });
 #endif
 
-        std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>> implicitResources;
-        std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>> explicitResources;
+        std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>> implicitResources;
+        std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>> explicitResources;
 
         m_keyByIndex.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
         m_resourceMap.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);

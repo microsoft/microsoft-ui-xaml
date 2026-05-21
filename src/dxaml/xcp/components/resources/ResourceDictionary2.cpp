@@ -33,7 +33,7 @@ _Check_return_ HRESULT CResourceDictionary2::LoadValueIfExists(
     _In_ const xstring_ptr& key,
     _In_ bool isImplicitKey,
     _Out_ bool& keyFound,
-    _Out_ std::shared_ptr<CDependencyObject>& value)
+    _Out_ xref_ptr<CDependencyObject>& value)
 {
     StreamOffsetToken token;
     keyFound = false;
@@ -66,8 +66,8 @@ _Check_return_ HRESULT CResourceDictionary2::LoadValueIfExists(
 _Check_return_
 HRESULT CResourceDictionary2::LoadAllRemainingDeferredResources(
     _In_ const ResourceMapType& loadedResources,
-    _Out_ std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& implicitResources,
-    _Out_ std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& explicitResources)
+    _Out_ std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& implicitResources,
+    _Out_ std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& explicitResources)
 {
     // We don't preserve the ordering of keys here. Ideally we'd keep the illusion
     // that the keys were in the same index order as they appeared in the developer's XAML file
@@ -77,13 +77,13 @@ HRESULT CResourceDictionary2::LoadAllRemainingDeferredResources(
     // key, but it also is dependent on the previous access order as already-instantiated
     // keys are already present in the dictionary.
     auto instantiateAndAddKey = [this](const xstring_ptr& key, bool isImplicit,
-        std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& dest)
+        std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& dest)
     {
         bool keyFound = false;
-        std::shared_ptr<CDependencyObject> resource;
+        xref_ptr<CDependencyObject> resource;
         IFC_RETURN(LoadValueIfExists(key, isImplicit, keyFound, resource));
         ASSERT(keyFound);
-        dest.emplace_back(key, resource);
+        dest.emplace_back(key, std::move(resource));
         return S_OK;
     };
 

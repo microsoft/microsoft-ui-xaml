@@ -65,7 +65,7 @@ Microsoft::WRL::ComPtr<IInspectable> VisualStateGroupCollection::CreateStoryboar
 
     auto deferredToken = customRuntimeData->GetStoryboard(storyboardIdx);
 
-    std::shared_ptr<CDependencyObject> createdCoreObject;
+    xref_ptr<CDependencyObject> createdCoreObject;
     xref_ptr<CThemeResource> unused;
     IFCFAILFAST(creator.CreateInstance(deferredToken, &createdCoreObject, &unused));
 

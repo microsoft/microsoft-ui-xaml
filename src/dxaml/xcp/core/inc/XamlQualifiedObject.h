@@ -157,12 +157,8 @@ public:
     // Proxied methods onto CValue.
     CDependencyObject* GetDependencyObject() const {  return m_value.AsObject(); }
 
-    // Returns a pointer to a CDependencyObject with the ability to be released when
-    // needed.
-    std::shared_ptr<CDependencyObject> GetOwnedDependencyObject();
-
     // Returns a pointer to a CDependencyObject with ownership given to the caller.
-    std::shared_ptr<CDependencyObject> GetAndTransferDependencyObjectOwnership();
+    CDependencyObject* GetAndTransferDependencyObjectOwnership();
 
     // Helper for cases where we want a shared pointer string representation.
     HRESULT GetCopyAsString(_Out_ xstring_ptr* pstrOutssString) const;

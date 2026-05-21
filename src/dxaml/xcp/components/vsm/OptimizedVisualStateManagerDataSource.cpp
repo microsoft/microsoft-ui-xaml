@@ -69,7 +69,7 @@ bool OptimizedVisualStateManagerDataSource::TryGetVisualStateImpl(_In_ VisualSta
     return false;
 }
 
-_Check_return_ HRESULT OptimizedVisualStateManagerDataSource::TryGetOrCreateTransitionImpl(_In_ int fromIndex, _In_ int toIndex, _Out_ std::shared_ptr<CVisualTransition>* pTransition)
+_Check_return_ HRESULT OptimizedVisualStateManagerDataSource::TryGetOrCreateTransitionImpl(_In_ int fromIndex, _In_ int toIndex, _Out_ xref_ptr<CVisualTransition>* pTransition)
 {
     auto customRuntimeData = m_pGroupCollection->GetCustomRuntimeData();
 
@@ -77,51 +77,50 @@ _Check_return_ HRESULT OptimizedVisualStateManagerDataSource::TryGetOrCreateTran
 
     if (customRuntimeData->TryGetVisualTransition(fromIndex, toIndex, &transitionToken))
     {
-        std::shared_ptr<CDependencyObject> transition;
+        xref_ptr<CDependencyObject> transition;
         xref_ptr<CThemeResource> unused;
         IFC_RETURN(m_objectCreator.CreateInstance(transitionToken, &transition, &unused));
-        *pTransition = std::static_pointer_cast<CVisualTransition>(transition);
+        pTransition->attach(static_cast<CVisualTransition*>(transition.detach()));
     }
     else
     {
-        *pTransition = std::shared_ptr<CVisualTransition>();
+        *pTransition = nullptr;
     }
     return S_OK;
 }
 
-_Check_return_ HRESULT OptimizedVisualStateManagerDataSource::TryGetOrCreateStoryboardForVisualStateImpl(_In_ int index, _Out_ std::shared_ptr<CStoryboard>* pStoryboard)
+_Check_return_ HRESULT OptimizedVisualStateManagerDataSource::TryGetOrCreateStoryboardForVisualStateImpl(_In_ int index, _Out_ xref_ptr<CStoryboard>* pStoryboard)
 {
     auto customRuntimeData = m_pGroupCollection->GetCustomRuntimeData();
 
     if (customRuntimeData->HasStoryboard(index))
     {
         auto storyboardToken = customRuntimeData->GetStoryboard(index);
-        std::shared_ptr<CDependencyObject> storyboard;
+        xref_ptr<CDependencyObject> storyboard;
         xref_ptr<CThemeResource> unused;
         IFC_RETURN(m_objectCreator.CreateInstance(storyboardToken, &storyboard, &unused));
-        *pStoryboard = std::static_pointer_cast<CStoryboard>(storyboard);
+        pStoryboard->attach(static_cast<CStoryboard*>(storyboard.detach()));
     }
     else
     {
-        *pStoryboard = std::shared_ptr<CStoryboard>();
+        *pStoryboard = nullptr;
     }
     return S_OK;
 }
 
-_Check_return_ HRESULT OptimizedVisualStateManagerDataSource::TryGetOrCreatePropertySettersForVisualStateImpl(_In_ int index, _Out_ std::vector<std::shared_ptr<CSetter>>* pSetterVector)
+_Check_return_ HRESULT OptimizedVisualStateManagerDataSource::TryGetOrCreatePropertySettersForVisualStateImpl(_In_ int index, _Out_ std::vector<xref_ptr<CSetter>>* pSetterVector)
 {
-    std::vector<std::shared_ptr<CSetter>> setterVector;
+    std::vector<xref_ptr<CSetter>> setterVector;
     auto customRuntimeData = m_pGroupCollection->GetCustomRuntimeData();
 
     if (customRuntimeData->HasPropertySetters(index))
     {
         for (const auto& token : customRuntimeData->GetPropertySetterTokens(index))
         {
-            std::shared_ptr<CDependencyObject> result;
+            xref_ptr<CDependencyObject> result;
             xref_ptr<CThemeResource> unused;
             IFC_RETURN(m_objectCreator.CreateInstance(token, &result, &unused));
-            std::shared_ptr<CSetter> setter = std::static_pointer_cast<CSetter>(result);
-            setterVector.push_back(setter);
+            setterVector.emplace_back(static_cast<CSetter*>(result.get()));
         }
     }
     *pSetterVector = setterVector;
@@ -261,16 +260,17 @@ _Check_return_ HRESULT OptimizedVisualStateManagerDataSource::GetQualifiersFromS
     const auto extensibleStateTriggerTokens = customRuntimeData->GetExtensibleStateTriggerTokens(index);
     for (auto& token : extensibleStateTriggerTokens)
     {
-        std::shared_ptr<CDependencyObject> stateTriggerBase;
+        xref_ptr<CDependencyObject> triggerDO;
         xref_ptr<CThemeResource> unused;
-        IFC_RETURN(m_objectCreator.CreateInstance(token, &stateTriggerBase, &unused));
-        auto pStateTriggerBase = std::static_pointer_cast<CStateTriggerBase>(stateTriggerBase);
-        if(!pStateTriggerBase) return S_OK;
+        xref_ptr<CStateTriggerBase> stateTriggerBase;
+        IFC_RETURN(m_objectCreator.CreateInstance(token, &triggerDO, &unused));
+        stateTriggerBase.attach(static_cast<CStateTriggerBase*>(triggerDO.detach()));
+        if(!stateTriggerBase) return S_OK;
 
-        auto pQualifier = QualifierFactory::Create(&pStateTriggerBase->m_triggerState);
+        auto pQualifier = QualifierFactory::Create(&stateTriggerBase->m_triggerState);
         ASSERT(pQualifier);
-        IFC_RETURN(onCreated(VisualStateToken(index), pQualifier, xref_ptr<CStateTriggerBase>(pStateTriggerBase.get())));
-        IFC_RETURN(ParentDeferredStateTrigger(xref_ptr<CStateTriggerBase>(pStateTriggerBase.get())));
+        IFC_RETURN(onCreated(VisualStateToken(index), pQualifier, stateTriggerBase));
+        IFC_RETURN(ParentDeferredStateTrigger(stateTriggerBase));
     }
     return S_OK;
 };
@@ -284,17 +284,18 @@ _Check_return_ HRESULT OptimizedVisualStateManagerDataSource::GetQualifiersFromS
     const auto staticResourceTriggerTokens = customRuntimeData->GetStaticResourceTriggerTokens(index);
     for (auto& token : staticResourceTriggerTokens)
     {
-        std::shared_ptr<CDependencyObject> triggerDO;
+        xref_ptr<CDependencyObject> triggerDO;
+        xref_ptr<CStateTriggerBase> trigger;
         IFC_RETURN(m_objectCreator.LookupStaticResourceValue(token, &triggerDO));
-        auto trigger = std::static_pointer_cast<CStateTriggerBase>(triggerDO);
+        trigger.attach(static_cast<CStateTriggerBase*>(triggerDO.detach()));
         if(!trigger) return S_OK;
 
         std::shared_ptr<IQualifier> pQualifier;
         if(trigger->GetTypeIndex() == KnownTypeIndex::AdaptiveTrigger)
         {
             pQualifier = QualifierFactory::Create(
-                    static_cast<int>(std::static_pointer_cast<CAdaptiveTrigger>(trigger)->m_minWindowWidth),
-                    static_cast<int>(std::static_pointer_cast<CAdaptiveTrigger>(trigger)->m_minWindowHeight));
+                    static_cast<int>(static_cast<CAdaptiveTrigger*>(trigger.get())->m_minWindowWidth),
+                    static_cast<int>(static_cast<CAdaptiveTrigger*>(trigger.get())->m_minWindowHeight));
         }
         else
         {
@@ -302,8 +303,8 @@ _Check_return_ HRESULT OptimizedVisualStateManagerDataSource::GetQualifiersFromS
         }
 
         ASSERT(pQualifier);
-        IFC_RETURN(onCreated(VisualStateToken(index), pQualifier, xref_ptr<CStateTriggerBase>(trigger.get())));
-        IFC_RETURN(ParentDeferredStateTrigger(xref_ptr<CStateTriggerBase>(trigger.get())));
+        IFC_RETURN(onCreated(VisualStateToken(index), pQualifier, trigger));
+        IFC_RETURN(ParentDeferredStateTrigger(trigger));
     }
     return S_OK;
 };

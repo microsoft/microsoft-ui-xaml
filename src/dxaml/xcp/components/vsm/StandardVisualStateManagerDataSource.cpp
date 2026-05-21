@@ -226,15 +226,13 @@ bool StandardVisualStateManagerDataSource::TryGetVisualStateImpl(_In_ VisualStat
     return false;
 }
 
-_Check_return_ HRESULT StandardVisualStateManagerDataSource::TryGetOrCreateTransitionImpl(_In_ int fromIndex, _In_ int toIndex, _Out_ std::shared_ptr<CVisualTransition>* pTransition)
+_Check_return_ HRESULT StandardVisualStateManagerDataSource::TryGetOrCreateTransitionImpl(_In_ int fromIndex, _In_ int toIndex, _Out_ xref_ptr<CVisualTransition>* pTransition)
 {
-    xref_ptr<CVisualTransition> transition;
-    IFC_RETURN(GetTransition(m_pGroupCollection, toIndex, fromIndex, &transition));
-    *pTransition = std::shared_ptr<CVisualTransition>(transition.detach(), [](CVisualTransition* owned) { if (owned) owned->Release(); });
+    IFC_RETURN(GetTransition(m_pGroupCollection, toIndex, fromIndex, pTransition));
     return S_OK;
 }
 
-_Check_return_ HRESULT StandardVisualStateManagerDataSource::TryGetOrCreateStoryboardForVisualStateImpl(_In_ int index, _Out_ std::shared_ptr<CStoryboard>* pStoryboard)
+_Check_return_ HRESULT StandardVisualStateManagerDataSource::TryGetOrCreateStoryboardForVisualStateImpl(_In_ int index, _Out_ xref_ptr<CStoryboard>* pStoryboard)
 {
     xref_ptr<CVisualState> visualState;
     IFC_RETURN(GetStateFromIndex(m_pGroupCollection, index, &visualState));
@@ -251,16 +249,16 @@ _Check_return_ HRESULT StandardVisualStateManagerDataSource::TryGetOrCreateStory
         CValue storyboardCValue;
         IFC_RETURN(visualState->GetValueByIndex(KnownPropertyIndex::VisualState_Storyboard, &storyboardCValue));
         xref_ptr<CDependencyObject> value = storyboardCValue.DetachObject();
-        *pStoryboard =  std::shared_ptr<CStoryboard>(static_cast<CStoryboard*>(value.detach()), [](CStoryboard* owned) { if (owned) owned->Release(); });
+        pStoryboard->attach(static_cast<CStoryboard*>(value.detach()));
     }
     else
     {
-        *pStoryboard = std::shared_ptr<CStoryboard>();
+        *pStoryboard = nullptr;
     }
     return S_OK;
 }
 
-_Check_return_ HRESULT StandardVisualStateManagerDataSource::TryGetOrCreatePropertySettersForVisualStateImpl(_In_ int index, _Out_ std::vector<std::shared_ptr<CSetter>>* pSetterVector)
+_Check_return_ HRESULT StandardVisualStateManagerDataSource::TryGetOrCreatePropertySettersForVisualStateImpl(_In_ int index, _Out_ std::vector<xref_ptr<CSetter>>* pSetterVector)
 {
     xref_ptr<CVisualState> visualState;
     IFC_RETURN(GetStateFromIndex(m_pGroupCollection, index, &visualState));
@@ -277,9 +275,7 @@ _Check_return_ HRESULT StandardVisualStateManagerDataSource::TryGetOrCreatePrope
         IFC_RETURN(visualState->GetValueByIndex(KnownPropertyIndex::VisualState_Setters, &settersCollection));
         for (auto& item : (do_pointer_cast<CSetterBaseCollection>(settersCollection.DetachObject().get())->GetCollection()))
         {
-            // Setters come out from the collection as raw pointers, so we need to AddRef before wrapping them in std::shared_ptr
-            item->AddRef();
-            pSetterVector->push_back(std::shared_ptr<CSetter>(do_pointer_cast<CSetter>(item), [](CSetter* owned) { if (owned) owned->Release(); }));
+            pSetterVector->emplace_back(do_pointer_cast<CSetter>(item));
         }
     }
 

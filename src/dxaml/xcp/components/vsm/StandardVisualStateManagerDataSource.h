@@ -28,9 +28,9 @@ protected:
     bool TryGetVisualStateImpl(_In_ VisualStateToken vsToken, 
         _Out_ int* stateIndex, _Out_ int* groupIndex) override;
 
-    _Check_return_ HRESULT TryGetOrCreateTransitionImpl(_In_ int fromIndex, _In_ int toIndex, _Out_ std::shared_ptr<CVisualTransition>* pTransition) override;
-    _Check_return_ HRESULT TryGetOrCreateStoryboardForVisualStateImpl(_In_ int index, _Out_ std::shared_ptr<CStoryboard>* pStoryboard) override;
-    _Check_return_ HRESULT TryGetOrCreatePropertySettersForVisualStateImpl(_In_ int index, _Out_ std::vector<std::shared_ptr<CSetter>>* pSetterVector) override;
+    _Check_return_ HRESULT TryGetOrCreateTransitionImpl(_In_ int fromIndex, _In_ int toIndex, _Out_ xref_ptr<CVisualTransition>* pTransition) override;
+    _Check_return_ HRESULT TryGetOrCreateStoryboardForVisualStateImpl(_In_ int index, _Out_ xref_ptr<CStoryboard>* pStoryboard) override;
+    _Check_return_ HRESULT TryGetOrCreatePropertySettersForVisualStateImpl(_In_ int index, _Out_ std::vector<xref_ptr<CSetter>>* pSetterVector) override;
 
     void ClearActiveStoryboardsImpl(_In_ int groupIndex) override;
     void RemoveActiveStoryboardImpl(_In_ int groupIndex, CStoryboard* storyboard) override;

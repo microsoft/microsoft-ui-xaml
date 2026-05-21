@@ -117,7 +117,7 @@ public:
         _In_ CDependencyObject* element);
 
 private:
-    _Check_return_ HRESULT LoadContent(_Out_ std::shared_ptr<CDependencyObject>* pResult);
+    _Check_return_ HRESULT LoadContent(_Out_ xref_ptr<CDependencyObject>* pResult);
 
     _Check_return_ HRESULT CanInsertRealizedElement(_Out_ bool& result);
 

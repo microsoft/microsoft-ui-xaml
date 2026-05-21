@@ -46,11 +46,11 @@ public:
         _In_ StreamOffsetToken token,
         _In_opt_ CStyle* optimizedStyleParent,
         _In_ KnownPropertyIndex stylePropertyIndex,
-        _Out_ std::shared_ptr<CDependencyObject>* pResourceValue);
+        _Out_ xref_ptr<CDependencyObject>* pResourceValue);
 
     _Check_return_ HRESULT LookupStaticResourceValue(
         _In_ StreamOffsetToken token,
-        _Out_ std::shared_ptr<CDependencyObject>* pResourceValue);
+        _Out_ xref_ptr<CDependencyObject>* pResourceValue);
 
     _Check_return_ HRESULT CreateThemeResourceInstance(
         _In_ StreamOffsetToken token,
@@ -64,12 +64,12 @@ public:
     // When the entire stream is a single object instance we allow CustomWriterObjectCreator to
     // be invoked without a StreamOffsetToken.
     _Check_return_ HRESULT CreateInstance(
-        _Out_ std::shared_ptr<CDependencyObject>* pInstance,
+        _Out_ xref_ptr<CDependencyObject>* pInstance,
         _Out_ xref_ptr<CThemeResource>* resultAsThemeResource);
 
     _Check_return_ HRESULT CreateInstance(
         _In_ StreamOffsetToken token,
-        _Out_ std::shared_ptr<CDependencyObject>* pInstance,
+        _Out_ xref_ptr<CDependencyObject>* pInstance,
         _Out_ xref_ptr<CThemeResource>* resultAsThemeResource);
 
     // When we create an entry with NameScopeRegistrationMode::SkipRegistration they are

@@ -69,7 +69,7 @@ _Check_return_ HRESULT CDeferredElement::Realize(
     });
 
     // Load element which was deferred.
-    std::shared_ptr<CDependencyObject> result;
+    xref_ptr<CDependencyObject> result;
     IFC_RETURN(LoadContent(&result));
 
     m_wrRealizedElement = xref::get_weakref(result.get());
@@ -105,7 +105,7 @@ _Check_return_ HRESULT CDeferredElement::Realize(
 
     registerGuard.release();
 
-    *ppResult = xref_ptr<CDependencyObject>(result.get()).detach();
+    *ppResult = result.detach();
 
     return S_OK;
 }
@@ -178,7 +178,7 @@ _Check_return_ HRESULT CDeferredElement::PostAppendInit()
     return S_OK;
 }
 
-_Check_return_ HRESULT CDeferredElement::LoadContent(_Out_ std::shared_ptr<CDependencyObject>* pResult)
+_Check_return_ HRESULT CDeferredElement::LoadContent(_Out_ xref_ptr<CDependencyObject>* pResult)
 {
     uint64_t instanceToken = 0;
 

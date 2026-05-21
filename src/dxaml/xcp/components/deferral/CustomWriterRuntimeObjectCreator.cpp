@@ -40,7 +40,7 @@ CustomWriterRuntimeObjectCreator::CustomWriterRuntimeObjectCreator(
 
 _Check_return_ HRESULT
 CustomWriterRuntimeObjectCreator::CreateInstance(
-    _Out_ std::shared_ptr<CDependencyObject>* pResult,
+    _Out_ xref_ptr<CDependencyObject>* pResult,
     _Out_ xref_ptr<CThemeResource>* resultAsThemeResource)
 {
     IFC_RETURN(CreateInstance(StreamOffsetToken(), pResult, resultAsThemeResource));
@@ -51,7 +51,7 @@ CustomWriterRuntimeObjectCreator::CreateInstance(
 _Check_return_ HRESULT
 CustomWriterRuntimeObjectCreator::CreateInstance(
     _In_ StreamOffsetToken token,
-    _Out_ std::shared_ptr<CDependencyObject>* pResult,
+    _Out_ xref_ptr<CDependencyObject>* pResult,
     _Out_ xref_ptr<CThemeResource>* resultAsThemeResource)
 {
     // Initialize the output parameters to a valid state
@@ -174,7 +174,7 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::RunObjectWriter(_In_ St
 _Check_return_ HRESULT
 CustomWriterRuntimeObjectCreator::LookupStaticResourceValue(
     _In_ StreamOffsetToken token,
-    _Out_ std::shared_ptr<CDependencyObject>* pResourceValue)
+    _Out_ xref_ptr<CDependencyObject>* pResourceValue)
 {
     return LookupStaticResourceValue(token, nullptr, KnownPropertyIndex::UnknownType_UnknownProperty, pResourceValue);
 }
@@ -186,7 +186,7 @@ CustomWriterRuntimeObjectCreator::LookupStaticResourceValue(
     _In_ StreamOffsetToken token,
     _In_opt_ CStyle* optimizedStyleParent,
     _In_ KnownPropertyIndex stylePropertyIndex,
-    _Out_ std::shared_ptr<CDependencyObject>* pResource)
+    _Out_ xref_ptr<CDependencyObject>* pResource)
 {
     IFC_RETURN(EnsureObjectWriter());
 

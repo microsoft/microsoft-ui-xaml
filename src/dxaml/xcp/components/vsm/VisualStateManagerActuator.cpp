@@ -45,7 +45,7 @@ _Check_return_ HRESULT VisualStateManagerActuator::ChangeVisualState(_In_ int gr
     // for the given state.
     VisualStateSetterHelper::ResolvedVisualStateSetterCollection destinationPropertySetters;
     IFC_RETURN(m_dataSource->TryGetOrCreatePropertySettersForVisualState(endIndex, &destinationPropertySetters));
-    std::shared_ptr<CStoryboard> destinationStoryboard;
+    xref_ptr<CStoryboard> destinationStoryboard;
     IFC_RETURN(m_dataSource->TryGetOrCreateStoryboardForVisualState(endIndex, &destinationStoryboard));
 
     // Clear any pending property setters, as they are made moot by the new VisualState
@@ -53,14 +53,10 @@ _Check_return_ HRESULT VisualStateManagerActuator::ChangeVisualState(_In_ int gr
 
     // When animations are disabled in the case of UISettings global accessibility overrides we
     // simply don't play or even bother to create VisualTransition storyboards.
-    std::shared_ptr<CVisualTransition> transition;
+    xref_ptr<CVisualTransition> transition;
     if (useTransitions)
     {
         IFC_RETURN(m_dataSource->TryGetOrCreateTransition(startIndex, endIndex, &transition));
-    }
-    else
-    {
-        transition = std::shared_ptr<CVisualTransition>();
     }
 
     // Store away all the currently active storyboards in case we're going to be creating a dynamic storyboard
@@ -91,7 +87,7 @@ _Check_return_ HRESULT VisualStateManagerActuator::ChangeVisualState(_In_ int gr
     // to Start the storyboards.
     if (destinationStoryboard)
     {
-        m_dataSource->AddActiveStoryboard(groupIndex, xref_ptr<CStoryboard>(destinationStoryboard.get()), VisualStateGroupContext::StoryboardType::State);
+        m_dataSource->AddActiveStoryboard(groupIndex, destinationStoryboard, VisualStateGroupContext::StoryboardType::State);
         VSMLOG(L"[VSMA]: ChangeVisualState - Adding destination storyboard.");
     }
     auto destinationStoryboardCleanupGuard = wil::scope_exit([&] { if (destinationStoryboard) {
@@ -99,7 +95,7 @@ _Check_return_ HRESULT VisualStateManagerActuator::ChangeVisualState(_In_ int gr
     });
     if (transition)
     {
-        m_dataSource->AddActiveTransition(groupIndex, xref_ptr<CVisualTransition>(transition.get()));
+        m_dataSource->AddActiveTransition(groupIndex, transition);
         VSMLOG(L"[VSMA]: ChangeVisualState - Adding transition.");
     }
     auto transitionCleanupGuard = wil::scope_exit([&] { if (transition) {

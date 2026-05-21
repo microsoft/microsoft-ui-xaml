@@ -28,8 +28,8 @@ public:
     int GetGroupCount() const;
     VisualStateGroupContext& GetGroupContext(_In_ int groupIndex);
 
-    _Check_return_ HRESULT TryGetOrCreateTransition(_In_ int fromIndex, _In_ int toIndex, _Out_ std::shared_ptr<CVisualTransition>* pTransition);
-    _Check_return_ HRESULT TryGetOrCreateStoryboardForVisualState(_In_ int index, _Out_ std::shared_ptr<CStoryboard>* pStoryboard);
+    _Check_return_ HRESULT TryGetOrCreateTransition(_In_ int fromIndex, _In_ int toIndex, _Out_ xref_ptr<CVisualTransition>* pTransition);
+    _Check_return_ HRESULT TryGetOrCreateStoryboardForVisualState(_In_ int index, _Out_ xref_ptr<CStoryboard>* pStoryboard);
     _Check_return_ HRESULT TryGetOrCreatePropertySettersForVisualState(_In_ int index, _Out_ VisualStateSetterHelper::ResolvedVisualStateSetterCollection* pResolvedSetters);
 
     const std::vector<std::pair<CStoryboard*, VisualStateGroupContext::StoryboardType>>& GetActiveStoryboards(_In_ int groupIndex) const;
@@ -90,9 +90,9 @@ protected:
     virtual void ClearActiveTransitionsImpl(_In_ int groupIndex) = 0;
     virtual void RemoveActiveTransitionImpl(_In_ int groupIndex, CVisualTransition* transition) = 0;
     virtual void AddActiveTransitionImpl(_In_ int groupIndex, xref_ptr<CVisualTransition> transition) = 0;
-    virtual _Check_return_ HRESULT TryGetOrCreateTransitionImpl(_In_ int fromIndex, _In_ int toIndex, _Out_ std::shared_ptr<CVisualTransition>* pTransition) = 0;
-    virtual _Check_return_ HRESULT TryGetOrCreateStoryboardForVisualStateImpl(_In_ int index, _Out_ std::shared_ptr<CStoryboard>* pStoryboard) = 0;
-    virtual _Check_return_ HRESULT TryGetOrCreatePropertySettersForVisualStateImpl(_In_ int index, _Out_ std::vector<std::shared_ptr<CSetter>>* pSetterVector) = 0;
+    virtual _Check_return_ HRESULT TryGetOrCreateTransitionImpl(_In_ int fromIndex, _In_ int toIndex, _Out_ xref_ptr<CVisualTransition>* pTransition) = 0;
+    virtual _Check_return_ HRESULT TryGetOrCreateStoryboardForVisualStateImpl(_In_ int index, _Out_ xref_ptr<CStoryboard>* pStoryboard) = 0;
+    virtual _Check_return_ HRESULT TryGetOrCreatePropertySettersForVisualStateImpl(_In_ int index, _Out_ std::vector<xref_ptr<CSetter>>* pSetterVector) = 0;
 
     virtual _Check_return_ HRESULT OnBeginTransitionToState(_In_ int groupIndex, _In_ int stateIndex);
     virtual  _Check_return_ HRESULT OnCompleteTransitionToState(_In_ int groupIndex);

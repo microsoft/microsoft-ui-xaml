@@ -114,18 +114,19 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
                     objectCreator.reset(new CustomWriterRuntimeObjectCreator(NameScopeRegistrationMode::RegisterEntries, context.get()));
                 }
                 xref_ptr<CThemeResource> unused;
-                std::shared_ptr<CDependencyObject> depObj;
+                xref_ptr<CDependencyObject> depObj;
+                xref_ptr<CSetter> setter;
                 IFC_RETURN(objectCreator->CreateInstance(data->GetSetterValueToken(i), &depObj, &unused));
 
                 // Extract information
-                xref_ptr<CSetter> setter(do_pointer_cast<CSetter>(depObj.get()));
+                setter.attach(do_pointer_cast<CSetter>(depObj.detach()));
                 IFC_RETURN(setter->GetProperty(m_targetType, &prop));
                 IFC_RETURN(setter->GetValueByIndex(KnownPropertyIndex::Setter_Value, &val));
 
                 if (data->SetterIsMutable(i))
                 {
                     setter->SetIsValueMutable(true);
-                    m_mutableSetters.emplace_back(setter, m_properties.size());
+                    m_mutableSetters.emplace_back(std::move(setter), m_properties.size());
                 }
             }
         }
@@ -165,7 +166,7 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
             }
             else
             {
-                std::shared_ptr<CDependencyObject> depObj;
+                xref_ptr<CDependencyObject> depObj;
                 std::shared_ptr<XamlQualifiedObject> xqObj;
                 bool resourceFound = false;
 
@@ -240,10 +241,10 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
                 // ThemeResource
                 else if (xqObj)
                 {
-                    depObj = xqObj->GetAndTransferDependencyObjectOwnership();
-                    if (depObj)
+                    auto* pDO = xqObj->GetAndTransferDependencyObjectOwnership();
+                    if (pDO)
                     {
-                        CThemeResourceExtension* pThemeResourceExtension = do_pointer_cast<CThemeResourceExtension>(depObj.get());
+                        CThemeResourceExtension* pThemeResourceExtension = do_pointer_cast<CThemeResourceExtension>(pDO);
                         xref_ptr<CThemeResource> pThemeResource = make_xref<CThemeResource>(pThemeResourceExtension);
                         val.SetThemeResourceNoRef(pThemeResource.detach());
                     }

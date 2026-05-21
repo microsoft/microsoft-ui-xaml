@@ -30,7 +30,7 @@ public:
         _In_ const xstring_ptr& key,
         _In_ bool isImplicitKey,
         _Out_ bool& keyFound,
-        _Out_ std::shared_ptr<CDependencyObject>& value);
+        _Out_ xref_ptr<CDependencyObject>& value);
 
     // Index-accesses and index-removal operations require all deferred resources be instantiated to avoid
     // the complexity of managing what would become a quite sophisicated internal state for what is
@@ -39,8 +39,8 @@ public:
     _Check_return_
     HRESULT LoadAllRemainingDeferredResources(
         _In_ const ResourceMapType& loadedResources,
-        _Out_ std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& implicitResources,
-        _Out_ std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& explicitResources);
+        _Out_ std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& implicitResources,
+        _Out_ std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& explicitResources);
 
     std::size_t GetInitialImplicitStyleKeyCount() const;
     const std::vector<xstring_ptr>& GetInitialResourcesToLoad() const;
