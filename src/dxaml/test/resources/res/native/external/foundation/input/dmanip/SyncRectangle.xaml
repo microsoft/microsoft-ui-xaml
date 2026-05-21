@@ -1,0 +1,6 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer x:Name="myScrollViewer" Width="300" Height="400">
+        <Rectangle x:Name="myRectangle" Width="300" Height="5000" Fill="Red"/>
+    </ScrollViewer>
+</Grid>

@@ -27,8 +27,18 @@ public:
 
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
+    // Public API for manual drag region refresh
+    void RecomputeDragRegions();
+
+    // Static callback for IsDragRegion attached property changes
+    static void OnIsDragRegionPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
 private:
     void GoToState(std::wstring_view const& stateName, bool useTransitions);
+    void HandleTitleChange(const winrt::hstring& oldTitle, const winrt::hstring& newTitle);
+    void ResetTitle(winrt::hstring const& lastAppliedTitle);
     void UpdatePadding();
     void UpdateIcon();
     void UpdateBackButton();
@@ -43,6 +53,7 @@ private:
     void UpdateIconRegion();
     void UpdateInteractableElementsList();
     void UpdateLeftHeaderSpacing();
+    void UpdateAutoRefreshDragRegions();
 
     void OnInputActivationChanged(const winrt::InputActivationListener& sender, const winrt::InputActivationListenerActivationChangedEventArgs& args);
     void OnWindowRectChanged(const winrt::InputNonClientPointerSource& sender, const winrt::WindowRectChangedEventArgs& args);
@@ -51,6 +62,8 @@ private:
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnFlowDirectionChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnIconLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+    void OnContentLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+    void FindInteractableElements(const winrt::DependencyObject& element, bool parentIsDragRegion);
 
     void LoadBackButton();
     void LoadPaneToggleButton();
@@ -58,16 +71,22 @@ private:
     winrt::InputNonClientPointerSource const& GetInputNonClientPointerSource();
     winrt::Windows::Graphics::RectInt32 const GetBounds(const winrt::FrameworkElement& element);
     winrt::WindowId GetAppWindowId();
+    winrt::Microsoft::UI::Windowing::AppWindow TryGetAppWindow();
 
     winrt::event_token m_inputActivationChangedToken{};
     winrt::event_token m_windowRectChangedToken{};
+    winrt::hstring m_defaultAppWindowTitle{};
     winrt::Button::Click_revoker m_backButtonClickRevoker{};
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_sizeChangedRevoker;
     winrt::FrameworkElement::LayoutUpdated_revoker m_iconLayoutUpdatedRevoker{};
+    winrt::FrameworkElement::LayoutUpdated_revoker m_contentLayoutUpdatedRevoker{};
+    // Add a cached AppWindow field to avoid repeated GetFromWindowId calls
+    winrt::Microsoft::UI::Windowing::AppWindow m_appWindow{ nullptr };
     PropertyChanged_revoker m_flowDirectionChangedRevoker{};
 
     std::list<winrt::FrameworkElement> m_interactableElementsList{};
+    std::vector<winrt::Windows::Graphics::RectInt32> m_previousPassthroughRects{};
     winrt::InputActivationListener m_inputActivationListener = nullptr;
     winrt::InputNonClientPointerSource m_inputNonClientPointerSource{ nullptr };
     winrt::WindowId m_lastAppWindowId{};
@@ -84,6 +103,7 @@ private:
 
     double m_compactModeThresholdWidth{ 0.0 };
     bool m_isCompact{ false };
+    bool m_hasDefaultAppWindowTitle{ false };
 
     static constexpr std::wstring_view s_leftPaddingColumnName{ L"LeftPaddingColumn"sv };
     static constexpr std::wstring_view s_rightPaddingColumnName{ L"RightPaddingColumn"sv };

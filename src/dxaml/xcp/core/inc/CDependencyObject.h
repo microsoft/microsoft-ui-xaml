@@ -1253,15 +1253,15 @@ public:
     // 2. Parser encounters instruction to create new instance of type "MyApp.MyAwesomeControl"
     // 3. MyAwesomeControl's constructor is called which in turn calls Application.LoadComponent;
     //    this is a recursive parser invocation.
-    // 4. MyAwesomeControl instance's base URI is set to "ms-appx:///MyAwesomeControl.xaml" by 
-    //    Application.LoadComponent. The inner parser processes MyAwesomeControl's markup before returning 
+    // 4. MyAwesomeControl instance's base URI is set to "ms-appx:///MyAwesomeControl.xaml" by
+    //    Application.LoadComponent. The inner parser processes MyAwesomeControl's markup before returning
     //    the fully initialized control to the outer parser.
     // 5. The outer parser sets the current base URI, "ms-appx:///MainPage.xaml", on the just-created control
-    //    not knowing that the inner parser had already set it to the correct value of 
+    //    not knowing that the inner parser had already set it to the correct value of
     //    "ms-appx:///MyAwesomeControl.xaml".
     //
-    // We can avoid this by setting the below flag on the root object at the same time that 
-    // Application.LoadComponent sets its base URI thereby informing the parser that it should not try to 
+    // We can avoid this by setting the below flag on the root object at the same time that
+    // Application.LoadComponent sets its base URI thereby informing the parser that it should not try to
     // overwrite it with its own value (see XamlManagedRuntime::SetUriBase/XamlNativeRuntime::SetUriBase)
     bool GetCanParserOverwriteBaseUri() const { return m_canParserOverwriteBaseUri; }
     void SetCanParserOverwriteBaseUri(bool value) { m_canParserOverwriteBaseUri = value; }
@@ -1701,6 +1701,8 @@ public:
     bool ShouldCheckForResourceOverrides() const    { return m_checkForResourceOverrides; };
 
     CDependencyObject* GetPublicRootVisual();
+
+    static const WCHAR* TypeIndexToType(KnownTypeIndex typeIndex);
 
 public:
     // Default values for properties with storage type float array

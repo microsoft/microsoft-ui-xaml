@@ -91,6 +91,10 @@ HRESULT DirectUI::SetterFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ vo
     {
         *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ISetterFactory*>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::ISetterStatics2)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::ISetterStatics2*>(this);
+    }
     else
     {
         RRETURN(ctl::BetterCoreObjectActivationFactory::QueryInterfaceImpl(iid, ppObject));
@@ -115,7 +119,10 @@ Cleanup:
 
 // Dependency properties.
 
-
+IFACEMETHODIMP DirectUI::SetterFactory::get_ValueProperty(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue)
+{
+    RRETURN(MetadataAPI::GetIDependencyProperty(KnownPropertyIndex::Setter_Value, ppValue));
+}
 
 
 // Attached properties.

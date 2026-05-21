@@ -12,11 +12,6 @@ PropertyPathParser::PropertyPathParser()
 
 PropertyPathParser::~PropertyPathParser()
 {
-    std::for_each(m_descriptors.begin(), m_descriptors.end(),
-        [](PropertyPathStepDescriptor *pDescriptor)
-        {
-            delete pDescriptor;
-        });
 }
 
 _Check_return_ 
@@ -24,7 +19,7 @@ HRESULT
 PropertyPathParser::SetSource(_In_opt_z_ const WCHAR *szPath, _In_opt_ ::XamlServiceProviderContext* context)
 {
     // The source can only be called once
-    IFCEXPECT_RETURN(m_descriptors.empty());
+    IFCEXPECT_RETURN(m_descriptors.m_vector.empty());
     IFC_RETURN(Parse(szPath, context));
 
     return S_OK;
@@ -39,19 +34,15 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
     const WCHAR *pCurrentProperty = nullptr;
     WCHAR *szCurrentProperty = nullptr;
     WCHAR *szIndex = nullptr;
-    PropertyPathStepDescriptor *pCurrentStep = nullptr;
+    PropertyPathStepDescriptor currentStep;
     bool fExpectingProperty = false;
 
     // If the property path is empty or NULL then this means that we're binding
     // directly to the source
     if (szPropertyPath == NULL || szPropertyPath[0] == L'\0')
     {
-        pCurrentStep = new SourceAccessPathStepDescriptor();
-
-        // This will be the only step in the chain
-        IFC(AppendStepDescriptor(pCurrentStep));
-
-        pCurrentStep = NULL;
+        currentStep = PropertyPathStepDescriptor::CreateSourceAccess();
+        IFC(AppendStepDescriptor(std::move(currentStep)));
         goto Cleanup;
     }
 
@@ -83,11 +74,8 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
                 IFC(E_INVALIDARG);
             }
 
-            IFC(CreateDependencyPropertyPathStepDescriptor(cProperty - 1, pProperty, context, &pCurrentStep));
-            
-            // Add the new step
-            IFC(AppendStepDescriptor(pCurrentStep));
-            pCurrentStep = NULL;
+            IFC(CreateDependencyPropertyPathStepDescriptor(cProperty - 1, pProperty, context, &currentStep));
+            IFC(AppendStepDescriptor(std::move(currentStep)));
 
             // Go to the next character
             fExpectingProperty = FALSE;
@@ -138,12 +126,9 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
                 pCurrentProperty = pPropertyPath + 1;
 
                 // Now we can create a property path step
-                pCurrentStep = new PropertyAccessPathStepDescriptor(szCurrentProperty);
-                szCurrentProperty = NULL;
-
-                // Now add the step to the list
-                IFC(AppendStepDescriptor(pCurrentStep));
-                pCurrentStep = NULL;
+                currentStep = PropertyPathStepDescriptor::CreatePropertyAccess(szCurrentProperty);
+                szCurrentProperty = NULL; // Descriptor owns the string now
+                IFC(AppendStepDescriptor(std::move(currentStep)));
 
                 // If the separator found was a '.' then the next 
                 // step must be a property otherwise it is an indexer
@@ -197,27 +182,26 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
                     IFC(E_INVALIDARG);
                 }
 
-#pragma prefast(push)
+#pragma warning(push)
                 // wcsncpy_s will always null-terminate szIndex on success
-#pragma prefast(disable: __WARNING_BUFFER_OVERFLOW, "Read overflow of null terminated buffer using expression '(WCHAR *)szIndex'")
+#pragma warning(disable: 6385)  // Read overflow of null terminated buffer using expression '(WCHAR *)szIndex'
                 // Create the right type of indexer
                 if (IsNumericIndex(szIndex))
                 {
-                    pCurrentStep = new IntIndexerPathStepDescriptor(_wtoi(szIndex));
+                    currentStep = PropertyPathStepDescriptor::CreateIntIndexer(_wtoi(szIndex));
                     delete[] szIndex;
                     szIndex = NULL;
                 }
                 else
                 {
                     // TODO: Implement the string index, perhaps it is redundant?
-                    pCurrentStep = new StringIndexerPathStepDescriptor(szIndex);
-                    szIndex = NULL; // The indexer now owns the string
+                    currentStep = PropertyPathStepDescriptor::CreateStringIndexer(szIndex);
+                    szIndex = NULL; // The descriptor now owns the string
                 }
-#pragma prefast(pop)
+#pragma warning(pop)
 
                 // Now add the step to the list
-                IFC(AppendStepDescriptor(pCurrentStep));
-                pCurrentStep = NULL;
+                IFC(AppendStepDescriptor(std::move(currentStep)));
 
                 // Move the char pointer to the begining of the next step
                 pPropertyPath++;
@@ -254,7 +238,6 @@ PropertyPathParser::Parse(_In_opt_z_ const WCHAR *szPropertyPath, _In_opt_ ::Xam
 
 Cleanup:
 
-    delete pCurrentStep;
     delete[] szCurrentProperty;
     delete[] szIndex;
     RRETURN(hr);
@@ -262,11 +245,11 @@ Cleanup:
 
 _Check_return_ 
 HRESULT 
-PropertyPathParser::AppendStepDescriptor(_In_ PropertyPathStepDescriptor *pDescriptor)
+PropertyPathParser::AppendStepDescriptor(_In_ PropertyPathStepDescriptor&& descriptor)
 {
     HRESULT hr = S_OK;
 
-    m_descriptors.push_back(pDescriptor);
+    m_descriptors.m_vector.emplace_back(std::move(descriptor));
 
     RRETURN(hr);//RRETURN_REMOVAL
 }
@@ -291,7 +274,7 @@ PropertyPathParser::CreateDependencyPropertyPathStepDescriptor(
     _In_ XUINT32 nPropertyLength,
     _In_reads_(nPropertyLength + 1) const WCHAR *pchProperty,
     _In_opt_ ::XamlServiceProviderContext* context,
-    _Outptr_ PropertyPathStepDescriptor **ppDescriptor)
+    _Out_ PropertyPathStepDescriptor *pDescriptor)
 {
     const CDependencyProperty *pDP = nullptr;
 
@@ -301,7 +284,7 @@ PropertyPathParser::CreateDependencyPropertyPathStepDescriptor(
         IFC_RETURN(E_INVALIDARG);
     }
 
-    *ppDescriptor = new DependencyPropertyPathStepDescriptor(pDP);
+    *pDescriptor = PropertyPathStepDescriptor::CreateDependencyProperty(pDP);
     
     return S_OK;
 }

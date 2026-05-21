@@ -12,23 +12,23 @@ public:
     void LineAlignment(winrt::FlowLayoutLineAlignment const& value);
     winrt::FlowLayoutLineAlignment LineAlignment();
 
-    void MinColumnSpacing(double value);
-    double MinColumnSpacing();
+    void LineSpacing(double value);
+    double LineSpacing();
 
-    void MinRowSpacing(double value);
-    double MinRowSpacing();
+    void MinItemSpacing(double value);
+    double MinItemSpacing();
 
     void Orientation(winrt::Orientation const& value);
     winrt::Orientation Orientation();
 
     static winrt::DependencyProperty LineAlignmentProperty() { return s_LineAlignmentProperty; }
-    static winrt::DependencyProperty MinColumnSpacingProperty() { return s_MinColumnSpacingProperty; }
-    static winrt::DependencyProperty MinRowSpacingProperty() { return s_MinRowSpacingProperty; }
+    static winrt::DependencyProperty LineSpacingProperty() { return s_LineSpacingProperty; }
+    static winrt::DependencyProperty MinItemSpacingProperty() { return s_MinItemSpacingProperty; }
     static winrt::DependencyProperty OrientationProperty() { return s_OrientationProperty; }
 
     static GlobalDependencyProperty s_LineAlignmentProperty;
-    static GlobalDependencyProperty s_MinColumnSpacingProperty;
-    static GlobalDependencyProperty s_MinRowSpacingProperty;
+    static GlobalDependencyProperty s_LineSpacingProperty;
+    static GlobalDependencyProperty s_MinItemSpacingProperty;
     static GlobalDependencyProperty s_OrientationProperty;
 
     static void EnsureProperties();
@@ -38,11 +38,11 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnMinColumnSpacingPropertyChanged(
+    static void OnLineSpacingPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnMinRowSpacingPropertyChanged(
+    static void OnMinItemSpacingPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

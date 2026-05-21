@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{87E325C8-8DE9-4DAD-B599-23DED1D14EC7}</ProjectGuid>
+    <!-- TODO: Remove <DisableExperimentalWarnings> from source when Ixp makes its api non-experimental -->
+    <DisableExperimentalWarnings>true</DisableExperimentalWarnings>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\test\common.props" />
+  <Import Project="$(NativeExternalTestPath)\common.props" />
+  <PropertyGroup>
+    <XamlDiagPath>$(XamlSourcePath)\xcp\components\xamldiagnostics</XamlDiagPath>
+    <XamlDiagObjPath>$(XamlBinaryPath)\xcp\components\xamldiagnostics</XamlDiagObjPath>
+    <XamlDiagTapPath>$(XamlSourcePath)\xcp\dxaml\tools\xamldiagnostics\tap</XamlDiagTapPath>
+    <!-- $REVIEW: This comment is probably not correct and is probably as a result of a multiline comment being placed on a single value in a multivalue property set -->
+    <!-- Some types appear in microsoft.diagnostics.appanalysis.winmd that are expected in another 'assembly'. -->
+    <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions);MIDL_NS_PREFIX;</ProjectPreprocessorDefinitions>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(MSBuildThisFileDirectory)\appAnalysis;
+        $(MSBuildThisFileDirectory)\bindingHelpers;
+        $(MSBuildThisFileDirectory)\diag;
+        $(MSBuildThisFileDirectory)\ETW\InputEvents;
+        $(MSBuildThisFileDirectory)\ETW\LayoutCausality;
+        $(MSBuildThisFileDirectory)\xamlCompiler\compiledBindings;
+        $(MSBuildThisFileDirectory)\customTypes;
+        $(BaseIntermediateOutputPath)\customTypes\generated;
+        $(LiftedIXPIncludePaths);
+        $(NativeExternalTestPath)\enterprise\inc;
+        $(NativeExternalTestPath)\tools\AppAnalysis;
+        $(XamlBinaryPath)\xcp\components\xamldiagnostics\idl;
+        $(XamlDiagObjPath)\idl;
+        $(XamlDiagPath)\idl\;
+        $(XamlDiagPath)\inc\;
+        $(XamlDiagTapPath)\;
+        $(XamlSourcePath)\xcp\components\base\inc;
+        $(XamlSourcePath)\xcp\components\xamldiagnostics\inc;
+        $(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\dll;
+        $(XamlSourcePath)\xcp\dxaml\tools\xamldiagnostics\tap;
+        $(WinUIDetailsIncludePath)\abi;
+        $(WinUIDetailsIncludePath)\MockDComp;
+      </AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>%(DisableSpecificWarnings);4691</DisableSpecificWarnings>
+      <ForcedUsingFiles>
+        %(ForcedUsingFiles);
+        $(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl\microsoft.diagnostics.appanalysis.winmd;
+        $(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl\microsoft.diagnostics.appanalysis.internal.winmd;
+      </ForcedUsingFiles>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>
+        %(AdditionalDependencies);
+        $(WindowsUmLibPath)\windowscodecs.lib;
+      </AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="appAnalysis\CollapsedElementsRuleIntegrationTests.h" />
+    <ClInclude Include="appAnalysis\DuplicateAutomationNameRuleIntegrationTests.h" />
+    <ClInclude Include="appAnalysis\DynamicBindingRuleIntegrationTests.h" />
+    <ClInclude Include="appAnalysis\ImageDecodingRuleIntegrationTests.h" />
+    <ClInclude Include="appAnalysis\LVDevirtualizedRuleIntegrationTests.h" />
+    <ClInclude Include="appAnalysis\NoAutomationNameRuleIntegrationTests.h" />
+    <ClInclude Include="appAnalysis\NonVirtualizingPanelRuleIntegrationTests.h" />
+    <ClInclude Include="appAnalysis\ResourceUsingXNameRuleIntegrationTests.h" />
+    <ClInclude Include="appAnalysis\RuleTesterHelper.h" />
+    <ClInclude Include="appAnalysis\TestHelpers.h" />
+    <ClInclude Include="bindingHelpers\XamlBindingHelperTests.h" />
+    <ClInclude Include="diag\AddRemoveDictionaryItems.h" />
+    <ClInclude Include="diag\AnimatedValueTests.h" />
+    <ClInclude Include="diag\CollectionTests.h" />
+    <ClInclude Include="diag\CompositionGraphicsDevice.h" />
+    <ClInclude Include="diag\ElementStateChangedTests.h" />
+    <ClInclude Include="diag\MemoryInfoTests.h" />
+    <ClInclude Include="diag\MultipleWindowTests.h" />
+    <ClInclude Include="diag\ReplaceResourceTests.h" />
+    <ClInclude Include="diag\ResolveResourceTests.h" />
+    <ClInclude Include="diag\SourceInfoTests.h" />
+    <ClInclude Include="diag\StyleTests.h" />
+    <ClInclude Include="diag\Win32InteropTests.h" />
+    <ClInclude Include="diag\XamlDiagnosticsTestBase.h" />
+    <ClInclude Include="diag\XamlDiagnosticsTestHelpers.h" />
+    <ClInclude Include="diag\XamlDiagnosticsTests.h" />
+    <ClInclude Include="ETW\InputEvents\AppBarTests.h" />
+    <ClInclude Include="ETW\InputEvents\DragInputTests.h" />
+    <ClInclude Include="ETW\InputEvents\KeyboardInputTests.h" />
+    <ClInclude Include="ETW\InputEvents\ManipulationInputTests.h" />
+    <ClInclude Include="ETW\InputEvents\PointerInputTests.h" />
+    <ClInclude Include="ETW\InputEvents\TouchInputTests.h" />
+    <ClInclude Include="ETW\LayoutCausality\BindingEvents.h" />
+    <ClInclude Include="ETW\LayoutCausality\PropertyChangedEvents.h" />
+    <ClInclude Include="xamlCompiler\compiledBindings\CompileBindingTests.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="appAnalysis\ImageDecodingRuleIntegrationTests.cpp" />
+    <ClCompile Include="appAnalysis\CollapsedElementsRuleIntegrationTests.cpp" />
+    <ClCompile Include="appAnalysis\LVDevirtualizedRuleIntegrationTests.cpp" />
+    <ClCompile Include="appAnalysis\DynamicBindingRuleIntegrationTests.cpp" />
+    <ClCompile Include="appAnalysis\NoAutomationNameRuleIntegrationTests.cpp" />
+    <ClCompile Include="appAnalysis\DuplicateAutomationNameRuleIntegrationTests.cpp" />
+    <ClCompile Include="appAnalysis\ResourceUsingXNameRuleIntegrationTests.cpp" />
+    <ClCompile Include="appAnalysis\NonVirtualizingPanelRuleIntegrationTests.cpp" />
+    <ClCompile Include="bindingHelpers\XamlBindingHelperTests.cpp" />
+    <ClCompile Include="diag\XamlDiagnosticsTests.cpp" />
+    <ClCompile Include="diag\SourceInfoTests.cpp" />
+    <ClCompile Include="diag\ReplaceResourceTests.cpp" />
+    <ClCompile Include="diag\AnimatedValueTests.cpp" />
+    <ClCompile Include="diag\CollectionTests.cpp" />
+    <ClCompile Include="diag\MultipleWindowTests.cpp" />
+    <ClCompile Include="diag\CompositionGraphicsDevice.cpp" />
+    <ClCompile Include="diag\ResolveResourceTests.cpp" />
+    <ClCompile Include="diag\AddRemoveDictionaryItems.cpp" />
+    <ClCompile Include="diag\XamlDiagnosticsTestHelpers.cpp" />
+    <ClCompile Include="diag\ElementStateChangedTests.cpp" />
+    <ClCompile Include="diag\MemoryInfoTests.cpp" />
+    <ClCompile Include="diag\Win32InteropTests.cpp" />
+    <ClCompile Include="diag\StyleTests.cpp" />
+    <ClCompile Include="ETW\InputEvents\PointerInputTests.cpp" />
+    <ClCompile Include="ETW\InputEvents\TouchInputTests.cpp" />
+    <ClCompile Include="ETW\InputEvents\DragInputTests.cpp" />
+    <ClCompile Include="ETW\InputEvents\ManipulationInputTests.cpp" />
+    <ClCompile Include="ETW\InputEvents\KeyboardInputTests.cpp" />
+    <ClCompile Include="ETW\InputEvents\AppBarTests.cpp" />
+    <ClCompile Include="ETW\LayoutCausality\PropertyChangedEvents.cpp" />
+    <ClCompile Include="ETW\LayoutCausality\BindingEvents.cpp" />
+    <ClCompile Include="xamlCompiler\compiledBindings\CompileBindingTests.cpp" />
+    <ClCompile Include="customTypes.App.g.cpp" />
+    <ClCompile Include="customTypes.UserControl.cpp" />
+    <ClCompile Include="customTypes.ValueConverters.cpp" />
+    <ClCompile Include="customTypes.AllCustomPages.cpp" />
+    <ClCompile Include="customTypes.XamlCompilerPage.g.cpp" />
+    <ClCompile Include="customTypes.XamlTypeInfo.g.cpp" />
+    <ClCompile Include="customTypes.XamlTypeInfo.Impl.g.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" />
+    <ProjectReference Include="$(XamlDiagPath)\idl\xamlom.vcxproj" />
+    <ProjectReference Include="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" />
+    <ProjectReference Include="customTypes\customTypes.vcxproj" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />
+</Project>

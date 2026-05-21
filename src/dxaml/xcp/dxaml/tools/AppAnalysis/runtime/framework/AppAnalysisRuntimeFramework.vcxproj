@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>StaticLibrary</ConfigurationType>
+        <ProjectGuid>{0abd262a-c1d8-440a-ac58-99fd5997fbdd}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\common.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledInclude>precomp.h</XamlPrecompiledInclude>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="EtwEventInfo.h"/>
+        <ClInclude Include="EtwEventRecord.h"/>
+        <ClInclude Include="EtwEventWatcher.h"/>
+        <ClInclude Include="EtwProvider.h"/>
+        <ClInclude Include="EventProcessor.h"/>
+        <ClInclude Include="precomp.h"/>
+
+        <ClCompile Include="EtwEventRecord.cpp"/>
+        <ClCompile Include="EventProcessor.cpp"/>
+        <ClCompile Include="EtwProvider.cpp"/>
+        <ClCompile Include="EtwEventInfo.cpp"/>
+        <ClCompile Include="EtwEventWatcher.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(AppAnalysisPath)\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

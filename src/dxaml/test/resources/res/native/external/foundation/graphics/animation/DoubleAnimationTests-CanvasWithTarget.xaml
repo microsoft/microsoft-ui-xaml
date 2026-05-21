@@ -1,0 +1,13 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Canvas Width="10" Height="10" Background="Red" Canvas.Top="100" x:Name="canv">
+        <Canvas.RenderTransform>
+            <TransformGroup>
+                <TranslateTransform x:Name="tr1" />
+                <TranslateTransform x:Name="tr2" />
+            </TransformGroup>
+        </Canvas.RenderTransform>
+    </Canvas>
+
+</Canvas>

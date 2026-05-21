@@ -432,10 +432,10 @@ void PipsPager::OnSelectedPageIndexChanged(const int oldValue)
         // Now handle the value changes
         m_lastSelectedPageIndex = oldValue;
 
-        // Fire value property change for UIA
+        // Notify UIA that the selection has changed
         if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).try_as<winrt::PipsPagerAutomationPeer>())
         {
-            winrt::get_self<PipsPagerAutomationPeer>(peer)->RaiseSelectionChanged(m_lastSelectedPageIndex, SelectedPageIndex());
+            winrt::get_self<PipsPagerAutomationPeer>(peer)->RaiseSelectionChanged();
         }
         if (NumberOfPages() < 0) {
             UpdatePipsItems(NumberOfPages(), MaxVisiblePips());

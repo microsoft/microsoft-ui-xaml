@@ -85,9 +85,6 @@ if (-not (Test-Path $repoRoot\src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlType
     # Use smaller perf config when building OSS
     $projectPackages = $projectPackages | ForEach-Object { $_ -replace 'perf\\packages.config', 'perf\packages.OSS.config' }
 
-    # Replace the full MUX sln with the one limited to the OSS-available projects
-    $projectPackages = $projectPackages | ForEach-Object { $_ -replace 'dxaml\\Microsoft.UI.Xaml.sln', 'dxaml\Microsoft.UI.Xaml.OSS.sln' }
-
     # We don't have all necessary files to build the compiler, so also restore
     # the project which uses the public compiler
     $projectPackages += 'XamlCompilerPublic.csproj'

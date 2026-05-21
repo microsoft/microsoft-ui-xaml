@@ -7,6 +7,7 @@
     <Target Name="WinAppSdkInsertActivatableClassEntries"
         BeforeTargets="_GenerateAppxPackageRecipeFile;_WireUpCoreRuntime"
         AfterTargets="_CalculateInputsForGenerateAppxPackageRecipe"
+        Condition="'$(WindowsAppSdkSelfContained)' != '' or '$(MicrosoftWindowsAppSDKPackageDir)' != '' or '@(WindowsAppSdkComponentPackages)' != ''"
         Inputs="$(MSBuildAllProjects);@(_GenerateCurrentProjectAppxManifestInput);@(_GenerateAppxPackageRecipeInput)"
         Outputs="$(FinalAppxManifestName).incremental" >
         

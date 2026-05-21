@@ -12,7 +12,7 @@ bool TextBlockViewHelpers::AdjustPositionByCharacterCount(
     _Inout_ int &charCount,
     _Inout_ int &adjustedPosition)
 {
-    auto inlineCollection = inlines->GetCollection();
+    const auto& inlineCollection = inlines->GetCollection();
     for (auto inl : inlineCollection)
     {
         int curInlineLength;
@@ -91,7 +91,7 @@ bool TextBlockViewHelpers::AdjustCharacterIndexByPosition(
     _Inout_ int &charCount,
     _Inout_ int &position)
 {
-    auto inlineCollection = inlines->GetCollection();
+    const auto& inlineCollection = inlines->GetCollection();
     for (auto inl : inlineCollection)
     {
         int curInlineLength;
@@ -173,7 +173,7 @@ bool TextBlockViewHelpers::FindIUCPositionInInlines(
     _In_ CInlineUIContainer* iuc,
     _Inout_ uint32_t &positionOfIUC)
 {
-    auto inlineCollection = inlines->GetCollection();
+    const auto& inlineCollection = inlines->GetCollection();
     for (auto inl : inlineCollection)
     {
         int curInlineLength;

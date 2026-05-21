@@ -1,0 +1,76 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="Tests.Tools.Shared.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Tests.Tools.Shared">
+
+    <Page.Resources>
+      <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="CommonStyles.xaml"/>
+        </ResourceDictionary.MergedDictionaries>
+        <Style x:Key="ThemedRectangleFillStyle" TargetType="Rectangle">
+            <Setter Property="Fill" Value="{ThemeResource MyCustomThemedBrush}"/>
+        </Style>
+        <SolidColorBrush x:Key="MyBrush">AliceBlue</SolidColorBrush>
+      </ResourceDictionary>
+    </Page.Resources>
+    <Grid x:Name="LayoutRoot" Background="{StaticResource MyBrush}">
+      <Grid.Resources>
+        <SolidColorBrush x:Key="BackgroundBrush">Blue</SolidColorBrush>
+        <local:CustomUserControl x:Key="MyUserControl"></local:CustomUserControl>
+      </Grid.Resources>
+      <StackPanel x:Name="stacky">
+        <StackPanel.Resources>
+          <ResourceDictionary>
+            <!-- Define some themes here that match the ones in CommonStyles -->
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                  <SolidColorBrush x:Key="MyCustomThemedBrush">Black</SolidColorBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                  <SolidColorBrush x:Key="MyCustomThemedBrush">Yellow</SolidColorBrush>
+                </ResourceDictionary>
+              </ResourceDictionary.ThemeDictionaries>
+            </ResourceDictionary>
+        </StackPanel.Resources>
+        <Ellipse Width="30" Height="30" x:Name="ellipse">
+          <Ellipse.Fill>
+            <ImageBrush x:Name="brush" ImageSource="ms-appx:///resources/native/external/foundation/graphics/image/Rainier_444_2048x1536.jpg" />
+          </Ellipse.Fill>
+        </Ellipse>
+        <local:CustomUserControl x:Name="customControl" local:CustomThoughts="Yes" local:CustomDoubleNonDP="3">
+          <local:CustomUserControl.CustomUserCollection>
+            <Rectangle Fill="{ThemeResource MyCustomThemedBrush}" />
+            <SolidColorBrush Color="Blue" />
+          </local:CustomUserControl.CustomUserCollection>
+        </local:CustomUserControl>
+        <Rectangle Fill="{ThemeResource MyCustomThemedBrush}" Width="100" Height="100" x:Name="rectangle"/>
+        <Rectangle Style="{StaticResource ThemedRectangleFillStyle}" Width="100" Height="100" x:Name="styledRectangle"/>
+        <Ellipse Style="{StaticResource UnthemedEllipseFillStyle}" Width="100" Height="100" x:Name="unthemedEllipse"/>
+        <Ellipse Style="{StaticResource UnthemedEllipseFillStyle}" Width="100" Height="100" x:Name="themedEllipse"/>
+        <Button Style="{StaticResource MyBrushTemplatedButtonStyle}" Width="100" Height="100" Content="MyBrushButton" x:Name="myBrushButton"/>
+        <ContentControl Content="Smile" Style="{StaticResource Icon}"/>
+      </StackPanel>
+      <Grid x:Name="g">
+        <Grid.Resources>
+          <SolidColorBrush x:Key="scb">Red</SolidColorBrush>
+          <Style TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource scb}" />
+          </Style>
+        </Grid.Resources>
+        <Button x:Name="b" Width="100" Height="100" />
+        <Rectangle x:Name="r_inline" Width="100" Height="100">
+          <Rectangle.Style>
+            <Style TargetType="Rectangle">
+              <Setter Property="Fill" Value="{StaticResource scb}" />
+            </Style>
+          </Rectangle.Style>
+        </Rectangle>
+      </Grid>
+      
+    </Grid>
+</Page>
+

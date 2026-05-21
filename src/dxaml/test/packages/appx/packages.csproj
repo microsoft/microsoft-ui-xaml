@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="ReadFromFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <FilePath ParameterType="System.String" Required="true" />
+      <Contents ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        Contents = File.ReadAllText(FilePath, System.Text.Encoding.UTF8);
+]]></Code>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="WriteToFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <FilePath ParameterType="System.String" Required="true" />
+      <Contents ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        File.WriteAllText(FilePath, Contents, System.Text.Encoding.UTF8);
+]]></Code>
+    </Task>
+  </UsingTask>
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>Utility</ConfigurationType>
+    <ProjectGuid>{1F38AD30-B0E3-4055-9F58-52D5934ACA4A}</ProjectGuid>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\test\common.props" />
+  <PropertyGroup>
+    <TestExtensionsPath>$(XamlBuildOutputRoot)\MergedWinMD\private\TestExtensions.xml</TestExtensionsPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppxManifestFile Include="AppxManifest*.xml">
+      <BuildOutputPath>$(XamlBuildPath)\%(Filename)%(Extension)</BuildOutputPath>
+    </AppxManifestFile>
+  </ItemGroup>
+  <Target Name="RetrieveTestExtensionsContents">
+    <ReadFromFile FilePath="TestExtensionsBase.xml">
+      <Output TaskParameter="Contents" ItemName="TestExtensionsLines" />
+    </ReadFromFile>
+    <ReadFromFile FilePath="$(TestExtensionsPath)">
+      <Output TaskParameter="Contents" ItemName="TestExtensionsLines" />
+    </ReadFromFile>
+    <PropertyGroup Label="Globals">
+      <TestExtensionsContents>@(TestExtensionsLines -> '%(Identity)', '%0A%0D')</TestExtensionsContents>
+    </PropertyGroup>
+  </Target>
+  <Target Name="GenerateAppxManifest" DependsOnTargets="RetrieveTestExtensionsContents" BeforeTargets="Binplace" Inputs="%(AppxManifestFile.Identity);TestExtensionsBase.xml;$(TestExtensionsPath)" Outputs="%(AppxManifestFile.BuildOutputPath)">
+    <Message Text="Generating file %(AppxManifestFile.BuildOutputPath)..." />
+    <ReadFromFile FilePath="%(AppxManifestFile.Identity)">
+      <Output TaskParameter="Contents" ItemName="AppxManifestLines" />
+    </ReadFromFile>
+    <PropertyGroup Label="Globals">
+      <AppxManifestContents>@(AppxManifestLines -> '%(Identity)', '%0A%0D')</AppxManifestContents>
+      <AppxManifestContentsWithReplacement>$(AppxManifestContents.Replace('__EXTS__', '$(TestExtensionsContents)').Replace('__ARCH__', $(PlatformTarget.ToLower())))</AppxManifestContentsWithReplacement>
+    </PropertyGroup>
+    <WriteToFile FilePath="%(AppxManifestFile.BuildOutputPath)" Contents="$(AppxManifestContentsWithReplacement)" />
+  </Target>
+  <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)\MergedWinMD\private\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <BinplaceItem Include="@(AppxManifestFile -> '%(BuildOutputPath)')" />
+    <BinplaceItem Include="taef.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

@@ -78,12 +78,10 @@ winrt::com_array<winrt::Microsoft::UI::Xaml::Automation::Provider::IRawElementPr
     return {};
 }
 
-void PipsPagerAutomationPeer::RaiseSelectionChanged(double oldIndex, double newIndex)
+void PipsPagerAutomationPeer::RaiseSelectionChanged()
 {
-    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionPatternOnInvalidated))
     {
-        RaisePropertyChangedEvent(winrt::SelectionPatternIdentifiers::SelectionProperty(),
-            winrt::PropertyValue::CreateDouble(oldIndex),
-            winrt::PropertyValue::CreateDouble(newIndex));
+        RaiseAutomationEvent(winrt::AutomationEvents::SelectionPatternOnInvalidated);
     }
 }

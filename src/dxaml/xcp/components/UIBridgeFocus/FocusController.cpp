@@ -8,6 +8,7 @@
 #include "NavigationFocusEventArgs.h"
 #include "NavigateFocusResult.h"
 #include <WRLHelper.h>
+#include <MuxActivationFactory.h>
 
 using namespace xaml_hosting;
 using FocusChangedEventHandler = wf::ITypedEventHandler<
@@ -184,7 +185,7 @@ HRESULT FocusController::DepartFocus(
     wrl::ComPtr<ixp::IFocusNavigationRequest> ixpRequest;
 
     wrl::ComPtr<ixp::IFocusNavigationRequestStatics> focusNavigationRequestStatics;
-    wf::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_FocusNavigationRequest).Get(), &focusNavigationRequestStatics);
+    MuxGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_FocusNavigationRequest).Get(), &focusNavigationRequestStatics);
     IFCFAILFAST(focusNavigationRequestStatics->CreateWithHintRectAndId(ixpReason, hintRect, correlationId, &ixpRequest));
 
     wrl::ComPtr<ixp::IInputFocusController2> inputFocusController2;
@@ -217,7 +218,7 @@ _Check_return_
 HRESULT FocusController::OnGotFocusCommon()
 {
     wrl::ComPtr<msy::IDispatcherQueueStatics> spDispatcherQueueStatics;
-    IFC_RETURN(wf::GetActivationFactory(
+    IFC_RETURN(MuxGetActivationFactory(
         wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
         &spDispatcherQueueStatics));
 

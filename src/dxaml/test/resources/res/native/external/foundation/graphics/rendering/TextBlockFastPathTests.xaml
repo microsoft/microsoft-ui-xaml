@@ -1,0 +1,24 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+       <StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Margin="20" >
+            <TextBlock Text="Hello World" FontFamily="Segoe UI" FontSize="15"/>
+            <TextBlock Text="Hello World" FontFamily="Arial" FontSize="15"/>
+            <TextBlock Text="Hello World" FontFamily="Segoe UI" FontSize="16"/>
+            <TextBlock Text="Hello World" FontFamily="Segoe UI" FontSize="16" FontStretch="UltraExpanded"/>
+            <TextBlock Text="Hello World" FontFamily="Segoe UI" FontSize="16" FontWeight="ExtraBold"/>
+            <TextBlock Text="Hello World" FontFamily="Segoe UI" FontSize="16" FontStyle="Italic"/>
+            <TextBlock Text="Hello World" FontFamily="Segoe UI" FontSize="16" Width="400" FlowDirection="RightToLeft" TextAlignment="Left" TextReadingOrder="UseFlowDirection"/>
+            <TextBlock Text="Hello World" FontFamily="Segoe UI" FontSize="16" Width="400" TextAlignment="Center"/>
+            <TextBlock Text="Hello World" FontFamily="Segoe UI" FontSize="16" Width="400" TextReadingOrder="DetectFromContent"/>
+            <TextBlock Text="לדגחעיךדHello.לגכחיעךלדגכחיע" FontFamily="Segoe UI" FontSize="16" Width="400" TextReadingOrder="DetectFromContent" TextAlignment="Left"/>
+            <TextBlock Text="Hello World, Hello world, hello world hello world hello world" FontFamily="Segoe UI" FontSize="16" Width="200" TextWrapping="Wrap"/>
+            <TextBlock Text="Hello World, Hello world, hello world hello world hello world" FontFamily="Segoe UI" MaxLines="2" FontSize="16" Width="200" TextWrapping="Wrap"/>
+            <TextBlock Text="Hello World, Hello world, hello world hello world hello world" FontFamily="Segoe UI" FontSize="16" Width="200" TextWrapping="Wrap" LineStackingStrategy="BlockLineHeight" LineHeight="10"/>
+            <TextBlock Text="Hello ☺⛄☂♥♦♨⛅" FontSize="16" FontFamily="Segoe UI"/>
+            <TextBlock Text="Hello World, Hello world, hello world hello world hello world" FontFamily="Segoe UI" FontSize="16" Width="200" TextTrimming="CharacterEllipsis"/>
+            <StackPanel FlowDirection="RightToLeft" >
+                <TextBlock  Visibility="Visible" Language="en-us" Width="200" FontFamily="Segoe UI" FontSize="20" Text="לדגחעיךדלגכחיעךלדגכחיע" TextAlignment="Left" TextReadingOrder="UseFlowDirection"></TextBlock>
+            </StackPanel>
+            <TextBlock Text="ああああああああああああ" FontFamily="Yu Gothic UI" FontSize="16" />
+            <TextBlock Text="Hello World" CacheMode="BitmapCache" FontSize="16" FontFamily="Segoe UI"/>
+        </StackPanel>
+

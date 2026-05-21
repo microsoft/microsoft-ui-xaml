@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{ac75a83e-1221-430e-8c9b-684a040ec84d}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest.props"/>
+
+    <ItemGroup>
+        <BaseComplibs Remove="@(BaseComplibs)"/>
+        <BaseComplibs Include="$(XcpPath)\components\base\lib\Microsoft.UI.Xaml.Base.vcxproj" Project="{47c659b9-130a-4eb2-b367-c556a179d0cb}"/>
+        <BaseComplibs Include="$(XcpPath)\components\dependencyLocator\lib\Microsoft.UI.Xaml.DependencyLocator.vcxproj" Project="{e2ffd843-5c31-491b-b58e-8a0bf55875ca}"/>
+        <BaseComplibs Include="$(XcpPath)\components\allocation\lib\Microsoft.UI.Xaml.Allocation.vcxproj" Project="{502b46a0-df35-4692-8275-ce66e7fdd741}"/>
+        <BaseComplibs Include="@(BaseCompstubs)"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XamlSourcePath)\xcp\plat\win\desktop\;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>
+                %(AdditionalDependencies);
+                $(XamlBinaryPath)\xcp\components\staticpal\lib\Threading.obj;
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClInclude Include="CreateMockDetourBase.h"/>
+        <ClInclude Include="D2DFactoryUnitTests.h"/>
+        <ClInclude Include="D3D11DeviceInstanceUnitTests.h"/>
+        <ClInclude Include="LockableGraphicsPointerUnitTests.h"/>
+        <ClInclude Include="MockComObjectBase.h"/>
+        <ClInclude Include="MockD2D1.h"/>
+        <ClInclude Include="MockD3D11.h"/>
+        <ClInclude Include="MockDXGI.h"/>
+        <ClInclude Include="MockPlatformServices.h"/>
+        <ClInclude Include="SharedDeviceGuardUnitTests.h"/>
+        <ClInclude Include="XamlLightTargetIdMapUnitTests.h"/>
+        <ClInclude Include="SchedulerUnitTests.h"/>
+
+        <ClCompile Include="Stubs.cpp"/>
+        <ClCompile Include="D2DFactoryUnitTests.cpp"/>
+        <ClCompile Include="D3D11DeviceInstanceUnitTests.cpp"/>
+        <ClCompile Include="SharedDeviceGuardUnitTests.cpp"/>
+        <ClCompile Include="LockableGraphicsPointerUnitTests.cpp"/>
+        <ClCompile Include="MockDXGI.cpp"/>
+        <ClCompile Include="MockD2D1.cpp"/>
+        <ClCompile Include="MockD3D11.cpp"/>
+        <ClCompile Include="MockPlatformServices.cpp"/>
+        <ClCompile Include="XamlLightTargetIdMapUnitTests.cpp"/>
+        <ClCompile Include="SchedulerUnitTests.cpp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{0ee23677-77e1-49c9-8b89-ad1a1fd0c6f4}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\plat\win\desktop\platwindesktop.vcxproj" Project="{f868d210-0440-4a29-8cc5-285f4cd86bf4}"/>
+        <ProjectReference Include="$(XcpPath)\hostpalplatmisc.vcxproj" Project="{379aa0e5-75bd-4ac3-9e9d-2168f400f1b0}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\staticpal\lib\Microsoft.UI.Xaml.StaticPal.vcxproj" Project="{c766b284-6b02-474b-9a87-58b2a997bc59}" LinkLibraryDependencies="false"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\xstring\lib\Microsoft.UI.Xaml.XString.vcxproj" Project="{f9da8380-5504-4acc-bde0-72cd5981826d}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\unittests\stubs\Microsoft.UI.Xaml.Stubs.vcxproj" Project="{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\runtimeEnabledFeatures\lib\Microsoft.UI.Xaml.RuntimeEnabledFeatures.vcxproj" Project="{968dc6e1-0f0a-4211-97cc-57ab0754206b}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\graphics\lib\Microsoft.UI.Xaml.GraphicsUtility.vcxproj" Project="{8b386f16-9cf2-44e0-82ec-5c5129593a3c}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\CValue\lib\Microsoft.UI.Xaml.CValue.vcxproj" Project="{a96cf4ea-7170-4aff-90a5-5fce1055270f}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\math\lib\Microsoft.UI.Xaml.Math.vcxproj" Project="{bbabdb8f-db10-4ca7-9d8e-0634b5b2a183}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\flyweight\lib\Microsoft.UI.Xaml.Flyweight.vcxproj" Project="{88536608-bab9-49f1-9cc6-36b7f8e73d8a}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\ContentRoot\lib\Microsoft.UI.Xaml.ContentRoot.vcxproj" Project="{87d264ce-4220-4861-b0b9-b257b022fdd6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\metadata\lib\Microsoft.UI.Xaml.Metadata.vcxproj" Project="{23637f36-0cb9-4142-a60c-888b0efe9a4c}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\criticalsection\lib\Microsoft.UI.Xaml.CriticalSection.vcxproj" Project="{ee89d265-0c07-49a3-b39c-d2a40adf9d19}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\metadata\DynamicMetadataStorage\Microsoft.UI.Xaml.DynamicMetadataStorage.vcxproj" Project="{91cdc786-7b41-4339-b3dc-5854c6f04d4f}"/>
+    </ItemGroup>
+
+    <Import Project="$(DetoursPath)\build\native\Detours.targets" />
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

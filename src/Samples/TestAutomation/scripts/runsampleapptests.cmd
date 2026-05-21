@@ -1,0 +1,1 @@
+te.exe test\MUXControls.Test.dll /select:"@Classification='ScenarioTestSuite'"

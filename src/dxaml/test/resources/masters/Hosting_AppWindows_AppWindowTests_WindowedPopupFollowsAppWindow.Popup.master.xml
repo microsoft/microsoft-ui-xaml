@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MultiTargetTree>
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="1024" SizeY="696">
+          <Visual Tag="ContentVisual">
+            <wucSpriteVisual SizeX="1024" SizeY="696" BorderMode="Soft">
+              <ColorBrush Color="#ff000000" />
+            </wucSpriteVisual>
+            <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+              <ColorBrush Color="rgb {0, 0.502, 0}" />
+            </wucSpriteVisual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="1008" SizeY="687">
+          <Visual Tag="ContentVisual">
+            <wucSpriteVisual SizeX="1008" SizeY="687" BorderMode="Soft">
+              <ColorBrush Color="#ff000000" />
+            </wucSpriteVisual>
+            <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft" OffsetX="454" OffsetY="294" OffsetZ="0">
+              <ColorBrush Color="rgb {1, 1, 0}" />
+            </wucSpriteVisual>
+            <Visual Tag="PopupPlaceholderVisual" />
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+  <CompositionTarget HwndLeft="462" HwndTop="295">
+    <Visual>
+      <WindowBackgroundTreatment>
+        <EffectBrush />
+      </WindowBackgroundTreatment>
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual">
+          <Visual Tag="ContentVisual">
+            <Visual Tag="PrependVisual">
+              <Visual Tag="PrimaryVisual" SizeX="100" SizeY="100">
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                    <ColorBrush Color="rgb {0, 0.502, 0}" />
+                  </wucSpriteVisual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</MultiTargetTree>

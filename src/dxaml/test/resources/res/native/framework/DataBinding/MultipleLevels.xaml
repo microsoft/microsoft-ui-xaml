@@ -1,0 +1,14 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/client/2007" 
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Name="rootPanel"
+        Background="Green">
+    <TextBlock x:Name="textBlock1" Text="TextBlock 1"/>
+    <StackPanel x:Name="panel2">
+        <TextBlock x:Name="textBlock2_1" Text="TextBlock 2.1"/>
+        <Canvas x:Name="canvas2_2"/>
+    </StackPanel>
+    <StackPanel x:Name="panel3">
+        <StackPanel x:Name="panel3_1"/>
+    </StackPanel>
+</Canvas>

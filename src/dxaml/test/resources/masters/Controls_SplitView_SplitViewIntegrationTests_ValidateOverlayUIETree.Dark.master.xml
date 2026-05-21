@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <Property Name="ActualHeight" Value="600" />
+      <Property Name="ActualWidth" Value="400" />
+      <Property Name="Background" Value="#FF000000" />
+      <Property Name="IsHitTestVisible" Value="False" />
+      <Property Name="RenderSize" Value="400x600" />
+      <Element Type="Microsoft.UI.Xaml.Controls.SplitView">
+        <Property Name="ActualHeight" Value="100" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="CompactPaneLength" Value="48" />
+        <Property Name="DisplayMode" Value="0" />
+        <Property Name="Height" Value="100" />
+        <Property Name="HorizontalContentAlignment" Value="3" />
+        <Property Name="IsPaneOpen" Value="True" />
+        <Property Name="LightDismissOverlayMode" Value="1" />
+        <Property Name="Margin" Value="0,0,0,10" />
+        <Property Name="OpenPaneLength" Value="50" />
+        <Property Name="PaneBackground" Value="#FF171717" />
+        <Property Name="RenderSize" Value="400x100" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="VerticalContentAlignment" Value="3" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="100" />
+          <Property Name="ActualWidth" Value="400" />
+          <Property Name="Background" Value="[NULL]" />
+          <Property Name="RenderSize" Value="400x100" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="100" />
+            <Property Name="ActualWidth" Value="50" />
+            <Property Name="Background" Value="#FF171717" />
+            <Property Name="BackgroundTransition" Value="[Microsoft.UI.Xaml.BrushTransition]" />
+            <Property Name="Canvas.ZIndex" Value="1" />
+            <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Name" Value="PaneRoot" />
+            <Property Name="RenderSize" Value="50x100" />
+            <Property Name="RenderTransform" Value="CompositeTransform( Name=PaneTransform )" />
+            <Property Name="Visibility" Value="0" />
+            <Property Name="Width" Value="50" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="50" />
+              <Property Name="Child" Value="[NULL]" />
+              <Property Name="RenderSize" Value="50x100" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="1" />
+              <Property Name="Fill" Value="#00FFFFFF" />
+              <Property Name="HorizontalAlignment" Value="2" />
+              <Property Name="Name" Value="HCPaneBorder" />
+              <Property Name="RenderSize" Value="1x100" />
+              <Property Name="Visibility" Value="0" />
+              <Property Name="Width" Value="1" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="100" />
+            <Property Name="ActualWidth" Value="400" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="Name" Value="ContentRoot" />
+            <Property Name="RenderSize" Value="400x100" />
+            <Property Name="RenderTransform" Value="CompositeTransform( Name=ContentTransform )" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="400" />
+              <Property Name="Child" Value="[NULL]" />
+              <Property Name="RenderSize" Value="400x100" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="400" />
+              <Property Name="Fill" Value="#99000000" />
+              <Property Name="Name" Value="LightDismissLayer" />
+              <Property Name="RenderSize" Value="400x100" />
+              <Property Name="Visibility" Value="0" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.SplitView">
+        <Property Name="ActualHeight" Value="100" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="CompactPaneLength" Value="48" />
+        <Property Name="DisplayMode" Value="2" />
+        <Property Name="Height" Value="100" />
+        <Property Name="HorizontalContentAlignment" Value="3" />
+        <Property Name="IsPaneOpen" Value="True" />
+        <Property Name="LightDismissOverlayMode" Value="1" />
+        <Property Name="Margin" Value="0,0,0,10" />
+        <Property Name="OpenPaneLength" Value="50" />
+        <Property Name="PaneBackground" Value="#FF171717" />
+        <Property Name="RenderSize" Value="400x100" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="VerticalContentAlignment" Value="3" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="100" />
+          <Property Name="ActualWidth" Value="400" />
+          <Property Name="Background" Value="[NULL]" />
+          <Property Name="RenderSize" Value="400x100" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="100" />
+            <Property Name="ActualWidth" Value="50" />
+            <Property Name="Background" Value="#FF171717" />
+            <Property Name="BackgroundTransition" Value="[Microsoft.UI.Xaml.BrushTransition]" />
+            <Property Name="Canvas.ZIndex" Value="1" />
+            <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Name" Value="PaneRoot" />
+            <Property Name="RenderSize" Value="50x100" />
+            <Property Name="RenderTransform" Value="CompositeTransform( Name=PaneTransform )" />
+            <Property Name="Visibility" Value="0" />
+            <Property Name="Width" Value="50" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="50" />
+              <Property Name="Child" Value="[NULL]" />
+              <Property Name="RenderSize" Value="50x100" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="1" />
+              <Property Name="Fill" Value="#00FFFFFF" />
+              <Property Name="HorizontalAlignment" Value="2" />
+              <Property Name="Name" Value="HCPaneBorder" />
+              <Property Name="RenderSize" Value="1x100" />
+              <Property Name="Visibility" Value="0" />
+              <Property Name="Width" Value="1" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="100" />
+            <Property Name="ActualWidth" Value="352" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="Grid.ColumnSpan" Value="1" />
+            <Property Name="Name" Value="ContentRoot" />
+            <Property Name="RenderSize" Value="352x100" />
+            <Property Name="RenderTransform" Value="CompositeTransform( Name=ContentTransform )" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="352" />
+              <Property Name="Child" Value="[NULL]" />
+              <Property Name="RenderSize" Value="352x100" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="352" />
+              <Property Name="Fill" Value="#99000000" />
+              <Property Name="Name" Value="LightDismissLayer" />
+              <Property Name="RenderSize" Value="352x100" />
+              <Property Name="Visibility" Value="0" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.SplitView">
+        <Property Name="ActualHeight" Value="100" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="CompactPaneLength" Value="48" />
+        <Property Name="DisplayMode" Value="1" />
+        <Property Name="Height" Value="100" />
+        <Property Name="HorizontalContentAlignment" Value="3" />
+        <Property Name="IsPaneOpen" Value="True" />
+        <Property Name="LightDismissOverlayMode" Value="1" />
+        <Property Name="Margin" Value="0,0,0,10" />
+        <Property Name="OpenPaneLength" Value="50" />
+        <Property Name="PaneBackground" Value="#FF171717" />
+        <Property Name="RenderSize" Value="400x100" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="VerticalContentAlignment" Value="3" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="100" />
+          <Property Name="ActualWidth" Value="400" />
+          <Property Name="Background" Value="[NULL]" />
+          <Property Name="RenderSize" Value="400x100" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="100" />
+            <Property Name="ActualWidth" Value="50" />
+            <Property Name="Background" Value="#FF171717" />
+            <Property Name="BackgroundTransition" Value="[Microsoft.UI.Xaml.BrushTransition]" />
+            <Property Name="Canvas.ZIndex" Value="1" />
+            <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+            <Property Name="Grid.ColumnSpan" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Name" Value="PaneRoot" />
+            <Property Name="RenderSize" Value="50x100" />
+            <Property Name="RenderTransform" Value="CompositeTransform( Name=PaneTransform  TranslateX=0 )" />
+            <Property Name="Visibility" Value="0" />
+            <Property Name="Width" Value="50" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="50" />
+              <Property Name="Child" Value="[NULL]" />
+              <Property Name="RenderSize" Value="50x100" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="1" />
+              <Property Name="Fill" Value="#00FFFFFF" />
+              <Property Name="HorizontalAlignment" Value="2" />
+              <Property Name="Name" Value="HCPaneBorder" />
+              <Property Name="RenderSize" Value="1x100" />
+              <Property Name="Visibility" Value="0" />
+              <Property Name="Width" Value="1" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="100" />
+            <Property Name="ActualWidth" Value="350" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="Grid.ColumnSpan" Value="1" />
+            <Property Name="Name" Value="ContentRoot" />
+            <Property Name="RenderSize" Value="350x100" />
+            <Property Name="RenderTransform" Value="CompositeTransform( Name=ContentTransform  TranslateX=0 )" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="350" />
+              <Property Name="Child" Value="[NULL]" />
+              <Property Name="RenderSize" Value="350x100" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="0" />
+              <Property Name="ActualWidth" Value="0" />
+              <Property Name="Fill" Value="#99000000" />
+              <Property Name="Name" Value="LightDismissLayer" />
+              <Property Name="RenderSize" Value="0x0" />
+              <Property Name="Visibility" Value="1" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.SplitView">
+        <Property Name="ActualHeight" Value="100" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="CompactPaneLength" Value="48" />
+        <Property Name="DisplayMode" Value="3" />
+        <Property Name="Height" Value="100" />
+        <Property Name="HorizontalContentAlignment" Value="3" />
+        <Property Name="IsPaneOpen" Value="True" />
+        <Property Name="LightDismissOverlayMode" Value="1" />
+        <Property Name="OpenPaneLength" Value="50" />
+        <Property Name="PaneBackground" Value="#FF171717" />
+        <Property Name="RenderSize" Value="400x100" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="VerticalContentAlignment" Value="3" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="100" />
+          <Property Name="ActualWidth" Value="400" />
+          <Property Name="Background" Value="[NULL]" />
+          <Property Name="RenderSize" Value="400x100" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="100" />
+            <Property Name="ActualWidth" Value="50" />
+            <Property Name="Background" Value="#FF171717" />
+            <Property Name="BackgroundTransition" Value="[Microsoft.UI.Xaml.BrushTransition]" />
+            <Property Name="Canvas.ZIndex" Value="1" />
+            <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+            <Property Name="Grid.ColumnSpan" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Name" Value="PaneRoot" />
+            <Property Name="RenderSize" Value="50x100" />
+            <Property Name="RenderTransform" Value="CompositeTransform( Name=PaneTransform  TranslateX=0 )" />
+            <Property Name="Visibility" Value="0" />
+            <Property Name="Width" Value="50" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="50" />
+              <Property Name="Child" Value="[NULL]" />
+              <Property Name="RenderSize" Value="50x100" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="1" />
+              <Property Name="Fill" Value="#00FFFFFF" />
+              <Property Name="HorizontalAlignment" Value="2" />
+              <Property Name="Name" Value="HCPaneBorder" />
+              <Property Name="RenderSize" Value="1x100" />
+              <Property Name="Visibility" Value="0" />
+              <Property Name="Width" Value="1" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="100" />
+            <Property Name="ActualWidth" Value="350" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="Grid.ColumnSpan" Value="1" />
+            <Property Name="Name" Value="ContentRoot" />
+            <Property Name="RenderSize" Value="350x100" />
+            <Property Name="RenderTransform" Value="CompositeTransform( Name=ContentTransform  TranslateX=0 )" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="100" />
+              <Property Name="ActualWidth" Value="350" />
+              <Property Name="Child" Value="[NULL]" />
+              <Property Name="RenderSize" Value="350x100" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="0" />
+              <Property Name="ActualWidth" Value="0" />
+              <Property Name="Fill" Value="#99000000" />
+              <Property Name="Name" Value="LightDismissLayer" />
+              <Property Name="RenderSize" Value="0x0" />
+              <Property Name="Visibility" Value="1" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+    </Element>
+  </VisualRoot>
+  <PopupRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+      <Property Name="ActualHeight" Value="0" />
+      <Property Name="ActualWidth" Value="0" />
+      <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+      <Property Name="IsOpen" Value="True" />
+      <Property Name="RenderSize" Value="0x0" />
+      <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+        <Property Name="ActualHeight" Value="600" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+        <Property Name="RenderSize" Value="400x600" />
+        <Element Type="Microsoft.UI.Xaml.Shapes.Path">
+          <Property Name="ActualHeight" Value="600" />
+          <Property Name="ActualWidth" Value="400" />
+          <Property Name="Data" Value="[Microsoft.UI.Xaml.Media.PathGeometry]" />
+          <Property Name="Fill" Value="#00000000" />
+          <Property Name="RenderSize" Value="400x600" />
+        </Element>
+        <Element Type="Microsoft.UI.Xaml.Shapes.Path">
+          <Property Name="ActualHeight" Value="600" />
+          <Property Name="ActualWidth" Value="400" />
+          <Property Name="Data" Value="[Microsoft.UI.Xaml.Media.PathGeometry]" />
+          <Property Name="Fill" Value="#00000000" />
+          <Property Name="RenderSize" Value="400x600" />
+        </Element>
+      </Element>
+    </Element>
+    <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+      <Property Name="ActualHeight" Value="0" />
+      <Property Name="ActualWidth" Value="0" />
+      <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+      <Property Name="IsOpen" Value="True" />
+      <Property Name="RenderSize" Value="0x0" />
+      <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+        <Property Name="ActualHeight" Value="600" />
+        <Property Name="ActualWidth" Value="400" />
+        <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+        <Property Name="RenderSize" Value="400x600" />
+        <Element Type="Microsoft.UI.Xaml.Shapes.Path">
+          <Property Name="ActualHeight" Value="600" />
+          <Property Name="ActualWidth" Value="400" />
+          <Property Name="Data" Value="[Microsoft.UI.Xaml.Media.PathGeometry]" />
+          <Property Name="Fill" Value="#00000000" />
+          <Property Name="RenderSize" Value="400x600" />
+        </Element>
+      </Element>
+    </Element>
+  </PopupRoot>
+</VisualTreeDump>

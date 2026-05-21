@@ -37,6 +37,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         public void EnsureTopSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            using (var orientation = new OrientationResetHelper())
             {
                 var readSettingsSelectedButton = new Button(FindElement.ByName("ReadSettingsSelected"));
                 var SettingsSelectionStateTextBlock = new TextBlock(FindElement.ByName("SettingsSelectedState"));
@@ -53,17 +54,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Verify.AreEqual(SettingsSelectionStateTextBlock.GetText(), "True");
 
                 Log.Comment("Flipping orientation: Left -> Top.");
-                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
+                orientation.Flip();
 
                 Log.Comment("Verify the top settings item is selected.");
                 readSettingsSelectedButton.Invoke();
                 Verify.AreEqual(SettingsSelectionStateTextBlock.GetText(), "True");
 
                 Log.Comment("Flipping orientation: Top -> Left.");
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
+                orientation.Flip();
 
                 Log.Comment("Verify the left settings item is still selected.");
                 readSettingsSelectedButton.Invoke();
@@ -105,14 +103,13 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
         public void EnsureLeftSettingsRetainsFocusAfterOrientationChanges()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            using (var orientation = new OrientationResetHelper())
             {
                 var readSettingsSelectedButton = new Button(FindElement.ByName("ReadSettingsSelected"));
                 var SettingsSelectionStateTextBlock = new TextBlock(FindElement.ByName("SettingsSelectedState"));
 
                 Log.Comment("Flipping orientation: Left -> Top.");
-                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
+                orientation.Flip();
 
                 var topSettingsItem = new Button(FindElement.ByName("Settings"));
                 topSettingsItem.Click();
@@ -122,18 +119,16 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
                 Verify.AreEqual(SettingsSelectionStateTextBlock.GetText(), "True");
 
                 Log.Comment("Flipping orientation: Top -> Left.");
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
+                orientation.Flip();
 
                 Log.Comment("Verify the left settings item is selected.");
                 readSettingsSelectedButton.Invoke();
                 Verify.AreEqual(SettingsSelectionStateTextBlock.GetText(), "True");
 
                 Log.Comment("Flipping orientation: Left -> Top.");
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
+                orientation.Flip();
 
-                Log.Comment("Verify the left top item is still selected.");
+                Log.Comment("Verify the top settings item is still selected.");
                 readSettingsSelectedButton.Invoke();
                 Verify.AreEqual(SettingsSelectionStateTextBlock.GetText(), "True");
             }

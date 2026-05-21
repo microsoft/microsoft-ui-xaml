@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- TAEF.targets always sets INLINE_TEST_METHOD_MARKUP.  We don't want that defined so capture the value before the import and override it
+         back to the starting value afterwards. -->
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <BeforeTAEFPreprocessorDefinitions>%(PreprocessorDefinitions)</BeforeTAEFPreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+    <Import Project="$(TaefPkgDirectory)\build\Microsoft.Taef.targets"/>
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <PreprocessorDefinitions>%(BeforeTAEFPreprocessorDefinitions)</PreprocessorDefinitions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNICODE; _UNICODE; MIDL_NS_PREFIX;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+            <AdditionalOptions>%(AdditionalOptions) /Zm400</AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <TestCode>true</TestCode>
+
+        <ProjectIncludeDirectories>
+            $(InfraTestPath)\client\pch;
+            $(InfraTestPath)\client\inc;
+            $(InfraTestPath)\inc;
+            $(InfraTestObjPath)\client\idl;
+            $(InfraTestObjPath)\Win32Hosting\idl;
+            $(WinUIDetailsIncludePath)\abi;
+            $(WinUIDetailsIncludePath)\MockDComp;
+            $(InfraTestObjPath)\contract;
+            $(NativeIncPath);
+            $(InternalTestPath)\inc;
+            $(InfraTestObjPath)\client\idl;
+            $(XamlBinaryPath)\phone\idl;
+            $(XamlSourcePath)\xcp\inc;
+            $(XamlSourcePath)\xcp\components\base\inc;
+            $(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl;
+            $(XcpPath)\inc;
+            $(InfraTestPath)\..\resources\masters;
+            $(XcpPath)\components\runtimeEnabledFeatures\inc;
+            $(InfraTestPath)\logging;
+            $(LiftedIXPIncludePaths);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{3fd1b03c-df81-4bc7-8204-c48d16026cfb}'" Include="$(InfraTestPath)\Win32Hosting\idl\Private.Infrastructure.Hosting.vcxproj" Project="{3fd1b03c-df81-4bc7-8204-c48d16026cfb}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{37d37a5d-e167-43fe-aeca-5063c2369807}'" Include="$(InfraTestPath)\contract\contract.vcxproj" Project="{37d37a5d-e167-43fe-aeca-5063c2369807}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{e076fa9c-3b19-431a-a566-3e771f962428}'" Include="$(InfraTestPath)\client\idl\Private.Infrastructure.vcxproj" Project="{e076fa9c-3b19-431a-a566-3e771f962428}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{84d22d7d-5fd0-4ccf-b8d2-c34506c6ba66}'" Include="$(XamlSourcePath)\phone\idl\phone.vcxproj" Project="{84d22d7d-5fd0-4ccf-b8d2-c34506c6ba66}"/>
+        <ProjectReference Condition="'$(ProjectGuid)'!='{e1f36d19-f82d-474a-be26-fea52da5b6e6}'" Include="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}"/>
+    </ItemGroup>
+</Project>

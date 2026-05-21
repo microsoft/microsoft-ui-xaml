@@ -19,6 +19,7 @@
 #include "ButtonBase.g.h"
 #include "localizedResource.h"
 #include "WrlHelper.h"
+#include "XamlTraceLogging.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -854,6 +855,13 @@ SplitMenuFlyoutItem::OpenSubMenuImpl(wf::Point position)
         IFC_RETURN(ForwardSystemBackdropToPopup(parentMenuFlyout.Get()));
     }
 
+    TraceLoggingWrite(
+        g_hTraceProvider,
+        "SplitMenuFlyoutItem-SubMenuOpened",
+        TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS),
+        TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+
     return S_OK;
 }
 
@@ -1192,6 +1200,14 @@ SplitMenuFlyoutItem::SetPresenterStyle(
     }
     else
     {
+        // Only using ClearValue on Style is not sufficient to reset the ItemsControl's
+        // ItemPanel and other values to default. Hence, explicitly setting Template to null
+        // and clearing the Template so as to trigger the application of the implicit style.
+        IFC(static_cast<Control*>(pPresenter)->put_Template(nullptr));
+        
+        IFC(static_cast<Control*>(pPresenter)->ClearValue(
+            MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::Control_Template)));
+
         IFC(static_cast<Control*>(pPresenter)->ClearValue(
             MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::FrameworkElement_Style)));
     }
@@ -1238,7 +1254,7 @@ SplitMenuFlyoutItem::ApplySubMenuItemStyleToItem(
     ctl::ComPtr<IFrameworkElement> spItemAsFE;
     ctl::ComPtr<IInspectable> spLocalStyle;
     BOOLEAN isUnsetValue = FALSE;
-    BOOLEAN isStyleSetFromSplitMenuItem = FALSE;
+    bool isStyleSetFromParentMenu = false;
     const CDependencyProperty* pStyleProperty = MetadataAPI::GetDependencyPropertyByIndex(KnownPropertyIndex::FrameworkElement_Style);
 
     IFCPTR(pItem);
@@ -1248,22 +1264,22 @@ SplitMenuFlyoutItem::ApplySubMenuItemStyleToItem(
     IFC(spItemAsFE.Cast<FrameworkElement>()->ReadLocalValue(pStyleProperty, &spLocalStyle));
     IFC(DependencyPropertyFactory::IsUnsetValue(spLocalStyle.Get(), isUnsetValue));
 
-    isStyleSetFromSplitMenuItem = spItemAsFE.Cast<FrameworkElement>()->GetIsStyleSetFromItemsControl();
+    isStyleSetFromParentMenu = static_cast<MenuFlyoutItemBase*>(pItem)->GetIsStyleSetFromParentMenu();
 
     // Only apply our style if no local style is set, or if we previously set the style
-    if (isUnsetValue || isStyleSetFromSplitMenuItem)
+    if (isUnsetValue || isStyleSetFromParentMenu)
     {
         if (pStyle)
         {
             // Apply the SubMenuItemStyle
             IFC(spItemAsFE->put_Style(pStyle));
-            spItemAsFE.Cast<FrameworkElement>()->SetIsStyleSetFromItemsControl(TRUE);
+            static_cast<MenuFlyoutItemBase*>(pItem)->SetIsStyleSetFromParentMenu(true);
         }
         else
         {
             // Clear the style if SubMenuItemStyle is null
             IFC(spItemAsFE.Cast<FrameworkElement>()->ClearValue(pStyleProperty));
-            spItemAsFE.Cast<FrameworkElement>()->SetIsStyleSetFromItemsControl(FALSE);
+            static_cast<MenuFlyoutItemBase*>(pItem)->SetIsStyleSetFromParentMenu(false);
         }
     }
 
@@ -1447,6 +1463,14 @@ SplitMenuFlyoutItem::OnSecondaryButtonPointerExited(_In_ IInspectable* sender, _
 _Check_return_ HRESULT
 SplitMenuFlyoutItem::OnPrimaryButtonClick(_In_ IInspectable* sender, _In_ xaml::IRoutedEventArgs* args)
 {
+    // Log primary button click telemetry
+    TraceLoggingWrite(
+        g_hTraceProvider,
+        "SplitMenuFlyoutItem-PrimaryButtonClicked",
+        TraceLoggingLevel(WINEVENT_LEVEL_LOG_ALWAYS),
+        TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+
     IFC_RETURN(Invoke());
 
     // There is an intermittent issue where the primary button remains in the

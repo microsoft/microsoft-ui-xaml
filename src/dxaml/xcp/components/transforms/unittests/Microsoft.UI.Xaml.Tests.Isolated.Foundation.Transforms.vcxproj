@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{8c1d8872-59a8-48b6-8c93-5c9a073bf1ae}</ProjectGuid>
+        <UseHybridCRT>false</UseHybridCRT>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\xcp\projectbase.props"/>
+    <Import Project="$(XcpPath)\components\unittest-uielement.props"/>
+
+    <PropertyGroup>
+        <XamlPrecompiledShared>$(XcpPath)\components\pch\ut-nohybrid\precomp.h</XamlPrecompiledShared>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <ProjectIncludeDirectories>
+            $(ProjectIncludeDirectories);
+            $(XcpPath)\components\collection\inc;
+            $(XcpPath)\components\transforms\inc;
+            $(XcpPath)\components\graphics\inc;
+            $(XamlSourcePath)\test\dcomp\inc;
+            $(XamlBinaryPath)\test\dcomp\idl;
+            $(WinUIDetailsIncludePath)\abi;
+            $(WinUIDetailsIncludePath)\MockDComp;
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ClInclude Include="CompositeTransformUnitTests.h"/>
+        <ClInclude Include="MatrixTransformUnitTests.h"/>
+        <ClInclude Include="RotateTransformUnitTests.h"/>
+        <ClInclude Include="ScaleTransformUnitTests.h"/>
+        <ClInclude Include="SkewTransformUnitTests.h"/>
+        <ClInclude Include="TransformGroupUnitTests.h"/>
+        <ClInclude Include="TransformUnitTests.h"/>
+        <ClInclude Include="TranslateTransformUnitTests.h"/>
+        <ClInclude Include="WinRTExpressionUnitTestHelper.h"/>
+
+        <ClCompile Include="WinRTExpressionUnitTestHelper.cpp"/>
+        <ClCompile Include="TranslateTransformUnitTestsWUC.cpp"/>
+        <ClCompile Include="ScaleTransformUnitTestsWUC.cpp"/>
+        <ClCompile Include="RotateTransformUnitTestsWUC.cpp"/>
+        <ClCompile Include="SkewTransformUnitTestsWUC.cpp"/>
+        <ClCompile Include="CompositeTransformUnitTestsWUC.cpp"/>
+        <ClCompile Include="TransformGroupUnitTestsWUC.cpp"/>
+        <ClCompile Include="MatrixTransformUnitTestsWUC.cpp"/>
+        <ClCompile Include="TransformUnitTestsWUC.cpp"/>
+
+        <!-- MockDComp.dll is needed for these unittests -->
+        <ReferenceCopyLocalPaths Include="$(WinUIDetailsRuntimesPath)\MockDComp.dll" />
+    </ItemGroup>
+
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>
+                $(FrameworkUdkLibPath)\Microsoft.Internal.FrameworkUdk.lib;
+                %(AdditionalDependencies);
+                $(WinUIDetailsRuntimesPath)\MockDComp.lib;
+            </AdditionalDependencies>
+        </Link>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(XcpPath)\components\pch\ut-nohybrid\Microsoft.UI.Xaml.Precomp.vcxproj" Project="{33a6c9ea-636f-42fb-9ceb-15e54abab8e6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\transforms\lib\Microsoft.UI.Xaml.Transforms.vcxproj" Project="{365cdabf-7f04-445d-a598-ba372821b5a6}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\text\lib\Microsoft.UI.Xaml.Text.vcxproj" Project="{df854298-841f-4dd5-9ddf-fefbc280a6d1}"/>
+        <ProjectReference Include="$(XamlSourcePath)\xcp\components\unittests\stubs\Microsoft.UI.Xaml.Stubs.vcxproj" Project="{ec5bfab1-619b-45cb-b8ec-db81f3c7811b}"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

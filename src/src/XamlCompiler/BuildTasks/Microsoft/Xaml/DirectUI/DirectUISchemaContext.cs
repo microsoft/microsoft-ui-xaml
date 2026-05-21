@@ -271,7 +271,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
             XamlType xamlType = null;
             ApiInformation apiInformation = null;
             Platform targetPlatform = Platform.Any;
-            
+
             // This is a lookup of the full type name as it comes from the the dom parser.
             // It may or may not contain conditional statemets.
             if (this.domFullTypeNameCache.ContainsKey(domFullTypeName))
@@ -297,7 +297,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
                         apiInformation = parsedValues.ApiInfo;
                         targetPlatform = parsedValues.PlatConditional;
                     }
-                    catch(ParseException)
+                    catch (ParseException)
                     {
                         Debug.Assert(false, "Validator should have checked this scenario");
                         return null;
@@ -331,6 +331,11 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.DirectUI
                 var duiType = xamlType as DirectUIXamlType;
                 if ((apiInformation != null || targetPlatform != Platform.Any) && duiType != null)
                 {
+                    if (apiInformation != null && apiInformation.IsCustomPredicate)
+                    {
+                        apiInformation.Method.Namespace = FindNamespaceByPrefix(apiInformation.Method.Prefix);
+                    }
+
                     duiType = new DirectUIXamlType(xamlType.UnderlyingType, this, apiInformation, targetPlatform);
                     xamlType = duiType;
                 }

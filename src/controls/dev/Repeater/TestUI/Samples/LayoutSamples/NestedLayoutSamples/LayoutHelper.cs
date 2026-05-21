@@ -24,7 +24,7 @@ namespace MUXControlsTestApp.Samples
             }
             else if (layout is FlowLayout)
             {
-                ((FlowLayout)layout).MinRowSpacing = value;
+                ((FlowLayout)layout).LineSpacing = value;
             }
             else if (layout is StackLayout)
             {
@@ -40,7 +40,7 @@ namespace MUXControlsTestApp.Samples
             }
             else if (layout is FlowLayout)
             {
-                ((FlowLayout)layout).MinColumnSpacing = value;
+                ((FlowLayout)layout).MinItemSpacing = value;
             }
             else if (layout is StackLayout)
             {

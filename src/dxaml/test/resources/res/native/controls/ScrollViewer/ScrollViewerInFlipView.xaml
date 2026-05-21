@@ -1,0 +1,12 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid x:Name="LayoutRoot"  
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{StaticResource ApplicationPageBackgroundThemeBrush}">
+  <FlipView x:Name="flipView" Width="400" Height="400">
+    <FlipViewItem>FlipViewItem1</FlipViewItem>
+    <FlipViewItem>FlipViewItem2</FlipViewItem>
+    <FlipViewItem>FlipViewItem3</FlipViewItem>
+    <FlipViewItem>FlipViewItem4</FlipViewItem>
+  </FlipView>
+</Grid>

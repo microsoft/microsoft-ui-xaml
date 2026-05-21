@@ -109,7 +109,6 @@ CTemplateContent::PreResolveResourcesFromNodeList(
     std::shared_ptr<XamlReader> spReader;
     xref_ptr<CResourceDictionary> spResourceDictionary;
     auto core = GetContext();
-    CREATEPARAMETERS cp(core);
 
     IFC(m_spNodeList->get_Reader(spReader));
     while ((hr = spReader->Read()) == S_OK)
@@ -123,11 +122,6 @@ CTemplateContent::PreResolveResourcesFromNodeList(
             {
                 bool bResourceFromReadOnlyDictionary = false;
 
-                if (!spResourceDictionary)
-                {
-                    IFC(CResourceDictionary::Create(((CDependencyObject**)spResourceDictionary.ReleaseAndGetAddressOf()), &cp));
-                    IFC(spResourceDictionary->EnsurePeerDuringCreate());
-                }
                 IFC(ResolveAndSaveResource(core, spServiceProviderContext, spReader, spResourceDictionary, &bResourceFromReadOnlyDictionary));
                 if (!bResourceFromReadOnlyDictionary)
                 {
@@ -137,7 +131,10 @@ CTemplateContent::PreResolveResourcesFromNodeList(
         }
     }
 
-    IFC(CompleteInitializationOfLocalDictionary(spResourceDictionary));
+    if (spResourceDictionary)
+    {
+        IFC(CompleteInitializationOfLocalDictionary(spResourceDictionary));
+    }
 
 Cleanup:
     if (FAILED(hr) && spResourceDictionary)
@@ -158,16 +155,10 @@ CTemplateContent::PreResolveResourcesFromListOfReferences(
 
     xref_ptr<CResourceDictionary> spResourceDictionary;
     auto core = GetContext();
-    CREATEPARAMETERS cp(core);
 
     for (auto& strResource : vecResourceList)
     {
         bool bResourceFromReadOnlyDictionary = false;
-        if (!spResourceDictionary)
-        {
-            IFC(CResourceDictionary::Create(((CDependencyObject**)spResourceDictionary.ReleaseAndGetAddressOf()), &cp));
-            IFC(spResourceDictionary->EnsurePeerDuringCreate());
-        }
         IFC(ResolveReferenceAndAddToLocalDictionary(core, spServiceProviderContext, strResource.second, strResource.first, spResourceDictionary, &bResourceFromReadOnlyDictionary));
         if (!bResourceFromReadOnlyDictionary)
         {
@@ -175,7 +166,10 @@ CTemplateContent::PreResolveResourcesFromListOfReferences(
         }
     }
 
-    IFC(CompleteInitializationOfLocalDictionary(spResourceDictionary));
+    if (spResourceDictionary)
+    {
+        IFC(CompleteInitializationOfLocalDictionary(spResourceDictionary));
+    }
 
 Cleanup:
     if (FAILED(hr) && spResourceDictionary)
@@ -220,7 +214,7 @@ CTemplateContent::ResolveAndSaveResource(
     _In_ CCoreServices *pCore,
     _In_ const std::shared_ptr<XamlServiceProviderContext>& spServiceProviderContext,
     _In_ const std::shared_ptr<XamlReader>& spReader,
-    _In_ xref_ptr<CResourceDictionary>& spResourceDictionary,
+    _Inout_ xref_ptr<CResourceDictionary>& spResourceDictionary,
     _Out_ bool* pbResourceFromReadOnlyDictionary)
 {
     HRESULT hr = S_OK;
@@ -312,7 +306,7 @@ CTemplateContent::ResolveReferenceAndAddToLocalDictionary(
     _In_ const std::shared_ptr<XamlServiceProviderContext>& spServiceProviderContext,
     _In_ const xstring_ptr& strKey,
     _In_ const bool isStaticResource,
-    _In_ xref_ptr<CResourceDictionary>& spResourceDictionary,
+    _Inout_ xref_ptr<CResourceDictionary>& spResourceDictionary,
     _Out_ bool* pbResourceFromReadOnlyDictionary)
 {
     HRESULT hr = S_OK;
@@ -322,12 +316,23 @@ CTemplateContent::ResolveReferenceAndAddToLocalDictionary(
     *pbResourceFromReadOnlyDictionary = FALSE;
 
     xref_ptr<CResourceDictionary> dictionaryReadFrom;
-    // first look the value up in the cached ResourceDictionary
-    IFC(spResourceDictionary->GetKeyForResourceResolutionNoRef(
-        strKey,
-        Resources::LookupScope::All,
-        &pValueNoRef,
-        &dictionaryReadFrom));
+
+    if (spResourceDictionary)
+    {
+        // Look the value up in the cached ResourceDictionary
+        IFC(spResourceDictionary->GetKeyForResourceResolutionNoRef(
+            strKey,
+            Resources::LookupScope::All,
+            &pValueNoRef,
+            &dictionaryReadFrom));
+    }
+    else
+    {
+        // No dictionary yet - check global theme resources directly to avoid
+        // unnecessary dictionary allocation when resources resolve globally.
+        IFC(CResourceDictionary::GetKeyFromGlobalThemeResourceNoRef(
+            pCore, nullptr, ResourceKey(strKey, false), &pValueNoRef, &dictionaryReadFrom));
+    }
 
     if (dictionaryReadFrom)
     {
@@ -336,7 +341,7 @@ CTemplateContent::ResolveReferenceAndAddToLocalDictionary(
 
     if (!pValueNoRef)
     {
-        // second:  if not found in the cached ResourceDictionary look it up in the current context.
+        // Not found in cached dictionary or global scope, look it up in the current context.
         if (isStaticResource)
         {
             IFC(CStaticResourceExtension::LookupResourceNoRef(strKey, spServiceProviderContext, pCore, &pValueNoRef, FALSE /* bShouldCheckThemeResources */));
@@ -352,9 +357,17 @@ CTemplateContent::ResolveReferenceAndAddToLocalDictionary(
             pValueNoRef = pValue;
         }
 
-        // third:  if found in the current context, cache it.
+        // If found in the current context, cache it in the local dictionary.
         if (pValueNoRef)
         {
+            // Create the dictionary if we don't have one yet.
+            if (!spResourceDictionary)
+            {
+                CREATEPARAMETERS cp(pCore);
+                IFC(CResourceDictionary::Create(((CDependencyObject**)spResourceDictionary.ReleaseAndGetAddressOf()), &cp));
+                IFC(spResourceDictionary->EnsurePeerDuringCreate());
+            }
+
             CValue vValue;
 
             // [Bug fix: #95299]

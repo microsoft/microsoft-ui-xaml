@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{33AC7EE6-1069-4118-B204-2A2129FE0406}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>Tools.Shared.CustomTypes</ProjectName>
+    <RootNamespace>CustomTypes</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+    <!-- Use the latest compiler, some weird razzleness is causing line info to not be generated. This is ok because we generate
+         it on the fly in our tests. -->
+    <DisableXbfGeneration>false</DisableXbfGeneration>
+    <DisableXbfLineInfo>false</DisableXbfLineInfo>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)'==''">15.0</VisualStudioVersion>
+    <Mui>false</Mui>
+    <PreprocessorDefinitions>_UNICODE;UNICODE;_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    <UseXamlCompiler>true</UseXamlCompiler>
+    <CxLinkage>true</CxLinkage>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.NTLegacy.Cpp.props))" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_Desktop_CurrentPlatform_spectre);</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="App.xaml.h">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClInclude>
+    <CLInclude Include="PageWithTemplatedParentBinding.xaml.h">
+      <DependentUpon>PageWithTemplatedParentBinding.xaml</DependentUpon>
+    </CLInclude>
+    <CLInclude Include="MainPage.xaml.h">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </CLInclude>
+    <CLInclude Include="VisualStatePage.xaml.h">
+      <DependentUpon>VisualStatePage.xaml</DependentUpon>
+    </CLInclude>
+    <CLInclude Include="UnnamedStatePage.xaml.h">
+      <DependentUpon>UnnamedStatePage.xaml</DependentUpon>
+    </CLInclude>
+    <ClInclude Include="CustomUserControl.h" />
+    <ClInclude Include="ValueConverters.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="DataTemplateSelectors.h" />
+    <CLInclude Include="DataTemplateSelectorPage.xaml.h">
+      <DependentUpon>DataTemplateSelectorPage.xaml</DependentUpon>
+    </CLInclude>
+    <CLInclude Include="PopupPage.xaml.h">
+      <DependentUpon>PopupPage.xaml</DependentUpon>
+    </CLInclude>
+    <CLInclude Include="XamlCompilerPage.xaml.h">
+      <DependentUpon>XamlCompilerPage.xaml</DependentUpon>
+    </CLInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.xaml.cpp">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="PageWithTemplatedParentBinding.xaml.cpp">
+      <DependentUpon>PageWithTemplatedParentBinding.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="MainPage.xaml.cpp">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="VisualStatePage.xaml.cpp">
+      <DependentUpon>VisualStatePage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="UnnamedStatePage.xaml.cpp">
+      <DependentUpon>UnnamedStatePage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="DataTemplateSelectorPage.xaml.cpp">
+      <DependentUpon>DataTemplateSelectorPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="PopupPage.xaml.cpp">
+      <DependentUpon>PopupPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="XamlCompilerPage.xaml.cpp">
+      <DependentUpon>XamlCompilerPage.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="CustomUserControl.cpp" />
+    <ClCompile Include="ValueConverters.cpp" />
+    <ClCompile Include="DataTemplateSelectors.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="App.xaml" />
+    <Page Include="PageWithTemplatedParentBinding.xaml" />
+    <Page Include="MainPage.xaml" />
+    <Page Include="CommonStyles.xaml" />
+    <Page Include="VisualStatePage.xaml" />
+    <Page Include="StaticResourcePage.xaml" />
+    <Page Include="UnnamedStatePage.xaml" />
+    <Page Include="SimpleGrid.xaml" />
+    <Page Include="DataTemplateSelectorPage.xaml" />
+    <Page Include="SimpleTemplateResolutionPage.xaml" />
+    <Page Include="PopupPage.xaml" />
+    <Page Include="PageWithCustomUserControl.xaml" />
+    <Page Include="CustomUserControl.xaml" />
+    <Page Include="XamlCompilerPage.xaml" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetDestination>$(TestBinplaceResourcesDestinationPath)\native\tools</TargetDestination>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.NTLegacy.Cpp.targets))" />
+</Project>

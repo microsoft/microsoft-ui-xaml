@@ -405,6 +405,18 @@ namespace OM
             set;
         }
 
+        /// <summary>
+        /// Gets or sets the version for the DependencyProperty handle (e.g., ValueProperty) independently
+        /// of the property itself. When set, the DP handle will be placed in the statics interface for this
+        /// version, while the property remains in its original version. When null, the DP version is inferred
+        /// from the property's getter/setter version.
+        /// </summary>
+        public int? DependencyPropertyVersion
+        {
+            get;
+            set;
+        }
+
         public DependencyPropertyDefinition()
         {
             DependencyPropertyModifier = OM.Modifier.Public;

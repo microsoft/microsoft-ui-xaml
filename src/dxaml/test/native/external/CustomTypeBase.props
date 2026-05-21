@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. -->
+<!-- Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- This file contains the seemingly-endless number of build properties that need to be set in order to
+  produce the XamlCompiler output needed to generate metadata and all that goodness. The idea here is that
+  we more-or-less build all the custom controls into a DLL we never use. During the process of them being
+  built the XamlCompiler generates all the needed files that we then consume from the side-by-side tests folder
+  and rebuild into our product.
+
+  Ideally we'd just invoke the XamlCompiler directly using a makefile or something similar, but for now this
+  is pretty painless and keeps us up-to-date with the rest of the VS build process.
+
+  I've made an attempt to comment this file and clean it up the best I could. Please keep it that way!
+-->
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64EC">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64EC</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64EC">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64EC</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  
+  <!-- these options are passed to the XAML compiler to control how
+    it generates Xbf -->
+  <PropertyGroup>
+    <DisableXbfGeneration>false</DisableXbfGeneration>
+    <DisableXbfLineInfo>true</DisableXbfLineInfo>
+    <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{504cd4b5-11d7-489b-b8ed-aa12cbfee7d1}</ProjectGuid>
+    <DefaultLanguage>en-US</DefaultLanguage>
+
+    <!-- Has very little impact on the build, primarily determines how we can
+      open this file. -->
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)'==''">11.0</MinimumVisualStudioVersion>
+
+    <!-- These flags set a bunch of compiler flags to define the right preprocessor
+      directives to ensure the header files make the correct APIs available. -->
+    <AppContainerApplication>true</AppContainerApplication>
+    <Immersive>true</Immersive>
+    <WindowsAppContainer>true</WindowsAppContainer>
+    <WindowsStoreApp>true</WindowsStoreApp>
+
+    <!-- Build a dll -->
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+
+    <!-- sets ConsumeWinRT=true -->
+    <UseXamlInWindows>true</UseXamlInWindows>
+    <CxLinkage>true</CxLinkage>
+
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <ItemGroup>
+    <ProjectDependencies Include="$(XamlBinaryPath)\test\infra\server\$(ObjectDirectory)\Private.Infrastructure.Server.lib"/>
+  </ItemGroup>
+  <PropertyGroup>
+      <ProjectDependenciesAsString>@(ProjectDependencies->'%(FullPath)')</ProjectDependenciesAsString>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <!-- adding the desktop app API family is key to defeating the limitations placed on WinRT apps by default -->
+      <PreprocessorDefinitions>_UNICODE;UNICODE;_WINRT_DLL;%(PreprocessorDefinitions);WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP</PreprocessorDefinitions>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <!-- error C4453: 'Microsoft::UI::Xaml::Navigation::NavigationEventArgs' : A '[WebHostHidden]' type should not be used on the published surface of a public type that is not '[WebHostHidden]' (App.xaml.cpp) -->
+      <DisableSpecificWarnings>4453</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(ProjectRoot)\dxaml\test\native\external\inc;
+        $(ProjectRoot)\dxaml\test\native\inc;
+        $(ProjectRoot)\dxaml\test\infra\server\inc;
+        $(ProjectRoot)\dxaml\xcp\components\runtimeEnabledFeatures\inc;
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>$(ProjectDependenciesAsString);%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <IgnoreSpecificDefaultLibraries>ole32.lib;kernel32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(VC_LibraryPath_VC_Desktop_CurrentPlatform_spectre);</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(XamlSourcePath)\test\native\external\infra\Private.Native.External.Infrastructure.vcxproj" LinkLibraryDependencies="false" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(XamlSourcePath)\test\infra\server\Private.Infrastructure.Server.vcxproj" ReferenceOutputAssembly="false"/>
+    <ProjectReference Include="$(XamlSourcePath)\test\infra\client\idl\Private.Infrastructure.vcxproj" ReferenceOutputAssembly="false"/>
+    <ProjectReference Include="$(ProjectRoot)\MergedWinMD\private\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.UI.Text">
+      <HintPath>$(WinUIDetailsLibPath)\Microsoft.UI.Text.winmd</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.UI">
+      <HintPath>$(PrivateMergedWinMDDir)\Microsoft.UI.winmd</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <PropertyGroup>
+        <!-- setting this explicitly to null here. This controls the prefix the XamlCompiler
+          places in code for the resource URI to XAML/XBF files. By default it is set to the target name. -->
+    <PriIndexName></PriIndexName>
+  </PropertyGroup>
+</Project>

@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "FrameworkApplication.g.h"
+#include <MuxActivationFactory.h>
 #include "DebugSettings.g.h"
 #include "WindowCreatedEventArgs.g.h"
 #include "ApplicationInitializationCallbackParams.g.h"
@@ -199,7 +200,7 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     wrl::ComPtr<msy::IDispatcherQueueController> dispatcherQueueController;
     wrl::ComPtr<msy::IDispatcherQueueController2> dispatcherQueueController2;
 
-    IFCFAILFAST(wf::GetActivationFactory(
+    IFCFAILFAST(MuxGetActivationFactory(
         wrl::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueueController).Get(),
         &dispatcherQueueControllerStatics));
     IFCFAILFAST(dispatcherQueueControllerStatics->CreateOnCurrentThread(&dispatcherQueueController));
@@ -215,14 +216,19 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     //  Invoke the ApplicationInitialization callback set by FrameworkApplication::StartImpl
     if (g_spApplicationInitializationCallback)
     {
-        // Invoke the callback, usually to create a custom Application object instance
+        // Invoke the callback, usually to create a custom Application object instance.
+        // Use IFC_NOTRACE_RETURN (not IFCFAILFAST) so that failures in the app's callback
+        // propagate back to the app without adding WinUI frames to the error context.
+        // This matches the UWP path (MainASTAInitialize) and avoids WinUI being blamed
+        // in Watson for app-side errors.
         IFCFAILFAST(ctl::ComObject<ApplicationInitializationCallbackParams>::CreateInstance(&pParams));
-        IFCFAILFAST(g_spApplicationInitializationCallback->Invoke(pParams.Get()));
+        HRESULT hrCallback = g_spApplicationInitializationCallback->Invoke(pParams.Get());
         g_spApplicationInitializationCallback.Reset();
+        IFC_NOTRACE_RETURN(hrCallback);
     }
 
     // Create WindowsXamlManager (WindowsXamlManager::Initialize will call FrameworkApplication::StartOnCurrentThread())
-    IFCFAILFAST(ctl::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Hosting_WindowsXamlManager).Get(), &windowsXamlManagerFactory));
+    IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Hosting_WindowsXamlManager).Get(), windowsXamlManagerFactory.ReleaseAndGetAddressOf()));
     IFCFAILFAST(windowsXamlManagerFactory->InitializeForCurrentThread(&windowsXamlManager));
 
     // We must have an XAML application instance at this point

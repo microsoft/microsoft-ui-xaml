@@ -1,0 +1,31 @@
+﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+    <Platforms>x64;x86</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\winmd\**\*.cs" />
+    <Compile Include="..\src\NativeMethods.cs" />
+    <Compile Include="..\src\XamlContentHost.cs" />
+    <Compile Include="..\src\XamlContentHostDebugging.cs" />
+    <Compile Include="..\src\XamlContentHostKeyboardFocus.cs" />
+    <Compile Include="..\src\XamlContentHostLayout.cs" />
+    <Compile Include="..\src\XamlContentUpdatedEventArgs.cs" />
+    <Compile Include="..\..\winmd\AppDomainExceptionHandler.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.Windows.CsWinRT" Version="$(MicrosoftCsWinRTPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" />
+    <ProjectReference Include="..\..\..\client\cswinrt\Private.Infrastructure.CsWinRT.csproj" />
+    <ProjectReference Include="..\..\..\Win32Hosting\src\Microsoft.Toolkit.Win32.UI.XamlHost.csproj" />
+  </ItemGroup>
+</Project>

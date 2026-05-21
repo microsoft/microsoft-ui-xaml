@@ -8,6 +8,7 @@
 #include <DXamlServices.h>
 #include <AutoReentrantReferenceLock.h>
 #include "ICollectionChangeCallback.h"
+#include <CompactInlineVector.h>
 #include <CValue.h>
 #include <UIElement.h>
 #include <double.h>
@@ -1301,16 +1302,16 @@ _Check_return_ HRESULT CDOCollection::NotifyThemeChangedCore(
     // Notify collection items that theme has changed.
     // There's no guarantee that the collection won't change as a side
     // effect of calling to an item, e.g. a new theme resolution causing
-    // un-deferral of additional resources, so we use a temp stack vector
+    // un-deferral of additional resources, so we use a temp CompactInlineVector
     // of the items to prevent using an invalid iterator.
-    Jupiter::stack_vector<xref::weakref_ptr<CDependencyObject>, 24> tmp;
-    tmp.m_vector.reserve(this->size()); // avoid reallocations
+    CompactInlineVector<xref::weakref_ptr<CDependencyObject>, 24> tmp;
+    tmp.reserve(this->size()); // avoid reallocations
     for (const auto& item : *this)
     {
-        tmp.m_vector.push_back(xref::get_weakref(item));
+        tmp.push_back(xref::get_weakref(item));
     }
 
-    for (auto& item : tmp.m_vector)
+    for (auto& item : tmp)
     {
         xref_ptr<CDependencyObject> itemDO = item.lock();
 

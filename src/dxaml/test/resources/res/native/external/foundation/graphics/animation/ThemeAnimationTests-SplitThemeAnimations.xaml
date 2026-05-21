@@ -1,0 +1,28 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Canvas.Resources>
+        <Storyboard x:Name="_splitOpen">
+            <SplitOpenThemeAnimation OpenedTargetName="canv" ContentTargetName="r" ClosedTargetName="r2" ContentTranslationDirection="Right" ContentTranslationOffset="200" OpenedLength="200" />
+        </Storyboard>
+        <Storyboard x:Name="_splitClose">
+            <SplitCloseThemeAnimation OpenedTargetName="canv" ContentTargetName="r" ClosedTargetName="r2" ContentTranslationDirection="Right" ContentTranslationOffset="200" OpenedLength="200" />
+        </Storyboard>
+    </Canvas.Resources>
+
+    <StackPanel Canvas.Top="50" Canvas.Left="100">
+        <Rectangle HorizontalAlignment="Left" Width="50" Height="50" Fill="Blue" x:Name="r2" />
+        <StackPanel x:Name="canv" HorizontalAlignment="Left">
+            <Rectangle HorizontalAlignment="Left" Width="75" Height="75" Fill="Red" x:Name="r">
+                <Rectangle.Clip>
+                    <RectangleGeometry Rect="0,0,50,50">
+                        <RectangleGeometry.Transform>
+                            <CompositeTransform x:Name="clipTx" />
+                        </RectangleGeometry.Transform>
+                    </RectangleGeometry>
+                </Rectangle.Clip>
+            </Rectangle>
+        </StackPanel>
+    </StackPanel>
+
+</Canvas>

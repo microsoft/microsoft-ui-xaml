@@ -1,0 +1,38 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border BorderBrush="Red" BorderThickness="2">
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Orientation="Horizontal" Background="Purple">
+            <StackPanel Orientation="Vertical" Background="Orange">
+                <!-- A rectangle at top left of the screen -->
+                <Rectangle x:Name="Rectangle1" Fill="Green" Width="200" Height="100" HorizontalAlignment="Left"/>
+
+                <!-- A button with a simple ToolTip. When expanded, the tooltip *should not* show up in TitleSafe area -->
+                <Button x:Name="Button1" Content="Button with a simple ToolTip 1." FontSize="20" Margin="12">
+                    <ToolTipService.ToolTip>
+                        <ToolTip x:Name="ToolTip1" Placement="Left">
+                            <ToolTip.Content>
+                                <TextBlock Text="??"/>
+                            </ToolTip.Content>
+                        </ToolTip>
+                    </ToolTipService.ToolTip>
+                </Button>
+
+            </StackPanel>
+
+            <!-- A ComboBox. When expanded, it *can* show up in the TitleSafe area (one of few controls we want to do so) -->
+            <ComboBox x:Name="ComboBox1" PlaceholderText="A ComboBox" Margin="10,10" HorizontalAlignment="Right" >
+                <ComboBoxItem Content="Test Item 1"/>
+                <ComboBoxItem Content="Test Item 2"/>
+                <ComboBoxItem Content="Test Item 3"/>
+                <ComboBoxItem Content="Test Item 4"/>
+                <ComboBoxItem Content="Test Item 5"/>
+                <ComboBoxItem Content="Test Item 6"/>
+                <ComboBoxItem Content="Test Item 7"/>
+                <ComboBoxItem Content="Test Item 8"/>
+            </ComboBox>
+        </StackPanel>
+    </Border>
+</Page>

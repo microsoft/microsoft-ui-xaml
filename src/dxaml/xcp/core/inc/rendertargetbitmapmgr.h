@@ -90,6 +90,11 @@ public:
 
     int CountElementJobs(_In_ CUIElement* uiElement);
 
+    // Cancel any in-flight RTB operations targeting this element.
+    // Called when an element leaves the visual tree to prevent PreCommit
+    // from accessing stale composition state.
+    _Check_return_ HRESULT CancelRenderForElement(_In_ CUIElement* pElement);
+
 private:
 
     CRenderTargetBitmapManager(_In_ CCoreServices *pCore);

@@ -2177,7 +2177,6 @@ namespace Microsoft.UI.Xaml.Controls
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
-    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     [contentproperty("Items")]
     unsealed runtimeclass SplitMenuFlyoutItem
@@ -2729,16 +2728,13 @@ namespace Microsoft.UI.Xaml.Automation.Peers
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
-    [feature(Feature_ExperimentalApi)]
     [webhosthidden]
     [default_interface]
     unsealed runtimeclass SplitMenuFlyoutItemAutomationPeer
         : Microsoft.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
-        , [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        , [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
         Microsoft.UI.Xaml.Automation.Provider.IInvokeProvider
-        , [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        , [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
         Microsoft.UI.Xaml.Automation.Provider.IExpandCollapseProvider
     {
         [method_name("CreateInstanceWithOwner")] SplitMenuFlyoutItemAutomationPeer(Microsoft.UI.Xaml.Controls.SplitMenuFlyoutItem owner);

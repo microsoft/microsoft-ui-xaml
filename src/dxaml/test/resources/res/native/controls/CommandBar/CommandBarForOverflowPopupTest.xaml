@@ -1,0 +1,257 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<CommandBar xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <AppBarButton Label="Button 1" />
+    <AppBarButton Label="Button 2" />
+    <AppBarButton Label="Button 3" />
+
+    <CommandBar.SecondaryCommands>
+        <AppBarButton Label="Secondary button 1" />
+        <AppBarButton Label="Secondary button 2" />
+        <AppBarButton Label="Secondary button 3" />
+    </CommandBar.SecondaryCommands>
+
+    <CommandBar.Template>
+        <ControlTemplate TargetType="CommandBar">
+            <Border x:Name="LayoutRoot"
+                            Height="{ThemeResource AppBarThemeCompactHeight}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}">
+                <VisualStateManager.VisualStateGroups>
+                    <VisualStateGroup x:Name="FloatingStates">
+                        <VisualState x:Name="FloatingVisible">
+                            <Storyboard>
+                                <FadeInThemeAnimation TargetName="LayoutRoot" />
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="IsHitTestVisible" Storyboard.TargetName="LayoutRoot">
+                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                        <DiscreteObjectKeyFrame.Value>
+                                            <x:Boolean>True</x:Boolean>
+                                        </DiscreteObjectKeyFrame.Value>
+                                    </DiscreteObjectKeyFrame>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="FloatingHidden">
+                            <Storyboard>
+                                <FadeOutThemeAnimation TargetName="LayoutRoot" />
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="IsHitTestVisible" Storyboard.TargetName="LayoutRoot">
+                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                        <DiscreteObjectKeyFrame.Value>
+                                            <x:Boolean>False</x:Boolean>
+                                        </DiscreteObjectKeyFrame.Value>
+                                    </DiscreteObjectKeyFrame>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                    </VisualStateGroup>
+                    <VisualStateGroup x:Name="DockPositions">
+                        <VisualState x:Name="Top">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
+                                                                       Storyboard.TargetProperty="BorderThickness">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarTopBorderThemeThickness}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
+                                                                       Storyboard.TargetProperty="Padding">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarTopThemePadding}" />
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="Bottom">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
+                                                                       Storyboard.TargetProperty="BorderThickness">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarBottomBorderThemeThickness}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
+                                                                       Storyboard.TargetProperty="Padding">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarBottomThemePadding}" />
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                    </VisualStateGroup>
+                    <VisualStateGroup x:Name="AvailableCommands">
+                        <VisualState x:Name="BothCommands"/>
+                        <VisualState x:Name="PrimaryCommandsOnly">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton" Storyboard.TargetProperty="Visibility">
+                                  <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="SecondaryCommandsOnly">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsControl" Storyboard.TargetProperty="Visibility">
+                                  <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed"/>
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton" Storyboard.TargetProperty="Margin">
+                                  <DiscreteObjectKeyFrame KeyTime="0" Value="5,11"/>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                    </VisualStateGroup>
+                    <VisualStateGroup x:Name="DisplayModeAndOverflowStates">
+                        <VisualState x:Name="HiddenOpened">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
+                                                                       Storyboard.TargetProperty="Height">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0"/>
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryBarContainer"
+                                                                       Storyboard.TargetProperty="Height">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0"/>
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsControl"
+                                                                       Storyboard.TargetProperty="Visibility">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Visible"/>
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="HiddenClosed">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
+                                                                       Storyboard.TargetProperty="Height">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryBarContainer"
+                                                                       Storyboard.TargetProperty="Height">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0" />
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="MinimalOpened">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
+                                                                       Storyboard.TargetProperty="Height">
+                                   <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarThemeMinimalHeight}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryBarContainer"
+                                                                       Storyboard.TargetProperty="MinHeight">
+                                   <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarThemeMinimalHeight}" />
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="MinimalClosed">
+                            <Storyboard>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="LayoutRoot"
+                                                                       Storyboard.TargetProperty="Height">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarThemeMinimalHeight}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryBarContainer"
+                                                                       Storyboard.TargetProperty="MinHeight">
+                                   <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource AppBarThemeMinimalHeight}" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PrimaryItemsControl"
+                                                                       Storyboard.TargetProperty="Visibility">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Collapsed" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton"
+                                                                       Storyboard.TargetProperty="(Grid.Column)">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton"
+                                                                       Storyboard.TargetProperty="Width">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="NaN"/>
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton"
+                                                                       Storyboard.TargetProperty="HorizontalAlignment">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="Stretch"/>
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton"
+                                                                       Storyboard.TargetProperty="(Grid.ColumnSpan)">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="2" />
+                                </ObjectAnimationUsingKeyFrames>
+                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="MoreButton"
+                                                                       Storyboard.TargetProperty="Padding">
+                                    <DiscreteObjectKeyFrame KeyTime="0" Value="0,11,9,0" />
+                                </ObjectAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </VisualState>
+                        <VisualState x:Name="CompactOpened"/>
+                        <VisualState x:Name="CompactClosed" />
+                    </VisualStateGroup>
+                </VisualStateManager.VisualStateGroups>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Containers for Primary & Secondary Items -->
+                    <Grid x:Name="PrimaryBarContainer">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="{ThemeResource AppBarExpandButtonThemeWidthGridLength}"/>
+                        </Grid.ColumnDefinitions>
+                        <ItemsControl x:Name="PrimaryItemsControl"
+                                    HorizontalAlignment="Right"
+                                    IsTabStop="False">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                        <Button x:Name="MoreButton" 
+                                        HorizontalAlignment="Right"
+                                        Padding="0,23,9,0"
+                                        Style="{StaticResource EllipsisButton}"
+                                        Grid.Column="1">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Fill="{ThemeResource SystemControlForegroundBaseHighBrush}" Width="{ThemeResource AppBarExpandButtonCircleDiameter}" Height="{ThemeResource AppBarExpandButtonCircleDiameter}" />
+                                <Ellipse Fill="{ThemeResource SystemControlForegroundBaseHighBrush}" Width="{ThemeResource AppBarExpandButtonCircleDiameter}" Height="{ThemeResource AppBarExpandButtonCircleDiameter}" Margin="{ThemeResource AppBarExpandButtonCircleInnerPadding}" />
+                                <Ellipse Fill="{ThemeResource SystemControlForegroundBaseHighBrush}" Width="{ThemeResource AppBarExpandButtonCircleDiameter}" Height="{ThemeResource AppBarExpandButtonCircleDiameter}" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                    <Border x:Name="PopupPlacementTarget"
+                                        Grid.Column="1"
+                                        VerticalAlignment="Stretch"
+                                        BorderThickness="0"/>
+                    <Popup x:Name="OverflowPopup"
+                                        Grid.Column="1"
+                                        IsLightDismissEnabled="True">
+                        <Border Background="{TemplateBinding Background}"
+                                        MinWidth="{ThemeResource CommandBarOverflowMinWidth}"
+                                        MaxHeight="{ThemeResource CommandBarOverflowMaxHeight}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" MinHeight="{ThemeResource AppBarThemeCompactHeight}"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="{ThemeResource AppBarExpandButtonThemeWidthGridLength}"/>
+                                </Grid.ColumnDefinitions>
+                                <ScrollViewer x:Name="ScrollViewer"
+                                            Grid.Row="1"
+                                            Grid.ColumnSpan="2"
+                                            MaxHeight="{ThemeResource CommandBarOverflowMaxHeight}"
+                                            ZoomMode="Disabled"
+                                            HorizontalScrollMode="Auto"
+                                            HorizontalScrollBarVisibility="Disabled"
+                                            VerticalScrollMode="Auto"
+                                            VerticalScrollBarVisibility="Auto"
+                                            AutomationProperties.AccessibilityView="Raw">
+                                    <ItemsControl x:Name="SecondaryItemsControl"
+                                                IsTabStop="False">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="FrameworkElement">
+                                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                                <Setter Property="Width" Value="NaN"/>
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Popup>
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </CommandBar.Template>
+</CommandBar>

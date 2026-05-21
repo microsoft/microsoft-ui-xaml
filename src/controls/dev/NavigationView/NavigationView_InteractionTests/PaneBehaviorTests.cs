@@ -994,9 +994,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests.NavigationViewTes
 
                     // Select item by clicking a bit lower
                     KeyboardHelper.PressKey(Key.Down);
+                    Wait.ForIdle();
                     KeyboardHelper.PressKey(Key.Enter);
 
-                    Wait.ForIdle();
+                    WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
 
                     Verify.AreEqual(ToggleState.On, querySubmittedCheckbox.ToggleState,
                         "Should've submitted a query");

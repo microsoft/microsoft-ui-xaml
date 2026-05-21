@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <ChildElements>
+        <Element Type="Microsoft.UI.Xaml.Controls.MediaElement">
+          <Properties>
+            <Property Name="AreTransportControlsEnabled" Value="False" />
+            <Property Name="AutoPlay" Value="False" />
+            <Property Name="Markers" Value="[Microsoft.UI.Xaml.Media.TimelineMarkerCollection]" />
+            <Property Name="Position" Value="???" />
+            <Property Name="TransportControls" Value="[Microsoft.UI.Xaml.Controls.MediaTransportControls]" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Properties>
+                <Property Name="Background" Value="#00000000" />
+                <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+                <Property Name="Height" Value="281" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="IsHitTestVisible" Value="False" />
+                <Property Name="Margin" Value="0.0270833,0,0,0" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Property Name="Width" Value="499.946" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                  <Properties>
+                    <Property Name="Background" Value="#00000000" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.StackPanel]" />
+                    <Property Name="Height" Value="281" />
+                    <Property Name="HorizontalAlignment" Value="0" />
+                    <Property Name="Margin" Value="0,0,0,0" />
+                    <Property Name="Padding" Value="0,0,0,0" />
+                    <Property Name="VerticalAlignment" Value="0" />
+                    <Property Name="Visibility" Value="0" />
+                    <Property Name="Width" Value="499.946" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+                      <Properties>
+                        <Property Name="VerticalAlignment" Value="0" />
+                      </Properties>
+                      <ChildElements>
+                        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                          <Properties>
+                            <Property Name="Background" Value="#FF0000FF" />
+                            <Property Name="HorizontalAlignment" Value="1" />
+                            <Property Name="Visibility" Value="0" />
+                          </Properties>
+                          <ChildElements>
+                            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                              <Properties>
+                                <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                <Property Name="LineStackingStrategy" Value="0" />
+                                <Property Name="TextLineBounds" Value="0" />
+                                <Property Name="TextWrapping" Value="2" />
+                              </Properties>
+                              <ChildElements>
+                                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                                  <Properties>
+                                    <Property Name="FlowDirection" Value="0" />
+                                    <Property Name="FontFamily" Value="Segoe UI" />
+                                    <Property Name="FontSize" Value="14.05" />
+                                    <Property Name="FontWeight" Value="400" />
+                                    <Property Name="Foreground" Value="#FFFFFF00" />
+                                    <Property Name="Text" Value="This caption is aligned in the center, has a blue background and undecorated yellow text." />
+                                    <Property Name="TextDecorations" Value="0" />
+                                  </Properties>
+                                </Element>
+                              </ChildElements>
+                            </Element>
+                          </ChildElements>
+                        </Element>
+                      </ChildElements>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </ChildElements>
+    </Element>
+  </VisualElements>
+</VisualTreeDump>

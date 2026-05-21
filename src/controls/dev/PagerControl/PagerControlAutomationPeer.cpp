@@ -63,21 +63,19 @@ com_ptr<PagerControl> PagerControlAutomationPeer::GetImpl()
     return impl;
 }
 
-winrt::com_array<winrt::IInspectable> PagerControlAutomationPeer::GetSelection()
+winrt::com_array<winrt::Microsoft::UI::Xaml::Automation::Provider::IRawElementProviderSimple> PagerControlAutomationPeer::GetSelection()
 {
-    if (const auto pager = GetImpl())
-    {
-        return { winrt::box_value(pager->SelectedPageIndex()) };
-    }
+    // PagerControl's NumberPanel repeater mixes Button and SymbolIcon (ellipsis) elements,
+    // so repeater indices do not correspond to page indices. Returning empty is UIA-compliant
+    // and avoids the stowed exceptios
+    // TODO: Implement proper pageIndex-to-repeaterIndex mapping per display mode. (http://task.ms/61570104)
     return {};
 }
 
-void PagerControlAutomationPeer::RaiseSelectionChanged(double oldIndex, double newIndex)
+void PagerControlAutomationPeer::RaiseSelectionChanged()
 {
-    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::SelectionPatternOnInvalidated))
     {
-        RaisePropertyChangedEvent(winrt::SelectionPatternIdentifiers::SelectionProperty(),
-            winrt::PropertyValue::CreateDouble(oldIndex),
-            winrt::PropertyValue::CreateDouble(newIndex));
+        RaiseAutomationEvent(winrt::AutomationEvents::SelectionPatternOnInvalidated);
     }
 }

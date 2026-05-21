@@ -12,7 +12,7 @@
                               HorizontalCacheLength="0"
                               VerticalCacheLength="0">
             <mux:ItemsRepeater.Layout>
-                <mux:FlowLayout  LineAlignment="Start" MinRowSpacing="10" MinColumnSpacing="10"/>
+                <mux:FlowLayout  LineAlignment="Start" LineSpacing="10" MinItemSpacing="10"/>
             </mux:ItemsRepeater.Layout>
             <mux:ItemsRepeater.ItemTemplate>
                 <DataTemplate x:DataType="local:MyItem">

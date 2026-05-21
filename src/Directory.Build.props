@@ -19,6 +19,7 @@
     <WindowsAppSDKVerifyWinrtRuntimeVersion>false</WindowsAppSDKVerifyWinrtRuntimeVersion>
     <!-- The sln files in this repo are not always "complete", but we still want to ensure Configuration/Platform are inherited correctly, in particular for graph builds. -->
     <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <!-- Import LKG VC Toolset, if enabled (LkgVcTools* env vars set)-->

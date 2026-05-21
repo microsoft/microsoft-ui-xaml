@@ -37,7 +37,9 @@ public:
 
     void Invalidate()
     {
+        m_spDefaultValue = nullptr;
         m_spPropertyChangedCallback = nullptr;
+        m_spCreateDefaultValueCallback = nullptr;
         m_flags |= MetaDataPropertyInfoFlags::IsInvalid;
     }
 
@@ -101,6 +103,7 @@ class CCustomProperty : public CDependencyProperty
 
     void Invalidate()
     {
+        m_spXamlProperty = nullptr;
         m_flags |= MetaDataPropertyInfoFlags::IsInvalid;
     }
 

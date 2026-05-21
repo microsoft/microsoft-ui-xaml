@@ -46,6 +46,16 @@ _Check_return_ HRESULT VisualTree::Shutdown()
 
     m_rootElement = nullptr;
 
+    // Detach test LTEs before tearing down roots. Test LTEs hold xref_ptr references that
+    // keep the LTE alive after its parent (transition root under popup root) is removed.
+    // Without this, tearing down the popup root orphans the LTE while the target element
+    // (e.g. a border under the root scroll viewer) still references it in
+    // m_pLayoutTransitionRenderers. When the target's subtree is later destroyed and dirty
+    // flag propagation walks through the stale LTE, it can hit an AV.
+    // Note: This must be in Shutdown(), not ResetRoots(), because ResetRoots() is also
+    // called during PutPublicRootVisual() where LTEs should survive root replacement.
+    ClearTestLTEs();
+
     if (m_xamlRoot)
     {
         FxCallbacks::XamlRoot_UpdatePeg(m_xamlRoot.Get(), false);
@@ -674,7 +684,14 @@ VisualTree::GetFocusManagerForElement(_In_ CDependencyObject *pObject, LookupOpt
         return contentRoot->GetFocusManagerNoRef();
     }
 
-    if (CContentRoot* contentRoot = pObject->GetContext()->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot())
+    // Same shutdown null-context guard as in GetContentRootForElement above.
+    CCoreServices* const context = pObject->GetContext();
+    if (context == nullptr)
+    {
+        return nullptr;
+    }
+
+    if (CContentRoot* contentRoot = context->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot())
     {
         return contentRoot->GetFocusManagerNoRef();
     }
@@ -880,7 +897,15 @@ CContentRoot* VisualTree::GetContentRootForElement(_In_ CDependencyObject* objec
         return visualTree->GetContentRootNoRef();
     }
 
-    if (CContentRoot* contentRoot = object->GetContext()->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot())
+    // During XAML core shutdown a peer's CCoreServices may already be null;
+    // see CDependencyObject::ResetReferencesFromChildren for the same pattern.
+    CCoreServices* const context = object->GetContext();
+    if (context == nullptr)
+    {
+        return nullptr;
+    }
+
+    if (CContentRoot* contentRoot = context->GetContentRootCoordinator()->Unsafe_IslandsIncompatible_CoreWindowContentRoot())
     {
         return contentRoot;
     }

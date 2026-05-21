@@ -502,6 +502,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Implementing IXamlPredicate on generic type &apos;{0}&apos; is not supported.
+        /// </summary>
+        internal static string DuiSchema_PredicateNotSupportedOnGeneric {
+            get {
+                return ResourceManager.GetString("DuiSchema_PredicateNotSupportedOnGeneric", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Type Load Exception loading type &apos;{0}&apos; from reference &apos;{1}&apos;.
         /// </summary>
         internal static string DuiSchema_TypeLoadException {

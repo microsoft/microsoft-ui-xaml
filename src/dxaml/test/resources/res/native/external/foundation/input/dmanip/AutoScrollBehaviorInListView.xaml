@@ -1,0 +1,51 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid x:Name="rootGrid" Width="300" Height="400" Background="Red" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ListView x:Name="listView"
+      Background="DarkBlue"
+      CanReorderItems="True"
+      AllowDrop="True"
+      Margin="0,25,0,25">
+    <ListView.Resources>
+      <x:Double x:Key='ListViewItemMinHeight'>44</x:Double>
+    </ListView.Resources>
+    <ListViewItem Content="Algona" FontSize="15"/>
+    <ListViewItem Content="Auburn" FontSize="15"/>
+    <ListViewItem Content="Beaux Arts Village" FontSize="15"/>
+    <ListViewItem Content="Bellevue" FontSize="15"/>
+    <ListViewItem Content="Black Diamond" FontSize="15"/>
+    <ListViewItem Content="Bothell" FontSize="15"/>
+    <ListViewItem Content="Burien" FontSize="15"/>
+    <ListViewItem Content="Carnation" FontSize="15"/>
+    <ListViewItem Content="Clyde Hill" FontSize="15"/>
+    <ListViewItem Content="Covington" FontSize="15"/>
+    <ListViewItem Content="Des Moines" FontSize="15"/>
+    <ListViewItem Content="Duvall" FontSize="15"/>
+    <ListViewItem Content="Enumclaw" FontSize="15"/>
+    <ListViewItem Content="Federal Way" FontSize="15"/>
+    <ListViewItem Content="Hunts Point" FontSize="15"/>
+    <ListViewItem Content="Issaquah" FontSize="15"/>
+    <ListViewItem Content="Kenmore" FontSize="15"/>
+    <ListViewItem Content="Kent" FontSize="15"/>
+    <ListViewItem Content="Kirkland" FontSize="15"/>
+    <ListViewItem Content="Lake Forest Park" FontSize="15"/>
+    <ListViewItem Content="Maple Valley" FontSize="15"/>
+    <ListViewItem Content="Medina" FontSize="15"/>
+    <ListViewItem Content="Mercer Island" FontSize="15"/>
+    <ListViewItem Content="Milton" FontSize="15"/>
+    <ListViewItem Content="Newcastle" FontSize="15"/>
+    <ListViewItem Content="Normandy Park" FontSize="15"/>
+    <ListViewItem Content="North Bend" FontSize="15"/>
+    <ListViewItem Content="Pacific" FontSize="15"/>
+    <ListViewItem Content="Redmond" FontSize="15"/>
+    <ListViewItem Content="Renton" FontSize="15"/>
+    <ListViewItem Content="Sammamish" FontSize="15"/>
+    <ListViewItem Content="SeaTac" FontSize="15"/>
+    <ListViewItem Content="Seattle" FontSize="15"/>
+    <ListViewItem Content="Shoreline" FontSize="15"/>
+    <ListViewItem Content="Skykomish" FontSize="15"/>
+    <ListViewItem Content="Snoqualmie" FontSize="15"/>
+    <ListViewItem Content="Tukwila" FontSize="15"/>
+    <ListViewItem Content="Woodinville" FontSize="15"/>
+    <ListViewItem Content="Yarrow Point" FontSize="15"/>
+  </ListView>
+</Grid>

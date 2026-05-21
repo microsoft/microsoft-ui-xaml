@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="400" SizeY="300" BorderMode="Soft">
+            <ColorBrush Color="#ff000000" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+            <ColorBrush Color="rgb {0, 1, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+            <ColorBrush Color="rgb {0, 1, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+            <ColorBrush Color="rgb {0, 1, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+            <ColorBrush Color="rgb {0, 1, 0}" />
+          </wucSpriteVisual>
+          <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft" TransparentForInput="True">
+            <ColorBrush Color="Argb {0, 1, 1, 1}" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Render" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.X, PS.Y)) * PS.Expression * Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Expression" Type="Matrix3x2">
+                              <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.CenterX, PS.CenterY)) * Matrix3x2(cos(PS.RotateAngle * pi / 180.0f), sin(PS.RotateAngle * pi / 180.0f), -sin(PS.RotateAngle * pi / 180.0f), cos(PS.RotateAngle * pi / 180.0f), 0, 0) * Matrix3x2.CreateFromTranslation(vector2(PS.CenterX, PS.CenterY))">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="CenterX" Type="Scalar" />
+                                  <Property Name="CenterY" Type="Scalar" />
+                                  <Property Name="RotateAngle" Type="Scalar">
+                                    <KeyFrameAnimation Duration="3.217" Comment=",Target:E1R+P:Ring+P:invisible+P:root,Prop:Angle">
+                                      <AnimationInstance>
+                                        <CubicSegment Constant="0.006217" Linear="0.3089" />
+                                        <FreezeSegment BeginOffset="3.217" />
+                                        <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                                      </AnimationInstance>
+                                      <KeyFrame Value="-110">
+                                        <CubicBezierEasingFunction Offset1X="0.13" Offset1Y="0.21" Offset2X="0.1" Offset2Y="0.7" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.1346" Value="10">
+                                        <CubicBezierEasingFunction Offset1X="0.02" Offset1Y="0.33" Offset2X="0.38" Offset2Y="0.77" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.373" Value="93">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.5026" Value="205">
+                                        <CubicBezierEasingFunction Offset1X="0.57" Offset1Y="0.17" Offset2X="0.95" Offset2Y="0.75" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.627" Value="357">
+                                        <CubicBezierEasingFunction Offset1X="0" Offset1Y="0.19" Offset2X="0.07" Offset2Y="0.72" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.8651" Value="439">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="1" Value="585">
+                                        <CubicBezierEasingFunction Offset2X="0.95" Offset2Y="0.37" />
+                                      </KeyFrame>
+                                    </KeyFrameAnimation>
+                                  </Property>
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                            <Property Name="X" Type="Scalar" Value="25" />
+                            <Property Name="Y" Type="Scalar" Value="25" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="5" SizeY="5" OffsetX="0" OffsetY="20" OffsetZ="0">
+                    <Opacity>
+                      <ExpressionAnimation String="PS.Opacity">
+                        <ReferenceParameter Name="PS" />
+                        <PropertySet>
+                          <Property Name="Opacity" Type="Scalar">
+                            <KeyFrameAnimation Duration="3.47" Comment=",Target:E1+P:E1+P:Ring+P:invisible+P:root,Prop:Opacity">
+                              <AnimationInstance>
+                                <CubicSegment Constant="0.005764" Linear="0.2865" />
+                                <FreezeSegment BeginOffset="3.47" />
+                                <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                              </AnimationInstance>
+                              <KeyFrame Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9251" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.928">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                            </KeyFrameAnimation>
+                          </Property>
+                        </PropertySet>
+                      </ExpressionAnimation>
+                    </Opacity>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="5" SizeY="5" BorderMode="Soft" TransparentForInput="True">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="rgb {0.3569, 0.1804, 0.7725}" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Render" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.X, PS.Y)) * PS.Expression * Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Expression" Type="Matrix3x2">
+                              <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.CenterX, PS.CenterY)) * Matrix3x2(cos(PS.RotateAngle * pi / 180.0f), sin(PS.RotateAngle * pi / 180.0f), -sin(PS.RotateAngle * pi / 180.0f), cos(PS.RotateAngle * pi / 180.0f), 0, 0) * Matrix3x2.CreateFromTranslation(vector2(PS.CenterX, PS.CenterY))">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="CenterX" Type="Scalar" />
+                                  <Property Name="CenterY" Type="Scalar" />
+                                  <Property Name="RotateAngle" Type="Scalar">
+                                    <KeyFrameAnimation Duration="3.237" Comment=",Target:E2R+P:Ring+P:invisible+P:root,Prop:Angle">
+                                      <AnimationInstance>
+                                        <CubicSegment BeginOffset="0.147" Constant="0.006179" Linear="0.307" />
+                                        <FreezeSegment BeginOffset="3.384" />
+                                        <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                                      </AnimationInstance>
+                                      <KeyFrame Time="0.006179" Value="-116">
+                                        <CubicBezierEasingFunction Offset1X="0.13" Offset1Y="0.21" Offset2X="0.1" Offset2Y="0.7" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.1399" Value="4">
+                                        <CubicBezierEasingFunction Offset1X="0.02" Offset1Y="0.33" Offset2X="0.38" Offset2Y="0.77" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.3769" Value="87">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.5057" Value="199">
+                                        <CubicBezierEasingFunction Offset1X="0.57" Offset1Y="0.17" Offset2X="0.95" Offset2Y="0.75" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.6293" Value="351">
+                                        <CubicBezierEasingFunction Offset1X="0" Offset1Y="0.19" Offset2X="0.07" Offset2Y="0.72" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.8659" Value="433">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="1" Value="579">
+                                        <CubicBezierEasingFunction Offset2X="0.95" Offset2Y="0.37" />
+                                      </KeyFrame>
+                                    </KeyFrameAnimation>
+                                  </Property>
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                            <Property Name="X" Type="Scalar" Value="25" />
+                            <Property Name="Y" Type="Scalar" Value="25" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="5" SizeY="5" OffsetX="0" OffsetY="20" OffsetZ="0">
+                    <Opacity>
+                      <ExpressionAnimation String="PS.Opacity">
+                        <ReferenceParameter Name="PS" />
+                        <PropertySet>
+                          <Property Name="Opacity" Type="Scalar">
+                            <KeyFrameAnimation Duration="3.49" Comment=",Target:E2+P:E2+P:Ring+P:invisible+P:root,Prop:Opacity">
+                              <AnimationInstance>
+                                <CubicSegment BeginOffset="0.147" Constant="0.005731" Linear="0.2849" />
+                                <FreezeSegment BeginOffset="3.637" />
+                                <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                              </AnimationInstance>
+                              <KeyFrame Time="0.005731" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9255" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9284">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                            </KeyFrameAnimation>
+                          </Property>
+                        </PropertySet>
+                      </ExpressionAnimation>
+                    </Opacity>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="5" SizeY="5" BorderMode="Soft" TransparentForInput="True">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="rgb {0.3569, 0.1804, 0.7725}" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Render" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.X, PS.Y)) * PS.Expression * Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Expression" Type="Matrix3x2">
+                              <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.CenterX, PS.CenterY)) * Matrix3x2(cos(PS.RotateAngle * pi / 180.0f), sin(PS.RotateAngle * pi / 180.0f), -sin(PS.RotateAngle * pi / 180.0f), cos(PS.RotateAngle * pi / 180.0f), 0, 0) * Matrix3x2.CreateFromTranslation(vector2(PS.CenterX, PS.CenterY))">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="CenterX" Type="Scalar" />
+                                  <Property Name="CenterY" Type="Scalar" />
+                                  <Property Name="RotateAngle" Type="Scalar">
+                                    <KeyFrameAnimation Duration="3.237" Comment=",Target:E3R+P:Ring+P:invisible+P:root,Prop:Angle">
+                                      <AnimationInstance>
+                                        <CubicSegment BeginOffset="0.314" Constant="0.006179" Linear="0.307" />
+                                        <FreezeSegment BeginOffset="3.551" />
+                                        <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                                      </AnimationInstance>
+                                      <KeyFrame Time="0.006179" Value="-122">
+                                        <CubicBezierEasingFunction Offset1X="0.13" Offset1Y="0.21" Offset2X="0.1" Offset2Y="0.7" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.1399" Value="-2">
+                                        <CubicBezierEasingFunction Offset1X="0.02" Offset1Y="0.33" Offset2X="0.38" Offset2Y="0.77" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.3769" Value="81">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.5057" Value="193">
+                                        <CubicBezierEasingFunction Offset1X="0.57" Offset1Y="0.17" Offset2X="0.95" Offset2Y="0.75" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.6293" Value="345">
+                                        <CubicBezierEasingFunction Offset1X="0" Offset1Y="0.19" Offset2X="0.07" Offset2Y="0.72" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.8659" Value="427">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="1" Value="573">
+                                        <CubicBezierEasingFunction Offset2X="0.95" Offset2Y="0.37" />
+                                      </KeyFrame>
+                                    </KeyFrameAnimation>
+                                  </Property>
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                            <Property Name="X" Type="Scalar" Value="25" />
+                            <Property Name="Y" Type="Scalar" Value="25" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="5" SizeY="5" OffsetX="0" OffsetY="20" OffsetZ="0">
+                    <Opacity>
+                      <ExpressionAnimation String="PS.Opacity">
+                        <ReferenceParameter Name="PS" />
+                        <PropertySet>
+                          <Property Name="Opacity" Type="Scalar">
+                            <KeyFrameAnimation Duration="3.49" Comment=",Target:E3+P:E3+P:Ring+P:invisible+P:root,Prop:Opacity">
+                              <AnimationInstance>
+                                <CubicSegment BeginOffset="0.314" Constant="0.005731" Linear="0.2849" />
+                                <FreezeSegment BeginOffset="3.804" />
+                                <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                              </AnimationInstance>
+                              <KeyFrame Time="0.005731" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9255" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9284">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                            </KeyFrameAnimation>
+                          </Property>
+                        </PropertySet>
+                      </ExpressionAnimation>
+                    </Opacity>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="5" SizeY="5" BorderMode="Soft" TransparentForInput="True">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="rgb {0.3569, 0.1804, 0.7725}" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Render" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.X, PS.Y)) * PS.Expression * Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Expression" Type="Matrix3x2">
+                              <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.CenterX, PS.CenterY)) * Matrix3x2(cos(PS.RotateAngle * pi / 180.0f), sin(PS.RotateAngle * pi / 180.0f), -sin(PS.RotateAngle * pi / 180.0f), cos(PS.RotateAngle * pi / 180.0f), 0, 0) * Matrix3x2.CreateFromTranslation(vector2(PS.CenterX, PS.CenterY))">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="CenterX" Type="Scalar" />
+                                  <Property Name="CenterY" Type="Scalar" />
+                                  <Property Name="RotateAngle" Type="Scalar">
+                                    <KeyFrameAnimation Duration="3.237" Comment=",Target:E4R+P:Ring+P:invisible+P:root,Prop:Angle">
+                                      <AnimationInstance>
+                                        <CubicSegment BeginOffset="0.481" Constant="0.006179" Linear="0.307" />
+                                        <FreezeSegment BeginOffset="3.718" />
+                                        <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                                      </AnimationInstance>
+                                      <KeyFrame Time="0.006179" Value="-128">
+                                        <CubicBezierEasingFunction Offset1X="0.13" Offset1Y="0.21" Offset2X="0.1" Offset2Y="0.7" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.1399" Value="-8">
+                                        <CubicBezierEasingFunction Offset1X="0.02" Offset1Y="0.33" Offset2X="0.38" Offset2Y="0.77" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.3769" Value="75">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.5057" Value="187">
+                                        <CubicBezierEasingFunction Offset1X="0.57" Offset1Y="0.17" Offset2X="0.95" Offset2Y="0.75" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.6293" Value="339">
+                                        <CubicBezierEasingFunction Offset1X="0" Offset1Y="0.19" Offset2X="0.07" Offset2Y="0.72" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.8659" Value="421">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="1" Value="567">
+                                        <CubicBezierEasingFunction Offset2X="0.95" Offset2Y="0.37" />
+                                      </KeyFrame>
+                                    </KeyFrameAnimation>
+                                  </Property>
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                            <Property Name="X" Type="Scalar" Value="25" />
+                            <Property Name="Y" Type="Scalar" Value="25" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="5" SizeY="5" OffsetX="0" OffsetY="20" OffsetZ="0">
+                    <Opacity>
+                      <ExpressionAnimation String="PS.Opacity">
+                        <ReferenceParameter Name="PS" />
+                        <PropertySet>
+                          <Property Name="Opacity" Type="Scalar">
+                            <KeyFrameAnimation Duration="3.49" Comment=",Target:E4+P:E4+P:Ring+P:invisible+P:root,Prop:Opacity">
+                              <AnimationInstance>
+                                <CubicSegment BeginOffset="0.481" Constant="0.005731" Linear="0.2849" />
+                                <FreezeSegment BeginOffset="3.971" />
+                                <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                              </AnimationInstance>
+                              <KeyFrame Time="0.005731" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9255" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9284">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                            </KeyFrameAnimation>
+                          </Property>
+                        </PropertySet>
+                      </ExpressionAnimation>
+                    </Opacity>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="5" SizeY="5" BorderMode="Soft" TransparentForInput="True">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="rgb {0.3569, 0.1804, 0.7725}" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.Render)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Render" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.X, PS.Y)) * PS.Expression * Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Expression" Type="Matrix3x2">
+                              <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.CenterX, PS.CenterY)) * Matrix3x2(cos(PS.RotateAngle * pi / 180.0f), sin(PS.RotateAngle * pi / 180.0f), -sin(PS.RotateAngle * pi / 180.0f), cos(PS.RotateAngle * pi / 180.0f), 0, 0) * Matrix3x2.CreateFromTranslation(vector2(PS.CenterX, PS.CenterY))">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="CenterX" Type="Scalar" />
+                                  <Property Name="CenterY" Type="Scalar" />
+                                  <Property Name="RotateAngle" Type="Scalar">
+                                    <KeyFrameAnimation Duration="3.237" Comment=",Target:E5R+P:Ring+P:invisible+P:root,Prop:Angle">
+                                      <AnimationInstance>
+                                        <CubicSegment BeginOffset="0.648" Constant="0.006179" Linear="0.307" />
+                                        <FreezeSegment BeginOffset="3.885" />
+                                        <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                                      </AnimationInstance>
+                                      <KeyFrame Time="0.006179" Value="-134">
+                                        <CubicBezierEasingFunction Offset1X="0.13" Offset1Y="0.21" Offset2X="0.1" Offset2Y="0.7" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.1399" Value="-14">
+                                        <CubicBezierEasingFunction Offset1X="0.02" Offset1Y="0.33" Offset2X="0.38" Offset2Y="0.77" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.3769" Value="69">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.5057" Value="181">
+                                        <CubicBezierEasingFunction Offset1X="0.57" Offset1Y="0.17" Offset2X="0.95" Offset2Y="0.75" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.6293" Value="331">
+                                        <CubicBezierEasingFunction Offset1X="0" Offset1Y="0.19" Offset2X="0.07" Offset2Y="0.72" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="0.8659" Value="415">
+                                        <CubicBezierEasingFunction Offset2X="1" Offset2Y="1" />
+                                      </KeyFrame>
+                                      <KeyFrame Time="1" Value="561">
+                                        <CubicBezierEasingFunction Offset2X="0.95" Offset2Y="0.37" />
+                                      </KeyFrame>
+                                    </KeyFrameAnimation>
+                                  </Property>
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                            <Property Name="X" Type="Scalar" Value="25" />
+                            <Property Name="Y" Type="Scalar" Value="25" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <Visual Tag="PrependVisual">
+                  <Visual Tag="PrimaryVisual" SizeX="5" SizeY="5" OffsetX="0" OffsetY="20" OffsetZ="0">
+                    <Opacity>
+                      <ExpressionAnimation String="PS.Opacity">
+                        <ReferenceParameter Name="PS" />
+                        <PropertySet>
+                          <Property Name="Opacity" Type="Scalar">
+                            <KeyFrameAnimation Duration="3.49" Comment=",Target:E5+P:E5+P:Ring+P:invisible+P:root,Prop:Opacity">
+                              <AnimationInstance>
+                                <CubicSegment BeginOffset="0.648" Constant="0.005731" Linear="0.2849" />
+                                <FreezeSegment BeginOffset="4.138" />
+                                <RepeatSegment BeginOffset="4.305" DurationToRepeat="4.305" />
+                              </AnimationInstance>
+                              <KeyFrame Time="0.005731" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9255" Value="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="0.9284">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                              <KeyFrame Time="1">
+                                <StepEasingFunction StepCount="1" InitialStep="0" FinalStep="1" IsFinalStepSingleFrame="True" />
+                              </KeyFrame>
+                            </KeyFrameAnimation>
+                          </Property>
+                        </PropertySet>
+                      </ExpressionAnimation>
+                    </Opacity>
+                    <Visual Tag="ContentVisual">
+                      <wucSpriteVisual SizeX="5" SizeY="5" BorderMode="Soft" TransparentForInput="True">
+                        <MaskBrush>
+                          <Source>
+                            <ColorBrush Color="rgb {0.3569, 0.1804, 0.7725}" />
+                          </Source>
+                          <Mask>
+                            <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                          </Mask>
+                        </MaskBrush>
+                      </wucSpriteVisual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

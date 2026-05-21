@@ -1073,11 +1073,11 @@ CWindowsDownloadRequest::InitiateRequest (
         // to use the cached version rather than sending a new request.
         if (pUriAbsolute)
         {
-#pragma prefast( push )
-#pragma prefast( disable: 26015 "during the call to GetHost, cHostName can only decrease, cHostName is constrained by XINTERNET_MAX_HOST_NAME_LENGTH")
+#pragma warning( push )
+#pragma warning( disable: 26015 )  // during the call to GetHost, cHostName can only decrease, cHostName is constrained by XINTERNET_MAX_HOST_NAME_LENGTH
             IFC(pUriAbsolute->GetHost(&cHostName, szHostName));
             xephemeral_string_ptr strHostName(szHostName, cHostName);
-#pragma prefast( pop )
+#pragma warning( pop )
             if (strHostName.Equals(XSTRING_PTR_EPHEMERAL(L"localhost"), xstrCompareCaseInsensitive))
             {
                 m_nBindFlags |= BINDF_RESYNCHRONIZE;
@@ -1113,12 +1113,12 @@ CWindowsDownloadRequest::InitiateRequest (
 
     if (m_cHeaders)
     {
-#pragma prefast( suppress: 26451 "We shouldn't need to worry about casting here, if the following add operation generates an arithmetic overflow, m_cHeaders is likely already bad. Abstain from adding casting to complicate the code only to make PREfast happy.")
+#pragma warning( suppress: 26451 )  // We shouldn't need to worry about casting here, if the following add operation generates an arithmetic overflow, m_cHeaders is likely already bad. Abstain from adding casting to complicate the code only to make PREfast happy.
         m_pHeaders = new WCHAR[m_cHeaders + 1];
         if (bAddAcceptLanguageHeader)
         {
             //we need to add the accept-language header
-#pragma prefast( suppress: 6386 "PREfast does not know that whenever bAddAcceptLanguageHeader is set to TRUE above, m_cHeaders is big enough.")
+#pragma warning( suppress: 6386 )  // PREfast does not know that whenever bAddAcceptLanguageHeader is set to TRUE above, m_cHeaders is big enough.
             memcpy(m_pHeaders, ACCEPT_LANGUAGE_HEADER_PREFIX, ACCEPT_LANGUAGE_HEADER_PREFIX_LENGTH * sizeof(WCHAR));
             offset += ACCEPT_LANGUAGE_HEADER_PREFIX_LENGTH;
             memcpy(m_pHeaders+offset, strAcceptLanguageHeader.GetBuffer(), strAcceptLanguageHeader.GetCount() * sizeof(WCHAR));

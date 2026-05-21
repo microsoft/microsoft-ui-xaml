@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="100 100 5 15" preserveAspectRatio="xMidYMid meet">
+    <rect width="5" height="5" x="100" y="100" fill="red" />
+    <rect width="5" height="5" x="100" y="105" fill="yellow" />
+    <rect width="5" height="5" x="100" y="110" fill="green" />
+</svg>

@@ -1685,8 +1685,6 @@ HRESULT CWindowsServices::IsDirectManipulationSupported(_Out_ bool &isDirectMani
     RRETURN(S_OK);
 }
 
-#pragma prefast( pop )
-
 //------------------------------------------------------------------------
 //
 //  Method:   GetDirectManipulationService

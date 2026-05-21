@@ -516,15 +516,15 @@ unsealed runtimeclass FlowLayout : VirtualizingLayout
     [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Microsoft.UI.Xaml.Controls.Orientation Orientation { get; set; };
     [MUX_DEFAULT_VALUE("0.0")]
-    Double MinRowSpacing { get; set; };
+    Double LineSpacing { get; set; };
     [MUX_DEFAULT_VALUE("0.0")]
-    Double MinColumnSpacing { get; set; };
+    Double MinItemSpacing { get; set; };
     [MUX_DEFAULT_VALUE("winrt::FlowLayoutLineAlignment::Start")]
     FlowLayoutLineAlignment LineAlignment { get; set; };
 
     static Microsoft.UI.Xaml.DependencyProperty OrientationProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty MinRowSpacingProperty { get; };
-    static Microsoft.UI.Xaml.DependencyProperty MinColumnSpacingProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty LineSpacingProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty MinItemSpacingProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty LineAlignmentProperty { get; };
 
     overridable Windows.Foundation.Size GetMeasureSize(Int32 index, Windows.Foundation.Size availableSize);

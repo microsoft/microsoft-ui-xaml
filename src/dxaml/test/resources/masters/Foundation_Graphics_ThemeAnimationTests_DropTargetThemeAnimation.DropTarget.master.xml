@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50" OffsetX="0" OffsetY="100" OffsetZ="0">
+              <TransformMatrix>
+                <ExpressionAnimation String="Matrix4x4(LOCAL.TransitionTargetRender)">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="TransitionTargetRender" Type="Matrix3x2">
+                        <ExpressionAnimation String="Matrix3x2.CreateFromTranslation(-vector2(PS.X, PS.Y)) * PS.Expression * Matrix3x2.CreateFromTranslation(vector2(PS.X, PS.Y))">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="Expression" Type="Matrix3x2">
+                              <ExpressionAnimation String="Matrix3x2(PS.ScaleX, 0, 0, PS.ScaleY, PS.X, PS.Y)">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="ScaleX" Type="Scalar">
+                                    <KeyFrameAnimation Duration="2.4">
+                                      <KeyFrame Value="1" />
+                                      <KeyFrame Time="1" Value="0.95">
+                                        <CubicBezierEasingFunction Offset1X="0.1" Offset1Y="0.9" Offset2X="0.2" Offset2Y="1" />
+                                      </KeyFrame>
+                                    </KeyFrameAnimation>
+                                  </Property>
+                                  <Property Name="ScaleY" Type="Scalar">
+                                    <KeyFrameAnimation Duration="2.4">
+                                      <KeyFrame Value="1" />
+                                      <KeyFrame Time="1" Value="0.95">
+                                        <CubicBezierEasingFunction Offset1X="0.1" Offset1Y="0.9" Offset2X="0.2" Offset2Y="1" />
+                                      </KeyFrame>
+                                    </KeyFrameAnimation>
+                                  </Property>
+                                  <Property Name="X" Type="Scalar" />
+                                  <Property Name="Y" Type="Scalar" />
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                            <Property Name="X" Type="Scalar" Value="25" />
+                            <Property Name="Y" Type="Scalar" Value="25" />
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 0, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

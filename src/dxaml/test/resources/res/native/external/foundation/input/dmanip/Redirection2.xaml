@@ -1,0 +1,22 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+    <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+        <ScrollViewer Name="myScrollViewer" Width="300" Height="300" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled" MinZoomFactor="0.5" MaxZoomFactor="2.0" IsScrollInertiaEnabled="False" IsZoomInertiaEnabled="False" HorizontalSnapPointsType="None" VerticalSnapPointsType="None">
+            <Canvas Width="600" Height="300">
+                <StackPanel Orientation="Horizontal">
+                    <Rectangle Width="300" Height="300" Fill="Red"/>
+                    <Rectangle Width="300" Height="300" Fill="Green"/>
+                </StackPanel>
+                <Popup Name="myPopup" Canvas.Left="300">
+                    <StackPanel Orientation="Vertical" Background="Purple">
+                        <TextBlock FontSize="32" Foreground="Black">Popup</TextBlock>
+                        <Popup IsOpen="True">
+                            <StackPanel Orientation="Vertical" Background="Yellow">
+                                <TextBlock FontSize="32" Foreground="Black">NestedPopup</TextBlock>
+                                <Rectangle Width="300" Height="100" Fill="Yellow"/>
+                            </StackPanel>
+                        </Popup>                 
+                    </StackPanel>
+                </Popup>
+            </Canvas>
+        </ScrollViewer>
+    </Grid>

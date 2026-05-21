@@ -7,6 +7,7 @@
 #include "ThemeResource.h"
 #include "DeferredMapping.h"
 #include "XamlNativeRuntime_SimpleProperties.g.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 
@@ -612,6 +613,14 @@ _Check_return_ HRESULT XamlNativeRuntime::InitializationGuard(
     {
         if (fInitializing)
         {
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "XamlNativeRuntime_InitializationGuard",
+                TraceLoggingBoolean(true, "IsStart"),
+                TraceLoggingUInt32(pDependencyObject->GetContext()->GetFrameNumber(), "FrameNumber"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(pDependencyObject), "ObjectPointer"),
+                TraceLoggingUInt16(static_cast<uint16_t>(pDependencyObject->GetTypeIndex()), "TypeIndex"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
             pDependencyObject->SetIsParsing(TRUE);
             pDependencyObject->SetParserParentLock();
         }
@@ -620,6 +629,17 @@ _Check_return_ HRESULT XamlNativeRuntime::InitializationGuard(
             IFC_RETURN(pDependencyObject->CreationComplete());
             pDependencyObject->ResetParserParentLock();
             pDependencyObject->SetIsParsing(FALSE);
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "XamlNativeRuntime_InitializationGuard",
+                TraceLoggingBoolean(false, "IsStart"),
+                TraceLoggingUInt32(pDependencyObject->GetContext()->GetFrameNumber(), "FrameNumber"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(pDependencyObject), "ObjectPointer"),
+                TraceLoggingUInt16(static_cast<uint16_t>(pDependencyObject->GetTypeIndex()), "TypeIndex"),
+                TraceLoggingWideString(CDependencyObject::TypeIndexToType(pDependencyObject->GetTypeIndex()), "Type"),
+                TraceLoggingWideString(pDependencyObject->OfTypeByIndex<KnownTypeIndex::FrameworkElement>() ? static_cast<CFrameworkElement*>(pDependencyObject)->GetStrClassName().GetBuffer() : nullptr, "ClassName"),
+                TraceLoggingWideString(pDependencyObject->m_strName.GetBuffer(), "Name"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
         }
     }
 

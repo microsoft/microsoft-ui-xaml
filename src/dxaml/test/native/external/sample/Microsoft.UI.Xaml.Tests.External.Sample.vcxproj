@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ProjectGuid>{760F8B1C-525B-49A4-A702-64A2B8AA863A}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))" />
+  <Import Project="$(XamlSourcePath)\test\common.props" />
+  <Import Project="$(NativeExternalTestPath)\common.props" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        %(AdditionalIncludeDirectories);
+        $(MSBuildThisFileDirectory)\customControl;
+        $(MSBuildThisFileDirectory)\standard;
+        $(MSBuildThisFileDirectory)\customTypes;
+        $(BaseIntermediateOutputPath)\customTypes\generated;
+        $(WinUIDetailsIncludePath)\abi;
+        $(WinUIDetailsIncludePath)\MockDComp;
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="customControl\SampleCustomTypeTests.h" />
+    <ClInclude Include="standard\SampleIntegrationTests.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="customControl\SampleCustomTypeTests.cpp" />
+    <ClCompile Include="standard\SampleIntegrationTests.cpp" />
+    <ClCompile Include="TypeInfo.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(NativeExternalTestPath)\pch\Microsoft.UI.Xaml.Tests.External.Precomp.vcxproj" />
+    <ProjectReference Include="customTypes\CustomTypes.vcxproj" />
+  </ItemGroup>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+  <Import Project="$([MSBuild]::GetPathOfFileAbove(CustomTypesCompile.targets))" />
+</Project>

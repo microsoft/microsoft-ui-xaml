@@ -1387,5 +1387,10 @@ Cleanup:
 //---------------------------------------------------------------------------
 HINSTANCE TextServicesHost::GetDirectUIInstance()
 {
-    return GetModuleHandle(L"Microsoft.UI.Xaml.dll");
+    HMODULE hModule = nullptr;
+    IFCW32FAILFAST(GetModuleHandleExW(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCWSTR>(&TextServicesHost::GetDirectUIInstance),
+            &hModule));
+    return hModule;
 }

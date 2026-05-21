@@ -67,6 +67,13 @@ void DynamicMetadataStorage::ResetInstance()
         }
     }
 
+    // Invalidate custom types to release COM references before providing DLLs unload.
+
+    for (auto index = m_valid.m_typeFirstIndex; index < m_customTypesCache.size(); ++index)
+    {
+        m_customTypesCache[index]->Invalidate();
+    }
+
     // Reset providers.
 
     m_metadataProvider                      = nullptr;

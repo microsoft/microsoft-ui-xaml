@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" CompositeMode="MinBlend" SizeX="321" SizeY="210">
+              <Clip ClipLeft="-10" ClipRight="131" ClipBottom="80" TransformMatrix="Identity">
+                <TopInset>
+                  <ExpressionAnimation String="this.FinalValue   " />
+                </TopInset>
+              </Clip>
+              <Opacity>
+                <ExpressionAnimation String="this.FinalValue" />
+              </Opacity>
+              <Offset>
+                <ExpressionAnimation String="   this.FinalValue" />
+              </Offset>
+              <TransformMatrix>
+                <ExpressionAnimation String="   this.FinalValue   " />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="321" SizeY="210" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

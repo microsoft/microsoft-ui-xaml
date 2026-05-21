@@ -38,6 +38,9 @@
 #include <DXamlServices.h>
 #include <AutoReentrantReferenceLock.h>
 #include <RuntimeEnabledFeatures.h>
+#include <PerfOptIn.h>
+#include <MuxActivationFactory.h>
+#include <LoadLibraryAbs.h>
 #include <DeferredMapping.h>
 #include <ImageDecodeBoundsFinder.h>
 #include <algorithm>
@@ -75,6 +78,7 @@
 #include "JupiterWindow.h"
 #include "RefreshRateInfo.h"
 #include "GraphicsTelemetry.h"
+#include "XamlTelemetry.h"
 
 #if XCP_MONITOR
 #include "XcpAllocationDebug.h"
@@ -276,15 +280,238 @@ private:
     return s_activationFactoryCache.Get(true /* createIfNecessary */);
 }
 
+ActivationFactoryCache::~ActivationFactoryCache() = default;
+
 void ActivationFactoryCache::ResetCache()
 {
     m_dispatcherQueueStatics.Reset();
     m_dragDropManagerStatics.Reset();
     m_desktopChildSiteBridgeStatics.Reset();
+    m_desktopPopupSiteBridgeStatics.Reset();
     m_compositionEasingFunctionStatics.Reset();
     m_compositionPathFactory.Reset();
     m_inputSystemCursorStatics.Reset();
     m_contentIslandStatics.Reset();
+    m_inputFocusControllerStatics.Reset();
+    m_inputKeyboardSourceStatics2.Reset();
+    m_inputPreTranslateKeyboardSourceStatics.Reset();
+    m_inputPointerSourceStatics.Reset();
+    m_inputActivationListenerStatics2.Reset();
+    m_inputNonClientPointerSourceStatics.Reset();
+
+    m_dcompiModule.reset();
+    m_muxcModule.reset();
+    m_inputModule.reset();
+    m_dispatchingModule.reset();
+}
+
+// Try to get an activation factory directly from a loaded module's DllGetActivationFactory
+// export, bypassing RoGetActivationFactory. Returns CLASS_E_CLASSNOTAVAILABLE if the
+// module doesn't know about the type, or any other error the module returns.
+/* static */ HRESULT ActivationFactoryCache::TryGetActivationFactoryFromModule(
+    _In_ HMODULE module,
+    _In_ HSTRING activatableClassId,
+    _In_ REFIID iid,
+    _COM_Outptr_ void** factory)
+{
+    *factory = nullptr;
+
+    typedef HRESULT(WINAPI* PFN_DllGetActivationFactory)(HSTRING, IActivationFactory**);
+    auto pfn = reinterpret_cast<PFN_DllGetActivationFactory>(
+        GetProcAddress(module, "DllGetActivationFactory"));
+
+    if (!pfn)
+    {
+        return CLASS_E_CLASSNOTAVAILABLE;
+    }
+
+    wrl::ComPtr<IActivationFactory> activationFactory;
+    HRESULT hr = pfn(activatableClassId, &activationFactory);
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+
+    return activationFactory->QueryInterface(iid, factory);
+}
+
+// Lazily load a DLL from our module directory using LoadLibraryExW. Uses
+// double-checked locking on cachedModule. Returns the cached HMODULE
+// (may be null if the load fails or the module directory is unknown).
+// Requires the DLL be in the same dir as this one.
+HMODULE ActivationFactoryCache::EnsureModuleLoaded(
+    _Inout_ ActivationFactoryCache::CachedModule& cached,
+    _In_z_ const wchar_t* dllName)
+{
+    if (!cached.loadAttempted)
+    {
+        // Note two threads may both get here at the same time and both attempt to load the DLL,
+        // we'll rely on the loader lock to ensure that for all threads, this function doesn't
+        // exit until either:
+        //  - The DLL is actually loaded...
+        //  - OR we've failed to do the load (in which case loadAttempted is true and handle is null)
+        HMODULE loadLibraryHandle = NULL;
+        std::wstring fullPath = GetMuxAbsPath(dllName);
+        if (!fullPath.empty())
+        {
+            loadLibraryHandle = LoadLibraryExW(fullPath.c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+        }
+
+        // Enter the lock briefly to make sure only one thread stores the handle.
+        // We don't support unloading these DLLs, so it's OK if we end up with an extra ref on the DLL.
+        wil::cs_leave_scope_exit guard = m_lock.lock();
+        if (!cached.loadAttempted)
+        {
+            if (loadLibraryHandle)
+            {
+                cached.handle.reset(loadLibraryHandle);
+            }
+            cached.loadAttempted = true;
+        }
+    }
+    return cached.get();
+}
+
+// Our own DllGetActivationFactory, declared in dllentry.cpp.
+extern "C" HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING hstrAcid, _Outptr_ IActivationFactory** factory);
+
+// Fast path for activation factory lookups. For known Microsoft.UI.* namespaces,
+// calls DllGetActivationFactory directly on the target DLL instead of going
+// through RoGetActivationFactory. Falls back to RoGetActivationFactory on any
+// error from the fast path.
+HRESULT ActivationFactoryCache::MuxGetActivationFactoryImpl(
+    _In_ HSTRING activatableClassId,
+    _In_ REFIID iid,
+    _COM_Outptr_ void** factory)
+{
+    *factory = nullptr;
+
+    if (!IsPerfOptInEnabled())
+    {
+        return RoGetActivationFactory(activatableClassId, iid, factory);
+    }
+
+    const wchar_t* name = WindowsGetStringRawBuffer(activatableClassId, nullptr);
+
+    // All our fast paths target "Microsoft.UI.*" namespaces.
+    if (wcsncmp(name, L"Microsoft.UI.", 13) != 0)
+    {
+        return RoGetActivationFactory(activatableClassId, iid, factory);
+    }
+
+    // By calling DllGetActivationFactory directly on the target DLL, we bypass
+    // RoGetActivationFactory and COM's DLL lifetime tracking.  COM doesn't know that
+    // these DLLs are hosting live COM objects, so we call LoadLibrary for each
+    // host DLL and keep it loaded forever (because Microsoft.ui.xaml.dll itself doesn't
+    // get unloaded).
+
+    const wchar_t* suffix = name + 13;  // past "Microsoft.UI."
+
+    if (wcsncmp(suffix, L"Xaml.Controls.", 14) == 0)
+    {
+        // Microsoft.UI.Xaml.Controls.* -- try MUXC first, then us (MUX).
+        HMODULE muxc = EnsureModuleLoaded(m_muxcModule, L"Microsoft.UI.Xaml.Controls.dll");
+        if (muxc)
+        {
+            HRESULT hr = TryGetActivationFactoryFromModule(muxc, activatableClassId, iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+
+        // Some Controls types live in MUX itself
+        wrl::ComPtr<IActivationFactory> activationFactory;
+        HRESULT hr = DllGetActivationFactory(activatableClassId, &activationFactory);
+        if (SUCCEEDED(hr))
+        {
+            hr = activationFactory->QueryInterface(iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+    else if (wcsncmp(suffix, L"Xaml.", 5) == 0)
+    {
+        // Fast if we can call our own DllGetActivationFactory!
+        // This could still be a Microsoft.UI.Xaml.Phone.* type, those are used more rarely.  That's
+        // OK, we just fall back.  If it becomes a perf issue we can optimize that path later.
+        wrl::ComPtr<IActivationFactory> activationFactory;
+        HRESULT hr = DllGetActivationFactory(activatableClassId, &activationFactory);
+        if (SUCCEEDED(hr))
+        {
+            hr = activationFactory->QueryInterface(iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+    else if (wcsncmp(suffix, L"Composition.", 12) == 0)
+    {
+        // dcompi.dll has static DLL dependencies on a cluster of other IXP DLLs.
+        // By loading it ourselves, we keep it and its deps pinned.
+        HMODULE dcompi = EnsureModuleLoaded(m_dcompiModule, L"dcompi.dll");
+        if (dcompi)
+        {
+            HRESULT hr = TryGetActivationFactoryFromModule(dcompi, activatableClassId, iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+    else if (wcsncmp(suffix, L"Input.", 6) == 0 ||
+             wcsncmp(suffix, L"Content.", 8) == 0)
+    {
+        // Microsoft.UI.Input.* and Microsoft.UI.Content.* -- both live in Microsoft.UI.Input.dll,
+        // which is a static dep of dcompi.dll, so it should already be loaded before we get here.
+        HMODULE input = EnsureModuleLoaded(m_inputModule, L"Microsoft.UI.Input.dll");
+        if (input)
+        {
+            HRESULT hr = TryGetActivationFactoryFromModule(input, activatableClassId, iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+    else if (wcsncmp(suffix, L"Dispatching.", 12) == 0)
+    {
+        // Microsoft.UI.Dispatching.* types live in CoreMessagingXP.dll, which for islands-based
+        // apps should already be loaded.
+        HMODULE dispatching = EnsureModuleLoaded(m_dispatchingModule, L"CoreMessagingXP.dll");
+        if (dispatching)
+        {
+            HRESULT hr = TryGetActivationFactoryFromModule(dispatching, activatableClassId, iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+
+    // Fall back to the slow path (RoGetActivationFactory)
+    return RoGetActivationFactory(activatableClassId, iid, factory);
+}
+
+// Free-function wrapper for callers that don't have direct access to the
+// ActivationFactoryCache instance. Grabs the singleton and delegates.
+// Declared in MuxActivationFactory.h.
+HRESULT MuxGetActivationFactoryImpl(
+    _In_ HSTRING activatableClassId,
+    _In_ REFIID iid,
+    _COM_Outptr_ void** factory)
+{
+    auto factoryCache = ActivationFactoryCache::GetActivationFactoryCache();
+    if (factoryCache)
+    {
+        return factoryCache->MuxGetActivationFactoryImpl(activatableClassId, iid, factory);
+    }
+
+    // No cache available (process shutting down?), use slow path.
+    return RoGetActivationFactory(activatableClassId, iid, factory);
 }
 
 HRESULT ActivationFactoryCache::GetDispatcherQueueStatics(_Outptr_ msy::IDispatcherQueueStatics** statics)
@@ -308,7 +535,7 @@ HRESULT ActivationFactoryCache::GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::I
 
     if (!m_desktopChildSiteBridgeStatics)
     {
-        IFC_RETURN(wf::GetActivationFactory(
+        IFC_RETURN(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopChildSiteBridge).Get(),
             &m_desktopChildSiteBridgeStatics));
     }
@@ -323,7 +550,7 @@ HRESULT ActivationFactoryCache::GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::I
 
     if (!m_desktopPopupSiteBridgeStatics)
     {
-        IFC_RETURN(wf::GetActivationFactory(
+        IFC_RETURN(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopPopupSiteBridge).Get(),
             &m_desktopPopupSiteBridgeStatics));
     }
@@ -338,7 +565,7 @@ HRESULT ActivationFactoryCache::GetDragDropManagerStatics(_Outptr_ mui::DragDrop
 
     if (!m_dragDropManagerStatics)
     {
-        IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(
+        IFC_RETURN(MuxGetActivationFactory(wrl_wrappers::HStringReference(
             RuntimeClass_Microsoft_UI_Input_DragDrop_DragDropManager).Get(),
             &m_dragDropManagerStatics));
     }
@@ -353,7 +580,7 @@ ixp::ICompositionEasingFunctionStatics* ActivationFactoryCache::GetCompositionEa
 
     if (!m_compositionEasingFunctionStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEasingFunction).Get(),
             &m_compositionEasingFunctionStatics));
     }
@@ -361,13 +588,14 @@ ixp::ICompositionEasingFunctionStatics* ActivationFactoryCache::GetCompositionEa
     return m_compositionEasingFunctionStatics.Get();
 }
 
+
 ixp::ICompositionPathFactory* ActivationFactoryCache::GetPathFactory()
 {
     wil::cs_leave_scope_exit guard = m_lock.lock();
 
     if (!m_compositionPathFactory)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionPath).Get(),
             &m_compositionPathFactory));
     }
@@ -381,7 +609,7 @@ ixp::IInputSystemCursorStatics* ActivationFactoryCache::GetInputSystemCursorStat
 
     if (!m_inputSystemCursorStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputSystemCursor).Get(),
             &m_inputSystemCursorStatics));
     }
@@ -395,7 +623,7 @@ ixp::IContentIslandStatics* ActivationFactoryCache::GetContentIslandStatics()
 
     if (!m_contentIslandStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_ContentIsland).Get(),
             &m_contentIslandStatics));
     }
@@ -409,7 +637,7 @@ ixp::IInputFocusControllerStatics* ActivationFactoryCache::GetInputFocusControll
 
     if (!m_inputFocusControllerStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputFocusController).Get(),
             &m_inputFocusControllerStatics));
     }
@@ -423,7 +651,7 @@ ixp::IInputKeyboardSourceStatics2* ActivationFactoryCache::GetInputKeyboardSourc
 
     if (!m_inputKeyboardSourceStatics2)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
             &m_inputKeyboardSourceStatics2));
     }
@@ -437,7 +665,7 @@ ixp::IInputPreTranslateKeyboardSourceStatics* ActivationFactoryCache::GetInputPr
 
     if (!m_inputPreTranslateKeyboardSourceStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPreTranslateKeyboardSource).Get(),
             &m_inputPreTranslateKeyboardSourceStatics));
     }
@@ -451,7 +679,7 @@ ixp::IInputPointerSourceStatics* ActivationFactoryCache::GetInputPointerSourceSt
 
     if (!m_inputPointerSourceStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPointerSource).Get(),
             &m_inputPointerSourceStatics));
     }
@@ -466,7 +694,7 @@ ixp::IInputActivationListenerStatics2* ActivationFactoryCache::GetInputActivatio
     if (!m_inputActivationListenerStatics2)
     {
         wrl::ComPtr<ixp::IInputActivationListenerStatics> inputActivationListenerStatics;
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputActivationListener).Get(),
             &inputActivationListenerStatics));
         IFCFAILFAST(inputActivationListenerStatics.As(&m_inputActivationListenerStatics2));
@@ -481,7 +709,7 @@ ixp::IInputNonClientPointerSourceStatics* ActivationFactoryCache::GetInputNonCli
 
     if (!m_inputNonClientPointerSourceStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
+        IFCFAILFAST(MuxGetActivationFactory(
             wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputNonClientPointerSource).Get(),
             &m_inputNonClientPointerSourceStatics));
     }
@@ -6078,6 +6306,13 @@ CCoreServices::NWDrawTree(
     //
     TraceFrameBegin();
 
+    XUINT32 frameNumber = m_uFrameNumber;
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "CoreServices_Frame",
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingUInt32(frameNumber, "FrameNumber"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
     // tell framework about this time
     IFC(FxCallbacks::FrameworkCallbacks_BudgetService_StoreFrameTime(TRUE /* beginning of tick */));
 
@@ -6667,6 +6902,12 @@ Cleanup:
     //       of changing the data format.
     TraceFrameInfo(*pFrameDrawn);
     TraceFrameEnd();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "CoreServices_Frame",
+        TraceLoggingBoolean(false, "IsStart"),
+        TraceLoggingUInt32(frameNumber, "FrameNumber"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     if (m_pendingFirstFrameTraceLoggingEvent)
     {
@@ -9134,12 +9375,6 @@ CUIElement *CCoreServices::GetLastLayoutExceptionElement()
 void CCoreServices::SetLastLayoutExceptionElement(_In_opt_ CUIElement *pElement)
 {
     ReplaceInterface(m_pLastLayoutExceptionElement, pElement);
-}
-
-//static
-HINSTANCE CCoreServices::GetInstanceHandle()
-{
-    return ::GetModuleHandle(L"Microsoft.UI.Xaml.dll");
 }
 
 //------------------------------------------------------------------------

@@ -1,0 +1,68 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid.Resources>
+        <Style x:Key="MyCustomListViewItemStyle" TargetType="ListViewItem">
+            <Setter Property="Margin" Value="0,0,18,2"/>
+            <Setter Property="MinHeight" Value="10"/>
+            <Setter Property="BorderBrush" Value="{x:Null}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <ContentPresenter x:Name="ListViewItemContentPresenter"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            FontFamily="{Binding ElementName=SearchTextBox, Path=FontFamily}"
+                            FontSize="{Binding ElementName=SearchTextBox, Path=FontSize}"
+                            FontWeight="{Binding ElementName=SearchTextBox, Path=FontWeight}"
+                            Foreground="{TemplateBinding Foreground}"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Grid.Resources>
+
+    <ListView x:Name="myListView" ItemContainerStyle="{StaticResource MyCustomListViewItemStyle}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.VerticalScrollMode="Enabled" ScrollViewer.ZoomMode="Enabled">
+      <ListView.ItemsPanel>
+        <ItemsPanelTemplate>
+          <ItemsStackPanel CacheLength="0"/>
+        </ItemsPanelTemplate>
+      </ListView.ItemsPanel>
+      <Rectangle Fill="Red" Width="400" Height="10"/>
+      <Rectangle Fill="Green" Width="400" Height="20"/>
+      <Rectangle Fill="Blue" Width="400" Height="35"/>
+      <Rectangle Fill="Purple" Width="400" Height="40"/>
+      <Rectangle Fill="Red" Width="400" Height="50"/>
+      <Rectangle Fill="Green" Width="400" Height="60"/>
+      <Rectangle Fill="Blue" Width="400" Height="70"/>
+      <Rectangle Fill="Purple" Width="400" Height="80"/>
+      <Rectangle Fill="Red" Width="400" Height="90"/>
+      <Rectangle Fill="Green" Width="400" Height="100"/>
+      <Rectangle Fill="Blue" Width="400" Height="110"/>
+      <Rectangle Fill="Purple" Width="400" Height="120"/>
+      <Rectangle Fill="Red" Width="400" Height="90"/>
+      <Rectangle Fill="Green" Width="400" Height="100"/>
+      <Rectangle Fill="Blue" Width="400" Height="110"/>
+      <Rectangle Fill="Purple" Width="400" Height="120"/>
+      <Rectangle Fill="Red" Width="400" Height="90"/>
+      <Rectangle Fill="Green" Width="400" Height="100"/>
+      <Rectangle Fill="Blue" Width="400" Height="110"/>
+      <Rectangle Fill="Purple" Width="400" Height="120"/>
+      <Rectangle Fill="Red" Width="400" Height="90"/>
+      <Rectangle Fill="Green" Width="400" Height="100"/>
+      <Rectangle Fill="Blue" Width="400" Height="110"/>
+      <Rectangle Fill="Purple" Width="400" Height="120"/>
+      <Rectangle Fill="Red" Width="400" Height="90"/>
+      <Rectangle Fill="Green" Width="400" Height="100"/>
+      <Rectangle Fill="Blue" Width="400" Height="110"/>
+      <Rectangle Fill="Purple" Width="400" Height="120"/>
+      <Rectangle Fill="Red" Width="400" Height="90"/>
+      <Rectangle Fill="Green" Width="400" Height="100"/>
+      <Rectangle Fill="Blue" Width="400" Height="110"/>
+      <Rectangle Fill="Purple" Width="400" Height="120"/>
+    </ListView>
+</Grid>
+

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft" OffsetX="10" OffsetY="10" OffsetZ="0">
+            <ColorBrush Color="rgb {1, 1, 0}" />
+          </wucSpriteVisual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="60" OffsetY="10" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="1000" M12="0" M13="0" M14="0" />
+                <Row2 M21="0" M22="1000" M13="0" M14="0" />
+                <Row3 M31="-15" M32="-15" M33="-1.001" M34="-1" />
+                <Row4 M41="-15" M42="-15" M43="999" M44="999" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="110" OffsetY="10" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="487" M12="-12.99" M13="-0.8669" M14="-0.866" />
+                <Row2 M21="0" M22="1000" M13="0" M14="0" />
+                <Row3 M31="-873.5" M32="-7.5" M33="-0.5005" M34="-0.5" />
+                <Row4 M41="7680" M42="179.9" M43="1012" M44="1012" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="160" OffsetY="10" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="340.6" M12="340.6" M13="-0.8669" M14="-0.866" />
+                <Row2 M21="-707.1" M22="707.1" M13="0" M14="0" />
+                <Row3 M31="-619.9" M32="-619.9" M33="-0.5005" M34="-0.5" />
+                <Row4 M41="2.066e+04" M42="-548.6" M43="1012" M44="1012" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="210" OffsetY="10" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="1000" M12="0" M13="0" M14="0" />
+                <Row2 M21="0" M22="1000" M13="0" M14="0" />
+                <Row3 M31="-15" M32="-15" M33="-1.001" M34="-1" />
+                <Row4 M41="9.999e+04" M42="-15" M43="999" M44="999" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="260" OffsetY="10" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="1000" M12="0" M13="0" M14="0" />
+                <Row2 M21="0" M22="1000" M13="0" M14="0" />
+                <Row3 M31="-15" M32="-15" M33="-1.001" M34="-1" />
+                <Row4 M41="1035" M42="1035" M43="1069" M44="1069" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="310" OffsetY="10" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="113.1" M12="576.7" M13="-0.7994" M14="-0.7986" />
+                <Row2 M21="-899.5" M22="405.3" M13="0.1559" M14="0.1558" />
+                <Row3 M31="-422.3" M32="-709.5" M33="-0.5819" M34="-0.5813" />
+                <Row4 M41="-2.22e+05" M42="8.345e+04" M43="453.8" M44="454.4" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="10" OffsetY="60" OffsetZ="0">
+              <TransformMatrix>
+                <Row1 M11="1" M12="2" M13="3" M14="4" />
+                <Row2 M21="5" M22="6" M13="7" M14="8" />
+                <Row3 M31="9" M32="10" M33="11" M34="12" />
+                <Row4 M41="13" M42="14" M43="15" M44="16" />
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+          <Visual Tag="PrependVisual">
+            <Visual Tag="PrimaryVisual" SizeX="30" SizeY="30" OffsetX="60" OffsetY="60" OffsetZ="0">
+              <TransformMatrix>
+                <ExpressionAnimation String="LOCAL.Projection">
+                  <ReferenceParameter Name="LOCAL">
+                    <PropertySet>
+                      <Property Name="Projection" Type="Matrix4x4">
+                        <ExpressionAnimation String="PS.LocalXYZ * PS.Rotation * PS.GlobalXYZ * PS.Perspective">
+                          <ReferenceParameter Name="PS" />
+                          <PropertySet>
+                            <Property Name="GlobalXYZ" Type="Matrix4x4" />
+                            <Property Name="LocalXYZ" Type="Matrix4x4" />
+                            <Property Name="Perspective" Type="Matrix4x4">
+                              <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(vector3(PS.Width / -2, PS.Height / -2, 0)) * PS.PerspectiveMatrix * Matrix4x4.CreateFromTranslation(vector3(PS.Width / 2, PS.Height / 2, 0))">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="Height" Type="Scalar" Value="30" />
+                                  <Property Name="PerspectiveMatrix" Type="Matrix4x4">
+                                    <Value>
+                                      <Row1 M11="1000" M12="0" M13="0" M14="0" />
+                                      <Row2 M21="0" M22="1000" M13="0" M14="0" />
+                                      <Row3 M31="0" M32="0" M33="-1.001" M34="-1" />
+                                      <Row4 M41="0" M42="0" M43="999" M44="999" />
+                                    </Value>
+                                  </Property>
+                                  <Property Name="Width" Type="Scalar" Value="30" />
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                            <Property Name="Rotation" Type="Matrix4x4">
+                              <ExpressionAnimation String="PS.RotateCenter * PS.RotateX * PS.RotateY * PS.RotateZ * PS.UndoRotateCenter">
+                                <ReferenceParameter Name="PS" />
+                                <PropertySet>
+                                  <Property Name="RotateCenter" Type="Matrix4x4" />
+                                  <Property Name="RotateX" Type="Matrix4x4" />
+                                  <Property Name="RotateY" Type="Matrix4x4">
+                                    <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(-vector3(PS.CenterX, PS.CenterY, PS.CenterZ))* Matrix4x4.CreateFromAxisAngle(vector3(0, -1, 0), PS.RotateAngle * pi / 180.0f) * Matrix4x4.CreateFromTranslation(vector3(PS.CenterX, PS.CenterY, PS.CenterZ))">
+                                      <ReferenceParameter Name="PS" />
+                                      <PropertySet>
+                                        <Property Name="CenterX" Type="Scalar" Value="15" />
+                                        <Property Name="CenterY" Type="Scalar" Value="15" />
+                                        <Property Name="CenterZ" Type="Scalar" />
+                                        <Property Name="RotateAngle" Type="Scalar">
+                                          <KeyFrameAnimation Duration="3">
+                                            <KeyFrame />
+                                            <KeyFrame Time="1">
+                                              <LinearEasingFunction />
+                                            </KeyFrame>
+                                          </KeyFrameAnimation>
+                                        </Property>
+                                      </PropertySet>
+                                    </ExpressionAnimation>
+                                  </Property>
+                                  <Property Name="RotateZ" Type="Matrix4x4" />
+                                  <Property Name="UndoRotateCenter" Type="Matrix4x4" />
+                                </PropertySet>
+                              </ExpressionAnimation>
+                            </Property>
+                          </PropertySet>
+                        </ExpressionAnimation>
+                      </Property>
+                    </PropertySet>
+                  </ReferenceParameter>
+                </ExpressionAnimation>
+              </TransformMatrix>
+              <Visual Tag="ContentVisual">
+                <wucSpriteVisual SizeX="30" SizeY="30" BorderMode="Soft">
+                  <ColorBrush Color="rgb {1, 1, 0}" />
+                </wucSpriteVisual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

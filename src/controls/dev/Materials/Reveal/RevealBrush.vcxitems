@@ -33,6 +33,10 @@
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RevealBrush_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>2</Priority>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RevealControls.idl" />

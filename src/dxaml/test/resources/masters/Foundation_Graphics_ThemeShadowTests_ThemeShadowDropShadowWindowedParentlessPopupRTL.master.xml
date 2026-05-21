@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MultiTargetTree>
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <Visual Tag="ContentVisual">
+            <wucSpriteVisual SizeX="400" SizeY="400" BorderMode="Soft">
+              <ColorBrush Color="#ffffffff" />
+            </wucSpriteVisual>
+            <Visual Tag="PopupPlaceholderVisual" />
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+  <CompositionTarget HwndLeft="90" HwndTop="221" HwndWidth="120" HwndHeight="120">
+    <Visual Tag="WindowedPopup_ContentIslandRootVisual">
+      <TransformMatrix>
+        <Translate X="-90" Y="-198" />
+      </TransformMatrix>
+      <Visual Tag="WindowedPopup_AnimationRootVisual">
+        <Visual Tag="PrependVisual">
+          <TransformMatrix>
+            <Translate Z="32" />
+          </TransformMatrix>
+          <Visual Tag="PrimaryVisual">
+            <Visual Tag="ContentVisual">
+              <Visual Tag="PrependVisual">
+                <Visual TransformParentVisualId="2" Tag="DropShadowVisual" TransparentForInput="True">
+                  <wucSpriteVisual SizeX="132" SizeY="132" OffsetX="-16" OffsetY="-8" OffsetZ="0">
+                    <NineGridBrush LeftInset="17" TopInset="9" RightInset="17" BottomInset="25" isCenterHollow="True">
+                      <Source>
+                        <SurfaceBrush Stretch="Fill" Transform="Identity">
+                          <VisualSurface SourceRectangle="RB {96, 96}" RealizationSizeX="96" RealizationSizeY="96" SourceVisualId="1" />
+                        </SurfaceBrush>
+                      </Source>
+                    </NineGridBrush>
+                  </wucSpriteVisual>
+                </Visual>
+                <Visual VisualId="2" Tag="PrimaryVisual" SizeX="100" SizeY="100" OffsetX="200" OffsetY="200" OffsetZ="0">
+                  <TransformMatrix>
+                    <Scale ScaleX="-1" />
+                  </TransformMatrix>
+                  <Visual Tag="ContentVisual">
+                    <wucSpriteVisual SizeX="100" SizeY="100" BorderMode="Soft">
+                      <ColorBrush Color="rgb {1, 0, 0}" />
+                    </wucSpriteVisual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</MultiTargetTree>

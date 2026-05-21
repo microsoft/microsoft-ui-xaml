@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Compositor>
+  <Light Number="1" TargetCount="0" HasCoordinateSpace="True" />
+  <Light Number="2" TargetCount="0" HasCoordinateSpace="True" />
+  <Light Number="3" TargetCount="1" HasCoordinateSpace="True" />
+  <Light Number="4" TargetCount="0" HasCoordinateSpace="True" />
+  <Light Number="5" TargetCount="1" HasCoordinateSpace="True" />
+  <Light Number="6" TargetCount="0" HasCoordinateSpace="True" />
+  <Light Number="7" TargetCount="1" HasCoordinateSpace="True" />
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+          <Visual Tag="ContentVisual">
+            <Visual Tag="PrependVisual">
+              <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+                <CoodinateSpaceFor LightNumber="1" />
+                <CoodinateSpaceFor LightNumber="2" />
+                <CoodinateSpaceFor LightNumber="3" />
+                <CoodinateSpaceFor LightNumber="6" />
+                <CoodinateSpaceFor LightNumber="7" />
+                <Visual Tag="ContentVisual">
+                  <Visual Tag="PrependVisual">
+                    <Visual Tag="PrimaryVisual" SizeX="50" SizeY="50">
+                      <CoodinateSpaceFor LightNumber="4" />
+                      <CoodinateSpaceFor LightNumber="5" />
+                      <Visual Tag="ContentVisual">
+                        <wucSpriteVisual SizeX="50" SizeY="50" BorderMode="Soft">
+                          <ColorBrush Color="rgb {0, 0.502, 0}" />
+                        </wucSpriteVisual>
+                        <wucSpriteVisual SizeX="25" SizeY="25" BorderMode="Soft" OffsetX="13" OffsetY="13" OffsetZ="0">
+                          <TargetedByLight LightNumber="5" />
+                          <TargetedByLight LightNumber="3" />
+                          <TargetedByLight LightNumber="7" />
+                          <ColorBrush Color="rgb {1, 0, 0}" />
+                        </wucSpriteVisual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</Compositor>

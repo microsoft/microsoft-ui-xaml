@@ -1,0 +1,284 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64EC">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64EC</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64EC">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64EC</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <UseXamlCompiler>true</UseXamlCompiler>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64EC'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64EC'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <ProjectGuid>{8761499A-7280-43C4-A32F-7F41C47CA6DF}</ProjectGuid>
+    <OutputType>AppContainerExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TaefHostAppManaged</RootNamespace>
+    <AssemblyName>TaefHostAppManaged</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(WindowsTargetPlatformVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>$(WindowsTargetPlatformVersion)</TargetPlatformMinVersion>
+    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
+    <PackageCertificateKeyFile>$(ProjectRoot)\build\WinUITest.pfx</PackageCertificateKeyFile>
+    <DebugSymbols Condition="'$(Configuration)' == 'Debug'">true</DebugSymbols>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <DefineConstants Condition="'$(Configuration)' == 'Debug'">$(DefineConstants);DEBUG</DefineConstants>
+    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    <NoWarn>;2008</NoWarn>
+    <DebugType Condition="'$(Configuration)' == 'Debug'">full</DebugType>
+    <DebugType Condition="'$(Configuration)' == 'Release'">pdbonly</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit Condition="'$(Configuration)' == 'Release'">true</Prefer32Bit>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Debug'">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="'$(Configuration)' == 'Release'">false</UseDebugLibraries>
+    <IlcOutputPath>$(OutputPath)ilc\out\</IlcOutputPath>
+    <AppxPackageDir>$(OutDir)AppPackages\</AppxPackageDir>
+    <TargetedSDKConfiguration>Release</TargetedSDKConfiguration>
+    <MUXCPlatform Condition="'$(Platform)' == '' or '$(Platform)' == 'Win32'">x86</MUXCPlatform>
+    <MUXCPlatform Condition="'$(MUXCPlatform)' == ''">$(Platform)</MUXCPlatform>
+    <DependencyPlatform>$(Platform)</DependencyPlatform>
+    <DependencyPlatform Condition="'$(DependencyPlatform)' == 'ARM64EC'">x64</DependencyPlatform>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MainPage.xaml.cs">
+      <DependentUpon>MainPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="AppxManifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Properties\Default.rd.xml" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="@(MuxBinaries)">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(XamlBuildOutputRoot)\controls\dev\dll\Microsoft.UI.Xaml.Controls.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(XamlBinaryPath)\test\infra\client\dll\Private.Infrastructure.Client.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\dll\Microsoft.Diagnostics.AppAnalysis.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(TaefPkgDirectory)lib\uap10.0.16299\TE.AppXUnitTestClient.Managed.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(TaefPkgDirectory)lib\uap10.0.16299\Wex.Logger.Interop.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <!-- MSBuild complains about P/Invokes into these DLLs when they aren't included as content.
+         We won't actually be deploying the AppX for this application - we deploy the exe and its
+         dependencies as loose files in the remote drop directory - but packaging things as an AppX
+         puts together everything that we need as dependencies in one place, which is convenient.
+         As such, we'll include these to make MSBuild happy. -->
+    <Content Include="$(TaefPkgDirectory)build\Binaries\$(PlatformTarget)\Wex.Logger.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(TaefPkgDirectory)build\Binaries\$(PlatformTarget)\TE.Host.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(TaefPkgDirectory)build\Binaries\$(PlatformTarget)\TE.Common.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+    <Content Include="$(TaefPkgDirectory)build\Binaries\$(PlatformTarget)\TE.AppxUnitTestClient.dll">
+      <Link>%(Filename)%(Extension)</Link>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="MainPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="$(MicrosoftNETCoreUniversalWindowsPlatformVersion)" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="$(MicrosoftWindowsSDKContractsVersion)" />
+  </ItemGroup>
+  <Import Project="$(XamlSourcePath)\test\managed\taef.managed.props" />
+  <ItemGroup>
+    <Reference Include="TE.AppXUnitTestClient.Managed">
+      <HintPath>$(TaefManagedRefPath)TE.AppXUnitTestClient.Managed.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj">
+      <Project>{d6a86b75-c0d2-4761-844c-9d83a130af69}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Name>Microsoft.ui.xaml</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\xcp\dxaml\dllsrv\winrt\res\19h1\Microsoft.ui.xaml.resources.19h1.vcxproj">
+      <Project>{c0955fbb-8fb9-40c1-a7e4-a93a0757ff66}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Name>Microsoft.ui.xaml.resources.19h1</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\xcp\dxaml\dllsrv\winrt\res\common\Microsoft.ui.xaml.resources.common.vcxproj">
+      <Project>{15c55795-cd51-415e-aa93-dfb42b6565e1}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Name>Microsoft.ui.xaml.resources.common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\xcp\dxaml\dllsrv\exts\phone\Microsoft.UI.Xaml.Phone.vcxproj">
+      <Project>{be2d8fe3-d933-404e-bfe4-88435d96d8e4}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Name>Microsoft.UI.Xaml.Phone</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\xcp\dxaml\tools\AppAnalysis\dll\Microsoft.Diagnostics.AppAnalysis.vcxproj">
+      <Project>{2443059a-fad7-4812-b0e6-243e33f11a01}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Name>Microsoft.Diagnostics.AppAnalysis</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\client\dll\Private.Infrastructure.Client.vcxproj">
+      <Project>{7e2bc80e-cf9b-4567-8e3e-d0f81b4782fd}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Name>Private.Infrastructure.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\MergedWinMD\private\MergedWinMD.vcxproj">
+      <Project>{52B2ED64-1CFC-401B-8C5B-6D1E1DEADF98}</Project>
+      <Name>MergedWinMD</Name>
+    </ProjectReference>
+    <ProjectReference Include="$(ProjectRoot)\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="Microsoft.VCLibs.Desktop, Version=14.0" />
+    <!-- Needed for ucrtbased.dll when running a debug build. -->
+    <SDKReference Include="Microsoft.UniversalCRT.Debug, Version=$(TargetPlatformVersion)" Condition="'$(Configuration)' == 'Debug'" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
+    <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+  <PropertyGroup>
+    <PackageName>$(AssemblyName)_1.0.0.0_$(Platform)</PackageName>
+    <PackageName Condition="'$(Configuration)' == 'Debug'">$(PackageName)_Debug</PackageName>
+    <CoreFrameworkName>Microsoft.NET.CoreFramework.Debug.2.2</CoreFrameworkName>
+    <CoreRuntimeName>Microsoft.NET.CoreRuntime.2.2</CoreRuntimeName>
+  </PropertyGroup>
+  <!-- We don't want to actually use an AppX for tests - we run our tests from a directory that we get to act like the root of an AppX
+       but whose contents are actually just loose files.  However, packing everything in an AppX has us collect in one nice bundle
+       everything we need to run this app - our root exe + entrypoint exe, plus AppX dependencies, are all collected together in a form
+       that we can easily deploy and run. To facilitate that deployment, we'll unzip those AppX packages to a location and then binplace
+       their contents. -->
+  <Target Name="UnpackPackages" AfterTargets="AddBinplaceItems" BeforeTargets="Binplace" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <PropertyGroup>
+      <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+      <UcrtBaseDLocation Condition="'%(InstalledSDKLocations.SDKName)' == 'Microsoft.UniversalCRT.Debug, Version=$(WindowsSdkTargetPlatformVersion)'">@(InstalledSDKLocations)Redist\Debug\$(DependencyPlatform)\</UcrtBaseDLocation>
+      <VCLibsDesktopDebugLocation Condition="'%(InstalledSDKLocations.SDKName)' == 'Microsoft.VCLibs.Desktop, Version=14.0'">@(InstalledSDKLocations)AppX\Debug\$(DependencyPlatform)\</VCLibsDesktopDebugLocation>
+    </PropertyGroup>
+    <Unzip SourceFiles="$(OutDir)AppPackages\$(PackageName)_Test\$(PackageName).msix" DestinationFolder="$(TempDir)AppPackages_Unzipped\$(PackageName)" />
+    <Unzip SourceFiles="$(OutDir)AppPackages\$(PackageName)_Test\Dependencies\$(DependencyPlatform)\$(CoreFrameworkName).appx" DestinationFolder="$(TempDir)AppPackages_Unzipped\$(CoreFrameworkName)" />
+    <Unzip SourceFiles="$(OutDir)AppPackages\$(PackageName)_Test\Dependencies\$(DependencyPlatform)\$(CoreRuntimeName).appx" DestinationFolder="$(TempDir)AppPackages_Unzipped\$(CoreRuntimeName)" />
+    <Unzip SourceFiles="$(VCLibsDesktopDebugLocation)Microsoft.VCLibs.$(DependencyPlatform).Debug.14.00.Desktop.appx" DestinationFolder="$(TempDir)AppPackages_Unzipped\Microsoft.VCLibs.Debug.14.00.Desktop" Condition="'$(Configuration)' == 'Debug'" />
+    <ItemGroup>
+      <BinplaceItem Remove="@(BinplaceItem)" />
+      <BinplaceItem Include="$(OutDir)resources.pri">
+        <Destination>$(TargetDestination)\managed</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(TempDir)AppPackages_Unzipped\$(PackageName)\$(AssemblyName).exe" />
+      <BinplaceItem Include="$(TempDir)AppPackages_Unzipped\$(PackageName)\entrypoint\$(AssemblyName).exe">
+        <Destination>$(TargetDestination)\entrypoint</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(OutDir)TE.AppxUnitTestClient.Managed.dll">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(UcrtBaseDLocation)ucrtbased.dll" Condition="'$(Configuration)' == 'Debug'">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(TempDir)AppPackages_Unzipped\Microsoft.VCLibs.Debug.14.00.Desktop\*d.dll" Condition="'$(Configuration)' == 'Debug'">
+        <Destination>$(TargetDestination)</Destination>
+      </BinplaceItem>
+      <BinplaceItem Include="$(OutDir)AppPackages\$(PackageName)_Test\Dependencies\$(DependencyPlatform)\*.appx">
+        <Destination>$(TestDependenciesResourcesDestinationPath)\AppX</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+    <ItemGroup Condition="'$(arch)'=='x86' or '$(arch)'=='amd64'">
+      <BinplaceItem Include="$(NugetPackageDirectory)\microsoft.diagnostics.tracing.traceevent.2.0.45\lib\native\$(arch)\KernelTraceControl.dll">
+        <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+    <!-- Copy mini_installer.exe if the Microsoft.UI.DCPP.Dependencies.Edge package has been restored (which only happens in the pipelines) -->
+    <ItemGroup Condition="('$(arch)'=='x86' or '$(arch)'=='amd64') and Exists('$(NugetPackageDirectory)\Microsoft.UI.DCPP.Dependencies.Edge.144.0.3719.82')">
+      <BinplaceItem Include="$(NugetPackageDirectory)\Microsoft.UI.DCPP.Dependencies.Edge.144.0.3719.82\edge\mini_installer\$(DependencyPlatform)\mini_installer.exe">
+        <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
+      </BinplaceItem>
+    </ItemGroup>
+  </Target>
+  <Target Name="AppxExternalBinaries" BeforeTargets="GetPackagingOutputs" DependsOnTargets="ChooseExternalBinaries">
+    <ItemGroup>
+      <Content Include="@(ExternalBinaries)">
+        <Link>%(Filename)%(Extension)</Link>
+      </Content>
+    </ItemGroup>
+  </Target>
+  <Import Project="$(XamlSourcePath)\Microsoft.UI.Xaml.Build.targets" />
+  <PropertyGroup>
+    <MarkupCompilePass1DependsOn>$(MarkupCompilePass1DependsOn)</MarkupCompilePass1DependsOn>
+  </PropertyGroup>
+</Project>

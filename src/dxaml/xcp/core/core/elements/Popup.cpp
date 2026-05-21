@@ -43,6 +43,8 @@
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
+#include "Geometry.h"
+#include <stack_vector.h>
 
 using namespace DirectUI;
 using namespace Focus;
@@ -565,6 +567,12 @@ _Check_return_ HRESULT CPopup::Open()
             if (m_shouldTakeFocus && Focus::FocusSelection::ShouldUpdateFocus(m_pChild, m_savedFocusState))
             {
                 InitialFocusSIPSuspender setInitalFocusTrue(pFocusManager);
+                // SetFocus reaches CXamlIslandRoot::TrySetFocus, which calls InputFocusController::TrySetFocus.
+                // That makes a ZwUserSetFocus syscall, and the kernel pumps the message queue via KiUserCallbackDispatcherReturn
+                // while we are still on the reentrancy-protected Tick path (e.g. TeachingTip opening via CompositionTarget.Rendering).
+                // The pump fires the Xaml dispatcher timer, dispatches a queued message into ProcessMessage,
+                // and trips OnReentrancyProtectedWindowMessage -> XCP_FAULT_ON_FAILURE.
+                PauseNewDispatch deferReentrancy(GetContext());
                 IFC_RETURN(SetFocus(DirectUI::FocusState::Programmatic));
             }
 
@@ -793,6 +801,8 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
         // Hide the popup, but only after LeavePCScene is called. This is because HideWindowForWindowedPopup
         // calls ReleaseDCompResourcesForWindowedPopup which would remove visuals from the tree that LeavePCScene
         // needs to access.
+        // Bug 45623892: HideWindowForWindowedPopup can pump messages via ShowWindow, causing reentrancy.
+        PauseNewDispatch deferReentrancy(GetContext());
         IFC_RETURN(HideWindowForWindowedPopup());
     }
 
@@ -1207,6 +1217,26 @@ wrl::ComPtr<InputSiteHelper::IIslandInputSite> CPopup::GetIslandInputSite() cons
     return const_cast<CPopup*>(this)->GetElementIslandInputSite();
 }
 
+bool CPopup::GetShouldShowKeyboardCues()
+{
+    if (m_contentIsland)
+    {
+        ixp::IInputFocusControllerStatics* inputFocusControllerStaticsNoRef = ActivationFactoryCache::GetActivationFactoryCache()->GetInputFocusControllerStatics();
+
+        Microsoft::WRL::ComPtr<ixp::IInputFocusController> inputFocusController;
+        IFCFAILFAST(inputFocusControllerStaticsNoRef->GetForIsland(m_contentIsland.Get(), &inputFocusController));
+
+        wrl::ComPtr<ixp::IInputFocusController3> focusController3;
+        IFCFAILFAST(inputFocusController.As(&focusController3));
+
+        boolean showFocusRectangles{};
+        IFCFAILFAST(focusController3->get_ShouldShowKeyboardCues(&showFocusRectangles));
+        return !!showFocusRectangles;
+    }
+
+    return false;
+}
+
 // Ensure that DComp resources are created for windowed popup
 _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
 {
@@ -1329,6 +1359,27 @@ float CPopup::GetWindowedPopupRasterizationScale() const
     float rasterizationScale;
     IFCFAILFAST(m_contentIsland->get_RasterizationScale(&rasterizationScale));
     return rasterizationScale;
+}
+
+float CPopup::GetWindowedPopupRootVisualScaleCompensation() const
+{
+    // Windowed popups render in a separate ContentIsland whose RasterizationScale is driven by the system (popup HWND DPI).
+    // For XAML Islands, the effective XamlRoot scale may be overridden (e.g. DesktopWindowXamlSource.OverrideScale).
+    // The main island cancels/adjusts system scale via RootScale. Windowed popups need the same compensation.
+    if (!m_contentIsland)
+    {
+        return 1.0f;
+    }
+
+    const float systemScaleForPopupIsland = GetWindowedPopupRasterizationScale();
+    const float effectiveScaleForPopup = GetEffectiveRootScale();
+
+    if (systemScaleForPopupIsland <= 0.0f || effectiveScaleForPopup <= 0.0f)
+    {
+        return 1.0f;
+    }
+
+    return effectiveScaleForPopup / systemScaleForPopupIsland;
 }
 
 wrl::ComPtr<ixp::IPointerPoint> CPopup::GetPreviousPointerPoint()
@@ -1630,12 +1681,15 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
         undoY += insets.top;
     }
 
+    const float rootScaleCompensation = GetWindowedPopupRootVisualScaleCompensation();
+
     if (m_contentIslandRootVisual)
     {
+
         // Set any scale inherited from the ancestor chain
         CMILMatrix rootTransform(true);
-        rootTransform.SetM11(scaleX);
-        rootTransform.SetM22(scaleY);
+        rootTransform.SetM11(scaleX * rootScaleCompensation);
+        rootTransform.SetM22(scaleY * rootScaleCompensation);
 
         // Set premultiplied "undo" transform on the window's root visual
         CMILMatrix undo(true);
@@ -1685,11 +1739,15 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     // Tell the windowed popup inputsite adapter the offset of the popup window from the content
     // root. We do this by using the position passed to MoveAndSize (either earlier in this function
     // or updated by AdjustWindowedPopupBoundsForDropShadow), converted to island coords in dips.
-    wf::Point transformedOffset{
-        PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.X - rootOffsetPhysical.x)),
-        PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.Y - rootOffsetPhysical.y))};
+    const float popupIslandRasterizationScale = m_contentIsland ? GetWindowedPopupRasterizationScale() : 0.0f;
+    const float offsetXPhysical = static_cast<float>(m_windowedPopupMoveAndResizeRect.X - rootOffsetPhysical.x);
+    const float offsetYPhysical = static_cast<float>(m_windowedPopupMoveAndResizeRect.Y - rootOffsetPhysical.y);
 
-    IFC_RETURN(UpdateTranslationFromContentRoot(transformedOffset, /*forceUpdate*/ false));
+    wf::Point transformedOffset{
+        popupIslandRasterizationScale > 0.0f ? (offsetXPhysical / popupIslandRasterizationScale) : PhysicalPixelsToDips(offsetXPhysical),
+        popupIslandRasterizationScale > 0.0f ? (offsetYPhysical / popupIslandRasterizationScale) : PhysicalPixelsToDips(offsetYPhysical)};
+
+    IFC_RETURN(UpdateTranslationFromContentRoot(transformedOffset, /*forceUpdate*/ false, rootScaleCompensation));
 
     // Play the MenuPopupThemeTransition, if we have one
     if (m_animationRootVisual && m_secretTransitionTarget && m_secretTransitionTarget->IsDirty())
@@ -1855,10 +1913,30 @@ void CPopup::ApplyRootRoundedCornerClipToSystemBackdrop()
         collectedCorners.bottomLeft = std::max(0.0f, collectedCorners.bottomLeft - collectedBorderThickness/2);
         collectedCorners.bottomRight = std::max(0.0f, collectedCorners.bottomRight - collectedBorderThickness/2);
 
-        IFCFAILFAST(rectangleClip->put_TopLeftRadius({collectedCorners.topLeft, collectedCorners.topLeft}));
-        IFCFAILFAST(rectangleClip->put_TopRightRadius({collectedCorners.topRight, collectedCorners.topRight}));
-        IFCFAILFAST(rectangleClip->put_BottomLeftRadius({collectedCorners.bottomLeft, collectedCorners.bottomLeft}));
-        IFCFAILFAST(rectangleClip->put_BottomRightRadius({collectedCorners.bottomRight, collectedCorners.bottomRight}));
+        // Clamp corner radii when they exceed the available space, following the same policy as
+        // HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual.
+        const float clipWidth = width - collectedBorderThickness;
+        const float clipHeight = height - collectedBorderThickness;
+        const float topLeft = collectedCorners.topLeft;
+        const float topRight = collectedCorners.topRight;
+        const float bottomLeft = collectedCorners.bottomLeft;
+        const float bottomRight = collectedCorners.bottomRight;
+        
+        float topLeftRadiusX, topRightRadiusX, bottomLeftRadiusX, bottomRightRadiusX;
+        float topLeftRadiusY, topRightRadiusY, bottomLeftRadiusY, bottomRightRadiusY;
+        
+        // Clamp X components against width
+        CGeometryBuilder::ClampCornerRadii(topLeft, topRight, clipWidth, &topLeftRadiusX, &topRightRadiusX);
+        CGeometryBuilder::ClampCornerRadii(bottomLeft, bottomRight, clipWidth, &bottomLeftRadiusX, &bottomRightRadiusX);
+        
+        // Clamp Y components against height
+        CGeometryBuilder::ClampCornerRadii(topLeft, bottomLeft, clipHeight, &topLeftRadiusY, &bottomLeftRadiusY);
+        CGeometryBuilder::ClampCornerRadii(topRight, bottomRight, clipHeight, &topRightRadiusY, &bottomRightRadiusY);
+
+        IFCFAILFAST(rectangleClip->put_TopLeftRadius({topLeftRadiusX, topLeftRadiusY}));
+        IFCFAILFAST(rectangleClip->put_TopRightRadius({topRightRadiusX, topRightRadiusY}));
+        IFCFAILFAST(rectangleClip->put_BottomLeftRadius({bottomLeftRadiusX, bottomLeftRadiusY}));
+        IFCFAILFAST(rectangleClip->put_BottomRightRadius({bottomRightRadiusX, bottomRightRadiusY}));
 
         IFCFAILFAST(m_systemBackdropPlacementVisual->put_Size({width, height}));
         IFCFAILFAST(m_systemBackdropPlacementVisual->put_Offset({x, y}));
@@ -2299,9 +2377,9 @@ HWND CPopup::GetPopupPositioningWindow() const
 }
 
 // Converts between logical and physical pixels
-float CPopup::GetEffectiveRootScale()
+float CPopup::GetEffectiveRootScale() const
 {
-    const auto scale = RootScale::GetRasterizationScaleForElement(this);
+    const auto scale = RootScale::GetRasterizationScaleForElement(const_cast<CPopup*>(this));
     return scale;
 }
 
@@ -2644,16 +2722,6 @@ CPopup::RemoveChild()
             // m_pChild is walked for GC, so take GC lock before it is changed
             AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
 
-            // Bug 43647291: [Watson Failure] caused by NULL_CLASS_PTR_READ_c0000005_Microsoft.UI.Xaml.dll!CPopup::Close
-            // We have crashes where m_pChild is null when CPopup::Close goes to get the child's automation peer. Except
-            // CPopup::Close uses m_pChild earlier to call SetAssociated on it, and we didn't crash then, which suggests
-            // that something in the Close call is nulling out m_pChild between the two times it's referenced. This
-            // failfast will help us catch the place that's doing that.
-            if (m_isClosing)
-            {
-                IFCFAILFAST(E_UNEXPECTED);
-            }
-
             m_pChild = nullptr;
         }
         ReleaseInterface(pChild);
@@ -2717,7 +2785,7 @@ CPopup::ClearUCRemoveLogicalParentFlag(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpdate)
+CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpdate, float rootScaleCompensation)
 {
     IFCEXPECT_RETURN(m_inputSiteAdapter);
 
@@ -2728,6 +2796,12 @@ CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpda
         m_offsetFromMainWindow.X = offset.X;
         m_offsetFromMainWindow.Y = offset.Y;
 
+        // Pointer points for windowed popups are delivered in the coordinate space of the popup's content island.
+        // When DesktopWindowXamlSource.OverrideScale is used, the popup island's rasterization scale (system DPI)
+        // can differ from the XamlRoot effective scale. We compensate the visuals by scaling the island root visual;
+        // mirror that compensation for input by scaling pointer coordinates by the inverse ratio.
+        const float inputScaleCompensation = (rootScaleCompensation != 0.0f) ? (1.0f / rootScaleCompensation) : 1.0f;
+
         auto dxamlCore = DXamlCore::GetCurrent();
         auto coreServices = dxamlCore->GetHandle();
         CREATEPARAMETERS cp(coreServices);
@@ -2736,6 +2810,9 @@ CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpda
         CMILMatrix matTransform(/*fInitialize*/ true);
         xref_ptr<CMatrix> matrix;
         xref_ptr<CMatrixTransform> matrixTransform;
+
+        matTransform.SetM11(inputScaleCompensation);
+        matTransform.SetM22(inputScaleCompensation);
 
         IFC_RETURN(CMatrixTransform::Create(reinterpret_cast<CDependencyObject**>(matrixTransform.ReleaseAndGetAddressOf()), &cp));
         IFC_RETURN(CMatrix::Create(reinterpret_cast<CDependencyObject**>(matrix.ReleaseAndGetAddressOf()), &cp));
@@ -4357,12 +4434,47 @@ bool CPopupRoot::ReplayPointerUpdate()
     UINT popupsThatReplayedPointerUpdate = 0;
     if (m_pOpenPopups != nullptr)
     {
+        // Snapshot the open popups before iterating.  Inside CPopup::ReplayPointerUpdate
+        // (-> WindowedPopupInputSiteAdapter::ReplayPointerUpdate) we synthesize a real
+        // pointer event and run it through the input pipeline, which executes app-side
+        // handlers that can synchronously close *other* popups (light-dismiss, cascading
+        // menus, focus-loss handlers, etc.).  Closing a popup runs RemoveFromOpenPopupList
+        // -> CXcpList::Remove, which `delete pTemp;` the XCPListNode regardless of the
+        // bDoDelete parameter (that flag only spares the data, not the node itself).
+        // Iterating m_pOpenPopups across that inner call therefore dereferences a freed
+        // XCPListNode leading to Access Violation.
+        //
+        // Holding strong refs (xref_ptr) is required, not just raw pointers, because
+        // CPopup::AsyncRelease only defers `delete this` -- the final-release path still
+        // runs CDependencyObject::start_destroying / ResetReferencesFromChildren
+        // synchronously, leaving a partially-destroyed CPopup that ReplayPointerUpdate
+        // would otherwise still walk.
+        //
+        // We re-check IsOpen() per-popup before replaying so a popup that prior
+        // iterations' reentrancy has already closed is skipped (m_fIsOpen is cleared in
+        // the IsOpen=false setter before Close() runs, so IsOpen() is a reliable
+        // post-reentrancy "still in m_pOpenPopups" proxy).
+        //
+        // 4 covers the typical 0..3 simultaneously-open popups (main popup +
+        // cascading sub-menu(s) / tooltip / focus visual) without heap allocation;
+        // stack_vector spills to the heap transparently if exceeded.
+
+        constexpr size_t typicalOpenPopupCount = 4;
+        Jupiter::stack_vector<xref_ptr<CPopup>, typicalOpenPopupCount> openPopupsSnapshot;
+        
         for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
         {
-            CPopup* pPopup = pNode->m_pData;
-            if (pPopup && !pPopup->IsUnloading())
+            if (CPopup* pPopup = pNode->m_pData)
             {
-                bool popupPointerUpdateReplayed = pPopup->ReplayPointerUpdate();
+                openPopupsSnapshot.m_vector.emplace_back(pPopup);
+            }
+        }
+
+        for (const auto& popup : openPopupsSnapshot.m_vector)
+        {
+            if (popup->IsOpen() && !popup->IsUnloading())
+            {
+                bool popupPointerUpdateReplayed = popup->ReplayPointerUpdate();
                 if (popupPointerUpdateReplayed)
                 {
                     popupsThatReplayedPointerUpdate++;

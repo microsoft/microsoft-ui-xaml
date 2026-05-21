@@ -66,5 +66,7 @@
     <EmbeddedResource Include="Icons\Microsoft.UI.Xaml.Controls.ToggleSplitButton.bmp" />
     <EmbeddedResource Include="Icons\Microsoft.UI.Xaml.Controls.TreeView.bmp" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- Build normally when VS Design SDK is available; no-op otherwise (e.g., GitHub/OSS builds without full VS IDE). -->
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="Exists('$(VSINSTALLDIR)\Common7\IDE\PublicAssemblies\Microsoft.Windows.Design.Extensibility.dll')" />
+  <Target Name="Build" Condition="!Exists('$(VSINSTALLDIR)\Common7\IDE\PublicAssemblies\Microsoft.Windows.Design.Extensibility.dll')" />
 </Project>

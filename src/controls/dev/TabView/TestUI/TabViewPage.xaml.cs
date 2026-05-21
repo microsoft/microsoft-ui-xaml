@@ -70,6 +70,19 @@ namespace MUXControlsTestApp
             NotCloseableTab.Visibility = Visibility.Visible;
         }
 
+        protected override void OnNavigatedFrom(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            Tabs.TabItemsChanged -= Tabs_TabItemsChanged;
+
+            if (DataBindingTabView.TabItemsSource is ObservableCollection<TabDataItem> source)
+            {
+                source.Clear();
+                DataBindingTabView.TabItemsSource = null;
+            }
+
+            base.OnNavigatedFrom(e);
+        }
+
         private void Tabs_TabItemsChanged(TabView sender, Windows.Foundation.Collections.IVectorChangedEventArgs args)
         {
             TabsItemChangedEventArgsTextBlock.Text = args.CollectionChange.ToString();

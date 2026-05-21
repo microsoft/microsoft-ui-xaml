@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualElements>
+    <Element Type="Microsoft.UI.Xaml.Controls.Page">
+      <Properties>
+        <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.StackPanel]" />
+      </Properties>
+      <ChildElements>
+        <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Properties>
+                <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Documents.Hyperlink">
+                  <Properties>
+                    <Property Name="AccessKey" Value="h" />
+                    <Property Name="FocusState" Value="1" />
+                    <Property Name="Foreground" Value="#FF5B2EC5" />
+                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                    <Property Name="KeyTipPlacementMode" Value="4" />
+                    <Property Name="TextDecorations" Value="1" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                      <Properties>
+                        <Property Name="Text" Value="Hyperlink" />
+                      </Properties>
+                    </Element>
+                  </ChildElements>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Documents.LineBreak" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Hyperlink">
+                  <Properties>
+                    <Property Name="AccessKey" Value="y" />
+                    <Property Name="Foreground" Value="#FF5B2EC5" />
+                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                    <Property Name="KeyTipPlacementMode" Value="4" />
+                    <Property Name="TextDecorations" Value="1" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                      <Properties>
+                        <Property Name="Text" Value="Hyperlink" />
+                      </Properties>
+                    </Element>
+                  </ChildElements>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Documents.LineBreak" />
+                <Element Type="Microsoft.UI.Xaml.Documents.Hyperlink">
+                  <Properties>
+                    <Property Name="AccessKey" Value="p" />
+                    <Property Name="Foreground" Value="#FF5B2EC5" />
+                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                    <Property Name="KeyTipPlacementMode" Value="4" />
+                    <Property Name="TextDecorations" Value="1" />
+                  </Properties>
+                  <ChildElements>
+                    <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                      <Properties>
+                        <Property Name="Text" Value="Hyperlink" />
+                      </Properties>
+                    </Element>
+                  </ChildElements>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </ChildElements>
+    </Element>
+  </VisualElements>
+  <PopupElements>
+    <PopupElement>
+      <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+        <Properties>
+          <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Border]" />
+          <Property Name="HighContrastAdjustment" Value="0" />
+          <Property Name="HorizontalOffset" Value="58.7933" />
+          <Property Name="IsHitTestVisible" Value="False" />
+          <Property Name="IsOpen" Value="True" />
+          <Property Name="VerticalOffset" Value="15.07" />
+        </Properties>
+      </Element>
+      <PopupElement.Child>
+        <Element Type="Microsoft.UI.Xaml.Controls.Border">
+          <Properties>
+            <Property Name="Background" Value="#FF767676" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="1,1,1,1" />
+            <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+            <Property Name="Padding" Value="4,4,4,4" />
+            <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Properties>
+                <Property Name="FontFamily" Value="Segoe UI" />
+                <Property Name="FontSize" Value="12" />
+                <Property Name="Foreground" Value="#FFFFFFFF" />
+                <Property Name="Text" Value="y" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Properties>
+                    <Property Name="Text" Value="y" />
+                  </Properties>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </PopupElement.Child>
+    </PopupElement>
+    <PopupElement>
+      <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+        <Properties>
+          <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Border]" />
+          <Property Name="HighContrastAdjustment" Value="0" />
+          <Property Name="HorizontalOffset" Value="58.7933" />
+          <Property Name="IsHitTestVisible" Value="False" />
+          <Property Name="IsOpen" Value="True" />
+          <Property Name="VerticalOffset" Value="0" />
+        </Properties>
+      </Element>
+      <PopupElement.Child>
+        <Element Type="Microsoft.UI.Xaml.Controls.Border">
+          <Properties>
+            <Property Name="Background" Value="#FF767676" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="1,1,1,1" />
+            <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+            <Property Name="Padding" Value="4,4,4,4" />
+            <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Properties>
+                <Property Name="FontFamily" Value="Segoe UI" />
+                <Property Name="FontSize" Value="12" />
+                <Property Name="Foreground" Value="#FFFFFFFF" />
+                <Property Name="Text" Value="h" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Properties>
+                    <Property Name="Text" Value="h" />
+                  </Properties>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </PopupElement.Child>
+    </PopupElement>
+    <PopupElement>
+      <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+        <Properties>
+          <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Border]" />
+          <Property Name="HighContrastAdjustment" Value="0" />
+          <Property Name="HorizontalOffset" Value="58.7933" />
+          <Property Name="IsHitTestVisible" Value="False" />
+          <Property Name="IsOpen" Value="True" />
+          <Property Name="VerticalOffset" Value="33.69" />
+        </Properties>
+      </Element>
+      <PopupElement.Child>
+        <Element Type="Microsoft.UI.Xaml.Controls.Border">
+          <Properties>
+            <Property Name="Background" Value="#FF767676" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="1,1,1,1" />
+            <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+            <Property Name="Padding" Value="4,4,4,4" />
+            <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Primitives.Popup]" />
+          </Properties>
+          <ChildElements>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Properties>
+                <Property Name="FontFamily" Value="Segoe UI" />
+                <Property Name="FontSize" Value="12" />
+                <Property Name="Foreground" Value="#FFFFFFFF" />
+                <Property Name="Text" Value="p" />
+              </Properties>
+              <ChildElements>
+                <Element Type="Microsoft.UI.Xaml.Documents.Run">
+                  <Properties>
+                    <Property Name="Text" Value="p" />
+                  </Properties>
+                </Element>
+              </ChildElements>
+            </Element>
+          </ChildElements>
+        </Element>
+      </PopupElement.Child>
+    </PopupElement>
+  </PopupElements>
+</VisualTreeDump>

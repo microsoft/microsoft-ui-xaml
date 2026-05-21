@@ -102,6 +102,13 @@ public:
                             _In_opt_ const CMILMatrix *pMatrix = NULL );
     _Check_return_ HRESULT AddSegments(_In_ PathPointType type, _In_ XUINT32 cPoint, _In_reads_(cPoint) const XPOINTF *pPoint);
     _Check_return_ HRESULT ReplaceLastPoint(_In_ XPOINTF *ppt);
+    static void ClampCornerRadii(
+        _In_ XFLOAT radius1,
+        _In_ XFLOAT radius2,
+        _In_ XFLOAT edgeLength,
+        _Out_ XFLOAT* pRadius1Clamped,
+        _Out_ XFLOAT* pRadius2Clamped
+        );
 
     static void CalculateRoundedCornersRectangle(
         _Out_writes_(8) XPOINTF *pCorners,

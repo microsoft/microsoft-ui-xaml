@@ -1,0 +1,46 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<StackPanel  
+     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+     Width="400" Height="400">
+    <Grid Background="LightGray">
+        <Grid.Resources>
+            <CollectionViewSource x:Name="cvs" />
+        </Grid.Resources>
+        <GridView ScrollViewer.ZoomMode="Enabled"
+                 x:Name="moco"
+                 ItemsSource="{Binding Source={StaticResource cvs}}"
+                 Width="400" Height="400"
+                 [[Moco_Properties]]
+        >
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <[[ItemsPanel]] Orientation="[[ItemsPanel_Orientation]]"/>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+            <GridView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Background="DarkGray" Width="50" Height="50">
+                        <StackPanel Orientation="Vertical"  Background="SlateBlue">
+                            <StackPanel Background="Gray" >
+                                <TextBlock Text="{Binding ItemContent0}" Foreground="Black" Margin="2"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding ItemContent1}" Foreground="Gray"  Margin="2"/>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+            <GridView.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid Background="Black" Width="50">
+                                <TextBlock Text='{Binding GroupName}' Foreground="White" />
+                            </Grid>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </GridView.GroupStyle>
+        </GridView>
+    </Grid>
+</StackPanel>

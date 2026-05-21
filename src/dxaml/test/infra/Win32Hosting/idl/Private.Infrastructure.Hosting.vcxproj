@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>Utility</ConfigurationType>
+        <ProjectGuid>{3fd1b03c-df81-4bc7-8204-c48d16026cfb}</ProjectGuid>
+        <IsWinmdProject>true</IsWinmdProject>
+        <BinplaceOutputAssemblies>false</BinplaceOutputAssemblies>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+
+    <PropertyGroup>
+        <DisableMidlVersionChecks>1</DisableMidlVersionChecks>
+        <ProjectIncludeDirectories>
+            $(ProjectRoot)\dxaml\xcp\inc;
+            $(LiftedIXPGeneratedIdlPath);
+            $(LiftedMRTGeneratedIdlPath);
+        </ProjectIncludeDirectories>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Midl Include="Private.Infrastructure.Hosting.idl"/>
+        <Midl Include="Private.Infrastructure.Hosting.WPF.idl"/>
+        <Midl Include="Private.Infrastructure.Hosting.WinForms.idl"/>
+    </ItemGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>

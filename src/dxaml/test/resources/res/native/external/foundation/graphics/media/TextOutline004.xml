@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tt xml:lang="en"
+    xmlns="http://www.w3.org/ns/ttml"
+    xmlns:tts="http://www.w3.org/ns/ttml#styling"
+    xmlns:ttm="http://www.w3.org/ns/ttml#metadata">
+  <head>
+    <metadata> 
+      <ttm:title>Styling Test - TextOutline - 004</ttm:title>
+      <ttm:desc>Test tts:textOutline attribute using values for color and outline thickness.</ttm:desc>
+      <ttm:copyright>Copyright (C) 2008 W3C (MIT, ERCIM, Keio).</ttm:copyright>
+    </metadata>
+    <ttp:profile use="dfxp-presentation" xmlns:ttp="http://www.w3.org/ns/ttml#parameter">
+      <ttp:features xml:base="http://www.w3.org/ns/ttml/feature/">
+        <ttp:feature>#textOutline-unblurred</ttp:feature>
+        <ttp:feature>#styling-referential</ttp:feature>
+        <ttp:feature>#styling-inheritance-content</ttp:feature>
+      </ttp:features>
+    </ttp:profile>
+    <styling>
+      <style xml:id="s1" tts:textOutline="red 2px"/>
+    </styling>
+  </head>
+  <body>
+    <div>
+      <p begin="0.1s" end="5s" style="s1" tts:textOutline="red 2px">This text has a red, two-pixel outline.</p>
+    </div>
+  </body>
+</tt>

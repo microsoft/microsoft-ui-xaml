@@ -4,6 +4,7 @@
 #pragma once
 
 #include <WRLHelper.h>
+#include <MuxActivationFactory.h>
 
 template<typename TDelegateInterface, typename TCallbackObject, typename TArg1, typename TArg2>
 Microsoft::WRL::ComPtr<typename Microsoft::WRL::Details::ArgTraitsHelper<TDelegateInterface>::Interface>
@@ -24,7 +25,7 @@ DispatcherCallback(
             : m_wpDO(xref::get_weakref(pDO)), m_pMethod(pMethod)
         {
             ctl::ComPtr<msy::IDispatcherQueueStatics> spDispatcherQueueStatics;
-            IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
                 spDispatcherQueueStatics.ReleaseAndGetAddressOf()));
             IFCFAILFAST(spDispatcherQueueStatics->GetForCurrentThread(&m_spDispatcherQueue));
             if (!m_spDispatcherQueue)

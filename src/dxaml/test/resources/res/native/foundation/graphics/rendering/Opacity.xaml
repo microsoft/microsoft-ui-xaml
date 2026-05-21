@@ -1,0 +1,28 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+
+    <!-- Full opacity -->
+    <Rectangle Canvas.Left="10" Canvas.Top="10" Fill="Blue" Width="30" Height="30" Opacity="1" />
+
+    <!-- Partial opacity -->
+    <Rectangle Canvas.Left="60" Canvas.Top="10" Fill="Blue" Width="30" Height="30" Opacity="0.3" />
+
+    <!-- Completely transparent - no primitive should be generated -->
+    <Rectangle Canvas.Left="110" Canvas.Top="10" Fill="Blue" Width="30" Height="30" Opacity="0" />
+
+    <!-- Group opacity - currently being pushed down to the primitives themselves -->
+    <Canvas Canvas.Left="10" Canvas.Top="60" Opacity="0.5" >
+        <Rectangle Fill="Blue" Width="30" Height="30" />
+        <Rectangle Fill="Blue" Canvas.Left="50" Width="30" Height="30" />
+    </Canvas>
+
+    <!-- Nested opacity - multiply everything, opacity 2 should be clamped to 1, so the net is 0.25 -->
+    <Canvas Canvas.Left="110" Canvas.Top="60" Opacity="0.5" >
+        <Canvas Opacity="2" >
+            <Canvas Opacity="0.5" >
+                <Rectangle Fill="Blue" Width="30" Height="30" />
+            </Canvas>
+        </Canvas>
+    </Canvas>
+
+</Canvas>

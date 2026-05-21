@@ -1,0 +1,71 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ListView
+    x:Name="listView"
+    Background="Blue"
+    Margin="10"
+    Height="380" Width="380">
+    <ListView.Resources>
+      <x:Double x:Key='ListViewItemMinHeight'>44</x:Double>
+    </ListView.Resources>
+    <ListView.ItemsPanel>
+      <ItemsPanelTemplate>
+        <ItemsStackPanel CacheLength="6"/>
+      </ItemsPanelTemplate>
+    </ListView.ItemsPanel>
+    <TextBlock Text="Algona"/>
+    <TextBlock Text="Auburn"/>
+    <TextBlock Text="Beaux Arts Village"/>
+    <TextBlock Text="Bellevue"/>
+    <TextBlock Text="Black Diamond"/>
+    <TextBlock Text="Bothell"/>
+    <TextBlock Text="Burien"/>
+    <TextBlock Text="Carnation"/>
+    <TextBlock Text="Clyde Hill"/>
+    <TextBlock Text="Covington"/>
+    <TextBlock Text="Des Moines"/>
+    <TextBlock Text="Duvall"/>
+    <TextBlock Text="Enumclaw"/>
+    <TextBlock Text="Federal Way"/>
+    <TextBlock Text="Hunts Point"/>
+    <TextBlock Text="Issaquah"/>
+    <TextBlock Text="Kenmore"/>
+    <TextBlock Text="Kent"/>
+    <TextBlock Text="Kirkland"/>
+    <TextBlock Text="Lake Forest Park"/>
+    <TextBlock Text="Maple Valley"/>
+    <TextBlock Text="Medina"/>
+    <TextBlock Text="Mercer Island"/>
+    <TextBlock Text="Milton"/>
+    <TextBlock Text="Newcastle"/>
+    <TextBlock Text="Normandy Park"/>
+    <TextBlock Text="North Bend"/>
+    <TextBlock Text="Pacific"/>
+    <TextBlock Text="Redmond"/>
+    <TextBlock Text="Renton"/>
+    <TextBlock Text="Sammamish"/>
+    <TextBlock Text="SeaTac"/>
+    <TextBlock Text="Seattle"/>
+    <TextBlock Text="Shoreline"/>
+    <TextBlock Text="Skykomish"/>
+    <TextBlock Text="Snoqualmie"/>
+    <TextBlock Text="Tukwila"/>
+    <TextBlock Text="Woodinville"/>
+    <TextBlock Text="Yarrow Point"/>
+    <TextBlock Text="Normandy Park"/>
+    <TextBlock Text="North Bend"/>
+    <TextBlock Text="Pacific"/>
+    <TextBlock Text="Redmond"/>
+    <TextBlock Text="Renton"/>
+    <TextBlock Text="Sammamish"/>
+    <TextBlock Text="SeaTac"/>
+    <TextBlock Text="Seattle"/>
+    <TextBlock Text="Shoreline"/>
+    <TextBlock Text="Skykomish"/>
+    <TextBlock Text="Snoqualmie"/>
+    <TextBlock Text="Tukwila"/>
+    <TextBlock Text="Woodinville"/>
+    <TextBlock Text="Yarrow Point"/>
+  </ListView>
+</Page>
+

@@ -12,7 +12,6 @@
 #include <Microsoft.DirectManipulation.h>
 #include "XcpDirectManipulationViewportEventHandler.h"
 #include "XcpAutoLock.h"
-#include <microsoft.ui.input.experimental.h> // For IExpPointerPointStatics
 #include "DirectManipulationHelper.h"
 
 // Uncomment for DManip debug outputs.
@@ -707,7 +706,7 @@ private:
     // DManipOnDComp_Staging:  This lock can be removed when DManip-on-DComp is finished
     XcpAutoCriticalSection m_overpanReflexesLock;
 
-    wrl::ComPtr<ixp::IExpPointerPointStatics> m_pointerPointStatics;
+    wrl::ComPtr<ixp::IPointerPointStatics> m_pointerPointStatics;
 
 #ifdef DBG
     bool m_wasInInertiaStatusDbg{ false };

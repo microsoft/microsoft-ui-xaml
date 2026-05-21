@@ -13,7 +13,6 @@
 
     wrl::ComPtr<RefreshRateInfo> refreshRateInfo;
     refreshRateInfo.Attach(new RefreshRateInfo(clock.Get()));
-    refreshRateInfo->RegisterForPowerNotification();
     *ppRefreshRateInfo = refreshRateInfo.Detach();
 
     return S_OK;
@@ -134,57 +133,6 @@ _Check_return_ HRESULT RefreshRateInfo::TryWaitForCompositorClock(_Out_ bool* pW
     return hr;
 }
 
-ULONG CALLBACK
-PowerNotification(_In_ PVOID pvContext, ULONG /*type*/, _In_ PVOID pvSetting)
-{
-    auto* pSetting = reinterpret_cast<POWERBROADCAST_SETTING*>(pvSetting);
-    if (IsEqualGUID(pSetting->PowerSetting, GUID_SESSION_DISPLAY_STATUS))
-    {
-        ASSERT(pSetting->DataLength == sizeof(DWORD));
-        DWORD displayState = *reinterpret_cast<DWORD*>(pSetting->Data);
-
-        auto* refreshRateInfo = reinterpret_cast<RefreshRateInfo*>(pvContext);
-        switch (displayState)
-        {
-            case 0: // Off
-                refreshRateInfo->SetIsDisplayOn(false);
-                break;
-            case 1: // On
-                refreshRateInfo->SetIsDisplayOn(true);
-                break;
-            case 2: // Dimmed
-                break;
-            default:
-                ASSERT(false);
-                break;
-        }
-    }
-
-    return ERROR_SUCCESS;
-}
-
-// End copied code
-
-void RefreshRateInfo::RegisterForPowerNotification()
-{
-    DEVICE_NOTIFY_SUBSCRIBE_PARAMETERS notification = {};
-    notification.Callback = PowerNotification;
-    notification.Context = this;
-
-    // Registration will immediately call back with the current state.
-    IFCFAILFAST(HRESULT_FROM_WIN32(
-        PowerSettingRegisterNotification(
-            &GUID_SESSION_DISPLAY_STATUS,
-            DEVICE_NOTIFY_CALLBACK,
-            &notification,
-            wil::out_param(m_hOcclusion))));
-}
-
-void RefreshRateInfo::SetIsDisplayOn(bool isDisplayOn)
-{
-    m_isDisplayOn = isDisplayOn;
-}
-
 //------------------------------------------------------------------------------
 //
 //  Synopsis:
@@ -198,29 +146,26 @@ RefreshRateInfo::WaitForRefreshInterval()
 
     //
     // The lifted compositor uses DCompositionWaitForCompositorClock to handle waiting, which deals with high refresh
-    // rate monitors. If DCompositionWaitForCompositorClock doesn't exist, we fall back to WaitForVBlank provided that
-    // the display isn't turned off.
+    // rate monitors. If DCompositionWaitForCompositorClock doesn't exist or the display is off (returns
+    // STATUS_GRAPHICS_PRESENT_OCCLUDED), we fall back to simulated VBlanks via Sleep.
     //
     // Note for Task 43816828: Consume lifted Compositor's WaitForCompositorClock function for throttling lifted Xaml.
     // Be careful around what the return value of the lifted function is. A failure to wait could return a failed HR, so
     // we might fall back to simulated VBlanks rather than bubble up the failure.
     //
-    if (m_isDisplayOn)
-    {
-        TraceLoggingProviderWrite(
-            XamlTelemetry, "RefreshRateInfo_WaitForCompositorClock",
-            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
-            TraceLoggingBoolean(true, "IsStart"),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "RefreshRateInfo_WaitForCompositorClock",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-        IFC_RETURN(TryWaitForCompositorClock(&waitForCompositorClockSucceeded));
+    IFC_RETURN(TryWaitForCompositorClock(&waitForCompositorClockSucceeded));
 
-        TraceLoggingProviderWrite(
-            XamlTelemetry, "RefreshRateInfo_WaitForCompositorClock",
-            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
-            TraceLoggingBoolean(false, "IsStart"),
-            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
-    }
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "RefreshRateInfo_WaitForCompositorClock",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingBoolean(false, "IsStart"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     if (!waitForCompositorClockSucceeded)
     {

@@ -39,15 +39,14 @@ StartDragAsyncOperation::SetVisual(_In_ bool hasAnchorPoint, _In_ wf::Point anch
     {
         wrl::ComPtr<wf::IAsyncAction> spAction;
         ctl::ComPtr<wf::IAsyncOperation<wadt::DataPackageOperation>> spThis(this);
-        ctl::WeakRefPtr wpThis;
-        IFC_RETURN(ctl::AsWeak(spThis.Get(), &wpThis));
-        auto completionCallback = wrl::Callback<wf::IAsyncActionCompletedHandler>([wpThis](wf::IAsyncAction*asyncOp, wf::AsyncStatus status) mutable
+        auto completionCallback = wrl::Callback<wf::IAsyncActionCompletedHandler>([spThis, this](wf::IAsyncAction*asyncOp, wf::AsyncStatus status) mutable
         {
-            auto spThis = wpThis.AsOrNull<wf::IAsyncOperation<wadt::DataPackageOperation>>().Cast<StartDragAsyncOperation>();
-            if (spThis)
+            auto scopeGuard = wil::scope_exit([&]
             {
-                IFC_RETURN(spThis->OnRenderCompleted(asyncOp, status));
-            }
+                spThis = nullptr;
+            });
+            
+            IFC_RETURN(this->OnRenderCompleted(asyncOp, status));
             return S_OK;
         });
 

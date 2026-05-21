@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Compositor>
+  <Light Number="1" TargetCount="1" HasCoordinateSpace="False" />
+  <Light Number="2" TargetCount="1" HasCoordinateSpace="False" />
+  <Light Number="3" TargetCount="1" HasCoordinateSpace="True" />
+  <CompositionTarget>
+    <Visual>
+      <Visual />
+      <Visual />
+      <Visual Tag="PrependVisual">
+        <Visual Tag="PrimaryVisual" SizeX="800" SizeY="600">
+          <Visual Tag="ContentVisual">
+            <Visual Tag="PrependVisual" SizeX="800" SizeY="600">
+              <Clip ClipLeft="0" ClipTop="0" ClipRight="0" ClipBottom="0" TransformMatrix="Identity" />
+              <Visual PixelSnappingEnabled="True" VisualId="1" Tag="PrimaryVisual" SizeX="800" SizeY="600">
+                <TransformMatrix>
+                  <ExpressionAnimation String="Matrix4x4.CreateFromTranslation(V.Offset) * LOCAL.DManip * Matrix4x4.CreateFromTranslation(-V.Offset)">
+                    <ReferenceParameter Name="LOCAL">
+                      <PropertySet>
+                        <Property Name="DManip" Type="Matrix4x4">
+                          <ExpressionAnimation String="PS.Matrix">
+                            <ReferenceParameter Name="PS">
+                              <PropertySet>
+                                <Property Name="Matrix" Type="Matrix4x4">
+                                  <ExpressionAnimation String="transform*manipTransform.Matrix">
+                                    <ReferenceParameter Name="manipTransform">
+                                      <DuplicatedMatrixTransform>
+                                        <ManipulationTransform Transform="Identity" />
+                                      </DuplicatedMatrixTransform>
+                                    </ReferenceParameter>
+                                    <Property Name="transform" Type="Matrix4x4" />
+                                  </ExpressionAnimation>
+                                </Property>
+                              </PropertySet>
+                            </ReferenceParameter>
+                          </ExpressionAnimation>
+                        </Property>
+                      </PropertySet>
+                    </ReferenceParameter>
+                    <ReferenceParameter Name="V" />
+                  </ExpressionAnimation>
+                </TransformMatrix>
+                <Visual Tag="ContentVisual">
+                  <wucSpriteVisual SizeX="800" SizeY="600" BorderMode="Soft">
+                    <ColorBrush Color="Argb {0, 1, 1, 1}" />
+                  </wucSpriteVisual>
+                  <Visual Tag="PrependVisual">
+                    <TransformMatrix>
+                      <Translate X="20" Y="20" />
+                    </TransformMatrix>
+                    <Visual Tag="PrimaryVisual" SizeX="116" SizeY="32">
+                      <Visual Tag="RoundedCornerClipVisual">
+                        <Clip ClipLeft="0" ClipTop="0" ClipRight="116" ClipBottom="32" ClipTopLeftRadiusX="4" ClipTopLeftRadiusY="4" ClipTopRightRadiusX="4" ClipTopRightRadiusY="4" ClipBottomLeftRadiusX="4" ClipBottomLeftRadiusY="4" ClipBottomRightRadiusX="4" ClipBottomRightRadiusY="4" TransformMatrix="Identity" />
+                        <Visual Tag="ContentVisual">
+                          <wucSpriteVisual SizeX="116" SizeY="32" BorderMode="Soft">
+                            <MaskBrush>
+                              <Source>
+                                <ColorBrush Color="Argb {0.05882, 1, 1, 1}" />
+                              </Source>
+                              <Mask>
+                                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="False">
+                                  <Source>
+                                    <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                  </Source>
+                                </NineGridBrush>
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                          <wucSpriteVisual SizeX="90" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="11" OffsetZ="0">
+                            <MaskBrush>
+                              <Source>
+                                <ColorBrush Color="#ffffffff" />
+                              </Source>
+                              <Mask>
+                                <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                          <wucSpriteVisual SizeX="116" SizeY="32" BorderMode="Soft">
+                            <MaskBrush>
+                              <Source>
+                                <LinearGradientBrush EndPointX="0" EndPointY="0.09375" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="Identity">
+                                  <GradientStop Offset="0.33" Color="Argb {18ffffff}" />
+                                  <GradientStop Offset="1" Color="Argb {12ffffff}" />
+                                </LinearGradientBrush>
+                              </Source>
+                              <Mask>
+                                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="True">
+                                  <Source>
+                                    <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                  </Source>
+                                </NineGridBrush>
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                        </Visual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <Visual Tag="PrependVisual">
+                    <TransformMatrix>
+                      <Translate X="20" Y="52" />
+                    </TransformMatrix>
+                    <Visual Tag="PrimaryVisual" SizeX="135" SizeY="32">
+                      <Visual Tag="RoundedCornerClipVisual">
+                        <Clip ClipLeft="0" ClipTop="0" ClipRight="135" ClipBottom="32" ClipTopLeftRadiusX="4" ClipTopLeftRadiusY="4" ClipTopRightRadiusX="4" ClipTopRightRadiusY="4" ClipBottomLeftRadiusX="4" ClipBottomLeftRadiusY="4" ClipBottomRightRadiusX="4" ClipBottomRightRadiusY="4" TransformMatrix="Identity" />
+                        <Visual Tag="ContentVisual">
+                          <wucSpriteVisual SizeX="135" SizeY="32" BorderMode="Soft">
+                            <MaskBrush>
+                              <Source>
+                                <ColorBrush Color="Argb {0.05882, 1, 1, 1}" />
+                              </Source>
+                              <Mask>
+                                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="False">
+                                  <Source>
+                                    <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                  </Source>
+                                </NineGridBrush>
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                          <wucSpriteVisual SizeX="110" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="11" OffsetZ="0">
+                            <MaskBrush>
+                              <Source>
+                                <ColorBrush Color="#ffffffff" />
+                              </Source>
+                              <Mask>
+                                <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                          <wucSpriteVisual SizeX="135" SizeY="32" BorderMode="Soft">
+                            <MaskBrush>
+                              <Source>
+                                <LinearGradientBrush EndPointX="0" EndPointY="0.09375" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="Identity">
+                                  <GradientStop Offset="0.33" Color="Argb {18ffffff}" />
+                                  <GradientStop Offset="1" Color="Argb {12ffffff}" />
+                                </LinearGradientBrush>
+                              </Source>
+                              <Mask>
+                                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="True">
+                                  <Source>
+                                    <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                  </Source>
+                                </NineGridBrush>
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                        </Visual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <Visual Tag="PrependVisual">
+                    <TransformMatrix>
+                      <Translate X="20" Y="84" />
+                    </TransformMatrix>
+                    <Visual Tag="PrimaryVisual" SizeX="116" SizeY="32">
+                      <Visual Tag="RoundedCornerClipVisual">
+                        <Clip ClipLeft="0" ClipTop="0" ClipRight="116" ClipBottom="32" ClipTopLeftRadiusX="4" ClipTopLeftRadiusY="4" ClipTopRightRadiusX="4" ClipTopRightRadiusY="4" ClipBottomLeftRadiusX="4" ClipBottomLeftRadiusY="4" ClipBottomRightRadiusX="4" ClipBottomRightRadiusY="4" TransformMatrix="Identity" />
+                        <Visual Tag="ContentVisual">
+                          <wucSpriteVisual SizeX="116" SizeY="32" BorderMode="Soft">
+                            <MaskBrush>
+                              <Source>
+                                <ColorBrush Color="Argb {0.05882, 1, 1, 1}" />
+                              </Source>
+                              <Mask>
+                                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="False">
+                                  <Source>
+                                    <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                  </Source>
+                                </NineGridBrush>
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                          <wucSpriteVisual SizeX="90" SizeY="10" BorderMode="Hard" OffsetX="13" OffsetY="11" OffsetZ="0">
+                            <MaskBrush>
+                              <Source>
+                                <ColorBrush Color="#ffffffff" />
+                              </Source>
+                              <Mask>
+                                <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                          <wucSpriteVisual SizeX="116" SizeY="32" BorderMode="Soft">
+                            <MaskBrush>
+                              <Source>
+                                <LinearGradientBrush EndPointX="0" EndPointY="0.09375" WrapMode="Extend" ColorInterpolationMode="SRgb" Transform="Identity">
+                                  <GradientStop Offset="0.33" Color="Argb {18ffffff}" />
+                                  <GradientStop Offset="1" Color="Argb {12ffffff}" />
+                                </LinearGradientBrush>
+                              </Source>
+                              <Mask>
+                                <NineGridBrush LeftInset="5" TopInset="5" RightInset="5" BottomInset="5" isCenterHollow="True">
+                                  <Source>
+                                    <SurfaceBrush Stretch="Fill" Transform="Identity" />
+                                  </Source>
+                                </NineGridBrush>
+                              </Mask>
+                            </MaskBrush>
+                          </wucSpriteVisual>
+                        </Visual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                  <Visual Tag="PrependVisual">
+                    <TransformMatrix>
+                      <Translate X="20" Y="20" />
+                    </TransformMatrix>
+                    <Visual Tag="PrimaryVisual">
+                      <Visual Tag="ContentVisual">
+                        <Visual TransformParentVisualId="1" Tag="PrependVisual">
+                          <Visual Tag="PrimaryVisual" SizeX="155" SizeY="52">
+                            <TransformMatrix>
+                              <Translate X="10" Y="42" />
+                            </TransformMatrix>
+                            <Visual Tag="ContentVisual">
+                              <Visual Tag="PrependVisual">
+                                <Visual Tag="PrimaryVisual" SizeX="155" SizeY="52">
+                                  <Visual Tag="ContentVisual">
+                                    <wucSpriteVisual SizeX="155" SizeY="52" BorderMode="Soft" TransparentForInput="True">
+                                      <NineGridBrush LeftInset="2" TopInset="3" RightInset="4" BottomInset="5" isCenterHollow="True">
+                                        <Source>
+                                          <ColorBrush Color="rgb {0, 0, 0.502}" />
+                                        </Source>
+                                      </NineGridBrush>
+                                    </wucSpriteVisual>
+                                  </Visual>
+                                  <wucSpriteVisual SizeX="173" SizeY="70" OffsetX="-19" OffsetY="-19" OffsetZ="0">
+                                    <TargetedByLight LightNumber="1" />
+                                    <TargetedByLight LightNumber="2" />
+                                    <TargetedByLight LightNumber="3" />
+                                    <CoodinateSpaceFor LightNumber="3" />
+                                    <Offset.x>
+                                      <ExpressionAnimation String="hostVisual.Offset.x + colorGlowOffsetXAdjustment">
+                                        <ReferenceParameter Name="hostVisual" />
+                                      </ExpressionAnimation>
+                                    </Offset.x>
+                                    <Offset.y>
+                                      <ExpressionAnimation String="hostVisual.Offset.y + colorGlowOffsetYAdjustment">
+                                        <ReferenceParameter Name="hostVisual" />
+                                      </ExpressionAnimation>
+                                    </Offset.y>
+                                    <EffectBrush />
+                                  </wucSpriteVisual>
+                                </Visual>
+                              </Visual>
+                            </Visual>
+                          </Visual>
+                        </Visual>
+                      </Visual>
+                    </Visual>
+                  </Visual>
+                </Visual>
+              </Visual>
+            </Visual>
+          </Visual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </CompositionTarget>
+</Compositor>

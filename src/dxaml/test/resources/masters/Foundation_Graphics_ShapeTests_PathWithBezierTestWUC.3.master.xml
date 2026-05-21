@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CompositionTarget>
+  <Visual>
+    <Visual />
+    <Visual />
+    <Visual Tag="PrependVisual">
+      <Visual Tag="PrimaryVisual" SizeX="400" SizeY="300">
+        <Visual Tag="ContentVisual">
+          <wucShapeVisual SizeX="400" SizeY="400">
+            <wucSpriteShape StrokeThickness="4">
+              <FillBrush>
+                <ColorBrush Color="rgb {0, 0.502, 0}" />
+              </FillBrush>
+              <StrokeBrush>
+                <ColorBrush Color="rgb {1, 0, 0}" />
+              </StrokeBrush>
+              <CompositionPathGeometry BeginFigureType="FigureBeginFilled" Data="M10.00,100.00 C0.00,0.00 100.00,0.00 200.00,50.00 C200.00,0.00 300.00,0.00 400.00,50.00 Q200.00,200.00 300.00,100.00 Q0.00,200.00 30.00,400.00 Z" />
+            </wucSpriteShape>
+          </wucShapeVisual>
+        </Visual>
+      </Visual>
+    </Visual>
+  </Visual>
+</CompositionTarget>

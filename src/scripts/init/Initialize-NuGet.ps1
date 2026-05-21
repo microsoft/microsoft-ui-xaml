@@ -16,7 +16,29 @@ $nuget_exe = . "$PSScriptRoot\Initialize-DownloadLatest.ps1" -OutDir $toolsDir -
 # See: https://github.com/microsoft/artifacts-credprovider
 Write-Progress "Downloading the Azure Artifacts Credential Provider"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
+
+# If this is PowerShell 5, remove PowerShell 7 module paths from PSModulePath to avoid module loading conflicts.
+# The pwsh7 path can cause an error inside the credprovider install via missing Get-FileHash command.
+$originalPSModulePath = $env:PSModulePath
+if ($PSVersionTable.PSVersion.Major -eq 5)
+{
+    if ($env:PSModulePath -like "*powershell\7\Modules*")
+    {
+        $paths = $env:PSModulePath -split ';'
+        $filteredPaths = $paths | Where-Object { $_ -notlike "*powershell\7\Modules*" }
+        $env:PSModulePath = $filteredPaths -join ';'
+    }
+}
+
+try
+{
+    Invoke-Expression "& { $(Invoke-RestMethod https://aka.ms/install-artifacts-credprovider.ps1) } -AddNetfx"
+}
+finally
+{
+    # Restore original PSModulePath
+    $env:PSModulePath = $originalPSModulePath
+}
 
 # Add the tools dir to the path which directly contains NuGet.exe and VSS.NuGet.AuthHelper.exe
 if (!($env:Path -like "*$toolsDir;*"))
