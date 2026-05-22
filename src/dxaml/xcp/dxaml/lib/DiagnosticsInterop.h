@@ -30,6 +30,7 @@ class CResourceDictionary;
 class CMarkupExtensionBase;
 class CResourceDictionaryCollection;
 class CCustomProperty;
+class CClassInfo;
 
 enum VisualElementState;
 
@@ -448,6 +449,21 @@ namespace Diagnostics
             _In_ const xstring_ptr& inputString,
             _In_ PCWSTR fallbackString,
             _Out_ HSTRING* outputString);
+
+        // Attempts to materialize a Grid Row/ColumnDefinitionCollection from the
+        // succinct comma-separated string syntax that the XAML parser accepts at
+        // markup-time (e.g. "Auto,*,2*"). On success returns S_OK with *ppInstance
+        // set. Returns S_OK with *ppInstance == nullptr when the type's metadata
+        // does not describe a parseable per-item shape (caller may try legacy paths).
+        // Returns a failing HRESULT when parsing/activation actually fails so that
+        // Hot Reload surfaces the broken edit instead of silently no-op'ing.
+        // This is used by Hot Reload (XamlDiagnostics::CreateInstance) so that
+        // edits to <Grid RowDefinitions="..."/> survive the diagnostics round-trip.
+        // See microsoft/microsoft-ui-xaml#5944.
+        static _Check_return_ HRESULT TryCreateCollectionFromInitializationString(
+            _In_ const CClassInfo* pCollectionType,
+            _In_z_ LPCWSTR value,
+            _Outptr_result_maybenull_ IInspectable** ppInstance);
 
         static CCoreServices* GetCore();
         template<class T, class U = T> static HRESULT VectorGetAt(

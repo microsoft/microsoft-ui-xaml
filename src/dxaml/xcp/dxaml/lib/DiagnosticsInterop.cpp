@@ -55,6 +55,8 @@
 #include "DebugSettings_Partial.h"
 #include "XamlIslandRoot_Partial.h"
 #include "Unsealer.h"
+#include "ActivationAPI.h"
+#include "JoltCollections.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -390,6 +392,32 @@ DiagnosticsInterop::CreateInstance(
 
     IFC_RETURN(MetadataAPI::GetClassInfoByFullName(xephemeral_string_ptr(typeName, wcslen(typeName)), &pType));
 
+    // Hot Reload sends the succinct comma-separated collection syntax (e.g. "Auto,*")
+    // as a CreateInstance(typeName=<collection>, value="...") request. The normal type
+    // conversion path below cannot turn a string into a collection, so without this
+    // branch the CreateInstance call fails silently and the XAML edit never reaches
+    // the live tree. Inflate the collection here using the same per-item FromString
+    // path that the XAML parser uses, before falling through to scalar converters.
+    // Scope is intentionally limited to Row/ColumnDefinitionCollection because their
+    // item grammar (GridLength) is comma-free; broadening this requires reusing the
+    // full Parser::CollectionInitializationStringParser to handle quoting/escapes.
+    // Fixes microsoft/microsoft-ui-xaml#5944.
+    if (value &&
+        (pType->GetIndex() == KnownTypeIndex::RowDefinitionCollection ||
+         pType->GetIndex() == KnownTypeIndex::ColumnDefinitionCollection))
+    {
+        // Errors from this path are real failures (we already matched the scenario),
+        // so propagate them instead of silently falling through to the scalar
+        // converters where they would manifest as a no-op Hot Reload edit.
+        IFC_RETURN(TryCreateCollectionFromInitializationString(pType, value, ppInstance));
+        if (*ppInstance != nullptr)
+        {
+            return S_OK;
+        }
+        // S_OK with null ppInstance means "type matched but helper opted out"
+        // (e.g. metadata wasn't shaped as expected). Fall through to legacy behavior.
+    }
+
     const bool hasCustomTypeConverter = !pType->IsBuiltinType() && pType->HasTypeConverter() || pType->GetIndex() == KnownTypeIndex::IMediaPlaybackSource;
     // GetClassInfoByFullName guarantees on success that pType is not null, so we can go ahead and skip any checks.
     if (!pType->IsEnum() && pType->GetBaseType()->GetIndex() == KnownTypeIndex::UnknownType && !hasCustomTypeConverter && !pType->IsValueType())
@@ -457,6 +485,131 @@ DiagnosticsInterop::CreateInstance(
         // ActivationAPI to create the object
         return ActivationAPI::ActivateInstance(pType, ppInstance);
     }
+}
+
+// Inflate a Grid Row/ColumnDefinitionCollection from the comma-separated succinct
+// syntax accepted by the XAML parser at markup-time (e.g. "Auto,*,2*,100"). Mirrors
+// ObjectWriter::Logic_InitializeCollectionFromString.
+//
+// Contract:
+//  - S_OK with *ppInstance set:    success; caller takes ownership.
+//  - S_OK with *ppInstance null:   metadata isn't shaped as expected (no content DP,
+//                                  no core constructor for the item); caller may try
+//                                  legacy paths.
+//  - failing HRESULT:              real parse / activation failure; should be reported.
+_Check_return_ HRESULT
+DiagnosticsInterop::TryCreateCollectionFromInitializationString(
+    _In_ const CClassInfo* pCollectionType,
+    _In_z_ LPCWSTR value,
+    _Outptr_result_maybenull_ IInspectable** ppInstance)
+{
+    *ppInstance = nullptr;
+
+    // We need a content property whose target type tells us which item to instantiate
+    // per parsed token, and the item type must have a core constructor that understands
+    // a string CREATEPARAMETERS (i.e. provides a FromString). RowDefinition and
+    // ColumnDefinition both satisfy this via CDefinitionBase::FromString.
+    const CDependencyProperty* pContentDP = pCollectionType->GetContentProperty();
+    if (pContentDP == nullptr)
+    {
+        return S_OK; // opt-out: no content property metadata
+    }
+
+    const CClassInfo* pItemType = pContentDP->GetPropertyType();
+    if (pItemType == nullptr || !pItemType->IsBuiltinType())
+    {
+        return S_OK; // opt-out: cannot describe the item type
+    }
+
+    const CREATEPFN pfnCreateItem = pItemType->GetCoreConstructor();
+    if (pfnCreateItem == nullptr)
+    {
+        return S_OK; // opt-out: item has no core constructor
+    }
+
+    // Activate the empty collection through the standard path so that resource graph
+    // bookkeeping, peers, etc. all match a normally constructed instance.
+    wrl::ComPtr<IInspectable> spCollection;
+    IFC_RETURN(ActivationAPI::ActivateInstance(pCollectionType, nullptr, &spCollection));
+
+    // All PresentationFrameworkCollection subtypes (including RowDefinitionCollection
+    // and ColumnDefinitionCollection) implement IUntypedVector, which lets us append
+    // items without depending on the concrete templated IVector<T*> projection.
+    wrl::ComPtr<IUntypedVector> spVector;
+    IFC_RETURN(spCollection.As(&spVector));
+
+    DXamlCore* pCore = DXamlCore::GetCurrent();
+    IFCPTR_RETURN(pCore);
+
+    // Split on top-level commas. The succinct collection grammar used by the parser
+    // (see Parser::CollectionInitializationStringParser) supports quoting and escape
+    // sequences, but Grid's GridLength tokens never need either, so a simple split is
+    // sufficient. Callers gate this helper to Row/ColumnDefinitionCollection only.
+    auto trim = [](std::wstring& s)
+    {
+        const wchar_t* ws = L" \t\r\n";
+        const auto first = s.find_first_not_of(ws);
+        if (first == std::wstring::npos) { s.clear(); return; }
+        const auto last = s.find_last_not_of(ws);
+        s = s.substr(first, last - first + 1);
+    };
+
+    std::wstring input(value);
+    std::wstring trimmedInput = input;
+    trim(trimmedInput);
+
+    // RowDefinitions="" / "   " => empty collection. Matches XAML parser behavior
+    // where an attribute set to whitespace yields a default-initialized collection.
+    if (trimmedInput.empty())
+    {
+        *ppInstance = spCollection.Detach();
+        return S_OK;
+    }
+
+    std::vector<std::wstring> tokens;
+    std::size_t start = 0;
+    for (std::size_t i = 0; i <= input.size(); ++i)
+    {
+        if (i == input.size() || input[i] == L',')
+        {
+            tokens.emplace_back(input.substr(start, i - start));
+            trim(tokens.back());
+            start = i + 1;
+        }
+    }
+
+    for (const auto& token : tokens)
+    {
+        if (token.empty())
+        {
+            // Trailing/leading/consecutive commas are a parse error rather than a
+            // signal to drop items - surface a clear failure so the developer sees
+            // the broken syntax instead of a half-populated grid.
+            return E_INVALIDARG;
+        }
+
+        xstring_ptr tokenXstr;
+        IFC_RETURN(xstring_ptr::CloneBuffer(token.c_str(), static_cast<XUINT32>(token.size()), &tokenXstr));
+
+        // Use the string-flavoured CREATEPARAMETERS constructor so the per-item
+        // FromString path is invoked by the core type's CREATEPFN.
+        CREATEPARAMETERS cp(pCore->GetHandle(), tokenXstr);
+
+        xref_ptr<CDependencyObject> pCoreItem;
+        IFC_RETURN(pfnCreateItem(pCoreItem.ReleaseAndGetAddressOf(), &cp));
+
+        // Get the framework peer so we can hand it to the projected IVector.
+        ctl::ComPtr<DependencyObject> spItemPeer;
+        IFC_RETURN(pCore->GetPeer(pCoreItem.get(), &spItemPeer));
+
+        wrl::ComPtr<IInspectable> spItemAsI;
+        IFC_RETURN(spItemPeer.As(&spItemAsI));
+
+        IFC_RETURN(spVector->UntypedAppend(spItemAsI.Get()));
+    }
+
+    *ppInstance = spCollection.Detach();
+    return S_OK;
 }
 
 HRESULT DiagnosticsInterop::GetName(
