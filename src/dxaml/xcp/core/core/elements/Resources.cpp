@@ -1874,23 +1874,23 @@ CResourceDictionary::TryLoadDeferredResource(
         return S_OK;
     }
 
-    ResourceKeyStorage keyStorage = key.ToStorage();
-
     // Load the resource. Temporarily add the key with a dummy value in our store,
     // so we can check above for reentrancy that attempts to lookup the same key,
-    // e.g. a style with BasedOn set to its own key.
-    m_undeferringResources.push_back(keyStorage);
+    // e.g. a style with BasedOn set to its own key. m_undeferringResources does not
+    // own the string since it uses ResourceKey rather than ResourceKeyStorage, but
+    // the key is removed on stack unwind so this temporary no-ref use is safe.
+    m_undeferringResources.push_back(key);
 
-    auto guard = wil::scope_exit([this, &keyStorage]
+    auto guard = wil::scope_exit([this, &key]
     {
-        auto newEnd = std::remove(m_undeferringResources.begin(), m_undeferringResources.end(), keyStorage);
+        auto newEnd = std::remove(m_undeferringResources.begin(), m_undeferringResources.end(), key);
         m_undeferringResources.erase(newEnd, m_undeferringResources.end());
     });
 
     bool keyFound = false;
     xref_ptr<CDependencyObject> resource;
 
-    IFC_RETURN(m_pDeferredResources->LoadValueIfExists(keyStorage.GetKey(), keyStorage.IsKeyType(), keyFound, resource));
+    IFC_RETURN(m_pDeferredResources->LoadValueIfExists(key.GetKey(), key.IsKeyType(), keyFound, resource));
 
     // Notice how this method behaves- if the key fails to parse it throws a bad HRESULT, if
     // the key simply doesn't exist it returns S_OK with the 'keyFound' parameter set to false.

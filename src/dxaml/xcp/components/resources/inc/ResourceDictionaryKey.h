@@ -99,6 +99,17 @@ struct ResourceKey
         , m_shouldFilter(other.ShouldFilter())
     {}
 
+    ResourceKey& operator=(const ResourceKey& other) noexcept
+    {
+        if (this != &other)
+        {
+            this->~ResourceKey();
+            auto p = ::new (this) ResourceKey(other);
+            return *p;
+        }
+        return *this;
+    }
+
     const xstring_ptr_view& GetKey() const
     {
         return m_key;
@@ -179,6 +190,11 @@ inline bool operator==(const ResourceKey& lhs, const ResourceKeyStorage& rhs)
 }
 
 inline bool operator==(const ResourceKeyStorage& lhs, const ResourceKey& rhs)
+{
+    return ResourceDictionaryKey::Compare::equals(lhs, rhs);
+}
+
+inline bool operator==(const ResourceKey& lhs, const ResourceKey& rhs)
 {
     return ResourceDictionaryKey::Compare::equals(lhs, rhs);
 }

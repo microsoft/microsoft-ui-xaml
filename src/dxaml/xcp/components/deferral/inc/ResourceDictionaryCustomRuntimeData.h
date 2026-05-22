@@ -62,7 +62,7 @@ protected:
 #pragma region Runtime Methods
 public:
     _Success_(return != false)
-    bool TryGetResourceOffset(_In_ const xstring_ptr& key, _In_ bool isImplicitKey,
+    bool TryGetResourceOffset(_In_ const xstring_ptr_view& key, _In_ bool isImplicitKey,
         _Out_ StreamOffsetToken& token);
 
     std::size_t size();

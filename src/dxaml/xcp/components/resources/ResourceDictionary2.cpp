@@ -30,7 +30,7 @@ _Check_return_ HRESULT CResourceDictionary2::SetCustomWriterRuntimeData(
 }
 
 _Check_return_ HRESULT CResourceDictionary2::LoadValueIfExists(
-    _In_ const xstring_ptr& key,
+    _In_ const xstring_ptr_view& key,
     _In_ bool isImplicitKey,
     _Out_ bool& keyFound,
     _Out_ xref_ptr<CDependencyObject>& value)

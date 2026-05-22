@@ -194,7 +194,7 @@ HRESULT ResourceDictionaryCustomRuntimeData::PrepareStream(_In_ std::shared_ptr<
 // Tries to get the StreamOffsetToken corresponding to the given key. Returns a boolean indicating success.
 _Success_(return != false)
 bool ResourceDictionaryCustomRuntimeData::TryGetResourceOffset(
-    _In_ const xstring_ptr& key,
+    _In_ const xstring_ptr_view& key,
     _In_ bool isImplicitKey,
     _Out_ StreamOffsetToken& token)
 {

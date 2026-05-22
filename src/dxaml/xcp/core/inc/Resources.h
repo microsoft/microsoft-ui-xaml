@@ -495,8 +495,9 @@ private:
     ResourceMapType m_resourceMap;
 
     // Temporary storage for keys that are being undeferred. This allows us to
-    // avoid an infinite loop when TryLoadDeferredResource is reentered.
-    std::vector<ResourceKeyStorage> m_undeferringResources;
+    // avoid an infinite loop when TryLoadDeferredResource is reentered. These
+    // keys do not copy the underlying key string but are removed on stack unwind.
+    std::vector<ResourceKey> m_undeferringResources;
 
     std::unique_ptr<Resources::details::ResourceKeyCache> m_keysNotFoundCache;
 
