@@ -538,11 +538,37 @@ public:
 
     bool OfTypeByIndex(_In_ KnownTypeIndex nIndex) const;
 
+    // Cached type checks -- fast O(1) path that avoids virtual call + array lookup.
+    // Bits are set in CUIElement / CFrameworkElement constructors and cleared in
+    // their destructors so they track the live C++ type identity exactly.
+    bool IsUIElement() const { return m_isUIElement; }
+    bool IsFrameworkElement() const { return m_isFrameworkElement; }
+
     template <KnownTypeIndex targetTypeIndex>
     constexpr bool OfTypeByIndex() const
     {
-        return DirectUI::MetadataAPI::IsAssignableFrom<targetTypeIndex>(GetTypeIndex());
+        if constexpr (targetTypeIndex == KnownTypeIndex::UIElement)
+        {
+            return m_isUIElement;
+        }
+        else if constexpr (targetTypeIndex == KnownTypeIndex::FrameworkElement)
+        {
+            return m_isFrameworkElement;
+        }
+        else
+        {
+            return DirectUI::MetadataAPI::IsAssignableFrom<targetTypeIndex>(GetTypeIndex());
+        }
     }
+
+protected:
+    // Called from CUIElement / CFrameworkElement ctors and dtors to maintain cached type bits.
+    void SetCachedUIElementBit() { m_isUIElement = true; }
+    void SetCachedFrameworkElementBit() { m_isFrameworkElement = true; }
+    void ClearCachedUIElementBit() { m_isUIElement = false; }
+    void ClearCachedFrameworkElementBit() { m_isFrameworkElement = false; }
+
+public:
 
     const CClassInfo* GetClassInformation() const;
 
@@ -1780,8 +1806,8 @@ protected:
 private:
     bool m_checkForResourceOverrides                        : 1;    // 11
     bool m_canParserOverwriteBaseUri                                 : 1;    // 12
-    bool                                                    : 1;    // 13- Unused
-    bool                                                    : 1;    // 14- Unused
+    bool m_isUIElement                                      : 1;    // 13- Cached: is this a UIElement?
+    bool m_isFrameworkElement                               : 1;    // 14- Cached: is this a FrameworkElement?
     bool                                                    : 1;    // 15- Unused
     bool                                                    : 1;    // 16- Unused
 

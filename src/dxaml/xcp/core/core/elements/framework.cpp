@@ -36,6 +36,7 @@ CFrameworkElement::CFrameworkElement(_In_ CCoreServices *pCore)
     , m_firedLoadingEvent(false)
 {
     ASSERT(0 == m_setByStyle.bits);
+    SetCachedFrameworkElementBit();
 }
 
 //------------------------------------------------------------------------
@@ -74,6 +75,10 @@ CFrameworkElement::~CFrameworkElement()
         // no Binding set through a style, it will be NULL.  If there is a BindingSet through a style,
         // both pointers will be valid and both will be released.
     }
+
+    // Clear the cached type bit so that code running during ~CUIElement won't
+    // incorrectly treat this as a CFrameworkElement after this part is destroyed.
+    ClearCachedFrameworkElementBit();
 }
 
 //------------------------------------------------------------------------

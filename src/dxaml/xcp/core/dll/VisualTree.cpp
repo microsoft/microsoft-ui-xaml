@@ -1435,28 +1435,34 @@ void DebugValidateVisualTree(_In_ CDependencyObject* element, _In_ VisualTree* e
             return visualTree;
         }
 
-        if (currentAncestor->GetTypeIndex() == KnownTypeIndex::XamlIslandRoot)
+        const KnownTypeIndex typeIndex = currentAncestor->GetTypeIndex();
+        if (typeIndex == KnownTypeIndex::XamlIslandRoot)
         {
             return static_cast<CXamlIslandRoot*>(currentAncestor)->GetVisualTreeNoRef();
         }
-        else if (currentAncestor->GetTypeIndex() == KnownTypeIndex::RootVisual)
+        else if (typeIndex == KnownTypeIndex::RootVisual)
         {
             return static_cast<CRootVisual*>(currentAncestor)->GetAssociatedVisualTree();
         }
 
         CDependencyObject* nextAncestor = nullptr;
-        if (currentAncestor->DoesAllowMultipleAssociation() && currentAncestor->GetParentCount() > 1)
+        // Fast path: UIElements never allow multiple association. Use the cached type bit
+        // to skip the virtual GetTypeIndex() + c_aTypeCheckData lookup.
+        const bool isUIElement = currentAncestor->IsUIElement();
+        if (isUIElement
+            || !currentAncestor->DoesAllowMultipleAssociation()
+            || currentAncestor->GetParentCount() <= 1)
         {
-            // We cannot travese up a tree through a multiply associated element.  Our goal is to support DOs being
+            nextAncestor = currentAncestor->GetParentInternal(false /* public parent only */);
+        }
+        else
+        {
+            // We cannot traverse up a tree through a multiply associated element.  Our goal is to support DOs being
             // shared between XAML trees.  We've seen cases where we traverse up the tree through CSetter objects,
             // so for now we allow the traversal if there's one unique parent.  TODO: This could be fragile?  Allowing
             // the traversal to happen when the parent count is 1 means that if this element gets another parent later,
             // we're now in an inconsistent state.
             // Bug 19548424: Investigate places where an element entering the tree doesn't have a unique VisualTree ptr
-        }
-        else
-        {
-            nextAncestor = currentAncestor->GetParentInternal(false /* public parent only */);
         }
 
         //

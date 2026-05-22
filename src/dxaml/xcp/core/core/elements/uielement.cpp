@@ -413,6 +413,10 @@ CUIElement::~CUIElement()
     SimpleProperty::Property::NotifyDestroyed<CUIElement>(this);
 
     TraceElementDestroyedInfo((XUINT64)this);
+
+    // Clear the cached type bit so that code running during ~CDependencyObject won't
+    // incorrectly treat this as a CUIElement after this part is destroyed.
+    ClearCachedUIElementBit();
 }
 
 // Force close on any hand-in or handoff visuals. This causes them to be disconnected from any other visuals and

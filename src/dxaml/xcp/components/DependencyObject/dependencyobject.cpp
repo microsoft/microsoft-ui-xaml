@@ -61,6 +61,8 @@ CDependencyObject::CDependencyObject(_In_opt_ CCoreServices* pCore)
     , m_objectStrictness(ObjectStrictness::Agnostic)
     , m_checkForResourceOverrides(false)
     , m_canParserOverwriteBaseUri(true)
+    , m_isUIElement(false)
+    , m_isFrameworkElement(false)
 {}
 
 KnownTypeIndex CDependencyObject::GetTypeIndex() const

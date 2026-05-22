@@ -189,6 +189,8 @@ CUIElement::CUIElement(_In_ CCoreServices* core)
 
     ASSERT(IsEmptyRectF(m_contentInnerBounds) && IsEmptyRectF(m_childBounds)
         && IsEmptyRectF(m_combinedInnerBounds) && IsEmptyRectF(m_outerBounds));
+
+    SetCachedUIElementBit();
 }
 
 FacadeTransformInfo CUIElement::GetFacadeTransformInfo(bool preferAnimatingValue) const
