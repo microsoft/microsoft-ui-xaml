@@ -33,10 +33,10 @@ public:
 
     _Check_return_ HRESULT RegisterName(
         _In_ const xstring_ptr& strName,
-        const std::shared_ptr<XamlQualifiedObject>& qoScopedObject) final;
+        _In_ CDependencyObject* pScopedObject) final;
 
     void EnsureNamescopeOwner(
-        const std::shared_ptr<XamlQualifiedObject>& qoScopedObject) final;
+        _In_ CDependencyObject* pScopedObject) final;
 
     Jupiter::NameScoping::NameScopeType GetNameScopeType() const final
     {
@@ -69,13 +69,13 @@ public:
 
     _Check_return_ HRESULT RegisterName(
         _In_ const xstring_ptr& strName,
-        _In_ const std::shared_ptr<XamlQualifiedObject>& qoScopedObject) final
+        _In_ CDependencyObject* pScopedObject) final
     {
         return S_OK;
     }
 
     void EnsureNamescopeOwner(
-        _In_ const std::shared_ptr<XamlQualifiedObject>& qoScopedObject) final
+        _In_ CDependencyObject* pScopedObject) final
     {
     }
 

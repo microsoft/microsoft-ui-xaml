@@ -183,7 +183,8 @@ _Check_return_ HRESULT CVisualStateManager2::FaultInChildren(_In_ CVisualStateGr
 
     CustomWriterRuntimeObjectCreator creator(
         NameScopeRegistrationMode::RegisterEntries,
-        groupCollection->GetCustomRuntimeContext());
+        groupCollection->GetCustomRuntimeContext(),
+        CustomWriterRuntimeObjectCreator::ContextReference::Strong);
 
     std::vector<StreamOffsetToken> indexRangesToSkip;
     if(!isImmediateFaultIn)

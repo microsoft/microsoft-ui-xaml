@@ -38,9 +38,16 @@ enum class NameScopeRegistrationMode
 class CustomWriterRuntimeObjectCreator
 {
 public:
+    enum class ContextReference
+    {
+        Weak,
+        Strong
+    };
+
     CustomWriterRuntimeObjectCreator(
         NameScopeRegistrationMode mode,
-        _In_ const CustomWriterRuntimeContext* context);
+        _In_ const CustomWriterRuntimeContext* context,
+        ContextReference contextReference);
 
     _Check_return_ HRESULT LookupStaticResourceValue(
         _In_ StreamOffsetToken token,
@@ -100,19 +107,19 @@ private:
 
     _Check_return_ HRESULT EnsureObjectWriter();
     std::shared_ptr<XamlSavedContext> BuildSavedContext();
-    _Check_return_ HRESULT BuildObjectWriterSettings(_Out_ ObjectWriterSettings* pResult);
+    void BuildObjectWriterSettings(_Out_ ObjectWriterSettings* pResult);
     std::shared_ptr<XamlBinaryFormatSubReader2> GetReaderAndSetIndex(unsigned int nodeIndex);
     void RestoreReaderIndex();
 
-    static _Check_return_ HRESULT XamlQOFromCDOHelper(
+    void XamlQOFromCDOHelper(
         _In_ CDependencyObject* cdo,
         _Out_ std::shared_ptr<XamlQualifiedObject>* pQO);
 
     const CustomWriterRuntimeContext* m_context;
     std::shared_ptr<BinaryFormatObjectWriter> m_writer;
-    bool m_pendingFirstNode;
     NameScopeRegistrationMode m_mode;
     unsigned int m_restoreIndex;
+    ContextReference m_contextReferences = ContextReference::Strong;
 };
 
 

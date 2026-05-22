@@ -27,7 +27,8 @@
 OptimizedVisualStateManagerDataSource::OptimizedVisualStateManagerDataSource(CVisualStateGroupCollection* pGroupCollection)
     : m_objectCreator(
         NameScopeRegistrationMode::SkipRegistration,
-        pGroupCollection->GetCustomRuntimeContext())
+        pGroupCollection->GetCustomRuntimeContext(),
+        CustomWriterRuntimeObjectCreator::ContextReference::Strong)
     , VisualStateManagerDataSource(pGroupCollection)
 {
     // Resize the group context vector such that every group index maps to a context.

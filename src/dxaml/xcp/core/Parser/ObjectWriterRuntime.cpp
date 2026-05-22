@@ -442,7 +442,7 @@ _Check_return_ HRESULT ObjectWriterRuntime::SetNameImpl(
         {
         case valueString:
             TraceSetNameOnCurrentInstanceBegin(pName->AsString().GetBuffer());
-            IFC_RETURN(spNamescope->RegisterName(pName->AsString(), spInstance));
+            IFC_RETURN(spNamescope->RegisterName(pName->AsString(), spInstance->GetDependencyObject()));
             break;
         case valueObject:
         {
@@ -450,7 +450,7 @@ _Check_return_ HRESULT ObjectWriterRuntime::SetNameImpl(
             if (pString != nullptr)
             {
                 TraceSetNameOnCurrentInstanceBegin(pString->m_strString.GetBuffer());
-                IFC_RETURN(spNamescope->RegisterName(pString->m_strString, spInstance));
+                IFC_RETURN(spNamescope->RegisterName(pString->m_strString, spInstance->GetDependencyObject()));
             }
             else
             {

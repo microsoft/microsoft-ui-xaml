@@ -5,6 +5,7 @@
 
 #include <vector_set.h>
 #include "ResourceDictionaryKey.h"
+#include <CustomWriterRuntimeObjectCreator.h>
 
 class ResourceDictionaryCustomRuntimeData;
 class CustomWriterRuntimeContext;
@@ -54,4 +55,5 @@ public:
 private:
     std::shared_ptr<ResourceDictionaryCustomRuntimeData> m_spRuntimeData;
     std::unique_ptr<CustomWriterRuntimeContext> m_spRuntimeContext;
+    std::unique_ptr<CustomWriterRuntimeObjectCreator> m_spObjectCreator; // Destruct before m_spRuntimeContext, has raw pointer to it.
 };

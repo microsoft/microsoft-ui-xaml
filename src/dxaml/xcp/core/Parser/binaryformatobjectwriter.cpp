@@ -1265,7 +1265,7 @@ _Check_return_ HRESULT BinaryFormatObjectWriter::CreateInstanceFromType(_In_ con
         if( m_rootObjectCreated && m_spContext->get_RootNamescope() )
         {
             // If the name scope helper doesn't have a namescope owner yet, use this one.  (This establishes the root.)
-            m_spContext->get_RootNamescope()->EnsureNamescopeOwner(outInstance);
+            m_spContext->get_RootNamescope()->EnsureNamescopeOwner(outInstance->GetDependencyObject());
         }
     }
 

@@ -7,7 +7,6 @@
 #include <ResourceDictionaryCustomRuntimeData.h>
 #include <CustomWriterRuntimeContext.h>
 #include <ResourceDictionary2.h>
-#include <CustomWriterRuntimeObjectCreator.h>
 #include <ObjectWriterStack.h>
 #include <ObjectWriterFrame.h>
 #include <XamlSchemaContext.h>
@@ -20,12 +19,16 @@ _Check_return_ HRESULT CResourceDictionary2::SetCustomWriterRuntimeData(
     _In_ std::shared_ptr<ResourceDictionaryCustomRuntimeData> data,
     _In_ std::unique_ptr<CustomWriterRuntimeContext> context)
 {
+    // Reset the object creator to ensure any previous state is cleared out.
+    m_spObjectCreator = nullptr;
+
     m_spRuntimeData = std::move(data);
     m_spRuntimeContext = std::move(context);
 
     std::shared_ptr<ParserErrorReporter> parserErrorReporter;
     IFC_RETURN(m_spRuntimeContext->GetSchemaContext()->GetErrorService(parserErrorReporter));
     IFC_RETURN(m_spRuntimeData->ResolveConditionalResources(parserErrorReporter));
+
     return S_OK;
 }
 
@@ -45,10 +48,21 @@ _Check_return_ HRESULT CResourceDictionary2::LoadValueIfExists(
         return S_OK;
     }
 
-    xref_ptr<CThemeResource> resourceAsThemeResourceAlias;
+    if (!m_spObjectCreator)
+    {
+        // The creator will use the context's weak references to some DOs (such as the root instance
+        // and the event root) to create its (really the binary parser's + its own context's) references
+        // for more convenient access. These references must also be weak to avoid cycles since
+        // the root references are to the ResourceDictionary that owns this object. We can guarantee
+        // that those effectively raw pointers cannot go away while this object exists.
+        m_spObjectCreator = std::make_unique<CustomWriterRuntimeObjectCreator>(
+            NameScopeRegistrationMode::RegisterEntries,
+            m_spRuntimeContext.get(),
+            CustomWriterRuntimeObjectCreator::ContextReference::Weak);
+    }
 
-    CustomWriterRuntimeObjectCreator creator(NameScopeRegistrationMode::RegisterEntries, m_spRuntimeContext.get());
-    IFC_RETURN(creator.CreateInstance(token, &value, &resourceAsThemeResourceAlias));
+    xref_ptr<CThemeResource> resourceAsThemeResourceAlias;
+    IFC_RETURN(m_spObjectCreator->CreateInstance(token, &value, &resourceAsThemeResourceAlias));
     
     if (resourceAsThemeResourceAlias == nullptr)
     {

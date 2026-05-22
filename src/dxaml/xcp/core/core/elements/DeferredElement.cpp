@@ -191,7 +191,8 @@ _Check_return_ HRESULT CDeferredElement::LoadContent(_Out_ xref_ptr<CDependencyO
     xref_ptr<CThemeResource> unused;
     IFC_RETURN(CustomWriterRuntimeObjectCreator(
         NameScopeRegistrationMode::RegisterEntries,
-        m_spRuntimeContext.get()).CreateInstance(pResult, &unused));
+        m_spRuntimeContext.get(),
+        CustomWriterRuntimeObjectCreator::ContextReference::Strong).CreateInstance(pResult, &unused));
 
     instanceToken = reinterpret_cast<uint64_t>(pResult->get());
 

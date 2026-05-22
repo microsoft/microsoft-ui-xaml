@@ -236,7 +236,7 @@ public:
     {
         return m_xbfHash;
     }
-
+     
     // Get whether there is a previous service provider context (or whether this
     // context is in the top level parse).
     bool HasPreviousObjectWriterContext()

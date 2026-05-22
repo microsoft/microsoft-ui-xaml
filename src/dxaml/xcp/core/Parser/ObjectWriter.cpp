@@ -1354,7 +1354,7 @@ _Check_return_ HRESULT ObjectWriter::Logic_CreateWithCtor()
     {
         // If the name scope helper doesn't have a namescope owner yet, use this one.  (This establishes the root.)
         // (Consider factoring this from BinaryFormatObjectWriter and ObjectWriter into ObjectWriterRuntime.)
-        m_spContext->get_RootNamescope()->EnsureNamescopeOwner(qoInst);
+        m_spContext->get_RootNamescope()->EnsureNamescopeOwner(qoInst->GetDependencyObject());
     }
 
     IFC_RETURN(Logic_ApplyCurrentSavedDirectives());
@@ -1799,7 +1799,7 @@ _Check_return_ HRESULT ObjectWriter::Logic_CreateFromInitializationValue()
         if(m_spContext->get_RootNamescope() && qoInstance->GetDependencyObject())
         {
             // If the name scope helper doesn't have a namescope owner yet, use this one.  (This establishes the root.)
-            m_spContext->get_RootNamescope()->EnsureNamescopeOwner(qoInstance);
+            m_spContext->get_RootNamescope()->EnsureNamescopeOwner(qoInstance->GetDependencyObject());
         }
     }
 

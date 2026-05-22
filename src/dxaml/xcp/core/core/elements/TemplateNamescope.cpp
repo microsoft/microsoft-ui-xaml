@@ -15,15 +15,10 @@ using namespace Jupiter::NameScoping;
 
 _Check_return_ HRESULT NameScopeHelper::RegisterName(
     _In_ const xstring_ptr& strName,
-    const std::shared_ptr<XamlQualifiedObject>& qoScopedObject)
+    _In_ CDependencyObject* pScopedObject)
 {
-    CDependencyObject* pScopedObject = NULL;
-
     // By now we should have an owner, either from the Create or from SetNamescopeOwner
     ASSERT(m_pNameScopeOwner);
-    
-    ASSERT(!!qoScopedObject);
-    pScopedObject = qoScopedObject->GetDependencyObject();
     IFCEXPECT_RETURN(pScopedObject);
 
     IFC_RETURN(m_pCore->SetNamedObject(
@@ -38,16 +33,16 @@ _Check_return_ HRESULT NameScopeHelper::RegisterName(
 // Receive a namescope owner to use when talking to the core, if we don't already
 // have one.  If we didn't have one, then create the name scope.
 void NameScopeHelper::EnsureNamescopeOwner(
-    const std::shared_ptr<XamlQualifiedObject>& qoOwner)
+    _In_ CDependencyObject* pNameScopeOwner)
 {
     // Ignore this if we already have an owner... the typical TemplateContent
     // scneario.
     if (m_pNameScopeOwner != nullptr) return;
 
     ASSERT(m_nameScopeType == NameScopeType::StandardNameScope);
+    ASSERT(pNameScopeOwner);
 
-    m_pNameScopeOwner = qoOwner->GetDependencyObject();
-    ASSERT(m_pNameScopeOwner);
+    m_pNameScopeOwner = pNameScopeOwner;
 
     m_pCore->GetNameScopeRoot().EnsureNameScope(m_pNameScopeOwner, nullptr);
     m_pNameScopeOwner->SetIsStandardNameScopeOwner(TRUE);

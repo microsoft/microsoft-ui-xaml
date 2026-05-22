@@ -111,7 +111,10 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
                 // Create the object
                 if (objectCreator == nullptr)
                 {
-                    objectCreator.reset(new CustomWriterRuntimeObjectCreator(NameScopeRegistrationMode::RegisterEntries, context.get()));
+                    objectCreator.reset(new CustomWriterRuntimeObjectCreator(
+                        NameScopeRegistrationMode::RegisterEntries,
+                        context.get(),
+                        CustomWriterRuntimeObjectCreator::ContextReference::Strong));
                 }
                 xref_ptr<CThemeResource> unused;
                 xref_ptr<CDependencyObject> depObj;
@@ -172,7 +175,10 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
 
                 if (objectCreator == nullptr)
                 {
-                    objectCreator.reset(new CustomWriterRuntimeObjectCreator(NameScopeRegistrationMode::RegisterEntries, context.get()));
+                    objectCreator.reset(new CustomWriterRuntimeObjectCreator(
+                        NameScopeRegistrationMode::RegisterEntries,
+                        context.get(),
+                        CustomWriterRuntimeObjectCreator::ContextReference::Strong));
                 }
 
                 if (data->SetterHasStaticResourceValue(i))

@@ -31,11 +31,12 @@ class CStyle;
 
 CustomWriterRuntimeObjectCreator::CustomWriterRuntimeObjectCreator(
     NameScopeRegistrationMode mode,
-    _In_ const CustomWriterRuntimeContext* context)
+    _In_ const CustomWriterRuntimeContext* context,
+    ContextReference contextReference)
     : m_context(context)
-    , m_pendingFirstNode(false)
     , m_mode(mode)
     , m_restoreIndex(0)
+    , m_contextReferences(contextReference)
 {}
 
 _Check_return_ HRESULT
@@ -59,7 +60,6 @@ CustomWriterRuntimeObjectCreator::CreateInstance(
     *resultAsThemeResource = nullptr;
 
     IFC_RETURN(EnsureObjectWriter());
-    m_pendingFirstNode = true;
     IFC_RETURN(RunObjectWriter(token, nullptr, std::vector<StreamOffsetToken>()));
     std::shared_ptr<XamlQualifiedObject> result = m_writer->get_Result();
     ASSERT(result);
@@ -82,7 +82,6 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::ApplyStreamToExistingIn
     _In_ const std::vector<StreamOffsetToken>& indexRangesToSkip)
 {
     IFC_RETURN(EnsureObjectWriter());
-    m_pendingFirstNode = true;
     IFC_RETURN(RunObjectWriter(token, instance, indexRangesToSkip));
 
     return S_OK;
@@ -100,6 +99,7 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::RunObjectWriter(_In_ St
         RestoreReaderIndex();
     });
 
+    bool pendingFirstNode = true;
     int streamDepth = 0;
     ObjectWriterNode node;
 
@@ -126,7 +126,7 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::RunObjectWriter(_In_ St
         // stands in for the PushScopeGetValue call.
         // TODO: This doesn't work for non-collection instances today, but the changed needed to make it work
         // are trivial.
-        if (m_pendingFirstNode && instance &&
+        if (pendingFirstNode && instance &&
             node.GetNodeType() == ObjectWriterNodeType::PushScopeGetValue)
         {
             auto result = std::make_shared<XamlQualifiedObject>(
@@ -134,7 +134,7 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::RunObjectWriter(_In_ St
             IFC_RETURN(result->SetDependencyObject(instance));
             m_writer->SetActiveObject(std::move(result));
         }
-        else if (m_pendingFirstNode && instance)
+        else if (pendingFirstNode && instance)
         {
             ASSERT(false); // TODO: Non-collection node streams.
         }
@@ -142,7 +142,7 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::RunObjectWriter(_In_ St
         {
             IFC_RETURN(m_writer->WriteNode(node));
         }
-        m_pendingFirstNode = false;
+        pendingFirstNode = false;
 
         if (streamDepth == 0)
         {
@@ -304,7 +304,7 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::EnsureObjectWriter()
         std::shared_ptr<BinaryFormatObjectWriter> writer;
 
         ObjectWriterSettings settings;
-        IFC_RETURN(BuildObjectWriterSettings(&settings));
+        BuildObjectWriterSettings(&settings);
         IFC_RETURN(BinaryFormatObjectWriter::Create(
             savedContext,
             settings,
@@ -325,28 +325,32 @@ std::shared_ptr<XamlSavedContext> CustomWriterRuntimeObjectCreator::BuildSavedCo
         m_context->GetXbfHash());
 }
 
-_Check_return_ HRESULT
-CustomWriterRuntimeObjectCreator::XamlQOFromCDOHelper(
+void CustomWriterRuntimeObjectCreator::XamlQOFromCDOHelper(
     _In_ CDependencyObject* cdo,
     _Out_ std::shared_ptr<XamlQualifiedObject>* pQO)
 {
     auto qoValue = std::make_shared<XamlQualifiedObject>();
-    CValue cValue;
+    CValue& cValue = qoValue->GetValue();
 
-    cValue.SetObjectAddRef(cdo);
-
-    IFC_RETURN(qoValue->SetValue(cValue));
+    if (m_contextReferences == ContextReference::Strong)
+    {
+        cValue.SetObjectAddRef(cdo);
+    }
+    else
+    {
+        // No AddRef() or Release()
+        cValue.WrapObjectNoRef(cdo);
+    }
 
     // Because this QO is only a temporary object for the purposes of taking a weak-ref and
     // handing it to the various parser APIs (which expect a XamlQualifiedObject), we don't
     // want the managed peer to get unpegged when the QO is destroyed.
     qoValue->ClearHasPeggedManagedPeer();
-
+    
     *pQO = qoValue;
-    return S_OK;
 }
 
-_Check_return_ HRESULT CustomWriterRuntimeObjectCreator::BuildObjectWriterSettings(_Out_ ObjectWriterSettings* pResult)
+void CustomWriterRuntimeObjectCreator::BuildObjectWriterSettings(_Out_ ObjectWriterSettings* pResult)
 {
     ObjectWriterSettings objectWriterSettings;
 
@@ -363,13 +367,12 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::BuildObjectWriterSettin
     }
 
     std::shared_ptr<XamlQualifiedObject> qo;
-    IFC_RETURN(XamlQOFromCDOHelper(m_context->GetRootInstance().get(), &qo));
+    XamlQOFromCDOHelper(m_context->GetRootInstance().get(), &qo);
     objectWriterSettings.set_EventRoot(qo);
 
     objectWriterSettings.set_XBindConnector(m_context->GetXBindConnector());
 
     *pResult = objectWriterSettings;
-    return S_OK;
 }
 
 _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::RegisterTemplateNameScopeEntriesIfNeeded(_In_ CDependencyObject* instance)
@@ -382,9 +385,7 @@ _Check_return_ HRESULT CustomWriterRuntimeObjectCreator::RegisterTemplateNameSco
     if (instance->IsTemplateNamescopeMember() && !instance->m_strName.IsNullOrEmpty())
     {
         ASSERT(m_context->GetNameScope()->GetNameScopeType() == Jupiter::NameScoping::NameScopeType::TemplateNameScope);
-        std::shared_ptr<XamlQualifiedObject> qo;
-        IFC_RETURN(XamlQOFromCDOHelper(instance, &qo));
-        IFC_RETURN(m_context->GetNameScope()->RegisterName(instance->m_strName, qo));
+        IFC_RETURN(m_context->GetNameScope()->RegisterName(instance->m_strName, instance));
     }
 
     return S_OK;

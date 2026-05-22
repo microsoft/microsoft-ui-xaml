@@ -61,7 +61,8 @@ Microsoft::WRL::ComPtr<IInspectable> VisualStateGroupCollection::CreateStoryboar
 
     CustomWriterRuntimeObjectCreator creator(
         NameScopeRegistrationMode::SkipRegistration,
-        customRuntimeContext);
+        customRuntimeContext,
+        CustomWriterRuntimeObjectCreator::ContextReference::Strong);
 
     auto deferredToken = customRuntimeData->GetStoryboard(storyboardIdx);
 
