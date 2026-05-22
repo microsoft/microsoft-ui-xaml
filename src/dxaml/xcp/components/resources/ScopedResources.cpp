@@ -505,12 +505,16 @@ namespace Resources { namespace ScopedResources
 
         const CFrameworkElement* whereFound = nullptr;
 
+        // Pre-compute the ResourceKey once so we don't re-hash keyName
+        // for every dictionary we visit walking up the tree.
+        const ResourceKey resourceKey(keyName, false /* keyIsType */);
+
         IFC_RETURN(TraverseVisualTreeResources(
             object,
-            [&keyName, resultObj, resultDict, &whereFound](const CFrameworkElement* fe, CResourceDictionary* dict, bool& done) -> HRESULT
+            [&resourceKey, resultObj, resultDict, &whereFound](const CFrameworkElement* fe, CResourceDictionary* dict, bool& done) -> HRESULT
             {
                 IFCFAILFAST(dict->GetKeyForResourceResolutionNoRef(
-                            keyName,
+                            resourceKey,
                             Resources::LookupScope::LocalOnly,
                             resultObj,
                             resultDict));

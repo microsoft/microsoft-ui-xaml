@@ -5,6 +5,7 @@
 
 #include <BaseValueSource.h>
 #include <CValue.h>
+#include <ResourceDictionaryKey.h>
 #include "weakref_ptr.h"
 
 class CThemeResourceExtension;
@@ -48,7 +49,7 @@ public:
 
     _Check_return_ HRESULT GetLastResolvedThemeValue(_Out_ CValue* pValue) const;
 
-    const xstring_ptr& GetResourceKey() const { return m_strResourceKey; }
+    const xstring_ptr& GetResourceKey() const { return m_resourceKey.GetKey(); }
 
     bool IsValueFromInitialTheme() const { return m_isValueFromInitialTheme; }
 
@@ -72,7 +73,7 @@ public:
 private:
     uint32_t m_cRef;
     uint8_t m_isValueFromInitialTheme : 1;
-    xstring_ptr m_strResourceKey;
+    ResourceKeyStorage m_resourceKey;
 
     _Check_return_ HRESULT SetInitialValueAndTargetDictionary(
         _In_ CDependencyObject* pValue,

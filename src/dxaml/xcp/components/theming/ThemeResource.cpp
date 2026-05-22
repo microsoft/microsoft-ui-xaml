@@ -22,7 +22,7 @@
 
 CThemeResource::CThemeResource(_In_ CThemeResourceExtension* pThemeResourceExtension)
     : m_cRef(1)
-    , m_strResourceKey(pThemeResourceExtension->m_strResourceKey)
+    , m_resourceKey(pThemeResourceExtension->m_strResourceKey, false /* keyIsType */)
     , m_isValueFromInitialTheme(pThemeResourceExtension->IsValueFromInitialTheme())
     , m_pTargetDictionaryWeakRef(pThemeResourceExtension->GetTargetDictionaryWeekRef())
     , m_themeWalkResourceCache(pThemeResourceExtension->m_themeWalkResourceCache)
@@ -72,9 +72,13 @@ CThemeResource::RefreshValue()
     // last resolved value.
     if (pTargetDictionaryNoRef)
     {
+        // Reuse the pre-computed hash from m_resourceKey so we don't
+        // re-hash on every call to RefreshValue.
+        const ResourceKey resourceKey = m_resourceKey.ToResourceKey();
+
         if (m_themeWalkResourceCache)
         {
-            pValueDO = m_themeWalkResourceCache->TryGetCachedResource(pTargetDictionaryNoRef, ResourceKey(m_strResourceKey, false));
+            pValueDO = m_themeWalkResourceCache->TryGetCachedResource(pTargetDictionaryNoRef, resourceKey);
         }
 
         if (pValueDO == nullptr)
@@ -82,14 +86,14 @@ CThemeResource::RefreshValue()
             // Get value
             // GetKeyNoRef doesn't add-ref.
             IFC_RETURN(pTargetDictionaryNoRef->GetKeyNoRef(
-                m_strResourceKey,
+                resourceKey,
                 &pValueDO));
 
             // Cache this value so that we can skip the resource dictionary lookup
             // for other theme resources with the same key.
             if (m_themeWalkResourceCache)
             {
-                m_themeWalkResourceCache->AddCachedResource(pTargetDictionaryNoRef, ResourceKey(m_strResourceKey, false), pValueDO);
+                m_themeWalkResourceCache->AddCachedResource(pTargetDictionaryNoRef, resourceKey, pValueDO);
             }
         }
 
@@ -101,12 +105,12 @@ CThemeResource::RefreshValue()
                 Diagnostics::ResourceLookupLogger* loggerNoRef = pTargetDictionaryNoRef->GetContext()->GetResourceLookupLogger();
                 auto cleanupGuard = wil::scope_exit([&]
                 {
-                    TRACE_HR_NORETURN(loggerNoRef->Stop(m_strResourceKey, traceMessage));
+                    TRACE_HR_NORETURN(loggerNoRef->Stop(m_resourceKey.GetKey(), traceMessage));
                 });
 
-                IFC_RETURN(loggerNoRef->Start(m_strResourceKey, xstring_ptr{}));
+                IFC_RETURN(loggerNoRef->Start(m_resourceKey.GetKey(), xstring_ptr{}));
                 IFC_RETURN(pTargetDictionaryNoRef->GetKeyNoRef(
-                    m_strResourceKey,
+                    resourceKey,
                     &pValueDO));
 			}
 
@@ -115,7 +119,7 @@ CThemeResource::RefreshValue()
             extraInfo.push_back(std::wstring(traceMessage.GetBuffer()));
 
             xephemeral_string_ptr parameters[1];
-            m_strResourceKey.Demote(&parameters[0]);
+            m_resourceKey.GetKey().Demote(&parameters[0]);
             IFC_RETURN_EXTRA_INFO(pTargetDictionaryNoRef->SetAndOriginateError(
                     E_NER_INVALID_OPERATION,
                     RuntimeError,
@@ -178,7 +182,7 @@ CThemeResource::SetThemeResourceBinding(
 {
     CValue valMarkupExtension;
     xref_ptr<CThemeResource> pThemeResource(this);
-    IFCEXPECT_RETURN(!m_strResourceKey.IsNull());
+    IFCEXPECT_RETURN(!m_resourceKey.GetKey().IsNull());
 
     // Don't store live expressions for certain properties like Setter.Value on a Style Setter
     // (live expressions OK on a VSM Setter's Setter.Value; if the VSM Setter value is a ThemeResource
@@ -243,7 +247,7 @@ CThemeResource::LookupResource(
             pThemeResource = make_xref<CThemeResource>(pCore->GetThemeWalkResourceCache());
 
             // Set key
-            pThemeResource->m_strResourceKey = strResourceKey;
+            pThemeResource->m_resourceKey = ResourceKeyStorage(strResourceKey, false /* keyIsType */);
 
             // Set inital value and target dictionary
             IFC_RETURN(pThemeResource->SetInitialValueAndTargetDictionary(

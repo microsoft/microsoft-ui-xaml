@@ -86,6 +86,13 @@ _Check_return_ HRESULT CResourceDictionary::GetKeyNoRef(
     return E_NOTIMPL;
 }
 
+_Check_return_ HRESULT CResourceDictionary::GetKeyNoRef(
+    const ResourceKey&,
+    _Outptr_ CDependencyObject**)
+{
+    return E_NOTIMPL;
+}
+
 bool CResourceDictionary::AllowsResourceOverrides() const
 {
     return false;

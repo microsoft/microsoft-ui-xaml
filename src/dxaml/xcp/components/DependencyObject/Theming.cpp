@@ -27,6 +27,7 @@
 #include <MetadataAPI.h>
 #include <resources.h>
 #include <framework.h>
+#include <PerfOptIn.h>
 #include <stack_allocator.h>
 #include "theming\inc\Theme.h"
 #include "resources\inc\ResourceResolver.h"
@@ -173,51 +174,98 @@ _Check_return_ HRESULT CDependencyObject::NotifyThemeChangedCoreImpl(_In_ Theme 
     IFC_RETURN(UpdateAllThemeReferences());
 
     // Notify field-backed property values of theme change.
-    for (const CPropertyBase* pProperty = pClassInfo->GetFirstProperty();
-         pProperty->GetIndex() != KnownPropertyIndex::UnknownType_UnknownProperty;
-         pProperty = pProperty->GetNextProperty())
+    if (IsPerfOptInEnabled())
     {
-        if (ShouldNotifyPropertyOfThemeChange(pProperty->GetIndex()))
+        // Use the pre-computed object property list instead of iterating all properties.
+        // This skips non-object properties (strings, ints, bools, etc.) that can never
+        // contribute to theme change propagation.
+        // This list can still include valueAny properties.  In that case
+        // GetDependencyObjectFromPropertyStorage reads the backing CValue directly and
+        // only notifies when the current value is actually a DO.
+        // Only CSetter::NotifyThemeChangedCore calls this function with ignoreGetValueFailures = true.
+        // For that case, valueAny properties still need GetValueByIndex() so Setter.Value can
+        // lazily resolve before we try to notify the current object value.
+        const CObjectDependencyProperty* pNullObjectProperty = MetadataAPI::GetNullObjectProperty();
+        for (const CObjectDependencyProperty* pObjectProperty = pClassInfo->GetFirstObjectProperty();
+             pObjectProperty != pNullObjectProperty;
+             pObjectProperty = pObjectProperty->GetNextProperty())
         {
-            const CDependencyProperty* pDP = pProperty->AsOrNull<CDependencyProperty>();
-
-            if (pDP && pDP->GetOffset() != 0 && !pDP->IsPropMethodCall())
+            if (ShouldNotifyPropertyOfThemeChange(pObjectProperty->m_nPropertyIndex))
             {
-                CDependencyObject *pDONoRef = nullptr;
+                const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(pObjectProperty->m_nPropertyIndex);
+                CDependencyObject* pDONoRef = nullptr;
 
-                // If property value is an object, notify it that theme has changed
-                if (pDP->GetStorageType() == valueObject)
-                {
-                    pDONoRef = MapPropertyAndGroupOffsetToDO(pDP->GetOffset(), pDP->GetGroupOffset());
-                }
-                else if (pDP->GetStorageType() == valueAny)
+                if (ignoreGetValueFailures && pDP->GetStorageType() == valueAny)
                 {
                     CValue value;
-                    if (ignoreGetValueFailures)
+                    if (SUCCEEDED(GetValueByIndex(pDP->GetIndex(), &value)))
                     {
-                        if (SUCCEEDED(GetValueByIndex(pDP->GetIndex(), &value)))
-                        {
-                            pDONoRef = value.AsObject();
-                        }
-                    }
-                    else
-                    {
-                        IFC_RETURN(GetValueByIndex(pDP->GetIndex(), &value));
                         pDONoRef = value.AsObject();
                     }
                 }
+                else
+                {
+                    // The object property list is limited to field-backed properties whose storage can
+                    // directly hold an object reference, so we can read that storage without paying
+                    // the full GetValueByIndex() cost when lazy resolution is not needed.
+                    pDONoRef = GetDependencyObjectFromPropertyStorage(pDP);
+                }
 
-                // Any DependencyObject property that happens to be a UIElement in the visual tree is skipped.
-                // This is to avoid processing those live elements multiple times, as they are covered anyways via a full
-                // traversal of the live visual tree starting from the root and going recursive in CUIElement::NotifyThemeChangedCore.
-                // This in particular avoids processing an ItemsControl’s host panel multiple times since the ItemsControl.ItemsHost
-                // property is a live UIElement (pProperty->GetIndex() is ItemsControl_ItemsHost for this case).
-
-                // Note that when a UIElement enters the tree, it also applies the current theme through a call to UpdateAllThemeReferences
-                // in CDependencyObject::EnterImpl.
                 if (pDONoRef != nullptr && !(pDONoRef->OfTypeByIndex<KnownTypeIndex::UIElement>() && pDONoRef->IsActive()))
                 {
                     IFC_RETURN(pDONoRef->NotifyThemeChanged(theme, forceRefresh));
+                }
+            }
+        }
+    }
+    else
+    {
+        for (const CPropertyBase* pProperty = pClassInfo->GetFirstProperty();
+             pProperty->GetIndex() != KnownPropertyIndex::UnknownType_UnknownProperty;
+             pProperty = pProperty->GetNextProperty())
+        {
+            if (ShouldNotifyPropertyOfThemeChange(pProperty->GetIndex()))
+            {
+                const CDependencyProperty* pDP = pProperty->AsOrNull<CDependencyProperty>();
+
+                if (pDP && pDP->GetOffset() != 0 && !pDP->IsPropMethodCall())
+                {
+                    CDependencyObject *pDONoRef = nullptr;
+
+                    // If property value is an object, notify it that theme has changed
+                    if (pDP->GetStorageType() == valueObject)
+                    {
+                        pDONoRef = MapPropertyAndGroupOffsetToDO(pDP->GetOffset(), pDP->GetGroupOffset());
+                    }
+                    else if (pDP->GetStorageType() == valueAny)
+                    {
+                        CValue value;
+                        if (ignoreGetValueFailures)
+                        {
+                            if (SUCCEEDED(GetValueByIndex(pDP->GetIndex(), &value)))
+                            {
+                                pDONoRef = value.AsObject();
+                            }
+                        }
+                        else
+                        {
+                            IFC_RETURN(GetValueByIndex(pDP->GetIndex(), &value));
+                            pDONoRef = value.AsObject();
+                        }
+                    }
+
+                    // Any DependencyObject property that happens to be a UIElement in the visual tree is skipped.
+                    // This is to avoid processing those live elements multiple times, as they are covered anyways via a full
+                    // traversal of the live visual tree starting from the root and going recursive in CUIElement::NotifyThemeChangedCore.
+                    // This in particular avoids processing an ItemsControl's host panel multiple times since the ItemsControl.ItemsHost
+                    // property is a live UIElement (pProperty->GetIndex() is ItemsControl_ItemsHost for this case).
+
+                    // Note that when a UIElement enters the tree, it also applies the current theme through a call to UpdateAllThemeReferences
+                    // in CDependencyObject::EnterImpl.
+                    if (pDONoRef != nullptr && !(pDONoRef->OfTypeByIndex<KnownTypeIndex::UIElement>() && pDONoRef->IsActive()))
+                    {
+                        IFC_RETURN(pDONoRef->NotifyThemeChanged(theme, forceRefresh));
+                    }
                 }
             }
         }

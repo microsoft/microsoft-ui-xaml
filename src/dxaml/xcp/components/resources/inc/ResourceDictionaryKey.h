@@ -68,6 +68,11 @@ struct ResourceKeyStorage
         return m_hashAndIsKeyType & ResourceDictionaryKey::details::c_isTypeKeyMask;
     }
 
+    // Creates a transient ResourceKey that references this storage's key
+    // and reuses its pre-computed hash.  The returned ResourceKey is only
+    // valid while this ResourceKeyStorage is alive.
+    inline ResourceKey ToResourceKey() const;
+
 private:
     explicit ResourceKeyStorage(const xstring_ptr& key, std::size_t hashAndIsKeyType)
         : m_key(key)
@@ -86,9 +91,18 @@ struct ResourceKey
 {
     template <typename T, typename U> friend bool ResourceDictionaryKey::Compare::equals(const T& lhs, const U& rhs);
 
+    // Tag type for constructing a ResourceKey with a pre-computed hash,
+    // skipping the hash computation on the key string.
+    struct PrecomputedHash {};
+
     explicit ResourceKey(const xstring_ptr_view& key, bool keyIsType)
         : m_key(key)
         , m_hashAndIsKeyType(ResourceDictionaryKey::details::EncodeHashAndIsType(key, keyIsType))
+    {}
+
+    explicit ResourceKey(const xstring_ptr_view& key, std::size_t precomputedHashAndIsKeyType, PrecomputedHash)
+        : m_key(key)
+        , m_hashAndIsKeyType(precomputedHashAndIsKeyType)
     {}
 
     // Constructor to reuse key hash and modify key-is-type.
@@ -147,6 +161,11 @@ private:
     std::size_t m_hashAndIsKeyType;
     bool m_shouldFilter = true;
 };
+
+inline ResourceKey ResourceKeyStorage::ToResourceKey() const
+{
+    return ResourceKey(m_key, m_hashAndIsKeyType, ResourceKey::PrecomputedHash{});
+}
 
 namespace std
 {

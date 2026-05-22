@@ -570,6 +570,15 @@ CResourceDictionary::GetKeyNoRef(
 }
 
 _Check_return_ HRESULT
+CResourceDictionary::GetKeyNoRef(
+    const ResourceKey& key,
+    _Outptr_ CDependencyObject** keyNoRef)
+{
+    *keyNoRef = nullptr;
+    return GetKeyNoRefImpl(key, Resources::LookupScope::All, keyNoRef);
+}
+
+_Check_return_ HRESULT
 CResourceDictionary::GetImplicitStyleKeyNoRef(
     const xstring_ptr_view& strKey,
     Resources::LookupScope resourceLookupScope,

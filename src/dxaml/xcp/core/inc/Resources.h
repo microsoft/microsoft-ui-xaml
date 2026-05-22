@@ -221,6 +221,11 @@ public:
         const xstring_ptr_view& strKey,
         _Outptr_ CDependencyObject **ppDO);
 
+    // Overload that accepts a pre-built ResourceKey, avoiding re-hashing the key string.
+    _Check_return_ HRESULT GetKeyNoRef(
+        const ResourceKey& key,
+        _Outptr_ CDependencyObject **ppDO);
+
     // Overload to GetKeyNoRef, takes a resourceLookupScope parameter which allows
     // the caller to specify the scope of the resource lookup if the key is not
     // first found in the current dictionary.

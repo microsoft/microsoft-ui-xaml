@@ -501,7 +501,9 @@ CDependencyObject* CDependencyObject::GetParentFollowPopups()
 {
     CDependencyObject* parent = GetParentInternal();
 
-    if (parent == nullptr || !parent->OfTypeByIndex<KnownTypeIndex::PopupRoot>())
+    // CPopupRoot is final, so a direct type index check is equivalent to
+    // OfTypeByIndex but avoids the type hierarchy walk.
+    if (parent == nullptr || parent->GetTypeIndex() != KnownTypeIndex::PopupRoot)
     {
         return parent;
     }
