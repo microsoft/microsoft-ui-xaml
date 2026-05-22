@@ -535,6 +535,240 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
+    void CommandingIntegrationTests::ValidateKeyboardAcceleratorsAddedAfterCommandAssignmentNotPropagated()
+    {
+        // This test validates a known behavioral limitation: the binding between a
+        // XamlUICommand's KeyboardAccelerators collection and a target element (e.g.
+        // Button) is a property-level binding, not a collection-change binding.
+        // The DirectSourceBindingExpression listens for DP change notifications on
+        // XamlUICommand.KeyboardAccelerators, which only fire when the entire collection
+        // object is replaced, NOT when items are added/removed within the collection.
+        // Since KeyboardAccelerators is a get-only property (no setter), the collection
+        // object never changes, so late additions never trigger the binding.
+        //
+        // Because of this, the early-out optimization in BindToKeyboardAcceleratorsIfUnset
+        // (which skips binding setup when the command has no accelerators) is safe.
+        TestCleanupWrapper cleanup;
+
+        auto loadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::StackPanel, Loaded);
+
+        xaml_controls::Button^ button;
+
+        RunOnUIThread([&]
+        {
+            // Create a XamlUICommand with NO keyboard accelerators initially.
+            auto uiCommand = ref new xaml_input::XamlUICommand();
+            uiCommand->Label = ref new Platform::String(L"Test command");
+
+            // Create a Button and assign the command.
+            button = ref new xaml_controls::Button();
+            button->Command = uiCommand;
+
+            // Now add a keyboard accelerator to the command AFTER it's been assigned.
+            auto accelerator = ref new xaml_input::KeyboardAccelerator();
+            accelerator->Key = ::Windows::System::VirtualKey::T;
+            accelerator->Modifiers = ::Windows::System::VirtualKeyModifiers::Control;
+            uiCommand->KeyboardAccelerators->Append(accelerator);
+
+            // Verify the accelerator is on the command.
+            VERIFY_ARE_EQUAL(1u, uiCommand->KeyboardAccelerators->Size);
+
+            // Verify the accelerator was NOT propagated to the button,
+            // since the binding was never set up (early-out optimization)
+            // and even if it had been, collection mutations don't trigger
+            // the DP change notification that would refresh the binding.
+            VERIFY_ARE_EQUAL(0u, button->KeyboardAccelerators->Size);
+
+            auto stackPanel = ref new xaml_controls::StackPanel();
+            stackPanel->Children->Append(button);
+
+            loadedRegistration.Attach(stackPanel, [loadedEvent]()
+            {
+                loadedEvent->Set();
+            });
+
+            TestServices::WindowHelper->WindowContent = stackPanel;
+        });
+
+        loadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Verify again after layout that the accelerator still hasn't propagated.
+        RunOnUIThread([&]
+        {
+            VERIFY_ARE_EQUAL(0u, button->KeyboardAccelerators->Size);
+        });
+    }
+
+        void CommandingIntegrationTests::ValidateLaterKeyboardAcceleratorsIgnored()
+    {
+        // This test validates a known behavioral limitation: the binding between a
+        // XamlUICommand's KeyboardAccelerators collection and a target element (e.g.
+        // Button) is a property-level binding, not a collection-change binding.
+        // The DirectSourceBindingExpression listens for DP change notifications on
+        // XamlUICommand.KeyboardAccelerators, which only fire when the entire collection
+        // object is replaced, NOT when items are added/removed within the collection.
+        // Since KeyboardAccelerators is a get-only property (no setter), the collection
+        // object never changes, so late additions never trigger the binding.
+        //
+        // Because of this, the early-out optimization in BindToKeyboardAcceleratorsIfUnset
+        // (which skips binding setup when the command has no accelerators) is safe.
+        //
+        // In contrast, scalar properties like Label, Description, and AccessKey ARE
+        // standard DP-to-DP OneWay bindings, so changes to those properties on the
+        // XamlUICommand DO propagate to the target element after binding is established.
+        TestCleanupWrapper cleanup;
+
+        auto loadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::StackPanel, Loaded);
+
+        xaml_controls::Button^ button;
+        xaml_input::XamlUICommand^ uiCommand;
+
+        RunOnUIThread([&]
+        {
+            // Create a XamlUICommand with NO keyboard accelerators initially.
+            uiCommand = ref new xaml_input::XamlUICommand();
+            uiCommand->Label = ref new Platform::String(L"Test command");
+            uiCommand->Description = ref new Platform::String(L"Test description");
+            uiCommand->AccessKey = ref new Platform::String(L"T");
+
+            // Create a Button and assign the command.
+            button = ref new xaml_controls::Button();
+            button->Command = uiCommand;
+
+            // Verify the initial scalar property bindings propagated.
+            auto content = safe_cast<Platform::String^>(button->Content);
+            VERIFY_ARE_EQUAL(Platform::String::CompareOrdinal(content, L"Test command"), 0);
+            VERIFY_ARE_EQUAL(Platform::String::CompareOrdinal(button->AccessKey, L"T"), 0);
+
+            // Now add a keyboard accelerator to the command AFTER it's been assigned.
+            auto accelerator = ref new xaml_input::KeyboardAccelerator();
+            accelerator->Key = ::Windows::System::VirtualKey::T;
+            accelerator->Modifiers = ::Windows::System::VirtualKeyModifiers::Control;
+            uiCommand->KeyboardAccelerators->Append(accelerator);
+
+            // Verify the accelerator is on the command.
+            VERIFY_ARE_EQUAL(1u, uiCommand->KeyboardAccelerators->Size);
+
+            // Verify the accelerator was NOT propagated to the button,
+            // since the binding was never set up (early-out optimization)
+            // and even if it had been, collection mutations don't trigger
+            // the DP change notification that would refresh the binding.
+            VERIFY_ARE_EQUAL(0u, button->KeyboardAccelerators->Size);
+
+            // Now change the scalar properties AFTER binding is established.
+            // These should propagate because they are standard DP-to-DP OneWay bindings.
+            uiCommand->Label = ref new Platform::String(L"Updated label");
+            uiCommand->Description = ref new Platform::String(L"Updated description");
+            uiCommand->AccessKey = ref new Platform::String(L"U");
+
+            // Verify the scalar property changes DID propagate to the button.
+            auto updatedContent = safe_cast<Platform::String^>(button->Content);
+            VERIFY_ARE_EQUAL(Platform::String::CompareOrdinal(updatedContent, L"Updated label"), 0);
+            VERIFY_ARE_EQUAL(Platform::String::CompareOrdinal(button->AccessKey, L"U"), 0);
+
+            auto stackPanel = ref new xaml_controls::StackPanel();
+            stackPanel->Children->Append(button);
+
+            loadedRegistration.Attach(stackPanel, [loadedEvent]()
+            {
+                loadedEvent->Set();
+            });
+
+            TestServices::WindowHelper->WindowContent = stackPanel;
+        });
+
+        loadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Verify again after layout that the accelerator still hasn't propagated,
+        // but the scalar properties remain correct.
+        RunOnUIThread([&]
+        {
+            VERIFY_ARE_EQUAL(0u, button->KeyboardAccelerators->Size);
+
+            auto finalContent = safe_cast<Platform::String^>(button->Content);
+            VERIFY_ARE_EQUAL(Platform::String::CompareOrdinal(finalContent, L"Updated label"), 0);
+            VERIFY_ARE_EQUAL(Platform::String::CompareOrdinal(button->AccessKey, L"U"), 0);
+        });
+    }
+
+    void CommandingIntegrationTests::ValidateInitialAcceleratorPropagatedButLateAdditionNot()
+    {
+        // This test validates that when a XamlUICommand has a keyboard accelerator
+        // set BEFORE being assigned to a Button, that initial accelerator IS propagated
+        // to the button. However, adding another accelerator AFTER assignment does NOT
+        // propagate, because the binding is property-level (not collection-change-level).
+        TestCleanupWrapper cleanup;
+
+        auto loadedEvent = std::make_shared<Event>();
+        auto loadedRegistration = CreateSafeEventRegistration(xaml_controls::StackPanel, Loaded);
+
+        xaml_controls::Button^ button;
+        xaml_input::XamlUICommand^ uiCommand;
+
+        RunOnUIThread([&]
+        {
+            // Create a XamlUICommand with one keyboard accelerator set initially.
+            uiCommand = ref new xaml_input::XamlUICommand();
+            uiCommand->Label = ref new Platform::String(L"Test command");
+
+            auto initialAccelerator = ref new xaml_input::KeyboardAccelerator();
+            initialAccelerator->Key = ::Windows::System::VirtualKey::T;
+            initialAccelerator->Modifiers = ::Windows::System::VirtualKeyModifiers::Control;
+            uiCommand->KeyboardAccelerators->Append(initialAccelerator);
+
+            VERIFY_ARE_EQUAL(1u, uiCommand->KeyboardAccelerators->Size);
+
+            // Create a Button and assign the command.
+            button = ref new xaml_controls::Button();
+            button->Command = uiCommand;
+
+            // Verify the initial accelerator WAS propagated to the button.
+            VERIFY_ARE_EQUAL(1u, button->KeyboardAccelerators->Size);
+            VERIFY_ARE_EQUAL(::Windows::System::VirtualKey::T, button->KeyboardAccelerators->GetAt(0)->Key);
+            VERIFY_ARE_EQUAL(::Windows::System::VirtualKeyModifiers::Control, button->KeyboardAccelerators->GetAt(0)->Modifiers);
+
+            // Now add another keyboard accelerator to the command AFTER assignment.
+            auto lateAccelerator = ref new xaml_input::KeyboardAccelerator();
+            lateAccelerator->Key = ::Windows::System::VirtualKey::U;
+            lateAccelerator->Modifiers = ::Windows::System::VirtualKeyModifiers::Control;
+            uiCommand->KeyboardAccelerators->Append(lateAccelerator);
+
+            // Verify both accelerators are on the command.
+            VERIFY_ARE_EQUAL(2u, uiCommand->KeyboardAccelerators->Size);
+
+            // Verify only the initial accelerator is on the button - the late
+            // addition was NOT propagated because the binding listens for DP
+            // change notifications, not collection mutations.
+            VERIFY_ARE_EQUAL(1u, button->KeyboardAccelerators->Size);
+
+            auto stackPanel = ref new xaml_controls::StackPanel();
+            stackPanel->Children->Append(button);
+
+            loadedRegistration.Attach(stackPanel, [loadedEvent]()
+            {
+                loadedEvent->Set();
+            });
+
+            TestServices::WindowHelper->WindowContent = stackPanel;
+        });
+
+        loadedEvent->WaitForDefault();
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Verify again after layout that only the initial accelerator is on the button.
+        RunOnUIThread([&]
+        {
+            VERIFY_ARE_EQUAL(2u, uiCommand->KeyboardAccelerators->Size);
+            VERIFY_ARE_EQUAL(1u, button->KeyboardAccelerators->Size);
+            VERIFY_ARE_EQUAL(::Windows::System::VirtualKey::T, button->KeyboardAccelerators->GetAt(0)->Key);
+            VERIFY_ARE_EQUAL(::Windows::System::VirtualKeyModifiers::Control, button->KeyboardAccelerators->GetAt(0)->Modifiers);
+        });
+    }
+
     void CommandingIntegrationTests::ValidateSelectionFlyoutDismissalOnPointerMove()
     {
         ValidateSelectionFlyoutDismissalOnPointerMove(false /* shouldExpandBeforePointerMove */);

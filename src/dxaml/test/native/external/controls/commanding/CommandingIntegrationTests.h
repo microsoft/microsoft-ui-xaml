@@ -88,6 +88,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that CommandBarFlyout does not encounter a layout cycle at 125%.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateKeyboardAcceleratorsAddedAfterCommandAssignmentNotPropagated)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that keyboard accelerators added to a XamlUICommand after it has been assigned as a Button's Command are not propagated to the Button.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateLaterKeyboardAcceleratorsIgnored)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that if the app changes the XamlUICommand.KeyboardAccelerator object after the XamlUICommand has been bound, the target's KeyboardAccelerators are NOT updated.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateInitialAcceleratorPropagatedButLateAdditionNot)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that a keyboard accelerator set on a XamlUICommand before assigning the command to a Button is propagated, but a later addition is not.")
+        END_TEST_METHOD()
+
     private:
         void ValidateSelectionFlyoutDismissalOnPointerMove(bool shouldExpandBeforePointerMove);
 

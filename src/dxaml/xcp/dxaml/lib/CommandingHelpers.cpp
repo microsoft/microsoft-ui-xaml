@@ -239,6 +239,36 @@ _Check_return_ HRESULT CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
     _In_ IXamlUICommand* uiCommand,
     _In_ UIElement* target)
 {
+    auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand);
+    if (!sourceDO)
+    {
+        return S_OK;
+    }
+
+    // Early out if the command has no keyboard accelerators materialized.
+    // This avoids expensive binding setup work (converter creation, target collection
+    // access, etc.) when the command never had accelerators set. Since we don't
+    // subscribe to collection change events, accelerators added to the command
+    // later won't be picked up anyway, so this is safe.
+    if (!sourceDO->GetHandle()->IsEffectiveValueInSparseStorage(
+            KnownPropertyIndex::XamlUICommand_KeyboardAccelerators))
+    {
+        return S_OK;
+    }
+
+    // The collection was materialized but might be empty (e.g. if the getter was
+    // called without adding any items). Check the count before proceeding.
+    {
+        ctl::ComPtr<wfc::IVector<xaml_input::KeyboardAccelerator*>> commandKeyboardAccelerators;
+        UINT commandKeyboardAcceleratorCount = 0;
+        IFC_RETURN(uiCommand->get_KeyboardAccelerators(&commandKeyboardAccelerators));
+        IFC_RETURN(commandKeyboardAccelerators->get_Size(&commandKeyboardAcceleratorCount));
+        if (commandKeyboardAcceleratorCount == 0)
+        {
+            return S_OK;
+        }
+    }
+
     ctl::ComPtr<wfc::IVector<xaml_input::KeyboardAccelerator*>> targetKeyboardAccelerators;
     UINT targetKeyboardAcceleratorCount;
 
@@ -249,12 +279,9 @@ _Check_return_ HRESULT CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
     {
         // Use lightweight DirectSourceBindingExpression with converter
         // The KeyboardAcceleratorCopyConverter creates copies and internal bindings
-        if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
-        {
-            ctl::ComPtr<KeyboardAcceleratorCopyConverter> converter;
-            IFC_RETURN(ctl::make(&converter));
-            IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_KeyboardAccelerators, target, KnownPropertyIndex::UIElement_KeyboardAccelerators, converter.Get()));
-        }
+        ctl::ComPtr<KeyboardAcceleratorCopyConverter> converter;
+        IFC_RETURN(ctl::make(&converter));
+        IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_KeyboardAccelerators, target, KnownPropertyIndex::UIElement_KeyboardAccelerators, converter.Get()));
     }
 
     return S_OK;
