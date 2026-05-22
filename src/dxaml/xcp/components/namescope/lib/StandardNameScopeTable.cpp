@@ -50,7 +50,7 @@ namespace Jupiter {
 
         /* static */ void StandardNameScopeTable::MoveEntries(StandardNameScopeTable* pSource, StandardNameScopeTable* pDestination)
         {
-            for (auto entry : pSource->m_entries)
+            for (auto& entry : pSource->m_entries)
             {
                 pDestination->RegisterNameImpl(entry.first, std::move(entry.second));
             }

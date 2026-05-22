@@ -54,7 +54,7 @@ winrt::AutomationPeer ExpanderAutomationPeer::GetExpanderToggleButtonPeer()
     // We are not going to call the overriden one because that one doesn't have the toggle button.
     auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
 
-    for (auto peer : childrenPeers)
+    for (const auto& peer : childrenPeers)
     {
         if (peer.GetAutomationId() == s_ExpanderToggleButtonName)
         {
@@ -116,7 +116,7 @@ winrt::IVector<winrt::AutomationPeer> ExpanderAutomationPeer::GetChildrenCore()
     auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
     auto peers = winrt::make<Vector<winrt::AutomationPeer, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>(
                                         static_cast<int>(childrenPeers.Size() - 1) /* capacity */);
-    for (auto peer : childrenPeers)
+    for (const auto& peer : childrenPeers)
     {
         if (peer.GetAutomationId() != s_ExpanderToggleButtonName)
         {
@@ -126,7 +126,7 @@ winrt::IVector<winrt::AutomationPeer> ExpanderAutomationPeer::GetChildrenCore()
         {
             // If it is ExpanderToggleButton, we want to exclude it but add its children into the peer 
             auto expanderToggleButtonChildrenPeers = peer.GetChildrenCore();
-            for (auto expanderHeaderPeer : expanderToggleButtonChildrenPeers)
+            for (const auto& expanderHeaderPeer : expanderToggleButtonChildrenPeers)
             {
                 peers.Append(expanderHeaderPeer);
             }

@@ -241,7 +241,7 @@ winrt::IVectorView<winrt::IndexPath> SelectionModel::SelectedIndices()
         {
             unsigned int currentIndex = 0;
             winrt::IndexPath path{ nullptr };
-            for (const auto info : infos)
+            for (const auto& info : infos)
             {
                 if (const auto node = info.Node.lock())
                 {

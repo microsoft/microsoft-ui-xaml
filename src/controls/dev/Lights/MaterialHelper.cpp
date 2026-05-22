@@ -77,9 +77,9 @@ void MaterialHelperBase::OnRevealBrushDisconnected()
     if (instance->m_revealBrushConnectedCount == 0)
     {
         // Remove all the lights we created/attached previously now that there's no RevealBrushes active.
-        for (auto pair : instance->m_revealLightsToRemove)
+        for (const auto& pair : instance->m_revealLightsToRemove)
         {
-            for (auto lightToRemove : pair.second)
+            for (const auto& lightToRemove : pair.second)
             {
                 uint32_t index{};
                 if (pair.first.IndexOf(lightToRemove, index))

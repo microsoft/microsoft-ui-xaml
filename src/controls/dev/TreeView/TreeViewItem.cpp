@@ -80,7 +80,7 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
                 {
                     const auto droppedOnNode = treeView->NodeFromContainer(droppedOnItem);
                     const auto selectedRoots = treeViewList->GetRootsOfSelectedSubtrees();
-                    for (const auto node : selectedRoots)
+                    for (const auto& node : selectedRoots)
                     {
                         const auto nodeIndex = treeViewList->FlatIndex(node);
                         if (treeViewList->IsFlatIndexValid(nodeIndex))

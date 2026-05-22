@@ -3027,7 +3027,7 @@ void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, c
                             }
                         }
 
-                        for (auto nvib : containersWithTabFocusOff)
+                        for (const auto& nvib : containersWithTabFocusOff)
                         {
                             nvib.IsTabStop(true);
                         }

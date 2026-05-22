@@ -81,7 +81,7 @@ namespace VisualStateSetterHelper
         _In_ SetterOperation operation,
         _In_ xref_ptr<CDependencyObject> targetObject,
         _In_ const CDependencyProperty* targetProperty,
-        _In_ const CValue value,
+        _In_ const CValue& value,
         _In_ xref_ptr<CDependencyObject> originalSetter,
         _In_ const bool forceDeferOperation)
     {

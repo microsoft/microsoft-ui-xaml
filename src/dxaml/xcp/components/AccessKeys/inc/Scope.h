@@ -82,9 +82,9 @@ namespace AccessKeys {
         // Shows all access keys in the scope.  Calls ShowAccessKey for each AccessKey owner in this scope.
         _Check_return_ HRESULT ShowAccessKeys() const
         {
-            for (const auto pair : accessKeyOwners)
+            for (const auto& pair : accessKeyOwners)
             {
-                std::shared_ptr<Owner> owner = pair.second;
+                auto& owner = pair.second;
                 IFC_RETURN(owner->ShowAccessKey(L"" /*pressed keys - empty string means no keys pressed*/));
             }
 
@@ -93,9 +93,9 @@ namespace AccessKeys {
 
         _Check_return_ HRESULT HideAccessKeys() const
         {
-            for (const auto pair : accessKeyOwners)
+            for (const auto& pair : accessKeyOwners)
             {
-                std::shared_ptr<Owner> owner = pair.second;
+                auto& owner = pair.second;
                 IFC_RETURN(owner->HideAccessKey());
             }
 
@@ -199,7 +199,7 @@ namespace AccessKeys {
             invokeResult.invokeAttempted = false;
             for (const auto& pair : accessKeyOwners)
             {
-                std::shared_ptr<Owner> owner = pair.second;
+                auto& owner = pair.second;
 
                 if (owner->GetAccessKey() == inputKey)
                 {
@@ -219,9 +219,9 @@ namespace AccessKeys {
         // matches the starting key sequence of at least one AKOwner's AKAccessKey.  False otherwise.
         bool HasPartialMatch(const AKAccessKey& inputKey) const
         {
-            for (const auto pair : accessKeyOwners)
+            for (const auto& pair : accessKeyOwners)
             {
-                std::shared_ptr<Owner> owner = pair.second;
+                auto& owner = pair.second;
 
                 if (inputKey.IsPartialMatch(owner->GetAccessKey()))
                 {
@@ -233,9 +233,9 @@ namespace AccessKeys {
 
         _Check_return_ HRESULT UpdatePartialMatchAccessKeyVisibility(const AKAccessKey& inputKey) const
         {
-            for (const auto pair : accessKeyOwners)
+            for (const auto& pair : accessKeyOwners)
             {
-                std::shared_ptr<Owner> owner = pair.second;
+                auto& owner = pair.second;
 
                 // For partialMatches and non-matches, send a showAccessKey/HideAccessKey event to the owner->  This way
                 // visuals can be updated to reflect each key stroke (both positive match feedback, and negative match feedback).

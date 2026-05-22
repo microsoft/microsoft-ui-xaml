@@ -195,7 +195,7 @@ namespace RuntimeProfiler {
 
     void FireEvent(bool bSuspend) noexcept
     {
-        for (auto group : gProfileGroups)
+        for (const auto& group : gProfileGroups)
         {
             group.pGroup->FireEvent(bSuspend);
         }

@@ -137,7 +137,7 @@ _Check_return_ HRESULT VisualStateManagerDataSource::ApplyPropertySetters(
     _In_ const VisualStateSetterHelper::ResolvedVisualStateSetterCollection& propertySetters,
     _In_ const bool forceDeferOperation)
 {
-    for (auto setter : propertySetters)
+    for (const auto& setter : propertySetters)
     {
         // TODO: Debugger check is (hopefully) a temporary measure that will be removed at a later date
         HRESULT hr = VisualStateSetterHelper::PerformAnimatedValueOperation(

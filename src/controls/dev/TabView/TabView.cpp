@@ -1323,7 +1323,7 @@ void TabView::UpdateTabWidths(bool shouldUpdateWidths, bool fillAllAvailableSpac
 
     if (shouldUpdateWidths || TabWidthMode() != winrt::TabViewWidthMode::Equal)
     {
-        for (auto item : TabItems())
+        for (const auto& item : TabItems())
         {
             // Set the calculated width on each tab.
             auto tvi = item.try_as<winrt::TabViewItem>();

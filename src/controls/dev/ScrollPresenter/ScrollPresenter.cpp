@@ -2106,7 +2106,7 @@ void ScrollPresenter::SetupSnapPoints(
     }
     else
     {
-        for (auto snapPointWrapper : *snapPointsSet)
+        for (const auto& snapPointWrapper : *snapPointsSet)
         {
             winrt::InteractionTrackerInertiaRestingValue modifier = GetInertiaRestingValue(
                 snapPointWrapper,
@@ -2156,7 +2156,7 @@ void ScrollPresenter::UpdateSnapPointsRanges(
     std::shared_ptr<SnapPointWrapper<T>> previousSnapPointWrapper = nullptr;
     std::shared_ptr<SnapPointWrapper<T>> nextSnapPointWrapper = nullptr;
 
-    for (auto snapPointWrapper : *snapPointsSet)
+    for (const auto& snapPointWrapper : *snapPointsSet)
     {
         previousSnapPointWrapper = currentSnapPointWrapper;
         currentSnapPointWrapper = nextSnapPointWrapper;
@@ -2209,7 +2209,7 @@ void ScrollPresenter::UpdateSnapPointsIgnoredValue(
         winrt::Compositor compositor = m_interactionTracker.Compositor();
         winrt::IVector<winrt::InteractionTrackerInertiaModifier> modifiers = winrt::make<Vector<winrt::InteractionTrackerInertiaModifier>>();
 
-        for (auto snapPointWrapper : *snapPointsSet)
+        for (const auto& snapPointWrapper : *snapPointsSet)
         {
             auto modifier = winrt::InteractionTrackerInertiaRestingValue::Create(compositor);
             auto const [conditionExpressionAnimation, restingValueExpressionAnimation] = snapPointWrapper->GetUpdatedExpressionAnimationsForImpulse();
@@ -2244,7 +2244,7 @@ bool ScrollPresenter::UpdateSnapPointsIgnoredValue(
 {
     bool ignoredValueUpdated = false;
 
-    for (auto snapPointWrapper : *snapPointsSet)
+    for (const auto& snapPointWrapper : *snapPointsSet)
     {
         if (snapPointWrapper->ResetIgnoredValue())
         {
@@ -2255,7 +2255,7 @@ bool ScrollPresenter::UpdateSnapPointsIgnoredValue(
 
     int snapCount = 0;
 
-    for (auto snapPointWrapper : *snapPointsSet)
+    for (const auto& snapPointWrapper : *snapPointsSet)
     {
         const SnapPointBase* snapPoint = SnapPointWrapper<T>::GetSnapPointFromWrapper(snapPointWrapper);
 
@@ -2269,7 +2269,7 @@ bool ScrollPresenter::UpdateSnapPointsIgnoredValue(
 
     if (snapCount > 1)
     {
-        for (auto snapPointWrapper : *snapPointsSet)
+        for (const auto& snapPointWrapper : *snapPointsSet)
         {
             if (snapPointWrapper->SnapsAt(newIgnoredValue))
             {

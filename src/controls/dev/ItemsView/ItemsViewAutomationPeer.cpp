@@ -69,7 +69,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> ItemsViewAutomationPeer::GetS
                 {
                     if (const auto repeater = ItemsViewTestHooks::GetItemsRepeaterPart(*itemsView))
                     {
-                        for (const auto indexPath : selectedIndices)
+                        for (const auto& indexPath : selectedIndices)
                         {
                             // TODO: Update once ItemsView has grouping.
                             const auto index = indexPath.GetAt(0);

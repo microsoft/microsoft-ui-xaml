@@ -613,7 +613,7 @@ void RevealBrush::AttachLightsToElement(const winrt::UIElement& element, bool tr
     auto lights = element.Lights();
 
     bool hasRevealBorderLights = false;
-    for (auto light : lights)
+    for (const auto& light : lights)
     {
         if (auto self = light.try_as<winrt::RevealBorderLight>())
         {
@@ -708,7 +708,7 @@ void RevealBrush::OnIsContainerPropertyChanged(
         else
         {
             // Step through all of the lights
-            for (auto light : lights)
+            for (const auto& light : lights)
             {
                 if (auto self = light.try_as<winrt::RevealHoverLight>())
                 {
@@ -747,7 +747,7 @@ void RevealBrush::OnStatePropertyChanged(
             auto lights = uiElement.Lights();
             MUX_ASSERT(lights.Size() == 2);
 
-            for (auto light : lights)
+            for (const auto& light : lights)
             {
                 if (auto hoverLight = light.try_as<winrt::RevealHoverLight>())
                 {

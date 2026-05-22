@@ -42,7 +42,7 @@ void CTimeManager::CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp
         currentNodeNoRef = currentNodeNoRef->m_pNextNoRef;
     }
 
-    for (auto cdo : m_targetDOs)
+    for (const auto& cdo : m_targetDOs)
     {
         cdo->CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
     }
@@ -339,7 +339,7 @@ void CTimeManager::UpdateTargetDOs(_In_ WUComp::ICompositor* wucCompositor)
 {
     WinRTExpressionConversionContext context(wucCompositor);
 
-    for (auto cdo : m_targetDOs)
+    for (const auto& cdo : m_targetDOs)
     {
         cdo->EnsureWUCAnimationStarted(&context);
     }

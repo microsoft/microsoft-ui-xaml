@@ -671,7 +671,7 @@ void TitleBar::UpdateDragRegion()
             std::vector<winrt::Windows::Graphics::RectInt32> passthroughRects;
 
             // Get rects for each interactable element in TitleBar.
-            for (const auto frameworkElement : m_interactableElementsList)
+            for (const auto& frameworkElement : m_interactableElementsList)
             {
                 const auto transparentRect = GetBounds(frameworkElement);
 

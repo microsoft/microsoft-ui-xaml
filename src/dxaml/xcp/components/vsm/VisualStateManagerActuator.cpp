@@ -731,12 +731,12 @@ _Check_return_ HRESULT VisualStateManagerActuator::SelectExistingPropertySetters
             std::remove_if(
                 previouslyActivePropertySetters.begin(),
                 previouslyActivePropertySetters.end(),
-                    [collectionToMatchSet](VisualStateSetterHelper::ResolvedVisualStateSetter previouslyActiveSetter)
+                    [collectionToMatchSet](const VisualStateSetterHelper::ResolvedVisualStateSetter& previouslyActiveSetter)
                     {
                         auto result = std::find_if(
                             collectionToMatchSet.begin(),
                             collectionToMatchSet.end(),
-                            [previouslyActiveSetter](std::tuple<xref::weakref_ptr<CDependencyObject>, const CDependencyProperty*> element)
+                            [previouslyActiveSetter](const std::tuple<xref::weakref_ptr<CDependencyObject>, const CDependencyProperty*>& element)
                             {
                                 return std::get<0>(element) == previouslyActiveSetter.get_TargetObject()
                                     && std::get<1>(element) == previouslyActiveSetter.get_TargetProperty();

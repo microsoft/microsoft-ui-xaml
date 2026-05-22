@@ -27,24 +27,24 @@ namespace VisualStateSetterHelper
     {
     public:
         ResolvedVisualStateSetter(
-            xref::weakref_ptr<CDependencyObject> targetObject,
+            xref::weakref_ptr<CDependencyObject>&& targetObject,
             const CDependencyProperty* targetProperty,
-            CValue value)
-            : m_targetObject(targetObject)
+            CValue&& value)
+            : m_targetObject(std::move(targetObject))
             , m_targetProperty(targetProperty)
-            , m_value(value)
+            , m_value(std::move(value))
         {
         }
         
         ResolvedVisualStateSetter(
-            xref::weakref_ptr<CDependencyObject> targetObject,
+            xref::weakref_ptr<CDependencyObject>&& targetObject,
             const CDependencyProperty* targetProperty,
-            CValue value,
-            xref_ptr<CDependencyObject> setter)
-            : m_targetObject(targetObject)
+            CValue&& value,
+            xref_ptr<CDependencyObject>&& setter)
+            : m_targetObject(std::move(targetObject))
             , m_targetProperty(targetProperty)
-            , m_value(value)
-            , m_originalSetter(setter)
+            , m_value(std::move(value))
+            , m_originalSetter(std::move(setter))
         {
         }
         
@@ -77,7 +77,7 @@ namespace VisualStateSetterHelper
             return m_targetProperty;
         }
 
-        const CValue get_Value() const
+        const CValue& get_Value() const
         {
             return m_value;
         }
@@ -113,7 +113,7 @@ namespace VisualStateSetterHelper
         _In_ SetterOperation operation,
         _In_ xref_ptr<CDependencyObject> targetObject,
         _In_ const CDependencyProperty* targetProperty,
-        _In_ const CValue value,
+        _In_ const CValue& value,
         _In_ xref_ptr<CDependencyObject> originalSetter = nullptr, //Used by XamlDiagnostics for source info
         _In_ const bool forceDeferOperation = false);
 

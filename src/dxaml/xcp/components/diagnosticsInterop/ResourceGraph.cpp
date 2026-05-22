@@ -276,7 +276,7 @@ namespace Diagnostics
         auto it = m_dependentStyleMap.find(weakStylePointer);
         if (it != m_dependentStyleMap.end())
         {
-            for (auto weakRef : it->second)
+            for (const auto& weakRef : it->second)
             {
                 xref_ptr<CStyle> pStyleDependent = weakRef.lock();
                 if (pStyleDependent.get() != nullptr)
@@ -297,7 +297,7 @@ namespace Diagnostics
         auto it = m_dependentStyleMap.find(weakStylePointer);
         if (it != m_dependentStyleMap.end())
         {
-            for (auto weakRef : it->second)
+            for (const auto& weakRef : it->second)
             {
                 xref_ptr<CStyle> pStyleDependent = weakRef.lock();
                 if (pStyleDependent.get() != nullptr)

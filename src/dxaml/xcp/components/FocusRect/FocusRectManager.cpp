@@ -791,7 +791,7 @@ void CFocusRectManager::UpdateFocusRect(
     }
 
     unsigned int index = 0;
-    for (auto it : boundsVector)
+    for (const auto& it : boundsVector)
     {
         xref_ptr<CBorder> outerBorder = EnsureFocusRectBorderAtPosition(
             core,

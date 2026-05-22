@@ -192,7 +192,6 @@ namespace CValueConvert
         _Out_ CValueType& outValue)
     {
         ctl::ComPtr<IInspectable> inValueAsIInspectable = inValue.AsIInspectable();
-        CValueType result;
         bool unboxed = false;
 
         if (inValueAsIInspectable)
@@ -203,17 +202,15 @@ namespace CValueConvert
             {
                 IFC_RETURN(CValueConvert::TryUnboxPropertyValue(
                     inValueAsPV.Get(),
-                    result,
+                    outValue,
                     unboxed));
             }
         }
 
         if (!unboxed)
         {
-            result.WrapValue(inValue);
+            outValue.WrapValue(inValue);
         }
-
-        outValue = std::move(result);
 
         return S_OK;
     }
@@ -447,23 +444,20 @@ namespace CValueConvert
         _Out_ CValueType& outValue)
     {
         CDependencyObject* inValueAsDO = inValue.AsObject();
-        CValueType result;
         bool unboxed = false;
 
         if (inValueAsDO)
         {
             IFC_RETURN(TryUnboxCDependencyObjectValue(
                 inValueAsDO,
-                result,
+                outValue,
                 unboxed));
         }
 
         if (!unboxed)
         {
-            result.SetObjectAddRef(inValueAsDO);
+            outValue.SetObjectAddRef(inValueAsDO);
         }
-
-        outValue = std::move(result);
 
         return S_OK;
     }
@@ -567,23 +561,20 @@ namespace CValueConvert
         _Out_ CValueType& outValue)
     {
         const Flyweight::PropertyValueObjectBase* inValueAsVO = inValue.template As<valueVO>();
-        CValueType result;
         bool unboxed = false;
 
         if (inValueAsVO)
         {
             IFC_RETURN(TryUnboxValueObject(
                 inValueAsVO,
-                result,
+                outValue,
                 unboxed));
         }
 
         if (!unboxed)
         {
-            result.template SetAddRef<valueVO>(const_cast<Flyweight::PropertyValueObjectBase*>(inValueAsVO));
+            outValue.template SetAddRef<valueVO>(const_cast<Flyweight::PropertyValueObjectBase*>(inValueAsVO));
         }
-
-        outValue = std::move(result);
 
         return S_OK;
     }

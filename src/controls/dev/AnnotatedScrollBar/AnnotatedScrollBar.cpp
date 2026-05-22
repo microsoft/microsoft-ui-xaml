@@ -351,7 +351,7 @@ void AnnotatedScrollBar::CreateLabelContainers()
 
     ANNOTATEDSCROLLBAR_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    for (auto label : Labels())
+    for (const auto& label : Labels())
     {
         auto labelContentPresenter = winrt::ContentPresenter();
         labelContentPresenter.HorizontalAlignment(winrt::HorizontalAlignment::Right);
