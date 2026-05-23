@@ -1890,10 +1890,19 @@ CResourceDictionary::TryLoadDeferredResource(
     // the key is removed on stack unwind so this temporary no-ref use is safe.
     m_undeferringResources.push_back(key);
 
-    auto guard = wil::scope_exit([this, &key]
+#if DBG || defined(_PREFAST_)
+    auto guard = wil::scope_exit([this, &key, undeferringSize = m_undeferringResources.size()]
+#else
+    auto guard = wil::scope_exit([this]
+#endif
     {
-        auto newEnd = std::remove(m_undeferringResources.begin(), m_undeferringResources.end(), key);
-        m_undeferringResources.erase(newEnd, m_undeferringResources.end());
+        // m_undeferringResources is only used in this function and any reentrant calls should
+        // leave it the same as when they started. This means the size should always be the same
+        // as when we pushed, and that the back is the same key we pushed, so we can simply pop
+        // the value we added off.
+        ASSERT(undeferringSize == m_undeferringResources.size());
+        ASSERT(m_undeferringResources.back() == key);
+        m_undeferringResources.pop_back();
     });
 
     bool keyFound = false;
