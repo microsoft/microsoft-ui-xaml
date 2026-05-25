@@ -1,0 +1,202 @@
+# PR build validation for WinUI (OSS).
+#
+# This is a minimum-viable PR check that compiles the product+test code on a
+# single platform/configuration (x64 Debug aka x64chk) using the same scripts
+# that local developers use (`src/init.cmd` + `src/Build.cmd`). It intentionally
+# does *not* run tests, build samples, build release/PGO flavors, or do static
+# analysis - those will be added in follow-up workflows once this one is stable.
+#
+# The corresponding internal Azure DevOps pipeline (`build/WinUI-PR.yml` in the
+# microsoft-ui-xaml-lift ADO repo) builds 5 platforms x 2 configurations, runs
+# TAEF / scenario / static tests on Helix, and performs ESRP signing, APIScan,
+# PREfast, BinSkim, PoliCheck, etc. None of those are portable to a public
+# GitHub Actions runner. See `docs/external/contribution_workflow.md` for the
+# legacy ADO bridge check (`WinUI-Public-MUX-PR`, triggered via `/azp run`).
+
+name: PR Build
+
+on:
+  pull_request:
+    branches:
+      - main
+      - winui3/main
+      - winui3/dummy/main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - '.github/policies/**'
+      - 'LICENSE'
+      - 'NOTICE.md'
+      - 'PRIVACY.md'
+      - 'privacy.md'
+      - 'SECURITY.md'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CONTRIBUTING.md'
+      - 'CONTRIBUTING_feedback_and_requests.md'
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: 'init.cmd flavor (e.g. x64chk, x86chk, x64fre)'
+        required: false
+        default: 'x64chk'
+      target:
+        description: 'Build.cmd target (e.g. prodtest, product, test)'
+        required: false
+        default: 'prodtest'
+
+# Cancel superseded runs on the same PR / branch to save CI minutes.
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# Least privilege - we don't push, comment, or read packages.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ github.event.inputs.flavor || 'x64chk' }})
+    runs-on: windows-2022
+    timeout-minutes: 90
+    env:
+      # Resolve workflow_dispatch inputs (or defaults for pull_request triggers).
+      WINUI_INIT_FLAVOR: ${{ github.event.inputs.flavor || 'x64chk' }}
+      WINUI_BUILD_TARGET: ${{ github.event.inputs.target || 'prodtest' }}
+      # Speed up NuGet on hosted runners: avoid http-cache misses across steps.
+      NUGET_PACKAGES: ${{ github.workspace }}\src\packages
+      # Suppress PowerShell progress UI (very noisy in Actions logs).
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      # Force MSBuild to use only 2 parallel CL.exe instances. The hosted
+      # runner only has 2 vCPUs and the compiler is RAM-hungry; default /m:4
+      # in Build.cmd has been observed to hit C1076 (compiler heap exhausted)
+      # on similar SKUs. See src/GettingStarted.md "Build failures".
+      CL: '/MP2'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # No submodules in the GitHub repo; keep history shallow to save disk.
+          fetch-depth: 1
+          show-progress: false
+
+      # Restore NuGet packages directory from cache when possible. Keyed on
+      # every packages*.config and versions.props so any package bump busts it.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            src\packages
+            src\.tools
+            ~\.nuget\packages
+          key: winui-nuget-${{ runner.os }}-${{ hashFiles('src/packages.config', 'src/packages.*.config', 'src/eng/versions.props', 'src/Packages.props', 'src/NuGet.config') }}
+          restore-keys: |
+            winui-nuget-${{ runner.os }}-
+
+      # The build downloads its own pinned .NET SDK into src/.dotnet via
+      # init.cmd; this step caches that download.
+      - name: Cache .NET SDK
+        uses: actions/cache@v4
+        with:
+          path: src\.dotnet
+          key: winui-dotnet-${{ runner.os }}-${{ hashFiles('src/global.json') }}
+          restore-keys: |
+            winui-dotnet-${{ runner.os }}-
+
+      - name: Show available disk space (pre-build)
+        shell: pwsh
+        run: |
+          Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,2)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,2)}} | Format-Table
+
+      # Ensure LongPathsEnabled is set so MSBuild does not hit MAX_PATH issues
+      # during NuGet restore (some package paths are >260 chars). The hosted
+      # windows-2022 image normally has this set already, but explicitly
+      # setting it here avoids `init.cmd`'s elevation-via-UAC code path which
+      # is unreliable in a non-interactive runner.
+      - name: Enable Win32 long path support
+        shell: pwsh
+        run: |
+          $key  = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          $name = 'LongPathsEnabled'
+          $current = (Get-ItemProperty -Path $key -Name $name -ErrorAction SilentlyContinue).$name
+          if ($current -ne 1) {
+            Write-Host "LongPathsEnabled currently '$current'; setting to 1."
+            New-ItemProperty -Path $key -Name $name -Value 1 -PropertyType DWord -Force | Out-Null
+          } else {
+            Write-Host "LongPathsEnabled already 1."
+          }
+
+      # init.cmd + build.cmd must run in the same shell so the env vars set by
+      # init persist into build. Both scripts pushd into their own directory,
+      # so the working-directory below is purely for clarity.
+      #
+      # SECURITY: Build.cmd unconditionally writes MSBuild binary logs (.binlog)
+      # via /bl:, and we upload them as a workflow artifact. MSBuild binlogs
+      # capture *all* process environment variables by default - including the
+      # GitHub Actions runtime secrets (ACTIONS_RUNTIME_TOKEN etc.) that the
+      # runner injects into every step. In a public repo, artifacts are
+      # publicly downloadable, so anyone could extract those tokens within
+      # their (short) validity window. See:
+      #   https://github.com/dotnet/msbuild/issues/5675
+      #   https://github.com/actions/upload-artifact (security advisory
+      #   GHSA-pw2r-vq6v-hr8c)
+      # We mitigate by blanking those env vars inside this step's cmd process
+      # *before* MSBuild starts; subsequent steps (cache save, upload-artifact)
+      # spawn fresh shells and still see the runner's original values.
+      - name: Initialize build environment and build
+        working-directory: src
+        shell: cmd
+        run: |
+          rem Scrub sensitive runner env vars so they do not get embedded in
+          rem MSBuild binlogs that we upload as a public artifact.
+          set "ACTIONS_RUNTIME_TOKEN="
+          set "ACTIONS_RUNTIME_URL="
+          set "ACTIONS_RESULTS_URL="
+          set "ACTIONS_CACHE_URL="
+          set "ACTIONS_ID_TOKEN_REQUEST_TOKEN="
+          set "ACTIONS_ID_TOKEN_REQUEST_URL="
+          set "GITHUB_TOKEN="
+
+          echo === init.cmd %WINUI_INIT_FLAVOR% ===
+          call init.cmd %WINUI_INIT_FLAVOR%
+          if errorlevel 1 (
+            echo ERROR: init.cmd failed with errorlevel %errorlevel%
+            exit /b %errorlevel%
+          )
+          echo === build.cmd %WINUI_BUILD_TARGET% ===
+          call Build.cmd %WINUI_BUILD_TARGET%
+          if errorlevel 1 (
+            echo ERROR: Build.cmd failed with errorlevel %errorlevel%
+            exit /b %errorlevel%
+          )
+
+      - name: Show available disk space (post-build)
+        if: always()
+        shell: pwsh
+        run: |
+          Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,2)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,2)}} | Format-Table
+
+      # Always upload binlogs - they are the primary way to diagnose MSBuild
+      # failures and are small enough to keep for every run.
+      - name: Upload MSBuild binlogs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binlogs-${{ env.WINUI_INIT_FLAVOR }}
+          path: src/BuildOutput/*.binlog
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # On failure also grab the VS BuildTools install logs (only present when
+      # init had to modify the VS install).
+      - name: Upload VS BuildTools install logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vs-buildtools-logs-${{ env.WINUI_INIT_FLAVOR }}
+          path: src/msbuild-install-logs/**
+          if-no-files-found: ignore
+          retention-days: 7
