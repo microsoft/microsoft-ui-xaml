@@ -50,11 +50,11 @@ DllGetActivationFactory_t GetMuxActivationFactoryFn()
     if (!s_muxFactoryResolved.load(std::memory_order_acquire))
     {
         // Find MUX (Microsoft.ui.xaml.dll) -- it should be in the same
-        // directory as MUXC.  We look up by module name first (more
-        // reliable than full-path matching), then verify the path is
-        // next to us.  If it's a different copy of MUX (multiple WinUI
-        // versions side-by-side), we skip the bypass and let
-        // RoGetActivationFactory do the right thing.
+        // directory as MUXC.  We build the expected full path and look
+        // it up by full path to avoid ambiguity when multiple same-named
+        // DLLs are loaded (e.g. WinUI2 + WinUI3 in explorer.exe).
+        // If MUX isn't loaded from our sibling directory, then we skip the
+        // fast-path and let RoGetActivationFactory do the right thing.
         const wchar_t* failureReason = nullptr;
 
         // Build the expected sibling path: <MUXC dir>\Microsoft.ui.xaml.dll
@@ -76,20 +76,25 @@ DllGetActivationFactory_t GetMuxActivationFactoryFn()
                 *(lastSlash + 1) = L'\0';
                 wcscat_s(expectedPath, L"Microsoft.ui.xaml.dll");
 
-                // Find MUX by module name, then check it's the right one.
-                HMODULE mod = GetModuleHandleW(L"Microsoft.ui.xaml.dll");
+                // Find MUX by full path so we unambiguously get our
+                // sibling DLL even when another copy is loaded.
+                HMODULE mod = GetModuleHandleW(expectedPath);
                 if (!mod)
                 {
-                    failureReason = L"MUX DLL not loaded";
+                    failureReason = L"MUX DLL not loaded from expected path";
                 }
                 else
                 {
+                    // Double-check: read back the module path and confirm it
+                    // matches what we asked for.  This guards against any OS
+                    // quirk where a full-path GetModuleHandle still returns
+                    // the wrong handle.
                     wchar_t actualPath[MAX_PATH]{};
                     DWORD actualLen = GetModuleFileNameW(mod, actualPath, MAX_PATH);
                     if (actualLen == 0 || actualLen >= MAX_PATH ||
                         _wcsicmp(actualPath, expectedPath) != 0)
                     {
-                        failureReason = L"MUX DLL path mismatch";
+                        failureReason = L"MUX DLL path verification failed";
                     }
                     else
                     {
@@ -111,7 +116,8 @@ DllGetActivationFactory_t GetMuxActivationFactoryFn()
             "MuxActivationBypass",
             TraceLoggingLevel(WINEVENT_LEVEL_INFO),
             TraceLoggingValue(failureReason == nullptr, "IsActive"),
-            TraceLoggingWideString(failureReason ? failureReason : L"", "FailureReason"));
+            TraceLoggingWideString(failureReason ? failureReason : L"", "FailureReason"),
+            TraceLoggingWideString(expectedPath, "ExpectedPath"));
 
         s_muxFactoryResolved.store(true, std::memory_order_release);
     }
