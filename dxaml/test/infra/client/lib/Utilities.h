@@ -152,6 +152,7 @@ namespace Private { namespace Infrastructure {
         // Verifies that the UIElement tree only contains the colors that are specified in the given set.
         IFACEMETHOD(VerifyUIElementTreeContainsOnlyValidColors)(_In_ HSTRING variation, _In_ wfc::IVector<unsigned int>* validColors);
 
+        IFACEMETHOD(ResetOptionalChanges)() override;
         IFACEMETHOD(SetRuntimeEnabledFeatureOverride)(_In_ INT feature, _In_ BOOLEAN enabled, _Out_opt_ BOOLEAN* wasPreviouslyEnabled = nullptr) override;
         IFACEMETHOD(ClearAllRuntimeEnabledFeatureOverrides)() override;
         IFACEMETHOD(OverrideTrimImageResourceDelay)(_In_ BOOLEAN enabled) override;

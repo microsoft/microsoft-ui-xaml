@@ -110,6 +110,7 @@
 #include "AutomaticDragHelper.h"
 #include "TextControlFlyoutHelper.h"
 #include "XamlTelemetry.h"
+#include "XamlOptionalChanges.g.h"
 
 #include "DXamlCoreTipTests.h"
 
@@ -2754,6 +2755,13 @@ _Check_return_ HRESULT DXamlCore::SetCoreWindow(_In_ wuc::ICoreWindow* pCoreWind
 
 _Check_return_ HRESULT DXamlCore::InitializeImpl(_In_ InitializationType initializationType)
 {
+    // Lock optional changes now, before any XAML initialization proceeds.
+    // This is the single choke point for both Application.Start() and
+    // WindowsXamlManager.InitializeForCurrentThread().
+    // Return value intentionally ignored: we don't care whether this call
+    // actually performed the lock or it was already locked by a prior init.
+    std::ignore = XamlOptionalChanges::LockInternal();
+
     DXamlInstanceStorage::Handle hInstance = NULL;
     IFC_RETURN(DXamlInstanceStorage::GetValue(&hInstance));
 

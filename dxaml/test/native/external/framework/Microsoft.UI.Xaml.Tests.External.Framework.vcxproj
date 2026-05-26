@@ -14,6 +14,7 @@
         %(AdditionalIncludeDirectories);
         $(MSBuildThisFileDirectory)\activation\abi_tests;
         $(MSBuildThisFileDirectory)\activation\tests;
+        $(MSBuildThisFileDirectory)\settings;
         $(MSBuildThisFileDirectory)\collections;
         $(MSBuildThisFileDirectory)\componentconnector\tests;
         $(MSBuildThisFileDirectory)\controlTemplates\tests;
@@ -54,6 +55,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="activation\abi_tests\ActivationABITests.h" />
+    <ClInclude Include="settings\XamlOptionalChangesTests.h" />
     <ClInclude Include="activation\tests\ActivationIntegrationTests.h" />
     <ClInclude Include="collections\VectorIntegrationTests.h" />
     <ClInclude Include="componentconnector\tests\ComponentConnectorTests.h" />
@@ -182,6 +184,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="activation\abi_tests\ActivationABITests.cpp" />
+    <ClCompile Include="settings\XamlOptionalChangesTests.cpp" />
     <ClCompile Include="activation\tests\ActivationIntegrationTests.cpp" />
     <ClCompile Include="collections\VectorIntegrationTests.cpp" />
     <ClCompile Include="componentconnector\tests\ComponentConnectorTests.cpp" />

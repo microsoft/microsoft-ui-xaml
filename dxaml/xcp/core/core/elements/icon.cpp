@@ -8,9 +8,21 @@
 #include "CPathIconSource.g.h"
 #include "CSymbolIconSource.g.h"
 #include <ImageDecodeBoundsFinder.h>
+#include <OptionalChangeState.h>
 
 const XFLOAT g_ClientCoreFontSize = 20.f;
 DECLARE_CONST_XSTRING_PTR_STORAGE(c_strSegoeFluentIconsStorage, L"Segoe Fluent Icons,Segoe MDL2 Assets");
+
+bool IsFontIconNoGridOptimizationEnabled()
+{
+    return OptionalChangeState::IsIconNoGridOptimizationEnabled();
+}
+
+bool IsBitmapIconNoGridOptimizationEnabled()
+{
+    return OptionalChangeState::IsIconNoGridOptimizationEnabled();
+}
+
 
 //------------------------------------------------------------------------
 //
