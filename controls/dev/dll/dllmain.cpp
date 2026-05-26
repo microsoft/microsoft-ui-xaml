@@ -267,6 +267,43 @@ HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::
     return WINRT_GetActivationFactory(activatableClassId, reinterpret_cast<void**>(factory));
 }
 
+// Forward declaration of cppwinrt's generated non-throwing factory lookup, defined in module.g.cpp. 
+void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
+
+// DllTryGetActivationFactory is a non-error-originating variant of
+// DllGetActivationFactory.  It is intended for callers (today: MUX's
+// MuxGetActivationFactoryImpl in xcpcore.cpp) that speculatively probe this DLL for a
+// type and expect "type not hosted here" to be a routine non-error outcome.
+//
+// Why does MUX do this?  MUX has a namespace-based optimization for
+// "Microsoft.UI.Xaml.Controls.*" type activations: instead of going through
+// RoGetActivationFactory, it probes MUXC's DllGetActivationFactory directly first.
+// MUX has logic in CClassInfo::RunClassConstructorIfNecessary that runs the CLASS ctor for a type if
+// it can.  But some types, like "Microsoft.UI.Xaml.Controls.PersonPictureTemplateSettings",
+// don't have an activation factory.  In this case, it's fine and expected that no activation factory
+// will be found.  We just don't want to confuse the customer by raising a WinRT error.
+//
+// We don't need cppwinrt's WRL fallback here -- MUXC has no WRL ActivatableClass(...)
+// registrations, so every successful activation comes from winrt_get_activation_factory.
+extern "C" __control_entrypoint(DllExport)
+STDAPI DllTryGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::IActivationFactory** factory) noexcept try
+{
+    *factory = nullptr;
+
+    uint32_t length{};
+    wchar_t const* const buffer = WindowsGetStringRawBuffer(activatableClassId, &length);
+    std::wstring_view const name{ buffer, length };
+
+    if (auto raw = winrt_get_activation_factory(name))
+    {
+        *factory = static_cast<::IActivationFactory*>(raw);
+        return S_OK;
+    }
+
+    return CLASS_E_CLASSNOTAVAILABLE;
+}
+catch (...) { return winrt::to_hresult(); }
+
 __control_entrypoint(DllExport)
 HRESULT __stdcall DllCanUnloadNow()
 {

@@ -312,25 +312,22 @@ void ActivationFactoryCache::ResetCache()
     _In_ HMODULE module,
     _In_ HSTRING activatableClassId,
     _In_ REFIID iid,
-    _COM_Outptr_ void** factory)
+    _COM_Outptr_ void** factory,
+    _In_z_ const char* exportName)
 {
     *factory = nullptr;
 
     typedef HRESULT(WINAPI* PFN_DllGetActivationFactory)(HSTRING, IActivationFactory**);
-    auto pfn = reinterpret_cast<PFN_DllGetActivationFactory>(
-        GetProcAddress(module, "DllGetActivationFactory"));
 
+    auto pfn = reinterpret_cast<PFN_DllGetActivationFactory>(
+            GetProcAddress(module, exportName));
     if (!pfn)
     {
-        return CLASS_E_CLASSNOTAVAILABLE;
+        IFC_RETURN(CLASS_E_CLASSNOTAVAILABLE);
     }
 
     wrl::ComPtr<IActivationFactory> activationFactory;
-    HRESULT hr = pfn(activatableClassId, &activationFactory);
-    if (FAILED(hr))
-    {
-        return hr;
-    }
+    IFC_RETURN(pfn(activatableClassId, &activationFactory));
 
     return activationFactory->QueryInterface(iid, factory);
 }
@@ -413,7 +410,12 @@ HRESULT ActivationFactoryCache::MuxGetActivationFactoryImpl(
         HMODULE muxc = EnsureModuleLoaded(m_muxcModule, L"Microsoft.UI.Xaml.Controls.dll");
         if (muxc)
         {
-            HRESULT hr = TryGetActivationFactoryFromModule(muxc, activatableClassId, iid, factory);
+            // For MUXC, we use a special export that doesn't call RoOrignateLanguageException
+            // on failure.  There are some cases where MUX needs to probe MUXC for types that don't
+            // have activation factories.  In this case, we just want to quietly return a failure code.
+            // See DllTryGetActivationFactory for more detail.
+            HRESULT hr = TryGetActivationFactoryFromModule(
+                muxc, activatableClassId, iid, factory, "DllTryGetActivationFactory");
             if (SUCCEEDED(hr))
             {
                 return hr;
