@@ -8,7 +8,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 {
     public static class StringExtensions
     {
-        // Matches letters or numbers at the begining of a string, equivalent to a-zA-Z_0-9
+        // Matches letters or numbers at the beginning of a string, equivalent to a-zA-Z_0-9
         private static readonly Regex MemberFriendlyNameRegex = new Regex(@"[^\w]");
 
         /// <summary>

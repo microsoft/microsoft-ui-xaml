@@ -2,7 +2,7 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.FrameworkUdk" Version="3.0.0-experimental-27300.1877.260521-1650.1">
+    <Dependency Name="Microsoft.FrameworkUdk" Version="3.0.0-experimental-27300.1878.260525-0800.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>bcefb53ef31cde2d4d7e97760db1970335047aed</Sha>
     </Dependency>
@@ -10,7 +10,7 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
       <Sha>60b243c842ea697e318e3afdaeb4be9f7dbe056c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="3.0.0-experimental-27300.1877.260521-1650.1">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="3.0.0-experimental-27300.1878.260525-0800.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>bcefb53ef31cde2d4d7e97760db1970335047aed</Sha>
     </Dependency>
@@ -27,7 +27,7 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
       <Sha>60b243c842ea697e318e3afdaeb4be9f7dbe056c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="3.0.0-experimental-Rolling.20260522.1">
+    <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="3.0.0-experimental-Rolling.20260525.1">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
       <Sha>bcefb53ef31cde2d4d7e97760db1970335047aed</Sha>
     </Dependency>
