@@ -62,6 +62,7 @@
         <ClCompile Include="..\CustomProperty.cpp"/>
         <ClCompile Include="..\UIAffinityReleaseQueue.cpp"/>
         <ClCompile Include="..\DXamlCore.cpp"/>
+        <ClCompile Include="..\XamlOptionalChanges_Partial.cpp"/>
         <ClCompile Include="..\XamlBinaryWriter.cpp"/>
         <ClCompile Include="..\DependencyObject.cpp"/>
         <ClCompile Include="..\DependencyObjectAbstractionHelpers.cpp"/>

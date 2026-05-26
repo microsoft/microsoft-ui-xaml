@@ -16,6 +16,7 @@
 #include <SystemThemingInterop.h>
 #include <JupiterTextHelper.h>
 #include <XcpAllocation.h>
+#include "XamlOptionalChanges.g.h"
 #include <Storyboard.h>
 #include "DefaultStyles.h"
 #include <FocusMgr.h>
@@ -2036,6 +2037,11 @@ IFACEMETHODIMP DxamlCoreTestHooks::GetElementsRenderedCount(_Out_ int* elementsR
     HWWalk* hwWalk = coreServices->GetHWWalk();
     *elementsRendered = hwWalk->GetElementsRenderedCount();
     return S_OK;
+}
+
+IFACEMETHODIMP_(void) DxamlCoreTestHooks::ResetOptionalChanges()
+{
+    DirectUI::XamlOptionalChanges::ResetInternal();
 }
 
 IFACEMETHODIMP DxamlCoreTestHooks::PauseNewDispatchForTest()

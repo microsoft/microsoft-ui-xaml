@@ -2203,6 +2203,13 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(WindowVisualState);
 
+    enum class XamlChangeId 
+    {
+        _Reserved = 0,
+        IconNoGridOptimization = 61276805,
+    };
+    DEFINE_ENUM_FLAG_OPERATORS(XamlChangeId);
+
     enum class XamlSourceFocusNavigationReason : uint8_t
     {
         Programmatic = 0,

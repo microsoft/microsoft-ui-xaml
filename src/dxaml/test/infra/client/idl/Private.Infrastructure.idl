@@ -294,6 +294,9 @@ namespace Private.Infrastructure
         HRESULT SetForceDebugSettingsTracingEvents([in] BOOLEAN value);
 
         [propget] HRESULT IsWPF([out, retval] BOOLEAN* isWPF);
+
+        // XamlOptionalChanges test hooks
+        HRESULT ResetOptionalChanges();
    }
 
     [version(NTDDI_WINTHRESHOLD)]

@@ -143,6 +143,7 @@
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Navigation.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Printing.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Resources.cs" />
+    <CompileFiles Include="Model\Microsoft.UI.Xaml.Settings.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Shapes.cs" />
     <CompileFiles Include="Model\Microsoft.Windows.ApplicationModel.Resources.cs" />
     <CompileFiles Include="Model\Windows.UI.Xaml.Interop.cs" />

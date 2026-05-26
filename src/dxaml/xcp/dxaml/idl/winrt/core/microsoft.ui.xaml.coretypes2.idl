@@ -508,6 +508,17 @@ namespace Microsoft.UI.Xaml.Hosting
         Down,
     };
 }
+namespace Microsoft.UI.Xaml.Settings
+{
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+    [webhosthidden]
+    enum XamlChangeId
+    {
+        _Reserved,
+        IconNoGridOptimization = 61276805,
+    };
+}
 
 namespace Microsoft.UI.Xaml
 {
@@ -596,6 +607,7 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Media.LoadedImageSourceLoadStatus>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationComponent>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Media.Imaging.SvgImageSourceLoadStatus>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Settings.XamlChangeId>;
         interface Windows.Foundation.IReference<Windows.UI.Text.TextDecorations>;
     }
 }
@@ -2319,6 +2331,21 @@ namespace Microsoft.UI.Xaml.Hosting
     {
         [method_name("CreateInstance")] XamlSourceFocusNavigationResult(Boolean focusMoved);
         Boolean WasFocusMoved{ get; };
+    };
+
+}
+namespace Microsoft.UI.Xaml.Settings
+{
+    [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+    [webhosthidden]
+    [default_interface]
+    runtimeclass XamlOptionalChanges
+    {
+        static void EnableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static void DisableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean IsChangeEnabled(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean Lock();
+        static Boolean IsLocked();
     };
 
 }

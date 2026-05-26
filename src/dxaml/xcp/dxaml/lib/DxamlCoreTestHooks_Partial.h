@@ -296,6 +296,9 @@ namespace DirectUI
 
         IFACEMETHOD(GetElementsRenderedCount)(_Out_ int* elementsRendered) override;
 
+        // XamlOptionalChanges test hooks
+        IFACEMETHOD_(void, ResetOptionalChanges)() override;
+
         IFACEMETHOD(PauseNewDispatchForTest)() override;
         IFACEMETHOD(ResumeNewDispatchForTest)() override;
 

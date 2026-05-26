@@ -91,6 +91,8 @@ extern const MetaDataNamespace c_aNamespaces[KnownNamespaceCount] =
     { KnownNamespaceIndex::Microsoft_UI_Xaml_Internal, XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Internal") },
     // Microsoft.UI.Xaml.Printing
     { KnownNamespaceIndex::Microsoft_UI_Xaml_Printing, XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Printing") },
+    // Microsoft.UI.Xaml.Settings
+    { KnownNamespaceIndex::Microsoft_UI_Xaml_Settings, XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Settings") },
     // Microsoft.UI.Xaml.Resources
     { KnownNamespaceIndex::Microsoft_UI_Xaml_Resources, XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Resources") },
     // Microsoft.UI.Xaml.Documents

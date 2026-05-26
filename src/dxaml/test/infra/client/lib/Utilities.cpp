@@ -868,6 +868,19 @@ namespace Private { namespace Infrastructure {
         COM_END
     }
 
+    HRESULT Utilities::ResetOptionalChanges()
+    {
+        COM_START
+        {
+            RunOnUIThread([&]()
+            {
+                wrl::ComPtr<IXamlTestHooks> testHooks = WindowHelper::GetTestHooks();
+                testHooks->ResetOptionalChanges();
+            });
+        }
+        COM_END
+    }
+
     HRESULT Utilities::SetRuntimeEnabledFeatureOverride(_In_ INT feature, _In_ BOOLEAN enabled, _Out_opt_ BOOLEAN* wasPreviouslyEnabled)
     {
         COM_START

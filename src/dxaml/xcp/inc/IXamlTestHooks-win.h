@@ -354,6 +354,9 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
 
     IFACEMETHOD(GetElementsRenderedCount)(_Out_ int* elementsRendered) = 0;
 
+    // XamlOptionalChanges test hooks
+    IFACEMETHOD_(void, ResetOptionalChanges)() = 0;
+
     IFACEMETHOD(PauseNewDispatchForTest)() = 0;
     IFACEMETHOD(ResumeNewDispatchForTest)() = 0;
 
