@@ -654,7 +654,8 @@ private:
         _In_ HMODULE module,
         _In_ HSTRING activatableClassId,
         _In_ REFIID iid,
-        _COM_Outptr_ void** factory);
+        _COM_Outptr_ void** factory,
+        _In_z_ const char* exportName = "DllGetActivationFactory");
 
     // Lazily load a DLL from our module directory via LoadLibraryExW.
     // Uses double-checked locking. Returns the cached HMODULE (may be null).
