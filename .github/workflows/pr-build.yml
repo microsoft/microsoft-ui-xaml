@@ -1,17 +1,26 @@
 # PR build validation for WinUI (OSS).
 #
-# This is a minimum-viable PR check that compiles the product+test code on a
-# single platform/configuration (x64 Debug aka x64chk) using the same scripts
-# that local developers use (`src/init.cmd` + `src/Build.cmd`). It intentionally
-# does *not* run tests, build samples, build release/PGO flavors, or do static
-# analysis - those will be added in follow-up workflows once this one is stable.
+# This workflow compiles the product (and, for chk flavors, the test code) for
+# the full PR matrix using the same scripts that local developers use
+# (`src/init.cmd` + `src/Build.cmd`). It intentionally does *not* run tests,
+# build samples, run ESRP signing, APIScan, PREfast, BinSkim, or PoliCheck -
+# those still happen in the internal Azure DevOps pipeline.
 #
-# The corresponding internal Azure DevOps pipeline (`build/WinUI-PR.yml` in the
-# microsoft-ui-xaml-lift ADO repo) builds 5 platforms x 2 configurations, runs
-# TAEF / scenario / static tests on Helix, and performs ESRP signing, APIScan,
-# PREfast, BinSkim, PoliCheck, etc. None of those are portable to a public
-# GitHub Actions runner. See `docs/external/contribution_workflow.md` for the
-# legacy ADO bridge check (`WinUI-Public-MUX-PR`, triggered via `/azp run`).
+# Matrix (6 jobs, run in parallel on windows-2022):
+#   x86chk   prodtest    \
+#   x86fre   product      |
+#   x64chk   prodtest      > Mirrors the ADO `PR` build matrix in
+#   x64fre   product      |  `build/WinUI-BuildWinUI-Stage.yml` of the
+#   arm64chk prodtest     |  microsoft-ui-xaml-lift ADO repo. ARM64 is
+#   arm64fre product     /   cross-compiled from x64 hosts (same as ADO).
+#
+# Omitted vs ADO PR: arm64ec (toolchain availability on windows-2022 hosted
+# runners is unverified). All test runs, scenario tests, static-analysis
+# stages, and Helix-distributed UI tests remain in the internal ADO pipeline -
+# they depend on internal feeds, custom Win10/Win11 client SKUs, Helix queues,
+# and secrets that public GitHub-hosted runners cannot provide. See
+# `docs/external/contribution_workflow.md` for the legacy ADO bridge check
+# (`WinUI-Public-MUX-PR`, triggered via `/azp run`).
 
 name: PR Build
 
@@ -37,14 +46,10 @@ on:
       - 'CONTRIBUTING_feedback_and_requests.md'
   workflow_dispatch:
     inputs:
-      flavor:
-        description: 'init.cmd flavor (e.g. x64chk, x86chk, x64fre)'
-        required: false
-        default: 'x64chk'
       target:
-        description: 'Build.cmd target (e.g. prodtest, product, test)'
+        description: 'Build.cmd target override (e.g. product, prodtest, mux, samples, all). Leave empty to use the default per flavor (prodtest for chk, product for fre).'
         required: false
-        default: 'prodtest'
+        default: ''
 
 # Cancel superseded runs on the same PR / branch to save CI minutes.
 concurrency:
@@ -57,13 +62,37 @@ permissions:
 
 jobs:
   build:
-    name: Build (${{ github.event.inputs.flavor || 'x64chk' }})
+    name: Build (${{ matrix.flavor }})
     runs-on: windows-2022
-    timeout-minutes: 90
+    timeout-minutes: 120
+    strategy:
+      # One failing flavor should not cancel the others - we want to see the
+      # full failure profile across the matrix on every PR.
+      fail-fast: false
+      matrix:
+        include:
+          - flavor: x86chk
+            target: prodtest
+          - flavor: x86fre
+            target: product
+          - flavor: x64chk
+            target: prodtest
+          - flavor: x64fre
+            target: product
+          - flavor: arm64chk
+            target: prodtest
+          - flavor: arm64fre
+            target: product
+          # NOTE: arm64ec is in the ADO `PR` matrix but is intentionally
+          # excluded here for now. ARM64EC cross-tool install state on
+          # windows-2022 hosted runners is unverified; running it on every PR
+          # risks long elevation hangs in init.cmd. Add a `- flavor: arm64ecfre`
+          # entry once it has been validated on a hosted runner.
     env:
-      # Resolve workflow_dispatch inputs (or defaults for pull_request triggers).
-      WINUI_INIT_FLAVOR: ${{ github.event.inputs.flavor || 'x64chk' }}
-      WINUI_BUILD_TARGET: ${{ github.event.inputs.target || 'prodtest' }}
+      # Build.cmd target: matrix default, optionally overridden by a manual
+      # workflow_dispatch input.
+      WINUI_INIT_FLAVOR: ${{ matrix.flavor }}
+      WINUI_BUILD_TARGET: ${{ github.event.inputs.target != '' && github.event.inputs.target || matrix.target }}
       # Speed up NuGet on hosted runners: avoid http-cache misses across steps.
       NUGET_PACKAGES: ${{ github.workspace }}\src\packages
       # Suppress PowerShell progress UI (very noisy in Actions logs).
@@ -185,8 +214,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: binlogs-${{ env.WINUI_INIT_FLAVOR }}
-          path: src/BuildOutput/*.binlog
+          name: binlogs-${{ matrix.flavor }}
+          path: src/BuildOutput/**/*.binlog
           if-no-files-found: ignore
           retention-days: 7
 
@@ -196,7 +225,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: vs-buildtools-logs-${{ env.WINUI_INIT_FLAVOR }}
+          name: vs-buildtools-logs-${{ matrix.flavor }}
           path: src/msbuild-install-logs/**
           if-no-files-found: ignore
           retention-days: 7
