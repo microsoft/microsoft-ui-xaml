@@ -1711,7 +1711,16 @@ namespace Windows
                         dest.CopyValue(source);
 
                         VERIFY_ARE_EQUAL(source.GetType(), dest.GetType());
-                        VERIFY_ARE_EQUAL(dest.OwnsValue(), true);
+
+                        if constexpr (CValueDetails::ValueTypeInfo<valueType>::Store::isDestructible)
+                        {
+                            VERIFY_ARE_EQUAL(dest.OwnsValue(), true);
+                        }
+                        else
+                        {
+                            VERIFY_ARE_EQUAL(dest.OwnsValue(), false);
+                        }
+
                         VERIFY_ARE_EQUAL((uint32_t)source.GetCustomData(), (uint32_t)dest.GetCustomData());
 
                         ValidateCopy<valueType>(dest, source, tag_selector<selector<valueType>::kind>());

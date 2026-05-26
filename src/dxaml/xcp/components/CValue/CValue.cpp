@@ -92,7 +92,10 @@ namespace CValueDetails
                     target,
                     std::move(source));
 
-                target.SetOwnsValue(source.OwnsValue());
+                if (source.OwnsValue())
+                {
+                    target.SetOwnsValue<sourceValueType>(true);
+                }
             }
 
             template <ValueType sourceValueType>
@@ -104,8 +107,6 @@ namespace CValueDetails
                 ValueTypeInfo<sourceValueType>::Store::Set(
                     target,
                     ValueTypeInfo<sourceValueType>::Store::Get(source));
-
-                target.SetOwnsValue(false);
             }
 
             template <>
@@ -119,8 +120,6 @@ namespace CValueDetails
                 Accessor::Set(
                     GetField<valueString>(target.m_value),
                     Accessor::Get(GetField<valueString>(source.m_value)));
-
-                target.SetOwnsValue(false);
             }
 
             template <ValueType sourceValueType>
@@ -133,7 +132,7 @@ namespace CValueDetails
                     target,
                     source);
 
-                target.SetOwnsValue(true);
+                target.SetOwnsValue<sourceValueType>(true);
             }
 
             template <ValueType sourceValueType, typename V>
@@ -142,6 +141,7 @@ namespace CValueDetails
                 _Inout_ V&& source)
             {
                 ASSERT(source.GetType() == sourceValueType);
+                ASSERT(!target.OwnsValue());
 
                 // Invoke appropriate method for setting value.
                 TransferToStore<sourceValueType>(
@@ -174,8 +174,8 @@ namespace CValueDetails
                     target,
                     source);
 
+                target.SetOwnsValue<sourceValueType>(true);
                 target.SetType(sourceValueType);
-                target.SetOwnsValue(true);
 
                 if (ValueTypeInfo<sourceValueType>::Store::isArray)
                 {
@@ -231,6 +231,8 @@ namespace CValueDetails
                 _Out_ CValue& target,
                 _In_ const CValue& source)
             {
+                ASSERT(!target.OwnsValue());
+
                 return Copy<sourceValueType>(
                     target,
                     source);
@@ -701,7 +703,6 @@ bool CValue::IsUnset() const
 void CValue::Unset()
 {
     Set<valueAny>(nullptr);
-    SetOwnsValue(false);
 }
 
 bool CValue::IsNullOrUnset() const
@@ -772,12 +773,6 @@ void CValue::SetType(
     ValueType valueType)
 {
     m_flags.m_state.m_type = valueType;
-}
-
-void CValue::SetOwnsValue(
-    bool ownsValue)
-{
-    m_flags.m_state.m_ownsValue = ownsValue;
 }
 
 uint32_t CValue::AsEnum() const
@@ -874,25 +869,23 @@ void CValue::SetString(
 {
     ReleaseAndReset();
 
-    SetType(valueString);
-    SetOwnsValue(true);
+    ValueTypeInfo<valueString>::Store::MoveXString(*this, std::move(value));
 
-    ValueTypeInfo<valueString>::Store::MoveXString(
-        *this,
-        std::move(value));
+    SetOwnsValue<valueString>(true);
+    SetType(valueString);
 }
 
 xref_ptr<CDependencyObject> CValue::DetachObject()
 {
     xref_ptr<CDependencyObject> obj;
 
-    ASSERT(((GetType() == valueNull || GetType() == valueObject) && OwnsValue()) || GetType() == valueAny);
+    ASSERT(((GetType() == valueObject) && OwnsValue()) || (GetType() == valueAny) || (GetType() == valueNull));
 
     if (GetType() == valueObject &&
         OwnsValue())
     {
         obj.attach(As<valueObject>());
-        SetOwnsValue(false);
+        SetOwnsValue<valueObject>(false);
         ReleaseAndReset();
     }
 

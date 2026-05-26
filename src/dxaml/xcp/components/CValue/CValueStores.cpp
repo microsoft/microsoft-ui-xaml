@@ -50,6 +50,7 @@ namespace CValueDetails
         _Inout_ CValue&& source)
     {
         Accessor::Copy(GetField<valueType>(target.m_value), GetField<valueType>(source.m_value));
+        // Caller deals with transitioning source to a valid moved-from state.
     }
 
     template <ValueType valueType, typename Type>
@@ -129,10 +130,8 @@ namespace CValueDetails
         _Out_ CValue &target,
         _Inout_ CValue&& source)
     {
-        auto& sourceField = GetField<valueType>(source.m_value);
-
-        Accessor::Set(GetField<valueType>(target.m_value), Accessor::Get(sourceField));
-        Accessor::Set(sourceField, xencoded_string_ptr::NullString());
+        Accessor::Set(GetField<valueType>(target.m_value), Accessor::Get(GetField<valueType>(source.m_value)));
+        // Caller deals with transitioning source to a valid moved-from state.
     }
 
     template <ValueType valueType>
