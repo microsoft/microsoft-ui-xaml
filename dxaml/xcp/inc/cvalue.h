@@ -487,10 +487,10 @@ public:
 
         ReleaseAndReset();
 
-        SetType(valueType);
-        SetOwnsValue(true);
-
         ValueTypeInfo<valueType>::Store::Set(*this, value);
+
+        SetOwnsValue<valueType>(true);
+        SetType(valueType);
     }
 
     // SetArray<*> releases previously held value and takes the new one.
@@ -504,11 +504,11 @@ public:
 
         ReleaseAndReset();
 
-        SetType(valueType);
-        SetOwnsValue(true);
-        SetArrayElementCount(count);
-
         ValueTypeInfo<valueType>::Store::Set(*this, value);
+
+        SetOwnsValue<valueType>(true);
+        SetType(valueType);
+        SetArrayElementCount(count);
     }
 
     // SetAddRef<*> releases previously held value and takes the new one.
@@ -522,11 +522,11 @@ public:
 
         ReleaseAndReset();
 
-        SetType(valueType);
-        SetOwnsValue(true);
-
         ValueTypeInfo<valueType>::Store::Set(*this, value);
         ValueTypeInfo<valueType>::Store::AddRef(*this);
+
+        SetOwnsValue<valueType>(true);
+        SetType(valueType);
     }
 
     // Wrap<*> releases previously held value and takes the new one.
@@ -540,10 +540,10 @@ public:
 
         ReleaseAndReset();
 
-        SetType(valueType);
-        SetOwnsValue(false);
-
         ValueTypeInfo<valueType>::Store::Set(*this, value);
+
+        ASSERT(!OwnsValue());
+        SetType(valueType);
     }
 
     // WrapArray<*> releases previously held value and takes the new one.
@@ -558,11 +558,11 @@ public:
 
         ReleaseAndReset();
 
-        SetType(valueType);
-        SetOwnsValue(false);
-        SetArrayElementCount(count);
-
         ValueTypeInfo<valueType>::Store::Set(*this, value);
+
+        ASSERT(!OwnsValue());
+        SetType(valueType);
+        SetArrayElementCount(count);
     }
 
     // Legacy interface.
@@ -874,8 +874,19 @@ private:
     void SetType(
         ValueType valueType);
 
+    template <ValueType valueType>
     void SetOwnsValue(
-        bool ownsValue);
+        bool ownsValue)
+    {
+        if constexpr (ValueTypeInfo<valueType>::Store::isDestructible)
+        {
+            m_flags.m_state.m_ownsValue = ownsValue;
+        }
+        else
+        {
+            ASSERT(!OwnsValue());
+        }
+    }
 
     void SetEnumHelper(
         uint32_t value,

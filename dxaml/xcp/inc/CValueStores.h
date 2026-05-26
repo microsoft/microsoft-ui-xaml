@@ -9,6 +9,14 @@ class CValue;
 struct xencoded_string_ptr;
 class xstring_ptr;
 
+#ifndef UNALIGNED
+#ifdef (_X86_)
+#define UNALIGNED
+#else
+#define UNALIGNED __unaligned
+#endif
+#endif
+
 namespace CValueDetails
 {
     struct ValueStores
@@ -40,57 +48,61 @@ namespace CValueDetails
             }
         };
 
-        // Stores and accesses value stored with alignment forced to 32-bits.
+        // Stores and accesses value that may be unaligned
         template <typename T>
-        struct PiecewiseAccessor
+        struct UnalignedAccessor
         {
-            using StoredType = uint32_t[2];
+            using StoredType = BYTE[sizeof(T)];
 
             static T Get(
                 _In_ const StoredType& field)
             {
-                alignas(8) StoredType aligned;
-                Copy(aligned, field);
-                return *reinterpret_cast<T*>(&aligned);
+                T value = *reinterpret_cast<const UNALIGNED T*>(&field);
+                return value;
             }
 
             static void Set(
                 _Out_ StoredType& field,
                 _In_ const T value)
             {
-                const uint32_t* ptr = reinterpret_cast<const uint32_t*>(&value);
-                field[0] = ptr[0];
-                field[1] = ptr[1];
+                UNALIGNED T* pField = reinterpret_cast<UNALIGNED T*>(&field);
+                *pField = value;
             }
 
             static void Copy(
                 _Out_ StoredType& dest,
                 _In_ const StoredType& source)
             {
-                dest[0] = source[0];
-                dest[1] = source[1];
+                UNALIGNED T* pDest = reinterpret_cast<UNALIGNED T*>(&dest);
+                const UNALIGNED T* pSource = reinterpret_cast<const UNALIGNED T*>(&source);
+                *pDest = *pSource;
             }
         };
 
         // Selects accessor for type T for architecture.
-        template <typename T, size_t size>
+        template <typename T, bool Aligned>
         struct _pick_accessor
         {
             using Accessor = NaturalAccessor<T>;
-            static_assert(size < 8, "Only size <= 8 is currently supported.");
         };
 
-        // Specialization used to force 4-byte alignment.
+        // Specialization used to access types with greater than 4-byte alignment.
         template <typename T>
-        struct _pick_accessor<T, 8>
+        struct _pick_accessor<T, false>
         {
-            using Accessor = PiecewiseAccessor<T>;
+            using Accessor = UnalignedAccessor<T>;
         };
 
         template <typename T>
         struct pick_accessor
         {
-            using Accessor = typename _pick_accessor<T, sizeof(T)>::Accessor;
+            // We desire 4 byte alignment for CValue, so types with larger alignments
+            // need unaligned access. We need special treatment for nullptr_t since
+            // MSVC schizophrenically defines alignof(nullptr_t) == 1, but treats it
+            // the same as void* for purposes of class layout.
+            static constexpr bool IsAligned = (alignof(T) <= 4) &&
+                (!std::is_same_v<T, nullptr_t> || (sizeof(nullptr_t) <= 4)); // not 64bit nullptr_t
+            using Accessor = typename _pick_accessor<T, IsAligned>::Accessor;
         };
 
         // Degenerate case which does not store values, e.g. valueAny, valueNull.
@@ -103,6 +115,7 @@ namespace CValueDetails
 
             static constexpr const bool isArray = false;
             static constexpr const bool isWrappable = false;
+            static constexpr const bool isDestructible = false;
             static constexpr const bool manageRefCounts = false;
 
             static MappedType Get(
@@ -135,7 +148,9 @@ namespace CValueDetails
 
             static void Destroy(
                 _Inout_ CValue& target)
-            {}
+            {
+                ASSERT(false);
+            }
         };
 
         // Stores value types (e.g. valueSigned, valueDouble).
@@ -149,6 +164,7 @@ namespace CValueDetails
 
             static constexpr const bool isArray = false;
             static constexpr const bool isWrappable = false;
+            static constexpr const bool isDestructible = false;
             static constexpr const bool manageRefCounts = false;
 
             static MappedType Get(
@@ -176,6 +192,7 @@ namespace CValueDetails
                 _Inout_ CValue&& source)
             {
                 Accessor::Copy(GetField<valueType>(target.m_value), GetField<valueType>(source.m_value));
+                // Caller deals with transitioning source to a valid moved-from state.
             }
 
             static bool Compare(
@@ -188,7 +205,9 @@ namespace CValueDetails
 
             static void Destroy(
                 _Inout_ CValue& target)
-            {}
+            {
+                ASSERT(false);
+            }
         };
 
         // Stores heap-allocated value types (e.g. valueThickness, valuePoint).
@@ -202,7 +221,8 @@ namespace CValueDetails
 
             static constexpr const bool isArray = false;
             static constexpr const bool isWrappable = true;
-            static constexpr const bool manageRefCounts = true;
+            static constexpr const bool isDestructible = true;
+            static constexpr const bool manageRefCounts = false;
 
             static MappedType Get(
                 _In_ const CValue& value)
@@ -237,6 +257,7 @@ namespace CValueDetails
                 _Inout_ CValue&& source)
             {
                 Accessor::Copy(GetField<valueType>(target.m_value), GetField<valueType>(source.m_value));
+                // Caller deals with transitioning source to a valid moved-from state.
             }
 
             static bool Compare(
@@ -277,6 +298,7 @@ namespace CValueDetails
 
             static constexpr const bool isArray = true;
             static constexpr const bool isWrappable = true;
+            static constexpr const bool isDestructible = true;
             static constexpr const bool manageRefCounts = false;
 
             static MappedType Get(
@@ -307,6 +329,7 @@ namespace CValueDetails
                 _Inout_ CValue&& source)
             {
                 Accessor::Copy(GetField<valueType>(target.m_value), GetField<valueType>(source.m_value));
+                // Caller deals with transitioning source to a valid moved-from state.
             }
 
             static bool Compare(
@@ -336,6 +359,7 @@ namespace CValueDetails
 
             static constexpr const bool isArray = false;
             static constexpr const bool isWrappable = true;
+            static constexpr const bool isDestructible = true;
             static constexpr const bool manageRefCounts = true;
 
             static MappedType Get(
@@ -378,6 +402,7 @@ namespace CValueDetails
 
             static constexpr const bool isArray = false;
             static constexpr const bool isWrappable = false;
+            static constexpr const bool isDestructible = true;
             static constexpr const bool manageRefCounts = false;
 
             static MappedType Get(
