@@ -18,7 +18,7 @@ Instead of:
   - The state of the platform is disappointing. I am not going to consider WinUI until my trust has been earned.
 
 Try this:
-  - Deprecation of past frameworks has left me burned. The following would go a long way in earning my trust because my company is trying to launch an app next year and will need it supported for at least 5 more: 
+  - Deprecation of past frameworks has left me burned. The following would go a long way in earning my trust because my company is trying to launch an app next year and will need it supported for at least 5 more: 
     - OSS
     - High-confidence 5-year roadmap
     - Guaranteed support timeline
@@ -32,7 +32,7 @@ Try this:
   - It's very helpful to specify the "why" behind your request, even if it seems obvious. Comparisons can help, but shouldn't replace explanation. 
   - Ex: "I need `<`feature`>` so that I can achieve `<`goal`>`. Otherwise, I have to `<`alternative`>`."
 
-  There are also usually great opportunities to have feature-related impact in our [spec repo](https://github.com/microsoft/microsoft-ui-xaml-specs/tree/master). Here, you can give direct feedback and help shape the new features and APIs that we're currently building. 
+  There are also usually great opportunities to have feature-related impact in our [spec repo](https://github.com/microsoft/microsoft-ui-xaml-specs/tree/main). Here, you can give direct feedback and help shape the new features and APIs that we're currently building. 
 
 - ### Future/Roadmap
   - We strive to be transparent about our [product roadmap](https://aka.ms/winui3/feature-roadmap). Great examples of feedback to help us achieve this are:
@@ -53,9 +53,9 @@ Try this:
     - "`<`Resource`>` could be more inclusive and accessible if you considered `<`alternative`>` because `<`benefit`>`. Have you considered making these changes?"
    
    Many of the resources we provide are also open source themselves! It can sometimes be more effective to leave feedback on the more specific repo. This includes:
-    - [documentation](https://github.com/MicrosoftDocs/windows-uwp)
+    - [documentation](https://github.com/MicrosoftDocs/windows-dev-docs)
     - [website (`gh-pages` branch of this repo)](https://github.com/microsoft/microsoft-ui-xaml/tree/gh-pages)
-    - [Xaml Controls Gallery (sample app)](https://github.com/microsoft/Xaml-Controls-Gallery/tree/master)
+    - [WinUI 3 Gallery (sample app)](https://github.com/microsoft/WinUI-Gallery/tree/main)
   
 
 - ### Team Process
@@ -69,4 +69,4 @@ We strive to be respectful & empathetic toward each other, and we extend this to
 
 Our conduct guidelines help to ensure that discourse and feedback follows this same pattern of respect & empathy, and they also make it clear that non-constructive or hostile feedback is unacceptable. By following these guidelines, we can all enjoy the mutual respect that each WinUI team member, and each community member, deserve.
 
-Refer to our [conduct guidelines](https://github.com/microsoft/microsoft-ui-xaml/blob/main/CODE_OF_CONDUCT.md) for more guidance here. 
+Refer to our [conduct guidelines](CODE_OF_CONDUCT.md) for more guidance here. 

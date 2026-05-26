@@ -8,9 +8,7 @@ Note that all community interactions must abide by the [Code of Conduct](CODE_OF
 
 ## How we work with contributions
 
-For reporting security issues please see the [Security Policy](docs/SECURITY.md).
-
-Contributions from the community in the form of feature requests and bugs are handled according to our [contribution handling](docs/contribution_handling.md) guidelines.
+Contributions from the community in the form of feature requests and bugs are handled according to our [contribution handling](CONTRIBUTION_HANDLING.md) guidelines.
 
 ## New contributors
 
@@ -27,24 +25,15 @@ Another great way to help is by voting and commenting on feature proposals:
 
 ### Proposing new public APIs or UI
 
-Please follow the [New Feature or API Process](docs/feature_proposal_process.md) before adding, removing, or changing public APIs or UI.  
+Please follow the [New Feature or API Process](https://github.com/microsoft/microsoft-ui-xaml/blob/main/docs/feature_proposal_process.md) before adding, removing, or changing public APIs or UI.  
 All new public APIs, new UI, or breaking changes to existing features **must** go through that process before submitting code changes.  
 You don't need to follow that process for bug fixes or other small changes.
 
 ### Contribution bar
 
-The WinUI team accepts code changes that improve WinUI or fix bugs, as long as they follow the processes outlined below and broadly align with our [roadmap](docs/roadmap.md).
+The WinUI team accepts code changes that improve WinUI or fix bugs, as long as they follow the processes outlined below and broadly align with the [Windows App SDK feature roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md).
 
 While we strive to accept all community contributions that meet the guidelines outlined here, please note that we may not merge changes that have narrowly-defined benefits due to compatibility risks and maintenance costs. We may also revert changes if they are found to be breaking.
-
-### Code contribution process
-
-For details see:
-
-* [Setup and build environment](docs/developer_guide.md#Prerequisites)
-* [Source code structure](docs/source_code_structure.md)
-* [Contribution workflow](docs/contribution_workflow.md)
-* [Coding style and conventions](docs/code_style_and_conventions.md)
 
 ### Contributor License Agreement
 
@@ -58,19 +47,18 @@ The following rules must be followed for PRs that include files from another pro
 
 * The license of the file is [permissive](https://en.wikipedia.org/wiki/Permissive_free_software_licence).
 * The license of the file is left intact.
-* The contribution is correctly attributed in the [3rd party notices](https://github.com/dotnet/coreclr/blob/master/THIRD-PARTY-NOTICES.TXT)
-file in the repository, as needed.
+* The contribution is correctly attributed in the [3rd party notices](NOTICE.md) file in the repository, as needed.
 
 ## Documentation and usage samples
 
 You can also read and contribute to the WinUI documentation here:  
-https://docs.microsoft.com/uwp/toolkits/winui
+ https://learn.microsoft.com/en-us/windows/apps/winui/winui3/
 
 You can find usage examples of the controls available in WinUI in the WinUI 3 Gallery app:  
- https://github.com/Microsoft/WinUI-Gallery/  
+ https://github.com/microsoft/WinUI-Gallery/
 
- Which can also be installed from the Microsoft Store:  
- https://apps.microsoft.com/detail/9p3jfpwwdzrc
+ which can also be installed from the Windows Store:  
+ https://www.microsoft.com/p/winui-3-controls-gallery/9p3jfpwwdzrc
  
  ## API spec discussions
 
