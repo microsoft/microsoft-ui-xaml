@@ -159,48 +159,90 @@ jobs:
           }
 
       # init.cmd + build.cmd must run in the same shell so the env vars set by
-      # init persist into build. Both scripts pushd into their own directory,
-      # so the working-directory below is purely for clarity.
+      # init persist into build. We invoke both inside a single `cmd /c "..."`
+      # process, then tee the combined output through pwsh so we can post-scan
+      # for silent failures (see "FAIL-FAST SCAN" note below).
       #
-      # SECURITY: Build.cmd unconditionally writes MSBuild binary logs (.binlog)
-      # via /bl:, and we upload them as a workflow artifact. MSBuild binlogs
-      # capture *all* process environment variables by default - including the
-      # GitHub Actions runtime secrets (ACTIONS_RUNTIME_TOKEN etc.) that the
-      # runner injects into every step. In a public repo, artifacts are
-      # publicly downloadable, so anyone could extract those tokens within
-      # their (short) validity window. See:
+      # `/nopgo` disables profile-guided optimization. init.cmd auto-enables
+      # PGOBuildMode=Optimize for every non-ARM64EC `fre` flavor (see init.cmd
+      # ~line 222), which causes the build to invoke the RestorePGONuget task
+      # in Microsoft.Internal.PGO-Helpers.Cpp. That task runs
+      # `git merge-base origin/main HEAD` (scripts/version.ps1) which fails on
+      # a shallow `actions/checkout@v4` clone with
+      #   fatal: Not a valid object name origin/main
+      # and also requires an internal PGO NuGet feed. We do not need optimized
+      # binaries for PR validation, so we disable PGO outright; this mirrors
+      # ADO's `shouldPgo:false` slices in WinUI-BuildWinUI-Stage.yml and
+      # avoids a multi-minute git unshallow on every fre PR run.
+      #
+      # FAIL-FAST SCAN: src/Build.cmd has a silent-failure bug in its
+      # `:buildSolution` subroutine. When msbuild fails it prints
+      #   ERROR: buildSolution for <solution> FAILED.
+      # but the very next line is `goto:eof`, and the `echo ERROR:` between
+      # them resets %ERRORLEVEL% to 0. The caller's
+      #   if ERRORLEVEL 1 goto:showDurationAndExit
+      # therefore never fires, the script keeps walking the solution list,
+      # eventually prints "BUILD SUCCEEDED." and exits 0. To defeat that, we
+      # tee the combined init+build stdout/stderr into a log file and fail
+      # the step if any line starts with "ERROR:". This catches both the
+      # swallowed buildSolution failures and any other ERROR: lines emitted
+      # by init.cmd or build.cmd. Out of scope to fix Build.cmd here.
+      #
+      # SECURITY: Build.cmd unconditionally writes MSBuild binary logs
+      # (.binlog) via /bl: and we upload them as a workflow artifact. MSBuild
+      # binlogs capture *all* process environment variables by default -
+      # including the GitHub Actions runtime secrets (ACTIONS_RUNTIME_TOKEN
+      # etc.) that the runner injects into every step. In a public repo,
+      # artifacts are publicly downloadable, so anyone could extract those
+      # tokens within their (short) validity window. See:
       #   https://github.com/dotnet/msbuild/issues/5675
-      #   https://github.com/actions/upload-artifact (security advisory
-      #   GHSA-pw2r-vq6v-hr8c)
-      # We mitigate by blanking those env vars inside this step's cmd process
-      # *before* MSBuild starts; subsequent steps (cache save, upload-artifact)
+      #   https://github.com/actions/upload-artifact security advisory
+      #   GHSA-pw2r-vq6v-hr8c
+      # We mitigate by blanking those env vars in this step's pwsh process
+      # *before* cmd starts; subsequent steps (cache save, upload-artifact)
       # spawn fresh shells and still see the runner's original values.
       - name: Initialize build environment and build
         working-directory: src
-        shell: cmd
+        shell: pwsh
         run: |
-          rem Scrub sensitive runner env vars so they do not get embedded in
-          rem MSBuild binlogs that we upload as a public artifact.
-          set "ACTIONS_RUNTIME_TOKEN="
-          set "ACTIONS_RUNTIME_URL="
-          set "ACTIONS_RESULTS_URL="
-          set "ACTIONS_CACHE_URL="
-          set "ACTIONS_ID_TOKEN_REQUEST_TOKEN="
-          set "ACTIONS_ID_TOKEN_REQUEST_URL="
-          set "GITHUB_TOKEN="
+          # Scrub sensitive runner env vars so they do not get embedded in
+          # MSBuild binlogs that we upload as a public artifact.
+          foreach ($v in 'ACTIONS_RUNTIME_TOKEN','ACTIONS_RUNTIME_URL','ACTIONS_RESULTS_URL','ACTIONS_CACHE_URL','ACTIONS_ID_TOKEN_REQUEST_TOKEN','ACTIONS_ID_TOKEN_REQUEST_URL','GITHUB_TOKEN') {
+            Remove-Item "env:$v" -ErrorAction SilentlyContinue
+          }
 
-          echo === init.cmd %WINUI_INIT_FLAVOR% ===
-          call init.cmd %WINUI_INIT_FLAVOR%
-          if errorlevel 1 (
-            echo ERROR: init.cmd failed with errorlevel %errorlevel%
-            exit /b %errorlevel%
-          )
-          echo === build.cmd %WINUI_BUILD_TARGET% ===
-          call Build.cmd %WINUI_BUILD_TARGET%
-          if errorlevel 1 (
-            echo ERROR: Build.cmd failed with errorlevel %errorlevel%
-            exit /b %errorlevel%
-          )
+          $log = Join-Path $env:RUNNER_TEMP 'winui-build-combined.log'
+          if (Test-Path $log) { Remove-Item $log -Force }
+
+          Write-Host "=== init.cmd $env:WINUI_INIT_FLAVOR /nopgo && Build.cmd $env:WINUI_BUILD_TARGET ==="
+          Write-Host "(combined output also captured to $log for post-scan)"
+
+          # Run init + build in a single cmd shell so init's env vars persist
+          # into Build.cmd. The `&&` ensures Build.cmd does not run if init
+          # fails. Tee through pwsh so we keep live console output AND a
+          # complete file copy for the post-scan.
+          cmd /c "init.cmd $env:WINUI_INIT_FLAVOR /nopgo && Build.cmd $env:WINUI_BUILD_TARGET" 2>&1 |
+            Tee-Object -FilePath $log
+          $cmdExit = $LASTEXITCODE
+
+          # Post-scan for Build.cmd's swallowed errors (see header comment).
+          # `^ERROR:` (case-sensitive, anchored) is the exact prefix Build.cmd
+          # uses for its `echo ERROR: buildSolution for ... FAILED.` messages.
+          $errorLines = @()
+          if (Test-Path $log) {
+            $errorLines = Select-String -Path $log -Pattern '^ERROR:' -CaseSensitive
+          }
+          if ($errorLines.Count -gt 0) {
+            Write-Host "::error::Detected $($errorLines.Count) 'ERROR:' line(s) in build output. Build.cmd may have reported success despite a failing msbuild invocation (known src/Build.cmd ERRORLEVEL-clobber bug)."
+            foreach ($e in $errorLines) {
+              Write-Host ("  " + $e.Line)
+            }
+            if ($cmdExit -eq 0) { exit 1 }
+          }
+          if ($cmdExit -ne 0) {
+            Write-Host "::error::cmd exited with code $cmdExit"
+            exit $cmdExit
+          }
 
       - name: Show available disk space (post-build)
         if: always()
