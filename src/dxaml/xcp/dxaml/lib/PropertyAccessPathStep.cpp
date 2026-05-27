@@ -9,6 +9,7 @@
 #include "PropertyInfoPropertyAccess.h"
 #include "MapPropertyAccess.h"
 #include <XStringUtils.h>
+#include <xstrutil.h>
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -16,6 +17,12 @@ using namespace xaml_data;
 
 PropertyAccessPathStep::~PropertyAccessPathStep()
 {
+    if (IsInlineDOAccessEnabled())
+    {
+        // Detach inline DO event handler before destruction (safe from destructor path).
+        IGNOREHR(InlineDODisconnect());
+    }
+
     delete[] m_szProperty;
 }
 
@@ -43,10 +50,30 @@ Cleanup:
 
 void PropertyAccessPathStep::DisconnectCurrentItem()
 {
+    if (IsInlineDOAccessEnabled())
+    {
+        InlineDODisconnect();
+    }
     if (m_tpPropertyAccess)
     {
         VERIFYHR(m_tpPropertyAccess->DisconnectEventHandlers());
         VERIFYHR(m_tpPropertyAccess->SetSource(NULL, /* fListenToChanges */ FALSE));
+    }
+}
+
+bool PropertyAccessPathStep::IsConnected()
+{
+    if (IsInlineDOAccessEnabled())
+    {
+        if (IsUsingInlineDOAccess())
+        {
+            return m_inlineDO.m_pProperty && m_inlineDO.m_tpSource;
+        }
+        return m_tpPropertyAccess && m_tpPropertyAccess->IsConnected();
+    }
+    else
+    {
+        return m_tpPropertyAccess && m_tpPropertyAccess->IsConnected();
     }
 }
 
@@ -62,7 +89,33 @@ PropertyAccessPathStep::GetValue(_Outptr_ IInspectable **ppValue)
         goto Cleanup;
     }
 
-    IFC(m_tpPropertyAccess->GetValue(ppValue));
+    if (IsInlineDOAccessEnabled())
+    {
+        if (IsUsingInlineDOAccess())
+        {
+            // Inline DO fast path: read value directly from the DependencyObject.
+            // This parallels DependencyObjectPropertyAccess::GetValue.
+            ctl::ComPtr<DependencyObject> spSource;
+            *ppValue = nullptr;
+            IFC(InlineDOGetDependencyObject(&spSource));
+            if (spSource)
+            {
+                if (   !m_inlineDO.m_pProperty->ShouldBindingGetValueUseCheckOnDemandProperty()
+                    || !spSource->GetHandle()->CheckOnDemandProperty(m_inlineDO.m_pProperty).IsNull())
+                {
+                    IFC(spSource->GetValue(m_inlineDO.m_pProperty, ppValue));
+                }
+            }
+        }
+        else
+        {
+            IFC(m_tpPropertyAccess->GetValue(ppValue));
+        }
+    }
+    else
+    {
+        IFC(m_tpPropertyAccess->GetValue(ppValue));
+    }
 
 Cleanup:
 
@@ -89,10 +142,30 @@ void PropertyAccessPathStep::TraceGetterError()
         goto Cleanup;
     }
 
-    IFC(m_tpPropertyAccess->GetSource(&pSource));
-    IFC(MetadataAPI::GetFriendlyRuntimeClassName(pSource, &strSourceClassName));
+    if (IsInlineDOAccessEnabled())
+    {
+        if (IsUsingInlineDOAccess())
+        {
+            // For inline DO path, get source and type from our inline state.
+            pSource = m_inlineDO.m_tpSource.Get();
+            AddRefInterface(pSource);
+            IFC(MetadataAPI::GetFriendlyRuntimeClassName(pSource, &strSourceClassName));
+            pTypeInfo = m_inlineDO.m_pProperty->GetPropertyType();
+        }
+        else
+        {
+            IFC(m_tpPropertyAccess->GetSource(&pSource));
+            IFC(MetadataAPI::GetFriendlyRuntimeClassName(pSource, &strSourceClassName));
+            IFC(m_tpPropertyAccess->GetType(&pTypeInfo));
+        }
+    }
+    else
+    {
+        IFC(m_tpPropertyAccess->GetSource(&pSource));
+        IFC(MetadataAPI::GetFriendlyRuntimeClassName(pSource, &strSourceClassName));
 
-    IFC(m_tpPropertyAccess->GetType(&pTypeInfo));
+        IFC(m_tpPropertyAccess->GetType(&pTypeInfo));
+    }
 
     IFC(m_spListener.As(&spListener));
     IFCEXPECT_ASSERT(spListener.Get());
@@ -121,7 +194,26 @@ PropertyAccessPathStep::SetValue(_In_ IInspectable *pValue)
 
     IFCEXPECT(IsConnected());
 
-    IFC(m_tpPropertyAccess->SetValue(pValue));
+    if (IsInlineDOAccessEnabled())
+    {
+        if (IsUsingInlineDOAccess())
+        {
+            ctl::ComPtr<DependencyObject> spSource;
+            IFC(InlineDOGetDependencyObject(&spSource));
+            if (spSource)
+            {
+                IFC(spSource->SetValue(m_inlineDO.m_pProperty, pValue));
+            }
+        }
+        else
+        {
+            IFC(m_tpPropertyAccess->SetValue(pValue));
+        }
+    }
+    else
+    {
+        IFC(m_tpPropertyAccess->SetValue(pValue));
+    }
 
 Cleanup:
 
@@ -143,6 +235,11 @@ PropertyAccessPathStep::ConnectToPropertyOnSource(
     // we're done
     if (PropertyValue::IsNullOrEmpty(pSource))
     {
+        if (IsInlineDOAccessEnabled())
+        {
+            InlineDODisconnect();
+        }
+
         if (m_tpPropertyAccess)
         {
             IFC(m_tpPropertyAccess->DisconnectEventHandlers());
@@ -219,6 +316,11 @@ PropertyAccessPathStep::ConnectPropertyAccessForObject(
     // Nothing we can create if the value is NULL
     if (!spInsp)
     {
+        if (IsInlineDOAccessEnabled())
+        {
+            InlineDODisconnect();
+        }
+
         if (m_tpPropertyAccess)
         {
             IFC(m_tpPropertyAccess->DisconnectEventHandlers());
@@ -227,12 +329,49 @@ PropertyAccessPathStep::ConnectPropertyAccessForObject(
         goto Cleanup;
     }
 
-    if (m_tpPropertyAccess != nullptr)
+    // Try reconnect fast path.
+    if (IsInlineDOAccessEnabled())
     {
-        IFC(m_tpPropertyAccess->TryReconnect(spInsp.Get(), !!fListenToChanges, *pbConnected, pSourceType));
-        if (*pbConnected)
+        // Parallel of DependencyObjectPropertyAccess::TryReconnect and
+        // DependencyObjectPropertyAccess::SetSource -- if we're already using
+        // inline DO access and the source type matches, just swap the source pointer.
+        if (IsUsingInlineDOAccess())
         {
-            goto Cleanup;
+            IFC(MetadataAPI::GetClassInfoFromObject_SkipWinRTPropertyOtherType(spInsp.Get(), &pSourceType));
+            if (m_inlineDO.m_pSourceType == pSourceType)
+            {
+                // Same type -- reconnect in place.
+                IFC(InlineDOSafeRemovePropertyChangedHandler());
+                SetPtrValue(m_inlineDO.m_tpSource, spSourceForDP.Get());
+                if (fListenToChanges)
+                {
+                    IFC(InlineDOAddPropertyChangedHandler());
+                }
+                *pbConnected = TRUE;
+                goto Cleanup;
+            }
+
+            // Type changed -- disconnect inline path, will fall through to create new accessor.
+            InlineDODisconnect();
+        }
+        else if (m_tpPropertyAccess != nullptr)
+        {
+            IFC(m_tpPropertyAccess->TryReconnect(spInsp.Get(), !!fListenToChanges, *pbConnected, pSourceType));
+            if (*pbConnected)
+            {
+                goto Cleanup;
+            }
+        }
+    }
+    else
+    {
+        if (m_tpPropertyAccess != nullptr)
+        {
+            IFC(m_tpPropertyAccess->TryReconnect(spInsp.Get(), !!fListenToChanges, *pbConnected, pSourceType));
+            if (*pbConnected)
+            {
+                goto Cleanup;
+            }
         }
     }
 
@@ -244,17 +383,43 @@ PropertyAccessPathStep::ConnectPropertyAccessForObject(
     }
 
     // See if we can create one of the known types of property accessors
-    if (ctl::is<xaml::IDependencyObject>(spInsp))
+    if (IsInlineDOAccessEnabled())
     {
-        // The dependency object property access gets the original source because it
-        // can be a weak reference wrapper
-        if (m_pDP)
+        if (ctl::is<xaml::IDependencyObject>(spInsp))
         {
-            IFC(DependencyObjectPropertyAccess::CreateInstance(this, spSourceForDP.Get(), pSourceType, m_pDP, fListenToChanges, &spResult));
+            // Inline DO accessor: store state directly in step,
+            // avoiding a heap-allocated DependencyObjectPropertyAccess.
+            IFC(InlineDOConnect(spInsp.Get(), spSourceForDP.Get(), pSourceType, fListenToChanges));
+            if (IsUsingInlineDOAccess())
+            {
+                *pbConnected = TRUE;
+                goto Cleanup;
+            }
+            // InlineDOConnect couldn't resolve DP -- fall through to heap-allocated DOPA.
+            if (m_pDP)
+            {
+                IFC(DependencyObjectPropertyAccess::CreateInstance(this, spSourceForDP.Get(), pSourceType, m_pDP, fListenToChanges, &spResult));
+            }
+            else
+            {
+                IFC(DependencyObjectPropertyAccess::CreateInstance(this, spSourceForDP.Get(), pSourceType, fListenToChanges, &spResult));
+            }
         }
-        else
+    }
+    else
+    {
+        if (ctl::is<xaml::IDependencyObject>(spInsp))
         {
-            IFC(DependencyObjectPropertyAccess::CreateInstance(this, spSourceForDP.Get(), pSourceType, fListenToChanges, &spResult));
+            // The dependency object property access gets the original source because it
+            // can be a weak reference wrapper
+            if (m_pDP)
+            {
+                IFC(DependencyObjectPropertyAccess::CreateInstance(this, spSourceForDP.Get(), pSourceType, m_pDP, fListenToChanges, &spResult));
+            }
+            else
+            {
+                IFC(DependencyObjectPropertyAccess::CreateInstance(this, spSourceForDP.Get(), pSourceType, fListenToChanges, &spResult));
+            }
         }
     }
 
@@ -378,8 +543,24 @@ PropertyAccessPathStep::GetType(_Outptr_ const CClassInfo **ppType)
 {
     HRESULT hr = S_OK;
 
-    IFCEXPECT(m_tpPropertyAccess);
-    IFC(m_tpPropertyAccess->GetType(ppType));
+    if (IsInlineDOAccessEnabled())
+    {
+        if (IsUsingInlineDOAccess())
+        {
+            IFCEXPECT(m_inlineDO.m_pProperty);
+            *ppType = m_inlineDO.m_pProperty->GetPropertyType();
+        }
+        else
+        {
+            IFCEXPECT(m_tpPropertyAccess);
+            IFC(m_tpPropertyAccess->GetType(ppType));
+        }
+    }
+    else
+    {
+        IFCEXPECT(m_tpPropertyAccess);
+        IFC(m_tpPropertyAccess->GetType(ppType));
+    }
 
 Cleanup:
     RRETURN(hr);
@@ -397,8 +578,201 @@ HRESULT
 PropertyAccessPathStep::GetSourceType(_Outptr_ const CClassInfo **ppType)
 {
     HRESULT hr = S_OK;
-    IFCEXPECT(m_tpPropertyAccess);
-    IFC(m_tpPropertyAccess->GetSourceType(ppType));
+
+    if (IsInlineDOAccessEnabled())
+    {
+        if (IsUsingInlineDOAccess())
+        {
+            *ppType = m_inlineDO.m_pSourceType;
+        }
+        else
+        {
+            IFCEXPECT(m_tpPropertyAccess);
+            IFC(m_tpPropertyAccess->GetSourceType(ppType));
+        }
+    }
+    else
+    {
+        IFCEXPECT(m_tpPropertyAccess);
+        IFC(m_tpPropertyAccess->GetSourceType(ppType));
+    }
+
 Cleanup:
     return hr;
+}
+
+// ============================================================================
+// Inline DependencyObject accessor helpers
+//
+// For the common case where the source is a DependencyObject, we store the
+// accessor state (source, event handler, source type) directly in this step
+// instead of allocating a separate DependencyObjectPropertyAccess object.
+// ============================================================================
+
+// Parallel of DependencyObjectPropertyAccess::CreateInstance
+// resolves DP, stores state inline, optionally listens.
+_Check_return_
+HRESULT
+PropertyAccessPathStep::InlineDOConnect(
+    _In_ IInspectable *pSource,
+    _In_ IInspectable *pSourceForDP,
+    _In_ const CClassInfo *pSourceType,
+    _In_ bool fListenToChanges)
+{
+    ASSERT(IsInlineDOAccessEnabled());
+    const CDependencyProperty* pDP = m_pDP;
+
+    // If we don't have a pre-resolved DP, resolve by name for the current source type.
+    if (!pDP && m_szProperty)
+    {
+        ctl::ComPtr<DependencyObject> spSource;
+        IFC_RETURN(ResolveDependencyObject(pSource, &spSource));
+        if (spSource)
+        {
+            IFC_RETURN(MetadataAPI::TryGetDependencyPropertyByName(
+                pSourceType,
+                XSTRING_PTR_EPHEMERAL2(m_szProperty, xstrlen(m_szProperty)),
+                &pDP));
+        }
+    }
+
+    // If we couldn't resolve a DP, bail out -- caller will fall through to non-DO accessors. 
+    if (!pDP)
+    {
+        return S_OK;
+    }
+
+    // Store state inline in the step.  The DP goes in the InlineDOAccessor
+    // (not in step-level m_pDP) so it gets cleaned up by Clear() on type change.
+    m_inlineDO.m_pProperty = pDP;
+    m_inlineDO.m_pSourceType = pSourceType;
+    SetPtrValue(m_inlineDO.m_tpSource, pSourceForDP);
+
+    if (fListenToChanges)
+    {
+        IFC_RETURN(InlineDOAddPropertyChangedHandler());
+    }
+
+    return S_OK;
+}
+
+// Parallel of DependencyObjectPropertyAccess::AddPropertyChangedHandler.
+_Check_return_
+HRESULT
+PropertyAccessPathStep::InlineDOAddPropertyChangedHandler()
+{
+    ASSERT(IsInlineDOAccessEnabled());
+    ctl::ComPtr<DependencyObject> spSource;
+
+    IFC_RETURN(InlineDOGetDependencyObject(&spSource));
+    if (!spSource)
+    {
+        return S_OK;
+    }
+
+    IFC_RETURN(m_inlineDO.m_epSyncHandler.AttachEventHandler(
+        spSource.Get(),
+        [this](_In_ xaml::IDependencyObject *sender, _In_ const CDependencyProperty* pDP)
+        {
+            return this->InlineDOPropertyChanged(pDP);
+        }));
+
+    return S_OK;
+}
+
+// Parallel of DependencyObjectPropertyAccess::SafeRemovePropertyChangedHandler.
+_Check_return_
+HRESULT
+PropertyAccessPathStep::InlineDOSafeRemovePropertyChangedHandler()
+{
+    ASSERT(IsInlineDOAccessEnabled());
+
+    if (m_inlineDO.m_epSyncHandler)
+    {
+        ctl::ComPtr<DependencyObject> spSource;
+        IFC_RETURN(InlineDOSafeGetDependencyObject(&spSource));
+
+        if (spSource)
+        {
+            IFC_RETURN(m_inlineDO.m_epSyncHandler.DetachEventHandler(ctl::iinspectable_cast(spSource.Get())));
+        }
+    }
+
+    return S_OK;
+}
+
+// Parallel of DependencyObjectPropertyAccess::SetSource(nullptr, FALSE) + destructor cleanup.
+void
+PropertyAccessPathStep::InlineDODisconnect()
+{
+    ASSERT(IsInlineDOAccessEnabled());
+    IGNOREHR(InlineDOSafeRemovePropertyChangedHandler());
+    m_inlineDO.Clear();
+}
+
+// Parallel of DependencyObjectPropertyAccess::GetSource.
+_Check_return_
+HRESULT
+PropertyAccessPathStep::InlineDOGetDependencyObject(_Outptr_ DependencyObject **ppSource)
+{
+    ASSERT(IsInlineDOAccessEnabled());
+    return ResolveDependencyObject(m_inlineDO.m_tpSource.Get(), ppSource);
+}
+
+// Parallel of DependencyObjectPropertyAccess::SafeGetSource.
+_Check_return_
+HRESULT
+PropertyAccessPathStep::InlineDOSafeGetDependencyObject(_Outptr_ DependencyObject **ppSource)
+{
+    ASSERT(IsInlineDOAccessEnabled());
+    auto spSource = m_inlineDO.m_tpSource.GetSafeReference();
+
+    *ppSource = NULL;
+
+    if (spSource)
+    {
+        IFC_RETURN(ResolveDependencyObject(spSource.Get(), ppSource));
+    }
+
+    return S_OK;
+}
+
+// Shared helper for InlineDOGetDependencyObject / InlineDOSafeGetDependencyObject.
+// Parallel of the IInspectable-to-DependencyObject conversion in DOPA::GetSource.
+/* static */
+_Check_return_
+HRESULT
+PropertyAccessPathStep::ResolveDependencyObject(
+    _In_ IInspectable *pSource,
+    _Outptr_ DependencyObject **ppSource)
+{
+    ASSERT(IsInlineDOAccessEnabled());
+    ctl::ComPtr<xaml::IDependencyObject> spObj;
+
+    // ValueWeakReference::get_value_as handles both direct DOs and weak-reference wrappers.
+    spObj.Attach(ValueWeakReference::get_value_as<xaml::IDependencyObject>(pSource));
+    *ppSource = static_cast<DependencyObject*>(spObj.Detach());
+
+    return S_OK;
+}
+
+// Parallel of DependencyObjectPropertyAccess::PropertyAccessPathStepDPChanged +
+// SourceDPChanged -- filters by property index, then raises source changed.
+_Check_return_
+HRESULT
+PropertyAccessPathStep::InlineDOPropertyChanged(_In_ const CDependencyProperty* pDP)
+{
+    ASSERT(IsInlineDOAccessEnabled());
+
+    if (IsUsingInlineDOAccess())
+    {
+        // m_pProperty can be null if the handler fires after InlineDODisconnect
+        // cleared our state (e.g. the detach from the source failed).
+        if (m_inlineDO.m_pProperty && pDP->GetIndex() == m_inlineDO.m_pProperty->GetIndex())
+        {
+            IFC_RETURN(RaiseSourceChanged());
+        }
+    }
+
+    return S_OK;
 }

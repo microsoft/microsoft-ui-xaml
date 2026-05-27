@@ -109,8 +109,6 @@ protected:
 
 private:
 
-    _Check_return_ HRESULT ConnectToSourceProperty();
-
     _Check_return_ HRESULT AddPropertyChangedHandler();
 
     // This method can be called from the destructor to 

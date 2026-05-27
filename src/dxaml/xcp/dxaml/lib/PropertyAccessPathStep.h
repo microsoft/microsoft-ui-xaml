@@ -8,6 +8,9 @@
 
 #include "PropertyAccess.h"
 #include "PropertyPathStep.h"
+#include "XamlTelemetry.h"
+#include "DependencyObjectPropertyAccess.h"
+#include "PerfOptIn.h"
 
 namespace DirectUI
 {
@@ -37,6 +40,11 @@ public:
     Cleanup:
 
         RRETURN(hr);
+    }
+
+    static bool IsInlineDOAccessEnabled()
+    {
+        return IsPerfOptInEnabled();
     }
 
     _Check_return_ HRESULT Initialize(
@@ -71,8 +79,7 @@ public:
 
     _Check_return_ HRESULT GetSourceType(_Outptr_ const CClassInfo **ppType) override;
 
-    bool IsConnected() override 
-    { return m_tpPropertyAccess && m_tpPropertyAccess->IsConnected(); }
+    bool IsConnected() override;
 
     WCHAR *DebugGetPropertyName() override
     { return m_szProperty; }
@@ -106,12 +113,67 @@ private:
     void TraceGetterError();
     void TraceConnectionError(_In_ IInspectable *pSource);
 
+    // Returns true when this step is using the inline DO fast path
+    // (no heap-allocated DependencyObjectPropertyAccess).
+    bool IsUsingInlineDOAccess() const
+    { 
+        ASSERT(IsInlineDOAccessEnabled()); 
+        return m_inlineDO.IsActive();
+    }
+
+    // Inline DO accessor helpers
+    _Check_return_ HRESULT InlineDOConnect(
+        _In_ IInspectable *pSource,
+        _In_ IInspectable *pSourceForDP,
+        _In_ const CClassInfo *pSourceType,
+        _In_ bool fListenToChanges);
+
+    _Check_return_ HRESULT InlineDOAddPropertyChangedHandler();
+    _Check_return_ HRESULT InlineDOSafeRemovePropertyChangedHandler();
+    void InlineDODisconnect();
+
+    _Check_return_ HRESULT InlineDOGetDependencyObject(_Outptr_ DependencyObject **ppSource);
+    _Check_return_ HRESULT InlineDOSafeGetDependencyObject(_Outptr_ DependencyObject **ppSource);
+
+    static _Check_return_ HRESULT ResolveDependencyObject(
+        _In_ IInspectable *pSource,
+        _Outptr_ DependencyObject **ppSource);
+
+    _Check_return_ HRESULT InlineDOPropertyChanged(_In_ const CDependencyProperty* pDP);
+
 protected:
 
     bool m_fListenToChanges;
     WCHAR *m_szProperty;
     const CDependencyProperty* m_pDP;
     TrackerPtr<PropertyAccess> m_tpPropertyAccess;
+
+    // Inline DependencyObject accessor state (only used when IsInlineDOAccessEnabled() is true).
+    // When active, we access the DP directly instead of
+    // allocating a separate heap DependencyObjectPropertyAccess object.
+    struct InlineDOAccessor
+    {
+        TrackerPtr<IInspectable> m_tpSource;       // The binding source object
+        ctl::EventPtr<PropertyAccessPathStepDPChangedCallback> m_epSyncHandler;  // DP-changed event
+        const CClassInfo* m_pSourceType = nullptr;  // Source type for reconnect
+        const CDependencyProperty* m_pProperty = nullptr;  // Resolved DP 
+
+        bool IsActive() const
+        {
+            return m_tpSource.Get() != nullptr;
+        }
+        void Clear()
+        {
+            m_tpSource.Clear();
+            // m_epSyncHandler is detached in PropertyAccessPathStep dtor.
+            // Just for safety, move-assign from a default-constructed EventPtr to neuter any
+            // handler that wasn't properly detached from its source.            
+            m_epSyncHandler = decltype(m_epSyncHandler){};
+            m_pSourceType = nullptr;
+            m_pProperty = nullptr;
+        }
+    };
+    InlineDOAccessor m_inlineDO;  // Only valid when IsInlineDOAccessEnabled() is true
 };
 
 }
