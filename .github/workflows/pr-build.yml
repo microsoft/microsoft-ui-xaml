@@ -364,20 +364,33 @@ jobs:
           # and /p:Configuration explicitly so the solution config selector
           # matches MUXControls.sln (which has Debug|x86, not Debug|Win32).
           #
-          # `IsDebugTestConfiguration=false` is passed on the MUXControls.sln
-          # invocation only. That property gates the test apps (e.g.
-          # IXMPTestApp, MUXControlsTestApp) into emitting a full .appx during
-          # build. Appx packaging needs all referenced binaries (the WinUI
-          # product DLLs) binplaced into each app's payload, which on OSS
-          # depends on the mock-WindowsAppSDK package step that ADO runs but
-          # the public repo doesn't ship. Disabling appx generation for the
-          # compile-check PR build avoids the spurious APPX0703 failures on
-          # chk legs; ADO is unaffected because IsDebugTestConfiguration
-          # there is set by the ADO variable layer, not by the .csprojs.
+          # `EnableMUXWinRTRegistrations=false` is passed on the MUXControls.sln
+          # invocation only. That property gates the import of
+          # `src\eng\adhocappreg.targets`, which is what runs the
+          # `WinAppSdkInsertActivatableClassEntries` target on UAP test apps
+          # (IXMPTestApp.csproj, TabViewTearOutApp.vcxproj, etc.). That target
+          # inserts manifest entries for `Microsoft.UI.Xaml.dll`,
+          # `Microsoft.UI.Xaml.Controls.dll`, `Microsoft.UI.Xaml.Phone.dll`,
+          # `WinUIEdit.dll` etc. derived from the WindowsAppSDK fusion
+          # manifest. In ADO those DLLs get binplaced into the test app's
+          # payload by `scripts\buildMockWinAppSdkPackage.ps1` (a step that
+          # runs between Microsoft.UI.Xaml.sln and MUXControls.sln). That
+          # mock-package script is internal-only and not mirrored to OSS, so
+          # the DLLs are absent from the payload and APPX0703 validation
+          # fails. The PR build is a compile-check (no tests executed), so
+          # disabling the registration insertion is safe. The override is
+          # global-property scope, so it cleanly overrides
+          # `src\eng\adhocapp.targets:68` which auto-enables the flag for
+          # UAP test projects. ADO unaffected -- the flag stays unset there.
+          #
+          # `IsDebugTestConfiguration=false` is a belt-and-braces override
+          # for the `<GenerateAppxPackageOnBuild>` gate in IXMPTestApp.csproj
+          # (a no-op in current state since the property is never set true
+          # in either repo, but defensive against future changes).
           $sequence = $prereqSteps + @(
             "msbuild dxaml\Microsoft.UI.Xaml.sln    /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.$platform.$config.binlog",
             "pack.component.cmd /version 3.0.0-dev",
-            "msbuild controls\MUXControls.sln       /p:Platform=$platform /p:Configuration=$config /p:IsDebugTestConfiguration=false $commonArgs /binaryLogger:$binlogDir\MUXControls.$platform.$config.binlog"
+            "msbuild controls\MUXControls.sln       /p:Platform=$platform /p:Configuration=$config /p:EnableMUXWinRTRegistrations=false /p:IsDebugTestConfiguration=false $commonArgs /binaryLogger:$binlogDir\MUXControls.$platform.$config.binlog"
           )
 
           # Run init + the four build commands inside a single cmd shell so
