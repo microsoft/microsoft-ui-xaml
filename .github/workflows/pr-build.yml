@@ -363,10 +363,21 @@ jobs:
           # Build sequence mirrors ADO. Each invocation passes /p:Platform
           # and /p:Configuration explicitly so the solution config selector
           # matches MUXControls.sln (which has Debug|x86, not Debug|Win32).
+          #
+          # `IsDebugTestConfiguration=false` is passed on the MUXControls.sln
+          # invocation only. That property gates the test apps (e.g.
+          # IXMPTestApp, MUXControlsTestApp) into emitting a full .appx during
+          # build. Appx packaging needs all referenced binaries (the WinUI
+          # product DLLs) binplaced into each app's payload, which on OSS
+          # depends on the mock-WindowsAppSDK package step that ADO runs but
+          # the public repo doesn't ship. Disabling appx generation for the
+          # compile-check PR build avoids the spurious APPX0703 failures on
+          # chk legs; ADO is unaffected because IsDebugTestConfiguration
+          # there is set by the ADO variable layer, not by the .csprojs.
           $sequence = $prereqSteps + @(
             "msbuild dxaml\Microsoft.UI.Xaml.sln    /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.$platform.$config.binlog",
             "pack.component.cmd /version 3.0.0-dev",
-            "msbuild controls\MUXControls.sln       /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\MUXControls.$platform.$config.binlog"
+            "msbuild controls\MUXControls.sln       /p:Platform=$platform /p:Configuration=$config /p:IsDebugTestConfiguration=false $commonArgs /binaryLogger:$binlogDir\MUXControls.$platform.$config.binlog"
           )
 
           # Run init + the four build commands inside a single cmd shell so
