@@ -39,7 +39,7 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
-    const bool isPerf2026Enabled = false; // TODO: Decide based on opt-in flag, task.ms/60958581
+    const bool isPerf2026Enabled = true; // TODO: Decide based on opt-in flag, task.ms/60958581
 
     // We choose the URI to use at runtime based on whether we want compact resources
     winrt::Uri uri{
@@ -51,7 +51,7 @@ void XamlControlsResources::UpdateSource()
             return packagePrefix + compactPrefix + postfix;
         }()
     };
-    
+
     // Because of Compact, UpdateSource may be executed twice, but there is a bug in XAML and manually clear theme dictionaries here:
     // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
@@ -64,7 +64,7 @@ void XamlControlsResources::UpdateSource()
     ThemeDictionaries().Lookup(box_value(L"Default")).as<winrt::ResourceDictionary>().Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush));
 }
 
-void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className) 
+void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, std::wstring_view const& className)
 {
     controlProtected.DefaultStyleKey(box_value(className));
 

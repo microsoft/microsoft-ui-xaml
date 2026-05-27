@@ -42,7 +42,7 @@
     <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout.xaml">
       <Type>StylePerf2026</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout_themeresources_perf2026.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
   </ItemGroup>

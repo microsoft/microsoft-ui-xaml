@@ -58,7 +58,6 @@ AppBar::AppBar()
     , m_savedFocusState(xaml::FocusState_Unfocused)
     , m_isInOverlayState(false)
     , m_isChangingOpenedState(false)
-    , m_hasUpdatedTemplateSettings(false)
     , m_hasExpandButtonCustomAutomationName(false)
     , m_minCompactHeight(0.0)
     , m_compactHeight(0.0)
@@ -1345,31 +1344,6 @@ AppBar::UpdateTemplateSettings()
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_HiddenVerticalDelta(-contentHeight));
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_NegativeHiddenVerticalDelta(contentHeight));
 
-    if (m_hasUpdatedTemplateSettings)
-    {
-        // We wait until after the first call to update template settings to query DisplayModesStates VSG
-        // to to prevent a performance hit on app startup (see VSO 2362425)
-        IFC_RETURN(TryQueryDisplayModesStatesGroup());
-
-        // Force animations that reference our template settings in the current visual state
-        // to update their bindings.
-        if (m_tpDisplayModesStateGroup)
-        {
-            ctl::ComPtr<xaml::IVisualState> currentState;
-            IFC_RETURN(m_tpDisplayModesStateGroup->get_CurrentState(&currentState));
-            if (currentState)
-            {
-                ctl::ComPtr<xaml_animation::IStoryboard> storyboard;
-                IFC_RETURN(currentState->get_Storyboard(&storyboard));
-                if (storyboard)
-                {
-                    IFC_RETURN(storyboard->SkipToFill());
-                }
-            }
-        }
-    }
-    m_hasUpdatedTemplateSettings = true;
-
     return S_OK;
 }
 
@@ -1394,7 +1368,7 @@ AppBar::GetShouldOpenUp(_Out_ bool* shouldOpenUp)
 }
 
 // Virtual method is overwritten by CommandBar sub-class.
-_Check_return_ HRESULT 
+_Check_return_ HRESULT
 AppBar::HasRightLabelDynamicPrimaryCommand(_Out_ bool* hasRightLabelDynamicPrimaryCommand)
 {
     *hasRightLabelDynamicPrimaryCommand = false;
