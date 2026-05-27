@@ -2,228 +2,178 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 //  Abstract:
-//      Templates for singly and doubly linked lists
+//      Vector-backed list container (replaces legacy linked-list implementation).
+//      CXcpList<C> stores C* pointers in a std::vector.
+//      Use OldestBegin/End or NewestBegin/End for explicit iteration direction.
 
 #pragma once
 
-// Singly linked lists
+#include <vector>
+#include <algorithm>
 
-template <class C> class CXcpList
+template <class C>
+class CXcpList
 {
 public:
-    struct XCPListNode
-    {
-        C *m_pData;
-        XCPListNode *m_pNext;    
-    };
 
-public:
+    CXcpList() = default;
 
-    CXcpList()
+    explicit CXcpList(size_t reserveCount)
     {
-        m_pHead = NULL;
-        m_pTail = NULL;
-#if XCP_MONITOR
-        m_isContainingWeakPointers = false;
-#endif
+        Reserve(reserveCount);
     }
-    
+
     ~CXcpList()
     {
         Clean();
     }
-    
+
+    // Non-copyable but movable.
+    CXcpList(const CXcpList&) = delete;
+    CXcpList& operator=(const CXcpList&) = delete;
+    CXcpList(CXcpList&&) = default;
+    CXcpList& operator=(CXcpList&&) = default;
+
     HRESULT Add(C *pData)
     {
-        XCPListNode *pTemp = m_pHead;
-        HRESULT hr = S_OK;
-
-        XCPListNode *pTempNode; 
-
-        pTempNode = new XCPListNode;
-
+#if XCP_MONITOR
+        const bool realloc = (m_data.size() == m_data.capacity());
+#endif
+        m_data.push_back(pData);
 #if XCP_MONITOR
         if (m_isContainingWeakPointers)
         {
-            ::XcpMarkWeakPointer(pTempNode, &pTempNode->m_pData);
+            if (!realloc)
+            {
+                ::XcpMarkWeakPointer(m_data.data(), &m_data.back());
+            }
+            else
+            {
+                // Buffer moved — re-mark all existing pointers at their new addresses
+                for (size_t i = 0; i < m_data.size(); ++i)
+                {
+                    ::XcpMarkWeakPointer(m_data.data(), &m_data[i]);
+                }
+            }
         }
 #endif
-
-
-        m_pHead = pTempNode;    
-        if (!m_pTail)
-        {
-            m_pTail = m_pHead;
-        }
-        
-        m_pHead->m_pNext = pTemp;
-        m_pHead->m_pData = pData;      
-
-        RRETURN(hr);//RRETURN_REMOVAL
+        return S_OK;
     }
 
-    HRESULT AddTail(C *pData)
+    HRESULT Remove(C *pData, XUINT8 bDoDelete = TRUE)
     {
-        XCPListNode *pTemp = m_pTail;
-        HRESULT hr = S_OK;
-
-        XCPListNode *pTempNode; 
-
-        pTempNode = new XCPListNode;
+        HRESULT hr = S_FALSE;
+        auto it = std::find(m_data.begin(), m_data.end(), pData);
+        if (it != m_data.end())
+        {
+            if (bDoDelete)
+            {
+                DeleteItem(*it);
+            }
+            m_data.erase(it);
+            hr = S_OK;
 
 #if XCP_MONITOR
-        if (m_isContainingWeakPointers)
-        {
-            ::XcpMarkWeakPointer(pTempNode, &pTempNode->m_pData);
-        }
+            if (m_isContainingWeakPointers)
+            {
+                // Re-mark all existing pointers at their new addresses
+                for (size_t i = 0; i < m_data.size(); ++i)
+                {
+                    ::XcpMarkWeakPointer(m_data.data(), &m_data[i]);
+                }
+            }
+
+            // Free the buffer when empty so the leak checker doesn't
+            // flag the high-water-mark allocation that persists after
+            // all items have been individually removed.
+            if (m_data.empty())
+            {
+                m_data.shrink_to_fit();
+            }
 #endif
-
-
-        m_pTail = pTempNode;    
-        if (!m_pHead)
-        {
-            m_pHead = m_pTail;
         }
-        
-        if (pTemp)
-        {
-            pTemp->m_pNext = m_pTail;
-        }
-        m_pTail->m_pNext = NULL;
-        m_pTail->m_pData = pData;      
 
-        RRETURN(hr);//RRETURN_REMOVAL
+        return hr;
     }
-    
-    HRESULT Remove(C *pData,  XUINT8 bDoDelete = TRUE)
+
+    void Clean(XUINT8 bDoDelete = TRUE)
     {
-        XCPListNode *pTemp;
-        XCPListNode *pTempPrev = NULL; 
-        XUINT8 bFound = FALSE;
-        HRESULT hr = S_OK;
-
-        if (m_pHead == NULL)
+        if (bDoDelete)
         {
-            goto Cleanup;
-        }
-
-        if (m_pHead->m_pData == pData)
-        {
-            pTemp = m_pHead;
-            m_pHead = pTemp->m_pNext;
-
-            if (bDoDelete)
-                DeleteItem(pTemp->m_pData);
-
-            pTemp->m_pData = NULL;
-            delete pTemp;
-            pTemp = NULL;
-            bFound = TRUE;
-
-            goto Cleanup;
-
-        }
-
-        pTemp = m_pHead->m_pNext;
-        pTempPrev = m_pHead;
-
-        while (pTemp)
-        {
-            if (pTemp->m_pData == pData)
+            for (C* item : m_data)
             {
-                pTempPrev->m_pNext = pTemp->m_pNext;
-
-                if (pTemp == m_pTail)
-                    m_pTail = pTempPrev;
-                    
-                if (bDoDelete)
-                    DeleteItem(pTemp->m_pData);
-
-                pTemp->m_pData = NULL;
-                delete pTemp;
-                bFound = TRUE;                    
-                pTemp = NULL;
-                break;                
-
+                DeleteItem(item);
             }
-
-            pTempPrev = pTemp;
-            pTemp = pTemp->m_pNext;
-
         }
 
-        Cleanup:    
-            if (!m_pHead || !m_pTail)
+        // Shrink-to-fit so the vector's internal buffer is freed.  Under XCP_MONITOR
+        // this discards stale weak-pointer tags the leak checker attached to the buffer.
+        m_data.clear();
+#if XCP_MONITOR
+        m_data.shrink_to_fit();
+#endif
+    }
+
+    void Reserve(size_t n) 
+    {
+        #if XCP_MONITOR
+        const bool realloc = (n > m_data.capacity());
+        #endif
+        m_data.reserve(n);
+        #if XCP_MONITOR
+        if (m_isContainingWeakPointers && realloc)
+        {
+            // Buffer moved — re-mark all existing pointers at their new addresses
+            for (size_t i = 0; i < m_data.size(); ++i)
             {
-                m_pHead = m_pTail = NULL;
+                ::XcpMarkWeakPointer(m_data.data(), &m_data[i]);
             }
-            
-            if (!bFound)
-                hr = S_FALSE;
-
-            RRETURN(hr);
-    }
-    
-    void Clean( XUINT8 bDoDelete = TRUE)
-    {
-        XCPListNode *pTemp;
-        
-        while (m_pHead)
-        {
-            pTemp = m_pHead;
-            m_pHead = m_pHead->m_pNext;
-            
-            if (bDoDelete)
-                DeleteItem(pTemp->m_pData);
-            pTemp->m_pData = NULL;
-
-            delete pTemp;    
         }
-        
-        m_pHead = NULL;
-        m_pTail = NULL;
+        #endif
     }
-
-    XCPListNode *GetHead() const { return m_pHead; }
-
-    XCPListNode *GetTail() const
+    size_t Size() const { return m_data.size(); }
+    bool Empty() const { return m_data.empty(); }
+    C* At(size_t i) const 
     {
-        return m_pTail;
+        ASSERT(i < m_data.size());
+        return m_data[i];
     }
 
-    void GetReverse(CXcpList<C>* const pReversedList)
-    {
-        XCPListNode *pTemp = m_pHead;
+    // Front() = oldest element (front of vector = first added)
+    C* Front() const { return m_data.empty() ? nullptr : m_data.front(); }
+    // Back() = most recently added element (back of vector = last added)
+    C* Back() const { return m_data.empty() ? nullptr : m_data.back(); }
 
-        while (pTemp)
-        {
-            pReversedList->Add(pTemp->m_pData);
-            pTemp = pTemp->m_pNext;
-        }
-    }
+    // Oldest-to-newest iteration (forward through the vector)
+    auto OldestBegin()       { return m_data.begin(); }
+    auto OldestEnd()         { return m_data.end(); }
+    auto OldestBegin() const { return m_data.cbegin(); }
+    auto OldestEnd()   const { return m_data.cend(); }
+
+    // Newest-to-oldest iteration (reverse through the vector)
+    auto NewestBegin()       { return m_data.rbegin(); }
+    auto NewestEnd()         { return m_data.rend(); }
+    auto NewestBegin() const { return m_data.crbegin(); }
+    auto NewestEnd()   const { return m_data.crend(); }
 
     void XcpMarkWeakPointers()
     {
 #if XCP_MONITOR
-        // Can only call this when list is empty.
-        ASSERT(m_pHead == NULL);
-        ASSERT(m_pTail == NULL);
+        ASSERT(m_data.empty());
         m_isContainingWeakPointers = true;
 #endif
     }
-
-private:
 
     void DeleteItem(C* pData)
     {
         delete pData;
     }
 
-    XCPListNode *m_pHead;
-    XCPListNode *m_pTail;
+private:
+    std::vector<C*> m_data;
 
 #if XCP_MONITOR
-    bool m_isContainingWeakPointers;
+    bool m_isContainingWeakPointers = false;
 #endif
 };
 

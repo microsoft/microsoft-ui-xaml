@@ -39,18 +39,16 @@ CAsyncDownloadRequestManager::~CAsyncDownloadRequestManager()
     // a request has the final strong reference to one of the abortables in the list.
     if(m_pAbortableAsyncDownloadList)
     {
-        CXcpList<CAbortableAsyncDownload>::XCPListNode* pNode = m_pAbortableAsyncDownloadList->GetHead();
-        while (pNode)
+        for (auto it = m_pAbortableAsyncDownloadList->NewestBegin(); it != m_pAbortableAsyncDownloadList->NewestEnd(); ++it)
         {
-            if (pNode->m_pData)
+            CAbortableAsyncDownload* pItem = *it;
+            if (pItem)
             {
                 //update the async downloads, as the manager is leaving
-                pNode->m_pData->SetAsyncDownloadRequestManager(NULL);
-                pNode->m_pData = NULL;
+                pItem->SetAsyncDownloadRequestManager(NULL);
                 //don't call Abort() on the downloads.  Let the download owners call it
                 //don't delete it, just notify it
             }
-            pNode = pNode->m_pNext;
         }
 
         delete m_pAbortableAsyncDownloadList;
@@ -124,7 +122,8 @@ HRESULT CAsyncDownloadRequestManager::Init(
     // Create queue for async download requests
     IFC(gps->QueueCreate(&m_pDownloadRequestQueue));
 
-    m_pAbortableAsyncDownloadList = new CXcpList<CAbortableAsyncDownload>();
+    // Reserve based on values seen in perf runs.
+    m_pAbortableAsyncDownloadList = new CXcpList<CAbortableAsyncDownload>(6);
 
     m_bIsEnabled = TRUE;
 
@@ -321,19 +320,6 @@ void CAsyncDownloadRequestManager::AbortAsync(
     _In_ IPALAbortableOperation *abortable)
 {
     m_pSite->AbortAsync(abortable);
-}
-
-template<>
-void CXcpList<CAbortableAsyncDownload>::DeleteItem(CAbortableAsyncDownload* pData)
-{
-    // Specialize this template method so that delete is a no-op.
-    //
-    // The default template uses the delete operator, but CAbortableAsyncDownload
-    // does not have a public dtor, so the default template does not compile.
-    //
-    // It's OK for this to be a no-op, since we never delete CAbortableAsyncDownload
-    // through a CXcpList<CAbortableAsyncDownload>.
-    ASSERT(pData == NULL);
 }
 
 

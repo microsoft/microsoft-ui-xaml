@@ -20,12 +20,10 @@ void CAutomationPeer::Deinit()
 {
     if (m_pPatternsList)
     {
-        CXcpList<IUIAProvider>::XCPListNode *pTemp = m_pPatternsList->GetHead();
-        while (pTemp)
+        for (auto it = m_pPatternsList->NewestBegin(); it != m_pPatternsList->NewestEnd(); ++it)
         {
-            IUIAProvider *pData = static_cast<IUIAProvider*>(pTemp->m_pData);
+            IUIAProvider* pData = *it;
             ReleaseInterface(pData);
-            pTemp = pTemp->m_pNext;
         }
         m_pPatternsList->Clean(FALSE);
         delete m_pPatternsList;
@@ -75,7 +73,8 @@ void CAutomationPeer::Deinit()
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CAutomationPeer::InitInstance()
 {
-    m_pPatternsList = new CXcpList<IUIAProvider>();
+    // Reserve based on values seen in perf runs.
+    m_pPatternsList = new CXcpList<IUIAProvider>(6);
 
     return S_OK;//RRETURN_REMOVAL
 }
@@ -755,17 +754,15 @@ bool CAutomationPeer::FindCachedPattern(_In_ UIAXcp::APPatternInterface patternT
 
     if ( m_pPatternsList )
     {
-        CXcpList<IUIAProvider>::XCPListNode *pTemp = m_pPatternsList->GetHead();
-        while ( pTemp )
+        for (auto it = m_pPatternsList->NewestBegin(); it != m_pPatternsList->NewestEnd(); ++it)
         {
-            IUIAProvider *pData = static_cast<IUIAProvider*>(pTemp->m_pData);
-            if( pData && pData->GetPatternType() == patternType && ((CUIAPatternProvider*)(pData))->m_pInteropObject == pPatternObject )
+            IUIAProvider* pData = *it;
+            if( pData && pData->GetPatternType() == patternType&& ((CUIAPatternProvider*)(pData))->m_pInteropObject == pPatternObject )
             {
                 *ppPatternProvider = pData;
                 found = TRUE;
                 break;
             }
-            pTemp = pTemp->m_pNext;
         }
     }
 

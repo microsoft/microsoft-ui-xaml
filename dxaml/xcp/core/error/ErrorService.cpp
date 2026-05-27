@@ -252,7 +252,8 @@ _Check_return_ HRESULT CErrorService::AddListener(_In_ IErrorServiceListener* pL
 
     if(!m_pListenerList)
     {
-        m_pListenerList = new CXcpList<IErrorServiceListener>();
+        // Reserve based on values seen in perf runs.
+        m_pListenerList = new CXcpList<IErrorServiceListener>(6);
     }
 
     IFC_RETURN(m_pListenerList->Add(pListener));
@@ -361,18 +362,11 @@ void CErrorService::CoreResetCleanup( _In_ CCoreServices* pCore )
 //-----------------------------------------------------------------------------
 _Check_return_ HRESULT  CErrorService::GetLastReportedError(_Outptr_ IError **ppError)
 {
-    CXcpList<IError>::XCPListNode *pTail = NULL;
-
     auto lock = m_CSError.lock();
 
-    if(m_pErrorList)
+    if(m_pErrorList && !m_pErrorList->Empty())
     {
-        pTail = m_pErrorList->GetHead();
-    }
-    
-    if(pTail)
-    {
-        IError *pErrorObject = static_cast<IError *>(pTail->m_pData);
+        IError *pErrorObject = m_pErrorList->Back();
 
         if(pErrorObject)
         {
@@ -398,18 +392,11 @@ _Check_return_ HRESULT  CErrorService::GetLastReportedError(_Outptr_ IError **pp
 //-----------------------------------------------------------------------------
 _Check_return_ HRESULT  CErrorService::GetFirstError(_Outptr_ IError **ppError)
 {
-    CXcpList<IError>::XCPListNode *pHead = NULL;
-
     auto lock = m_CSError.lock();
 
-    if(m_pErrorList)
+    if(m_pErrorList && !m_pErrorList->Empty())
     {
-        pHead = m_pErrorList->GetTail();
-    }
-    
-    if(pHead)
-    {
-        IError *pErrorObject = static_cast<IError *>(pHead->m_pData);
+        IError *pErrorObject = m_pErrorList->Front();
 
         if(pErrorObject)
         {
@@ -714,7 +701,8 @@ _Check_return_ HRESULT CErrorService::AddError(HRESULT hrToOriginate, _In_ IErro
 
         if(!m_pErrorList)
         {
-            m_pErrorList = new CXcpList<IError>;
+            // Reserve based on values seen in perf runs.
+            m_pErrorList = new CXcpList<IError>(6);
         }
 
         IFC(m_pErrorList->Add(pErrorObject));
@@ -725,13 +713,11 @@ _Check_return_ HRESULT CErrorService::AddError(HRESULT hrToOriginate, _In_ IErro
         
             pListenersToNotify = new CXcpList<IErrorServiceListener>();
 
-            CXcpList<IErrorServiceListener>::XCPListNode* pNode = m_pListenerList->GetHead();
-            while (pNode)
+            for (auto it = m_pListenerList->NewestBegin(); it != m_pListenerList->NewestEnd(); ++it)
             {
-                IFC(pListenersToNotify->Add(pNode->m_pData));
-                AddRefInterface(pNode->m_pData);
-
-                pNode = pNode->m_pNext;
+                IErrorServiceListener* pListener = *it;
+                IFC(pListenersToNotify->Add(pListener));
+                AddRefInterface(pListener);
             }            
         }
     }
@@ -740,12 +726,9 @@ _Check_return_ HRESULT CErrorService::AddError(HRESULT hrToOriginate, _In_ IErro
     {
         // notify the listeners
     
-        CXcpList<IErrorServiceListener>::XCPListNode* pNode = pListenersToNotify->GetHead();
-        while (pNode)
+        for (auto it = pListenersToNotify->NewestBegin(); it != pListenersToNotify->NewestEnd(); ++it)
         {
-            pNode->m_pData->NotifyErrorAdded(hrToOriginate, this);
-
-            pNode = pNode->m_pNext;
+            (*it)->NotifyErrorAdded(hrToOriginate, this);
         }            
     }
 
@@ -1711,66 +1694,7 @@ CRuntimeError::SetErrorEventArgs(_In_ CEventArgs* pErrorEventArgs)
     return S_OK;
 }
 
-//------------------------------------------------------------------------
-//
-//  Function:   CXcpList::Clean
-//
-//  Synopsis:
-//      This is a specialized Clean function for an XcpList of IErrors.
-//      It is necessary because the IErrors need to be Released, not
-//      deleted on a Clean.
-//
-//------------------------------------------------------------------------
-template<>
-void CXcpList<IError>::Clean(XUINT8 bDoDelete)
-{
-    XCPListNode *pTemp;
-    IError* pError = NULL;
 
-    while (m_pHead)
-    {
-        pTemp = m_pHead;
-        m_pHead = m_pHead->m_pNext;
-        
-        pError = reinterpret_cast<IError *>(pTemp->m_pData);
-        ReleaseInterface(pError);
-
-        delete pTemp;
-    }
-
-    m_pHead = NULL;
-}
-
-//------------------------------------------------------------------------
-//
-//  Function:   CXcpList<IErrorServiceListener>::Clean
-//
-//  Synopsis:
-//      Template specialization to call IErrorServiceListener::Release.
-//
-//------------------------------------------------------------------------
-template<>
-void CXcpList<IErrorServiceListener>::Clean(XUINT8 bDoDelete)
-{
-    XCPListNode *pTemp;
-    
-    while (m_pHead)
-    {
-        pTemp = m_pHead;
-        m_pHead = m_pHead->m_pNext;
-    
-        if (bDoDelete)
-        {
-            ReleaseInterface(pTemp->m_pData);
-        }
-        pTemp->m_pData = NULL;        
-
-        delete pTemp;
-    }
-    
-    m_pHead = NULL;
-    m_pTail = NULL;
-}
 
 
 

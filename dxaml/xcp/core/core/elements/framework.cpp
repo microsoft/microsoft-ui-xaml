@@ -2308,15 +2308,13 @@ bool CFrameworkElement::IsPropertyTemplateBound(_In_ const CDependencyProperty* 
 {
     if (m_pTemplateBindingData != nullptr && m_pTemplateBindingData->m_pTemplateBindings != nullptr)
     {
-        CXcpList<const CDependencyProperty>::XCPListNode* node = m_pTemplateBindingData->m_pTemplateBindings->GetHead();
-        while (node != nullptr)
+        for (auto it = m_pTemplateBindingData->m_pTemplateBindings->NewestBegin();
+             it != m_pTemplateBindingData->m_pTemplateBindings->NewestEnd(); ++it)
         {
-            if (dp == node->m_pData)
+            if (dp == *it)
             {
                 return true;
             }
-
-            node = node->m_pNext;
         }
     }
 
@@ -3017,20 +3015,18 @@ _Check_return_ HRESULT CFrameworkElement::DisconnectFromTemplatedParent()
     {
         if (m_pTemplateBindingData->m_pTemplateBindings)
         {
-            CXcpList<const CDependencyProperty>::XCPListNode *pNode = m_pTemplateBindingData->m_pTemplateBindings->GetHead();
-
-            if (pNode)
+            if (!m_pTemplateBindingData->m_pTemplateBindings->Empty())
             {
                 CControl* templatedParent = do_pointer_cast<CControl>(GetTemplatedParent());
                 IFCEXPECT_NOTRACE_RETURN(templatedParent)
 
-                while (pNode)
+                for (auto it = m_pTemplateBindingData->m_pTemplateBindings->NewestBegin();
+                     it != m_pTemplateBindingData->m_pTemplateBindings->NewestEnd(); ++it)
                 {
                     if(templatedParent)
                     {
-                        templatedParent->RemoveTemplateBinding(this, pNode->m_pData);
+                        templatedParent->RemoveTemplateBinding(this, *it);
                     }
-                    pNode = pNode->m_pNext;
                 }
             }
         }

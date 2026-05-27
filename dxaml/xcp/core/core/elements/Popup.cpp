@@ -4055,7 +4055,7 @@ void CPopupRoot::CloseAllPopupsForTreeReset()
         }
 
         //assert that open popup list is now empty
-        ASSERT(!m_pOpenPopups->GetHead());
+        ASSERT(m_pOpenPopups->Empty());
         m_pOpenPopups->Clean(FALSE);
         delete m_pOpenPopups;
         m_pOpenPopups = NULL;
@@ -4104,11 +4104,9 @@ _Check_return_ HRESULT CPopupRoot::MeasureOverride(_In_ XSIZEF availableSize, _O
 
     m_availableSizeAtLastMeasure = availableSize;
     XSIZEF childConstraint = { XFLOAT_INF, XFLOAT_INF };
-    CXcpList<CPopup>::XCPListNode* pNode = m_pOpenPopups->GetHead();
-
-    while (pNode)
+    for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
     {
-        CPopup* pPopup = pNode->m_pData;
+        CPopup* pPopup = *it;
         if (!pPopup->IsUnloading())
         {
             if (pPopup->m_overlayElement != nullptr)
@@ -4118,7 +4116,6 @@ _Check_return_ HRESULT CPopupRoot::MeasureOverride(_In_ XSIZEF availableSize, _O
 
             IFC_RETURN(pPopup->m_pChild->Measure(childConstraint));
         }
-        pNode = pNode->m_pNext;
     }
 
     // Open and measure the popups in the deferred list. These popups were open during
@@ -4167,7 +4164,6 @@ _Check_return_ HRESULT CPopupRoot::MeasureOverride(_In_ XSIZEF availableSize, _O
 _Check_return_ HRESULT CPopupRoot::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZEF& newFinalSize)
 {
     HRESULT hr = S_OK;
-    CXcpList<CPopup>::XCPListNode *pNode = NULL;
 
     if(!m_pOpenPopups)
     {
@@ -4175,11 +4171,9 @@ _Check_return_ HRESULT CPopupRoot::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ 
         goto Cleanup;
     }
 
-    pNode = m_pOpenPopups->GetHead();
-
-    while (pNode)
+    for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
     {
-        CPopup* pPopup = pNode->m_pData;
+        CPopup* pPopup = *it;
         if (!pPopup->IsUnloading())
         {
             CUIElement* pChild = pPopup->m_pChild;
@@ -4210,8 +4204,6 @@ _Check_return_ HRESULT CPopupRoot::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ 
                 pPopup->ApplyRootRoundedCornerClipToSystemBackdrop();
             }
         }
-
-        pNode = pNode->m_pNext;
     }
 
 Cleanup:
@@ -4236,7 +4228,8 @@ _Check_return_ HRESULT CPopupRoot::StartAdditionToOpenPopupList(_In_ CPopup* pPo
 
     if (!m_pOpenPopups)
     {
-        m_pOpenPopups = new CXcpList<CPopup>;
+        // Reserve based on values seen in perf runs.
+        m_pOpenPopups = new CXcpList<CPopup>(6);
     }
 
     // The popup must not be unloading. If it is, the caller must finish unloading it first.
@@ -4321,15 +4314,13 @@ bool CPopupRoot::ContainsOpenOrUnloadingPopup(_In_ CPopup* pPopup)
 {
     if (m_pOpenPopups != nullptr)
     {
-        CXcpList<CPopup>::XCPListNode* node = m_pOpenPopups->GetHead();
-
-        while (node != nullptr)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            if (node->m_pData == pPopup)
+            CPopup* popup = *it;
+            if (popup == pPopup)
             {
                 return true;
             }
-            node = node->m_pNext;
         }
     }
 
@@ -4358,10 +4349,8 @@ bool CPopupRoot::ReplayPointerUpdate()
         // pointer event and run it through the input pipeline, which executes app-side
         // handlers that can synchronously close *other* popups (light-dismiss, cascading
         // menus, focus-loss handlers, etc.).  Closing a popup runs RemoveFromOpenPopupList
-        // -> CXcpList::Remove, which `delete pTemp;` the XCPListNode regardless of the
-        // bDoDelete parameter (that flag only spares the data, not the node itself).
-        // Iterating m_pOpenPopups across that inner call therefore dereferences a freed
-        // XCPListNode leading to Access Violation.
+        // which mutates the underlying collection.  Iterating m_pOpenPopups across that
+        // inner call therefore dereferences a freed node leading to Access Violation.
         //
         // Holding strong refs (xref_ptr) is required, not just raw pointers, because
         // CPopup::AsyncRelease only defers `delete this` -- the final-release path still
@@ -4380,10 +4369,10 @@ bool CPopupRoot::ReplayPointerUpdate()
 
         constexpr size_t typicalOpenPopupCount = 4;
         Jupiter::stack_vector<xref_ptr<CPopup>, typicalOpenPopupCount> openPopupsSnapshot;
-        
-        for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
+
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            if (CPopup* pPopup = pNode->m_pData)
+            if (CPopup* pPopup = *it)
             {
                 openPopupsSnapshot.m_vector.emplace_back(pPopup);
             }
@@ -4560,9 +4549,9 @@ CPopupRoot::BoundsTestChildrenImpl(
     if (m_pOpenPopups != NULL)
     {
         // Test bounds in opened order.
-        for (CXcpList<CPopup>::XCPListNode* pNode = m_pOpenPopups->GetHead(); pNode != NULL && flags_enum::is_set(childHitResult, BoundsWalkHitResult::Continue); pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd() && flags_enum::is_set(childHitResult, BoundsWalkHitResult::Continue); ++it)
         {
-            CPopup* pPopup = pNode->m_pData;
+            CPopup* pPopup = *it;
             if (!pPopup->IsUnloading())
             {
                 CUIElement* pPopupParent = pPopup->GetUIElementAdjustedParentInternal(FALSE);
@@ -4779,10 +4768,10 @@ CPopupRoot::GenerateChildOuterBounds(
 
     if (m_pOpenPopups != NULL)
     {
-        for (CXcpList<CPopup>::XCPListNode* pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
+            CPopup* pPopup = *it;
             XRECTF_RB childBounds = {};
-            CPopup* pPopup = pNode->m_pData;
 
             if (!pPopup->IsUnloading() && pPopup->IsVisible() && pPopup->AreAllAncestorsVisible())
             {
@@ -4838,17 +4827,13 @@ CPopupRoot::PrintChildren(
     )
 {
     HRESULT hr = S_OK;
-    CXcpList<CPopup> *pChildren = NULL;
 
     if (m_pOpenPopups)
     {
-        //get the FIFO ordered list of open popups
-        pChildren = new CXcpList<CPopup>;
-        m_pOpenPopups->GetReverse(pChildren);
-
-        for (CXcpList<CPopup>::XCPListNode *pNode = pChildren->GetHead(); pNode != NULL; pNode = pNode->m_pNext)
+        //iterate in FIFO (oldest-first) order
+        for (auto it = m_pOpenPopups->OldestBegin(); it != m_pOpenPopups->OldestEnd(); ++it)
         {
-            CPopup* pPopup = pNode->m_pData;
+            CPopup* pPopup = *it;
 
             IFCEXPECT(pPopup && pPopup->m_pChild);
             // Unloading popups print too
@@ -4879,16 +4864,11 @@ CPopupRoot::PrintChildren(
 
                 // Print the child.
                 pPopup->m_fIsPrintDirty = FALSE;
-                IFC(pNode->m_pData->m_pChild->Print(mySharedPrintParams, cp, printParams));
+                IFC(pPopup->m_pChild->Print(mySharedPrintParams, cp, printParams));
             }
         }
     }
 Cleanup:
-    if (pChildren)
-    {
-        pChildren->Clean(FALSE);
-        delete pChildren;
-    }
     RRETURN(hr);
 }
 
@@ -4903,10 +4883,9 @@ _Check_return_ HRESULT CPopupRoot::ClearPrintDirtyFlagOnOpenPopups()
     if (m_pOpenPopups)
     {
         // Unloading popups get cleared too
-        for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != NULL; pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            CPopup* pPopup = pNode->m_pData;
-
+            CPopup* pPopup = *it;
             IFCEXPECT_RETURN(pPopup);
             pPopup->m_fIsPrintDirty = FALSE;
         }
@@ -4929,7 +4908,6 @@ CPopupRoot::GetOpenPopups( _Out_ XINT32 *pnCount, _Outptr_result_buffer_(*pnCoun
 {
     HRESULT hr = S_OK;
 
-    CXcpList<CPopup>::XCPListNode *pNode = NULL;
     XINT32 count = 0;
     CPopup **ppResults = NULL;
 
@@ -4941,31 +4919,35 @@ CPopupRoot::GetOpenPopups( _Out_ XINT32 *pnCount, _Outptr_result_buffer_(*pnCoun
         goto Cleanup;
     }
 
-    pNode = m_pOpenPopups->GetHead();
-
-    // get count
-    while (pNode && count < XINT32_MAX)
     {
-        if (!pNode->m_pData->IsUnloading())
+        // get count
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            count++;
+            CPopup* pPopup = *it;
+            if (!pPopup->IsUnloading())
+            {
+                count++;
+            }
         }
-
-        pNode = pNode->m_pNext;
     }
 
     if (count > 0)
     {
-        pNode = m_pOpenPopups->GetHead();
         ppResults = new CPopup* [count];
 
-        for (XINT32 i = 0; i < count && pNode; pNode = pNode->m_pNext)
+        XINT32 i = 0;
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            if (!pNode->m_pData->IsUnloading())
+            CPopup* pPopup = *it;
+            if (!pPopup->IsUnloading())
             {
-                ppResults[i] = pNode->m_pData;
-                AddRefInterface(pNode->m_pData);
+                ppResults[i] = pPopup;
+                AddRefInterface(pPopup);
                 i++;
+                if (i >= count)
+                {
+                    break;
+                }
             }
         }
     }
@@ -4984,14 +4966,13 @@ std::vector<CPopup*> CPopupRoot::GetOpenPopupList(bool includeUnloadingPopups)
 
     if (m_pOpenPopups)
     {
-        CXcpList<CPopup>::XCPListNode* pNode = m_pOpenPopups->GetHead();
-        while (pNode)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            if (includeUnloadingPopups || !pNode->m_pData->IsUnloading())
+            CPopup* pPopup = *it;
+            if (includeUnloadingPopups || !pPopup->IsUnloading())
             {
-                openPopups.push_back(pNode->m_pData);
+                openPopups.push_back(pPopup);
             }
-            pNode = pNode->m_pNext;
         }
 
     }
@@ -5052,9 +5033,9 @@ _Check_return_ HRESULT CPopupRoot::HitTestLocalInternalImpl(
     if (m_pOpenPopups && !m_isRootHitTestingSuppressed)
     {
         // Hit testing doesn't run on unloading popups.
-        for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            CPopup* pPopup = pNode->m_pData;
+            CPopup* pPopup = *it;
             IFCEXPECT(pPopup);
             if (!pPopup->IsUnloading() && pPopup->m_fIsLightDismiss)
             {
@@ -5158,33 +5139,23 @@ void CPopupRoot::CleanupDeviceRelatedResourcesRecursive(_In_ bool cleanupDComp)
 void CPopupRoot::CleanupAndLeaveSubgraphHelper(bool forLeave, _In_ bool cleanupDComp)
 {
     // TODO: INCWALK: The pattern here needs to be kept in sync with the render walk, should be cleaned up
-    CXcpList<CPopup> *pPopupRootChildren = NULL;
 
     if (m_pOpenPopups)
     {
-        pPopupRootChildren = new CXcpList<CPopup>;
-
-        // Get the FIFO ordered list
-        m_pOpenPopups->GetReverse(pPopupRootChildren);
-
+        // Iterate in FIFO (oldest-first) order
         // Includes unloading popups too.
-        for (CXcpList<CPopup>::XCPListNode *pNode = pPopupRootChildren->GetHead(); pNode != NULL; pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->OldestBegin(); it != m_pOpenPopups->OldestEnd(); ++it)
         {
+            CPopup* pPopup = *it;
             if (forLeave)
             {
-                pNode->m_pData->LeavePCSceneRecursive();
+                pPopup->LeavePCSceneRecursive();
             }
             else
             {
-                pNode->m_pData->CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
+                pPopup->CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
             }
         }
-    }
-
-    if (pPopupRootChildren)
-    {
-        pPopupRootChildren->Clean(FALSE);
-        SAFE_DELETE(pPopupRootChildren);
     }
 }
 
@@ -5261,9 +5232,9 @@ CPopup* CPopupRoot::GetTopmostPopup(_In_ PopupFilter filter)
     {
         // Find the most recently opened Popup that has light dismiss enabled.
         // Unloading popups don't count.
-        for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            CPopup* pPopup = pNode->m_pData;
+            CPopup* pPopup = *it;
             if (!pPopup->IsUnloading())
             {
                 if (filter == PopupFilter::All || (filter == PopupFilter::LightDismissOrFlyout && pPopup->IsFlyout()) || pPopup->m_fIsLightDismiss)
@@ -5284,9 +5255,9 @@ bool CPopupRoot::IsTopmostPopupInLightDismissChain()
         // Find the most recently opened Popup and check that has light dismiss enabled,
         // or which has a parent that has light dismiss enabled.
         // Unloading popups don't count.
-        for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            CPopup* pPopup = pNode->m_pData;
+            CPopup* pPopup = *it;
             if (!pPopup->IsUnloading())
             {
                 return pPopup->IsSelfOrAncestorLightDismiss();
@@ -5307,9 +5278,9 @@ _Check_return_ HRESULT CPopupRoot::GetTopmostPopupInLightDismissChain(_Out_ CDep
         // Return recently opened Popup if it has light dismiss enabled,
         // or if it has a parent that has light dismiss enabled.
         // Unloading popups don't count.
-        for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            CPopup* pPopup = pNode->m_pData;
+            CPopup* pPopup = *it;
             if (!pPopup->IsUnloading())
             {
                 if (pPopup->IsSelfOrAncestorLightDismiss())
@@ -5369,8 +5340,6 @@ _Check_return_ HRESULT CPopupRoot::GetOpenPopupForElement(
 _Check_return_ HRESULT
 CPopupRoot::NotifyThemeChanged(_In_ Theming::Theme theme, _In_ bool fForceRefresh)
 {
-    CXcpList<CPopup>::XCPListNode *pNode = NULL;
-
     // An open popup's content is set as child of PopupRoot, and we
     // want to prevent that child from getting the PopupRoot's theme
     // in CDepedencyObject::EnterImpl. So the PopupRoot's theme is never
@@ -5386,19 +5355,14 @@ CPopupRoot::NotifyThemeChanged(_In_ Theming::Theme theme, _In_ bool fForceRefres
     }
 
     // Notify open popups
-    pNode = m_pOpenPopups->GetHead();
-
-    while (pNode)
+    for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
     {
-        CPopup* pPopup = pNode->m_pData;
-
+        CPopup* pPopup = *it;
         // Notification propagates to unloading popups too
         if (pPopup->ShouldPopupRootNotifyThemeChange())
         {
             IFC_RETURN(pPopup->NotifyThemeChanged(theme, fForceRefresh));
         }
-
-        pNode = pNode->m_pNext;
     }
 
     return S_OK;
@@ -5408,14 +5372,11 @@ void CPopupRoot::ClearWasOpenedDuringEngagementOnAllOpenPopups() const
 {
     if (!m_pOpenPopups) { return; }
 
-    CXcpList<CPopup>::XCPListNode* node = nullptr;
-    node = m_pOpenPopups->GetHead();
-
     // Includes unloading popups too
-    while (node)
+    for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
     {
-        node->m_pData->SetOpenedDuringEngagement(false);
-        node = node->m_pNext;
+        CPopup* popup = *it;
+        popup->SetOpenedDuringEngagement(false);
     }
 }
 
@@ -5457,10 +5418,9 @@ bool CPopupRoot::ComputeDepthInOpenPopups()
     if (m_pOpenPopups != nullptr)
     {
         // Look for depth in opened popups. Hit testing doesn't run on unloading popups, so ignore those.
-        for (auto node = m_pOpenPopups->GetHead(); node != nullptr; node = node->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            CPopup* popup = node->m_pData;
-
+            CPopup* popup = *it;
             if (!popup->IsUnloading())
             {
                 // If there's an LTE targeting a child element, we need to look at whether that LTE has 3D depth as well.

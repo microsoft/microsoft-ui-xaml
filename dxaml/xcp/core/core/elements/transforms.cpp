@@ -4,7 +4,6 @@
 #include "precomp.h"
 #include "MinMath.h"
 
-template void CXcpList<ITransformer>::Clean( XUINT8 bDoDelete );
 
 namespace CoreImports
 {
@@ -421,38 +420,7 @@ CTransformer::TransformBounds(
     return S_OK;
 }
 
-//------------------------------------------------------------------------
-//
-//  Method:   CXcpList<ITransformer>::Clean
-//
-//  Synopsis:
-//      Specialized templated list clean to deal with refcounted ITransformer
-//
-//------------------------------------------------------------------------
-template<>
-void
-CXcpList<ITransformer>::Clean( XUINT8 bDoDelete )
-{
-    XCPListNode *pTemp;
 
-    while (m_pHead)
-    {
-        pTemp = m_pHead;
-        m_pHead = m_pHead->m_pNext;
-
-        if ( bDoDelete )
-        {
-            ITransformer *pCurrent = static_cast<ITransformer *>( pTemp->m_pData );
-            ReleaseInterface(pCurrent);
-        }
-
-        pTemp->m_pData = NULL;
-        pTemp->m_pNext = NULL;
-        delete pTemp;
-    }
-
-    m_pHead = NULL;
-}
 
 //------------------------------------------------------------------------
 //
@@ -482,20 +450,13 @@ CAggregateTransformer::Transform(
     _Out_writes_(count) XPOINTF *destPoints,
     XUINT32 count)
 {
-    CXcpList< ITransformer > m_oReverseList;
-
     memcpy( destPoints, srcPoints, count * sizeof(XPOINTF) );
 
-    // The "list" is really a stack ...
-    m_oList.GetReverse( &m_oReverseList );
-    for ( CXcpList<ITransformer>::XCPListNode *p = m_oReverseList.GetHead();
-          p != NULL;
-          p = p->m_pNext )
+    // Iterate oldest-to-newest (reverse of default RecentFirst order)
+    for (auto it = m_oList.OldestBegin(); it != m_oList.OldestEnd(); ++it)
     {
-        IFC_RETURN(p->m_pData->Transform( destPoints, destPoints, count ));
+        IFC_RETURN((*it)->Transform( destPoints, destPoints, count ));
     }
-
-    m_oReverseList.Clean(FALSE);
 
     return S_OK;
 }
@@ -517,11 +478,10 @@ CAggregateTransformer::ReverseTransform(
 {
     memcpy( destPoints, srcPoints, count * sizeof(XPOINTF) );
 
-    for ( CXcpList<ITransformer>::XCPListNode *p = m_oList.GetHead();
-          p != NULL;
-          p = p->m_pNext )
+    for (auto it = m_oList.NewestBegin(); it != m_oList.NewestEnd(); ++it)
     {
-        IFC_RETURN(p->m_pData->ReverseTransform( destPoints, destPoints, count ));
+        ITransformer* p = *it;
+        IFC_RETURN(p->ReverseTransform( destPoints, destPoints, count ));
     }
 
     return S_OK;
@@ -541,14 +501,14 @@ CAggregateTransformer::Add( _In_ ITransformer* pChild )
 {
     if ( pChild )
     {
-        // If we already have a matrix in there
+        // If we already have a matrix in there (Back() = most recently added)
         if ( pChild->GetType() == ITransformer::TransformerType_Matrix
-          && m_oList.GetHead()
-          && m_oList.GetHead()->m_pData
-          && m_oList.GetHead()->m_pData->GetType() == ITransformer::TransformerType_Matrix )
+          && !m_oList.Empty()
+          && m_oList.Back()
+          && m_oList.Back()->GetType() == ITransformer::TransformerType_Matrix )
         {
             // Coalesce 2D transforms
-            CMatrixTransformer *pHead  = static_cast<CMatrixTransformer*>( m_oList.GetHead()->m_pData );
+            CMatrixTransformer *pHead  = static_cast<CMatrixTransformer*>( m_oList.Back() );
             CMatrixTransformer *pOther = static_cast<CMatrixTransformer*>( pChild );
             pHead->Append(pOther);
         }

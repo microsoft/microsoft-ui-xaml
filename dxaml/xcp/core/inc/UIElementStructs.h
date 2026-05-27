@@ -85,7 +85,8 @@ public:
         );
 
 private:
-    CXcpList<CUIElement> m_oResults;
+    // Reserve based on values seen in perf runs.
+    CXcpList<CUIElement> m_oResults{6};
     XUINT32 m_cResults = 0;
 };
 

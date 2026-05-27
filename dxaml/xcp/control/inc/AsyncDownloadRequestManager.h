@@ -152,5 +152,15 @@ private:
 };
 
 template<>
-void CXcpList<CAbortableAsyncDownload>::DeleteItem(CAbortableAsyncDownload* pData);
+inline void CXcpList<CAbortableAsyncDownload>::DeleteItem(CAbortableAsyncDownload* pData)
+{
+    // Specialize this template method so that delete is a no-op.
+    //
+    // The default template uses the delete operator, but CAbortableAsyncDownload
+    // does not have a public dtor, so the default template does not compile.
+    //
+    // It's OK for this to be a no-op, since we never delete CAbortableAsyncDownload
+    // through a CXcpList<CAbortableAsyncDownload>.
+    ASSERT(pData == NULL);
+}
 

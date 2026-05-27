@@ -243,18 +243,10 @@ _Check_return_ HRESULT CWindowRenderTarget::InitializeResources()
     IFC_RETURN(m_graphicsDeviceManager->StartResourceCreation());
 
     // Notify the graphics device change listeners.
+    for (auto it = m_graphicsDeviceChangeListenersNoRef.NewestBegin(); it != m_graphicsDeviceChangeListenersNoRef.NewestEnd(); ++it)
     {
-        CXcpList<IPALGraphicsDeviceChangeListener>::XCPListNode* pCurrent =
-            m_graphicsDeviceChangeListenersNoRef.GetHead();
-
-        while (pCurrent != NULL)
-        {
-            IPALGraphicsDeviceChangeListener* pListener = pCurrent->m_pData;
-
-            pListener->OnGraphicsDeviceChanged();
-
-            pCurrent = pCurrent->m_pNext;
-        }
+        IPALGraphicsDeviceChangeListener* pListener = *it;
+        pListener->OnGraphicsDeviceChanged();
     }
 
     m_needsFullRedraw = TRUE;

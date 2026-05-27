@@ -446,7 +446,7 @@ CRenderTargetBitmap::AddPixelWaitExecutor(_In_ RenderTargetBitmapPixelWaitExecut
 {
     if (m_pixelWaitExecutorList == nullptr)
     {
-        m_pixelWaitExecutorList = wil::make_unique_failfast<CXcpList<RenderTargetBitmapPixelWaitExecutor>>();
+        m_pixelWaitExecutorList = wil::make_unique_failfast<CXcpList<RenderTargetBitmapPixelWaitExecutor>>(6);
     }
 
     IFC_RETURN(m_pixelWaitExecutorList->Add(executor));
@@ -466,11 +466,9 @@ void CRenderTargetBitmap::AbortPixelWaitExecutors(HRESULT resultHR)
 {
     if (m_pixelWaitExecutorList != nullptr)
     {
-        CXcpList<RenderTargetBitmapPixelWaitExecutor>::XCPListNode *pCurrent = m_pixelWaitExecutorList->GetHead();
-        while (pCurrent)
+        for (auto it = m_pixelWaitExecutorList->NewestBegin(); it != m_pixelWaitExecutorList->NewestEnd(); ++it)
         {
-            pCurrent->m_pData->AbortAsyncOperation(resultHR);
-            pCurrent = pCurrent->m_pNext;
+            (*it)->AbortAsyncOperation(resultHR);
         }
         m_pixelWaitExecutorList->Clean(FALSE);
         m_pixelWaitExecutorList.reset();

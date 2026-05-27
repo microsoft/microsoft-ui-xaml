@@ -1115,13 +1115,13 @@ _Check_return_ HRESULT BaseContentRenderer::PopupRootRenderContent(
 
     if (pPopupRoot->m_pOpenPopups)
     {
-        for (CXcpList<CPopup>::XCPListNode *pNode = pPopupRoot->m_pOpenPopups->GetHead();
-             !requiresLightDismiss && pNode != nullptr;
-             pNode = pNode->m_pNext)
+        for (auto it = pPopupRoot->m_pOpenPopups->NewestBegin(); it != pPopupRoot->m_pOpenPopups->NewestEnd(); ++it)
         {
-            if (!pNode->m_pData->IsUnloading())
+            CPopup* popup = *it;
+            if (!popup->IsUnloading()&& popup->m_fIsLightDismiss)
             {
-                requiresLightDismiss |= pNode->m_pData->m_fIsLightDismiss;
+                requiresLightDismiss = true;
+                break;
             }
         }
     }
