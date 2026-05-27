@@ -18,10 +18,16 @@
 #     here we just never enable it.
 #
 # Build sequence per leg (mirrors ADO `WinUI-BuildMUXProject-Steps.yml`):
-#   1. `init.cmd /pipeline <flavor> /nopgo` - sets env vars (Platform,
-#      Configuration, _BuildArch, BuildArtifactsDir, etc.) and prepends the
-#      VS amd64 MSBuild to PATH via DevCmd.cmd. `/pipeline` mode persists
-#      env vars within the same cmd shell (via `:SetEnviromentVariable`).
+#   1. `init.cmd <flavor> /nopgo` - sets env vars (Platform, Configuration,
+#      _BuildArch, BuildArtifactsDir, etc.), prepends the VS amd64 MSBuild
+#      to PATH via DevCmd.cmd, restores NuGet packages, downloads the
+#      .NET runtime installer, and runs `vs_installer modify` on missing
+#      VS components (e.g. ARM64 ATL on GH runners). We intentionally do
+#      NOT pass `/pipeline` here: ADO does, but ADO's pipeline templates
+#      separately invoke `Initialize-InstallMSBuild.ps1` and `PostInit.ps1`
+#      to fill the same gaps. GH runners do not, so non-pipeline init is
+#      what makes downstream msbuild see the .NET runtime installer and
+#      ARM64 SDK libs it needs (see in-step comment for full rationale).
 #   2. Build the XAML compiler prerequisites. Two cases (mirrors the
 #      conditional in `src/Build.cmd` lines 155-167):
 #        a) If `src/src/XamlCompiler/BuildTasks/Microsoft/Lmr/XamlTypeUniverse.cs`
@@ -155,9 +161,10 @@ jobs:
       WINUI_BUILD_PLATFORM: ${{ matrix.platform }}
       WINUI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
       # `pack.component.cmd` requires BuildPlatform + Configuration env vars.
-      # init.cmd sets Configuration (Debug/Release), but under `/pipeline`
-      # it leaves BuildPlatform alone (assumes ADO matrix set it). So we set
-      # it here so pack.component.cmd works the same way it does in ADO.
+      # init.cmd sets Configuration (Debug/Release), and in non-pipeline mode
+      # it also auto-derives BUILDPLATFORM from %amd64%/%x86%/%arm64%. We set
+      # BuildPlatform explicitly here too so it survives any matrix-leg
+      # variations and matches ADO's variable-driven model.
       BuildPlatform: ${{ matrix.platform }}
       # Speed up NuGet on hosted runners: avoid http-cache misses across steps.
       NUGET_PACKAGES: ${{ github.workspace }}\src\packages
@@ -225,10 +232,11 @@ jobs:
           }
 
       # The build mirrors ADO's `WinUI-BuildMUXProject-Steps.yml` sequence:
-      # init.cmd /pipeline (env setup) -> msbuild XamlCompilerPrerequisites.sln
-      # -> msbuild dxaml/Microsoft.UI.Xaml.sln -> pack.component.cmd
-      # -> msbuild controls/MUXControls.sln. All five commands run in a
-      # single cmd shell chained with `&&` so:
+      # init.cmd (env setup + nuget restore + dotnet installer download +
+      # vs_installer modify for ARM64 components) -> msbuild
+      # XamlCompilerPrerequisites.sln -> msbuild dxaml/Microsoft.UI.Xaml.sln
+      # -> pack.component.cmd -> msbuild controls/MUXControls.sln. All
+      # commands run in a single cmd shell chained with `&&` so:
       #   1. Env vars set by init.cmd's `:SetEnviromentVariable` (Platform,
       #      Configuration, _BuildArch, BuildArtifactsDir, etc.) persist
       #      across the msbuild calls (they all execute in the same cmd
@@ -246,6 +254,27 @@ jobs:
       #       prints "BUILD SUCCEEDED."). Calling msbuild directly avoids
       #       that bug entirely because msbuild itself has a reliable
       #       non-zero exit code on failure.
+      #
+      # We intentionally do NOT pass `/pipeline` to init.cmd. ADO passes
+      # `/pipeline` because the ADO `WinUI-InstallDependencies-Steps.yml`
+      # template performs the same restores+installs that
+      # `Initialize-Restore.ps1` -> `PostInit.ps1` does in non-pipeline
+      # mode (NuGet restores of packages.config, packages.<arch>.config;
+      # DownloadDotNetCoreSdk.ps1; DownloadDotNetRuntimeInstaller.ps1;
+      # Maestro restore; plus an `Initialize-InstallMSBuild.ps1` step that
+      # runs `vs_installer modify` to add ARM64 ATL/SDK components when
+      # missing). GH runners do not run those ADO-template steps, so if
+      # we also skip them in init.cmd we miss two things that downstream
+      # msbuild needs:
+      #   - `.tools/<arch>/dotnet-windowsdesktop-runtime-installer.exe`
+      #     (causes MSB3030 in BinplaceTestDependencies.csproj on Debug)
+      #   - VS ARM64 ATL + Windows SDK ARM64 libs (causes LNK1181 on
+      #     kernel32.lib/urlmon.lib across many vcxproj in arm64 legs).
+      # Running init.cmd without `/pipeline` reuses the OSS Initialize-
+      # Restore path Build.cmd-based runs already validated, while we
+      # still call msbuild per-solution exactly like ADO does. First-run
+      # cost is ~5-15 min for vs_installer modify; subsequent runs are
+      # cached.
       #
       # `/nopgo` disables profile-guided optimization. init.cmd auto-enables
       # PGOBuildMode=Optimize for every non-ARM64EC `fre` flavor (see
@@ -344,7 +373,7 @@ jobs:
           # init's env vars (Platform, Configuration, _BuildArch, PATH+=
           # amd64 MSBuild, DOTNET_ROOT, etc.) persist across all of them.
           # The `&&` chain ensures any failure aborts the rest.
-          $chain = ("init.cmd /pipeline $flavor /nopgo") + " && " + ($sequence -join " && ")
+          $chain = ("init.cmd $flavor /nopgo") + " && " + ($sequence -join " && ")
           Write-Host "=== Combined cmd line ==="
           Write-Host $chain
 
