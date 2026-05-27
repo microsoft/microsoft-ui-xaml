@@ -149,7 +149,12 @@
     <WinUIGalleryControlInfoDataPath>$(ProjectRoot)\Samples\WinUIGallery\WinUIGallery\Samples\Data\ControlInfoData.json</WinUIGalleryControlInfoDataPath>
     <WinUIGalleryTestDataOutputPath>$(ArtifactsBinRoot)\$(TestBinplaceDestinationPath)\WinUIGalleryTestData.xml</WinUIGalleryTestDataOutputPath>
   </PropertyGroup>
-  <Target Name="GenerateWinUIGalleryTestData" AfterTargets="AfterBuild" Inputs="$(WinUIGalleryControlInfoDataPath)" Outputs="$(WinUIGalleryTestDataOutputPath)">
+  <!-- Skip the WinUIGallery test-data generation when the upstream JSON isn't
+       available (e.g. public OSS builds where Samples\WinUIGallery isn't
+       checked in). The target's Inputs/Outputs alone don't gate execution
+       when the input is missing, so guard the whole target with an Exists()
+       condition. ADO builds are unaffected because they have the file. -->
+  <Target Name="GenerateWinUIGalleryTestData" AfterTargets="AfterBuild" Inputs="$(WinUIGalleryControlInfoDataPath)" Outputs="$(WinUIGalleryTestDataOutputPath)" Condition="Exists('$(WinUIGalleryControlInfoDataPath)')">
     <RunPowershellScript Path="$(MSBuildThisFileDirectory)ScenarioAppTests\GenerateWinUIGalleryTestData.ps1" Parameters="-InputWinUIGalleryJsonFilePath $(WinUIGalleryControlInfoDataPath) -OutputXmlFilePath $(WinUIGalleryTestDataOutputPath)" FilesWritten="$(WinUIGalleryTestDataOutputPath)" />
   </Target>
   <Target Name="CopyDotNet" AfterTargets="Build">
