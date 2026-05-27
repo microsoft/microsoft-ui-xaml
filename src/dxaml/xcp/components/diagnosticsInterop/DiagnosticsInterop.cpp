@@ -740,7 +740,7 @@ namespace Diagnostics
 
         if (auto ownerFe = do_pointer_cast<CFrameworkElement>(owner))
         {
-            dictionaryToCheck = ownerFe->GetResourcesNoCreate();
+            dictionaryToCheck = ownerFe->GetResourcesNoCreateNoRef();
         }
         else if (auto ownerApp = do_pointer_cast<CApplication>(owner))
         {

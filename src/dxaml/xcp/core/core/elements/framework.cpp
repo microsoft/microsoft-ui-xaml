@@ -34,6 +34,7 @@ CFrameworkElement::CFrameworkElement(_In_ CCoreServices *pCore)
     , m_setByStyle()
     , m_strClassName()
     , m_firedLoadingEvent(false)
+    , m_hasLocalResources(false)
 {
     ASSERT(0 == m_setByStyle.bits);
     SetCachedFrameworkElementBit();
@@ -60,8 +61,7 @@ CFrameworkElement::~CFrameworkElement()
         delete m_pLayoutProperties;
     }
 
-    auto resources = GetResourcesNoCreate();
-    if (resources)
+    if (CResourceDictionary* resources = GetResourcesNoCreateNoRef())
     {
         // Clear the ResourceDictionary's owner weak ref to avoid a dangling pointer
         resources->SetResourceOwner(nullptr);
@@ -917,6 +917,13 @@ _Check_return_ HRESULT CFrameworkElement::OnPropertyChanged(_In_ const PropertyC
 
     switch (args.m_pDP->GetIndex())
     {
+        case KnownPropertyIndex::FrameworkElement_Resources:
+        {
+            // Keep m_hasLocalResources in sync for all mutation paths
+            // (SetValue, ClearValue, style changes, etc.).
+            SetHasLocalResources(args.m_pNewValue && args.m_pNewValue->AsObject() != nullptr);
+            break;
+        }
         case KnownPropertyIndex::ToolTipService_ToolTip:
         {
             // If we're setting the value of ToolTipService.ToolTip, then we need to have a managed peer to notify,
@@ -2344,7 +2351,7 @@ CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Enter
     if (params.fIsLive &&
         params.fCheckForResourceOverrides == FALSE)
     {
-        xref_ptr<CResourceDictionary> resources = GetResourcesNoCreate();
+        CResourceDictionary* resources = GetResourcesNoCreateNoRef();
 
         if (resources &&
             resources->HasPotentialOverrides())
@@ -2431,7 +2438,7 @@ CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Enter
 
         if (params.fCheckForResourceOverrides == FALSE)
         {
-            xref_ptr<CResourceDictionary> resources = GetResourcesNoCreate();
+            CResourceDictionary* resources = GetResourcesNoCreateNoRef();
 
             if (resources &&
                 resources->HasPotentialOverrides())

@@ -152,6 +152,30 @@ xref_ptr<CResourceDictionary> CFrameworkElement::GetResourcesNoCreate() const
     return checked_sp_cast<CResourceDictionary>(result.DetachObject());
 }
 
+CResourceDictionary* CFrameworkElement::GetResourcesNoCreateNoRef() const
+{
+    // Fast-path: go straight to sparse storage. No MetadataAPI lookup, no refcount.
+    // FrameworkElement.Resources is always a sparse on-demand property.
+    if (!m_hasLocalResources)
+    {
+        return nullptr;
+    }
+
+    const auto& valueTable = GetValueTable();
+    if (valueTable)
+    {
+        auto it = valueTable->find(KnownPropertyIndex::FrameworkElement_Resources);
+        if (it != valueTable->end())
+        {
+            return checked_cast<CResourceDictionary>(it->second.value.AsObject());
+        }
+    }
+
+    // Cache bit says we have resources, but sparse slot is empty -- shouldn't happen.
+    ASSERT(FALSE);
+    return nullptr;
+}
+
 xstring_ptr CFrameworkElement::GetClassName()
 {
     VERIFYHR(EnsureClassName());

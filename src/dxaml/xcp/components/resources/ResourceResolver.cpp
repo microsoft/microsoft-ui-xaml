@@ -415,7 +415,9 @@ namespace Resources {
         while (parent && parent != templatedParent)
         {
             auto parentFE = do_pointer_cast<CFrameworkElement>(parent);
-            auto parentDictionary = parentFE ? parentFE->GetResourcesNoCreate() : do_pointer_cast<CResourceDictionary>(parent);
+            CResourceDictionary* parentDictionary = parentFE
+                ? parentFE->GetResourcesNoCreateNoRef()
+                : do_pointer_cast<CResourceDictionary>(parent);
             if (parentDictionary)
             {
                 ambientValues.m_vector.push_back(xref_ptr<CDependencyObject>(parentDictionary));
@@ -829,12 +831,12 @@ namespace Resources {
             CDependencyObject *current = element;
             while (current)
             {
-                xref_ptr<CResourceDictionary> resourceDictionary;
+                CResourceDictionary* resourceDictionary = nullptr;
 
                 auto currentAsFe = do_pointer_cast<CFrameworkElement>(current);
                 if (currentAsFe)
                 {
-                    resourceDictionary = currentAsFe->GetResourcesNoCreate();
+                    resourceDictionary = currentAsFe->GetResourcesNoCreateNoRef();
                 }
 
                 if (resourceDictionary && resourceDictionary->HasImplicitStyle())
