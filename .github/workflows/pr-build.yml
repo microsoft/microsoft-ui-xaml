@@ -1,14 +1,24 @@
 # PR build validation for WinUI (OSS).
 #
-# This workflow mirrors the internal ADO PR pipeline's build sequence
-# (`build/AzurePipelinesTemplates/WinUI-BuildMUXProject-Steps.yml` in the
-# `microsoft-ui-xaml-lift` ADO repo) as closely as is feasible from a public
-# GitHub-hosted runner. The build invokes MSBuild directly per-solution
-# (instead of routing through `src/Build.cmd`) so that:
+# This workflow is a PRODUCT-only compile gate. It builds the WinUI product
+# (DXAML core + Microsoft.UI.Xaml.Controls.dll) but intentionally OMITS
+# MUXControls.sln, which is overwhelmingly test infrastructure (test apps +
+# per-control _APITests / _InteractionTests / _TestUI projects). Test
+# execution and test-app validation remain the responsibility of the
+# internal ADO test pipelines (mirroring ADO's separation of build and
+# Helix test stages).
 #
-#   - We pass `/p:Platform=<x86|x64|arm64>` explicitly (no Win32 alias), which
-#     matches MUXControls.sln's solution configurations and avoids the
-#     `MSB4126: invalid solution configuration "Debug|Win32"` failure on x86.
+# This is loosely modelled on the internal ADO PR pipeline's build sequence
+# (`build/AzurePipelinesTemplates/WinUI-BuildMUXProject-Steps.yml` in the
+# `microsoft-ui-xaml-lift` ADO repo), but is closer in spirit to ADO's
+# `buildProductOnly=true` mode: build product, skip test apps. The build
+# invokes MSBuild directly per-solution (instead of routing through
+# `src/Build.cmd`) so that:
+#
+#   - We pass `/p:Platform=<x86|x64|arm64>` explicitly (no Win32 alias),
+#     which matches the SLN's solution configurations (e.g. Debug|x86, not
+#     Debug|Win32) and avoids the `MSB4126: invalid solution configuration
+#     "Debug|Win32"` failure on x86.
 #   - We avoid `src/Build.cmd`'s known `ERRORLEVEL`-clobber bug in
 #     `:buildSolution`, which can silently turn a failed msbuild into a
 #     "BUILD SUCCEEDED" exit-0.
@@ -17,7 +27,7 @@
 #     a non-shallow clone). ADO disables PGO per-leg via `shouldPgo:false`;
 #     here we just never enable it.
 #
-# Build sequence per leg (mirrors ADO `WinUI-BuildMUXProject-Steps.yml`):
+# Build sequence per leg:
 #   1. `init.cmd <flavor> /nopgo` - sets env vars (Platform, Configuration,
 #      _BuildArch, BuildArtifactsDir, etc.), prepends the VS amd64 MSBuild
 #      to PATH via DevCmd.cmd, restores NuGet packages, downloads the
@@ -45,14 +55,28 @@
 #               to materialize GenXbf.dll into the expected location.
 #      Both branches leave the local file system in the same state with
 #      respect to what `Microsoft.UI.Xaml.sln` expects.
-#   3. `msbuild src/dxaml/Microsoft.UI.Xaml.sln` - core product
-#      (Microsoft.UI.Xaml.Controls.dll etc.).
+#   3. `msbuild src/dxaml/Microsoft.UI.Xaml.sln` - the WinUI product. This
+#      SLN includes both DXAML core projects and
+#      `..\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj`, so the
+#      output of this stage is the complete WinUI product surface
+#      (Microsoft.UI.Xaml.dll, Microsoft.UI.Xaml.Controls.dll,
+#      Microsoft.UI.Xaml.Phone.dll, Microsoft.WinUI projection, GenXbf,
+#      MergedWinMD, etc.). ADO's `buildProductOnly=true` builds a different
+#      SLN (`Microsoft.UI.Xaml-Product.sln`) that does NOT include the
+#      controls .vcxproj - that SLN is misnomered. We build the larger
+#      Microsoft.UI.Xaml.sln so we get controls compile-coverage too.
 #   4. `src/pack.component.cmd /version 3.0.0-dev` - public-OSS substitute for
 #      ADO's `scripts/buildMockWinAppSdkPackage.ps1` (which is not in OSS).
 #      `pack.component.cmd` calls `build/nuspecs/build-nupkg.ps1` with
-#      `-UseDependencyOverrides` to produce the mock Microsoft.WindowsAppSDK
-#      and Microsoft.WindowsAppSDK.WinUI nupkgs that MUXControls.sln consumes.
-#   5. `msbuild src/controls/MUXControls.sln` - controls + test code.
+#      `-UseDependencyOverrides` to produce the Microsoft.WindowsAppSDK
+#      and Microsoft.WindowsAppSDK.WinUI nupkgs. We keep this stage as a
+#      packaging-validation step even though we no longer build the SLN
+#      that consumes them (MUXControls.sln) - the pack step still exercises
+#      the nuspec inputs against the stage-3 outputs.
+#
+# ADO's stage 3 (`msbuild src/controls/MUXControls.sln`) is intentionally
+# omitted. See the inline comment block on the `$sequence` variable in
+# the Build step below for the full rationale.
 #
 # Matrix (6 jobs, parallel on windows-2022). ADO's PR matrix is:
 #   Debug_x86, Release_x86, Release_x64, Release_arm64, Release_arm64ec
@@ -155,9 +179,9 @@ jobs:
       # The flavor token passed to init.cmd (e.g. "x86chk", "arm64fre").
       WINUI_INIT_FLAVOR: ${{ matrix.flavor }}
       # Platform/Configuration passed to msbuild via /p:Platform=... /p:Configuration=...
-      # NOTE: we deliberately use "x86" (not "Win32") because MUXControls.sln
-      # only declares Debug|x86 / Release|x86 - it has no Debug|Win32 alias.
-      # This matches ADO's `buildPlatform: 'x86'` matrix value.
+      # NOTE: we deliberately use "x86" (not "Win32") because the SLNs we
+      # build declare Debug|x86 / Release|x86 directly (no Debug|Win32
+      # alias). This matches ADO's `buildPlatform: 'x86'` matrix value.
       WINUI_BUILD_PLATFORM: ${{ matrix.platform }}
       WINUI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
       # `pack.component.cmd` requires BuildPlatform + Configuration env vars.
@@ -231,12 +255,14 @@ jobs:
             Write-Host "LongPathsEnabled already 1."
           }
 
-      # The build mirrors ADO's `WinUI-BuildMUXProject-Steps.yml` sequence:
-      # init.cmd (env setup + nuget restore + dotnet installer download +
-      # vs_installer modify for ARM64 components) -> msbuild
-      # XamlCompilerPrerequisites.sln -> msbuild dxaml/Microsoft.UI.Xaml.sln
-      # -> pack.component.cmd -> msbuild controls/MUXControls.sln. All
-      # commands run in a single cmd shell chained with `&&` so:
+      # The build is a product-only compile gate (see file-level comment).
+      # Sequence: init.cmd (env setup + nuget restore + dotnet installer
+      # download + vs_installer modify for ARM64 components) -> msbuild
+      # XamlCompilerPrerequisites (Public.csproj on OSS, Prerequisites.sln
+      # internally) -> msbuild dxaml/Microsoft.UI.Xaml.sln -> pack.component
+      # .cmd. We intentionally do NOT build controls/MUXControls.sln (full
+      # rationale in the `$sequence` block below). All commands run in a
+      # single cmd shell chained with `&&` so:
       #   1. Env vars set by init.cmd's `:SetEnviromentVariable` (Platform,
       #      Configuration, _BuildArch, BuildArtifactsDir, etc.) persist
       #      across the msbuild calls (they all execute in the same cmd
@@ -360,40 +386,50 @@ jobs:
             )
           }
 
-          # Build sequence mirrors ADO. Each invocation passes /p:Platform
-          # and /p:Configuration explicitly so the solution config selector
-          # matches MUXControls.sln (which has Debug|x86, not Debug|Win32).
+          # Build sequence: product code only (DXAML + controls). The PR build
+          # is intentionally scoped to a compile-gate over PRODUCT projects
+          # and intentionally OMITS MUXControls.sln. Rationale:
           #
-          # `EnableMUXWinRTRegistrations=false` is passed on the MUXControls.sln
-          # invocation only. That property gates the import of
-          # `src\eng\adhocappreg.targets`, which is what runs the
-          # `WinAppSdkInsertActivatableClassEntries` target on UAP test apps
-          # (IXMPTestApp.csproj, TabViewTearOutApp.vcxproj, etc.). That target
-          # inserts manifest entries for `Microsoft.UI.Xaml.dll`,
-          # `Microsoft.UI.Xaml.Controls.dll`, `Microsoft.UI.Xaml.Phone.dll`,
-          # `WinUIEdit.dll` etc. derived from the WindowsAppSDK fusion
-          # manifest. In ADO those DLLs get binplaced into the test app's
-          # payload by `scripts\buildMockWinAppSdkPackage.ps1` (a step that
-          # runs between Microsoft.UI.Xaml.sln and MUXControls.sln). That
-          # mock-package script is internal-only and not mirrored to OSS, so
-          # the DLLs are absent from the payload and APPX0703 validation
-          # fails. The PR build is a compile-check (no tests executed), so
-          # disabling the registration insertion is safe. The override is
-          # global-property scope, so it cleanly overrides
-          # `src\eng\adhocapp.targets:68` which auto-enables the flag for
-          # UAP test projects. ADO unaffected -- the flag stays unset there.
+          #   * Microsoft.UI.Xaml.sln already builds Microsoft.UI.Xaml.Controls
+          #     .vcxproj (the controls DLL containing all ~67 modern controls
+          #     under src\controls\dev\: TabView, NavigationView, ItemsView,
+          #     ColorPicker, etc.). Confirmed by the project reference
+          #     `Microsoft.UI.Xaml.Controls -> ..\controls\dev\dll\Microsoft
+          #     .UI.Xaml.Controls.vcxproj` in dxaml\Microsoft.UI.Xaml.sln.
+          #     ADO's own template documents the same: "Microsoft.UI.Xaml.sln
+          #     builds Microsoft.UI.Xaml.Controls.dll" (WinUI-BuildMUXProject-
+          #     Steps.yml).
           #
-          # `IsDebugTestConfiguration=false` is a belt-and-braces override
-          # for the `<GenerateAppxPackageOnBuild>` gate in IXMPTestApp.csproj
-          # (a no-op in current state since the property is never set true
-          # in either repo, but defensive against future changes).
+          #   * MUXControls.sln has 305 projects, ~292 of which are test
+          #     infrastructure unique to that SLN: IXMPTestApp,
+          #     MUXControlsTestApp, TabViewTearOutApp, and per-control
+          #     _APITests.shproj / _InteractionTests.shproj / _TestUI.shproj
+          #     projects. The handful of product project references it has
+          #     (e.g. Microsoft.UI.Xaml.Controls.vcxproj) are duplicates of
+          #     projects already built by Microsoft.UI.Xaml.sln. Skipping
+          #     MUXControls.sln therefore loses no PRODUCT coverage.
+          #
+          #   * All OSS-specific build failures discovered so far
+          #     (APPX0703 from UAP test apps via
+          #     `WinAppSdkInsertActivatableClassEntries`, missing
+          #     `ControlInfoData.json` from `GenerateWinUIGalleryTestData`,
+          #     unavailable ILLink/ILCompiler 8.0.27 from test-project AOT
+          #     publishing) originated in MUXControls.sln test projects.
+          #     Dropping the SLN removes their entire failure surface.
+          #
+          #   * Test execution is out of scope for PR builds. Tests run in
+          #     dedicated test pipelines (mirroring ADO's separation of
+          #     build and Helix test stages).
+          #
+          # Each invocation passes /p:Platform and /p:Configuration explicitly
+          # so the solution config selector matches the SLN's actual
+          # configurations (e.g. Debug|x86, not Debug|Win32).
           $sequence = $prereqSteps + @(
             "msbuild dxaml\Microsoft.UI.Xaml.sln    /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.$platform.$config.binlog",
-            "pack.component.cmd /version 3.0.0-dev",
-            "msbuild controls\MUXControls.sln       /p:Platform=$platform /p:Configuration=$config /p:EnableMUXWinRTRegistrations=false /p:IsDebugTestConfiguration=false $commonArgs /binaryLogger:$binlogDir\MUXControls.$platform.$config.binlog"
+            "pack.component.cmd /version 3.0.0-dev"
           )
 
-          # Run init + the four build commands inside a single cmd shell so
+          # Run init + the build commands inside a single cmd shell so
           # init's env vars (Platform, Configuration, _BuildArch, PATH+=
           # amd64 MSBuild, DOTNET_ROOT, etc.) persist across all of them.
           # The `&&` chain ensures any failure aborts the rest.
