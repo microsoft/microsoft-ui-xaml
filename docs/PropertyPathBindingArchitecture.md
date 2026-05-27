@@ -40,19 +40,21 @@ is a `DependencyObject` with properties `Foo` (returns another DO) and `Bar`
 and links them into a chain:
 
 ```
-  Step("Foo")  --->  Step("Bar")
-     |                   |
-     | source=DataCtx    | source=DataCtx.Foo
-     | value=DataCtx.Foo | value=DataCtx.Foo.Bar  <-- this is what TextBlock.Text gets
-     |                   |
-     | accessor:         | accessor:
-     |  m_tpPropertyAccess |  m_tpPropertyAccess
+  Step("Foo")  -------->  Step("Bar")
+     |                       |
+     | source=DataCtx        | source=DataCtx.Foo
+     | value=DataCtx.Foo     | value=DataCtx.Foo.Bar  <-- this is what TextBlock.Text gets
+     |                       |
+     | accessor:             | accessor:
+     |  m_inlineDO           |  m_inlineDO
+     |  (or fallback         |  (or fallback
+     |   m_tpPropertyAccess) |   m_tpPropertyAccess)
 ```
 
-Each step has a `PropertyAccess` stored in `m_tpPropertyAccess`.  The accessor
-is the object that actually reads the property value and listens for changes.
-For `DependencyObject` sources, the accessor is a `DependencyObjectPropertyAccess`;
-for CLR/map/custom sources it is one of the other `PropertyAccess` subclasses.
+Each step has a `PropertyAccess` -- either inlined (`m_inlineDO`) for the
+common DependencyObject case, or heap-allocated (`m_tpPropertyAccess`) for
+CLR/map/custom sources.  The accessor is the object that actually reads the
+property value and listens for changes.
 
 In the source code, "DataCtx" is whatever `IInspectable*` gets passed into
 `PropertyPathListener::SetSource()`.  Typically that's the `FrameworkElement`'s
@@ -70,32 +72,50 @@ and the final value flows back to `BindingExpression` -> `TextBlock.Text`.
 ```
 PropertyPathStep (base)                    PropertyAccess (base)
   |                                          |
-  +-- PropertyAccessPathStep -------uses---> +-- DependencyObjectPropertyAccess
+  +-- PropertyAccessPathStep -------uses---> +-- DependencyObjectPropertyAccess  (*)
   |     m_szProperty: WCHAR*                 +-- PropertyInfoPropertyAccess
   |     m_pDP: const CDependencyProperty*    +-- PropertyProviderPropertyAccess
-  |     m_tpPropertyAccess: PropertyAccess   +-- MapPropertyAccess
-  |                                          |
-  +-- SourceAccessPathStep                   |
-  +-- IntIndexerPathStep                     +-- IndexerPropertyAccess (used by Int/StringIndexerPathStep)
+  |     m_inlineDO: InlineDOAccessor         +-- MapPropertyAccess
+  |     m_tpPropertyAccess: PropertyAccess   |
+  |                                          +-- IndexerPropertyAccess
+  +-- SourceAccessPathStep                       (used by Int/StringIndexerPathStep)
+  +-- IntIndexerPathStep
   +-- StringIndexerPathStep
 
-
+(*) DependencyObjectPropertyAccess exists in the codebase but is now
+    replaced by InlineDOAccessor for the common case.
 ```
 
 ### PropertyAccessPathStep -- the workhorse
 
-This object handles `"Foo"` and `(Button.Content)` segments.  It resolves the
-property on the source object and stores the resulting `PropertyAccess`
-subclass in `m_tpPropertyAccess`.  The concrete accessor type depends on the
-source:
+This object handles `"Foo"` and `(Button.Content)` segments.  It has two ways
+to access the property value:
 
-- **`DependencyObjectPropertyAccess`** -- source is a `DependencyObject`.
-- **`PropertyInfoPropertyAccess`** -- source has app metadata (IXamlMetadataProvider).
-- **`MapPropertyAccess`** -- source is `IMap<HSTRING, IInspectable*>`.
-- **`PropertyProviderPropertyAccess`** -- source is `ICustomPropertyProvider`.
+1. **Inline DO path** (fast, ~95% of bindings): If the source is a
+   `DependencyObject`, store the accessor state directly inside the step
+   as an `InlineDOAccessor` struct.  No heap allocation.  This path is
+   enabled unconditionally (see `IsInlineDOAccessEnabled()`).
 
-On reconnect, if the source type hasn't changed, the existing accessor's
-`TryReconnect` swaps the source pointer -- no teardown/rebuild.
+2. **Fallback path**: Allocate a `PropertyAccess` subclass on the heap
+   (`PropertyInfoPropertyAccess`, `MapPropertyAccess`, or
+   `PropertyProviderPropertyAccess`).  Used for CLR objects, maps, and
+   custom property providers.
+
+### InlineDOAccessor (the optimization)
+
+```cpp
+struct InlineDOAccessor {
+    TrackerPtr<IInspectable> m_tpSource;       // binding source object
+    EventPtr<...>            m_epSyncHandler;  // DP-changed listener
+    const CClassInfo*        m_pSourceType;    // cached type (for reconnect)
+    const CDependencyProperty* m_pDP;          // resolved DP for this property
+};
+```
+
+Lives inline in `PropertyAccessPathStep`.  Does the same job as a heap-allocated
+`DependencyObjectPropertyAccess`, but without the allocation.  On reconnect,
+if the source type hasn't changed, it just swaps the source pointer -- no
+teardown/rebuild.
 
 ---
 
@@ -120,12 +140,16 @@ When a step connects to a new source object, it goes through this decision tree:
     yes -> disconnect, done
     no  |
         v
-  Already using accessor and same source type?  (TryReconnect)
+  Already using inline DO and same source type?  (reconnect fast path)
     yes -> swap source pointer, done
     no  |
         v
-  Source is IDependencyObject?
-    yes -> DependencyObjectPropertyAccess::CreateInstance, done
+  Already using heap accessor and same source type?  (TryReconnect)
+    yes -> swap source pointer, done
+    no  |
+        v
+  Source is IDependencyObject and IsInlineDOAccessEnabled?
+    yes -> InlineDOConnect (resolve DP, store inline), done
     no  |
         v
   Try PropertyInfoPropertyAccess (app metadata / IXamlMetadataProvider)
@@ -143,7 +167,7 @@ When a step connects to a new source object, it goes through this decision tree:
        |
        v
   PropertyAccessPathStep("Foo")::SourceChanged()
-       |  (DO accessor: filtered by DP index;  other accessors: INPC / MapChanged)
+       |  (inline DO: filtered by DP index;  heap accessor: INPC / MapChanged)
        v
   PropertyPathListener::PropertyPathStepChanged()
        |  re-connects downstream steps (Step("Bar") gets new source)
