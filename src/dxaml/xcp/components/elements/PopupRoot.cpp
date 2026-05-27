@@ -10,12 +10,9 @@ CPopup* CPopupRoot::GetOpenPopupWithChild(_In_ const CUIElement* const child, bo
     if (m_pOpenPopups)
     {
         // Include unloading popups too.
-        for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead();
-             pNode != nullptr;
-             pNode = pNode->m_pNext)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            CPopup* popup = pNode->m_pData;
-
+            CPopup* popup = *it;
             if (popup->m_pChild == child
                 || checkUnloadingChildToo && popup->m_unloadingChild == child)
             {
@@ -29,7 +26,7 @@ CPopup* CPopupRoot::GetOpenPopupWithChild(_In_ const CUIElement* const child, bo
 
 bool CPopupRoot::HasOpenOrUnloadingPopups() const
 {
-    return m_pOpenPopups != nullptr && m_pOpenPopups->GetHead() != nullptr;
+    return m_pOpenPopups != nullptr && !m_pOpenPopups->Empty();
 }
 
 // When closing all open popups, we can't just close them in the order that they were opened. With nested
@@ -43,13 +40,9 @@ std::vector<CPopup*> CPopupRoot::GetPopupsInSafeClosingOrder()
 
     if (m_pOpenPopups != nullptr)
     {
-        CXcpList<CPopup>::XCPListNode* openPopupNode = m_pOpenPopups->GetHead();
-
-        while (openPopupNode)
+        for (auto it = m_pOpenPopups->NewestBegin(); it != m_pOpenPopups->NewestEnd(); ++it)
         {
-            CPopup* popup = openPopupNode->m_pData;
-            openPopupNode = openPopupNode->m_pNext;
-
+            CPopup* popup = *it;
             // For each open popup, find a safe time to call Close on it. By default the popup is closed in natural
             // order (i.e. the order that it was opened in). But if the popup has popup ancestors that also need to
             // be closed, it must be closed before the ancestors get closed. So default to the index at end of the

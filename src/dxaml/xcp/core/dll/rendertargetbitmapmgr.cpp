@@ -100,9 +100,10 @@ CRenderTargetBitmapManager::OnSetCurrentState(_In_ IRenderTargetElement *pItem)
             {
                 if (m_pIdleWithResourcesListNoRef == NULL)
                 {
-                    m_pIdleWithResourcesListNoRef = new CXcpList<IRenderTargetElement>();
+                    // Reserve based on values seen in perf runs.
+                    m_pIdleWithResourcesListNoRef = new CXcpList<IRenderTargetElement>(16);
                 }
-                IFC(m_pIdleWithResourcesListNoRef->AddTail(pItem));
+                IFC(m_pIdleWithResourcesListNoRef->Add(pItem));
             }
             break;
         }
@@ -111,9 +112,10 @@ CRenderTargetBitmapManager::OnSetCurrentState(_In_ IRenderTargetElement *pItem)
             IFC(RemoveRenderTargetElement(pItem));
             if (m_pPendingListNoRef == NULL)
             {
-                m_pPendingListNoRef = new CXcpList<IRenderTargetElement>();
+                // Reserve based on values seen in perf runs.
+                m_pPendingListNoRef = new CXcpList<IRenderTargetElement>(16);
             }
-            IFC(m_pPendingListNoRef->AddTail(pItem));
+            IFC(m_pPendingListNoRef->Add(pItem));
             break;
         }
         case RenderTargetElementState::Rendering:
@@ -123,9 +125,10 @@ CRenderTargetBitmapManager::OnSetCurrentState(_In_ IRenderTargetElement *pItem)
             ASSERT(hr == S_OK);
             if (m_pRenderingListNoRef == NULL)
             {
-                m_pRenderingListNoRef = new CXcpList<IRenderTargetElement>();
+                // Reserve based on values seen in perf runs.
+                m_pRenderingListNoRef = new CXcpList<IRenderTargetElement>(16);
             }
-            IFC(m_pRenderingListNoRef->AddTail(pItem));
+            IFC(m_pRenderingListNoRef->Add(pItem));
             break;
         }
         case RenderTargetElementState::Rendered:
@@ -143,9 +146,10 @@ CRenderTargetBitmapManager::OnSetCurrentState(_In_ IRenderTargetElement *pItem)
             ASSERT(hr == S_OK);
             if (m_pDrawingListNoRef == NULL)
             {
-                m_pDrawingListNoRef = new CXcpList<IRenderTargetElement>();
+                // Reserve based on values seen in perf runs.
+                m_pDrawingListNoRef = new CXcpList<IRenderTargetElement>(16);
             }
-            IFC(m_pDrawingListNoRef->AddTail(pItem));
+            IFC(m_pDrawingListNoRef->Add(pItem));
             break;
         }
         default:
@@ -208,42 +212,35 @@ CRenderTargetBitmapManager::RemoveFromDrawingLists(_In_ IRenderTargetElement *pI
     //       data in previous operations.
     if ((m_pDrawWaitDataList != nullptr) && (m_pDrawingListNoRef != nullptr))
     {
-        CXcpList<RenderTargetElementWaitData>::XCPListNode *pCurrentWait = m_pDrawWaitDataList->GetHead();
-        CXcpList<RenderTargetElementWaitData>::XCPListNode *pPreviousWait = NULL;
-        while (pCurrentWait)
+        RenderTargetElementWaitData *pPreviousWaitData = NULL;
+        for (size_t wi = 0; wi < m_pDrawWaitDataList->Size(); ++wi)
         {
-            if (pItem == pCurrentWait->m_pData->m_pRenderTargetElementNoRef)
+            auto* pCurrentWaitData = m_pDrawWaitDataList->At(wi);
+            if (pItem == pCurrentWaitData->m_pRenderTargetElementNoRef)
             {
                 ASSERT(m_pDrawingListNoRef != NULL);
-                CXcpList<IRenderTargetElement>::XCPListNode *pCurrent = m_pDrawingListNoRef->GetHead();
                 IRenderTargetElement *pPrevRenderTargetBitmap = NULL;
-                if (pCurrent && pCurrent->m_pData != pItem)
+                for (size_t i = 1; i < m_pDrawingListNoRef->Size(); ++i)
                 {
-                    while (pCurrent)
+                    if (m_pDrawingListNoRef->At(i) == pItem)
                     {
-                        if (pCurrent->m_pNext != NULL &&
-                            pCurrent->m_pNext->m_pData == pItem)
-                        {
-                            pPrevRenderTargetBitmap = pCurrent->m_pData;
-                            break;
-                        }
-                        pCurrent = pCurrent->m_pNext;
+                        pPrevRenderTargetBitmap = m_pDrawingListNoRef->At(i - 1);
+                        break;
                     }
                 }
                 if (pPrevRenderTargetBitmap != NULL &&
-                    (pPreviousWait == NULL ||
-                    pPreviousWait->m_pData->m_pRenderTargetElementNoRef != pPrevRenderTargetBitmap))
+                    (pPreviousWaitData == NULL ||
+                    pPreviousWaitData->m_pRenderTargetElementNoRef != pPrevRenderTargetBitmap))
                 {
-                    pCurrentWait->m_pData->m_pRenderTargetElementNoRef = pPrevRenderTargetBitmap;
+                    pCurrentWaitData->m_pRenderTargetElementNoRef = pPrevRenderTargetBitmap;
                 }
                 else
                 {
-                    IFC_RETURN(m_pDrawWaitDataList->Remove(pCurrentWait->m_pData, TRUE));
+                    IFC_RETURN(m_pDrawWaitDataList->Remove(pCurrentWaitData, TRUE));
                 }
                 break;
             }
-            pPreviousWait = pCurrentWait;
-            pCurrentWait = pCurrentWait->m_pNext;
+            pPreviousWaitData = pCurrentWaitData;
         }
     }
 
@@ -337,26 +334,26 @@ CRenderTargetBitmapManager::PickupForRender()
 
     if (allowPickup && m_pPendingListNoRef != NULL)
     {
-        CXcpList<IRenderTargetElement>::XCPListNode *pCurrent = m_pPendingListNoRef->GetHead();
-        CXcpList<IRenderTargetElement>::XCPListNode *pNext = NULL;
-        if (pCurrent)
+        // Erase-while-iterate: SetCurrentState/FailRender may remove the current element
+        // from this list (via OnSetCurrentState). We detect removal by comparing the list
+        // size before and after, and only advance the index when no removal occurred.
+        for (size_t i = 0; i < m_pPendingListNoRef->Size(); )
         {
-            while (pCurrent)
+            const size_t sizeBefore = m_pPendingListNoRef->Size();
+            IRenderTargetElement *pRenderTargetElementNoRef = m_pPendingListNoRef->At(i);
+            if (CanPickupForRender(pRenderTargetElementNoRef->GetRenderTargetElementData()->GetRenderElement()))
             {
-                pNext = pCurrent->m_pNext;
-                IRenderTargetElement *pRenderTargetElementNoRef = pCurrent->m_pData;
-                if (CanPickupForRender(pRenderTargetElementNoRef->GetRenderTargetElementData()->GetRenderElement()))
-                {
-                    IFC_RETURN(pRenderTargetElementNoRef->SetCurrentState(RenderTargetElementState::Rendering));
-                }
-                else
-                {
-                    // TODO: RTB: Appropriate HR?
-                    IFC_RETURN(pRenderTargetElementNoRef->FailRender(E_INVALIDARG));
-                }
-
-                pCurrent = pNext;
+                IFC_RETURN(pRenderTargetElementNoRef->SetCurrentState(RenderTargetElementState::Rendering));
             }
+            else
+            {
+                // TODO: RTB: Appropriate HR?
+                IFC_RETURN(pRenderTargetElementNoRef->FailRender(E_INVALIDARG));
+            }
+
+            if (m_pPendingListNoRef == NULL) { break; }
+            if (m_pPendingListNoRef->Size() < sizeBefore) { /* removed, don't advance */ }
+            else { ++i; }
         }
     }
 
@@ -378,15 +375,16 @@ CRenderTargetBitmapManager::RenderElements(
     *pHasPendingDraws = FALSE;
     if (m_pRenderingListNoRef != NULL)
     {
-        CXcpList<IRenderTargetElement>::XCPListNode *pCurrent = m_pRenderingListNoRef->GetHead();
-        CXcpList<IRenderTargetElement>::XCPListNode *pNext = NULL;
-        bool hadNodes = (pCurrent != NULL);
+        const bool hadNodes = !m_pRenderingListNoRef->Empty();
         BOOLEAN isReadyForRenderTargetElementRender = TRUE;
 
-        while (pCurrent)
+        // Erase-while-iterate: SetCurrentState may remove the current element from
+        // m_pRenderingListNoRef (via OnSetCurrentState). We detect removal by comparing
+        // the list size before and after, and only advance the index when no removal occurred.
+        for (size_t i = 0; i < m_pRenderingListNoRef->Size(); )
         {
-            pNext = pCurrent->m_pNext;
-            IRenderTargetElement *pRenderTargetElement = pCurrent->m_pData;
+            size_t sizeBefore = m_pRenderingListNoRef->Size();
+            IRenderTargetElement *pRenderTargetElement = m_pRenderingListNoRef->At(i);
             if (pRenderTargetElement->GetCurrentState() == RenderTargetElementState::Rendering)
             {
                 CRenderTargetElementData *pRenderTargetElementDataNoRef = pRenderTargetElement->GetRenderTargetElementData();
@@ -430,14 +428,16 @@ CRenderTargetBitmapManager::RenderElements(
                     }
                 }
             }
-            pCurrent = pNext;
+            if (m_pRenderingListNoRef == NULL) { break; }
+            if (m_pRenderingListNoRef->Size() < sizeBefore) { /* removed, don't advance */ }
+            else { ++i; }
         }
 
         // Try cleaning up staging resources when in background task,
         // if there no RTBs under process.
         if ( hadNodes &&
-            (m_pRenderingListNoRef == NULL || m_pRenderingListNoRef->GetHead() == NULL) &&
-            (m_pDrawingListNoRef == NULL || m_pDrawingListNoRef->GetHead() == NULL))
+            (m_pRenderingListNoRef == NULL || m_pRenderingListNoRef->Empty()) &&
+            (m_pDrawingListNoRef == NULL || m_pDrawingListNoRef->Empty()))
         {
             IFC_RETURN(CleanupResourcesForBackgroundTask());
         }
@@ -472,12 +472,13 @@ CRenderTargetBitmapManager::PreCommit(
 
         if (resetToPreparing)
         {
-            auto current = m_pRenderingListNoRef->GetHead();
-            while (current)
+            // Erase-while-iterate: SetCurrentState may remove the current element from
+            // m_pRenderingListNoRef (via OnSetCurrentState). Detect removal via size check.
+            for (size_t i = 0; i < m_pRenderingListNoRef->Size(); )
             {
-                auto next = current->m_pNext;
+                size_t sizeBefore = m_pRenderingListNoRef->Size();
 
-                auto renderTargetElement = current->m_pData;
+                auto renderTargetElement = m_pRenderingListNoRef->At(i);
 
                 if (renderTargetElement->GetCurrentState() == RenderTargetElementState::Rendered)
                 {
@@ -486,7 +487,9 @@ CRenderTargetBitmapManager::PreCommit(
                     IFC_RETURN(renderTargetElement->SetCurrentState(RenderTargetElementState::Preparing));
                 }
 
-                current = next;
+                if (m_pRenderingListNoRef == NULL) { break; }
+                if (m_pRenderingListNoRef->Size() < sizeBefore) { /* removed, don't advance */ }
+                else { ++i; }
             }
         }
         else
@@ -494,12 +497,13 @@ CRenderTargetBitmapManager::PreCommit(
             // Go through the rendering list and for each item that is in the Rendered state
             // Create an event and add it to the wait list.  Also call PreCommit on all those
             // items.
-            auto current = m_pRenderingListNoRef->GetHead();
-            while (current)
+            // Erase-while-iterate: SetCurrentState may remove the current element from
+            // m_pRenderingListNoRef (via OnSetCurrentState). Detect removal via size check.
+            for (size_t i = 0; i < m_pRenderingListNoRef->Size(); )
             {
-                auto next = current->m_pNext;
+                size_t sizeBefore = m_pRenderingListNoRef->Size();
 
-                auto renderTargetElement = current->m_pData;
+                auto renderTargetElement = m_pRenderingListNoRef->At(i);
 
                 if (renderTargetElement->GetCurrentState() == RenderTargetElementState::Rendered)
                 {
@@ -529,7 +533,6 @@ CRenderTargetBitmapManager::PreCommit(
                     if (FAILED(preCommitHr))
                     {
                         IGNOREHR(renderTargetElement->FailRender(preCommitHr));
-                        current = next;
                         continue;
                     }
 
@@ -543,7 +546,9 @@ CRenderTargetBitmapManager::PreCommit(
                     IFC_RETURN(renderTargetElement->SetCurrentState(RenderTargetElementState::Committed));
                 }
 
-                current = next;
+                if (m_pRenderingListNoRef == NULL) { break; }
+                if (m_pRenderingListNoRef->Size() < sizeBefore) { /* removed, don't advance */ }
+                else { ++i; }
             }
         }
     }
@@ -564,15 +569,15 @@ CRenderTargetBitmapManager::DrawCompTrees(
 {
     if (m_pRenderingListNoRef != NULL)
     {
-        CXcpList<IRenderTargetElement>::XCPListNode *pCurrent = m_pRenderingListNoRef->GetHead();
-        bool hadNodes = (pCurrent != NULL);
+        const bool hadNodes = !m_pRenderingListNoRef->Empty();
 
-        pCurrent = m_pRenderingListNoRef->GetHead();
-        while (pCurrent)
+        // Erase-while-iterate: SetCurrentState may remove the current element from
+        // m_pRenderingListNoRef (via OnSetCurrentState). Detect removal via size check.
+        for (size_t i = 0; i < m_pRenderingListNoRef->Size(); )
         {
-            auto next = pCurrent->m_pNext;
+            size_t sizeBefore = m_pRenderingListNoRef->Size();
 
-            IRenderTargetElement *pRenderTargetElement = pCurrent->m_pData;
+            IRenderTargetElement *pRenderTargetElement = m_pRenderingListNoRef->At(i);
             if (pRenderTargetElement->GetCurrentState() == RenderTargetElementState::Committed)
             {
                 // The pRenderTargetElement doesn't require the RTB drawing management so put it
@@ -583,14 +588,16 @@ CRenderTargetBitmapManager::DrawCompTrees(
                 IFC_RETURN(pRenderTargetElement->SetCurrentState(RenderTargetElementState::Drawing));
             }
 
-            pCurrent = next;
+            if (m_pRenderingListNoRef == NULL) { break; }
+            if (m_pRenderingListNoRef->Size() < sizeBefore) { /* removed, don't advance */ }
+            else { ++i; }
         }
 
         // Try cleaning up staging resources when in background task,
         // if there no RTBs under process.
         if ( hadNodes &&
-            (m_pRenderingListNoRef == NULL || m_pRenderingListNoRef->GetHead() == NULL) &&
-            (m_pDrawingListNoRef == NULL || m_pDrawingListNoRef->GetHead() == NULL))
+            (m_pRenderingListNoRef == NULL || m_pRenderingListNoRef->Empty()) &&
+            (m_pDrawingListNoRef == NULL || m_pDrawingListNoRef->Empty()))
         {
             IFC_RETURN(CleanupResourcesForBackgroundTask());
         }
@@ -665,57 +672,59 @@ CRenderTargetBitmapManager::NotifyDrawCompleted(_In_ IPALWaitable *pWaitHandle)
         }
         else
         {
-            CXcpList<RenderTargetElementWaitData>::XCPListNode *pCurrentWait = m_pDrawWaitDataList->GetHead();
-            CXcpList<RenderTargetElementWaitData>::XCPListNode *pPreviousWait = NULL;
-
             // Try cleaning up staging resources when in background task,
             // if there no RTBs under process. Do this before completing
             // the async actions which may queue up new RTBs.
-            if ((m_pRenderingListNoRef == NULL || m_pRenderingListNoRef->GetHead() == NULL) &&
-                (pCurrentWait == NULL || pCurrentWait->m_pNext == NULL))
+            if ((m_pRenderingListNoRef == NULL || m_pRenderingListNoRef->Empty()) &&
+                (m_pDrawWaitDataList->Size() <= 1))
             {
                 IFC_RETURN(CleanupResourcesForBackgroundTask());
             }
 
-            while (pCurrentWait)
+            RenderTargetElementWaitData *pPreviousWaitData = NULL;
+            for (size_t wi = 0; wi < m_pDrawWaitDataList->Size(); ++wi)
             {
-                if (pWaitHandle == pCurrentWait->m_pData->m_pWaitHandleNoRef)
+                auto* pCurrentWaitData = m_pDrawWaitDataList->At(wi);
+                if (pWaitHandle == pCurrentWaitData->m_pWaitHandleNoRef)
                 {
-                    IRenderTargetElement *pPreviousEnd = (pPreviousWait == NULL ? NULL : pPreviousWait->m_pData->m_pRenderTargetElementNoRef);
-                    IRenderTargetElement *pCurrentEnd = pCurrentWait->m_pData->m_pRenderTargetElementNoRef;
-                    IFC_RETURN(m_pDrawWaitDataList->Remove(pCurrentWait->m_pData, TRUE));
+                    IRenderTargetElement *pPreviousEnd = (pPreviousWaitData == NULL ? NULL : pPreviousWaitData->m_pRenderTargetElementNoRef);
+                    IRenderTargetElement *pCurrentEnd = pCurrentWaitData->m_pRenderTargetElementNoRef;
+                    IFC_RETURN(m_pDrawWaitDataList->Remove(pCurrentWaitData, TRUE));
 
                     ASSERT(pCurrentEnd != NULL);
                     ASSERT(m_pDrawingListNoRef != NULL);
-                    CXcpList<IRenderTargetElement>::XCPListNode *pCurrent = m_pDrawingListNoRef->GetHead();
-                    CXcpList<IRenderTargetElement>::XCPListNode *pNext = NULL;
+                    // Find the starting index in the drawing list.
+                    // If pPreviousEnd is not null, start after it; otherwise start from 0.
+                    size_t startIdx = 0;
                     if (pPreviousEnd != NULL)
                     {
-                        while (pCurrent)
+                        for (size_t i = 0; i < m_pDrawingListNoRef->Size(); ++i)
                         {
-                            if (pCurrent->m_pData == pPreviousEnd)
+                            if (m_pDrawingListNoRef->At(i) == pPreviousEnd)
                             {
-                                pCurrent = pCurrent->m_pNext;
+                                startIdx = i + 1;
                                 break;
                             }
-                            pCurrent = pCurrent->m_pNext;
                         }
                     }
-                    while (pCurrent)
+                    // Erase-while-iterate: PostDraw() calls SetCurrentState(Idle) which
+                    // removes the current element from m_pDrawingListNoRef (via OnSetCurrentState).
+                    // Detect removal via size check to avoid skipping the next element.
+                    for (size_t i = startIdx; i < m_pDrawingListNoRef->Size(); )
                     {
-                        IRenderTargetElement *pRenderTargetElementNoRef = pCurrent->m_pData;
-                        pNext = pCurrent->m_pNext;
+                        size_t sizeBefore = m_pDrawingListNoRef->Size();
+                        IRenderTargetElement *pRenderTargetElementNoRef = m_pDrawingListNoRef->At(i);
                         IFC_RETURN(pRenderTargetElementNoRef->PostDraw());
                         if (pRenderTargetElementNoRef == pCurrentEnd)
                         {
                             break;
                         }
-                        pCurrent = pNext;
+                        if (m_pDrawingListNoRef->Size() < sizeBefore) { /* removed, don't advance */ }
+                        else { ++i; }
                     }
                     break;
                 }
-                pPreviousWait = pCurrentWait;
-                pCurrentWait = pCurrentWait->m_pNext;
+                pPreviousWaitData = pCurrentWaitData;
             }
         }
     }
@@ -874,16 +883,17 @@ CRenderTargetBitmapManager::CleanupDeviceRelatedResourcesOnList(
 {
     if (pList != NULL)
     {
-        CXcpList<IRenderTargetElement>::XCPListNode *pCurrent = pList->GetHead();
-        CXcpList<IRenderTargetElement>::XCPListNode *pNext = NULL;
-        while (pCurrent)
+        // Erase-while-iterate: SetCurrentState may remove the current element from
+        // pList (via OnSetCurrentState). Detect removal via size check.
+        for (size_t i = 0; i < pList->Size(); )
         {
-            pNext = pCurrent->m_pNext;
+            size_t sizeBefore = pList->Size();
+            auto* item = pList->At(i);
             if (!cleanupDiscardedOnly ||
-                pCurrent->m_pData->HasLostHardwareResources())
+                item->HasLostHardwareResources())
             {
                 if (setNeedsContentsLost
-                    && pCurrent->m_pData->RequiresSurfaceContentsLostNotification())
+                    && item->RequiresSurfaceContentsLostNotification())
                 {
                     m_needsSurfaceContentsLost = TRUE;
                 }
@@ -895,26 +905,26 @@ CRenderTargetBitmapManager::CleanupDeviceRelatedResourcesOnList(
                     // the current RTB request. But do not do a comprehensive walk
                     // as in the case of device loss.
                     CRenderTargetElementData *pRenderTargetElementDataNoRef =
-                        pCurrent->m_pData->GetRenderTargetElementData();
+                        item->GetRenderTargetElementData();
                     if (pRenderTargetElementDataNoRef != NULL)
                     {
                         pRenderTargetElementDataNoRef->CleanupDeviceRelatedResources();
                     }
-                    pCurrent->m_pData->AbortPixelWaitExecutors(E_FAIL);
+                    item->AbortPixelWaitExecutors(E_FAIL);
                 }
                 else
                 {
                     // If we are to cleanup all the resources (not just the discarded resources),
                     // then this scenario is for device loss. Hence do a extensive walk on the
                     // RTB to cleanup all the device related resources.
-                    pCurrent->m_pData->CleanupHardwareResources(cleanupDComp);
+                    item->CleanupHardwareResources(cleanupDComp);
                 }
                 if (addToPendingList)
                 {
-                    IFC_RETURN(pCurrent->m_pData->SetCurrentState(RenderTargetElementState::Preparing));
+                    IFC_RETURN(item->SetCurrentState(RenderTargetElementState::Preparing));
                 }
             }
-            pCurrent = pNext;
+            if (pList->Size() >= sizeBefore) { ++i; }
         }
         if (cleanList)
         {
@@ -929,16 +939,10 @@ CRenderTargetBitmapManager::UpdateMetrics()
 {
     if (m_pPendingListNoRef != NULL)
     {
-        CXcpList<IRenderTargetElement>::XCPListNode *pCurrent = m_pPendingListNoRef->GetHead();
-        CXcpList<IRenderTargetElement>::XCPListNode *pNext = NULL;
-        while (pCurrent)
+        for (auto it = m_pPendingListNoRef->OldestBegin(); it != m_pPendingListNoRef->OldestEnd(); ++it)
         {
-            pNext = pCurrent->m_pNext;
-            IRenderTargetElement *pRenderTargetElement = pCurrent->m_pData;
-
+            auto* pRenderTargetElement = *it;
             IFC_RETURN(pRenderTargetElement->GetRenderTargetElementData()->UpdateMetrics());
-
-            pCurrent = pNext;
         }
     }
     return S_OK;
@@ -1003,7 +1007,8 @@ CRenderTargetBitmapManager::EnsureWaitList()
 {
     if (m_pDrawWaitDataList == nullptr)
     {
-        m_pDrawWaitDataList = new CXcpList<RenderTargetElementWaitData>();
+        // Reserve based on values seen in perf runs.
+        m_pDrawWaitDataList = new CXcpList<RenderTargetElementWaitData>(16);
     }
 }
 
@@ -1023,7 +1028,7 @@ CRenderTargetBitmapManager::AddWaitItem(
 
     // This can only fail on OOM which will fail fast anyway for an element of this size
     // so ignore checking the return code.
-    m_pDrawWaitDataList->AddTail(renderTargetElementWaitData);
+    m_pDrawWaitDataList->Add(renderTargetElementWaitData);
 
     return renderTargetElementWaitData;
 }
@@ -1066,14 +1071,9 @@ void CRenderTargetBitmapManager::IterateList(
     // exit early prior to each state being set for the first time, thus allocating all the lists.  It is rare, but it can happen.
     if (elementList != nullptr)
     {
-        auto current = elementList->GetHead();
-        while (current)
+        for (auto it = elementList->NewestBegin(); it != elementList->NewestEnd(); ++it)
         {
-            auto next = current->m_pNext;
-
-            callbackFunc(current->m_pData);
-
-            current = next;
+            callbackFunc(*it);
         }
     }
 }

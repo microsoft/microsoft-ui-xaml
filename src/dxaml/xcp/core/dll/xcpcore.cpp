@@ -4587,7 +4587,8 @@ CCoreServices::AddSurfaceImageSource(CSurfaceImageSource *pItem)
 
     if (m_pAllSurfaceImageSources == NULL)
     {
-        m_pAllSurfaceImageSources = new CXcpList<CSurfaceImageSource>();
+        // Reserve based on values seen in perf runs.
+        m_pAllSurfaceImageSources = new CXcpList<CSurfaceImageSource>(6);
     }
     IFC_RETURN(m_pAllSurfaceImageSources->Add(pItem));
 
@@ -4624,7 +4625,8 @@ CCoreServices::AddVirtualSurfaceImageSource(CVirtualSurfaceImageSource *pItem)
 
     if (m_pAllVirtualSurfaceImageSources == NULL)
     {
-        m_pAllVirtualSurfaceImageSources = new CXcpList<CVirtualSurfaceImageSource>();
+        // Reserve based on values seen in perf runs.
+        m_pAllVirtualSurfaceImageSources = new CXcpList<CVirtualSurfaceImageSource>(6);
     }
     IFC_RETURN(m_pAllVirtualSurfaceImageSources->Add(pItem));
 
@@ -4658,8 +4660,6 @@ CCoreServices::VirtualSurfaceImageSourcePerFrameWork(
     _In_ const XRECTF_RB *pWindowBounds
     )
 {
-    CXcpList<CVirtualSurfaceImageSource>::XCPListNode *pPrevious = nullptr;
-    CXcpList<CVirtualSurfaceImageSource>::XCPListNode *pCurrent = nullptr;
     const XUINT64 maxCachedTileMemory = 1024 * 1024 * 16; // 16MB
     VirtualSurfaceImageSourceStandbyLists standbyLists;
     bool wantAdditionalFrame = false;
@@ -4673,10 +4673,10 @@ CCoreServices::VirtualSurfaceImageSourcePerFrameWork(
     if (m_pAllVirtualSurfaceImageSources != NULL)
     {
         // Do per-frame processing
-        pCurrent = m_pAllVirtualSurfaceImageSources->GetHead();
-
-        while (pCurrent)
+        CVirtualSurfaceImageSource* pPrevious = nullptr;
+        for (auto it = m_pAllVirtualSurfaceImageSources->NewestBegin(); it != m_pAllVirtualSurfaceImageSources->NewestEnd(); ++it)
         {
+            CVirtualSurfaceImageSource* pVSIS = *it;
             bool thisSurfaceWantsAdditionalFrame = false;
 
             // Perf optimization:
@@ -4687,11 +4687,10 @@ CCoreServices::VirtualSurfaceImageSourcePerFrameWork(
             // roughly sibling order, otherwise the simple common ancestor search may not find the common ancestor.
             if (pPrevious != nullptr)
             {
-                IFC_RETURN(CVirtualSurfaceImageSource::CacheCommonAncestorVisibleRect(pPrevious->m_pData, pCurrent->m_pData, pWindowBounds));
+                IFC_RETURN(CVirtualSurfaceImageSource::CacheCommonAncestorVisibleRect(pPrevious, pVSIS, pWindowBounds));
             }
-            IFC_RETURN(pCurrent->m_pData->PreRender(pWindowBounds, &thisSurfaceWantsAdditionalFrame));
-            pPrevious = pCurrent;
-            pCurrent = pCurrent->m_pNext;
+            IFC_RETURN(pVSIS->PreRender(pWindowBounds, &thisSurfaceWantsAdditionalFrame));
+            pPrevious = pVSIS;
 
             // If any VSIS requests an additional tick, then another one will be requested
             wantAdditionalFrame |= thisSurfaceWantsAdditionalFrame;
@@ -4700,12 +4699,10 @@ CCoreServices::VirtualSurfaceImageSourcePerFrameWork(
         // Now that all callbacks have completed - put cached tiles onto the standby lists
         standbyLists.totalSize = 0;
 
-        pCurrent = m_pAllVirtualSurfaceImageSources->GetHead();
-
-        while (pCurrent)
+        for (auto it = m_pAllVirtualSurfaceImageSources->NewestBegin(); it != m_pAllVirtualSurfaceImageSources->NewestEnd(); ++it)
         {
-            IFC_RETURN(pCurrent->m_pData->UpdateStandbyLists(&standbyLists));
-            pCurrent = pCurrent->m_pNext;
+            CVirtualSurfaceImageSource* pVSIS = *it;
+            IFC_RETURN(pVSIS->UpdateStandbyLists(&standbyLists));
         }
 
         // Free tiles until the total amount of memory consumed by all non-desired tiles is under the maximum limit
@@ -4749,13 +4746,12 @@ CCoreServices::VirtualSurfaceImageSourcePerFrameWork(
         // It's not safe to trim DComp surface memory at this time - it will be deferred until the tick after Resume().
         if (!m_isSuspended)
         {
-            pCurrent = m_pAllVirtualSurfaceImageSources->GetHead();
-            while (pCurrent)
+            for (auto it = m_pAllVirtualSurfaceImageSources->NewestBegin(); it != m_pAllVirtualSurfaceImageSources->NewestEnd(); ++it)
             {
-                IFC_RETURN(pCurrent->m_pData->TrimTilesIfPossible());
-                pCurrent = pCurrent->m_pNext;
+                CVirtualSurfaceImageSource* pVSIS = *it;
+                IFC_RETURN(pVSIS->TrimTilesIfPossible());
             }
-            }
+        }
     }
 
     // Each VSIS can request an additional frame to render low-priority updates
@@ -8450,7 +8446,6 @@ CCoreServices::RaisePendingLoadedRequests()
 _Check_return_ HRESULT
 CCoreServices::CheckForLostSurfaceContent()
 {
-    CXcpList<CSurfaceImageSource>::XCPListNode *pCurrent = NULL;
     bool enqueueSurfaceContentsLostEvent = false;
 
     IFC_RETURN(m_pRenderTargetBitmapManager->CheckForLostSurfaceContent());
@@ -8459,15 +8454,14 @@ CCoreServices::CheckForLostSurfaceContent()
     if (!enqueueSurfaceContentsLostEvent &&
         m_pAllSurfaceImageSources != NULL)
     {
-        pCurrent = m_pAllSurfaceImageSources->GetHead();
-        while (pCurrent)
+        for (auto it = m_pAllSurfaceImageSources->NewestBegin(); it != m_pAllSurfaceImageSources->NewestEnd(); ++it)
         {
-            if(pCurrent->m_pData->CheckForLostHardwareResources())
+            CSurfaceImageSource* pSIS = *it;
+            if(pSIS->CheckForLostHardwareResources())
             {
                 enqueueSurfaceContentsLostEvent = TRUE;
                 break;
             }
-            pCurrent = pCurrent->m_pNext;
         }
     }
 
@@ -8495,16 +8489,12 @@ CCoreServices::CheckForLostSurfaceContent()
 void
 CCoreServices::HandleVirtualSurfaceImageSourceLostResources()
 {
-    CXcpList<CVirtualSurfaceImageSource>::XCPListNode *pCurrent = NULL;
-
     if (m_pAllVirtualSurfaceImageSources != NULL)
     {
-        pCurrent = m_pAllVirtualSurfaceImageSources->GetHead();
-
-        while (pCurrent)
+        for (auto it = m_pAllVirtualSurfaceImageSources->NewestBegin(); it != m_pAllVirtualSurfaceImageSources->NewestEnd(); ++it)
         {
-            pCurrent->m_pData->HandleLostResources();
-            pCurrent = pCurrent->m_pNext;
+            CVirtualSurfaceImageSource* pVSIS = *it;
+            pVSIS->HandleLostResources();
         }
     }
 }
@@ -8831,11 +8821,10 @@ _Check_return_ HRESULT CCoreServices::CleanupDeviceRelatedResources(_In_ bool cl
 
     if (m_pAllSurfaceImageSources != nullptr)
     {
-        CXcpList<CSurfaceImageSource>::XCPListNode *pCurrent = m_pAllSurfaceImageSources->GetHead();
-        while (pCurrent)
+        for (auto it = m_pAllSurfaceImageSources->NewestBegin(); it != m_pAllSurfaceImageSources->NewestEnd(); ++it)
         {
-            pCurrent->m_pData->CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
-            pCurrent = pCurrent->m_pNext;
+            CSurfaceImageSource* pSIS = *it;
+            pSIS->CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
         }
     }
 
@@ -8939,7 +8928,7 @@ CCoreServices::BuildDeviceRelatedResources()
     TraceRebuildGraphicsDeviceResourcesBegin();
 
     if ((m_pAllSurfaceImageSources != NULL &&
-        m_pAllSurfaceImageSources->GetHead() != NULL) ||
+        !m_pAllSurfaceImageSources->Empty()) ||
         m_pRenderTargetBitmapManager->NeedsSurfaceContentsLost())
     {
         IFC_RETURN(EnqueueSurfaceContentsLostEvent());
@@ -10301,14 +10290,14 @@ HRESULT CCoreServices::ShutdownToIdle()
     m_pPALClock.reset();
 
     // Only delete this if it's empty, that way it will show as being leaked if it isn't
-    if (m_pAllSurfaceImageSources != nullptr && m_pAllSurfaceImageSources->GetHead() == nullptr)
+    if (m_pAllSurfaceImageSources != nullptr && m_pAllSurfaceImageSources->Empty())
     {
         delete m_pAllSurfaceImageSources;
         m_pAllSurfaceImageSources = nullptr;
     }
 
     // Only delete this if it's empty, that way it will show as being leaked if it isn't
-    if (m_pAllVirtualSurfaceImageSources != nullptr && m_pAllVirtualSurfaceImageSources->GetHead() == nullptr)
+    if (m_pAllVirtualSurfaceImageSources != nullptr && m_pAllVirtualSurfaceImageSources->Empty())
     {
         delete m_pAllVirtualSurfaceImageSources;
         m_pAllVirtualSurfaceImageSources = nullptr;

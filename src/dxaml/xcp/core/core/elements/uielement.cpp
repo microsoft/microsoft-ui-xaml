@@ -2301,17 +2301,11 @@ CHitTestResults::~CHitTestResults()
     // Release all reference inside
     if ( m_cResults )
     {
-        CXcpList<CUIElement>::XCPListNode *pNode = NULL;
-
-        pNode = m_oResults.GetHead();
-        while ( pNode != NULL )
+        for (auto it = m_oResults.NewestBegin(); it != m_oResults.NewestEnd(); ++it)
         {
-            // Release current item
-            CDependencyObject* pResult = reinterpret_cast<CDependencyObject*>(pNode->m_pData);
+            CUIElement* pItem = *it;
+            CDependencyObject* pResult = reinterpret_cast<CDependencyObject*>(pItem);
             ReleaseInterface(pResult);
-
-            // Move to the next element
-            pNode = pNode->m_pNext;
         }
     }
 
@@ -2329,7 +2323,7 @@ CHitTestResults::First()
 {
     if (m_cResults)
     {
-        CUIElement *pFirst = m_oResults.GetHead()->m_pData;
+        CUIElement *pFirst = m_oResults.Back();
         AddRefInterface(pFirst);
         return pFirst;
     }
@@ -2370,24 +2364,20 @@ CHitTestResults::GetAnswer(
     HRESULT hr = S_OK;
 
     XUINT32 nResults = m_cResults;
-    CXcpList<CUIElement>::XCPListNode *pNode = NULL;
     CUIElement **ppResults = NULL;
 
     if ( m_cResults )
     {
         ppResults = new CUIElement *[ m_cResults ];
 
-        pNode = m_oResults.GetHead();
-        while ( pNode != NULL )
+        for (auto it = m_oResults.NewestBegin(); it != m_oResults.NewestEnd(); ++it)
         {
+            CUIElement* pItem = *it;
             // Store the result in the results array - the list
             // has them in reverse order
             nResults--;
-            ppResults[nResults] = pNode->m_pData;
+            ppResults[nResults] = pItem;
             AddRefInterface(ppResults[nResults]);
-
-            // Move to the next element
-            pNode = pNode->m_pNext;
         }
     }
 

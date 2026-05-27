@@ -80,5 +80,6 @@ private:
     CXcpDispatcher *m_pDispatcher;
 
     // Message list
-    CXcpList<CPendingMessage> m_messageList;    
+    // Reserve based on values seen in perf runs.
+    CXcpList<CPendingMessage> m_messageList{70};
 };

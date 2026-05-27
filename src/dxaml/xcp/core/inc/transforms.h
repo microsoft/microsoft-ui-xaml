@@ -386,7 +386,10 @@ private:
 };
 
 template<>
-void CXcpList<ITransformer>::Clean(XUINT8 bDoDelete);
+inline void CXcpList<ITransformer>::DeleteItem(ITransformer* pData)
+{
+    ReleaseInterface(pData);
+}
 
 //------------------------------------------------------------------------
 //
@@ -423,14 +426,13 @@ public:
 
     bool IsPure2D() override
     {
-        CXcpList<ITransformer>::XCPListNode *pCurrent = m_oList.GetHead();
-        while (pCurrent != NULL)
+        for (auto it = m_oList.NewestBegin(); it != m_oList.NewestEnd(); ++it)
         {
-            if (!pCurrent->m_pData->IsPure2D())
+            ITransformer* pCurrent = *it;
+            if (!pCurrent->IsPure2D())
             {
                 return false;
             }
-            pCurrent = pCurrent->m_pNext;
         }
         return true;
     }
@@ -441,19 +443,18 @@ public:
         {
             return CMILMatrix(TRUE);
         }
-        return m_oList.GetHead() ?
-            m_oList.GetHead()->m_pData->Get2DMatrix()
+        return !m_oList.Empty() ?
+            (*m_oList.NewestBegin())->Get2DMatrix()
             : CTransformer::Get2DMatrix() ;
     }
 
     CMILMatrix Get2DMatrixIgnore3D() override
     {
         CMILMatrix matrix(TRUE);
-        for ( CXcpList<ITransformer>::XCPListNode *p = m_oList.GetHead();
-              p != nullptr;
-              p = p->m_pNext )
+        for (auto it = m_oList.NewestBegin(); it != m_oList.NewestEnd(); ++it)
         {
-            matrix.Append(p->m_pData->Get2DMatrixIgnore3D());
+            ITransformer* p = *it;
+            matrix.Append(p->Get2DMatrixIgnore3D());
         }
         return matrix;
     }
@@ -461,7 +462,8 @@ public:
     _Check_return_ HRESULT Add(_In_ ITransformer* pChild);
 
 private:
-    CXcpList<ITransformer> m_oList;
+    // Reserve based on values seen in perf runs.
+    CXcpList<ITransformer> m_oList{2};
 };
 
 //------------------------------------------------------------------------

@@ -230,7 +230,6 @@ _Check_return_ HRESULT CPendingMessages::FindMessage(
     _Out_ CPendingMessage **ppPendingMessage)
 {
     HRESULT hr = S_OK;
-    CXcpList<CPendingMessage>::XCPListNode *pNode;
 
     *ppPendingMessage = NULL;
 
@@ -238,13 +237,12 @@ _Check_return_ HRESULT CPendingMessages::FindMessage(
     {
         auto Lock = m_CS.lock();
 
-        pNode = m_messageList.GetHead();
-        IFCCHECK_NOTRACE(pNode);
+        IFCCHECK_NOTRACE(!m_messageList.Empty());
 
         // Search for message
-        while (pNode != NULL)
+        for (auto it = m_messageList.NewestBegin(); it != m_messageList.NewestEnd(); ++it)
         {
-            CPendingMessage * pPendingMessage = pNode->m_pData;
+            CPendingMessage* pPendingMessage = *it;
             ASSERT(pPendingMessage);
 
             if ((pPendingMessage->m_uMsg == uMsg)
@@ -255,8 +253,6 @@ _Check_return_ HRESULT CPendingMessages::FindMessage(
                 *ppPendingMessage = pPendingMessage;
                 goto Cleanup;
             }
-
-            pNode = pNode->m_pNext;
         }
     }
 

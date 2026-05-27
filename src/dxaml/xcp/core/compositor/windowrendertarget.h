@@ -114,6 +114,7 @@ private:
     CCoreServices *m_pCoreNoRef;
 
     // List of listeners that will be called back when the window render target
-    // graphics device is created, re-created or released...
-    CXcpList<IPALGraphicsDeviceChangeListener> m_graphicsDeviceChangeListenersNoRef;
+    // graphics device is created, re-created or released.  Reserve based on
+    // values seen in perf runs.
+    CXcpList<IPALGraphicsDeviceChangeListener> m_graphicsDeviceChangeListenersNoRef{6};
 };

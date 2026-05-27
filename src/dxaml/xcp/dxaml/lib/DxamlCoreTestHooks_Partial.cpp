@@ -2010,8 +2010,8 @@ IFACEMETHODIMP DxamlCoreTestHooks::GetAllContentIslands(_In_ xaml_hosting::IDesk
     CPopupRoot* popupRoot = visualTreeNoRef->GetPopupRoot();
     if (popupRoot)
     {
-        // Note: CPopupRoot::m_pOpenPopups is a CXcpList, and new entries get added at the head, so this is in reverse
-        // opened order - the most recently opened popup is first.
+        // Note: CPopupRoot::m_pOpenPopups is a CXcpList with RecentFirst order, so iterating
+        // returns popups in reverse opened order - the most recently opened popup is first.
         std::vector<CPopup*> openPopups = popupRoot->GetOpenPopupList(true /* includeUnloadingPopups */);
 
         for (CPopup* popup : openPopups)

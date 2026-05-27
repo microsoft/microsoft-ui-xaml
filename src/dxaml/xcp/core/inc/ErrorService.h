@@ -129,10 +129,16 @@ private :
 };
 
 template<>
-void CXcpList<IError>::Clean(XUINT8 bDoDelete);
+inline void CXcpList<IError>::DeleteItem(IError* pData)
+{
+    ReleaseInterface(pData);
+}
 
 template<>
-void CXcpList<IErrorServiceListener>::Clean(XUINT8 bDoDelete);
+inline void CXcpList<IErrorServiceListener>::DeleteItem(IErrorServiceListener* pData)
+{
+    ReleaseInterface(pData);
+}
 
 //------------------------------------------------------------------------
 //

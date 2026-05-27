@@ -1963,42 +1963,28 @@ HWWalk::PopupRootRenderChildren(
     _In_ const HWRenderParams &rp
     )
 {
-    HRESULT hr = S_OK;
-
-    CXcpList<CPopup> *pChildren = NULL;
-
     if (pPopupRoot->m_pOpenPopups)
     {
         // The popup root's CDependencyObject::m_pChildren are a list of popup contents. We want to render the
         // popups themselves.
 
-        pChildren = new CXcpList<CPopup>;
-
-        // Get the FIFO ordered list
+        // Iterate in FIFO (oldest-first) order.
         // This includes unloading popups, which get rendered too.
-        pPopupRoot->m_pOpenPopups->GetReverse(pChildren);
-
-        for (CXcpList<CPopup>::XCPListNode *pNode = pChildren->GetHead(); pNode != NULL; pNode = pNode->m_pNext)
+        for (auto it = pPopupRoot->m_pOpenPopups->OldestBegin(); it != pPopupRoot->m_pOpenPopups->OldestEnd(); ++it)
         {
-            if (pNode->m_pData->m_overlayElement)
+            CPopup* popup = *it;
+            if (popup->m_overlayElement)
             {
-                ASSERT(!pNode->m_pData->m_overlayElement->IsRenderWalkRoot());
-                IFC(Render(pNode->m_pData->m_overlayElement, rp, FALSE /* redirectedDraw */));
+                ASSERT(!popup->m_overlayElement->IsRenderWalkRoot());
+                IFC_RETURN(Render(popup->m_overlayElement, rp, FALSE /* redirectedDraw */));
             }
 
-            ASSERT(!pNode->m_pData->IsRenderWalkRoot());
-            IFC(Render(pNode->m_pData, rp, TRUE /* redirectedDraw */));
+            ASSERT(!popup->IsRenderWalkRoot());
+            IFC_RETURN(Render(popup, rp, TRUE /* redirectedDraw */));
         }
     }
 
-Cleanup:
-    if (pChildren)
-    {
-        pChildren->Clean(FALSE);
-        SAFE_DELETE(pChildren);
-    }
-
-    RRETURN(hr);
+    return S_OK;
 }
 
 // ------------------------------------------------------------------------

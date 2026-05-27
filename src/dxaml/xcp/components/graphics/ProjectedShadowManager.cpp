@@ -796,9 +796,9 @@ void ThemeShadowGlobalScene::UpdateReceiversAndFilterCasters(_In_ CCoreServices*
             if (popupRoot->m_pOpenPopups)
             {
                 float minPopupDepth = std::numeric_limits<float>::max();
-                for (CXcpList<CPopup>::XCPListNode *pNode = popupRoot->m_pOpenPopups->GetHead(); pNode != NULL; pNode = pNode->m_pNext)
+                for (auto it = popupRoot->m_pOpenPopups->NewestBegin(); it != popupRoot->m_pOpenPopups->NewestEnd(); ++it)
                 {
-                    CPopup* openPopup = pNode->m_pData;
+                    CPopup* openPopup = *it;
                     CUIElement* popupChild = openPopup->m_pChild;
 
                     if (popupChild &&              // We can't cast/receive on Popup without a child since its visual has no size
@@ -810,10 +810,10 @@ void ThemeShadowGlobalScene::UpdateReceiversAndFilterCasters(_In_ CCoreServices*
                         info.ContainingPopup = openPopup;
                         info.Depth = EstimateShadowDepth(openPopup);
 
-                        auto it = m_popupCasters.find(xref::get_weakref(openPopup));
-                        if (it != m_popupCasters.end())
+                        auto it1 = m_popupCasters.find(xref::get_weakref(openPopup));
+                        if (it1 != m_popupCasters.end())
                         {
-                            CUIElement* casterElement = it->second.lock_noref();
+                            CUIElement* casterElement = it1->second.lock_noref();
                             info.casterElement = casterElement;
                             info.isCaster = true;
 
@@ -822,7 +822,7 @@ void ThemeShadowGlobalScene::UpdateReceiversAndFilterCasters(_In_ CCoreServices*
                             // In case of a deep caster, this avoids an abrupt change in any shadow it is receiving when it is filtered out.
                             info.isFilteredCaster = casterElement && FindFilteredShadowCasterPairByElement(casterElement) != nullptr;
 
-                            popupReceiverVisual = it->second.lock_noref()->GetShadowVisualNoRef();
+                            popupReceiverVisual = it1->second.lock_noref()->GetShadowVisualNoRef();
                             //Currently comment out this Assertion to reduce test crash,
                             //Bug 19327369 created to track this problem.
                             //ASSERT(popupReceiverVisual);
