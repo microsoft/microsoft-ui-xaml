@@ -28,8 +28,6 @@ namespace DirectUI
             }
         };
 
-        static std::default_random_engine m_generator;
-
         public:
             _Check_return_ HRESULT CreateTimelines(_In_ BOOLEAN bOnlyGenerateSteadyState, _In_ wfc::IVector<xaml_animation::Timeline*>* pTimelineCollection) override;
     };

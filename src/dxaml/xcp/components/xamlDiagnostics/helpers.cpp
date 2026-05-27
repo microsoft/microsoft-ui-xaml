@@ -17,7 +17,6 @@
 using namespace RuntimeFeatureBehavior;
 
 #pragma region XamlDiagnosticsHelpers
-wrl_wrappers::HString XamlDiagnosticsHelpers::_fallbackString;
 
 #pragma region Environment Helpers
 
@@ -62,12 +61,13 @@ XamlDiagnosticsHelpers::GetEnv(
 const wrl_wrappers::HString&
 XamlDiagnosticsHelpers::GetFallbackString()
 {
-    if (XamlDiagnosticsHelpers::_fallbackString.IsEmpty())
+    static wrl_wrappers::HString fallbackString;
+    if (fallbackString.IsEmpty())
     {
-        XamlDiagnosticsHelpers::_fallbackString.Set(L"");
+        fallbackString.Set(L"");
     }
 
-    return XamlDiagnosticsHelpers::_fallbackString;
+    return fallbackString;
 }
 
 // Try to convert the given color to a known color name.  Returns nullptr

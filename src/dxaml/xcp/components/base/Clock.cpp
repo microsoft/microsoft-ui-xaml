@@ -7,28 +7,19 @@
 
 namespace Jupiter
 {
-    // Until we have magic statics, we'll do the slightly ugly thing of
-    // initializing this in a member variable's dynamic initializer
-    const long long HighResolutionClock::m_frequency = []
-    {
-        // QueryPerformanceFrequency is guaranteed to succeed on WinXP and later
-        // So, we don't need to check for failure
-        static_assert(NTDDI_VERSION >= NTDDI_WINXP, "Can't build for pre-XP");
-        LARGE_INTEGER li;
-        ::QueryPerformanceFrequency(&li);
-        return li.QuadPart;
-    }();
-
     long long HighResolutionClock::GetFrequency()
     {
-        return m_frequency;
+        static const long long frequency = []
+        {
+            LARGE_INTEGER li;
+            ::QueryPerformanceFrequency(&li);
+            return li.QuadPart;
+        }();
+        return frequency;
     }
 
     long long HighResolutionClock::GetCounter()
     {
-        // QueryPerformanceFrequency is guaranteed to succeed on WinXP and later
-        // So, we don't need to check for failure
-        static_assert(NTDDI_VERSION >= NTDDI_WINXP, "Can't build for pre-XP");
         LARGE_INTEGER li;
         ::QueryPerformanceCounter(&li);
         return li.QuadPart;

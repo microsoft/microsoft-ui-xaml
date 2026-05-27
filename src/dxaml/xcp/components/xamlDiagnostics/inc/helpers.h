@@ -11,9 +11,6 @@ class xstring_ptr;
 
 class XamlDiagnosticsHelpers
 {
-private:
-    static wrl_wrappers::HString _fallbackString;
-
 public:
 
     #pragma region Environment Helpers
