@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Project Sdk="Microsoft.Build.NoTargets" DefaultTargets="CopyFiles">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- This is the version of Microsoft.WindowsAppSDK.WinUI on nuget.org which should be downloaded and files copied from -->
-    <PublicWinUIPackageVersion>1.8.250906003</PublicWinUIPackageVersion>
+    <PublicWinUIPackageVersion>2.0.12</PublicWinUIPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +25,13 @@
     <Files Include="$(PublicWinUIPackagePath)\**\Microsoft.UI.Xaml.Markup.Compiler*.targets" />
     <Files Include="$(PublicWinUIPackagePath)\**\Microsoft.WinUI.NET.Markup.Compiler.targets" />
     <Files Include="$(PublicWinUIPackagePath)\**\net472\*" />
+    <!--
+      Currently-published Microsoft.WindowsAppSDK.WinUI packages ship the XamlCompiler under tools\net6.0,
+      while packages produced after the net8.0 migration in this repo will ship it under tools\net8.0.
+      Include both so this csproj keeps working as the public package transitions to net8.0.
+    -->
     <Files Include="$(PublicWinUIPackagePath)\**\net6.0\*" />
+    <Files Include="$(PublicWinUIPackagePath)\**\net8.0\*" />
   </ItemGroup>
 
   <Target Name="CopyFiles">

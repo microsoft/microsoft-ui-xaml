@@ -59,9 +59,16 @@
   </Target>
 
   <ItemGroup>
-    <BinplaceItem Include="$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName)\$(MicrosoftCsWinRTPackageVersion)\lib\net6.0\winrt.runtime.dll">
+    <BinplaceItem Include="$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName)\$(MicrosoftCsWinRTPackageVersion)\lib\$(_DotNetMoniker)\winrt.runtime.dll">
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>
+    <!--
+      Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage publishes
+      Microsoft.InteractiveExperiences.Projection.dll only under
+      lib\net6.0-windows<CurrentLiftedIXPTargetPlatformVersion>\ - there is no net8.0-windows variant yet.
+      The .NET 6 projection assembly is forward-compatible with .NET 8 consumers, so we continue to
+      reference the net6.0-windows folder here. Update once the IXP transport package ships a net8.0-windows lib.
+    -->
     <BinplaceItem Include="$(NugetPackageDirectory)\$(LiftedIXPTransportPackageName)\$(IxpTransportPackageVersion)\lib\net6.0-windows$(CurrentLiftedIXPTargetPlatformVersion)\Microsoft.InteractiveExperiences.Projection.dll">
       <Destination>$(TestBinplaceDestinationPath)</Destination>
     </BinplaceItem>

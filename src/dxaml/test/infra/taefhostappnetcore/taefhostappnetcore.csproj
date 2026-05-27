@@ -20,6 +20,12 @@
     <BinplaceItem Include="$(MSBuildThisFileDirectory)WinRT.Host.runtimeconfig.json" /> 
     <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\WinRT.Host.dll" /> 
     <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\hosting\$(WindowsSDKArch)\native\en-us\WinRT.Host.dll.mui" />
+    <!--
+      WinRT.Host.Shim.dll is only published under lib\net6.0 in Microsoft.Windows.CsWinRT (2.1.1 and 2.2.0
+      both ship lib\net6.0\WinRT.Host.Shim.dll; the lib\net8.0 folder only contains WinRT.Runtime.dll).
+      The .NET 6 assembly is forward-compatible with .NET 8 hosts, so it is the right binary to binplace
+      until CsWinRT publishes a net8.0 variant of WinRT.Host.Shim.dll. Do not change to net8.0.
+    -->
     <BinplaceItem Include="$(NuGetPackageRoot)\Microsoft.Windows.CsWinRT\$(MicrosoftCsWinRTPackageVersion)\lib\net6.0\WinRT.Host.Shim.dll" />
   </ItemGroup>
 

@@ -21,7 +21,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <UseVCMetaManaged Condition="'$(UseVCMetaManaged)' == ''">true</UseVCMetaManaged>
         <DisableXbfGeneration Condition="'$(DisableXbfGeneration)' == '' AND '$(TargetPlatformVersion)' == '8.0'">true</DisableXbfGeneration>
         <DisableXbfGeneration Condition="'$(DisableXbfGeneration)' == ''">false</DisableXbfGeneration>
-        <_MuxPackageToolsFolder Condition=" '$(MSbuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\tools\net6.0\</_MuxPackageToolsFolder>
+        <_MuxPackageToolsFolder Condition=" '$(MSbuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)..\tools\net8.0\</_MuxPackageToolsFolder>
         <_MuxPackageToolsFolder Condition=" '$(_MuxPackageToolsFolder)' == '' ">$(MSBuildThisFileDirectory)..\tools\net472\</_MuxPackageToolsFolder>
         <GenXbfPath Condition="$(GenXbfPath) == ''">$(_MuxPackageToolsFolder)..\</GenXbfPath>
         <UseXamlCompilerExecutable Condition=" '$(MSbuildRuntimeType)' == 'Core' ">true</UseXamlCompilerExecutable>

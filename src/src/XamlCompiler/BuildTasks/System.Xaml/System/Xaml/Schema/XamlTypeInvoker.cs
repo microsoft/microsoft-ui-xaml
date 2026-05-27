@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Security;
 using System.Security.Permissions;
@@ -360,7 +361,11 @@ namespace System.Xaml.Schema
 #endif
             private static object CallCtorDelegate(XamlTypeInvoker type)
             {
+#if NET8_0_OR_GREATER
+                object inst = RuntimeHelpers.GetUninitializedObject(type._xamlType.UnderlyingType);
+#else
                 object inst = FormatterServices.GetUninitializedObject(type._xamlType.UnderlyingType);
+#endif
                 InvokeDelegate(type._constructorDelegate, inst);
                 return inst;
             }
