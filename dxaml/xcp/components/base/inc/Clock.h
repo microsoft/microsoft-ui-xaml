@@ -40,10 +40,6 @@ namespace Jupiter
     private:
         static long long GetCounter();
         static long long GetFrequency();
-
-        // Until we have magic statics, we'll do the slightly ugly thing of
-        // initializing this in a member variable's dynamic initializer
-        static const long long m_frequency;
     };
 }
 

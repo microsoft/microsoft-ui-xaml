@@ -5,7 +5,6 @@
 
 extern const xstring_ptr c_strUsing;
 extern const xstring_ptr c_strUsingWindowsFoundation;
-extern const xstring_ptr c_strXmlnsUri;
 extern const xstring_ptr c_strXmlUri;
 extern const xstring_ptr c_strXmlPrefix;
 extern const xstring_ptr c_strMarkupUri;

@@ -35,7 +35,7 @@
 using namespace DirectUI;
 using namespace DirectUISynonyms;
 
-std::default_random_engine DropTargetItemThemeAnimation::m_generator;
+
 
 _Check_return_ HRESULT ThemeAnimation_GetStoryboardTargetName(
         _In_ Timeline *pThemeAnimation,
