@@ -1,24 +1,66 @@
 # PR build validation for WinUI (OSS).
 #
-# This workflow compiles the product (and, for chk flavors, the test code) for
-# the full PR matrix using the same scripts that local developers use
-# (`src/init.cmd` + `src/Build.cmd`). It intentionally does *not* run tests,
-# build samples, run ESRP signing, APIScan, PREfast, BinSkim, or PoliCheck -
-# those still happen in the internal Azure DevOps pipeline.
+# This workflow mirrors the internal ADO PR pipeline's build sequence
+# (`build/AzurePipelinesTemplates/WinUI-BuildMUXProject-Steps.yml` in the
+# `microsoft-ui-xaml-lift` ADO repo) as closely as is feasible from a public
+# GitHub-hosted runner. The build invokes MSBuild directly per-solution
+# (instead of routing through `src/Build.cmd`) so that:
 #
-# Matrix (6 jobs, run in parallel on windows-2022):
-#   x86chk   prodtest    \
-#   x86fre   product      |
-#   x64chk   prodtest      > Mirrors the ADO `PR` build matrix in
-#   x64fre   product      |  `build/WinUI-BuildWinUI-Stage.yml` of the
-#   arm64chk prodtest     |  microsoft-ui-xaml-lift ADO repo. ARM64 is
-#   arm64fre product     /   cross-compiled from x64 hosts (same as ADO).
+#   - We pass `/p:Platform=<x86|x64|arm64>` explicitly (no Win32 alias), which
+#     matches MUXControls.sln's solution configurations and avoids the
+#     `MSB4126: invalid solution configuration "Debug|Win32"` failure on x86.
+#   - We avoid `src/Build.cmd`'s known `ERRORLEVEL`-clobber bug in
+#     `:buildSolution`, which can silently turn a failed msbuild into a
+#     "BUILD SUCCEEDED" exit-0.
+#   - We avoid Build.cmd's auto-enable of PGO on fre flavors (which requires
+#     an internal NuGet feed and `git merge-base origin/main HEAD` to work on
+#     a non-shallow clone). ADO disables PGO per-leg via `shouldPgo:false`;
+#     here we just never enable it.
 #
-# Omitted vs ADO PR: arm64ec (toolchain availability on windows-2022 hosted
-# runners is unverified). All test runs, scenario tests, static-analysis
-# stages, and Helix-distributed UI tests remain in the internal ADO pipeline -
-# they depend on internal feeds, custom Win10/Win11 client SKUs, Helix queues,
-# and secrets that public GitHub-hosted runners cannot provide. See
+# Build sequence per leg (mirrors ADO `WinUI-BuildMUXProject-Steps.yml`):
+#   1. `init.cmd /pipeline <flavor> /nopgo` - sets env vars (Platform,
+#      Configuration, _BuildArch, BuildArtifactsDir, etc.) and prepends the
+#      VS amd64 MSBuild to PATH via DevCmd.cmd. `/pipeline` mode persists
+#      env vars within the same cmd shell (via `:SetEnviromentVariable`).
+#   2. `msbuild src/XamlCompilerPrerequisites.sln` - build XAML compiler
+#      prerequisites first so subsequent solutions can consume the compiler
+#      DLLs without MSBuild contention.
+#   3. `msbuild src/dxaml/Microsoft.UI.Xaml.sln` - core product
+#      (Microsoft.UI.Xaml.Controls.dll etc.).
+#   4. `src/pack.component.cmd /version 3.0.0-dev` - public-OSS substitute for
+#      ADO's `scripts/buildMockWinAppSdkPackage.ps1` (which is not in OSS).
+#      `pack.component.cmd` calls `build/nuspecs/build-nupkg.ps1` with
+#      `-UseDependencyOverrides` to produce the mock Microsoft.WindowsAppSDK
+#      and Microsoft.WindowsAppSDK.WinUI nupkgs that MUXControls.sln consumes.
+#   5. `msbuild src/controls/MUXControls.sln` - controls + test code.
+#
+# Matrix (6 jobs, parallel on windows-2022). ADO's PR matrix is:
+#   Debug_x86, Release_x86, Release_x64, Release_arm64, Release_arm64ec
+# We expand to 6 legs (add Debug_x64 and Debug_arm64) for broader public-PR
+# coverage. The arm64ec leg is intentionally omitted - toolchain availability
+# on GitHub-hosted windows-2022 runners is unverified, and arm64ec is built
+# only for fre flavors anyway. We can add it once validated on a hosted run.
+#
+# ADO steps intentionally NOT mirrored (all internal-only or test-only):
+#   - WinUI-Install-MSBuildTools.yml (installs VS BuildTools from an internal
+#     feed into `.buildtools`; on GH we use the runner's preinstalled VS).
+#   - WinUI-InstallDependencies-Steps.yml (private IXP transport + private
+#     CsWinRT NuGet restore from internal feeds).
+#   - GenerateVersionInfo.ps1 (under `build/PipelineScripts/`, not in OSS).
+#     The WindowsAppSDK-ProductInfo.h header already exists with default-dev
+#     values - sufficient for a dev/PR build.
+#   - Microsoft.Telemetry.Inbox.Native download (MUXFinalRelease only).
+#   - Native compiler override install (microsoft.pkgs.visualstudio.com).
+#   - InjectAzureMapsToken.ps1 (internal secret; only affects MapControl test).
+#   - SDLNativeRules / PREfast / APIScan / BinSkim / PoliCheck (run in the
+#     internal ADO Compliance stage).
+#   - ESRP code-signing, symbol publishing, scenario apps, Helix-distributed
+#     test runs - all internal-only and out of scope for PR validation.
+#
+# All test runs, static-analysis stages, signed builds, and Helix-distributed
+# UI tests remain in the internal ADO pipeline - they depend on internal
+# feeds, custom Win10/Win11 client SKUs, Helix queues, and secrets that
+# public GitHub-hosted runners cannot provide. See
 # `docs/external/contribution_workflow.md` for the legacy ADO bridge check
 # (`WinUI-Public-MUX-PR`, triggered via `/azp run`).
 
@@ -44,12 +86,7 @@ on:
       - 'CODE_OF_CONDUCT.md'
       - 'CONTRIBUTING.md'
       - 'CONTRIBUTING_feedback_and_requests.md'
-  workflow_dispatch:
-    inputs:
-      target:
-        description: 'Build.cmd target override (e.g. product, prodtest, mux, samples, all). Leave empty to use the default per flavor (prodtest for chk, product for fre).'
-        required: false
-        default: ''
+  workflow_dispatch: {}
 
 # Cancel superseded runs on the same PR / branch to save CI minutes.
 concurrency:
@@ -72,27 +109,42 @@ jobs:
       matrix:
         include:
           - flavor: x86chk
-            target: prodtest
+            platform: x86
+            configuration: Debug
           - flavor: x86fre
-            target: product
+            platform: x86
+            configuration: Release
           - flavor: x64chk
-            target: prodtest
+            platform: x64
+            configuration: Debug
           - flavor: x64fre
-            target: product
+            platform: x64
+            configuration: Release
           - flavor: arm64chk
-            target: prodtest
+            platform: arm64
+            configuration: Debug
           - flavor: arm64fre
-            target: product
+            platform: arm64
+            configuration: Release
           # NOTE: arm64ec is in the ADO `PR` matrix but is intentionally
           # excluded here for now. ARM64EC cross-tool install state on
           # windows-2022 hosted runners is unverified; running it on every PR
           # risks long elevation hangs in init.cmd. Add a `- flavor: arm64ecfre`
           # entry once it has been validated on a hosted runner.
     env:
-      # Build.cmd target: matrix default, optionally overridden by a manual
-      # workflow_dispatch input.
+      # The flavor token passed to init.cmd (e.g. "x86chk", "arm64fre").
       WINUI_INIT_FLAVOR: ${{ matrix.flavor }}
-      WINUI_BUILD_TARGET: ${{ github.event.inputs.target != '' && github.event.inputs.target || matrix.target }}
+      # Platform/Configuration passed to msbuild via /p:Platform=... /p:Configuration=...
+      # NOTE: we deliberately use "x86" (not "Win32") because MUXControls.sln
+      # only declares Debug|x86 / Release|x86 - it has no Debug|Win32 alias.
+      # This matches ADO's `buildPlatform: 'x86'` matrix value.
+      WINUI_BUILD_PLATFORM: ${{ matrix.platform }}
+      WINUI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
+      # `pack.component.cmd` requires BuildPlatform + Configuration env vars.
+      # init.cmd sets Configuration (Debug/Release), but under `/pipeline`
+      # it leaves BuildPlatform alone (assumes ADO matrix set it). So we set
+      # it here so pack.component.cmd works the same way it does in ADO.
+      BuildPlatform: ${{ matrix.platform }}
       # Speed up NuGet on hosted runners: avoid http-cache misses across steps.
       NUGET_PACKAGES: ${{ github.workspace }}\src\packages
       # Suppress PowerShell progress UI (very noisy in Actions logs).
@@ -100,8 +152,8 @@ jobs:
       DOTNET_NOLOGO: '1'
       # Force MSBuild to use only 2 parallel CL.exe instances. The hosted
       # runner only has 2 vCPUs and the compiler is RAM-hungry; default /m:4
-      # in Build.cmd has been observed to hit C1076 (compiler heap exhausted)
-      # on similar SKUs. See src/GettingStarted.md "Build failures".
+      # has been observed to hit C1076 (compiler heap exhausted) on similar
+      # SKUs. See src/GettingStarted.md "Build failures".
       CL: '/MP2'
 
     steps:
@@ -158,41 +210,45 @@ jobs:
             Write-Host "LongPathsEnabled already 1."
           }
 
-      # init.cmd + build.cmd must run in the same shell so the env vars set by
-      # init persist into build. We invoke both inside a single `cmd /c "..."`
-      # process, then tee the combined output through pwsh so we can post-scan
-      # for silent failures (see "FAIL-FAST SCAN" note below).
+      # The build mirrors ADO's `WinUI-BuildMUXProject-Steps.yml` sequence:
+      # init.cmd /pipeline (env setup) -> msbuild XamlCompilerPrerequisites.sln
+      # -> msbuild dxaml/Microsoft.UI.Xaml.sln -> pack.component.cmd
+      # -> msbuild controls/MUXControls.sln. All five commands run in a
+      # single cmd shell chained with `&&` so:
+      #   1. Env vars set by init.cmd's `:SetEnviromentVariable` (Platform,
+      #      Configuration, _BuildArch, BuildArtifactsDir, etc.) persist
+      #      across the msbuild calls (they all execute in the same cmd
+      #      process, so the inherited environment carries forward).
+      #   2. Any failure short-circuits the chain (cmd's `&&` propagates
+      #      the non-zero ERRORLEVEL).
+      # We don't use `src/Build.cmd` here for two reasons:
+      #   (a) ADO doesn't either - ADO invokes msbuild per-solution via
+      #       the WinUI-BuildProject-Steps.yml template.
+      #   (b) Build.cmd's `:buildSolution` subroutine has an
+      #       ERRORLEVEL-clobber bug (an `echo ERROR: ...` between a failed
+      #       msbuild and `goto:eof` resets %ERRORLEVEL% to 0, so the
+      #       caller's `if ERRORLEVEL 1 goto:showDurationAndExit` never
+      #       fires and the script keeps walking the solution list and
+      #       prints "BUILD SUCCEEDED."). Calling msbuild directly avoids
+      #       that bug entirely because msbuild itself has a reliable
+      #       non-zero exit code on failure.
       #
       # `/nopgo` disables profile-guided optimization. init.cmd auto-enables
-      # PGOBuildMode=Optimize for every non-ARM64EC `fre` flavor (see init.cmd
-      # ~line 222), which causes the build to invoke the RestorePGONuget task
-      # in Microsoft.Internal.PGO-Helpers.Cpp. That task runs
-      # `git merge-base origin/main HEAD` (scripts/version.ps1) which fails on
-      # a shallow `actions/checkout@v4` clone with
+      # PGOBuildMode=Optimize for every non-ARM64EC `fre` flavor (see
+      # init.cmd ~line 222), which imports
+      # `Microsoft.Internal.PGO-Helpers.Cpp` and runs
+      # `git merge-base origin/main HEAD` (scripts/version.ps1). That fails
+      # on a shallow `actions/checkout@v4` clone with
       #   fatal: Not a valid object name origin/main
-      # and also requires an internal PGO NuGet feed. We do not need optimized
-      # binaries for PR validation, so we disable PGO outright; this mirrors
-      # ADO's `shouldPgo:false` slices in WinUI-BuildWinUI-Stage.yml and
-      # avoids a multi-minute git unshallow on every fre PR run.
+      # and also requires an internal PGO NuGet feed. We do not need
+      # optimized binaries for PR validation, so we disable PGO outright;
+      # this mirrors ADO's `shouldPgo:false` slices in
+      # WinUI-BuildWinUI-Stage.yml.
       #
-      # FAIL-FAST SCAN: src/Build.cmd has a silent-failure bug in its
-      # `:buildSolution` subroutine. When msbuild fails it prints
-      #   ERROR: buildSolution for <solution> FAILED.
-      # but the very next line is `goto:eof`, and the `echo ERROR:` between
-      # them resets %ERRORLEVEL% to 0. The caller's
-      #   if ERRORLEVEL 1 goto:showDurationAndExit
-      # therefore never fires, the script keeps walking the solution list,
-      # eventually prints "BUILD SUCCEEDED." and exits 0. To defeat that, we
-      # tee the combined init+build stdout/stderr into a log file and fail
-      # the step if any line starts with "ERROR:". This catches both the
-      # swallowed buildSolution failures and any other ERROR: lines emitted
-      # by init.cmd or build.cmd. Out of scope to fix Build.cmd here.
-      #
-      # SECURITY: Build.cmd unconditionally writes MSBuild binary logs
-      # (.binlog) via /bl: and we upload them as a workflow artifact. MSBuild
-      # binlogs capture *all* process environment variables by default -
-      # including the GitHub Actions runtime secrets (ACTIONS_RUNTIME_TOKEN
-      # etc.) that the runner injects into every step. In a public repo,
+      # SECURITY: MSBuild binary logs (.binlog) we upload as a workflow
+      # artifact capture *all* process environment variables by default -
+      # including GitHub Actions runtime secrets (ACTIONS_RUNTIME_TOKEN
+      # etc.) that the runner injects into every step. In a public repo
       # artifacts are publicly downloadable, so anyone could extract those
       # tokens within their (short) validity window. See:
       #   https://github.com/dotnet/msbuild/issues/5675
@@ -211,36 +267,49 @@ jobs:
             Remove-Item "env:$v" -ErrorAction SilentlyContinue
           }
 
-          $log = Join-Path $env:RUNNER_TEMP 'winui-build-combined.log'
-          if (Test-Path $log) { Remove-Item $log -Force }
+          $flavor   = $env:WINUI_INIT_FLAVOR
+          $platform = $env:WINUI_BUILD_PLATFORM
+          $config   = $env:WINUI_BUILD_CONFIGURATION
+          $binlogDir = "BuildOutput\binlogs"
 
-          Write-Host "=== init.cmd $env:WINUI_INIT_FLAVOR /nopgo && Build.cmd $env:WINUI_BUILD_TARGET ==="
-          Write-Host "(combined output also captured to $log for post-scan)"
+          Write-Host "=== Mirroring ADO WinUI-BuildMUXProject-Steps.yml ==="
+          Write-Host "  flavor=$flavor  platform=$platform  configuration=$config"
+          Write-Host "  Binlogs will be written under src\$binlogDir"
 
-          # Run init + build in a single cmd shell so init's env vars persist
-          # into Build.cmd. The `&&` ensures Build.cmd does not run if init
-          # fails. Tee through pwsh so we keep live console output AND a
-          # complete file copy for the post-scan.
-          cmd /c "init.cmd $env:WINUI_INIT_FLAVOR /nopgo && Build.cmd $env:WINUI_BUILD_TARGET" 2>&1 |
-            Tee-Object -FilePath $log
+          # Ensure the binlog directory exists before msbuild writes into it.
+          if (-not (Test-Path $binlogDir)) { New-Item -ItemType Directory -Force -Path $binlogDir | Out-Null }
+
+          # Common msbuild args (mirrors ADO's WinUI-BuildProject-Steps.yml
+          # `msbuildArguments` template):
+          #   /restore           - NuGet restore + build in one invocation
+          #   /m                 - parallel project build (CL.exe parallelism
+          #                        is separately capped to 2 via $env:CL)
+          #   /binaryLogger:...  - emit a .binlog per solution per leg
+          #   /ds:false          - disable detailed summary (reduces noise)
+          $commonArgs = "/restore /m /ds:false"
+
+          # Build sequence mirrors ADO. Each invocation passes /p:Platform
+          # and /p:Configuration explicitly so the solution config selector
+          # matches MUXControls.sln (which has Debug|x86, not Debug|Win32).
+          $sequence = @(
+            "msbuild XamlCompilerPrerequisites.sln /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\XamlCompilerPrerequisites.$platform.$config.binlog",
+            "msbuild dxaml\Microsoft.UI.Xaml.sln    /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.$platform.$config.binlog",
+            "pack.component.cmd /version 3.0.0-dev",
+            "msbuild controls\MUXControls.sln       /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\MUXControls.$platform.$config.binlog"
+          )
+
+          # Run init + the four build commands inside a single cmd shell so
+          # init's env vars (Platform, Configuration, _BuildArch, PATH+=
+          # amd64 MSBuild, DOTNET_ROOT, etc.) persist across all of them.
+          # The `&&` chain ensures any failure aborts the rest.
+          $chain = ("init.cmd /pipeline $flavor /nopgo") + " && " + ($sequence -join " && ")
+          Write-Host "=== Combined cmd line ==="
+          Write-Host $chain
+
+          cmd /c $chain
           $cmdExit = $LASTEXITCODE
-
-          # Post-scan for Build.cmd's swallowed errors (see header comment).
-          # `^ERROR:` (case-sensitive, anchored) is the exact prefix Build.cmd
-          # uses for its `echo ERROR: buildSolution for ... FAILED.` messages.
-          $errorLines = @()
-          if (Test-Path $log) {
-            $errorLines = Select-String -Path $log -Pattern '^ERROR:' -CaseSensitive
-          }
-          if ($errorLines.Count -gt 0) {
-            Write-Host "::error::Detected $($errorLines.Count) 'ERROR:' line(s) in build output. Build.cmd may have reported success despite a failing msbuild invocation (known src/Build.cmd ERRORLEVEL-clobber bug)."
-            foreach ($e in $errorLines) {
-              Write-Host ("  " + $e.Line)
-            }
-            if ($cmdExit -eq 0) { exit 1 }
-          }
           if ($cmdExit -ne 0) {
-            Write-Host "::error::cmd exited with code $cmdExit"
+            Write-Host "::error::Build chain exited with code $cmdExit (last failing command in the && chain)."
             exit $cmdExit
           }
 
