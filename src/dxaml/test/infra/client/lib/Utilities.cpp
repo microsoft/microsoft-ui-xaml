@@ -119,7 +119,7 @@ namespace
         testName.Replace(L"::", L"_");
         testName.Replace(L".", L"_");
         wrl::Wrappers::HString fullTestName;
-        LogThrow_IfFailed(fullTestName.Set(testName.GetBuffer()));
+        LogThrow_IfFailed(fullTestName.Set(static_cast<const wchar_t*>(testName)));
 
         wrl::Wrappers::HString localExtension;
         LogThrow_IfFailed(localExtension.Set(extension));
@@ -495,7 +495,7 @@ namespace Private { namespace Infrastructure {
                 // Second verification pass checks the surfaces.
                 for each (WEX::Common::String surfaceVariation in surfaceVariations)
                 {
-                    wrl::Wrappers::HStringReference strVariation(surfaceVariation.GetBuffer());
+                    wrl::Wrappers::HStringReference strVariation(static_cast<const wchar_t*>(surfaceVariation));
                     ImageComparer imageComparer;
 
                     wrl::Wrappers::HString diffFileNameSuffix;
@@ -596,7 +596,7 @@ namespace Private { namespace Infrastructure {
             outputFilenameNoExtension.Replace(L".xml", L"");
 
             wrl::Wrappers::HString strOutputFilenameNoExtension;
-            LogThrow_IfFailed(strOutputFilenameNoExtension.Set(outputFilenameNoExtension.GetBuffer()));
+            LogThrow_IfFailed(strOutputFilenameNoExtension.Set(static_cast<const wchar_t*>(outputFilenameNoExtension)));
 
             // DComp tree dump needs to happen on the UI thread so that we don't get another render walk to
             // update the tree as it's being dumped.
@@ -2051,7 +2051,7 @@ namespace Private { namespace Infrastructure {
         deploymentDir.Append(L"resources\\masters\\");
         deploymentDir = deploymentDir.ToLower();
 
-        LogThrow_IfFailed(strMastersFolderPath.Set(deploymentDir.GetBuffer()));
+        LogThrow_IfFailed(strMastersFolderPath.Set(static_cast<const wchar_t*>(deploymentDir)));
         return strMastersFolderPath;
     }
 

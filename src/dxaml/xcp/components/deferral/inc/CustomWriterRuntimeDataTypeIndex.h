@@ -48,4 +48,5 @@ enum class CustomWriterRuntimeDataTypeIndex : std::uint16_t
     DeferredElement_v3 = 9,                 // added in RS2
     ResourceDictionary_v3 = 10,             // added in RS2
     Style_v3 = 11,                          // added in WinAppSDK 1.7
+    ResourceDictionary_v4 = 12,             // added in WinAppSDK 2.x
 };

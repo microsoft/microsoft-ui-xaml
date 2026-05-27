@@ -361,17 +361,7 @@ _Check_return_ HRESULT ObjectWriterRuntimeEncoder::SetCustomRuntimeDataImpl(
     UNREFERENCED_PARAMETER(spXBindConnector);
 
     IFC_RETURN(customWriterData->PrepareStream(customWriterNodeStream));
-    if (customWriterData->ShouldEncodeAsCustomData())
-    {
-        IFC_RETURN(m_spNodeList->AddNode(ObjectWriterNode::MakeSetCustomRuntimeData(lineInfo, customWriterData, customWriterNodeStream)));
-    }
-    else
-    {
-        for (auto&& node : customWriterNodeStream->GetNodeList()->GetNodeList())
-        {
-            IFC_RETURN(m_spNodeList->AddNode(std::move(node)));
-        }
-    }
+    IFC_RETURN(m_spNodeList->AddNode(ObjectWriterNode::MakeSetCustomRuntimeData(lineInfo, customWriterData, customWriterNodeStream)));
 
     return S_OK;
 }

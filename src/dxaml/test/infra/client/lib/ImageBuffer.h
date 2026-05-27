@@ -18,7 +18,7 @@ public:
     void SetPixel(int x, int y, uint8_t a, uint8_t r, uint8_t g, uint8_t b);
     void SetPixel(int x, int y, uint32_t pixelValue);
 
-    void SaveToFile(wchar_t* fileName);
+    void SaveToFile(const wchar_t* fileName);
 
 private:
 

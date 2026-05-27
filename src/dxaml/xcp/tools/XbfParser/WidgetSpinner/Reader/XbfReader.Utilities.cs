@@ -219,6 +219,7 @@ namespace Microsoft.Xaml.WidgetSpinner.Reader
                 case CustomWriterRuntimeDataTypeIndex.ResourceDictionary_v1:
                 case CustomWriterRuntimeDataTypeIndex.ResourceDictionary_v2:
                 case CustomWriterRuntimeDataTypeIndex.ResourceDictionary_v3:
+                case CustomWriterRuntimeDataTypeIndex.ResourceDictionary_v4:
                     {
                         data = ResourceDictionaryCustomRuntimeData.CreateAndDeserializeRuntimeData(this, typeIndex);
                     }

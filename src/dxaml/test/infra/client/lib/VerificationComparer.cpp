@@ -71,7 +71,7 @@ namespace Private {
             {
                 LOG_OUTPUT(L"Generating human-readable diff output of ASCII text files.");
                 FileDiff::FileDiff fileDiff;
-                fileDiff.Diff(m_file1.GetBuffer(), m_file2.GetBuffer());
+                fileDiff.Diff(m_file1, m_file2);
             }
         }
 
@@ -180,12 +180,12 @@ namespace Private {
         {
             if (m_diffBuffer.IsInitialized())
             {
-                m_diffBuffer.SaveToFile(m_diffFilePath.GetBuffer());
+                m_diffBuffer.SaveToFile(m_diffFilePath);
             }
 
             if (m_errorBuffer.IsInitialized())
             {
-                m_errorBuffer.SaveToFile(m_errorFilePath.GetBuffer());
+                m_errorBuffer.SaveToFile(m_errorFilePath);
             }
         }
 
@@ -303,13 +303,14 @@ namespace Private {
             startupInfo.hStdError = outWriteHandle.get();
 
             WEX::Common::String cmdLine = CreateCommandLine(s1, s2);
+            std::wstring cmdLineBuf(static_cast<const wchar_t*>(cmdLine));
 
             PROCESS_INFORMATION processInformation = { 0 };
 
             Throw::LastErrorIf(
                 ::CreateProcess(
                     nullptr,               // lpApplicationName
-                    cmdLine.GetBuffer(),   // lpCommandLine
+                    cmdLineBuf.data(),     // lpCommandLine
                     &securityAttributes,   // lpProcessAttributes
                     &securityAttributes,   // lpThreadAttributes
                     TRUE,                  // bInheritHandles

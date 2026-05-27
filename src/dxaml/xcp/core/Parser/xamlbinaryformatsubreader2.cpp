@@ -828,35 +828,14 @@ unsigned int XamlBinaryFormatSubReader2::ReadUInt()
     return returnValue;
 }
 
-_Success_(return != false)
-bool XamlBinaryFormatSubReader2::TryRead7BitEncodedInt(
-    _In_ XUINT8 *pBuffer,
-    _In_ XUINT32 cbBufferTotalSize,
-    _Inout_ XUINT32 *pcbBufferOffset,
-    _Out_ unsigned int *pValue)
+std::uint64_t XamlBinaryFormatSubReader2::ReadUInt64()
 {
-    static const unsigned int Bit8 = 0x00000080;    // 10000000
-    static const unsigned int BitMask = 0x0000007F; // 01111111
-
-    unsigned int value = 0;
-    unsigned int shift = 0;
-    unsigned char currentByte = 0;
-
-    do
-    {
-        ASSERT(shift != 5 * 7);
-        if (!TryReadFromBuffer(pBuffer, cbBufferTotalSize, sizeof(XUINT8), &currentByte, pcbBufferOffset))
-        {
-            return false;
-        }
-
-        value |= (currentByte & BitMask) << shift;
-        shift += 7;
-    } while (currentByte & Bit8);
-
-    *pValue = value;
-    return true;
+    std::uint64_t returnValue = 0;
+    THROW_HR_IF(E_FAIL,
+        !TryRead7BitEncodedInt(m_nodeStream, m_nodeStreamLength, &m_currentNodeStreamOffset, &returnValue));
+    return returnValue;
 }
+
 #pragma endregion
 
 const XamlLineInfo XamlBinaryFormatSubReader2::GetLineInfo()

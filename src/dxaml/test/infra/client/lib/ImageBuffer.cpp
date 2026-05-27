@@ -61,7 +61,7 @@ void ImageBuffer::SetPixel(int x, int y, uint32_t pixelValue)
     m_pixels[y * m_width + x] = pixelValue;
 }
 
-void ImageBuffer::SaveToFile(wchar_t* fileName)
+void ImageBuffer::SaveToFile(const wchar_t* fileName)
 {
     EnsureInit();
 

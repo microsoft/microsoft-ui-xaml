@@ -6,6 +6,8 @@
 #include "XamlBinaryMetadataStore.h"
 #include "ObjectWriterNode.h"
 #include <palfileuri.h>
+#include <type_traits>
+#include <cstdint>
 
 class ObjectWriterNodeList;
 class CCoreServices;
@@ -66,12 +68,33 @@ public:
     _Check_return_ HRESULT PersistConstant(
         _In_ const unsigned int value);
 
+    _Check_return_ HRESULT PersistConstant(
+        _In_ const std::uint64_t value);
+
     _Check_return_ HRESULT PersistLineInfo(
         _In_ const ObjectWriterNode& objectNode);
 
+    template <typename T,
+        std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, int> = 0>
     _Check_return_ HRESULT Persist7BitEncodedInt(
-        _In_ const unsigned int value,
-        _In_ const xref_ptr<IPALStream>& spStream);
+        _In_ const T value,
+        _In_ const xref_ptr<IPALStream>& spStream)
+    {
+        static const unsigned int Bit8 = 0x00000080;    // 10000000
+        unsigned char currentByte = 0;
+        T valueToEncode = value;
+
+        while (valueToEncode >= Bit8)
+        {
+            currentByte = static_cast<unsigned char>(valueToEncode | Bit8);
+            IFC_RETURN(PersistByteToStream(currentByte, spStream));
+            valueToEncode >>= 7;
+        }
+        currentByte = static_cast<unsigned char>(valueToEncode);
+        IFC_RETURN(PersistByteToStream(currentByte, spStream));
+
+        return S_OK;
+    }
 
     _Check_return_ HRESULT PersistSharedString(
         _In_ const xstring_ptr strValue);
@@ -87,6 +110,12 @@ public:
 private:
     _Check_return_ HRESULT PersistStringConstant(
         _In_ const xstring_ptr strValue);
+
+    // Non-template helper so Persist7BitEncodedInt's inline template can write
+    // to the stream without requiring IPALStream to be a complete type in this header.
+    _Check_return_ HRESULT PersistByteToStream(
+        _In_ unsigned char byte,
+        _In_ const xref_ptr<IPALStream>& spStream);
 
 
 private:

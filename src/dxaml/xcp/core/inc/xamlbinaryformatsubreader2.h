@@ -7,6 +7,8 @@
 #include "XamlBinaryMetadataReader2.h"
 #include "ObjectWriterNode.h"
 #include "ObjectWriterNodeType.h"
+#include <type_traits>
+#include <cstdint>
 
 class XamlBinaryFormatReader2;
 class XamlSchemaContext;
@@ -61,6 +63,7 @@ public:
 #pragma region Public Primitive Type Decoders
     CValue ReadCValue();
     unsigned int ReadUInt();
+    std::uint64_t ReadUInt64();
     xstring_ptr ReadSharedString();
     std::shared_ptr<XamlType> ReadXamlType();
     std::shared_ptr<XamlProperty> ReadXamlProperty();
@@ -100,12 +103,38 @@ private:
     xstring_ptr ReadPersistedString();
     PersistedXamlNode2 ReadPersistedXamlNode();
 
+    template <typename T,
+        std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, int> = 0>
     _Success_(return != false)
-     bool TryRead7BitEncodedInt(
+    bool TryRead7BitEncodedInt(
         _In_ XUINT8 *pBuffer,
         _In_ XUINT32 cbBufferTotalSize,
         _Inout_ XUINT32 *pcbBufferOffset,
-        _Out_ unsigned int *pValue);
+        _Out_ T *pValue)
+    {
+        static constexpr unsigned int ContinuationBit = 0x80;  // High bit signals "more bytes follow"
+        static constexpr unsigned int PayloadMask = 0x7F;      // Low 7 bits carry data payload
+        static constexpr unsigned int BitsPerEncodedByte = 7;  // Each encoded byte carries 7 payload bits
+
+        T value = 0;
+        unsigned int shift = 0;
+        unsigned char currentByte = 0;
+
+        do
+        {
+            ASSERT(shift < sizeof(T) * 8);
+            if (!TryReadFromBuffer(pBuffer, cbBufferTotalSize, sizeof(XUINT8), &currentByte, pcbBufferOffset))
+            {
+                return false;
+            }
+
+            value |= static_cast<T>(currentByte & PayloadMask) << shift;
+            shift += BitsPerEncodedByte;
+        } while (currentByte & ContinuationBit);
+
+        *pValue = value;
+        return true;
+    }
 
     PersistedConstantType ReadConstantNodeType();
     void ReadNamespace(_Out_ std::shared_ptr<XamlNamespace>& spNamespace, _Out_ xstring_ptr* pStrPrefixValue);

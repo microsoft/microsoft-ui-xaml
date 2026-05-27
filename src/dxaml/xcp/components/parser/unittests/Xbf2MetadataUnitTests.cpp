@@ -56,7 +56,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         xref_ptr<IPALUri> filePathUri;
         xref_ptr<IPALResource> filePathResource;
         WEX::Common::String xbfFile(GetResourcePath(L"resources\\native\\framework\\parser\\SampleXbf2.xbf"));
-        xephemeral_string_ptr xbfFilePathStr(xbfFile.GetBuffer(), xbfFile.GetLength());
+        xephemeral_string_ptr xbfFilePathStr(xbfFile, xbfFile.GetLength());
         xstring_ptr strXbfFilePath;
         VERIFY_SUCCEEDED(xbfFilePathStr.Promote(&strXbfFilePath));
 

@@ -46,6 +46,7 @@ namespace Microsoft.UI.Xaml
         interface IVectorView<Microsoft.UI.Xaml.Window*>;
 
         interface Windows.Foundation.IReference<HSTRING>;
+        interface Windows.Foundation.IReference<UINT16>;
         interface Windows.Foundation.IReference<WCHAR>;
         interface Windows.Foundation.IReference<Windows.Globalization.DayOfWeek>;
         interface Windows.Foundation.IReference<Microsoft.UI.Input.PointerDeviceType>;

@@ -4,15 +4,13 @@
 #pragma once
 
 #include <vector_set.h>
-#include "ResourceDictionaryKey.h"
+#include "ResourceDictionaryMapTypes.h"
 #include <CustomWriterRuntimeObjectCreator.h>
 
 class ResourceDictionaryCustomRuntimeData;
 class CustomWriterRuntimeContext;
 class CDependencyObject;
 struct IDependencyObject;
-
-using ResourceMapType = std::unordered_map<ResourceKeyStorage, CDependencyObject*>;
 
 // CResourceDictionary2 today exists as a thin wrapper around ResourceDictionaryCustomRuntimeData
 // with aspirations of one day possibly replacing the current resource dictionary implementation.
@@ -28,8 +26,7 @@ public:
 
     // Tries to load the resource matching the specified key. Throws on runtime object creation failure.
     _Check_return_ HRESULT LoadValueIfExists(
-        _In_ const xstring_ptr_view& key,
-        _In_ bool isImplicitKey,
+        _In_ const ResourceKey& key,
         _Out_ bool& keyFound,
         _Out_ xref_ptr<CDependencyObject>& value);
 
@@ -39,14 +36,13 @@ public:
     // instance of CResourceDictionary2 as it doesn't contain any useful state.
     _Check_return_
     HRESULT LoadAllRemainingDeferredResources(
-        _In_ const ResourceMapType& loadedResources,
-        _Out_ std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& implicitResources,
-        _Out_ std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& explicitResources);
+        _In_ ResourceMap& existingResources,
+		_Out_ std::vector<std::pair<ResourceKeyStorage, xref_ptr<CDependencyObject>>>& loadedResources);
 
     std::size_t GetInitialImplicitStyleKeyCount() const;
     const std::vector<xstring_ptr>& GetInitialResourcesToLoad() const;
 
-    bool ContainsKey(_In_ const xstring_ptr& key, _In_ bool isImplicitKey) const;
+    bool ContainsKey(_In_ const ResourceKey& key) const;
 
     std::size_t size() const;
 

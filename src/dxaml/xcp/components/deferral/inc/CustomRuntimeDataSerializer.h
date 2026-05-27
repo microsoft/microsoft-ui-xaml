@@ -11,6 +11,8 @@
 #include <vector_map.h>
 #include <vector_set.h>
 #include <unordered_map>
+#include <ankerl/unordered_dense.h>
+
 #include "StaticAssertFalse.h"
 
 class XamlBinaryFormatSubWriter2;
@@ -65,6 +67,12 @@ namespace CustomRuntimeDataSerializationHelpers {
         struct serialization_traits < containers::vector_set<T, Args...> > {
             using category = serialization_tag_presorted_container;
         };
+
+        template <class Key, class T, class Hash, class KeyEqual, class AllocatorOrContainer, class Bucket, class BucketContainer, bool IsSegmented>
+        struct serialization_traits < ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, AllocatorOrContainer, Bucket, BucketContainer, IsSegmented> > {
+            using category = serialization_tag_unordered_container;
+        };
+
 #pragma endregion
 
 #pragma region container dispatch
@@ -207,6 +215,16 @@ namespace CustomRuntimeDataSerializationHelpers {
             _In_ XamlBinaryFormatSubWriter2* writer,
             _In_ const std::vector<unsigned int>& streamOffsetTokenTable);
         static unsigned int Read(_In_ XamlBinaryFormatSubReader2* reader);
+    };
+
+    template<>
+    struct Serializer < std::uint64_t >
+    {
+        static _Check_return_ HRESULT Write(
+            _In_ std::uint64_t target,
+            _In_ XamlBinaryFormatSubWriter2* writer,
+            _In_ const std::vector<unsigned int>& streamOffsetTokenTable);
+        static std::uint64_t Read(_In_ XamlBinaryFormatSubReader2* reader);
     };
 
     template<>

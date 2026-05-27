@@ -141,6 +141,63 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
 
                         return new ResourceDictionaryCustomRuntimeData(typeIndex, explicitKeyResources, implicitKeyResources, resourcesWithXNames, conditionallyDeclaredObjects);
                     }
+                case CustomWriterRuntimeDataTypeIndex.ResourceDictionary_v4:
+                    {
+                        // v4 uses a unified map keyed by ResourceKeyStorage (string key + uint64 hashAndIsKeyType)
+                        // instead of separate explicit/implicit maps. We split back into the two lists by checking
+                        // the isKeyType flag (LSB of hashAndIsKeyType).
+                        var explicitKeyResources = new List<Tuple<string, StreamOffsetToken>>();
+                        var implicitKeyResources = new List<Tuple<string, StreamOffsetToken>>();
+
+                        var resourcesMapCount = reader.Read7BitEncodedInt();
+                        for (var i = 0; i < resourcesMapCount; i++)
+                        {
+                            var key = reader.ReadSharedString();
+                            var hashAndIsKeyType = reader.ReadUInt64();
+                            var token = reader.ReadStreamOffsetToken();
+
+                            bool isKeyType = (hashAndIsKeyType & 1) != 0;
+                            var entry = new Tuple<string, StreamOffsetToken>(key, token);
+                            if (isKeyType)
+                            {
+                                implicitKeyResources.Add(entry);
+                            }
+                            else
+                            {
+                                explicitKeyResources.Add(entry);
+                            }
+                        }
+
+                        var resourcesWithXNames = reader.ReadVector((r) => r.ReadSharedString(), true);
+
+                        // Read conditional resources map (ResourceKeyStorage -> vector<StreamOffsetToken>).
+                        // TODO: do something with conditional keys
+                        var conditionalMapCount = reader.Read7BitEncodedInt();
+                        for (var i = 0; i < conditionalMapCount; i++)
+                        {
+                            reader.ReadSharedString();   // key
+                            reader.ReadUInt64();         // hashAndIsKeyType (discarded)
+                            reader.ReadVector((r) => new StreamOffsetToken(r.Read7BitEncodedInt()), true);
+                        }
+
+                        // Read conditionallyDeclaredObjects (token -> predicates), serialized after the
+                        // type-specific data for versions that support conditional declarations.
+                        var conditionallyDeclaredObjectsAsList = reader.ReadVector((r) =>
+                        {
+                            var token = r.ReadStreamOffsetToken();
+                            var xamlPredicatesAndArgsList = r.ReadVector((r2) => r2.ReadXamlPredicateAndArgs(), true);
+
+                            return new Tuple<StreamOffsetToken, List<XamlPredicateAndArgs>>(token, xamlPredicatesAndArgsList);
+                        }, true);
+                        var conditionallyDeclaredObjects = new Dictionary<StreamOffsetToken, List<XamlPredicateAndArgs>>();
+                        foreach (var kvp in conditionallyDeclaredObjectsAsList)
+                        {
+                            conditionallyDeclaredObjects.Add(kvp.Item1, kvp.Item2);
+                        }
+
+                        return new ResourceDictionaryCustomRuntimeData(typeIndex, explicitKeyResources, implicitKeyResources, resourcesWithXNames, conditionallyDeclaredObjects);
+                    }
+
                 default:
                     {
                         throw new InvalidDataException(string.Format("Not a known version of ResourceDictionaryCustomWriterRuntimeData: {0}", typeIndex));
