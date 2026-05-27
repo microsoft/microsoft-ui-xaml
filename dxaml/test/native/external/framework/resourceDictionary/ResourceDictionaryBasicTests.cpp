@@ -29,7 +29,7 @@ using namespace std;
 
 using namespace ::Windows::UI;
 
-namespace 
+namespace
 {
     bool IsInWPFHostingMode()
     {
@@ -38,7 +38,7 @@ namespace
         return hostingMode.CompareNoCase(L"WPF") == 0;
     }
 
-    void VerifyXamlResourceReferenceTraceHelper(Platform::String^ xamlString, Platform::String^ expectedMessage, bool exceptionExpected = true)
+    void VerifyXamlResourceReferenceTraceHelper(Platform::String^ xamlString, Platform::String^ expectedMessage, Platform::String^ expectedMessage2, bool exceptionExpected = true)
     {
         xaml::DebugSettings^ debugSettings;
         bool origIsXamlResourceReferenceTracingEnabled = FALSE;
@@ -87,7 +87,7 @@ namespace
                 XamlReader::Load(xamlString);
             }
 
-            VERIFY_ARE_EQUAL(expectedMessage, actualMessage);
+            VERIFY_IS_TRUE(expectedMessage == actualMessage || expectedMessage2 == actualMessage);
         });
     }
 }
@@ -1165,7 +1165,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
             {
                 // The MUXC theme resources clash with these changes, so we'll clear them out first.
                 Application::Current->Resources->MergedDictionaries->Clear();
-                
+
                 auto appThemes = Application::Current->Resources->ThemeDictionaries;
 
                 auto buttonType = ref new Platform::Box<::Windows::UI::Xaml::Interop::TypeName>(Button::typeid);
@@ -3189,7 +3189,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
             {
                 // The MUXC theme resources clash with these changes, so we'll clear them out first.
                 Application::Current->Resources->MergedDictionaries->Clear();
-                
+
                 auto appResources = Application::Current->Resources;
 
                 if (!appResources->ThemeDictionaries->HasKey("Dark"))
@@ -3539,7 +3539,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                 VERIFY_ARE_EQUAL(Colors::Orange, brush4->Color);
                 VERIFY_ARE_EQUAL(Colors::Yellow, brush5->Color);
             });
-        
+
             RunOnUIThread([&]()
             {
                 TestServices::ThemingHelper->SetApplicationRequestedTheme(ApplicationTheme::Dark);
@@ -6004,34 +6004,49 @@ namespace Microsoft { namespace UI { namespace Xaml {
             // When tests are run in WPF hosting mode `app.xaml` has a different URI
             auto appXamlUri = IsInWPFHostingMode() ? L"ms-resource:///Files/app.xaml" : L"ms-appx:///App.xaml";
 
-            Platform::String^ expectedMessage = ref new Platform::String(WEX::Common::String().Format(
-L"Beginning search for resource with key 'NoResourceWithThisKey'.\n"
-L"  Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
-L"  Finished searching dictionary '<anonymous dictionary>'.\n"
-L"  Searching dictionary 'Framework-defined colors' for resource with key 'NoResourceWithThisKey'.\n"
-L"  Finished searching dictionary 'Framework-defined colors'.\n"
-L"  Searching dictionary 'Framework ThemeResources.xbf' for resource with key 'NoResourceWithThisKey'.\n"
-L"    Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
-L"      Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
-L"      Finished searching dictionary '<anonymous dictionary>'.\n"
-L"    Finished searching theme dictionary (active theme: 'Dark').\n"
-L"  Finished searching dictionary 'Framework ThemeResources.xbf'.\n"
-L"  Searching dictionary '%s' for resource with key 'NoResourceWithThisKey'.\n"
-L"    Searching merged dictionary with index '0' for resource with key 'NoResourceWithThisKey'.\n"
-L"      Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml' for resource with key 'NoResourceWithThisKey'.\n"
-L"        Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
-L"          Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml' for resource with key 'NoResourceWithThisKey'.\n"
-L"          Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml'.\n"
-L"        Finished searching theme dictionary (active theme: 'Dark').\n"
-L"      Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml'.\n"
-L"    Finished searching merged dictionary with index '0'.\n"
-L"  Finished searching dictionary '%s'.\n"
-L"Finished search for resource with key 'NoResourceWithThisKey'.",
-                appXamlUri, 
-                appXamlUri
-            ));
+            const auto stringTemplate =
+                L"Beginning search for resource with key 'NoResourceWithThisKey'.\n"
+                L"  Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
+                L"  Finished searching dictionary '<anonymous dictionary>'.\n"
+                L"  Searching dictionary 'Framework-defined colors' for resource with key 'NoResourceWithThisKey'.\n"
+                L"  Finished searching dictionary 'Framework-defined colors'.\n"
+                L"  Searching dictionary 'Framework ThemeResources.xbf' for resource with key 'NoResourceWithThisKey'.\n"
+                L"    Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
+                L"      Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
+                L"      Finished searching dictionary '<anonymous dictionary>'.\n"
+                L"    Finished searching theme dictionary (active theme: 'Dark').\n"
+                L"  Finished searching dictionary 'Framework ThemeResources.xbf'.\n"
+                L"  Searching dictionary '%s' for resource with key 'NoResourceWithThisKey'.\n"
+                L"    Searching merged dictionary with index '0' for resource with key 'NoResourceWithThisKey'.\n"
+                L"      Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml' for resource with key 'NoResourceWithThisKey'.\n"
+                L"        Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
+                L"          Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml' for resource with key 'NoResourceWithThisKey'.\n"
+                L"          Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml'.\n"
+                L"        Finished searching theme dictionary (active theme: 'Dark').\n"
+                L"      Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml'.\n"
+                L"    Finished searching merged dictionary with index '0'.\n"
+                L"  Finished searching dictionary '%s'.\n"
+                L"Finished search for resource with key 'NoResourceWithThisKey'.";
 
-            VerifyXamlResourceReferenceTraceHelper(xamlString, expectedMessage);
+            Platform::String^ expectedMessage = ref new Platform::String(WEX::Common::String().Format(
+                stringTemplate,
+                appXamlUri,
+                L"themeresources",
+                L"themeresources",
+                L"themeresources",
+                L"themeresources",
+                appXamlUri));
+
+            Platform::String^ expectedMessage2 = ref new Platform::String(WEX::Common::String().Format(
+                stringTemplate,
+                appXamlUri,
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                appXamlUri));
+
+            VerifyXamlResourceReferenceTraceHelper(xamlString, expectedMessage, expectedMessage2);
         }
 
         void ResourceDictionaryBasicTests::VerifyXamlResourceReferenceTraceSimpleThemeResource()
@@ -6061,38 +6076,53 @@ L"Finished search for resource with key 'NoResourceWithThisKey'.",
             // When tests are run in WPF hosting mode `app.xaml` has a different URI
             auto appXamlUri = IsInWPFHostingMode() ? L"ms-resource:///Files/app.xaml" : L"ms-appx:///App.xaml";
 
-            Platform::String^ expectedMessage = ref new Platform::String(WEX::Common::String().Format(
-L"Beginning search for resource with key 'NoResourceWithThisKey'.\n"
-L"  Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
-L"    Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
-L"      Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
-L"      Finished searching dictionary '<anonymous dictionary>'.\n"
-L"    Finished searching theme dictionary (active theme: 'Dark').\n"
-L"    Searching dictionary 'Framework-defined colors' for resource with key 'NoResourceWithThisKey'.\n"
-L"    Finished searching dictionary 'Framework-defined colors'.\n"
-L"    Searching dictionary 'Framework ThemeResources.xbf' for resource with key 'NoResourceWithThisKey'.\n"
-L"      Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
-L"        Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
-L"        Finished searching dictionary '<anonymous dictionary>'.\n"
-L"      Finished searching theme dictionary (active theme: 'Dark').\n"
-L"    Finished searching dictionary 'Framework ThemeResources.xbf'.\n"
-L"  Finished searching dictionary '<anonymous dictionary>'.\n"
-L"  Searching dictionary '%s' for resource with key 'NoResourceWithThisKey'.\n"
-L"    Searching merged dictionary with index '0' for resource with key 'NoResourceWithThisKey'.\n"
-L"      Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml' for resource with key 'NoResourceWithThisKey'.\n"
-L"        Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
-L"          Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml' for resource with key 'NoResourceWithThisKey'.\n"
-L"          Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml'.\n"
-L"        Finished searching theme dictionary (active theme: 'Dark').\n"
-L"      Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml'.\n"
-L"    Finished searching merged dictionary with index '0'.\n"
-L"  Finished searching dictionary '%s'.\n"
-L"Finished search for resource with key 'NoResourceWithThisKey'.",
-                appXamlUri, 
-                appXamlUri
-            ));
+            const auto stringTemplate =
+                L"Beginning search for resource with key 'NoResourceWithThisKey'.\n"
+                L"  Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
+                L"    Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
+                L"      Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
+                L"      Finished searching dictionary '<anonymous dictionary>'.\n"
+                L"    Finished searching theme dictionary (active theme: 'Dark').\n"
+                L"    Searching dictionary 'Framework-defined colors' for resource with key 'NoResourceWithThisKey'.\n"
+                L"    Finished searching dictionary 'Framework-defined colors'.\n"
+                L"    Searching dictionary 'Framework ThemeResources.xbf' for resource with key 'NoResourceWithThisKey'.\n"
+                L"      Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
+                L"        Searching dictionary '<anonymous dictionary>' for resource with key 'NoResourceWithThisKey'.\n"
+                L"        Finished searching dictionary '<anonymous dictionary>'.\n"
+                L"      Finished searching theme dictionary (active theme: 'Dark').\n"
+                L"    Finished searching dictionary 'Framework ThemeResources.xbf'.\n"
+                L"  Finished searching dictionary '<anonymous dictionary>'.\n"
+                L"  Searching dictionary '%s' for resource with key 'NoResourceWithThisKey'.\n"
+                L"    Searching merged dictionary with index '0' for resource with key 'NoResourceWithThisKey'.\n"
+                L"      Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml' for resource with key 'NoResourceWithThisKey'.\n"
+                L"        Searching theme dictionary (active theme: 'Dark') for resource with key 'NoResourceWithThisKey'.\n"
+                L"          Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml' for resource with key 'NoResourceWithThisKey'.\n"
+                L"          Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml'.\n"
+                L"        Finished searching theme dictionary (active theme: 'Dark').\n"
+                L"      Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml'.\n"
+                L"    Finished searching merged dictionary with index '0'.\n"
+                L"  Finished searching dictionary '%s'.\n"
+                L"Finished search for resource with key 'NoResourceWithThisKey'.";
 
-            VerifyXamlResourceReferenceTraceHelper(xamlString, expectedMessage);
+            Platform::String^ expectedMessage = ref new Platform::String(WEX::Common::String().Format(
+                stringTemplate,
+                appXamlUri,
+                L"themeresources",
+                L"themeresources",
+                L"themeresources",
+                L"themeresources",
+                appXamlUri));
+
+            Platform::String^ expectedMessage2 = ref new Platform::String(WEX::Common::String().Format(
+                stringTemplate,
+                appXamlUri,
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                appXamlUri));
+
+            VerifyXamlResourceReferenceTraceHelper(xamlString, expectedMessage, expectedMessage2);
         }
 
         void ResourceDictionaryBasicTests::VerifyXamlResourceReferenceTraceResourceDictionarySource()
@@ -6122,38 +6152,53 @@ L"Finished search for resource with key 'NoResourceWithThisKey'.",
             // When tests are run in WPF hosting mode `app.xaml` has a different URI
             auto appXamlUri = IsInWPFHostingMode() ? L"ms-resource:///Files/app.xaml" : L"ms-appx:///App.xaml";
 
+            const auto stringTemplate =
+                L"/UserControlWithUnresolveableStaticResource.xaml\n"
+                L"Beginning search for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"  Searching dictionary 'UserControlWithUnresolveableStaticResource.ResourceDictionary.xaml' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"  Finished searching dictionary 'UserControlWithUnresolveableStaticResource.ResourceDictionary.xaml'.\n"
+                L"  Searching dictionary 'Framework-defined colors' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"  Finished searching dictionary 'Framework-defined colors'.\n"
+                L"  Searching dictionary 'Framework ThemeResources.xbf' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"    Searching theme dictionary (active theme: 'Dark') for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"      Searching dictionary '<anonymous dictionary>' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"      Finished searching dictionary '<anonymous dictionary>'.\n"
+                L"    Finished searching theme dictionary (active theme: 'Dark').\n"
+                L"  Finished searching dictionary 'Framework ThemeResources.xbf'.\n"
+                L"  Searching dictionary '%s' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"    Searching merged dictionary with index '0' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"      Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"        Searching theme dictionary (active theme: 'Dark') for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"          Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
+                L"          Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml'.\n"
+                L"        Finished searching theme dictionary (active theme: 'Dark').\n"
+                L"      Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/%s.xaml'.\n"
+                L"    Finished searching merged dictionary with index '0'.\n"
+                L"  Finished searching dictionary '%s'.\n"
+                L"Finished search for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.";
+
             Platform::String^ expectedMessage = ref new Platform::String(WEX::Common::String().Format(
-L"/UserControlWithUnresolveableStaticResource.xaml\n"
-L"Beginning search for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"  Searching dictionary 'UserControlWithUnresolveableStaticResource.ResourceDictionary.xaml' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"  Finished searching dictionary 'UserControlWithUnresolveableStaticResource.ResourceDictionary.xaml'.\n"
-L"  Searching dictionary 'Framework-defined colors' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"  Finished searching dictionary 'Framework-defined colors'.\n"
-L"  Searching dictionary 'Framework ThemeResources.xbf' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"    Searching theme dictionary (active theme: 'Dark') for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"      Searching dictionary '<anonymous dictionary>' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"      Finished searching dictionary '<anonymous dictionary>'.\n"
-L"    Finished searching theme dictionary (active theme: 'Dark').\n"
-L"  Finished searching dictionary 'Framework ThemeResources.xbf'.\n"
-L"  Searching dictionary '%s' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"    Searching merged dictionary with index '0' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"      Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"        Searching theme dictionary (active theme: 'Dark') for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"          Searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml' for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.\n"
-L"          Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml'.\n"
-L"        Finished searching theme dictionary (active theme: 'Dark').\n"
-L"      Finished searching dictionary 'ms-appx:///Microsoft.UI.Xaml/Themes/themeresources.xaml'.\n"
-L"    Finished searching merged dictionary with index '0'.\n"
-L"  Finished searching dictionary '%s'.\n"
-L"Finished search for resource with key '9D2842E4-FE97-4BEE-97F4-A9BFC846F2FD'.",
-                appXamlUri, 
-                appXamlUri
-            ));
+                stringTemplate,
+                appXamlUri,
+                L"themeresources",
+                L"themeresources",
+                L"themeresources",
+                L"themeresources",
+                appXamlUri));
+
+            Platform::String^ expectedMessage2 = ref new Platform::String(WEX::Common::String().Format(
+                stringTemplate,
+                appXamlUri,
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                L"themeresources_perf2026",
+                appXamlUri));
 
             // Because of how this test is setup (failure to resolve a resource key inside a control's constructor)
             // we have to swallow the exception that would come out of Application::LoadComponent() otherwise the
             // control will be leaked.
-            VerifyXamlResourceReferenceTraceHelper(xamlString, expectedMessage, false);
+            VerifyXamlResourceReferenceTraceHelper(xamlString, expectedMessage, expectedMessage2, false);
         }
 
 } } } } }

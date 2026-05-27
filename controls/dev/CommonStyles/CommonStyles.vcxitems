@@ -196,7 +196,7 @@
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources_perf2026.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)CommandBar_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)CommandBar_themeresources_perf2026.xaml">
       <Type>ThemeResourcesPerf2026</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)PasswordBox_themeresources_perf2026.xaml">
