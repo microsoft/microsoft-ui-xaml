@@ -23,9 +23,11 @@ namespace MS.Internal.Xaml.Parser
             {
             }
 
+#if !NET8_0_OR_GREATER
             protected TypeNameParserException(SerializationInfo si, StreamingContext sc) : base(si, sc)
             {
             }
+#endif
         }
 
         private GenericTypeNameScanner _scanner;

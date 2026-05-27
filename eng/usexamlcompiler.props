@@ -4,7 +4,7 @@
     <EnableTypeInfoReflection>false</EnableTypeInfoReflection>
     <TargetPlatformMinVersion Condition="'$(TargetPlatformMinVersion)' == ''">$(TargetPlatformVersion)</TargetPlatformMinVersion>
     <!-- Mimic src\XamlCompiler\Targets\Microsoft.UI.Xaml.Markup.Compiler.interop.targets, but using the in-repo copy of the package -->
-    <XamlCompilerOutDir Condition=" '$(MSBuildRuntimeType)' == 'Core' and '$(XamlCompilerOutDir)' == '' ">$(ToolsPackageLocation)\net6.0\</XamlCompilerOutDir>
+    <XamlCompilerOutDir Condition=" '$(MSBuildRuntimeType)' == 'Core' and '$(XamlCompilerOutDir)' == '' ">$(ToolsPackageLocation)\net8.0\</XamlCompilerOutDir>
     <XamlCompilerOutDir Condition=" '$(XamlCompilerOutDir)' == '' ">$(ToolsPackageLocation)\net472\</XamlCompilerOutDir>
     <GenXbfPath>$(ArtifactsBinRoot)GenXbf</GenXbfPath>
     <XamlCompilerTaskPath>$(XamlCompilerOutDir)Microsoft.UI.Xaml.Markup.Compiler.dll</XamlCompilerTaskPath>
