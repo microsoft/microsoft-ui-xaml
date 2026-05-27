@@ -29,14 +29,14 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::AddResourceOffset(
     _In_ bool isImplicitKey,
     _In_ bool shouldAutoUndefer)
 {
+    ResourceKeyStorage rks(key, isImplicitKey);
+
     // Check first if the key already exists in the conditional store
-    auto& conditionalStore = (isImplicitKey) ? m_conditionalImplicitKeyResources : m_conditionalExplicitKeyResources;
-    bool conditionalKeyExists = (conditionalStore.find(key) != conditionalStore.end());
+    bool conditionalKeyExists = (m_conditionalResourcesMap.find(rks) != m_conditionalResourcesMap.end());
 
     if (!IsInConditionalScope() && !conditionalKeyExists)
     {
-        auto& store = (isImplicitKey) ? m_implicitKeyResourcesMap : m_explicitKeyResourcesMap;
-        if (!store.emplace(key, token).second)
+        if (!m_resourcesMap.emplace(rks, token).second)
         {
             // Return E_DO_RESOURCE_KEYCONFLICT instead of AG_E_PARSER2_OW_DUPLICATE_KEY as the former
             // is an HRESULT whereas the latter is just an internal error code.
@@ -47,7 +47,7 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::AddResourceOffset(
     }
     else
     {
-        auto entryItr = conditionalStore.emplace(key, std::vector<StreamOffsetToken>()).first;
+        auto entryItr = m_conditionalResourcesMap.emplace(rks, std::vector<StreamOffsetToken>()).first;
         entryItr->second.push_back(token);
         RecordConditionallyDeclaredObject(token);
 
@@ -55,12 +55,11 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::AddResourceOffset(
         // that at runtime it'll be a AG_E_PARSER2_OW_DUPLICATE_KEY once all relevant conditional scope predicates are
         // evaluated, but since we can't know for sure, we'll let it pass for now and check at runtime when looking
         // up the correct StreamOffsetToken to use.
-        auto& originalStore = (isImplicitKey) ? m_implicitKeyResourcesMap : m_explicitKeyResourcesMap;
-        auto originalEntry = originalStore.find(key);
-        if (originalEntry != originalStore.end())
+        auto originalEntry = m_resourcesMap.find(rks);
+        if (originalEntry != m_resourcesMap.end())
         {
             entryItr->second.push_back(originalEntry->second);
-            originalStore.erase(key);
+            m_resourcesMap.erase(rks);
         }
     }
 
@@ -108,82 +107,7 @@ HRESULT ResourceDictionaryCustomRuntimeData::ToString(_In_ bool verboseData, _Ou
 _Check_return_
 HRESULT ResourceDictionaryCustomRuntimeData::PrepareStream(_In_ std::shared_ptr<SubObjectWriterResult>& customWriterStream)
 {
-    if (!ShouldEncodeAsCustomData())
-    {
-        // If we ultimately decided to skip deferral of the corresponding ResourceDictionary, we need to recreate the original
-        // nodestream
-        auto& nodeListVector = customWriterStream->GetNodeList()->GetNodeList();
-        bool encounteredFirstMarker = false;
-        bool encounteredAddToDictionary = false;
-        unsigned int depth = 0;
-        auto itr = nodeListVector.begin();
-
-        for (; itr != nodeListVector.end();)
-        {
-            auto& node = *itr;
-
-            if (encounteredFirstMarker)
-            {
-                if (node.RequiresNewScope())
-                {
-                    ++depth;
-                }
-                else if (node.RequiresScopeToEnd())
-                {
-                    --depth;
-                }
-            }
-
-            // strip the stream offset markers
-            if (node.GetNodeType() == ObjectWriterNodeType::StreamOffsetMarker)
-            {
-                encounteredFirstMarker = true;
-                nodeListVector.erase(itr);
-            }
-            else if (!encounteredFirstMarker)
-            {
-                nodeListVector.erase(itr);
-            }
-            else
-            {
-                ++itr;
-                if (depth == 0)
-                {
-                    break;
-                }
-                else if (depth == 1 && (node.GetNodeType() == ObjectWriterNodeType::AddToDictionary || node.GetNodeType() == ObjectWriterNodeType::AddToDictionaryWithKey))
-                {
-                    encounteredAddToDictionary = true;
-                }
-            }
-        }
-
-        while (itr != nodeListVector.end())
-        {
-            nodeListVector.erase(itr);
-        }
-
-        if (!encounteredAddToDictionary)
-        {
-            if (m_explicitKeyResourcesMap.size() == 1)
-            {
-                auto spKey = std::make_shared<XamlQualifiedObject>();
-                CValue strValue;
-                strValue.SetString((*m_explicitKeyResourcesMap.begin()).first);
-
-                IFC_RETURN(spKey->SetValue(strValue));
-                IFC_RETURN(customWriterStream->GetNodeList()->AddNode(ObjectWriterNode::MakeAddToDictionaryWithKeyNode(nodeListVector.rbegin()->GetLineInfo(), spKey)));
-            }
-            else
-            {
-                IFC_RETURN(customWriterStream->GetNodeList()->AddNode(ObjectWriterNode::MakeAddToDictionaryNode(nodeListVector.rbegin()->GetLineInfo())));
-            }
-        }
-    }
-    else
-    {
-        IFC_RETURN(customWriterStream->GetNodeList()->Optimize());
-    }
+    IFC_RETURN(customWriterStream->GetNodeList()->Optimize());
 
     return S_OK;
 }
@@ -194,16 +118,13 @@ HRESULT ResourceDictionaryCustomRuntimeData::PrepareStream(_In_ std::shared_ptr<
 // Tries to get the StreamOffsetToken corresponding to the given key. Returns a boolean indicating success.
 _Success_(return != false)
 bool ResourceDictionaryCustomRuntimeData::TryGetResourceOffset(
-    _In_ const xstring_ptr_view& key,
-    _In_ bool isImplicitKey,
+    _In_ const ResourceKey& key,
     _Out_ StreamOffsetToken& token)
 {
     bool foundValue = false;
 
-    auto& primaryStore = (isImplicitKey) ? m_implicitKeyResourcesMap : m_explicitKeyResourcesMap;
-    auto search = primaryStore.find(key);
-
-    if (search != primaryStore.end())
+    auto search = m_resourcesMap.find(key);
+    if (search != m_resourcesMap.end())
     {
         token = search->second;
         foundValue = true;
@@ -214,25 +135,10 @@ bool ResourceDictionaryCustomRuntimeData::TryGetResourceOffset(
 
 _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::ResolveConditionalResources(_In_ std::shared_ptr<ParserErrorReporter> parserErrorReporter)
 {
-    IFC_RETURN(ResolveConditionalResourcesHelper(false, parserErrorReporter));
-    IFC_RETURN(ResolveConditionalResourcesHelper(true, parserErrorReporter));
-
-    m_conditionalResourcesResolved = true;
-
-    return S_OK;
-}
-
-_Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::ResolveConditionalResourcesHelper(
-    _In_ bool implicitResources,
-    _In_ std::shared_ptr<ParserErrorReporter> parserErrorReporter)
-{
-    auto& conditionalStore = (implicitResources) ? m_conditionalImplicitKeyResources : m_conditionalExplicitKeyResources;
-    auto& primaryStore = (implicitResources) ? m_implicitKeyResourcesMap : m_explicitKeyResourcesMap;
-
     if (!m_conditionalResourcesResolved)
     {
         StreamOffsetToken token;
-        for (auto& conditionalResource : conditionalStore)
+        for (auto& conditionalResource : m_conditionalResourcesMap)
         {
             bool foundValue = false;
 
@@ -250,7 +156,7 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::ResolveConditionalRe
                         // We already found a matching candidate, so this means the same key
                         // has been used multiple times which is an error.
                         // Report the error (via an originate exception), then throw E_FAIL.
-                        IFC_RETURN(parserErrorReporter->SetError(AG_E_PARSER2_OW_DUPLICATE_KEY, 0, 0, conditionalResource.first));
+                        IFC_RETURN(parserErrorReporter->SetError(AG_E_PARSER2_OW_DUPLICATE_KEY, 0, 0, conditionalResource.first.GetKey()));
                         IFC_RETURN(E_FAIL);
                     }
 
@@ -261,14 +167,12 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::ResolveConditionalRe
 
             if (foundValue)
             {
-                // Now that we know which conditionally declared resource is The One (for the lifetime of the app, that is),
-                // insert it into the primary store
-                primaryStore.emplace(std::make_pair(conditionalResource.first, token));
+                m_resourcesMap.emplace(conditionalResource.first, token);
             }
         }
 
-        conditionalStore.clear();
-        conditionalStore.shrink_to_fit();
+        m_conditionalResourcesMap.clear();
+        m_conditionalResourcesResolved = true;
     }
 
     return S_OK;
@@ -278,50 +182,29 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::ResolveConditionalRe
 std::size_t ResourceDictionaryCustomRuntimeData::size()
 {
     ASSERT(m_conditionalResourcesResolved);
-    auto explicitKeyResourcesSize = m_explicitKeyResourcesMap.size() + m_conditionalExplicitKeyResources.size();
-
-    return explicitKeyResourcesSize + GetImplicitResourceCount();
+    return m_resourcesMap.size() + m_conditionalResourcesMap.size();
 }
 
 std::size_t ResourceDictionaryCustomRuntimeData::GetImplicitResourceCount()
 {
     ASSERT(m_conditionalResourcesResolved);
 
-    return m_implicitKeyResourcesMap.size() + m_conditionalImplicitKeyResources.size();
-}
-
-const std::vector<xstring_ptr> ResourceDictionaryCustomRuntimeData::GetExplicitKeys()
-{
-    ASSERT(m_conditionalResourcesResolved);
-
-    std::vector<xstring_ptr> keyList;
-    keyList.reserve(m_explicitKeyResourcesMap.size() + m_conditionalExplicitKeyResources.size());
-    for (const auto& kvp : m_explicitKeyResourcesMap)
+    std::size_t count = 0;
+    for (const auto& kvp : m_resourcesMap)
     {
-        keyList.emplace_back(kvp.first);
+        if (kvp.first.IsKeyType())
+        {
+            ++count;
+        }
     }
-    for (const auto& kvp : m_conditionalExplicitKeyResources)
+    for (const auto& kvp : m_conditionalResourcesMap)
     {
-        keyList.emplace_back(kvp.first);
+        if (kvp.first.IsKeyType())
+        {
+            ++count;
+        }
     }
-    return keyList;
-}
-
-const std::vector<xstring_ptr> ResourceDictionaryCustomRuntimeData::GetImplicitKeys()
-{
-    ASSERT(m_conditionalResourcesResolved);
-
-    std::vector<xstring_ptr> keyList;
-    keyList.reserve(m_implicitKeyResourcesMap.size() + m_conditionalImplicitKeyResources.size());
-    for (const auto& kvp : m_implicitKeyResourcesMap)
-    {
-        keyList.emplace_back(kvp.first);
-    }
-    for (const auto& kvp : m_conditionalImplicitKeyResources)
-    {
-        keyList.emplace_back(kvp.first);
-    }
-    return keyList;
+    return count;
 }
 
 #pragma endregion

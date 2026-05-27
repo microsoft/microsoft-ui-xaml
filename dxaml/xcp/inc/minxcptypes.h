@@ -19,7 +19,6 @@
 // Basic signed integer types
 typedef signed char XINT8;
 typedef signed short XINT16;
-typedef unsigned short XCHAR;
 typedef signed int XINT32;
 typedef signed long long XINT64;
 typedef XINT64 XLONG_PTR;
@@ -40,7 +39,9 @@ typedef float XFLOAT;
 typedef double XDOUBLE;
 
 // Terminated string type
-typedef _Null_terminated_ XCHAR* XSZSTR;
+typedef _Null_terminated_ wchar_t* XSZSTR;
+
+typedef wchar_t XCHAR;
 
 typedef void *XHANDLE;
 
@@ -403,8 +404,8 @@ struct XNAME
 {
     XUINT32 cNamespace;
     XUINT32 cName;
-    const XCHAR  *pNamespace;
-    const XCHAR  *pName;
+    const wchar_t  *pNamespace;
+    const wchar_t  *pName;
 };
 
 struct TextRangeData

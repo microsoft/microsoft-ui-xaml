@@ -22,6 +22,7 @@ namespace Microsoft.Xaml.WidgetSpinner.XBF
         DeferredElement_v3 = 9,
         ResourceDictionary_v3 = 10,
         Style_v3 = 11,
+        ResourceDictionary_v4 = 12,
 
         // Legacy values derived from StableXbfTypeIndex
         DeferredElement_v1 = StableXbfTypeIndex.DeferredElement,                        // 745

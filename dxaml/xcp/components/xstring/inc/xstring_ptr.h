@@ -13,6 +13,7 @@
 #include <macros.h>
 #include <cstdint>
 #include <hstring.h>
+#include <ankerl/unordered_dense.h>
 
 // Note: the extra L"" in XSTRING_PTR_STORAGE is to ensure only string literals
 // are used with the macro. Use XSTRING_PTR_STORAGE2 for module buffers passed
@@ -429,24 +430,13 @@ public:
 
     WCHAR* MakeBufferCopy() const;
 
-    // Hash algorithm for xstring_ptr_view. Uses the Jenkins one-at-a-time hash algorithm.
-    std::size_t GetHash() const
+    // Hash algorithm for xstring_ptr_view.
+    std::uint64_t GetHash() const
     {
-        std::size_t hash = 0;
         unsigned int length;
         const WCHAR* buffer = GetBufferAndCount(&length);
 
-        for (unsigned int i = 0; i < length; ++i)
-        {
-            hash += buffer[i];
-            hash += (hash << 10);
-            hash ^= (hash >> 6);
-        }
-        hash += (hash << 3);
-        hash ^= (hash >> 11);
-        hash += (hash << 15);
-
-        return hash;
+        return ankerl::unordered_dense::detail::wyhash::hash(buffer, length * sizeof(wchar_t));
     }
 
 protected:
@@ -706,7 +696,7 @@ namespace std {
     {
         std::size_t operator()(const xstring_ptr_view& inputString) const
         {
-            return inputString.GetHash();
+            return static_cast<std::size_t>(inputString.GetHash());
         }
     };
 
@@ -715,10 +705,29 @@ namespace std {
     {
         std::size_t operator()(const xstring_ptr& inputString) const
         {
-            return inputString.GetHash();
+            return static_cast<std::size_t>(inputString.GetHash());
         }
     };
 }
+
+// Transparent hash and equality for heterogeneous lookup (e.g. finding an
+// xstring_ptr_view key in a map keyed by xstring_ptr).
+struct xstring_ptr_transparent_hash {
+    using is_transparent = void;
+    using is_avalanching = void;
+
+    [[nodiscard]] auto operator()(xstring_ptr_view const& inputString) const noexcept -> uint64_t {
+        return inputString.GetHash();
+    }
+};
+
+struct xstring_ptr_transparent_equal {
+    using is_transparent = void;
+
+    bool operator()(xstring_ptr_view const& lhs, xstring_ptr_view const& rhs) const {
+        return lhs.Equals(rhs);
+    }
+};
 
 struct xstrCaseInsensitiveHasher
 {
@@ -755,7 +764,7 @@ struct xstrCaseSensitiveHasher
 {
     std::size_t operator()(const xstring_ptr_view& input) const
     {
-        return input.GetHash();
+        return static_cast<std::size_t>(input.GetHash());
     }
 };
 

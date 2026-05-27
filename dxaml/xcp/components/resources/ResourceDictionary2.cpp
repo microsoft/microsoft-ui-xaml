@@ -33,15 +33,14 @@ _Check_return_ HRESULT CResourceDictionary2::SetCustomWriterRuntimeData(
 }
 
 _Check_return_ HRESULT CResourceDictionary2::LoadValueIfExists(
-    _In_ const xstring_ptr_view& key,
-    _In_ bool isImplicitKey,
+    _In_ const ResourceKey& key,
     _Out_ bool& keyFound,
     _Out_ xref_ptr<CDependencyObject>& value)
 {
     StreamOffsetToken token;
     keyFound = false;
     // If the key doesn't exist in the dictionary we return an empty element.
-    auto success = m_spRuntimeData->TryGetResourceOffset(key, isImplicitKey, token);
+    auto success = m_spRuntimeData->TryGetResourceOffset(key, token);
     if (!success)
     {
         value.reset();
@@ -79,9 +78,8 @@ _Check_return_ HRESULT CResourceDictionary2::LoadValueIfExists(
 
 _Check_return_
 HRESULT CResourceDictionary2::LoadAllRemainingDeferredResources(
-    _In_ const ResourceMapType& loadedResources,
-    _Out_ std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& implicitResources,
-    _Out_ std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& explicitResources)
+        _In_ ResourceMap& existingResources,
+        _Out_ std::vector<std::pair<ResourceKeyStorage, xref_ptr<CDependencyObject>>>& loadedResources)
 {
     // We don't preserve the ordering of keys here. Ideally we'd keep the illusion
     // that the keys were in the same index order as they appeared in the developer's XAML file
@@ -90,32 +88,31 @@ HRESULT CResourceDictionary2::LoadAllRemainingDeferredResources(
     // here is arbitrary w.r.t the developer's intent. Not only is it ordered by the type of
     // key, but it also is dependent on the previous access order as already-instantiated
     // keys are already present in the dictionary.
-    auto instantiateAndAddKey = [this](const xstring_ptr& key, bool isImplicit,
-        std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>>& dest)
-    {
-        bool keyFound = false;
-        xref_ptr<CDependencyObject> resource;
-        IFC_RETURN(LoadValueIfExists(key, isImplicit, keyFound, resource));
-        ASSERT(keyFound);
-        dest.emplace_back(key, std::move(resource));
-        return S_OK;
-    };
 
-    implicitResources.clear();
-    for (const auto& key : m_spRuntimeData->GetImplicitKeys())
+    if (!m_spObjectCreator)
     {
-        if (loadedResources.find(ResourceKeyStorage(key, true)) == loadedResources.end())
-        {
-            IFC_RETURN(instantiateAndAddKey(key, true, implicitResources));
-        }
+        // The creator will use the context's weak references to some DOs (such as the root instance
+        // and the event root) to create its (really the binary parser's + its own context's) references
+        // for more convenient access. These references must also be weak to avoid cycles since
+        // the root references are to the ResourceDictionary that owns this object. We can guarantee
+        // that those effectively raw pointers cannot go away while this object exists.
+        m_spObjectCreator = std::make_unique<CustomWriterRuntimeObjectCreator>(
+            NameScopeRegistrationMode::RegisterEntries,
+            m_spRuntimeContext.get(),
+            CustomWriterRuntimeObjectCreator::ContextReference::Weak);
     }
 
-    explicitResources.clear();
-    for (const auto& key : m_spRuntimeData->GetExplicitKeys())
+    for (const auto& resource : *m_spRuntimeData)
     {
-        if (loadedResources.find(ResourceKeyStorage(key, false)) == loadedResources.end())
+        auto& key = resource.first;
+        if (existingResources.find(key) == existingResources.end())
         {
-            IFC_RETURN(instantiateAndAddKey(key, false, explicitResources));
+            xref_ptr<CDependencyObject> value;
+            xref_ptr<CThemeResource> unused;
+            auto token = resource.second;
+
+            IFC_RETURN(m_spObjectCreator->CreateInstance(token, &value, &unused));
+            loadedResources.emplace_back(key, std::move(value));
         }
     }
 
@@ -123,11 +120,10 @@ HRESULT CResourceDictionary2::LoadAllRemainingDeferredResources(
 }
 
 bool CResourceDictionary2::ContainsKey(
-    _In_ const xstring_ptr& key,
-    _In_ bool isImplicitKey) const
+    _In_ const ResourceKey& key) const
 {
     StreamOffsetToken token;
-    return m_spRuntimeData->TryGetResourceOffset(key, isImplicitKey, token);
+    return m_spRuntimeData->TryGetResourceOffset(key, token);
 }
 
 std::size_t CResourceDictionary2::GetInitialImplicitStyleKeyCount() const

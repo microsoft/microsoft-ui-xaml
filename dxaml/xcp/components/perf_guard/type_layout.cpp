@@ -76,7 +76,7 @@ VALIDATE_TYPE_LAYOUT(                                CKeyTime,   64,   80,  104)
 VALIDATE_TYPE_LAYOUT(      CNoParentShareableDependencyObject,   56,   72,  104) // 3
 VALIDATE_TYPE_LAYOUT(                       CFrameworkElement,  304,  320,  440) // 3
 VALIDATE_TYPE_LAYOUT(                              CTextBlock,  424,  440,  640) // 4
-VALIDATE_TYPE_LAYOUT(                     CResourceDictionary,  200,  220,  368) // 4
+VALIDATE_TYPE_LAYOUT(                     CResourceDictionary,  204,  224,  368) // 4
 VALIDATE_TYPE_LAYOUT(                          CRichTextBlock,  444,  460,  672) // 4
 VALIDATE_TYPE_LAYOUT(          CObjectAnimationUsingKeyFrames,  288,  304,  456) // 4
 VALIDATE_TYPE_LAYOUT(                                CBinding,   52,   68,   96) // 4

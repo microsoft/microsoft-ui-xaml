@@ -140,7 +140,7 @@ static CustomWriterRuntimeDataTypeIndex GetDeferredElementSerializationVersion(c
 // Returns the CustomWriterRuntimeDataTypeIndex to use when serializing ResourceDictionaryCustomWriterRuntimeData for the given target OS
 static CustomWriterRuntimeDataTypeIndex GetResourceDictionarySerializationVersion(const TargetOSVersion& /* osVersion */)
 {
-    return CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3;
+    return CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4;
 }
 
 // Returns the CustomWriterRuntimeDataTypeIndex to use when serializing StyleCustomWriterRuntimeData for the given target OS

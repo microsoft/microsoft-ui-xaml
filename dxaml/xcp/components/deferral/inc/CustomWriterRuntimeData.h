@@ -26,10 +26,7 @@ struct XamlPredicateAndArgs;
 class CustomWriterRuntimeData
 {
 public:
-    CustomWriterRuntimeData()
-        : m_shouldEncodeAsCustomData(true)
-    {
-    }
+    CustomWriterRuntimeData() = default;
 
     virtual ~CustomWriterRuntimeData() {};
 
@@ -50,21 +47,6 @@ public:
     // serialize/deserialize data and that it would be better placed on the corresponding writer. I wouldn't disagree with them.
     _Check_return_
     HRESULT virtual PrepareStream(_In_ std::shared_ptr<SubObjectWriterResult>& customWriterStream);
-
-    void SetShouldEncodeAsCustomData(_In_ bool shouldEncode)
-    {
-        m_shouldEncodeAsCustomData = shouldEncode;
-    }
-
-    // Indicates if the data stream should use a custom data blob. For degenerate cases (e.g. resource
-    // dictionaries with small cardinalities) the overhead of CustomRuntimeData is greater than the savings.
-    // In other scnearios we might be using the CustomWriter machinery for purposes that involve manipulation
-    // of the node stream outside of creating CustomRuntimeData. This method will cause the encoder to avoid
-    // emitting the custom runtime data ObjectWriterNode.
-    bool ShouldEncodeAsCustomData() const
-    {
-        return m_shouldEncodeAsCustomData;
-    }
 
     // Encode-time methods for helping handling of conditional scopes
     void PushConditionalScope(std::shared_ptr<Parser::XamlPredicateAndArgs> scope)
@@ -93,8 +75,6 @@ protected:
     // XamlPredicateAndArgs. The value is a vector of XamlPredicateAndArgs since the object may be part
     // of nested conditional scopes.
     containers::vector_map<StreamOffsetToken, std::vector<std::shared_ptr<Parser::XamlPredicateAndArgs>>> m_conditionallyDeclaredObjects;
-
-    bool m_shouldEncodeAsCustomData;
 
 private:
     std::vector<std::shared_ptr<Parser::XamlPredicateAndArgs>> m_conditionalScopes;

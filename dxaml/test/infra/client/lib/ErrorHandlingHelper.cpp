@@ -75,7 +75,7 @@ void ErrorHandlingHelper::PerformLeakDetection()
     if (SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"LeakThreshold", value)))
     {
         // If a value for leak threshold was passed in, then use that.
-        leakThreshold = std::stoi(value.GetBuffer());
+        leakThreshold = std::stoi(std::wstring(value));
     }
 
     LOG_OUTPUT(L"Checking for leaks.");

@@ -142,16 +142,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     {
         auto rs5plus1 = TargetOSVersion(OSVersions::WIN10_RS5.major, OSVersions::WIN10_RS5.minor, OSVersions::WIN10_RS5.build + 1, OSVersions::WIN10_RS5.revision);
         // Note that adding a new XBF version will necessitate updating this test
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WINBLUE), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_TH1), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_TH2), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS1), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS2), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS3), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS4), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS5), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(rs5plus1), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
-        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(TargetOSVersion(99, 0, 0, 0)), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v3);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WINBLUE), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_TH1), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_TH2), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS1), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS2), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS3), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS4), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(OSVersions::WIN10_RS5), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(rs5plus1), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
+        VERIFY_ARE_EQUAL(GetResourceDictionarySerializationVersion(TargetOSVersion(99, 0, 0, 0)), CustomWriterRuntimeDataTypeIndex::ResourceDictionary_v4);
     }
 
     void XbfVersioningUnitTests::VerifyGetStyleSerializationVersion()

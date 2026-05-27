@@ -235,6 +235,12 @@ _Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
     return Persist7BitEncodedInt(value, m_spSubNodeStream);
 }
 
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
+    _In_ const std::uint64_t value)
+{
+    return Persist7BitEncodedInt(value, m_spSubNodeStream);
+}
+
 _Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistLineInfo(
     _In_ const ObjectWriterNode& objectNode)
 {
@@ -273,8 +279,8 @@ _Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistLineInfo(
             lineOffsetDelta = (lineOffsetDelta >= 0 ? 2 * lineOffsetDelta : -2 * lineOffsetDelta - 1);
             columnOffsetDelta = (columnOffsetDelta >= 0 ? 2 * columnOffsetDelta : -2 * columnOffsetDelta - 1);
             IFC_RETURN(Persist7BitEncodedInt(streamOffsetDelta, m_spSubLineStream));
-            IFC_RETURN(Persist7BitEncodedInt(lineOffsetDelta, m_spSubLineStream));
-            IFC_RETURN(Persist7BitEncodedInt(columnOffsetDelta, m_spSubLineStream));
+            IFC_RETURN(Persist7BitEncodedInt(static_cast<unsigned int>(lineOffsetDelta), m_spSubLineStream));
+            IFC_RETURN(Persist7BitEncodedInt(static_cast<unsigned int>(columnOffsetDelta), m_spSubLineStream));
            
             m_lastNodeStreamOffset = static_cast<unsigned int>(currentOffset);
             m_lastLineOffset = objectNode.GetLineInfo().LineNumber();
@@ -292,23 +298,11 @@ _Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistLineInfo(
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlBinaryFormatSubWriter2::Persist7BitEncodedInt(
-    _In_ const unsigned int value,
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistByteToStream(
+    _In_ unsigned char byte,
     _In_ const xref_ptr<IPALStream>& spStream)
 {
-    static const unsigned int Bit8 = 0x00000080;    // 10000000
-    unsigned char currentByte = 0;
-    unsigned int valueToEncode = value;
-
-    while (valueToEncode >= Bit8)
-    {
-        currentByte  = static_cast<unsigned char>(valueToEncode | Bit8);
-        IFC_RETURN(XamlBinaryFormatSerializationHelper::SerializeItemToNodeStream(currentByte, GetVersion(), spStream));
-        valueToEncode >>= 7;
-    }
-    currentByte = static_cast<unsigned char>(valueToEncode);
-    IFC_RETURN(XamlBinaryFormatSerializationHelper::SerializeItemToNodeStream(currentByte, GetVersion(), spStream));
-
+    IFC_RETURN(XamlBinaryFormatSerializationHelper::SerializeItemToNodeStream(byte, GetVersion(), spStream));
     return S_OK;
 }
 

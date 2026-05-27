@@ -486,4 +486,163 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         VERIFY_ARE_EQUAL(static_cast<DirectUI::HorizontalAlignment>(result), DirectUI::HorizontalAlignment::Stretch);
     }
 
+    void StringUnitTests::XStringPtrHashStability()
+    {
+        // Table-driven test: verify that GetHash() produces stable, known values
+        // for a set of fixed strings. If this test breaks, the hash algorithm has
+        // changed and all persisted or cached hash values (e.g. ResourceDictionary
+		// keys stored in XBF) may be invalid.
+        struct HashTestCase
+        {
+            const wchar_t* input;
+            std::uint64_t expectedHash;
+        };
+
+        static const HashTestCase testCases[] =
+        {
+            { L"",                                      0x42BC986DC5EEC4D3ULL },  //  0: empty string
+            { L"A",                                     0x83C8A1F77F3BE4D0ULL },  //  1: single char
+            { L"ab",                                    0x3AA468A9F277A9AFULL },  //  2: 2 chars
+            { L"foo",                                   0x84236FFA53C54A3FULL },  //  3: 3 chars
+            { L"test",                                  0x297EACBEC0297683ULL },  //  4: 4 chars
+            { L"Hello",                                 0x5571579D3FE1AA45ULL },  //  5: 5 chars
+            { L"Widget",                                0xA41D130832BACBAFULL },  //  6: 6 chars
+            { L"XAML",                                  0xC8020674B299B810ULL },  //  7: 4 chars uppercase
+            { L"Controls",                              0x32E7BB34F6E9D457ULL },  //  8: 8 chars
+            { L"Microsoft",                             0x7641E9E605C32839ULL },  //  9: 9 chars
+            { L"StringHash",                            0x77CD22226184BE76ULL },  // 10: 10 chars
+            { L"xstring_ptr_view",                      0x65273F7293519AC9ULL },  // 11: 16 chars with underscores
+            { L"The quick brown fox",                   0x7F1629212EC9F18BULL },  // 12: 19 chars with spaces
+            { L"Windows.UI.Xaml.Controls",              0x7259D8DC0E420FF4ULL },  // 13: 24 chars with dots
+            { L"unordered_dense::detail",               0xC44D4B12BBFAC3B8ULL },  // 14: 23 chars with colons
+            { L"Hash stability test string number 16",  0x7489E1D26B2D4D85ULL },  // 15: 36 chars
+            { L"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",  0x91C808CBFECC8545ULL },  // 16: 36 chars alphanumeric
+            { L"\x00E9\x00F1\x00FC\x00E4\x00F6",        0xD9D55899F91B2A03ULL },  // 17: 5 Unicode chars (éñüäö)
+            { L"Mix\x2603\x2764Unicode\x00AE",          0x246E5E25D5C73F9DULL },  // 18: mixed ASCII + Unicode
+            { L"A slightly longer string that exercises more of the hash computation path for better coverage", 0x2DF67A57453DFF91ULL },  // 19: 93 chars
+        };
+
+        for (int i = 0; i < ARRAYSIZE(testCases); ++i)
+        {
+            xstring_ptr str;
+            VERIFY_SUCCEEDED(xstring_ptr::CloneBuffer(testCases[i].input, static_cast<XUINT32>(wcslen(testCases[i].input)), &str));
+
+            std::uint64_t actualHash = str.GetHash();
+
+            WEX::Logging::Log::Comment(
+                WEX::Common::String().Format(L"String[%d] = \"%s\", hash = 0x%016llX", i, testCases[i].input, actualHash));
+
+            VERIFY_ARE_EQUAL(testCases[i].expectedHash, actualHash);
+        }
+    }
+
+    // Jenkins one-at-a-time hash (original implementation from commit 7734731a).
+    // This is the hash that xstring_ptr::GetHash() used before switching to wyhash.
+    // Note: uses std::size_t (64-bit on x64) with shift constants tuned for 32-bit.
+    static std::size_t JenkinsHash(const WCHAR* buffer, unsigned int length)
+    {
+        std::size_t hash = 0;
+        for (unsigned int i = 0; i < length; ++i)
+        {
+            hash += buffer[i];
+            hash += (hash << 10);
+            hash ^= (hash >> 6);
+        }
+        hash += (hash << 3);
+        hash ^= (hash >> 11);
+        hash += (hash << 15);
+        return hash;
+    }
+
+    void StringUnitTests::XStringPtrHashBenchmark()
+    {
+        struct BenchmarkCase
+        {
+            const wchar_t* label;
+            const wchar_t* input;
+        };
+
+        static const BenchmarkCase cases[] =
+        {
+            { L"Short  5ch", L"Width" },
+            { L"Med   24ch", L"Windows.UI.Xaml.Controls" },
+            { L"Long  93ch", L"A slightly longer string that exercises more of the hash computation path for better coverage" },
+        };
+
+        LARGE_INTEGER freq;
+        QueryPerformanceFrequency(&freq);
+
+        static const int warmupIterations = 10000;
+        static const int measureIterations = 1000000;
+
+        WEX::Logging::Log::Comment(L"=== xstring_ptr Hash Benchmark: wyhash (current) vs Jenkins (commit 7734731a) ===");
+        WEX::Logging::Log::Comment(
+            WEX::Common::String().Format(L"Iterations: %d (warmup: %d), QPC freq: %lld Hz",
+                measureIterations, warmupIterations, freq.QuadPart));
+
+        volatile std::uint64_t sink = 0;
+
+        for (int c = 0; c < ARRAYSIZE(cases); ++c)
+        {
+            xstring_ptr str;
+            VERIFY_SUCCEEDED(xstring_ptr::CloneBuffer(
+                cases[c].input,
+                static_cast<XUINT32>(wcslen(cases[c].input)),
+                &str));
+
+            unsigned int charLen;
+            const WCHAR* buf = str.GetBufferAndCount(&charLen);
+
+            // --- Benchmark wyhash (current GetHash) ---
+            for (int i = 0; i < warmupIterations; ++i)
+            {
+                sink = str.GetHash();
+            }
+
+            LARGE_INTEGER startWy, endWy;
+            QueryPerformanceCounter(&startWy);
+            for (int i = 0; i < measureIterations; ++i)
+            {
+                sink = str.GetHash();
+            }
+            QueryPerformanceCounter(&endWy);
+
+            double wySeconds = static_cast<double>(endWy.QuadPart - startWy.QuadPart) / freq.QuadPart;
+            double wyNsPerCall = (wySeconds * 1.0e9) / measureIterations;
+            double wyNsPerChar = wyNsPerCall / charLen;
+
+            // --- Benchmark Jenkins (old hash) ---
+            for (int i = 0; i < warmupIterations; ++i)
+            {
+                sink = JenkinsHash(buf, charLen);
+            }
+
+            LARGE_INTEGER startJk, endJk;
+            QueryPerformanceCounter(&startJk);
+            for (int i = 0; i < measureIterations; ++i)
+            {
+                sink = JenkinsHash(buf, charLen);
+            }
+            QueryPerformanceCounter(&endJk);
+
+            double jkSeconds = static_cast<double>(endJk.QuadPart - startJk.QuadPart) / freq.QuadPart;
+            double jkNsPerCall = (jkSeconds * 1.0e9) / measureIterations;
+            double jkNsPerChar = jkNsPerCall / charLen;
+
+            double ratio = jkNsPerCall / wyNsPerCall;
+
+            WEX::Logging::Log::Comment(
+                WEX::Common::String().Format(
+                    L"[%s] wyhash: %6.1f ns/call %5.2f ns/char | Jenkins: %6.1f ns/call %5.2f ns/char | speedup: %.2fx",
+                    cases[c].label,
+                    wyNsPerCall, wyNsPerChar,
+                    jkNsPerCall, jkNsPerChar,
+                    ratio));
+        }
+
+        // Use sink to prevent optimization
+        WEX::Logging::Log::Comment(
+            WEX::Common::String().Format(L"(sink = 0x%016llX)", static_cast<std::uint64_t>(sink)));
+    }
+
 } } } } }

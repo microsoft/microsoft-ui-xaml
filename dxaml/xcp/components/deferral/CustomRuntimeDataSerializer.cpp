@@ -25,6 +25,20 @@ namespace CustomRuntimeDataSerializationHelpers {
         return reader->ReadUInt();
     }
 
+    _Check_return_ HRESULT Serializer<std::uint64_t>::Write(
+        _In_ std::uint64_t target,
+        _In_ XamlBinaryFormatSubWriter2* writer,
+        _In_ const std::vector<unsigned int>&)
+    {
+        IFC_RETURN(writer->PersistConstant(target));
+        return S_OK;
+    }
+
+    std::uint64_t Serializer<std::uint64_t>::Read(_In_ XamlBinaryFormatSubReader2* reader)
+    {
+        return reader->ReadUInt64();
+    }
+
     _Check_return_ HRESULT Serializer<xstring_ptr>::Write(
         _In_ const xstring_ptr& target,
         _In_ XamlBinaryFormatSubWriter2* writer,

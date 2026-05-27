@@ -118,6 +118,16 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Classification", L"Integration")
                 TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(XStringPtrHashStability)
+                TEST_METHOD_PROPERTY(L"Classification", L"Integration")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(XStringPtrHashBenchmark)
+                TEST_METHOD_PROPERTY(L"Classification", L"Integration")
+                TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            END_TEST_METHOD()
         };
 
     }

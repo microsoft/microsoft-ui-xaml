@@ -272,23 +272,18 @@ CResourceDictionary::AddKey(
     ASSERT(undeferringKey ||
         m_processingBulkUndeferral ||
         !m_pDeferredResources ||
-        !m_pDeferredResources->ContainsKey(keyStorage.GetKey(), keyStorage.IsKeyType()));
+        !m_pDeferredResources->ContainsKey(key));
 #endif
 
     // Insert the map entry if the caller didn't do it already.
-    auto pair = m_resourceMap.emplace(keyStorage, nullptr);
-
-    if (!pair.second) // second component is false if the key was already mapped
+    auto [entry, emplaced] = m_resourceMap.try_emplace(keyStorage, pValue);
+    if (!emplaced)
     {
         IFC_RETURN(static_cast<HRESULT>(E_DO_RESOURCE_KEYCONFLICT));
     }
 
-    auto mapEntry = pair.first;
-
-    // Store the key, and update the map entry's value to the resource value.
-    ASSERT(mapEntry != m_resourceMap.end());
+    ASSERT(entry != m_resourceMap.end());
     m_keyByIndex.emplace_back(std::make_pair(keyStorage.GetKey(), KeyInfo { keyStorage.IsKeyType(), keyIsOverride }));
-    mapEntry->second = pValue;
 
     if (undeferringKey)
     {
@@ -337,14 +332,12 @@ CResourceDictionary::RemoveKey(
 
     TraceResourceDictionaryRemoveInfo(reinterpret_cast<UINT64>(this), key.GetKey().GetBuffer(), key.IsKeyType());
 
-    auto iter = m_resourceMap.find(key);
-    ASSERT(iter != m_resourceMap.end());
-
-    pValue = iter->second;
+    auto extracted = m_resourceMap.extract(key);
+    ASSERT(extracted.has_value());
+    pValue = extracted.has_value() ? extracted->second : nullptr;
 
     if (index < m_keyByIndex.size())
     {
-        m_resourceMap.erase(iter);
         m_keyByIndex.erase(m_keyByIndex.begin() + index); // remove the stored key
     }
     else
@@ -1141,12 +1134,14 @@ CResourceDictionary::Remove(
     HRESULT hr = S_OK;
     CDependencyObject *pDO = NULL;
 
-    if (m_pDeferredResources && m_pDeferredResources->ContainsKey(strKey, !!fKeyIsType))
+    ResourceKey resourceKey(strKey, !!fKeyIsType);
+
+    if (m_pDeferredResources && m_pDeferredResources->ContainsKey(resourceKey))
     {
         IFC(LoadAllDeferredResources());
     }
 
-    IGNOREHR(GetKeyNoRefImpl(ResourceKey(strKey, !!fKeyIsType), Resources::LookupScope::SelfOnly, &pDO));
+    IGNOREHR(GetKeyNoRefImpl(resourceKey, Resources::LookupScope::SelfOnly, &pDO));
     if (pDO)
     {
         CDependencyObject* pReturnedObject = CDOCollection::Remove(pDO);
@@ -1205,15 +1200,17 @@ CResourceDictionary::GetUndeferredImplicitStyles(Jupiter::stack_vector<CStyle*, 
 
     for (auto& entry : m_resourceMap)
     {
-        const auto& resourceKey = entry.first;
-
-        if (!resourceKey.IsKeyType()) // if not implicit
+        if (!entry.first.IsKeyType())
+        {
             continue;
+        }
 
-        CDependencyObject* pValue = entry.second;
+        auto pValue = entry.second;
 
         if (!pValue || !pValue->OfTypeByIndex<KnownTypeIndex::Style>())
+        {
             continue;
+        }
 
         CStyle* pStyle = nullptr;
         IFC_RETURN(DoPointerCast(pStyle, pValue));
@@ -1908,7 +1905,7 @@ CResourceDictionary::TryLoadDeferredResource(
     bool keyFound = false;
     xref_ptr<CDependencyObject> resource;
 
-    IFC_RETURN(m_pDeferredResources->LoadValueIfExists(key.GetKey(), key.IsKeyType(), keyFound, resource));
+    IFC_RETURN(m_pDeferredResources->LoadValueIfExists(key, keyFound, resource));
 
     // Notice how this method behaves- if the key fails to parse it throws a bad HRESULT, if
     // the key simply doesn't exist it returns S_OK with the 'keyFound' parameter set to false.
@@ -1952,8 +1949,7 @@ CResourceDictionary::LoadAllDeferredResources()
         });
 #endif
 
-        std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>> implicitResources;
-        std::vector<std::pair<xstring_ptr, xref_ptr<CDependencyObject>>> explicitResources;
+        std::vector<std::pair<ResourceKeyStorage, xref_ptr<CDependencyObject>>> loadedResources;
 
         m_keyByIndex.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
         m_resourceMap.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
@@ -1968,9 +1964,7 @@ CResourceDictionary::LoadAllDeferredResources()
         // should NEVER be a bad HRESULT thrown from an Add operation, I'd go as
         // far as making it FAIL_FAST here, but I don't claim to know all the ways DO Enter
         // can fail and we could end up doing some nontrivial amount of work there.
-        IFC_RETURN(m_pDeferredResources->LoadAllRemainingDeferredResources(
-            m_resourceMap,
-            implicitResources, explicitResources));
+        IFC_RETURN(m_pDeferredResources->LoadAllRemainingDeferredResources(m_resourceMap, loadedResources));
 
         // Imagine the following XAML. If both these resources have not been undeferred at this point. Then the undeferal of 'Icon' will
         // actually result in the current dictionary undefering IconConverter and adding it to the current dictionary. We don't necessarily
@@ -1992,10 +1986,9 @@ CResourceDictionary::LoadAllDeferredResources()
                 </Setter>
             </Style>
         */
-        for (const auto& kvp : implicitResources)
+        for (const auto& kvp : loadedResources)
         {
-            ResourceKey key(kvp.first, true);
-
+            auto key = kvp.first.ToResourceKey();
             // Make sure key is not in map
             if (FindResourceByKey(key) == nullptr)
             {
@@ -2004,20 +1997,6 @@ CResourceDictionary::LoadAllDeferredResources()
                 IFC_RETURN(Add(key, &value, nullptr, false, true, false));
             }
         }
-
-        for (const auto& kvp : explicitResources)
-        {
-            ResourceKey key(kvp.first, false);
-
-            // Make sure key is not in map
-            if (FindResourceByKey(key) == nullptr)
-            {
-                CValue value;
-                value.SetObjectAddRef(kvp.second.get());
-                IFC_RETURN(Add(key, &value, nullptr, false, true, false));
-            }
-        }
-
         TraceFaultInBehaviorEnd();
     }
 
@@ -2367,7 +2346,7 @@ CColorPaletteResources::SetCustomWriterRuntimeData(
         ASSERT(!overrideKey.IsNullOrEmpty());
 
         StreamOffsetToken unused;
-        if (std::static_pointer_cast<ResourceDictionaryCustomRuntimeData>(data)->TryGetResourceOffset(overrideKey, false, unused))
+        if (std::static_pointer_cast<ResourceDictionaryCustomRuntimeData>(data)->TryGetResourceOffset(ResourceKey(overrideKey, false), unused))
         {
             IFC_RETURN(static_cast<HRESULT>(E_DO_RESOURCE_KEYCONFLICT));
         }
@@ -2378,23 +2357,16 @@ CColorPaletteResources::SetCustomWriterRuntimeData(
 
 bool CResourceDictionary::HasKey(const xstring_ptr& key, bool isImplicitKey) const
 {
+    ResourceKey resourceKey(key, isImplicitKey);
     bool hasKey = false;
     if (m_pDeferredResources)
     {
-        hasKey = m_pDeferredResources->ContainsKey(key, isImplicitKey);
+        hasKey = m_pDeferredResources->ContainsKey(resourceKey);
     }
 
     if (!hasKey)
     {
-        size_t index = 0;
-        while (!hasKey && index < m_keyByIndex.size())
-        {
-            if (m_keyByIndex[index].second.m_isType == isImplicitKey)
-            {
-                hasKey = key.Equals(m_keyByIndex[index].first);
-            }
-            ++index;
-        }
+        hasKey = m_resourceMap.find(resourceKey) != m_resourceMap.end();
     }
 
     return hasKey;

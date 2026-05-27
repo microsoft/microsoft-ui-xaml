@@ -5,6 +5,7 @@
 
 #include <ICustomWriterRuntimeDataReceiver.h>
 #include <resources\inc\ResourceDictionary2.h>
+#include <resources\inc\ResourceDictionaryMapTypes.h>
 #include <stack_vector.h>
 #include "collection\inc\DOCollection.h"
 #include "MarkupExtension.h"
@@ -496,8 +497,7 @@ private:
     // Store of each resource's key by index.
     std::vector<std::pair<xstring_ptr, KeyInfo>> m_keyByIndex;
 
-    // Map of keys to resources.
-    ResourceMapType m_resourceMap;
+    ResourceMap m_resourceMap;
 
     // Temporary storage for keys that are being undeferred. This allows us to
     // avoid an infinite loop when TryLoadDeferredResource is reentered. These

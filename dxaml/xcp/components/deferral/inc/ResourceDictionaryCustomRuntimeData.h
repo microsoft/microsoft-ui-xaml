@@ -9,6 +9,8 @@
 #include <xstring_ptr.h>
 #include <cstdint>
 
+#include <resources\inc\ResourceDictionaryMapTypes.h>
+
 class ParserErrorReporter;
 class ResourceDictionaryCustomWriter;
 class CResourceDictionary2;
@@ -62,17 +64,11 @@ protected:
 #pragma region Runtime Methods
 public:
     _Success_(return != false)
-    bool TryGetResourceOffset(_In_ const xstring_ptr_view& key, _In_ bool isImplicitKey,
+    bool TryGetResourceOffset(_In_ const ResourceKey& key,
         _Out_ StreamOffsetToken& token);
 
     std::size_t size();
     std::size_t GetImplicitResourceCount();
-
-    // These methods carry a performance penalty. Because the list of keys
-    // is only needed in the case of faulting in all the resources we don't make a point to
-    // store it in this long-term object. Instead the vector is created on-demand.
-    const std::vector<xstring_ptr> GetExplicitKeys();
-    const std::vector<xstring_ptr> GetImplicitKeys();
 
     // Returns the list of resources that should be automatically undeferred (e.g. has x:Name or x:ConnectionId)
     const std::vector<xstring_ptr>& GetResourcesForAutoUndeferral() const { return m_resourcesForAutoUndeferral; }
@@ -81,25 +77,37 @@ public:
     // a CResourceDictionary2.
     _Check_return_ HRESULT ResolveConditionalResources(_In_ std::shared_ptr<ParserErrorReporter> parserErrorReporter);
 
+    auto begin() const
+    {
+        ASSERT(m_conditionalResourcesResolved);
+        return m_resourcesMap.begin();
+    }
+    auto end() const
+    {
+        ASSERT(m_conditionalResourcesResolved);
+        return m_resourcesMap.end();
+    }
+    auto begin()
+    {
+        ASSERT(m_conditionalResourcesResolved);
+        return m_resourcesMap.begin();
+    }
+    auto end()
+    {
+        ASSERT(m_conditionalResourcesResolved);
+        return m_resourcesMap.end();
+    }
+
 #pragma endregion
 
 private:
-    _Check_return_ HRESULT ResolveConditionalResourcesHelper(
-        _In_ bool implicitResources,
-        _In_ std::shared_ptr<ParserErrorReporter> parserErrorReporter);
+    // Unified map for runtime lookup of both explicit and implicit keys.
+    // The explicit/implicit distinction is encoded in the ResourceKeyStorage key's IsKeyType() bit.
+    DeferredResourceMap m_resourcesMap;
 
-    // Maps for runtime lookup of explicit and implicit keys. The key collections are kept
-    // separate because explicit key strings can match implicit key strings, which are merely
-    // the name of the type the key is implicitly targetting.
-    containers::vector_map<xstring_ptr, StreamOffsetToken> m_explicitKeyResourcesMap;
-    containers::vector_map<xstring_ptr, StreamOffsetToken> m_implicitKeyResourcesMap;
-
-    // These hold conditionally declared resources (i.e. resources prefixed with an xmlns prefix that
-    // maps to a conditional namespace). We use a vector_map here because we expect it to be small enough
-    // that the difference between O(log n) and O(1) lookup is insignificant, and to avoid the need for the
-    // vector->unordered_map trickery we do for the main dictionaries in the name of minimizing space overhead.
-    containers::vector_map<xstring_ptr, std::vector<StreamOffsetToken>> m_conditionalExplicitKeyResources;
-    containers::vector_map<xstring_ptr, std::vector<StreamOffsetToken>> m_conditionalImplicitKeyResources;
+    // Unified map for conditionally declared resources (i.e. resources prefixed with an xmlns prefix that
+    // maps to a conditional namespace).
+    ConditionalDeferredResourceMap m_conditionalResourcesMap;
 
     std::vector<xstring_ptr> m_resourcesForAutoUndeferral;
 
