@@ -272,6 +272,12 @@ public:
     xref_ptr<CVisualStateGroupCollection> GetVisualStateGroupsNoCreate() const;
     xref_ptr<CResourceDictionary> GetResourcesNoCreate() const;
 
+    // Fast-path for hot loops: skips MetadataAPI lookup and refcounting.
+    CResourceDictionary* GetResourcesNoCreateNoRef() const;
+
+    // Cached resource check -- true when this FrameworkElement has a local ResourceDictionary. 
+    bool HasLocalResources() const { return m_hasLocalResources; }
+
     virtual xref_ptr<CBrush> GetBackgroundBrush() const;
     virtual xref_ptr<CBrush> GetBorderBrush() const;
     virtual XTHICKNESS GetBorderThickness() const;
@@ -413,7 +419,11 @@ private:
     // Allow 8 byte alignment on amd64
     ImplicitStyleProvider m_eImplicitStyleProvider : 4;
     bool                  m_firedLoadingEvent      : 1;
-    // unsigned int                                : 27;    // 6 - 32 Unused on amd64
+    bool                  m_hasLocalResources      : 1;
+    // unsigned int                                : 26;    // 7 - 32 Unused on amd64
+
+    // Maintained by CFrameworkElement::OnPropertyChanged when FrameworkElement.Resources changes.
+    void SetHasLocalResources(bool value) { m_hasLocalResources = value; }
 
 
 public:

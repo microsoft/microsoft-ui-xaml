@@ -132,9 +132,13 @@ namespace Resources { namespace ScopedResources
         return S_OK;
     }
 
+    // The visitor used to be a std::function, but taking it as a template
+    // parameter lets the compiler see the lambda body and inline it -- this
+    // removes the indirect call overhead on a hot tree-walk path.
+    template<typename Visitor>
     static _Check_return_ HRESULT TraverseVisualTreeResources(
         _In_ const CDependencyObject* const startObject,
-        const std::function<HRESULT(const CFrameworkElement*, CResourceDictionary*, bool&)>& visitor)
+        const Visitor& visitor)
     {
         const CDependencyObject* current = startObject;
 
@@ -142,7 +146,7 @@ namespace Resources { namespace ScopedResources
         {
             if (const CFrameworkElement* currentAsFe = do_pointer_cast<CFrameworkElement>(current))
             {
-                if (xref_ptr<CResourceDictionary> resources = currentAsFe->GetResourcesNoCreate())
+                if (CResourceDictionary* resources = currentAsFe->GetResourcesNoCreateNoRef())
                 {
                     bool done = false;
 

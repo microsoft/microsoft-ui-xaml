@@ -128,7 +128,7 @@ namespace Diagnostics
                 auto parentFE = do_pointer_cast<CFrameworkElement>(parent);
                 if (parentFE)
                 {
-                    if (childResources == parentFE->GetResourcesNoCreate())
+                    if (parentFE->GetResourcesNoCreateNoRef() == childResources)
                     {
                         foundProperty = DirectUI::MetadataAPI::GetPropertyByIndex(KnownPropertyIndex::FrameworkElement_Resources);
                     }
