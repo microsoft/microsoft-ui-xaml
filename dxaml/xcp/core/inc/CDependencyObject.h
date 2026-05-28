@@ -1733,8 +1733,6 @@ public:
 
     CDependencyObject* GetPublicRootVisual();
 
-    static const WCHAR* TypeIndexToType(KnownTypeIndex typeIndex);
-
 public:
     // Default values for properties with storage type float array
 

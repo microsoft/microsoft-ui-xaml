@@ -8,6 +8,7 @@
 
 #include "PropertyAccess.h"
 #include "PropertyPathStep.h"
+#include "XamlTelemetry.h"
 
 namespace DirectUI
 {
@@ -33,6 +34,15 @@ public:
         IFC(PropertyPathStep::Initialize(pOwner));
         m_nIndex = nIndex;
         m_fListenToChanges = fListenToChanges;
+
+#ifdef TRACE_BINDINGS
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - PP - IntIndexerPathStep::Initialize",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingUInt32(m_nIndex, "Index"),
+            TraceLoggingBoolean(m_fListenToChanges, "ListenToChanges"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 
     Cleanup:
 

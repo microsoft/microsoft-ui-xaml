@@ -5,6 +5,7 @@
 #include "PropertyInfoPropertyAccess.h"
 #include "CustomDependencyProperty.h"
 #include <xstrutil.h>
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -22,6 +23,18 @@ PropertyInfoPropertyAccess::Initialize(
     SetPtrValue(m_tpSource, pSource);
     m_pProperty = pProperty;
     m_pSourceType = pSourceType;
+
+#ifdef TRACE_BINDINGS
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Binding - PP - PropertyInfoPropertyAccess::Initialize",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pSource), "SourcePointer"),
+        TraceLoggingWideString(pSourceType->GetFullName().GetBuffer(), "SourceType"),
+        TraceLoggingWideString(pProperty->GetName().GetBuffer(), "PropertyName"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pOwner), "OwnerPointer"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
+
     return S_OK;
 }
 

@@ -27,6 +27,7 @@
 #include <DeferredElementStateChange.h>
 
 #include "Control_Partial.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -45,8 +46,8 @@ private:
 public:
 
     // Due to a bug in C# WinRT 1.2.1, tearoffs are not correctly lifetime managed. To maintain tearoff perf advantages
-    // but avoid an over-release, tie the lifetime strictly to the lifetime of the parent object. This works because the parent 
-    // will still have a C# WinRT tracker reference. This instance does not hold a reference on the parent, since that would 
+    // but avoid an over-release, tie the lifetime strictly to the lifetime of the parent object. This works because the parent
+    // will still have a C# WinRT tracker reference. This instance does not hold a reference on the parent, since that would
     // create a cycle. So unlike a normal tear-off, this tear-off is cached for the lifetime of the containing object, but
     // is held in an external map.
     static TearoffSourceInfoPrivate* Get(_In_ DependencyObject* owner)
@@ -192,8 +193,8 @@ private:
 public:
 
     // Due to a bug in C# WinRT 1.2.1, tearoffs are not correctly lifetime managed. To maintain tearoff perf advantages
-    // but avoid an over-release, tie the lifetime strictly to the lifetime of the parent object. This works because the parent 
-    // will still have a C# WinRT tracker reference. This instance does not hold a reference on the parent, since that would 
+    // but avoid an over-release, tie the lifetime strictly to the lifetime of the parent object. This works because the parent
+    // will still have a C# WinRT tracker reference. This instance does not hold a reference on the parent, since that would
     // create a cycle. So unlike a normal tear-off, this tear-off is cached for the lifetime of the containing object, but
     // is held in an external map.
     static TearoffMemoryInfoPrivate* Get(_In_ DependencyObject * owner)
@@ -1643,6 +1644,29 @@ _Check_return_ HRESULT DependencyObject::RefreshExpression(_In_ const CDependenc
 _Check_return_ HRESULT
 DependencyObject::RefreshExpression_Helper(_In_ const CDependencyProperty* pDP, _In_ EffectiveValueEntry* pValueEntry)
 {
+#ifdef TRACE_BINDINGS
+    const auto& cdoTypeName = DirectUI::MetadataAPI::GetClassInfoByIndex(GetHandle()->GetTypeIndex())->GetFullName();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Binding - DependencyObject::RefreshExpression_Helper",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+        TraceLoggingWideString(cdoTypeName.GetBuffer(), "TypeName"),
+        TraceLoggingWideString(pDP->GetName().GetBuffer(), "PropertyName"),
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    auto endEvent = wil::scope_exit([&]
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - DependencyObject::RefreshExpression_Helper",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    });
+#endif
+
     // Some properties like ContentPresenter.Content don't set the BaseValueSource correctly sometimes, so
     // consider "Default" as "Unknown" because the property may not have had its default bit cleared.
     ::BaseValueSource baseValueSource = GetHandle()->GetBaseValueSource(pDP);
@@ -2251,6 +2275,29 @@ _Check_return_ HRESULT DependencyObject::NotifyPropertyChanged(_In_ const Proper
     ctl::ComPtr<CorePropertyChangedCallbackEventSourceType> spSource;
     ctl::ComPtr<xaml::IDependencyProperty> spDP;
 
+#ifdef TRACE_EVENTS
+    const auto& cdoTypeName = DirectUI::MetadataAPI::GetClassInfoByIndex(GetHandle()->GetTypeIndex())->GetFullName();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "DependencyObject::NotifyPropertyChanged",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+        TraceLoggingWideString(cdoTypeName.GetBuffer(), "TypeName"),
+        TraceLoggingWideString(args.m_pDP->GetName().GetBuffer(), "PropertyName"),
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    auto endEvent = wil::scope_exit([&]
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "DependencyObject::NotifyPropertyChanged",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    });
+#endif
+
     if (auto customDependencyProperty = args.m_pDP->AsOrNull<CCustomDependencyProperty>())
     {
         pCallbackNoRef = customDependencyProperty->GetPropertyChangedCallbackNoRef();
@@ -2323,6 +2370,29 @@ Cleanup:
 _Check_return_ HRESULT DependencyObject::RaiseDPChanged(_In_ const CDependencyProperty* pDP)
 {
     HRESULT hr = S_OK;
+
+#ifdef TRACE_BINDINGS
+    const auto& cdoTypeName = DirectUI::MetadataAPI::GetClassInfoByIndex(GetHandle()->GetTypeIndex())->GetFullName();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Binding - DependencyObject::RaiseDPChanged",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+        TraceLoggingWideString(cdoTypeName.GetBuffer(), "TypeName"),
+        TraceLoggingWideString(pDP->GetName().GetBuffer(), "PropertyName"),
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    auto endEvent = wil::scope_exit([&]
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - DependencyObject::RaiseDPChanged",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    });
+#endif
 
     if (m_pDPChangedEventSource)
     {
@@ -3040,6 +3110,28 @@ DependencyObject::OnInheritanceContextChanged()
     // context.
     if (m_pInheritanceContextChangedEventSource)
     {
+#ifdef TRACE_BINDINGS
+        const auto& cdoTypeName = DirectUI::MetadataAPI::GetClassInfoByIndex(GetHandle()->GetTypeIndex())->GetFullName();
+
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - DependencyObject::OnInheritanceContextChanged",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+            TraceLoggingWideString(cdoTypeName.GetBuffer(), "TypeName"),
+            TraceLoggingBoolean(true, "IsStart"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+        auto endEvent = wil::scope_exit([&]
+        {
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "Binding - DependencyObject::OnInheritanceContextChanged",
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+                TraceLoggingBoolean(false, "IsStart"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+        });
+#endif
+
         IFC(m_pInheritanceContextChangedEventSource->Raise(this, NULL));
     }
 
@@ -3586,7 +3678,7 @@ _Check_return_ HRESULT DependencyObject::RemoveEventSource(
 
 #if XCP_MONITOR
         // Global singletons that are DependencyObjects with events, e.g. Application.DebugSettings,
-        // can cause the leak detector to raise a false positive during tests as they will never be 
+        // can cause the leak detector to raise a false positive during tests as they will never be
         // destroyed prior to the leak detector running. To avoid this we'll explicitly free the
         // event map if it is now empty
         if (m_pEventMap->empty())

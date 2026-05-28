@@ -11,6 +11,12 @@
 // Uncomment to trace parser commands via ETW
 //#define TRACE_PARSER_COMMANDS 1
 
+// Uncomment to trace classic Bindings via ETW
+//#define TRACE_BINDINGS 1
+
+// Uncomment to trace events via ETW
+//#define TRACE_EVENTS 1
+
 // GUID for "Microsoft-Windows-Xaml": {531a35ab-63ce-4bcf-aa98-f88c7a89e455}
 #pragma warning (suppress : 6387) // param 1 could be null warning from inside wil\Telemetry.
 DECLARE_TRACELOGGING_CLASS(XamlTelemetryLogging, "Microsoft-Windows-XAML", (0x531a35ab, 0x63ce, 0x4bcf, 0xaa, 0x98, 0xf8, 0x8c, 0x7a, 0x89, 0xe4, 0x55));

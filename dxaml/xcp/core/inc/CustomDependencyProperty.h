@@ -107,6 +107,11 @@ class CCustomProperty : public CDependencyProperty
         m_flags |= MetaDataPropertyInfoFlags::IsInvalid;
     }
 
+    xstring_ptr GetName() const
+    {
+        return m_strName;
+    }
+
 private:
     CCustomProperty(
         _In_ KnownPropertyIndex index,

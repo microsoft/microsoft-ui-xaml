@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "INPCListenerBase.h"
+#include "XamlTelemetry.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -18,8 +19,8 @@ INPCListenerBase::INPCListenerBase()
 INPCListenerBase::~INPCListenerBase()
 { }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 INPCListenerBase::AddPropertyChangedHandler(_In_ IInspectable *pSource)
 {
     HRESULT hr = S_OK;
@@ -53,7 +54,7 @@ INPCListenerBase::UpdatePropertyChangedHandler(_In_opt_ IInspectable *pOldSource
     {
         if ((spINPC = ctl::query_interface_cast<xaml_data::INotifyPropertyChanged>(pNewSource)))
         {
-            IFC(m_epPropertyChangedHandler.AttachEventHandler(spINPC.Get(), 
+            IFC(m_epPropertyChangedHandler.AttachEventHandler(spINPC.Get(),
                 [this](IInspectable*, xaml_data::IPropertyChangedEventArgs *pArgs)
                 {
                     return OnPropertyChangedCallback(pArgs);
@@ -66,8 +67,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 INPCListenerBase::DisconnectPropertyChangedHandler(_In_ IInspectable *pSource)
 {
     HRESULT hr = S_OK;
@@ -82,8 +83,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 INPCListenerBase::OnPropertyChangedCallback(_In_ xaml_data::IPropertyChangedEventArgs *pArgs)
 {
     HRESULT hr = S_OK;
@@ -101,20 +102,38 @@ INPCListenerBase::OnPropertyChangedCallback(_In_ xaml_data::IPropertyChangedEven
         const wchar_t* current = strProperty.GetRawBuffer(&length);
         propertyChanged = (length == m_propertyNameLength) && (wcsncmp(current, buffer, length) == 0);
     }
-    else 
+    else
     {
         // If the property name is NULL, which means empty, then we want the change
         propertyChanged = TRUE;
     }
 
-    // Notify the class if the property we're listening to changed 
+    // Notify the class if the property we're listening to changed
     if (propertyChanged)
     {
+#ifdef TRACE_BINDINGS
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - INPCListenerBase::OnPropertyChangedCallback",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "Listener Pointer"),
+            TraceLoggingWideString(this->GetPropertyName(), "PropertyName"),
+            TraceLoggingBoolean(true, "IsStart"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+        auto endEvent = wil::scope_exit([this]
+        {
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "Binding - INPCListenerBase::OnPropertyChangedCallback",
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "Listener Pointer"),
+                TraceLoggingBoolean(false, "IsStart"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+        });
+#endif
+
         IFC(OnPropertyChanged());
     }
 
 Cleanup:
-    RRETURN(hr);    
+    RRETURN(hr);
 }
 
 

@@ -12,6 +12,7 @@
 
 #include <FocusSelection.h>
 #include "XamlTelemetry.h"
+#include "MetadataAPI.h"
 
 //------------------------------------------------------------------------
 //
@@ -615,8 +616,8 @@ HRESULT CEventManager::RaiseHelper(const gsl::span<const REQUEST>& requests,
     for (const auto& request : requests)
     {
 #ifdef TRACE_EVENTS
-        const auto* pSenderTypeName = pSenderOverride ? 
-        DirectUI::MetadataAPI::GetClassInfoByIndex(pSenderOverride->GetTypeIndex())->GetFullName().GetBuffer() : 
+        const auto* pSenderTypeName = pSenderOverride ?
+        DirectUI::MetadataAPI::GetClassInfoByIndex(pSenderOverride->GetTypeIndex())->GetFullName().GetBuffer() :
             pSender ? DirectUI::MetadataAPI::GetClassInfoByIndex(pSender->GetTypeIndex())->GetFullName().GetBuffer() : L"null";
 
         TraceLoggingProviderWrite(

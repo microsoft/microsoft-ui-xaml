@@ -8,6 +8,7 @@
 
 #include "PropertyAccess.h"
 #include "PropertyPathStep.h"
+#include "XamlTelemetry.h"
 
 namespace DirectUI
 {
@@ -35,6 +36,15 @@ public:
         m_szIndex = szIndex;
         m_fListenToChanges = fListenToChanges;
 
+#ifdef TRACE_BINDINGS
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - PP - StringIndexerPathStep::Initialize",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingWideString(m_szIndex, "Index"),
+            TraceLoggingBoolean(m_fListenToChanges, "ListenToChanges"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
+
     Cleanup:
 
         RRETURN(hr);
@@ -42,12 +52,12 @@ public:
     using PropertyPathStep::Initialize;
 
     ~StringIndexerPathStep() override;
-    
+
 public:
 
-    // PropertyPathStep overrides    
+    // PropertyPathStep overrides
     _Check_return_ HRESULT ReConnect(_In_ IInspectable *pSource) override;
-    
+
     _Check_return_ HRESULT GetValue(_Out_ IInspectable **ppValue) override;
     _Check_return_ HRESULT SetValue(_In_  IInspectable *pValue) override;
 
@@ -73,7 +83,7 @@ private:
 
 public:
 
-    // IPropertyAccessHost 
+    // IPropertyAccessHost
     _Check_return_ HRESULT SourceChanged() override;
     WCHAR *GetPropertyName() override
     { return m_szIndex; }
