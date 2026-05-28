@@ -29,3 +29,4 @@ jobs:
       - name: Check links
         run: npx --yes unbroken
         working-directory: docs
+        timeout-minutes: 10
