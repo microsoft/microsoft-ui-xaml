@@ -16,6 +16,7 @@
 #include <TypeNameHelper.h>
 #include "xcperrorresource.h"
 #include <wininet.h>
+#include <PerfOptIn.h>
 
 using namespace DirectUI;
 using namespace xaml_hosting;
@@ -356,10 +357,20 @@ _Check_return_ HRESULT StyleCache::GetFrameworkStyles(_Outptr_ ResourceDictionar
         // In case we should use XBF
         if (!IsGenericXamlFilePathAvailableFromMUX())
         {
-            IFC(LoadStylesFromResource(
-                XSTRING_PTR_EPHEMERAL(L"Styles.xbf"),
-                XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/generic.xaml"),
-                &m_pFrameworkStyles));
+            if (IsPerfOptInEnabled())
+            {
+                IFC(LoadStylesFromResource(
+                    XSTRING_PTR_EPHEMERAL(L"Styles_perf2026.xbf"),
+                    XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/generic.xaml"),
+                    &m_pFrameworkStyles));
+            }
+            else
+            {
+                IFC(LoadStylesFromResource(
+                    XSTRING_PTR_EPHEMERAL(L"Styles.xbf"),
+                    XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/generic.xaml"),
+                    &m_pFrameworkStyles));
+            }
         }
 
         if (!m_pFrameworkStyles)
@@ -441,12 +452,23 @@ _Check_return_ HRESULT StyleCache::LoadThemeResources()
     if (useXbf)
     {
         ctl::ComPtr<ResourceDictionary> themeResources;
-        IFC_RETURN(LoadStylesFromResource(
-            XSTRING_PTR_EPHEMERAL(L"themeresources.xbf"),
-            XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/themeresources.xbf"),
-            themeResources.ReleaseAndGetAddressOf()));
+        if (IsPerfOptInEnabled())
+        {
+            IFC_RETURN(LoadStylesFromResource(
+                XSTRING_PTR_EPHEMERAL(L"ThemeResources_perf2026.xbf"),
+                XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/themeresources.xbf"),
+                themeResources.ReleaseAndGetAddressOf()));
+            TRACE(TraceAlways, L"Loaded theme resources from ThemeResources_perf2026.xbf");
+        }
+        else
+        {
+            IFC_RETURN(LoadStylesFromResource(
+                XSTRING_PTR_EPHEMERAL(L"themeresources.xbf"),
+                XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/themeresources.xbf"),
+                themeResources.ReleaseAndGetAddressOf()));
+            TRACE(TraceAlways, L"Loaded theme resources from themeresources.xbf");
+        }
         DXamlCore::GetCurrent()->GetHandle()->SetThemeResources(static_cast<CResourceDictionary*>(themeResources->GetHandle()));
-        TRACE(TraceAlways, L"Loaded theme resources from themeresources.xbf");
     }
     else
     {
