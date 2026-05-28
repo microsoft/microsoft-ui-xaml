@@ -15,7 +15,7 @@
 namespace DirectUI
 {
 
-class PropertyAccessPathStep: 
+class PropertyAccessPathStep:
     public IPropertyAccessHost,
     public PropertyPathStep
 {
@@ -28,14 +28,23 @@ public:
 
     _Check_return_ HRESULT Initialize(
        _In_ PropertyPathListener *pListener,
-       _In_z_ WCHAR *szProperty, 
+       _In_z_ WCHAR *szProperty,
        _In_ bool fListenToChanges)
     {
         HRESULT hr = S_OK;
-        
+
         IFC(PropertyPathStep::Initialize(pListener));
         m_szProperty = szProperty;
         m_fListenToChanges = fListenToChanges;
+
+#ifdef TRACE_BINDINGS
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - PP - PropertyAccessPathStep::Initialize String",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingWideString(m_szProperty, "PropertyName"),
+            TraceLoggingBoolean(m_fListenToChanges, "ListenToChanges"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 
     Cleanup:
 
@@ -49,7 +58,7 @@ public:
 
     _Check_return_ HRESULT Initialize(
         _In_ PropertyPathListener *pListener,
-        _In_ const CDependencyProperty *pDP, 
+        _In_ const CDependencyProperty *pDP,
         _In_ bool fListenToChanges)
     {
         HRESULT hr = S_OK;
@@ -57,6 +66,15 @@ public:
         IFC(PropertyPathStep::Initialize(pListener));
         m_pDP = pDP;
         m_fListenToChanges = fListenToChanges;
+
+#ifdef TRACE_BINDINGS
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - PP - PropertyAccessPathStep::Initialize DP",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingWideString(pDP->GetName().GetBuffer(), "PropertyName"),
+            TraceLoggingBoolean(m_fListenToChanges, "ListenToChanges"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 
     Cleanup:
 
@@ -71,9 +89,9 @@ public:
 
     // PropertyPathStep overrides
     _Check_return_ HRESULT ReConnect(_In_ IInspectable *pSource) override;
-    
-    _Check_return_ HRESULT GetValue(_Outptr_ IInspectable **ppValue) override; 
-    _Check_return_ HRESULT SetValue(_In_  IInspectable *pValue) override; 
+
+    _Check_return_ HRESULT GetValue(_Outptr_ IInspectable **ppValue) override;
+    _Check_return_ HRESULT SetValue(_In_  IInspectable *pValue) override;
 
     _Check_return_ HRESULT GetType(_Outptr_ const CClassInfo **ppType) override;
 
@@ -88,10 +106,10 @@ public:
 
     // IPropertyAccessHost
     _Check_return_ HRESULT SourceChanged() override;
-    
+
     WCHAR *GetPropertyName() override
     { return m_szProperty; }
-        
+
 
 protected:
 
@@ -116,8 +134,8 @@ private:
     // Returns true when this step is using the inline DO fast path
     // (no heap-allocated DependencyObjectPropertyAccess).
     bool IsUsingInlineDOAccess() const
-    { 
-        ASSERT(IsInlineDOAccessEnabled()); 
+    {
+        ASSERT(IsInlineDOAccessEnabled());
         return m_inlineDO.IsActive();
     }
 
@@ -156,7 +174,7 @@ protected:
         TrackerPtr<IInspectable> m_tpSource;       // The binding source object
         ctl::EventPtr<PropertyAccessPathStepDPChangedCallback> m_epSyncHandler;  // DP-changed event
         const CClassInfo* m_pSourceType = nullptr;  // Source type for reconnect
-        const CDependencyProperty* m_pProperty = nullptr;  // Resolved DP 
+        const CDependencyProperty* m_pProperty = nullptr;  // Resolved DP
 
         bool IsActive() const
         {
@@ -167,7 +185,7 @@ protected:
             m_tpSource.Clear();
             // m_epSyncHandler is detached in PropertyAccessPathStep dtor.
             // Just for safety, move-assign from a default-constructed EventPtr to neuter any
-            // handler that wasn't properly detached from its source.            
+            // handler that wasn't properly detached from its source.
             m_epSyncHandler = decltype(m_epSyncHandler){};
             m_pSourceType = nullptr;
             m_pProperty = nullptr;

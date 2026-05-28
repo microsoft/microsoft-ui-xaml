@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "MapPropertyAccess.h"
+#include "XamlTelemetry.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -17,6 +18,15 @@ MapPropertyAccess::Initialize(
 {
     m_pOwner = pOwner;
     SetPtrValue(m_tpSource, pSource);
+
+#ifdef TRACE_BINDINGS
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Binding - PP - MapPropertyAccess::Initialize",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pSource), "SourcePointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pOwner), "OwnerPointer"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 }
 
 MapPropertyAccess::~MapPropertyAccess()

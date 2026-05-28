@@ -330,7 +330,7 @@ DXamlCore::GetAssociatedWindowNoRef(
     }
 
     // This is a change we made late in the 1.8 release, so it's scoped tightly to reduce risk.
-    // The main point of this function is to return the Window object for an element that's in the 
+    // The main point of this function is to return the Window object for an element that's in the
     // content of the Window.  But we have a problem where the call to get_HostWindow can fail
     // if the XamlIsland that contains the element is not backed by an HWND.
     // We know that Xaml Window uses a DesktopWindowXamlSource to host its content.  So if we can
@@ -2143,6 +2143,28 @@ DXamlCore::RaiseEvent(_In_ CDependencyObject* target, _In_opt_ CEventArgs* pCore
     ctl::ComPtr<IInspectable> spArgs;
     ctl::ComPtr<xaml::ISizeChangedEventArgs> spSizeChangedArgs;
     bool isArgsTypeExist = false;
+
+#ifdef TRACE_EVENTS
+    const auto& senderTypeName = target ? DirectUI::MetadataAPI::GetClassInfoByIndex(target->GetTypeIndex())->GetFullName() : xstring_ptr::EmptyString();
+
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "DXamlCore::RaiseEvent",
+        TraceLoggingUInt32(static_cast<uint32_t>(eventId), "ManagedEvent"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(target), "Sender Pointer"),
+        TraceLoggingWideString(senderTypeName.GetBuffer(), "Sender TypeName"),
+        TraceLoggingBoolean(true, "IsStart"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    auto endEvent = wil::scope_exit([target, eventId]
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "DXamlCore::RaiseEvent",
+            TraceLoggingUInt32(static_cast<uint32_t>(eventId), "ManagedEvent"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(target), "Sender Pointer"),
+            TraceLoggingBoolean(false, "IsStart"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    });
+#endif
 
     if (target)
     {

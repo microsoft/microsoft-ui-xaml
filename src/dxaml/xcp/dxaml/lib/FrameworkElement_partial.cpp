@@ -18,6 +18,7 @@
 #include <DeferredElement.h>
 #include "VisualTreeHelper.h"
 #include "DefaultValueConverter.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -659,6 +660,28 @@ FrameworkElement::NotifyBindingExpressions(_In_ const DataContextChangedParams& 
 
     if (m_pDataContextChangedSource)
     {
+#ifdef TRACE_BINDINGS
+        const auto& cdoTypeName = DirectUI::MetadataAPI::GetClassInfoByIndex(GetHandle()->GetTypeIndex())->GetFullName();
+
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "Binding - FrameworkElement::NotifyBindingExpressions",
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+            TraceLoggingWideString(cdoTypeName.GetBuffer(), "TypeName"),
+            TraceLoggingBoolean(true, "IsStart"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+        auto endEvent = wil::scope_exit([&]
+        {
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "Binding - FrameworkElement::NotifyBindingExpressions",
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(GetHandle()), "CDOPointer"),
+                TraceLoggingBoolean(false, "IsStart"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+        });
+#endif
+
         IFC(m_pDataContextChangedSource->Raise(this, &args));
     }
 
@@ -1193,7 +1216,7 @@ _Check_return_ HRESULT FrameworkElement::FindNameInPage(
                     ctl::ComPtr<FrameworkElement> inheritanceParentAsFE = inheritanceParentAsDO.Cast<FrameworkElement>();
 
                     // GetInheritanceParent does not support XamlIslandRootCollection or RootScrollViewer, so skip them & exit early.
-                    if (!inheritanceParentAsFE || 
+                    if (!inheritanceParentAsFE ||
                         inheritanceParentAsFE->GetHandle()->OfTypeByIndex<KnownTypeIndex::XamlIslandRootCollection>() ||
                         inheritanceParentAsFE->GetHandle()->OfTypeByIndex<KnownTypeIndex::RootScrollViewer>())
                     {

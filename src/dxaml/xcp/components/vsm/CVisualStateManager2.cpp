@@ -32,6 +32,7 @@
 
 #include "MUX-ETWEvents.h"
 #include "XamlTelemetry.h"
+#include "MetadataAPI.h"
 
 //#define VSMLOG(...) LOG(__VA_ARGS__)
 #define VSMLOG(...)
@@ -113,7 +114,7 @@ _Check_return_ HRESULT CVisualStateManager2::GoToStateOptimizedImpl(
                 TraceLoggingUInt64(reinterpret_cast<uint64_t>(pControl), "ObjectPointer"),
                 TraceLoggingWideString(pStateName, "StateName"),
                 TraceLoggingWideString(pControl->m_strName.GetBuffer(), "Name"),
-                TraceLoggingWideString(CDependencyObject::TypeIndexToType(pControl->GetTypeIndex()), "Type"),
+                TraceLoggingWideString(DirectUI::MetadataAPI::GetClassInfoByIndex(pControl->GetTypeIndex())->GetFullName().GetBuffer(), "Type"),
                 TraceLoggingUInt16(static_cast<uint16_t>(pControl->GetTypeIndex()), "TypeIndex"),
                 TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 

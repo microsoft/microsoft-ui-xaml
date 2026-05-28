@@ -3,13 +3,14 @@
 
 #include "precomp.h"
 #include "IndexerPropertyAccess.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
 using namespace xaml_data;
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 IndexerPropertyAccess::CreateInstance(
     _In_ IIndexedPropertyAccessHost *pOwner,
     _In_ xaml_data::ICustomPropertyProvider *pSource,
@@ -65,7 +66,7 @@ void
 IndexerPropertyAccess::Initialize(
     _In_ IIndexedPropertyAccessHost *pOwner,
     _In_ xaml_data::ICustomPropertyProvider *pSource,
-    _In_ IInspectable *pIndex, 
+    _In_ IInspectable *pIndex,
     _In_ xaml_data::ICustomProperty *pProperty,
     _In_ const CClassInfo *pPropertyType)
 {
@@ -76,6 +77,16 @@ IndexerPropertyAccess::Initialize(
     SetPtrValue(m_tpIndex, pIndex);
 
     m_pPropertyType = pPropertyType;
+
+#ifdef TRACE_BINDINGS
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Binding - PP - IndexerPropertyAccess::Initialize",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pSource), "SourcePointer"),
+        TraceLoggingWideString(pPropertyType->GetFullName().GetBuffer(), "PropertyType"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pOwner), "OwnerPointer"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 }
 
 IndexerPropertyAccess::~IndexerPropertyAccess()
@@ -83,8 +94,8 @@ IndexerPropertyAccess::~IndexerPropertyAccess()
     IGNOREHR(SafeRemovePropertyChangedHandler());
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 IndexerPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspectable **ppValue)
 {
     ctl::ComPtr<IInspectable> spIndex;
@@ -92,14 +103,14 @@ IndexerPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspectable **ppV
     // Workarround for CLR bug, we need to send a new IInspectable
     // everytime or the CLR will fail to do the unboxing on the other side
     IFC_RETURN(DuplicatePropertyValue(m_tpIndex.Get(), spIndex.ReleaseAndGetAddressOf()));
-    
+
     IFC_RETURN(m_tpIndexer->GetIndexedValue(m_tpSource.Get(), spIndex.Get(), ppValue));
 
     return S_OK;
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 IndexerPropertyAccess::SetValue(_In_ IInspectable *pValue)
 {
     HRESULT hr = S_OK;
@@ -108,7 +119,7 @@ IndexerPropertyAccess::SetValue(_In_ IInspectable *pValue)
     // Workarround for CLR bug, we need to send a new IInspectable
     // everytime or the CLR will fail to do the unboxing on the other side
     IFC(DuplicatePropertyValue(m_tpIndex.Get(), spIndex.ReleaseAndGetAddressOf()));
-    
+
     IFC(m_tpIndexer->SetIndexedValue(m_tpSource.Get(), pValue, spIndex.Get()));
 
 Cleanup:
@@ -123,7 +134,7 @@ IndexerPropertyAccess::SetSource(_In_opt_ IInspectable *pSource, _In_ BOOLEAN fL
 
     IFC(DisconnectEventHandlers());
     SetPtrValue(m_tpSource, pSource);
-    
+
     if (fListenToChanges)
     {
         IFC(AddPropertyChangedHandler());
@@ -133,14 +144,14 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 IndexerPropertyAccess::GetSource(_Outptr_ IInspectable **ppSource)
 {
     HRESULT hr = S_OK;
 
     IFCEXPECT(IsConnected());
-    
+
     *ppSource = m_tpSource.Get();
     AddRefInterface(*ppSource);
 
@@ -149,8 +160,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 IndexerPropertyAccess::DisconnectEventHandlers()
 {
     HRESULT hr = S_OK;
@@ -165,7 +176,7 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
+_Check_return_
 HRESULT
 IndexerPropertyAccess::AddPropertyChangedHandler()
 {
@@ -188,8 +199,8 @@ Cleanup:
 }
 
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 IndexerPropertyAccess::SafeRemovePropertyChangedHandler()
 {
     HRESULT hr = S_OK;
@@ -204,12 +215,12 @@ IndexerPropertyAccess::SafeRemovePropertyChangedHandler()
     }
 
 Cleanup:
-    
+
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 IndexerPropertyAccess::PropertyChanged()
 {
     HRESULT hr = S_OK;
@@ -221,10 +232,10 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 IndexerPropertyAccess::DuplicatePropertyValue(
-    _In_ IInspectable *pValue, 
+    _In_ IInspectable *pValue,
     _Outptr_ IInspectable **ppDupe)
 {
     HRESULT hr = S_OK;
@@ -238,7 +249,7 @@ IndexerPropertyAccess::DuplicatePropertyValue(
         ctl::addref_interface(pValue);
         goto Cleanup;
     }
-    
+
     IFC(spPV->get_Type(&propertyType));
 
     switch (propertyType)
@@ -258,8 +269,8 @@ IndexerPropertyAccess::DuplicatePropertyValue(
             IFC(PropertyValue::CreateFromInt32(iValue, ppDupe));
         }
         break;
-        
-    default:  
+
+    default:
 
         // We should not get here since the only supported
         // indexes are int and string
@@ -277,7 +288,7 @@ IndexerPropertyAccess::GetSourceType(_Outptr_ const CClassInfo **ppSourceType)
 {
     HRESULT hr = S_OK;
 
-    IFCEXPECT(IsConnected()); 
+    IFCEXPECT(IsConnected());
 
     IFC(MetadataAPI::GetClassInfoFromObject_SkipWinRTPropertyOtherType(m_tpSource.Get(), ppSourceType));
 

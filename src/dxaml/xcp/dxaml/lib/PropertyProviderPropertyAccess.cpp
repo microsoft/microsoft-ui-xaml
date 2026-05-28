@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "PropertyProviderPropertyAccess.h"
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -16,11 +17,22 @@ PropertyProviderPropertyAccess::Initialize(
     _In_ const CClassInfo *pPropertyType)
 {
     m_pOwnerNoRef = pOwner;
-    
+
     SetPtrValue(m_tpSource, pSource);
     SetPtrValue(m_tpProperty, pProperty);
 
     m_pPropertyType = pPropertyType;
+
+#ifdef TRACE_BINDINGS
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Binding - PP - PropertyProviderPropertyAccess::Initialize",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pSource), "SourcePointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pProperty), "PropertyPointer"),
+        TraceLoggingWideString(pPropertyType->GetFullName().GetBuffer(), "PropertyType"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pOwner), "OwnerPointer"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 }
 
 
@@ -33,8 +45,8 @@ PropertyProviderPropertyAccess::~PropertyProviderPropertyAccess()
     }
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 PropertyProviderPropertyAccess::CreateInstance(
     _In_ IPropertyAccessHost *pOwner,
     _In_ xaml_data::ICustomPropertyProvider *pSource,
@@ -55,7 +67,7 @@ PropertyProviderPropertyAccess::CreateInstance(
     {
         return S_OK;
     }
-    
+
     TypeNamePtr typeName;
     IFC_RETURN(spProperty->get_Type(typeName.ReleaseAndGetAddressOf()));
 
@@ -83,7 +95,7 @@ PropertyProviderPropertyAccess::CreateInstance(
         pSource,
         spProperty.Get(),
         pPropertyType);
-    
+
     if (fListenToChanges)
     {
         IFC_RETURN(spResult->AddPropertyChangedHandler(pSource));
@@ -94,8 +106,8 @@ PropertyProviderPropertyAccess::CreateInstance(
     return S_OK;
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 PropertyProviderPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspectable **ppValue)
 {
     if (IsConnected())
@@ -109,8 +121,8 @@ PropertyProviderPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspecta
     return S_OK;
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 PropertyProviderPropertyAccess::SetValue(_In_ IInspectable *pValue)
 {
     IFCEXPECT_RETURN(IsConnected());
@@ -121,7 +133,7 @@ PropertyProviderPropertyAccess::SetValue(_In_ IInspectable *pValue)
 _Check_return_ HRESULT
 PropertyProviderPropertyAccess::SetSource(_In_opt_ IInspectable *pSource, _In_ BOOLEAN fListenToChanges)
 {
-    // If we're clearing out the source, it's possible we by-pass the code in TryReconnect. Make sure we 
+    // If we're clearing out the source, it's possible we by-pass the code in TryReconnect. Make sure we
     // get the source's type while we still can, so we have an opportunity in the future to re-use this path.
     if (!m_sourceType && m_tpSource)
     {
@@ -134,7 +146,7 @@ PropertyProviderPropertyAccess::SetSource(_In_opt_ IInspectable *pSource, _In_ B
 
     if (fListenToChanges)
     {
-        // Disconnect the handler on the previous source, and attach to the new source. Both 
+        // Disconnect the handler on the previous source, and attach to the new source. Both
         // old and new source are allowed to be NULL.
         IFC_RETURN(UpdatePropertyChangedHandler(m_tpSource.Get(), pSource));
     }
@@ -181,8 +193,8 @@ PropertyProviderPropertyAccess::TryReconnect(_In_ IInspectable* pSource, _In_ BO
     return S_OK;
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 PropertyProviderPropertyAccess::GetSource(_COM_Outptr_result_maybenull_ IInspectable **ppSource)
 {
     IFCEXPECT_RETURN(IsConnected());
@@ -190,8 +202,8 @@ PropertyProviderPropertyAccess::GetSource(_COM_Outptr_result_maybenull_ IInspect
     return S_OK;
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 PropertyProviderPropertyAccess::DisconnectEventHandlers()
 {
     if (IsConnected())
@@ -201,8 +213,8 @@ PropertyProviderPropertyAccess::DisconnectEventHandlers()
     return S_OK;
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 PropertyProviderPropertyAccess::OnPropertyChanged()
 {
     IFC_RETURN(m_pOwnerNoRef->SourceChanged());

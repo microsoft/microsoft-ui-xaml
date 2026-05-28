@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "DependencyObjectPropertyAccess.h"
 #include <xstrutil.h>
+#include "XamlTelemetry.h"
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -30,13 +31,24 @@ DependencyObjectPropertyAccess::Initialize(
     SetPtrValue(m_tpSource, pSource);
     m_pSourceType = pSourceType;
     m_pOwner = pOwner;
+
+#ifdef TRACE_BINDINGS
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "Binding - PP - DependencyObjectPropertyAccess::Initialize",
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pSource), "SourcePointer"),
+        TraceLoggingWideString(pSourceType->GetFullName().GetBuffer(), "SourceType"),
+        TraceLoggingWideString(pProperty->GetName().GetBuffer(), "PropertyName"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pOwner), "OwnerPointer"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::CreateInstance(
-    _In_ IPropertyAccessHost *pOwner, 
-    _In_ IInspectable *pInspSource, 
+    _In_ IPropertyAccessHost *pOwner,
+    _In_ IInspectable *pInspSource,
     _In_ const CClassInfo *pSourceType,
     _In_ bool fListenToChanges,
     _Outptr_ PropertyAccess **ppPropertyAccess)
@@ -68,11 +80,11 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::CreateInstance(
-    _In_ IPropertyAccessHost *pOwner, 
-    _In_ IInspectable *pInspSource, 
+    _In_ IPropertyAccessHost *pOwner,
+    _In_ IInspectable *pInspSource,
     _In_ const CClassInfo *pSourceType,
     _In_ const CDependencyProperty* pDP,
     _In_ bool fListenToChanges,
@@ -82,10 +94,10 @@ DependencyObjectPropertyAccess::CreateInstance(
 
     HRESULT hr = S_OK;
     ctl::ComPtr<DependencyObjectPropertyAccess> spResult;
-    
+
     // By default there's no property access
     *ppPropertyAccess = NULL;
-    
+
     IFC(ctl::make<DependencyObjectPropertyAccess>(&spResult));
     spResult->Initialize(pOwner, pInspSource, pSourceType, pDP);
 
@@ -101,8 +113,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::AddPropertyChangedHandler()
 {
     HRESULT hr = S_OK;
@@ -131,8 +143,8 @@ Cleanup:
 
 
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::PropertyAccessPathStepDPChanged(_In_ const CDependencyProperty* pDP)
 {
     HRESULT hr = S_OK;
@@ -146,8 +158,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::SafeRemovePropertyChangedHandler()
 {
     HRESULT hr = S_OK;
@@ -168,8 +180,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspectable **ppValue)
 {
     ctl::ComPtr<DependencyObject> spSource;
@@ -189,8 +201,8 @@ DependencyObjectPropertyAccess::GetValue(_COM_Outptr_result_maybenull_ IInspecta
     return S_OK;
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::SetValue(_In_  IInspectable *pValue)
 {
     HRESULT hr = S_OK;
@@ -212,8 +224,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::GetType(_Outptr_ const CClassInfo **ppType)
 {
     HRESULT hr = S_OK;
@@ -262,14 +274,14 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::GetSource(_Outptr_ IInspectable **ppSource)
 {
     HRESULT hr = S_OK;
 
     IFCEXPECT(IsConnected());
-    
+
     *ppSource = m_tpSource.Get();
     AddRefInterface(*ppSource);
 
@@ -278,8 +290,8 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::DisconnectEventHandlers()
 {
     HRESULT hr = S_OK;
@@ -302,8 +314,8 @@ Cleanup:
 
 
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::SourceDPChanged()
 {
     HRESULT hr = S_OK;
@@ -315,10 +327,10 @@ Cleanup:
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::GetSource(
-    _In_ IInspectable *pSource, 
+    _In_ IInspectable *pSource,
     _Outptr_ DependencyObject **ppSource)
 {
     HRESULT hr = S_OK;
@@ -330,15 +342,15 @@ DependencyObjectPropertyAccess::GetSource(
     RRETURN(hr);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::GetSource(_Outptr_ DependencyObject **ppSource)
 {
     return GetSource(m_tpSource.Get(), ppSource);
 }
 
-_Check_return_ 
-HRESULT 
+_Check_return_
+HRESULT
 DependencyObjectPropertyAccess::SafeGetSource(_Outptr_ DependencyObject **ppSource)
 {
     HRESULT hr = S_OK;
@@ -350,18 +362,18 @@ DependencyObjectPropertyAccess::SafeGetSource(_Outptr_ DependencyObject **ppSour
     {
         IFC(GetSource(spSource.Get(), ppSource));
     }
-    
+
 
 Cleanup:
 
     RRETURN(hr);
 }
 
-_Check_return_ HRESULT 
+_Check_return_ HRESULT
 DependencyObjectPropertyAccess::ResolvePropertyName(
-    _In_ DependencyObject *pSource, 
+    _In_ DependencyObject *pSource,
     _In_ const CClassInfo* pSourceType,
-    _In_z_ WCHAR *szPropertyName, 
+    _In_z_ WCHAR *szPropertyName,
     _Outptr_ const CDependencyProperty** ppDP)
 {
     HRESULT hr = S_OK;
