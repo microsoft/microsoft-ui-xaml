@@ -109,6 +109,10 @@ public:
     _Check_return_ HRESULT EnsureDeviceSpecificD2DResources(_In_ const CD3D11Device* deviceWrapper);
     _Check_return_ HRESULT EnsureD2DFactory();
 
+    // Transfers ownership of the device-removed event and its registration cookie to the caller.
+    // Can only be called once. After this, the caller is responsible for calling UnregisterDeviceRemoved.
+    _Check_return_ HRESULT TakeDeviceRemovedEvent(_Out_ HANDLE* event, _Out_ DWORD* cookie);
+
     _Check_return_ HRESULT GetTextureMemoryUsage(
         _Out_ UINT32 *puTextureMemoryUsage,
         _Out_ UINT32 *puTextureMemoryUsageNPOT
@@ -167,6 +171,8 @@ private:
 
     void ReleaseD2DResources(const long millisecondDelay);
 
+    void UnregisterDeviceRemovedEvent();
+
     _Check_return_ HRESULT InitializeState();
 
     _Check_return_ HRESULT EnsureDXGIAdapters();
@@ -211,6 +217,11 @@ private:
     D3D_FEATURE_LEVEL m_featureLevel;
 
     IDXGIDevice2* m_pDXGIDevice2;
+
+    // Device-removed event, registered during device creation to avoid lock contention later.
+    // Ownership is transferred to the caller via TakeDeviceRemovedEvent().
+    wil::unique_handle m_deviceRemovedEvent;
+    DWORD m_deviceRemovedCookie = 0;
 
     bool m_fIsWarpDevice : 1;
     bool m_fIsHardwareOutput : 1;
