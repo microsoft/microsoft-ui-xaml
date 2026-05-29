@@ -11,6 +11,7 @@
 #include <Resources.h>
 #include <XamlTraceLogging.h>
 #include <XStringUtils.h>
+#include "XamlTelemetry.h"
 
 #include "ResourceLookupLogger.h"
 
@@ -90,7 +91,7 @@ namespace
         {
             TRACE_HR_NORETURN(baseUri->GetCanonical(&identifier));
         }
-        else if (dictionary == DirectUI::DXamlServices::GetHandle()->GetThemeResources())
+        else if (dictionary == DirectUI::DXamlServices::GetHandle()->GetThemeResources_NoLazyLoad())
         {
             identifier = c_globalThemeResourcesId;
         }
@@ -111,20 +112,48 @@ namespace
 
         return identifier;
     }
+
+    xstring_ptr IndentString(uint32_t level, const xstring_ptr_view& stringToIndent, const xstring_ptr_view& suffix = xstring_ptr::EmptyString(), const xstring_ptr_view& suffix2 = xstring_ptr::EmptyString())
+    {
+        XStringBuilder builder;
+
+        for (uint32_t i = 0; i < level; ++i)
+        {
+            IFCFAILFAST(builder.Append(STR_LEN_PAIR(L"  ")));
+        }
+
+        IFCFAILFAST(builder.Append(stringToIndent));
+        IFCFAILFAST(builder.Append(suffix));
+        IFCFAILFAST(builder.Append(suffix2));
+
+        xstring_ptr indentedString;
+        IFCFAILFAST(builder.DetachString(&indentedString));
+        return indentedString;
+    }
 }
 
 namespace Diagnostics
 {
     ResourceLookupLogger::ResourceLookupLogger()
     {
-        m_messageBuilder = std::make_shared<XStringBuilder>();
+    }
+
+    static std::atomic<uint64_t> s_ResourceEtwIndex{0};
+
+    uint64_t ResourceLookupLogger::GetNextEtwIndex()
+    {
+        return s_ResourceEtwIndex.fetch_add(1, std::memory_order_relaxed);
     }
 
     _Check_return_ HRESULT ResourceLookupLogger::Start(const xstring_ptr_view& resourceKey, const xstring_ptr_view& resourceConsumingUri)
     {
-        ASSERT(!m_isLogging);
-
+#ifdef TRACE_RESOURCELOOKUPS
+        ASSERT(IsLogging());
+#else
+        ASSERT(!IsLogging());
         m_isLogging = true;
+#endif
+        m_messageBuilder = std::make_shared<XStringBuilder>();
         m_indentationLevel = 0;
 
         // If the caller provides a Uri for the document that referenced this resource then output that first.  This allows app
@@ -153,9 +182,12 @@ namespace Diagnostics
 
     _Check_return_ HRESULT ResourceLookupLogger::Stop(const xstring_ptr_view& resourceKey, xstring_ptr& traceMessage)
     {
-        ASSERT(m_isLogging);
+        ASSERT(IsLogging());
 
+#ifdef TRACE_RESOURCELOOKUPS
+#else
         m_isLogging = false;
+#endif
         DecrementIndentationLevel();
 
         TraceLoggingWrite(
@@ -179,27 +211,35 @@ namespace Diagnostics
             DirectUI::DebugOutput::LogXamlResourceReferenceErrorMessage(m_traceMessage);
         }
 
+        m_messageBuilder.reset();
+
         return S_OK;
     }
 
-    _Check_return_ HRESULT ResourceLookupLogger::OnEnterDictionary(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey)
+    _Check_return_ HRESULT ResourceLookupLogger::OnEnterDictionary(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex)
     {
         if (IsLogging())
         {
             auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_indentationLevel, id);
 
-            TraceLoggingWrite(
-                g_hTraceProvider,
-                "ResourceLookup_EnterDictionary",
-                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
-                TraceLoggingValue(id.GetBuffer(), "ID"),
-                TraceLoggingValue(resourceKey.GetBuffer(), "ResourceKey"));
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_Dictionary",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "DictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt32(dictionary->GetCount(), "Count"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingBoolean(true, "IsEnter"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-            IFC_RETURN(StartNewLineWithIndentation());
-            IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
-                L"Searching dictionary '%s' for resource with key '%s'.",
-                id.GetBuffer(), resourceKey.GetBuffer())));
+            if (m_messageBuilder)
+            {
+                IFC_RETURN(StartNewLineWithIndentation());
+                IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
+                    L"Searching dictionary '%s' for resource with key '%s'.",
+                    id.GetBuffer(), resourceKey.GetBuffer())));
+            }
 
             IncrementIndentationLevel();
         }
@@ -207,56 +247,70 @@ namespace Diagnostics
         return S_OK;
     }
 
-    _Check_return_ HRESULT ResourceLookupLogger::OnLeaveDictionary(CResourceDictionary* dictionary)
+    _Check_return_ HRESULT ResourceLookupLogger::OnLeaveDictionary(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex)
     {
         if (IsLogging())
         {
-            auto id = GenerateIdentifierForResourceDictionary(dictionary);
-
-            TraceLoggingWrite(
-                g_hTraceProvider,
-                "ResourceLookup_LeaveDictionary",
-                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
-                TraceLoggingValue(id.GetBuffer(), "ID"));
-
             DecrementIndentationLevel();
 
-            IFC_RETURN(StartNewLineWithIndentation());
-            IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
-                L"Finished searching dictionary '%s'.",
-                id.GetBuffer())));
+            auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_indentationLevel, id);
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_Dictionary",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "DictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt32(dictionary->GetCount(), "Count"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingBoolean(false, "IsEnter"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+            if (m_messageBuilder)
+            {
+                IFC_RETURN(StartNewLineWithIndentation());
+                IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
+                    L"Finished searching dictionary '%s'.",
+                    id.GetBuffer())));
+            }
         }
 
         return S_OK;
     }
 
-    _Check_return_ HRESULT ResourceLookupLogger::OnEnterMergedDictionary(const std::int32_t index, const xstring_ptr_view& resourceKey)
+    _Check_return_ HRESULT ResourceLookupLogger::OnEnterMergedDictionary(CResourceDictionary* dictionary, const std::int32_t index, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex)
     {
         if (IsLogging())
         {
-            xstring_ptr id;
+            xstring_ptr indexAsString;
             {
                 wchar_t buffer[_MAX_ITOSTR_BASE10_COUNT];
                 if (_itow_s(index, buffer, 10))
                 {
-                    IFC_RETURN(HRESULT_FROM_WIN32(_doserrno))
+                    IFC_RETURN(HRESULT_FROM_WIN32(_doserrno));
                 }
-                IFC_RETURN(xstring_ptr::CloneBuffer(buffer, &id));
+                IFC_RETURN(xstring_ptr::CloneBuffer(buffer, &indexAsString));
             }
 
-            TraceLoggingWrite(
-                g_hTraceProvider,
-                "ResourceLookup_EnterMergedDictionary",
-                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
-                TraceLoggingValue(id.GetBuffer(), "ID"),
-                TraceLoggingValue(resourceKey.GetBuffer(), "ResourceKey"));
+            auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_indentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Merged "), indexAsString);
 
-            IFC_RETURN(StartNewLineWithIndentation());
-            IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
-                L"Searching merged dictionary with index '%s' for resource with key '%s'.",
-                id.GetBuffer(), resourceKey.GetBuffer())));
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_MergedDictionary",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "ParentDictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingBoolean(true, "IsEnter"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+            if (m_messageBuilder)
+            {
+                IFC_RETURN(StartNewLineWithIndentation());
+                IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
+                    L"Searching merged dictionary with index '%s' for resource with key '%s'.",
+                    indexAsString.GetBuffer(), resourceKey.GetBuffer())));
+            }
 
             IncrementIndentationLevel();
         }
@@ -265,58 +319,73 @@ namespace Diagnostics
     }
 
     /* static */ _Check_return_ HRESULT
-    ResourceLookupLogger::OnLeaveMergedDictionary(const std::int32_t index)
+    ResourceLookupLogger::OnLeaveMergedDictionary(CResourceDictionary* dictionary, const std::int32_t index, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex)
     {
         if (IsLogging())
         {
-            xstring_ptr id;
+            DecrementIndentationLevel();
+
+            xstring_ptr indexAsString;
             {
                 wchar_t buffer[_MAX_ITOSTR_BASE10_COUNT];
                 if (_itow_s(index, buffer, 10))
                 {
-                    IFC_RETURN(HRESULT_FROM_WIN32(_doserrno))
+                    IFC_RETURN(HRESULT_FROM_WIN32(_doserrno));
                 }
-                IFC_RETURN(xstring_ptr::CloneBuffer(buffer, &id));
+                IFC_RETURN(xstring_ptr::CloneBuffer(buffer, &indexAsString));
             }
 
-            TraceLoggingWrite(
-                g_hTraceProvider,
-                "ResourceLookup_LeaveMergedDictionary",
-                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
-                TraceLoggingValue(id.GetBuffer(), "ID"));
+            auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_indentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Merged "), indexAsString);
 
-            DecrementIndentationLevel();
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_MergedDictionary",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "ParentDictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingBoolean(false, "IsEnter"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-            IFC_RETURN(StartNewLineWithIndentation());
-            IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
-                L"Finished searching merged dictionary with index '%s'.",
-                id.GetBuffer())));
+            if (m_messageBuilder)
+            {
+                IFC_RETURN(StartNewLineWithIndentation());
+                IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
+                    L"Finished searching merged dictionary with index '%s'.",
+                    indexAsString.GetBuffer())));
+            }
         }
 
         return S_OK;
     }
 
     /* static */ _Check_return_ HRESULT
-    ResourceLookupLogger::OnEnterThemeDictionary(Theming::Theme theme, const xstring_ptr_view& resourceKey)
+    ResourceLookupLogger::OnEnterThemeDictionary(CResourceDictionary* dictionary, Theming::Theme theme, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex)
     {
         if (IsLogging())
         {
             xstring_ptr themeAsString;
             IFC_RETURN(ConvertThemeToString(theme, themeAsString));
 
-            TraceLoggingWrite(
-                g_hTraceProvider,
-                "ResourceLookup_EnterThemeDictionary",
-                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
-                TraceLoggingValue(themeAsString.GetBuffer(), "ActiveTheme"),
-                TraceLoggingValue(resourceKey.GetBuffer(), "ResourceKey"));
+            auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_indentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Theme "), themeAsString);
 
-            IFC_RETURN(StartNewLineWithIndentation());
-            IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
-                L"Searching theme dictionary (active theme: '%s') for resource with key '%s'.",
-                themeAsString.GetBuffer(), resourceKey.GetBuffer())));
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_ThemeDictionary",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "ParentDictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingBoolean(true, "IsEnter"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+            if (m_messageBuilder)
+            {
+                IFC_RETURN(StartNewLineWithIndentation());
+                IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
+                    L"Searching theme dictionary (active theme: '%s') for resource with key '%s'.",
+                    themeAsString.GetBuffer(), resourceKey.GetBuffer())));
+            }
 
             IncrementIndentationLevel();
         }
@@ -325,26 +394,54 @@ namespace Diagnostics
     }
 
     /* static */ _Check_return_ HRESULT
-    ResourceLookupLogger::OnLeaveThemeDictionary(Theming::Theme theme)
+    ResourceLookupLogger::OnLeaveThemeDictionary(CResourceDictionary* dictionary, Theming::Theme theme, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex)
     {
         if (IsLogging())
         {
+            DecrementIndentationLevel();
+
             xstring_ptr themeAsString;
             IFC_RETURN(ConvertThemeToString(theme, themeAsString));
 
-            TraceLoggingWrite(
-                g_hTraceProvider,
-                "ResourceLookup_EnterThemeDictionary",
-                TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
-                TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
-                TraceLoggingValue(themeAsString.GetBuffer(), "ActiveTheme"));
+            auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_indentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Theme "), themeAsString);
 
-            DecrementIndentationLevel();
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_ThemeDictionary",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "ParentDictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingBoolean(false, "IsEnter"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-            IFC_RETURN(StartNewLineWithIndentation());
-            IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
-                L"Finished searching theme dictionary (active theme: '%s').",
-                themeAsString.GetBuffer())));
+            if (m_messageBuilder)
+            {
+                IFC_RETURN(StartNewLineWithIndentation());
+                IFC_RETURN(m_messageBuilder->Append(StringCchPrintfWWrapper(
+                    L"Finished searching theme dictionary (active theme: '%s').",
+                    themeAsString.GetBuffer())));
+            }
+        }
+
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT ResourceLookupLogger::OnFoundResource(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey)
+    {
+        if (IsLogging())
+        {
+            auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_indentationLevel, id);
+            uint64_t etwEventIndex = GetNextEtwIndex();
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_ResourceFound",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "ParentDictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
         }
 
         return S_OK;
@@ -366,6 +463,8 @@ namespace Diagnostics
 
     _Check_return_ HRESULT ResourceLookupLogger::StartNewLineWithIndentation()
     {
+        ASSERT(m_messageBuilder);
+
         IFC_RETURN(m_messageBuilder->AppendChar(L'\n'));
         for (std::uint32_t i = 0; i < m_indentationLevel; ++i)
         {
