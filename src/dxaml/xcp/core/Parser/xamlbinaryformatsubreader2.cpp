@@ -12,6 +12,8 @@
 #include "XamlSerializationHelper.h"
 #include "XbfMetadataApi.h"
 
+#include <intrin.h>  // For _BitScanForward, _BitScanForward64
+
 #pragma region Public Interface
 
 XamlBinaryFormatSubReader2::XamlBinaryFormatSubReader2(
@@ -836,6 +838,13 @@ std::uint64_t XamlBinaryFormatSubReader2::ReadUInt64()
     return returnValue;
 }
 
+std::uint64_t XamlBinaryFormatSubReader2::ReadFixedWidthUInt64()
+{
+    std::uint64_t returnValue = 0;
+    THROW_HR_IF(E_FAIL, !TryReadFromNodeStreamBuffer(&returnValue));
+    return returnValue;
+}
+
 #pragma endregion
 
 const XamlLineInfo XamlBinaryFormatSubReader2::GetLineInfo()
@@ -862,12 +871,172 @@ bool XamlBinaryFormatSubReader2::TryReadFromBuffer(
         return false;
     }
 
-    // these are going to be small reads, so memcpy would be overkill.
     const XUINT8 *pbRead = pBuffer + *pcbBufferOffset;
     std::copy_n(pbRead, cbBufferReadSize, static_cast<XUINT8*>(pbTarget));
 
     *pcbBufferOffset += cbBufferReadSize;
     return true;
+}
+
+// Branchless fast path for decoding 7-bit encoded uint32 values.
+//
+// Standard 7-bit encoding stores an unsigned integer in 1–5 bytes: each byte's
+// low 7 bits carry payload, and the high bit (0x80) signals "more bytes follow."
+// The naive decode loop has poor ILP because the CPU cannot speculatively load
+// the next byte until the current byte's continuation bit is resolved.
+//
+// This implementation speculatively loads all potentially-needed bytes at once
+// (via a single memory operation), then uses a bit scan intrinsic to find the
+// terminator byte and shift-and-OR to compact the 7-bit payloads — all with
+// no data-dependent branches.
+//
+// Architecture-specific strategies:
+//   x64/ARM64:  8-byte memcpy → _BitScanForward64 → shift-and-OR extraction
+//   x86:        4-byte memcpy + 1-byte read → _BitScanForward → same extraction
+//
+// When fewer bytes remain than needed for the speculative load, falls back to
+// TryRead7BitEncodedIntSlow (a simple direct-buffer loop).
+_Success_(return != false)
+bool XamlBinaryFormatSubReader2::TryRead7BitEncodedIntFast32(
+    _In_ XUINT8* pBuffer,
+    _In_ XUINT32 cbBufferTotalSize,
+    _Inout_ XUINT32* pcbBufferOffset,
+    _Out_ unsigned int* pValue)
+{
+    XUINT32 offset = *pcbBufferOffset;
+
+    // Overflow-safe bounds check
+    if (offset >= cbBufferTotalSize)
+    {
+        return false;
+    }
+
+    XUINT32 remaining = cbBufferTotalSize - offset;
+    const XUINT8* p = pBuffer + offset;
+
+    // Precomputed masks for isolating the 7-bit payload from each encoded byte.
+    // PayloadMasks[n-1] covers bytes 0 through n-1, setting bits [6:0] in each byte
+    // and clearing the continuation bit (bit 7) so only payload bits remain.
+    //   1 byte:  0x7F              (bits [6:0])
+    //   2 bytes: 0x7F7F            (bits [6:0] and [14:8])
+    //   3 bytes: 0x7F7F7F          (bits [6:0], [14:8], [22:16])
+    //   4 bytes: 0x7F7F7F7F        (bits [6:0], [14:8], [22:16], [30:24])
+    //   5 bytes: 0x7F7F7F7F7F      (bits [6:0], [14:8], [22:16], [30:24], [38:32])
+    static constexpr std::uint64_t PayloadMasks[] = {
+        0x7FULL, 0x7F7FULL, 0x7F7F7FULL, 0x7F7F7F7FULL, 0x7F7F7F7F7FULL
+    };
+
+#if defined(_M_AMD64) || defined(_M_ARM64)
+    // x64/ARM64 fast path: speculatively load 8 bytes and decode branchlessly.
+    //
+    // We require 8 bytes remaining for a safe 8-byte memcpy, even though a
+    // uint32 varint uses at most 5 bytes. This avoids reading past the buffer end.
+    // The extra 3 bytes loaded beyond the varint are masked off and never used.
+    if (remaining >= 8)
+    {
+        std::uint64_t raw = 0;
+        memcpy(&raw, p, 8);  // Single 64-bit load; compiler emits MOV (x64) or LDR (ARM64)
+
+        // Identify the terminator byte (first byte with continuation bit clear)
+        // among the first 5 bytes only. A uint32 varint cannot exceed 5 bytes,
+        // so we must not accept a terminator in bytes 5–7 as that would indicate
+        // a malformed overlong encoding.
+        //
+        // ContinuationBitMask5 selects bit 7 of bytes 0–4 (bit positions 7, 15, 23, 31, 39).
+        // After inverting, a set bit indicates a terminator (continuation bit was clear).
+        static constexpr std::uint64_t ContinuationBitMask5 = 0x0000008080808080ULL;
+        std::uint64_t continuationBits = raw & ContinuationBitMask5;
+        std::uint64_t terminators = ~continuationBits & ContinuationBitMask5;
+
+        // _BitScanForward64: finds the bit position of the least significant set bit.
+        // On x64 this compiles to BSF; on ARM64, MSVC maps it to RBIT + CLZ.
+        unsigned long firstTermBit;
+        if (!_BitScanForward64(&firstTermBit, terminators))
+        {
+            // No terminator in first 5 bytes — overlong or malformed encoding
+            return false;
+        }
+
+        // Convert bit position to byte count: bit 7 → byte 1, bit 15 → byte 2, etc.
+        unsigned int byteCount = (firstTermBit >> 3) + 1;
+
+        // Compact the 7-bit payloads by removing each byte's continuation bit gap.
+        // Each successive byte's payload needs one additional right-shift to close
+        // the gap left by the removed continuation bits:
+        //   Byte 0: bits [6:0]   → value bits [6:0]   (no shift)
+        //   Byte 1: bits [14:8]  → value bits [13:7]   (shift right by 1)
+        //   Byte 2: bits [22:16] → value bits [20:14]  (shift right by 2)
+        //   Byte 3: bits [30:24] → value bits [27:21]  (shift right by 3)
+        //   Byte 4: bits [38:32] → value bits [31:28]  (shift right by 4, only 4 payload bits)
+        std::uint64_t masked = raw & PayloadMasks[byteCount - 1];
+        unsigned int value = static_cast<unsigned int>(masked & 0x7F);
+        value |= static_cast<unsigned int>((masked >> 1)  & 0x3F80);
+        value |= static_cast<unsigned int>((masked >> 2)  & 0x1FC000);
+        value |= static_cast<unsigned int>((masked >> 3)  & 0xFE00000);
+        value |= static_cast<unsigned int>((masked >> 4)  & 0xF0000000ULL);
+
+        *pcbBufferOffset = offset + byteCount;
+        *pValue = value;
+        return true;
+    }
+
+#elif defined(_M_IX86)
+    // x86 (32-bit) fast path: uses 32-bit operations to avoid expensive 64-bit
+    // register pair manipulation. Loads 4 bytes in a single read, plus byte 5
+    // only when all 4 initial bytes have continuation bits set.
+    if (remaining >= 5)
+    {
+        std::uint32_t lo = 0;
+        memcpy(&lo, p, 4);  // Single 32-bit load
+
+        // Check continuation bits in the first 4 bytes
+        std::uint32_t continuationBits = lo & 0x80808080U;
+        std::uint32_t terminators = ~continuationBits & 0x80808080U;
+
+        unsigned long firstTermBit;
+        unsigned int byteCount;
+
+        if (_BitScanForward(&firstTermBit, terminators))
+        {
+            // Terminator found in bytes 0–3
+            byteCount = (firstTermBit >> 3) + 1;
+        }
+        else
+        {
+            // All 4 bytes have continuation bits set — the 5th byte must be the
+            // terminator. If it also has the continuation bit, the encoding is overlong.
+            if (p[4] & 0x80)
+                return false;
+            byteCount = 5;
+        }
+
+        // Build a 64-bit value for uniform extraction logic.
+        // MSVC handles uint64_t on x86 using EDX:EAX register pairs.
+        std::uint64_t raw = static_cast<std::uint64_t>(lo);
+        if (byteCount == 5)
+        {
+            raw |= static_cast<std::uint64_t>(p[4]) << 32;
+        }
+
+        // Same shift-and-OR compaction as the x64/ARM64 path
+        std::uint64_t masked = raw & PayloadMasks[byteCount - 1];
+        unsigned int value = static_cast<unsigned int>(masked & 0x7F);
+        value |= static_cast<unsigned int>((masked >> 1)  & 0x3F80);
+        value |= static_cast<unsigned int>((masked >> 2)  & 0x1FC000);
+        value |= static_cast<unsigned int>((masked >> 3)  & 0xFE00000);
+        value |= static_cast<unsigned int>((masked >> 4)  & 0xF0000000ULL);
+
+        *pcbBufferOffset = offset + byteCount;
+        *pValue = value;
+        return true;
+    }
+
+#endif
+
+    // Slow fallback: near end of buffer (fewer than 8 bytes remaining on x64/ARM64,
+    // fewer than 5 bytes on x86). Uses a simple direct-buffer loop without
+    // TryReadFromBuffer per-byte overhead.
+    return TryRead7BitEncodedIntSlow(pBuffer, cbBufferTotalSize, pcbBufferOffset, pValue);
 }
 
 const Parser::XamlBinaryFileVersion& XamlBinaryFormatSubReader2::GetVersion() const

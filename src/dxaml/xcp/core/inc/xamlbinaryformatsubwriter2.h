@@ -71,6 +71,11 @@ public:
     _Check_return_ HRESULT PersistConstant(
         _In_ const std::uint64_t value);
 
+    // Writes a fixed-width (8-byte) uint64_t to the node stream, bypassing LEB128 encoding.
+    // Used for values like high-quality hashes where variable-length encoding is counterproductive.
+    _Check_return_ HRESULT PersistFixedWidthUInt64(
+        _In_ const std::uint64_t value);
+
     _Check_return_ HRESULT PersistLineInfo(
         _In_ const ObjectWriterNode& objectNode);
 
