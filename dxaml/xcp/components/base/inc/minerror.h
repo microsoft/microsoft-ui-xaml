@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 // A bare set of error handling macros needed to work with classes
-// fundemental to the XAML framework (xref_ptr, xstring, etc). This include file
+// fundamental to the XAML framework (xref_ptr, xstring, etc). This include file
 // is designed to be included from unit tests and other places where we'd
 // like to build isolated objects.
 
