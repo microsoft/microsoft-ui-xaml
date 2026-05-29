@@ -35,7 +35,7 @@ permissions:
 jobs:
   build:
     name: Build (${{ matrix.flavor }})
-    runs-on: windows-2022
+    runs-on: windows-2025
     timeout-minutes: 120
     strategy:
       fail-fast: false
@@ -59,7 +59,7 @@ jobs:
           - flavor: arm64fre
             platform: arm64
             configuration: Release
-          # arm64ec deferred: cross-toolchain on windows-2022 unverified.
+          # arm64ec deferred: cross-toolchain on windows-2025 unverified.
     env:
       WINUI_INIT_FLAVOR: ${{ matrix.flavor }}
       # Use 'x86' (not 'Win32') - SLNs declare Debug|x86 directly, no Win32 alias.
