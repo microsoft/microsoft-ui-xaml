@@ -241,6 +241,15 @@ _Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistConstant(
     return Persist7BitEncodedInt(value, m_spSubNodeStream);
 }
 
+_Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistFixedWidthUInt64(
+    _In_ const std::uint64_t value)
+{
+    XUINT32 cbWritten = 0;
+    IFC_RETURN(m_spSubNodeStream->Write(&value, sizeof(value), 0, &cbWritten));
+    IFCEXPECT_RETURN(cbWritten == sizeof(value));
+    return S_OK;
+}
+
 _Check_return_ HRESULT XamlBinaryFormatSubWriter2::PersistLineInfo(
     _In_ const ObjectWriterNode& objectNode)
 {

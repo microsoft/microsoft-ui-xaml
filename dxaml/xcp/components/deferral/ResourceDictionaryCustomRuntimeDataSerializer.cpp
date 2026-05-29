@@ -22,14 +22,17 @@ namespace CustomRuntimeDataSerializationHelpers
         _In_ const std::vector<unsigned int>& streamOffsetTokenTable)
     {
         IFC_RETURN(Serialize(target.GetKey(), writer, streamOffsetTokenTable));
-        IFC_RETURN(Serialize(target.GetHashAndIsKeyType(), writer, streamOffsetTokenTable));
+        // Use fixed-width encoding for the hash: this value is derived from a high-quality
+        // hash and almost always occupies all 64 bits, making LEB128 counterproductive
+        // (10 bytes encoded vs 8 bytes fixed-width).
+        IFC_RETURN(writer->PersistFixedWidthUInt64(target.GetHashAndIsKeyType()));
         return S_OK;
     }
 
     ResourceKeyStorage Serializer<ResourceKeyStorage>::Read(_In_ XamlBinaryFormatSubReader2* reader)
     {
         auto key = Deserialize<xstring_ptr>(reader);
-        auto hashAndIsKeyType = Deserialize<std::uint64_t>(reader);
+        auto hashAndIsKeyType = reader->ReadFixedWidthUInt64();
         return ResourceKeyStorage(key, hashAndIsKeyType);
     }
 

@@ -57,6 +57,7 @@
         <ClInclude Include="XamlSchemaContextUnitTests.h"/>
         <ClInclude Include="xamltextparserunittests.h"/>
         <ClInclude Include="Xbf2MetadataUnitTests.h"/>
+        <ClInclude Include="XbfSubReaderUnitTests.h"/>
         <ClInclude Include="XbfVersioningUnitTests.h"/>
 
         <ClCompile Include="CollectionInitializationStringParserUnitTests.cpp"/>
@@ -77,6 +78,7 @@
         <ClCompile Include="Stubs.cpp"/>
         <ClCompile Include="XamlPredicateServiceUnitTests.cpp"/>
         <ClCompile Include="HeapMemory.cpp"/>
+        <ClCompile Include="XbfSubReaderUnitTests.cpp"/>
         <ClCompile Include="XbfVersioningUnitTests.cpp"/>
     </ItemGroup>
 

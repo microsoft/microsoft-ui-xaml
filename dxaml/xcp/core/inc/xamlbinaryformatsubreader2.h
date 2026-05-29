@@ -64,6 +64,9 @@ public:
     CValue ReadCValue();
     unsigned int ReadUInt();
     std::uint64_t ReadUInt64();
+    // Reads a fixed-width (8-byte) uint64_t from the node stream, bypassing LEB128 encoding.
+    // Used for values like high-quality hashes where variable-length encoding is counterproductive.
+    std::uint64_t ReadFixedWidthUInt64();
     xstring_ptr ReadSharedString();
     std::shared_ptr<XamlType> ReadXamlType();
     std::shared_ptr<XamlProperty> ReadXamlProperty();
@@ -73,6 +76,9 @@ public:
 
 private:
 #pragma region Raw Stream Accessors
+    // Generic buffer read for variable-size data (arrays, strings).
+    // For fixed-size type reads, prefer TryReadFromNodeStreamBuffer<T> which
+    // avoids the overhead of function call indirection and void* type erasure.
     bool TryReadFromBuffer(
         _In_ XUINT8 *pBuffer,
         _In_ XUINT32 cbBufferTotalSize,
@@ -80,10 +86,27 @@ private:
         _Out_writes_bytes_(cbBufferReadSize) void* pbTarget,
         _Inout_ XUINT32 *pcbBufferOffset);
 
+    // Optimized fixed-size read from the node stream. Uses memcpy for
+    // type-punning safety; the compiler optimizes this to a single load
+    // instruction for types that fit in a register (1, 2, 4, or 8 bytes).
+    // This eliminates the overhead of the generic TryReadFromBuffer path
+    // (function call, void* indirection, std::copy_n) for the most common
+    // read sizes in the hot deserialization loop.
     template <typename T>
     bool TryReadFromNodeStreamBuffer(_Out_ T* pTarget)
     {
-        return TryReadFromBuffer(m_nodeStream, m_nodeStreamLength, sizeof(T), pTarget, &m_currentNodeStreamOffset);
+        static_assert(std::is_trivially_copyable_v<T>,
+            "TryReadFromNodeStreamBuffer only supports trivially copyable types");
+        // Overflow-safe bounds check: verify offset is within buffer, then check
+        // remaining bytes >= sizeof(T). The subtraction form avoids unsigned wrap.
+        if (m_currentNodeStreamOffset > m_nodeStreamLength ||
+            sizeof(T) > m_nodeStreamLength - m_currentNodeStreamOffset)
+        {
+            return false;
+        }
+        memcpy(pTarget, m_nodeStream + m_currentNodeStreamOffset, sizeof(T));
+        m_currentNodeStreamOffset += sizeof(T);
+        return true;
     }
 
     template <typename T>
@@ -103,6 +126,69 @@ private:
     xstring_ptr ReadPersistedString();
     PersistedXamlNode2 ReadPersistedXamlNode();
 
+    // Branchless fast path for decoding 7-bit encoded uint32 values.
+    // Uses architecture-specific bit scanning intrinsics to decode without
+    // data-dependent branches, improving instruction-level parallelism.
+    // Falls back to TryRead7BitEncodedIntSlow when near end of buffer.
+    // Implemented in xamlbinaryformatsubreader2.cpp.
+    _Success_(return != false)
+    bool TryRead7BitEncodedIntFast32(
+        _In_ XUINT8* pBuffer,
+        _In_ XUINT32 cbBufferTotalSize,
+        _Inout_ XUINT32* pcbBufferOffset,
+        _Out_ unsigned int* pValue);
+
+    // Slow-path loop for decoding 7-bit encoded integers of any width.
+    // Reads bytes directly from the buffer without TryReadFromBuffer overhead.
+    // Used as fallback when near end of buffer, and for uint64_t decoding
+    // (where the branchless approach would be overly complex for 10-byte max).
+    template <typename T,
+        std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, int> = 0>
+    _Success_(return != false)
+    bool TryRead7BitEncodedIntSlow(
+        _In_ XUINT8* pBuffer,
+        _In_ XUINT32 cbBufferTotalSize,
+        _Inout_ XUINT32* pcbBufferOffset,
+        _Out_ T* pValue)
+    {
+        static constexpr unsigned int ContinuationBit = 0x80;  // High bit signals "more bytes follow"
+        static constexpr unsigned int PayloadMask = 0x7F;      // Low 7 bits carry data payload
+        static constexpr unsigned int BitsPerEncodedByte = 7;  // Each encoded byte carries 7 payload bits
+        // Maximum encoded byte count: ceil(sizeof(T) * 8 / BitsPerEncodedByte).
+        // A uint32 (32 bits) requires at most 5 bytes; a uint64 (64 bits) at most 10.
+        static constexpr unsigned int MaxEncodedBytes = (sizeof(T) * 8 + 6) / BitsPerEncodedByte;
+
+        T value = 0;
+        unsigned int shift = 0;
+        XUINT32 offset = *pcbBufferOffset;
+
+        for (unsigned int bytesRead = 0; bytesRead < MaxEncodedBytes; ++bytesRead)
+        {
+            if (offset >= cbBufferTotalSize)
+            {
+                return false;
+            }
+
+            unsigned char currentByte = pBuffer[offset++];
+            value |= static_cast<T>(currentByte & PayloadMask) << shift;
+            shift += BitsPerEncodedByte;
+
+            if (!(currentByte & ContinuationBit))
+            {
+                *pcbBufferOffset = offset;
+                *pValue = value;
+
+                return true;
+            }
+        }
+
+        // Overlong encoding: more continuation bytes than T can represent.
+        return false;
+    }
+
+    // Dispatcher for 7-bit encoded integer decoding.
+    // Routes uint32 to the branchless fast path (TryRead7BitEncodedIntFast32)
+    // when possible; uint64 and other widths use the generic loop.
     template <typename T,
         std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>, int> = 0>
     _Success_(return != false)
@@ -112,28 +198,18 @@ private:
         _Inout_ XUINT32 *pcbBufferOffset,
         _Out_ T *pValue)
     {
-        static constexpr unsigned int ContinuationBit = 0x80;  // High bit signals "more bytes follow"
-        static constexpr unsigned int PayloadMask = 0x7F;      // Low 7 bits carry data payload
-        static constexpr unsigned int BitsPerEncodedByte = 7;  // Each encoded byte carries 7 payload bits
-
-        T value = 0;
-        unsigned int shift = 0;
-        unsigned char currentByte = 0;
-
-        do
+        if constexpr (sizeof(T) == sizeof(unsigned int))
         {
-            ASSERT(shift < sizeof(T) * 8);
-            if (!TryReadFromBuffer(pBuffer, cbBufferTotalSize, sizeof(XUINT8), &currentByte, pcbBufferOffset))
-            {
-                return false;
-            }
-
-            value |= static_cast<T>(currentByte & PayloadMask) << shift;
-            shift += BitsPerEncodedByte;
-        } while (currentByte & ContinuationBit);
-
-        *pValue = value;
-        return true;
+            // uint32: use branchless fast path with architecture-specific intrinsics
+            return TryRead7BitEncodedIntFast32(
+                pBuffer, cbBufferTotalSize, pcbBufferOffset,
+                reinterpret_cast<unsigned int*>(pValue));
+        }
+        else
+        {
+            // uint64 and other widths: use the direct-buffer loop
+            return TryRead7BitEncodedIntSlow(pBuffer, cbBufferTotalSize, pcbBufferOffset, pValue);
+        }
     }
 
     PersistedConstantType ReadConstantNodeType();
