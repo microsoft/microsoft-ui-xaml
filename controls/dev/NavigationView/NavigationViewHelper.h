@@ -52,8 +52,8 @@ private:
     static constexpr wstring_view c_selectionIndicatorName = L"SelectionIndicator"sv;
 };
 
-static constexpr wstring_view c_OnLeftNavigationReveal = L"OnLeftNavigationReveal"sv;
-static constexpr wstring_view c_OnLeftNavigation = L"OnLeftNavigation"sv;
-static constexpr wstring_view c_OnTopNavigationPrimary = L"OnTopNavigationPrimary"sv;
-static constexpr wstring_view c_OnTopNavigationPrimaryReveal = L"OnTopNavigationPrimaryReveal"sv;
-static constexpr wstring_view c_OnTopNavigationOverflow = L"OnTopNavigationOverflow"sv;
+inline constexpr wstring_view c_OnLeftNavigationReveal = L"OnLeftNavigationReveal"sv;
+inline constexpr wstring_view c_OnLeftNavigation = L"OnLeftNavigation"sv;
+inline constexpr wstring_view c_OnTopNavigationPrimary = L"OnTopNavigationPrimary"sv;
+inline constexpr wstring_view c_OnTopNavigationPrimaryReveal = L"OnTopNavigationPrimaryReveal"sv;
+inline constexpr wstring_view c_OnTopNavigationOverflow = L"OnTopNavigationOverflow"sv;

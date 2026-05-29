@@ -30,6 +30,8 @@ public:
 
 namespace LayoutUtils
 {
+    inline constexpr winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
+
     template<class UIElementType>
     inline float MeasureAndGetDesiredWidthFor(UIElementType element, winrt::Size const& availableSize)
     {

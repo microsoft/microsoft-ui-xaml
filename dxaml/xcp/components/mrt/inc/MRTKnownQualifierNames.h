@@ -6,11 +6,11 @@
 // Namespace with the string constants for qualifier names.
 namespace MRTKnownQualifierNames
 {
-    constexpr wchar_t Contrast[] = L"Contrast";
-    constexpr wchar_t DeviceFamily[] = L"DeviceFamily";
-    constexpr wchar_t HomeRegion[] = L"HomeRegion";
-    constexpr wchar_t Language[] = L"Language";
-    constexpr wchar_t LayoutDirection[] = L"LayoutDirection";
-    constexpr wchar_t Scale[] = L"Scale";
-    constexpr wchar_t Theme[] = L"Theme";
+    inline constexpr wchar_t Contrast[] = L"Contrast";
+    inline constexpr wchar_t DeviceFamily[] = L"DeviceFamily";
+    inline constexpr wchar_t HomeRegion[] = L"HomeRegion";
+    inline constexpr wchar_t Language[] = L"Language";
+    inline constexpr wchar_t LayoutDirection[] = L"LayoutDirection";
+    inline constexpr wchar_t Scale[] = L"Scale";
+    inline constexpr wchar_t Theme[] = L"Theme";
 }

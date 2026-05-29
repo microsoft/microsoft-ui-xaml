@@ -733,7 +733,7 @@ _Check_return_ HRESULT XamlPullParser::Logic_StartContentProperty(const std::sha
         // TODO: Is setting attachable to FALSE the right thing?
         IFC_RETURN(UnknownProperty::Create(
                     schemaContext,
-                    c_strUnknownContent,
+                    XSTRING_PTR_FROM_STORAGE(c_strUnknownContentStorage),
                     m_ParserContext->get_CurrentType(),
                     FALSE,
                     unknownProperty));

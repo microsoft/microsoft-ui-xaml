@@ -35,6 +35,7 @@ _Check_return_ HRESULT XamlTextReaderSettings::AddDefaultXmlNamespacePrefixesIfN
         {
             std::shared_ptr<XamlSchemaContext> spSchemaContext;
 
+            DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strDefaultXmlNsUri, L"http://schemas.microsoft.com/winfx/2006/xaml/presentation");
             xstring_ptr spDefaultXmlNsUri(c_strDefaultXmlNsUri);
 
             // Turn the URI into a XAML namespace (Note: We're assuming we

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -102,8 +102,6 @@ static constexpr auto c_shadowCasterEaseOutStoryboard = L"ShadowCasterEaseOutSto
 static constexpr auto c_paneOverlayShadowDepthName{ L"PaneOverlayShadowDepth"sv };
 
 constexpr int s_itemNotFound{ -1 };
-
-static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool NavigationViewTrace::s_IsDebugOutputEnabled{ false };
@@ -1549,7 +1547,7 @@ void NavigationView::UpdatePaneLayout()
                                     const auto footerItemsRepeaterMargin = footerItemsRepeater.Margin();
                                     footerItemsRepeaterTopBottomMargin = footerItemsRepeaterMargin.Top + footerItemsRepeaterMargin.Bottom;
                                 }
-                                auto footerItemsDesiredHeight = LayoutUtils::MeasureAndGetDesiredHeightFor(footerItemsRepeater, c_infSize);
+                                auto footerItemsDesiredHeight = LayoutUtils::MeasureAndGetDesiredHeightFor(footerItemsRepeater, LayoutUtils::c_infSize);
                                 return footerItemsDesiredHeight + footerItemsRepeaterTopBottomMargin;
                             }();
 
@@ -3705,7 +3703,7 @@ void NavigationView::HandleTopNavigationMeasureOverride(winrt::Size const& avail
 
 void NavigationView::HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size& availableSize)
 {
-    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(LayoutUtils::c_infSize);
     if (desiredWidth > availableSize.Width)
     {
         ResetAndRearrangeTopNavItems(availableSize);
@@ -3714,7 +3712,7 @@ void NavigationView::HandleTopNavigationMeasureOverrideNormal(const winrt::Windo
 
 void NavigationView::HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size& availableSize)
 {
-    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(LayoutUtils::c_infSize);
     if (desiredWidth > availableSize.Width)
     {
         ShrinkTopNavigationSize(desiredWidth, availableSize);
@@ -3738,12 +3736,12 @@ void NavigationView::HandleTopNavigationMeasureOverrideOverflow(const winrt::Win
 void NavigationView::ArrangeTopNavItems(winrt::Size const& availableSize)
 {
     SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
-    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+    const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(LayoutUtils::c_infSize);
     if (!(desiredWidth < availableSize.Width))
     {
         // overflow
         SetOverflowButtonVisibility(winrt::Visibility::Visible);
-        const auto desiredWidthForOverflowButton = MeasureTopNavigationViewDesiredWidth(c_infSize);
+        const auto desiredWidthForOverflowButton = MeasureTopNavigationViewDesiredWidth(LayoutUtils::c_infSize);
 
         MUX_ASSERT(desiredWidthForOverflowButton >= desiredWidth);
         m_topDataProvider.OverflowButtonWidth(desiredWidthForOverflowButton - desiredWidth);
@@ -3782,7 +3780,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
     if (!needInvalidMeasure)
     {
         const auto actualWidth = GetTopNavigationViewActualWidth();
-        const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+        const auto desiredWidth = MeasureTopNavigationViewDesiredWidth(LayoutUtils::c_infSize);
         // This assert triggers on the InfoBadge page, however it seems to recover fine, disabling the assert for now.
         // Github issue: https://github.com/microsoft/microsoft-ui-xaml/issues/5771
         // MUX_ASSERT(desiredWidth <= actualWidth);
@@ -3925,7 +3923,7 @@ void NavigationView::ShrinkTopNavigationSize(float desiredWidth, winrt::Size con
 
     const auto selectedItemIndex = GetSelectedItemIndex();
 
-    const auto possibleWidthForPrimaryList = MeasureTopNavMenuItemsHostDesiredWidth(c_infSize) - (desiredWidth - availableSize.Width);
+    const auto possibleWidthForPrimaryList = MeasureTopNavMenuItemsHostDesiredWidth(LayoutUtils::c_infSize) - (desiredWidth - availableSize.Width);
     if (possibleWidthForPrimaryList >= 0)
     {
         // Remove all items which is not visible except first item and selected item.
@@ -3936,7 +3934,7 @@ void NavigationView::ShrinkTopNavigationSize(float desiredWidth, winrt::Size con
     }
 
     // measure again to make sure SelectedItem is realized
-    desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
+    desiredWidth = MeasureTopNavigationViewDesiredWidth(LayoutUtils::c_infSize);
 
     const auto widthAtLeastToBeRemoved = desiredWidth - availableSize.Width;
     if (widthAtLeastToBeRemoved > 0)

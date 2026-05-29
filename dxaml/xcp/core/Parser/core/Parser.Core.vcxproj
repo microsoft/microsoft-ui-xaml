@@ -52,7 +52,7 @@
         <ClCompile Include="..\objectwriterstack.cpp"/>
         <ClCompile Include="..\parser.cpp"/>
         <ClCompile Include="..\parsererrorservice.cpp"/>
-        <ClCompile Include="..\parserstringconstants.cpp"/>
+
         <ClCompile Include="..\savedcontext.cpp"/>
         <ClCompile Include="..\StableXbfIndexMapping.g.cpp"/>
         <ClCompile Include="..\xamlassembly.cpp"/>

@@ -468,9 +468,12 @@ IFACEMETHODIMP
     DxamlCoreTestHooks::SetStoryboardStartedCallback(
         _In_ HRESULT(*pCallback)(xaml_animation::IStoryboard*, xaml::IUIElement*)) /*override*/
 {
+    static std::function<HRESULT(CDependencyObject*, CDependencyObject*)> s_callback;
+
     if (pCallback)
     {
-        IFC_RETURN(CoreImports::CStoryboard_SetStoryboardStartedCallback([pCallback](CDependencyObject* pStoryboardAsDO, CDependencyObject* pTargetAsDO)
+        ASSERT(!s_callback);
+        s_callback = [pCallback](CDependencyObject* pStoryboardAsDO, CDependencyObject* pTargetAsDO)
         {
             ctl::ComPtr<DependencyObject> spStoryboardAsDO;
             ctl::ComPtr<xaml_animation::IStoryboard> spStoryboard;
@@ -488,10 +491,12 @@ IFACEMETHODIMP
             }
 
             return pCallback(spStoryboard.Get(), spTarget.Get());
-        }));
+        };
+        IFC_RETURN(CoreImports::CStoryboard_SetStoryboardStartedCallback(&s_callback));
     }
     else
     {
+        s_callback = nullptr;
         IFC_RETURN(CoreImports::CStoryboard_SetStoryboardStartedCallback(nullptr));
     }
     return S_OK;

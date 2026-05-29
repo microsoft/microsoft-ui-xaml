@@ -16,17 +16,17 @@ class CUIElement;
 class CDependencyObject;
 
 
-static const wchar_t FacadeProperty_Translation[] = L"Translation";
-static const wchar_t FacadeProperty_Translation_Comp[] = L"Offset"; // Translation corresponds to Offset in Composition
-static const wchar_t FacadeProperty_Rotation[] = L"Rotation";
-static const wchar_t FacadeProperty_Rotation_Comp[] = L"RotationAngleInDegrees";  // Rotation corresponds to RotationAngleInDegrees in Composition
-static const wchar_t FacadeProperty_Scale[] = L"Scale";
-static const wchar_t FacadeProperty_TransformMatrix[] = L"TransformMatrix";
-static const wchar_t FacadeProperty_CenterPoint[] = L"CenterPoint";
-static const wchar_t FacadeProperty_RotationAxis[] = L"RotationAxis";
-static const wchar_t FacadeProperty_Opacity[] = L"Opacity";
-static const wchar_t FacadeProperty_ActualOffset[] = L"ActualOffset";
-static const wchar_t FacadeProperty_ActualSize[] = L"ActualSize";
+inline constexpr wchar_t FacadeProperty_Translation[] = L"Translation";
+inline constexpr wchar_t FacadeProperty_Translation_Comp[] = L"Offset"; // Translation corresponds to Offset in Composition
+inline constexpr wchar_t FacadeProperty_Rotation[] = L"Rotation";
+inline constexpr wchar_t FacadeProperty_Rotation_Comp[] = L"RotationAngleInDegrees";  // Rotation corresponds to RotationAngleInDegrees in Composition
+inline constexpr wchar_t FacadeProperty_Scale[] = L"Scale";
+inline constexpr wchar_t FacadeProperty_TransformMatrix[] = L"TransformMatrix";
+inline constexpr wchar_t FacadeProperty_CenterPoint[] = L"CenterPoint";
+inline constexpr wchar_t FacadeProperty_RotationAxis[] = L"RotationAxis";
+inline constexpr wchar_t FacadeProperty_Opacity[] = L"Opacity";
+inline constexpr wchar_t FacadeProperty_ActualOffset[] = L"ActualOffset";
+inline constexpr wchar_t FacadeProperty_ActualSize[] = L"ActualSize";
 
 // Although we only have the one listener now (PropertySet), we will eventually have listeners for
 // brushes and possibly geometery.  But for now, our only abstraction for this will be an interface

@@ -378,14 +378,14 @@ XamlBinaryMetadataReader2::LoadProperty(_In_ uint32_t index)
         std::shared_ptr<XamlNamespace> spNamespace;
         std::shared_ptr<DirectiveProperty> directiveProperty;
 
-        IFC_RETURN(m_spXamlSchemaContext->GetXamlXmlNamespace(c_strMarkupUri, spNamespace));
+        IFC_RETURN(m_spXamlSchemaContext->GetXamlXmlNamespace(XSTRING_PTR_FROM_STORAGE(c_strMarkupUriStorage), spNamespace));
         IFC_RETURN(m_spXamlSchemaContext->GetXamlDirective(spNamespace, spPropertyName, directiveProperty));
         spProperty = directiveProperty;
 
         // if we can't find in xaml markup namespace, look in xml namespace
         if (!spProperty)
         {
-            IFC_RETURN(m_spXamlSchemaContext->GetXamlXmlNamespace(c_strXmlUri, spNamespace));
+            IFC_RETURN(m_spXamlSchemaContext->GetXamlXmlNamespace(XSTRING_PTR_FROM_STORAGE(c_strXmlUriStorage), spNamespace));
             IFC_RETURN(m_spXamlSchemaContext->GetXamlDirective(spNamespace, spPropertyName, directiveProperty));
             spProperty = directiveProperty;
         }

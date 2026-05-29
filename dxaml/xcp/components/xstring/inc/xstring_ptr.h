@@ -23,11 +23,16 @@
 
 #define DECLARE_CONST_XSTRING_PTR_STORAGE(name, buffer) static constexpr xstring_ptr_storage name = XSTRING_PTR_STORAGE(buffer L"")
 
+// Use this macro for xstring_ptr_storage constants in headers shared across translation units.
+// Unlike DECLARE_CONST_XSTRING_PTR_STORAGE (which uses static linkage and creates per-TU copies),
+// this uses inline constexpr to ensure a single copy across all translation units.
+#define DECLARE_CONST_XSTRING_PTR_STORAGE_GLOBAL(name, buffer) inline constexpr xstring_ptr_storage name = XSTRING_PTR_STORAGE(buffer L"")
+
 #define XSTRING_PTR_FROM_STORAGE(storage) (xstring_ptr(storage))
 
 // This macro should only be used at a function-level scope unless you're really sure you know what you're doing.  Using it in a global scope
 // adds a dynamic initializer to the DLL because xstring_ptr is a class that isn't a POD type.  You probably don't want to do that when you can
-// just DECLARE_CONST_XSTRING_PTR_STORAGE at the global scope and then construct the actual xstring_ptr in the scope you need it.
+// just use DECLARE_CONST_XSTRING_PTR_STORAGE_GLOBAL at the global scope and then construct the actual xstring_ptr in the scope you need it.
 #define DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(name, buffer) \
     static constexpr xstring_ptr_storage s##name##Storage = XSTRING_PTR_STORAGE(buffer L""); \
     const xstring_ptr name {(s##name##Storage)}
@@ -37,7 +42,7 @@
 
 // This macro should only be used at a function-level scope unless you're really sure you know what you're doing.  Using it in a global scope
 // adds a dynamic initializer to the DLL because xstring_ptr is a class that isn't a POD type.  You probably don't want to do that when you can
-// just DECLARE_CONST_XSTRING_PTR_STORAGE at the global scope and then construct the actual xstring_ptr in the scope you need it.
+// just use DECLARE_CONST_XSTRING_PTR_STORAGE_GLOBAL at the global scope and then construct the actual xstring_ptr in the scope you need it.
 #define DECLARE_STATIC_CONST_STRING_IN_FUNCTION_SCOPE(name, buffer) \
     static constexpr xstring_ptr_storage s##name##Storage = XSTRING_PTR_STORAGE(buffer L""); \
     const xstring_ptr name {(s##name##Storage)}

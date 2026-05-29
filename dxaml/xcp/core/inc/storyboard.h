@@ -120,7 +120,7 @@ public:
     }
 
     static void SetStoryboardStartedCallback(
-        _In_ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)> callback)
+        _In_ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)>* callback)
     { s_storyboardStartedCallback = callback; }
 
     void SynchronizeDCompAnimationAfterResume(double timeManagerTime) override;
@@ -188,7 +188,7 @@ private:
     XDOUBLE m_rTimeDelta            = XDOUBLE_MAX;
 
     // Callback we invoke to notify the test framework that we started a storyboard.
-    static std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)> s_storyboardStartedCallback;
+    static std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)>* s_storyboardStartedCallback;
 };
 
 namespace StoryboardHelpers

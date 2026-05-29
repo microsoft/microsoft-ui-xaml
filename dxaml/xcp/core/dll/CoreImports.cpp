@@ -3739,7 +3739,7 @@ _Check_return_ HRESULT CStoryboard_SeekAlignedToLastTickPublic(
 }
 
 _Check_return_ HRESULT CStoryboard_SetStoryboardStartedCallback(
-    _In_ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)> callback)
+    _In_ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)>* callback)
 {
     CStoryboard::SetStoryboardStartedCallback(callback);
     RRETURN(S_OK);

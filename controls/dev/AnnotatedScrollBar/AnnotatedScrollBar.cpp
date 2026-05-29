@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -20,8 +20,6 @@
 // Change to 'true' to turn on debugging outputs in Output window
 bool AnnotatedScrollBarTrace::s_IsDebugOutputEnabled{ false };
 bool AnnotatedScrollBarTrace::s_IsVerboseDebugOutputEnabled{ false };
-
-static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 
 AnnotatedScrollBar::AnnotatedScrollBar()
 {
@@ -369,7 +367,7 @@ void AnnotatedScrollBar::CreateLabelContainers()
             }
         }
 
-        float const labelHeight = LayoutUtils::MeasureAndGetDesiredHeightFor(labelContentPresenter, c_infSize);
+        float const labelHeight = LayoutUtils::MeasureAndGetDesiredHeightFor(labelContentPresenter, LayoutUtils::c_infSize);
         m_labelSizes.push_back(labelHeight);
 
         auto const labelVerticalOffset = GetLabelVerticalOffset(label);
@@ -558,7 +556,7 @@ void AnnotatedScrollBar::ShowToolTipAtOffset(double offsetFromTop)
             }
         }
 
-        auto const detailLabelToolTipWidth = LayoutUtils::MeasureAndGetDesiredWidthFor(tooltipContentPresenter, c_infSize);
+        auto const detailLabelToolTipWidth = LayoutUtils::MeasureAndGetDesiredWidthFor(tooltipContentPresenter, LayoutUtils::c_infSize);
         // +2 extra pixels to offset the tooltip border for proper alignment
         auto const horizontalPosition = static_cast<float>((-1*detailLabelToolTipWidth/2) + 2);
         const winrt::Rect placementRect(horizontalPosition,

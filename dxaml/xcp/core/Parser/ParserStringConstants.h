@@ -3,11 +3,7 @@
 
 #pragma once
 
-extern const xstring_ptr c_strUsing;
-extern const xstring_ptr c_strUsingWindowsFoundation;
-extern const xstring_ptr c_strXmlUri;
-extern const xstring_ptr c_strXmlPrefix;
-extern const xstring_ptr c_strMarkupUri;
-extern const xstring_ptr c_strUnknownContent;
-extern const xstring_ptr c_strDefaultXmlNsUri;
+DECLARE_CONST_XSTRING_PTR_STORAGE_GLOBAL(c_strMarkupUriStorage, L"http://schemas.microsoft.com/winfx/2006/xaml");
+DECLARE_CONST_XSTRING_PTR_STORAGE_GLOBAL(c_strXmlUriStorage, L"http://www.w3.org/XML/1998/namespace");
+DECLARE_CONST_XSTRING_PTR_STORAGE_GLOBAL(c_strUnknownContentStorage, L"_UnknownContent");
 
