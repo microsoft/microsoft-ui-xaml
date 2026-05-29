@@ -394,6 +394,7 @@ _Check_return_ HRESULT XamlSchemaContext::GetXamlTypeNamespace(
 
                 // ManagedTypeInfoProvider::GetTypeNamespace() expects the namespace string to still have "using:" prepended, so get the name into the expected form
                 XStringBuilder namespaceBuilder;
+                DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strUsing, L"using:");
                 IFC_RETURN(namespaceBuilder.Initialize(c_strUsing));
                 IFC_RETURN(namespaceBuilder.Append(inTypeNamespaceName));
                 xstring_ptr normalizedTypeNamespaceName;
@@ -911,7 +912,7 @@ _Check_return_ HRESULT XamlSchemaContext::get_X_KeyProperty(
 
         DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strKey, L"Key");
 
-        IFC_RETURN(GetXamlXmlNamespace(c_strMarkupUri, spDirectiveNamespace));
+        IFC_RETURN(GetXamlXmlNamespace(XSTRING_PTR_FROM_STORAGE(c_strMarkupUriStorage), spDirectiveNamespace));
         IFC_RETURN(GetXamlDirective(spDirectiveNamespace, c_strKey, m_spXKeyProperty));
     }
 
@@ -931,7 +932,7 @@ _Check_return_ HRESULT XamlSchemaContext::get_X_NameProperty(
 
         DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strName, L"Name");
 
-        IFC_RETURN(GetXamlXmlNamespace(c_strMarkupUri, spDirectiveNamespace));
+        IFC_RETURN(GetXamlXmlNamespace(XSTRING_PTR_FROM_STORAGE(c_strMarkupUriStorage), spDirectiveNamespace));
         IFC_RETURN(GetXamlDirective(spDirectiveNamespace, c_strName, m_spXNameProperty));
     }
 
@@ -951,7 +952,7 @@ _Check_return_ HRESULT XamlSchemaContext::get_X_ConnectionIdProperty(
 
         DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strName, L"ConnectionId");
 
-        IFC_RETURN(GetXamlXmlNamespace(c_strMarkupUri, spDirectiveNamespace));
+        IFC_RETURN(GetXamlXmlNamespace(XSTRING_PTR_FROM_STORAGE(c_strMarkupUriStorage), spDirectiveNamespace));
         IFC_RETURN(GetXamlDirective(spDirectiveNamespace, c_strName, m_spXConnectionIdProperty));
     }
 
@@ -968,6 +969,7 @@ _Check_return_ HRESULT XamlSchemaContext::get_StringXamlType(
     if (!m_spStringType)
     {
         DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strString, L"String");
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strUsingWindowsFoundation, L"using:Windows.Foundation");
         std::shared_ptr<XamlNamespace> spSystemNamespace;
 
         IFC_RETURN(GetXamlXmlNamespace(c_strUsingWindowsFoundation, spSystemNamespace));
@@ -988,6 +990,7 @@ _Check_return_ HRESULT XamlSchemaContext::get_Int32XamlType(
     if (!m_spInt32Type)
     {
         DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strInt32, L"Int32");
+        DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strUsingWindowsFoundation, L"using:Windows.Foundation");
         std::shared_ptr<XamlNamespace> spSystemNamespace;
 
         IFC_RETURN(GetXamlXmlNamespace(c_strUsingWindowsFoundation, spSystemNamespace));
@@ -1198,19 +1201,19 @@ void XamlSchemaContext::InitializeSpecialXmlNamespaceMap()
     std::shared_ptr<XamlSpecialXmlNamespace> spXmlNamespace;
     std::shared_ptr<XamlMarkupXmlNamespace> spMarkupNamespace;
 
-    spXmlNamespace = std::make_shared<XamlSpecialXmlNamespace>(shared_from_this(), c_strXmlUri);
+    spXmlNamespace = std::make_shared<XamlSpecialXmlNamespace>(shared_from_this(), XSTRING_PTR_FROM_STORAGE(c_strXmlUriStorage));
     m_xmlNamespaceVector.emplace_back(spXmlNamespace);
     spXmlNamespace->SetRuntimeIndex(m_xmlNamespaceVector.size() - 1);
 
-    spMarkupNamespace = std::make_shared<XamlMarkupXmlNamespace>(shared_from_this(), c_strMarkupUri);
+    spMarkupNamespace = std::make_shared<XamlMarkupXmlNamespace>(shared_from_this(), XSTRING_PTR_FROM_STORAGE(c_strMarkupUriStorage));
     m_xmlNamespaceVector.emplace_back(spMarkupNamespace);
     spMarkupNamespace->SetRuntimeIndex(m_xmlNamespaceVector.size() - 1);
 
     // Clear the existing mapping of Uri-to-Namespace
     m_mapUriToXmlNamespace.clear();
 
-    m_mapUriToXmlNamespace.insert({ c_strXmlUri, spXmlNamespace });
-    m_mapUriToXmlNamespace.insert({ c_strMarkupUri, spMarkupNamespace });
+    m_mapUriToXmlNamespace.insert({ XSTRING_PTR_FROM_STORAGE(c_strXmlUriStorage), spXmlNamespace });
+    m_mapUriToXmlNamespace.insert({ XSTRING_PTR_FROM_STORAGE(c_strMarkupUriStorage), spMarkupNamespace });
 }
 
 #pragma endregion
@@ -1325,6 +1328,7 @@ _Check_return_ HRESULT XamlSchemaContext::ExtractTypeNamespace(
     _Out_ xstring_ptr& strOutTypeNamespace
     )
 {
+    DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strUsing, L"using:");
     if (rstrXmlNs.StartsWith(c_strUsing, xstrCompareCaseSensitive))
     {
         IFC_RETURN(rstrXmlNs.SubString(

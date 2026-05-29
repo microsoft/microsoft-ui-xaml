@@ -51,17 +51,20 @@ public:
 
     void Set(std::function<decltype(RoFailFastWithErrorContextInternal2)> mock)
     {
+        m_mock = mock;
         Private::Infrastructure::IXamlErrorTestHooks^ winrtErrorTestHooks = TestServices::WindowHelper->GetErrorHandlingTestHooks();
         auto errorTestHooks = reinterpret_cast<::IXamlErrorTestHooks*>(winrtErrorTestHooks);
-        errorTestHooks->SetRoFailFastMock(mock);
-        m_mock = mock;
+        errorTestHooks->SetRoFailFastMock(&m_mock);
     }
 
     void Detach()
     {
         if (m_mock)
         {
-            Set(nullptr);
+            Private::Infrastructure::IXamlErrorTestHooks^ winrtErrorTestHooks = TestServices::WindowHelper->GetErrorHandlingTestHooks();
+            auto errorTestHooks = reinterpret_cast<::IXamlErrorTestHooks*>(winrtErrorTestHooks);
+            errorTestHooks->SetRoFailFastMock(nullptr);
+            m_mock = nullptr;
         }
     }
 

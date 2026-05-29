@@ -72,7 +72,7 @@ _Check_return_ HRESULT XamlNodeStreamValidator::ValidateStartProperty(const Xaml
         {
             xstring_ptr spPropertyName;
             IFC_RETURN(inNode.get_Property()->get_Name(&spPropertyName));
-            if (spPropertyName.Equals(c_strUnknownContent, xstrCompareCaseSensitive))
+            if (spPropertyName.Equals(XSTRING_PTR_FROM_STORAGE(c_strUnknownContentStorage), xstrCompareCaseSensitive))
             {
                 std::shared_ptr<XamlType> spDeclaringType;
                 IFC_RETURN(inNode.get_Property()->get_DeclaringType(spDeclaringType));

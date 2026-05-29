@@ -25,7 +25,7 @@ public:
         : XamlXmlNamespace(inXamlSchemaContext, inXmlNamespaceUri, xstring_ptr::EmptyString())
         , m_eSpecialXmlNamespaceKind(sxkNone)
     {
-        if (XSTRING_PTR_FROM_STORAGE(c_strXmlUri).Equals(inXmlNamespaceUri))
+        if (XSTRING_PTR_FROM_STORAGE(c_strXmlUriStorage).Equals(inXmlNamespaceUri))
         {
             m_eSpecialXmlNamespaceKind = sxkXml;
         }

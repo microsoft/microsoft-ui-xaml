@@ -17,7 +17,7 @@
 using namespace DirectUI;
 
 // Callback we invoke to notify the test framework that we started a storyboard.
-/*static*/ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)> CStoryboard::s_storyboardStartedCallback;
+/*static*/ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)>* CStoryboard::s_storyboardStartedCallback = nullptr;
 
 CStoryboard::~CStoryboard()
 {
@@ -501,7 +501,7 @@ _Check_return_ HRESULT CStoryboard::BeginPrivate(bool fIsTopLevel)
     // We let the test framework know about the storyboard we just started.
     if (s_storyboardStartedCallback)
     {
-        IFC_RETURN(s_storyboardStartedCallback(this, GetTargetObjectNoRef()));
+        IFC_RETURN((*s_storyboardStartedCallback)(this, GetTargetObjectNoRef()));
     }
 
     InitializeIteration();

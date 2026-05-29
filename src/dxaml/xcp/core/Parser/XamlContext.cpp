@@ -17,7 +17,8 @@ HRESULT XamlContext::PopulateDefaultNamespaces()
     {
         IFC_RETURN(E_FAIL);
     }
-    IFC_RETURN(schemaContext->GetXamlXmlNamespace(c_strXmlUri, xmlDirectiveNamespace));
+    IFC_RETURN(schemaContext->GetXamlXmlNamespace(XSTRING_PTR_FROM_STORAGE(c_strXmlUriStorage), xmlDirectiveNamespace));
+    DECLARE_CONST_STRING_IN_FUNCTION_SCOPE(c_strXmlPrefix, L"xml");
     IFC_RETURN(AddNamespacePrefix(c_strXmlPrefix, xmlDirectiveNamespace));
 
     return S_OK;

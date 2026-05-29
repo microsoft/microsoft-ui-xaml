@@ -1484,7 +1484,7 @@ XUINT32 AgCodeFromHResult(HRESULT hr)
     return (hr & AgErrorCodeFlagBits) == AgErrorCodeFlagBits ? hr & ~AgErrorCodeFlagBits : 0;
 }
 
-std::function<decltype(RoFailFastWithErrorContextInternal2)> g_roFailFastMock;
+std::function<decltype(RoFailFastWithErrorContextInternal2)>* g_roFailFastMock = nullptr;
 
 void __stdcall FailFastWithStowedExceptions(
         HRESULT hrError,
@@ -1493,7 +1493,7 @@ void __stdcall FailFastWithStowedExceptions(
 {
     if (g_roFailFastMock)
     {
-        g_roFailFastMock(hrError, cStowedExceptions, aStowedExceptionPointers);
+        (*g_roFailFastMock)(hrError, cStowedExceptions, aStowedExceptionPointers);
         return;
     }
 
@@ -1516,7 +1516,7 @@ public:
     XamlErrorTestHooks() {}
 
     // IXamlErrorTestHooks
-    IFACEMETHOD_(void, SetRoFailFastMock)(std::function<decltype(RoFailFastWithErrorContextInternal2)> mock)
+    IFACEMETHOD_(void, SetRoFailFastMock)(std::function<decltype(RoFailFastWithErrorContextInternal2)>* mock)
     {
         g_roFailFastMock = mock;
     }

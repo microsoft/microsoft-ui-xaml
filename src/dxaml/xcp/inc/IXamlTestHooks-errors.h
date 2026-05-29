@@ -12,7 +12,7 @@ void WINAPI RoFailFastWithErrorContextInternal2(
 // IXamlErrorTestHooks
 DECLARE_INTERFACE_IID_(IXamlErrorTestHooks, IInspectable, "B4F0A992-3DE9-403A-B0DD-E06F3ACBB3DA")
 {
-    IFACEMETHOD_(void, SetRoFailFastMock)(std::function<decltype(RoFailFastWithErrorContextInternal2)> mock) = 0;
+    IFACEMETHOD_(void, SetRoFailFastMock)(std::function<decltype(RoFailFastWithErrorContextInternal2)>* mock) = 0;
     IFACEMETHOD_(void, ClearStowedExceptions)() = 0;
     
 };

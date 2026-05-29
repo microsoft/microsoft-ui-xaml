@@ -1065,7 +1065,7 @@ namespace CoreImports
         _In_ const CValue& seekTime);
 
     _Check_return_ HRESULT CStoryboard_SetStoryboardStartedCallback(
-        _In_ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)> callback);
+        _In_ std::function<HRESULT(CDependencyObject* /* storyboard */, CDependencyObject* /* target */)>* callback);
 
     _Check_return_ HRESULT Page_ValidatePropertyIfSwapChainBackgroundPanelChild(
         _In_ CCoreServices* pCore,
