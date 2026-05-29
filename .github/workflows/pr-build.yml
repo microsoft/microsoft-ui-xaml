@@ -1,112 +1,6 @@
-# PR build validation for WinUI (OSS).
-#
-# This workflow is a PRODUCT-only compile gate. It builds the WinUI product
-# (DXAML core + Microsoft.UI.Xaml.Controls.dll) but intentionally OMITS
-# MUXControls.sln, which is overwhelmingly test infrastructure (test apps +
-# per-control _APITests / _InteractionTests / _TestUI projects). Test
-# execution and test-app validation remain the responsibility of the
-# internal ADO test pipelines (mirroring ADO's separation of build and
-# Helix test stages).
-#
-# This is loosely modelled on the internal ADO PR pipeline's build sequence
-# (`build/AzurePipelinesTemplates/WinUI-BuildMUXProject-Steps.yml` in the
-# `microsoft-ui-xaml-lift` ADO repo), but is closer in spirit to ADO's
-# `buildProductOnly=true` mode: build product, skip test apps. The build
-# invokes MSBuild directly per-solution (instead of routing through
-# `src/Build.cmd`) so that:
-#
-#   - We pass `/p:Platform=<x86|x64|arm64>` explicitly (no Win32 alias),
-#     which matches the SLN's solution configurations (e.g. Debug|x86, not
-#     Debug|Win32) and avoids the `MSB4126: invalid solution configuration
-#     "Debug|Win32"` failure on x86.
-#   - We avoid `src/Build.cmd`'s known `ERRORLEVEL`-clobber bug in
-#     `:buildSolution`, which can silently turn a failed msbuild into a
-#     "BUILD SUCCEEDED" exit-0.
-#   - We avoid Build.cmd's auto-enable of PGO on fre flavors (which requires
-#     an internal NuGet feed and `git merge-base origin/main HEAD` to work on
-#     a non-shallow clone). ADO disables PGO per-leg via `shouldPgo:false`;
-#     here we just never enable it.
-#
-# Build sequence per leg:
-#   1. `init.cmd <flavor> /nopgo` - sets env vars (Platform, Configuration,
-#      _BuildArch, BuildArtifactsDir, etc.), prepends the VS amd64 MSBuild
-#      to PATH via DevCmd.cmd, restores NuGet packages, downloads the
-#      .NET runtime installer, and runs `vs_installer modify` on missing
-#      VS components (e.g. ARM64 ATL on GH runners). We intentionally do
-#      NOT pass `/pipeline` here: ADO does, but ADO's pipeline templates
-#      separately invoke `Initialize-InstallMSBuild.ps1` and `PostInit.ps1`
-#      to fill the same gaps. GH runners do not, so non-pipeline init is
-#      what makes downstream msbuild see the .NET runtime installer and
-#      ARM64 SDK libs it needs (see in-step comment for full rationale).
-#   2. Build the XAML compiler prerequisites. Two cases (mirrors the
-#      conditional in `src/Build.cmd` lines 155-167):
-#        a) If `src/src/XamlCompiler/BuildTasks/Microsoft/Lmr/XamlTypeUniverse.cs`
-#           exists, build `src/XamlCompilerPrerequisites.sln` (internal repo
-#           path - the LMR sources are needed to build the compiler from
-#           source). This is what ADO does.
-#        b) Otherwise (the public OSS case - the `Lmr/` subtree is internal-
-#           only and not mirrored to this repo), build
-#             - `src/XamlCompilerPublic.csproj` - a NoTargets SDK project
-#               that <PackageDownload>s a published `Microsoft.WindowsAppSDK.WinUI`
-#               nupkg from upstream and copies the prebuilt
-#               `Microsoft.UI.Xaml.Markup.Compiler.*` props/targets/binaries
-#               into the local PackageOutputLocation.
-#             - `src/eng/BuildGenXbfForMSBuild/BuildGenXbfForMSBuild.csproj`
-#               to materialize GenXbf.dll into the expected location.
-#      Both branches leave the local file system in the same state with
-#      respect to what `Microsoft.UI.Xaml.sln` expects.
-#   3. `msbuild src/dxaml/Microsoft.UI.Xaml.sln` - the WinUI product. This
-#      SLN includes both DXAML core projects and
-#      `..\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj`, so the
-#      output of this stage is the complete WinUI product surface
-#      (Microsoft.UI.Xaml.dll, Microsoft.UI.Xaml.Controls.dll,
-#      Microsoft.UI.Xaml.Phone.dll, Microsoft.WinUI projection, GenXbf,
-#      MergedWinMD, etc.). ADO's `buildProductOnly=true` builds a different
-#      SLN (`Microsoft.UI.Xaml-Product.sln`) that does NOT include the
-#      controls .vcxproj - that SLN is misnomered. We build the larger
-#      Microsoft.UI.Xaml.sln so we get controls compile-coverage too.
-#   4. `src/pack.component.cmd /version 3.0.0-dev` - public-OSS substitute for
-#      ADO's `scripts/buildMockWinAppSdkPackage.ps1` (which is not in OSS).
-#      `pack.component.cmd` calls `build/nuspecs/build-nupkg.ps1` with
-#      `-UseDependencyOverrides` to produce the Microsoft.WindowsAppSDK
-#      and Microsoft.WindowsAppSDK.WinUI nupkgs. We keep this stage as a
-#      packaging-validation step even though we no longer build the SLN
-#      that consumes them (MUXControls.sln) - the pack step still exercises
-#      the nuspec inputs against the stage-3 outputs.
-#
-# ADO's stage 3 (`msbuild src/controls/MUXControls.sln`) is intentionally
-# omitted. See the inline comment block on the `$sequence` variable in
-# the Build step below for the full rationale.
-#
-# Matrix (6 jobs, parallel on windows-2022). ADO's PR matrix is:
-#   Debug_x86, Release_x86, Release_x64, Release_arm64, Release_arm64ec
-# We expand to 6 legs (add Debug_x64 and Debug_arm64) for broader public-PR
-# coverage. The arm64ec leg is intentionally omitted - toolchain availability
-# on GitHub-hosted windows-2022 runners is unverified, and arm64ec is built
-# only for fre flavors anyway. We can add it once validated on a hosted run.
-#
-# ADO steps intentionally NOT mirrored (all internal-only or test-only):
-#   - WinUI-Install-MSBuildTools.yml (installs VS BuildTools from an internal
-#     feed into `.buildtools`; on GH we use the runner's preinstalled VS).
-#   - WinUI-InstallDependencies-Steps.yml (private IXP transport + private
-#     CsWinRT NuGet restore from internal feeds).
-#   - GenerateVersionInfo.ps1 (under `build/PipelineScripts/`, not in OSS).
-#     The WindowsAppSDK-ProductInfo.h header already exists with default-dev
-#     values - sufficient for a dev/PR build.
-#   - Microsoft.Telemetry.Inbox.Native download (MUXFinalRelease only).
-#   - Native compiler override install (microsoft.pkgs.visualstudio.com).
-#   - InjectAzureMapsToken.ps1 (internal secret; only affects MapControl test).
-#   - SDLNativeRules / PREfast / APIScan / BinSkim / PoliCheck (run in the
-#     internal ADO Compliance stage).
-#   - ESRP code-signing, symbol publishing, scenario apps, Helix-distributed
-#     test runs - all internal-only and out of scope for PR validation.
-#
-# All test runs, static-analysis stages, signed builds, and Helix-distributed
-# UI tests remain in the internal ADO pipeline - they depend on internal
-# feeds, custom Win10/Win11 client SKUs, Helix queues, and secrets that
-# public GitHub-hosted runners cannot provide. See
-# `docs/external/contribution_workflow.md` for the legacy ADO bridge check
-# (`WinUI-Public-MUX-PR`, triggered via `/azp run`).
+# PR build for WinUI (OSS). Product-only compile gate (DXAML + controls).
+# Tests/signing/Helix run in internal ADO; mirrors WinUI-BuildMUXProject-Steps.yml
+# via per-solution msbuild. Skips MUXControls.sln (test infra only).
 
 name: PR Build
 
@@ -132,12 +26,10 @@ on:
       - 'CONTRIBUTING_feedback_and_requests.md'
   workflow_dispatch: {}
 
-# Cancel superseded runs on the same PR / branch to save CI minutes.
 concurrency:
   group: pr-build-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
-# Least privilege - we don't push, comment, or read packages.
 permissions:
   contents: read
 
@@ -147,8 +39,6 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     strategy:
-      # One failing flavor should not cancel the others - we want to see the
-      # full failure profile across the matrix on every PR.
       fail-fast: false
       matrix:
         include:
@@ -170,47 +60,26 @@ jobs:
           - flavor: arm64fre
             platform: arm64
             configuration: Release
-          # NOTE: arm64ec is in the ADO `PR` matrix but is intentionally
-          # excluded here for now. ARM64EC cross-tool install state on
-          # windows-2022 hosted runners is unverified; running it on every PR
-          # risks long elevation hangs in init.cmd. Add a `- flavor: arm64ecfre`
-          # entry once it has been validated on a hosted runner.
+          # arm64ec deferred: cross-toolchain on windows-2022 unverified.
     env:
-      # The flavor token passed to init.cmd (e.g. "x86chk", "arm64fre").
       WINUI_INIT_FLAVOR: ${{ matrix.flavor }}
-      # Platform/Configuration passed to msbuild via /p:Platform=... /p:Configuration=...
-      # NOTE: we deliberately use "x86" (not "Win32") because the SLNs we
-      # build declare Debug|x86 / Release|x86 directly (no Debug|Win32
-      # alias). This matches ADO's `buildPlatform: 'x86'` matrix value.
+      # Use 'x86' (not 'Win32') - SLNs declare Debug|x86 directly, no Win32 alias.
       WINUI_BUILD_PLATFORM: ${{ matrix.platform }}
       WINUI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
-      # `pack.component.cmd` requires BuildPlatform + Configuration env vars.
-      # init.cmd sets Configuration (Debug/Release), and in non-pipeline mode
-      # it also auto-derives BUILDPLATFORM from %amd64%/%x86%/%arm64%. We set
-      # BuildPlatform explicitly here too so it survives any matrix-leg
-      # variations and matches ADO's variable-driven model.
       BuildPlatform: ${{ matrix.platform }}
-      # Speed up NuGet on hosted runners: avoid http-cache misses across steps.
       NUGET_PACKAGES: ${{ github.workspace }}\src\packages
-      # Suppress PowerShell progress UI (very noisy in Actions logs).
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
-      # Force MSBuild to use only 2 parallel CL.exe instances. The hosted
-      # runner only has 2 vCPUs and the compiler is RAM-hungry; default /m:4
-      # has been observed to hit C1076 (compiler heap exhausted) on similar
-      # SKUs. See src/GettingStarted.md "Build failures".
+      # Cap CL.exe parallelism: hosted runner has 2 vCPUs; default /m:4 OOMs (C1076).
       CL: '/MP2'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # No submodules in the GitHub repo; keep history shallow to save disk.
           fetch-depth: 1
           show-progress: false
 
-      # Restore NuGet packages directory from cache when possible. Keyed on
-      # every packages*.config and versions.props so any package bump busts it.
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
@@ -222,8 +91,6 @@ jobs:
           restore-keys: |
             winui-nuget-${{ runner.os }}-
 
-      # The build downloads its own pinned .NET SDK into src/.dotnet via
-      # init.cmd; this step caches that download.
       - name: Cache .NET SDK
         uses: actions/cache@v4
         with:
@@ -237,11 +104,7 @@ jobs:
         run: |
           Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,2)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,2)}} | Format-Table
 
-      # Ensure LongPathsEnabled is set so MSBuild does not hit MAX_PATH issues
-      # during NuGet restore (some package paths are >260 chars). The hosted
-      # windows-2022 image normally has this set already, but explicitly
-      # setting it here avoids `init.cmd`'s elevation-via-UAC code path which
-      # is unreliable in a non-interactive runner.
+      # init.cmd's UAC fallback fails non-interactively; set the regkey here.
       - name: Enable Win32 long path support
         shell: pwsh
         run: |
@@ -255,83 +118,13 @@ jobs:
             Write-Host "LongPathsEnabled already 1."
           }
 
-      # The build is a product-only compile gate (see file-level comment).
-      # Sequence: init.cmd (env setup + nuget restore + dotnet installer
-      # download + vs_installer modify for ARM64 components) -> msbuild
-      # XamlCompilerPrerequisites (Public.csproj on OSS, Prerequisites.sln
-      # internally) -> msbuild dxaml/Microsoft.UI.Xaml.sln -> pack.component
-      # .cmd. We intentionally do NOT build controls/MUXControls.sln (full
-      # rationale in the `$sequence` block below). All commands run in a
-      # single cmd shell chained with `&&` so:
-      #   1. Env vars set by init.cmd's `:SetEnviromentVariable` (Platform,
-      #      Configuration, _BuildArch, BuildArtifactsDir, etc.) persist
-      #      across the msbuild calls (they all execute in the same cmd
-      #      process, so the inherited environment carries forward).
-      #   2. Any failure short-circuits the chain (cmd's `&&` propagates
-      #      the non-zero ERRORLEVEL).
-      # We don't use `src/Build.cmd` here for two reasons:
-      #   (a) ADO doesn't either - ADO invokes msbuild per-solution via
-      #       the WinUI-BuildProject-Steps.yml template.
-      #   (b) Build.cmd's `:buildSolution` subroutine has an
-      #       ERRORLEVEL-clobber bug (an `echo ERROR: ...` between a failed
-      #       msbuild and `goto:eof` resets %ERRORLEVEL% to 0, so the
-      #       caller's `if ERRORLEVEL 1 goto:showDurationAndExit` never
-      #       fires and the script keeps walking the solution list and
-      #       prints "BUILD SUCCEEDED."). Calling msbuild directly avoids
-      #       that bug entirely because msbuild itself has a reliable
-      #       non-zero exit code on failure.
-      #
-      # We intentionally do NOT pass `/pipeline` to init.cmd. ADO passes
-      # `/pipeline` because the ADO `WinUI-InstallDependencies-Steps.yml`
-      # template performs the same restores+installs that
-      # `Initialize-Restore.ps1` -> `PostInit.ps1` does in non-pipeline
-      # mode (NuGet restores of packages.config, packages.<arch>.config;
-      # DownloadDotNetCoreSdk.ps1; DownloadDotNetRuntimeInstaller.ps1;
-      # Maestro restore; plus an `Initialize-InstallMSBuild.ps1` step that
-      # runs `vs_installer modify` to add ARM64 ATL/SDK components when
-      # missing). GH runners do not run those ADO-template steps, so if
-      # we also skip them in init.cmd we miss two things that downstream
-      # msbuild needs:
-      #   - `.tools/<arch>/dotnet-windowsdesktop-runtime-installer.exe`
-      #     (causes MSB3030 in BinplaceTestDependencies.csproj on Debug)
-      #   - VS ARM64 ATL + Windows SDK ARM64 libs (causes LNK1181 on
-      #     kernel32.lib/urlmon.lib across many vcxproj in arm64 legs).
-      # Running init.cmd without `/pipeline` reuses the OSS Initialize-
-      # Restore path Build.cmd-based runs already validated, while we
-      # still call msbuild per-solution exactly like ADO does. First-run
-      # cost is ~5-15 min for vs_installer modify; subsequent runs are
-      # cached.
-      #
-      # `/nopgo` disables profile-guided optimization. init.cmd auto-enables
-      # PGOBuildMode=Optimize for every non-ARM64EC `fre` flavor (see
-      # init.cmd ~line 222), which imports
-      # `Microsoft.Internal.PGO-Helpers.Cpp` and runs
-      # `git merge-base origin/main HEAD` (scripts/version.ps1). That fails
-      # on a shallow `actions/checkout@v4` clone with
-      #   fatal: Not a valid object name origin/main
-      # and also requires an internal PGO NuGet feed. We do not need
-      # optimized binaries for PR validation, so we disable PGO outright;
-      # this mirrors ADO's `shouldPgo:false` slices in
-      # WinUI-BuildWinUI-Stage.yml.
-      #
-      # SECURITY: MSBuild binary logs (.binlog) we upload as a workflow
-      # artifact capture *all* process environment variables by default -
-      # including GitHub Actions runtime secrets (ACTIONS_RUNTIME_TOKEN
-      # etc.) that the runner injects into every step. In a public repo
-      # artifacts are publicly downloadable, so anyone could extract those
-      # tokens within their (short) validity window. See:
-      #   https://github.com/dotnet/msbuild/issues/5675
-      #   https://github.com/actions/upload-artifact security advisory
-      #   GHSA-pw2r-vq6v-hr8c
-      # We mitigate by blanking those env vars in this step's pwsh process
-      # *before* cmd starts; subsequent steps (cache save, upload-artifact)
-      # spawn fresh shells and still see the runner's original values.
+      # init.cmd /nopgo (PGO needs internal feed); bypass Build.cmd (ERRORLEVEL-clobber bug).
+      # No /pipeline: Initialize-Restore.ps1 supplies .NET runtime + ARM64 ATL/SDK on OSS.
       - name: Initialize build environment and build
         working-directory: src
         shell: pwsh
         run: |
-          # Scrub sensitive runner env vars so they do not get embedded in
-          # MSBuild binlogs that we upload as a public artifact.
+          # Scrub runner secrets - binlogs are uploaded as a public artifact.
           foreach ($v in 'ACTIONS_RUNTIME_TOKEN','ACTIONS_RUNTIME_URL','ACTIONS_RESULTS_URL','ACTIONS_CACHE_URL','ACTIONS_ID_TOKEN_REQUEST_TOKEN','ACTIONS_ID_TOKEN_REQUEST_URL','GITHUB_TOKEN') {
             Remove-Item "env:$v" -ErrorAction SilentlyContinue
           }
@@ -341,106 +134,42 @@ jobs:
           $config   = $env:WINUI_BUILD_CONFIGURATION
           $binlogDir = "BuildOutput\binlogs"
 
-          Write-Host "=== Mirroring ADO WinUI-BuildMUXProject-Steps.yml ==="
-          Write-Host "  flavor=$flavor  platform=$platform  configuration=$config"
-          Write-Host "  Binlogs will be written under src\$binlogDir"
+          Write-Host "flavor=$flavor platform=$platform configuration=$config"
 
-          # Ensure the binlog directory exists before msbuild writes into it.
           if (-not (Test-Path $binlogDir)) { New-Item -ItemType Directory -Force -Path $binlogDir | Out-Null }
 
-          # Common msbuild args (mirrors ADO's WinUI-BuildProject-Steps.yml
-          # `msbuildArguments` template):
-          #   /restore           - NuGet restore + build in one invocation
-          #   /m                 - parallel project build (CL.exe parallelism
-          #                        is separately capped to 2 via $env:CL)
-          #   /binaryLogger:...  - emit a .binlog per solution per leg
-          #   /ds:false          - disable detailed summary (reduces noise)
           $commonArgs = "/restore /m /ds:false"
 
-          # Pick the XAML-compiler-prerequisites path based on whether the
-          # internal-only LMR (Lightweight Metadata Reader) sources are present.
-          # The public OSS repo does not mirror src\src\XamlCompiler\BuildTasks\
-          # Microsoft\Lmr\, so XamlCompilerPrerequisites.sln cannot compile
-          # here - several .csproj files (including Microsoft.UI.Xaml.Markup.
-          # Compiler.Executable.csproj) reference Lmr\ReflectionAdds\Resources.
-          # resx as an EmbeddedResource and msbuild fails with MSB3552
-          # "Resource file ... cannot be found". This mirrors the conditional
-          # in src\Build.cmd lines 155-167.
+          # Mirrors Build.cmd L155-167: LMR is internal-only; fall back to the public nupkg on OSS.
           $lmrSentinel = "src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlTypeUniverse.cs"
           if (Test-Path $lmrSentinel) {
-            Write-Host "=== LMR sources detected ($lmrSentinel exists) - building XamlCompilerPrerequisites.sln from source ==="
+            Write-Host "LMR present - building XamlCompilerPrerequisites.sln"
             $prereqSteps = @(
               "msbuild XamlCompilerPrerequisites.sln /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\XamlCompilerPrerequisites.$platform.$config.binlog"
             )
           } else {
-            Write-Host "=== LMR sources NOT present (public OSS path) - using XamlCompilerPublic.csproj + BuildGenXbfForMSBuild.csproj ==="
-            # Download a recent compatible public WinUI nupkg and copy the
-            # compiler binaries into PackageOutputLocation. Then build the
-            # BuildGenXbfForMSBuild helper to materialize GenXbf.dll.
-            # /p:Platform=$platform is passed to mirror what Build.cmd does;
-            # these projects are platform-agnostic (NoTargets SDK + net6.0
-            # csproj), so the value is harmless but kept for symmetry.
+            Write-Host "OSS path - using XamlCompilerPublic.csproj + BuildGenXbfForMSBuild.csproj"
             $prereqSteps = @(
               "msbuild XamlCompilerPublic.csproj                              /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\XamlCompilerPublic.$platform.$config.binlog",
               "msbuild eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\BuildGenXbfForMSBuild.$platform.$config.binlog"
             )
           }
 
-          # Build sequence: product code only (DXAML + controls). The PR build
-          # is intentionally scoped to a compile-gate over PRODUCT projects
-          # and intentionally OMITS MUXControls.sln. Rationale:
-          #
-          #   * Microsoft.UI.Xaml.sln already builds Microsoft.UI.Xaml.Controls
-          #     .vcxproj (the controls DLL containing all ~67 modern controls
-          #     under src\controls\dev\: TabView, NavigationView, ItemsView,
-          #     ColorPicker, etc.). Confirmed by the project reference
-          #     `Microsoft.UI.Xaml.Controls -> ..\controls\dev\dll\Microsoft
-          #     .UI.Xaml.Controls.vcxproj` in dxaml\Microsoft.UI.Xaml.sln.
-          #     ADO's own template documents the same: "Microsoft.UI.Xaml.sln
-          #     builds Microsoft.UI.Xaml.Controls.dll" (WinUI-BuildMUXProject-
-          #     Steps.yml).
-          #
-          #   * MUXControls.sln has 305 projects, ~292 of which are test
-          #     infrastructure unique to that SLN: IXMPTestApp,
-          #     MUXControlsTestApp, TabViewTearOutApp, and per-control
-          #     _APITests.shproj / _InteractionTests.shproj / _TestUI.shproj
-          #     projects. The handful of product project references it has
-          #     (e.g. Microsoft.UI.Xaml.Controls.vcxproj) are duplicates of
-          #     projects already built by Microsoft.UI.Xaml.sln. Skipping
-          #     MUXControls.sln therefore loses no PRODUCT coverage.
-          #
-          #   * All OSS-specific build failures discovered so far
-          #     (APPX0703 from UAP test apps via
-          #     `WinAppSdkInsertActivatableClassEntries`, missing
-          #     `ControlInfoData.json` from `GenerateWinUIGalleryTestData`,
-          #     unavailable ILLink/ILCompiler 8.0.27 from test-project AOT
-          #     publishing) originated in MUXControls.sln test projects.
-          #     Dropping the SLN removes their entire failure surface.
-          #
-          #   * Test execution is out of scope for PR builds. Tests run in
-          #     dedicated test pipelines (mirroring ADO's separation of
-          #     build and Helix test stages).
-          #
-          # Each invocation passes /p:Platform and /p:Configuration explicitly
-          # so the solution config selector matches the SLN's actual
-          # configurations (e.g. Debug|x86, not Debug|Win32).
+          # Product-only: Microsoft.UI.Xaml.sln pulls in controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj.
+          # MUXControls.sln is test infra (~292 of 305 projects); test execution is out of scope for PR.
           $sequence = $prereqSteps + @(
             "msbuild dxaml\Microsoft.UI.Xaml.sln    /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.$platform.$config.binlog",
             "pack.component.cmd /version 3.0.0-dev"
           )
 
-          # Run init + the build commands inside a single cmd shell so
-          # init's env vars (Platform, Configuration, _BuildArch, PATH+=
-          # amd64 MSBuild, DOTNET_ROOT, etc.) persist across all of them.
-          # The `&&` chain ensures any failure aborts the rest.
+          # Single cmd shell so init's env vars persist into msbuild; && aborts on first failure.
           $chain = ("init.cmd $flavor /nopgo") + " && " + ($sequence -join " && ")
-          Write-Host "=== Combined cmd line ==="
           Write-Host $chain
 
           cmd /c $chain
           $cmdExit = $LASTEXITCODE
           if ($cmdExit -ne 0) {
-            Write-Host "::error::Build chain exited with code $cmdExit (last failing command in the && chain)."
+            Write-Host "::error::Build chain exited with code $cmdExit."
             exit $cmdExit
           }
 
@@ -450,8 +179,6 @@ jobs:
         run: |
           Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,2)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,2)}} | Format-Table
 
-      # Always upload binlogs - they are the primary way to diagnose MSBuild
-      # failures and are small enough to keep for every run.
       - name: Upload MSBuild binlogs
         if: always()
         uses: actions/upload-artifact@v4
@@ -461,8 +188,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      # On failure also grab the VS BuildTools install logs (only present when
-      # init had to modify the VS install).
       - name: Upload VS BuildTools install logs (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
