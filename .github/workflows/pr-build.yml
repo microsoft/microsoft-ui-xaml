@@ -59,10 +59,8 @@ jobs:
           - flavor: arm64fre
             platform: arm64
             configuration: Release
-          # arm64ec deferred: cross-toolchain on windows-2022 unverified.
     env:
       WINUI_INIT_FLAVOR: ${{ matrix.flavor }}
-      # Use 'x86' (not 'Win32') - SLNs declare Debug|x86 directly, no Win32 alias.
       WINUI_BUILD_PLATFORM: ${{ matrix.platform }}
       WINUI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
       BuildPlatform: ${{ matrix.platform }}
