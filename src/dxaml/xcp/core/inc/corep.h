@@ -1392,6 +1392,7 @@ public:
     void SetThemeResources(_In_opt_ CResourceDictionary *pThemeResources);
 
     CResourceDictionary* GetThemeResources();
+    CResourceDictionary* GetThemeResources_NoLazyLoad() const { return m_pThemeResources; };
 
     bool HasThemeEverChanged() const
     {

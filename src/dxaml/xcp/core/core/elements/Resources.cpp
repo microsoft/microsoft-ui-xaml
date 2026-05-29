@@ -435,6 +435,11 @@ CResourceDictionary::GetKeyNoRefImpl(
         {
             dictionaryReadFrom->reset(this);
         }
+
+        if (m_pResourceLookupLoggerNoRef->IsLogging())
+        {
+            m_pResourceLookupLoggerNoRef->OnFoundResource(this, key.GetKey());
+        }
     }
 
     if (!value && Resources::DoesScopeMatch(scope, Resources::LookupScope::Merged) && m_pMergedDictionaries)
@@ -448,7 +453,7 @@ CResourceDictionary::GetKeyNoRefImpl(
         // So reset the GlobalTheme flag to indicate we can skip over it.
         for (XINT32 i = m_pMergedDictionaries->GetCount() - 1; i >= 0 && !value; i--)
         {
-            Diagnostics::EnterLeaveMergedDictionaryLogger mergedDictionaryLogger(m_pResourceLookupLoggerNoRef, i, key.GetKey());
+            Diagnostics::EnterLeaveMergedDictionaryLogger mergedDictionaryLogger(m_pResourceLookupLoggerNoRef, this, i, key.GetKey());
 
             xref_ptr<CResourceDictionary> currentDictionary;
             currentDictionary.attach(static_cast<CResourceDictionary*>(m_pMergedDictionaries->GetItemWithAddRef(i)));
@@ -647,7 +652,7 @@ _Check_return_ HRESULT CResourceDictionary::GetKeyFromThemeDictionariesNoRef(
 
     if (m_pActiveThemeDictionary)
     {
-        Diagnostics::EnterLeaveThemeDictionaryLogger themeDictionaryLogger(m_pResourceLookupLoggerNoRef, m_activeTheme, key.GetKey());
+        Diagnostics::EnterLeaveThemeDictionaryLogger themeDictionaryLogger(m_pResourceLookupLoggerNoRef, this, m_activeTheme, key.GetKey());
 
         auto core = GetContext();
 
