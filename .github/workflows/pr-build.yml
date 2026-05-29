@@ -152,10 +152,11 @@ jobs:
             )
           }
 
-          # Product-only: Microsoft.UI.Xaml.sln pulls in controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj.
-          # MUXControls.sln is test infra (~292 of 305 projects); test execution is out of scope for PR.
+          # Mirrors Build.cmd _targetProduct (L22-25): Microsoft.UI.Xaml-Product.sln + Microsoft.UI.Xaml.Controls.vcxproj + mock package.
+          # dxaml\Microsoft.UI.Xaml.sln is the prod+test umbrella; MUXControls.sln is test infra. Both out of scope for PR.
           $sequence = $prereqSteps + @(
-            "msbuild dxaml\Microsoft.UI.Xaml.sln    /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.$platform.$config.binlog",
+            "msbuild Microsoft.UI.Xaml-Product.sln                       /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml-Product.$platform.$config.binlog",
+            "msbuild controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.Controls.$platform.$config.binlog",
             "pack.component.cmd /version 3.0.0-dev"
           )
 
