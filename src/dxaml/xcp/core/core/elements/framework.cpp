@@ -793,12 +793,37 @@ CFrameworkElement::OnStyleChanged(
         for (auto i = 0U; i < newStylePropertyCount; i++)
         {
             IFC(pNewStyle->GetPropertyAtSetterIndex(i, &propIndex));
-            IGNOREHR(InvalidateProperty(MetadataAPI::GetDependencyPropertyByIndex(propIndex), baseValueSource));
+            const CDependencyProperty* pDP = MetadataAPI::GetDependencyPropertyByIndex(propIndex);
 
-            // Let the style know that the property setter has been applied.
-            // If the value has a new peer after InvalidateProperty, an optimized style will add a
-            // peer reference to it to ensure the life of the peer through the lifetime of the style.
-            IFC(pNewStyle->NotifySetterApplied(i));
+            // Skip NotifySetterApplied only when this style's value is overridden by a real
+            // Style layer (the FrameworkElement's Style property or implicit style). That layer
+            // is permanent for the duration of this style application, so the deferred
+            // Setter.Value can never become effective and there's no need to realize/peg it.
+            //
+            // We must NOT skip for transient sources like Local or Animation
+            // — those can be cleared (ClearValue, animation ending) and would then expose this
+            // style's value, which must already be realized at that point.  The upper bound
+            // (existingSource <= BaseValueSourceStyle) ensures only the Style-override case
+            // triggers the skip.
+            //
+            // Note: GetBaseValueSource conflates BuiltInStyle and Style on its output side
+            // (IsPropertySetByStyle is true for both, and the function always returns
+            // BaseValueSourceStyle in that case — it never returns BaseValueSourceBuiltInStyle).
+            // We must therefore read it BEFORE InvalidateProperty, otherwise the newly-applied
+            // BuiltInStyle would itself satisfy IsPropertySetByStyle and be misreported as a
+            // "Style" override.
+            const BaseValueSource existingSource = GetBaseValueSource(pDP);
+            if (baseValueSource == BaseValueSourceUnknown ||
+                baseValueSource >= existingSource ||
+                existingSource > BaseValueSourceStyle)
+            {
+                IGNOREHR(InvalidateProperty(pDP, baseValueSource));
+                IFC(pNewStyle->NotifySetterApplied(i));
+            }
+            else
+            {
+                IGNOREHR(InvalidateProperty(pDP, baseValueSource));
+            }
         }
 
         if (pNewStyle->HasMutableSetters() || shouldStoreSourceInfo)
