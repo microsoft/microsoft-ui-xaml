@@ -101,6 +101,8 @@ public:
         _Out_ bool *pSetEventEnqueued
         );
 
+    _Check_return_ HRESULT TakeDeviceRemovedEvent(_Out_ HANDLE* event, _Out_ DWORD* cookie);
+
     _Check_return_ HRESULT RegisterDeviceRemovedEvent(_In_ HANDLE event, _Out_ DWORD* cookie);
     void UnregisterDeviceRemoved(DWORD cookie);
 

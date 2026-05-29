@@ -8582,17 +8582,40 @@ _Check_return_ HRESULT CCoreServices::EnsureDeviceLostListener()
     // on OS SKUs where no WM_PAINT message is sent to the framework from DWM (WCOS).
     if (m_deviceLostWaiter == nullptr)
     {
-        m_deviceLostEvent.reset(::CreateEvent(
-            nullptr, // no security descriptor
-            FALSE,   // not a manual reset event
-            FALSE,   // initially unsignaled
-            nullptr  // no name
-            ));
-        IFCW32FAILFAST(m_deviceLostEvent != nullptr);
-
         // Note:  It's assumed that WaitForD3DDependentResourceCreation() was called prior to getting here.
-        CD3D11Device *device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
-        IFC_RETURN(device->RegisterDeviceRemovedEvent(m_deviceLostEvent.get(), &m_deviceLostEventCookie));
+
+        // When perf opt-in is enabled, try to grab the device-removed event that was registered eagerly
+        // during device creation (on a background thread). This way, if RegisterDeviceRemovedEvent blocks
+        // on the D3D lock, that wait happens on the background thread instead of the UI thread. During app
+        // startup the UI thread usually has other work it can do, so keeping it unblocked lets it make
+        // progress toward first frame.
+        if (IsPerfOptInEnabled())
+        {
+            CD3D11Device *device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+            HANDLE takenEvent = nullptr;
+            DWORD takenCookie = 0;
+            if (SUCCEEDED(device->TakeDeviceRemovedEvent(&takenEvent, &takenCookie)) &&
+                takenEvent != nullptr)
+            {
+                m_deviceLostEvent.reset(takenEvent);
+                m_deviceLostEventCookie = takenCookie;
+            }
+        }
+
+        // Original path: if we don't already have an eager event, create and register one ourselves.
+        if (m_deviceLostEvent == nullptr)
+        {
+            m_deviceLostEvent.reset(::CreateEvent(
+                nullptr, // no security descriptor
+                FALSE,   // not a manual reset event
+                FALSE,   // initially unsignaled
+                nullptr  // no name
+                ));
+            IFCW32FAILFAST(m_deviceLostEvent != nullptr);
+
+            CD3D11Device *device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+            IFC_RETURN(device->RegisterDeviceRemovedEvent(m_deviceLostEvent.get(), &m_deviceLostEventCookie));
+        }
 
         m_deviceLostWaiter.reset(CreateThreadpoolWait([](PTP_CALLBACK_INSTANCE, void *context, TP_WAIT *, TP_WAIT_RESULT)
         {

@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "dxgi1_2.h"
 #include "d3d11_2.h"
+#include "d3d11_4.h"
 #include "MockDXGI.h"
 #include "MockComObjectBase.h"
 
@@ -451,12 +452,12 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     class MockDXGIDevice :
         public MockDXGIBase<IMockDXGIDevice>,
         public MockAlsoImplementsComInterface<ID3D10Multithread>,
-        public MockAlsoImplementsComInterface<ID3D11Device>
+        public MockAlsoImplementsComInterface<ID3D11Device4>
     {
     public:
         MockDXGIDevice(IDXGIAdapter* adapter, D3D_DRIVER_TYPE driverType, UINT flags) :
             MockAlsoImplementsComInterface<ID3D10Multithread>((IMockDXGIDevice*)this),
-            MockAlsoImplementsComInterface<ID3D11Device>((IMockDXGIDevice*)this),
+            MockAlsoImplementsComInterface<ID3D11Device4>((IMockDXGIDevice*)this),
             MockDXGIBase<IMockDXGIDevice>(adapter),
             m_driverType(driverType),
             m_flags(flags),
@@ -475,6 +476,10 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
             if (iid == __uuidof(IDXGIDevice1)) return static_cast<IDXGIDevice1*>(this);
             if (iid == __uuidof(IDXGIDevice2)) return static_cast<IDXGIDevice2*>(this);
             if (iid == __uuidof(ID3D11Device)) return static_cast<ID3D11Device*>(this);
+            if (iid == __uuidof(ID3D11Device1)) return static_cast<ID3D11Device1*>(this);
+            if (iid == __uuidof(ID3D11Device2)) return static_cast<ID3D11Device2*>(this);
+            if (iid == __uuidof(ID3D11Device3)) return static_cast<ID3D11Device3*>(this);
+            if (iid == __uuidof(ID3D11Device4)) return static_cast<ID3D11Device4*>(this);
             if (iid == __uuidof(ID3D10Multithread)) return static_cast<ID3D10Multithread*>(this);
             return __super::CastTo(iid);
         }
@@ -815,6 +820,210 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         {
             VERIFY_FAIL();
             return 0;
+        }
+
+        //
+        //  ID3D11Device1
+        //
+        virtual void STDMETHODCALLTYPE GetImmediateContext1(_Outptr_ ID3D11DeviceContext1** ppImmediateContext)
+        {
+            UNREFERENCED_PARAMETER(ppImmediateContext);
+            VERIFY_FAIL();
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateDeferredContext1(UINT ContextFlags, _COM_Outptr_opt_ ID3D11DeviceContext1** ppDeferredContext)
+        {
+            UNREFERENCED_PARAMETER(ContextFlags);
+            UNREFERENCED_PARAMETER(ppDeferredContext);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateBlendState1(_In_ const D3D11_BLEND_DESC1* pBlendStateDesc, _COM_Outptr_opt_ ID3D11BlendState1** ppBlendState)
+        {
+            UNREFERENCED_PARAMETER(pBlendStateDesc);
+            UNREFERENCED_PARAMETER(ppBlendState);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateRasterizerState1(_In_ const D3D11_RASTERIZER_DESC1* pRasterizerDesc, _COM_Outptr_opt_ ID3D11RasterizerState1** ppRasterizerState)
+        {
+            UNREFERENCED_PARAMETER(pRasterizerDesc);
+            UNREFERENCED_PARAMETER(ppRasterizerState);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateDeviceContextState(UINT Flags, _In_reads_(FeatureLevels) const D3D_FEATURE_LEVEL* pFeatureLevels, UINT FeatureLevels, UINT SDKVersion, REFIID EmulatedInterface, _Out_opt_ D3D_FEATURE_LEVEL* pChosenFeatureLevel, _Out_opt_ ID3DDeviceContextState** ppContextState)
+        {
+            UNREFERENCED_PARAMETER(Flags);
+            UNREFERENCED_PARAMETER(pFeatureLevels);
+            UNREFERENCED_PARAMETER(FeatureLevels);
+            UNREFERENCED_PARAMETER(SDKVersion);
+            UNREFERENCED_PARAMETER(EmulatedInterface);
+            UNREFERENCED_PARAMETER(pChosenFeatureLevel);
+            UNREFERENCED_PARAMETER(ppContextState);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE OpenSharedResource1(_In_ HANDLE hResource, _In_ REFIID returnedInterface, _COM_Outptr_ void** ppResource)
+        {
+            UNREFERENCED_PARAMETER(hResource);
+            UNREFERENCED_PARAMETER(returnedInterface);
+            UNREFERENCED_PARAMETER(ppResource);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE OpenSharedResourceByName(_In_ LPCWSTR lpName, _In_ DWORD dwDesiredAccess, _In_ REFIID returnedInterface, _COM_Outptr_ void** ppResource)
+        {
+            UNREFERENCED_PARAMETER(lpName);
+            UNREFERENCED_PARAMETER(dwDesiredAccess);
+            UNREFERENCED_PARAMETER(returnedInterface);
+            UNREFERENCED_PARAMETER(ppResource);
+            return E_NOTIMPL;
+        }
+
+        //
+        //  ID3D11Device2
+        //
+        virtual void STDMETHODCALLTYPE GetImmediateContext2(_Outptr_ ID3D11DeviceContext2** ppImmediateContext)
+        {
+            UNREFERENCED_PARAMETER(ppImmediateContext);
+            VERIFY_FAIL();
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateDeferredContext2(UINT ContextFlags, _COM_Outptr_opt_ ID3D11DeviceContext2** ppDeferredContext)
+        {
+            UNREFERENCED_PARAMETER(ContextFlags);
+            UNREFERENCED_PARAMETER(ppDeferredContext);
+            return E_NOTIMPL;
+        }
+
+        virtual void STDMETHODCALLTYPE GetResourceTiling(_In_ ID3D11Resource* pTiledResource, _Out_opt_ UINT* pNumTilesForEntireResource, _Out_opt_ D3D11_PACKED_MIP_DESC* pPackedMipDesc, _Out_opt_ D3D11_TILE_SHAPE* pStandardTileShapeForNonPackedMips, _Inout_opt_ UINT* pNumSubresourceTilings, _In_ UINT FirstSubresourceTilingToGet, _Out_writes_(*pNumSubresourceTilings) D3D11_SUBRESOURCE_TILING* pSubresourceTilingsForNonPackedMips)
+        {
+            UNREFERENCED_PARAMETER(pTiledResource);
+            UNREFERENCED_PARAMETER(pNumTilesForEntireResource);
+            UNREFERENCED_PARAMETER(pPackedMipDesc);
+            UNREFERENCED_PARAMETER(pStandardTileShapeForNonPackedMips);
+            UNREFERENCED_PARAMETER(pNumSubresourceTilings);
+            UNREFERENCED_PARAMETER(FirstSubresourceTilingToGet);
+            UNREFERENCED_PARAMETER(pSubresourceTilingsForNonPackedMips);
+            VERIFY_FAIL();
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CheckMultisampleQualityLevels1(_In_ DXGI_FORMAT Format, _In_ UINT SampleCount, _In_ UINT Flags, _Out_ UINT* pNumQualityLevels)
+        {
+            UNREFERENCED_PARAMETER(Format);
+            UNREFERENCED_PARAMETER(SampleCount);
+            UNREFERENCED_PARAMETER(Flags);
+            UNREFERENCED_PARAMETER(pNumQualityLevels);
+            return E_NOTIMPL;
+        }
+
+        //
+        //  ID3D11Device3
+        //
+        virtual HRESULT STDMETHODCALLTYPE CreateTexture2D1(_In_ const D3D11_TEXTURE2D_DESC1* pDesc1, _In_reads_opt_(_Inexpressible_(pDesc1->MipLevels * pDesc1->ArraySize)) const D3D11_SUBRESOURCE_DATA* pInitialData, _COM_Outptr_opt_ ID3D11Texture2D1** ppTexture2D)
+        {
+            UNREFERENCED_PARAMETER(pDesc1);
+            UNREFERENCED_PARAMETER(pInitialData);
+            UNREFERENCED_PARAMETER(ppTexture2D);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateTexture3D1(_In_ const D3D11_TEXTURE3D_DESC1* pDesc1, _In_reads_opt_(_Inexpressible_(pDesc1->MipLevels)) const D3D11_SUBRESOURCE_DATA* pInitialData, _COM_Outptr_opt_ ID3D11Texture3D1** ppTexture3D)
+        {
+            UNREFERENCED_PARAMETER(pDesc1);
+            UNREFERENCED_PARAMETER(pInitialData);
+            UNREFERENCED_PARAMETER(ppTexture3D);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateRasterizerState2(_In_ const D3D11_RASTERIZER_DESC2* pRasterizerDesc, _COM_Outptr_opt_ ID3D11RasterizerState2** ppRasterizerState)
+        {
+            UNREFERENCED_PARAMETER(pRasterizerDesc);
+            UNREFERENCED_PARAMETER(ppRasterizerState);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateShaderResourceView1(_In_ ID3D11Resource* pResource, _In_opt_ const D3D11_SHADER_RESOURCE_VIEW_DESC1* pDesc1, _COM_Outptr_opt_ ID3D11ShaderResourceView1** ppSRView1)
+        {
+            UNREFERENCED_PARAMETER(pResource);
+            UNREFERENCED_PARAMETER(pDesc1);
+            UNREFERENCED_PARAMETER(ppSRView1);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateUnorderedAccessView1(_In_ ID3D11Resource* pResource, _In_opt_ const D3D11_UNORDERED_ACCESS_VIEW_DESC1* pDesc1, _COM_Outptr_opt_ ID3D11UnorderedAccessView1** ppUAView1)
+        {
+            UNREFERENCED_PARAMETER(pResource);
+            UNREFERENCED_PARAMETER(pDesc1);
+            UNREFERENCED_PARAMETER(ppUAView1);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateRenderTargetView1(_In_ ID3D11Resource* pResource, _In_opt_ const D3D11_RENDER_TARGET_VIEW_DESC1* pDesc1, _COM_Outptr_opt_ ID3D11RenderTargetView1** ppRTView1)
+        {
+            UNREFERENCED_PARAMETER(pResource);
+            UNREFERENCED_PARAMETER(pDesc1);
+            UNREFERENCED_PARAMETER(ppRTView1);
+            return E_NOTIMPL;
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateQuery1(_In_ const D3D11_QUERY_DESC1* pQueryDesc1, _COM_Outptr_opt_ ID3D11Query1** ppQuery1)
+        {
+            UNREFERENCED_PARAMETER(pQueryDesc1);
+            UNREFERENCED_PARAMETER(ppQuery1);
+            return E_NOTIMPL;
+        }
+
+        virtual void STDMETHODCALLTYPE GetImmediateContext3(_Outptr_ ID3D11DeviceContext3** ppImmediateContext)
+        {
+            UNREFERENCED_PARAMETER(ppImmediateContext);
+            VERIFY_FAIL();
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE CreateDeferredContext3(UINT ContextFlags, _COM_Outptr_opt_ ID3D11DeviceContext3** ppDeferredContext)
+        {
+            UNREFERENCED_PARAMETER(ContextFlags);
+            UNREFERENCED_PARAMETER(ppDeferredContext);
+            return E_NOTIMPL;
+        }
+
+        virtual void STDMETHODCALLTYPE WriteToSubresource(_In_ ID3D11Resource* pDstResource, _In_ UINT DstSubresource, _In_opt_ const D3D11_BOX* pDstBox, _In_ const void* pSrcData, _In_ UINT SrcRowPitch, _In_ UINT SrcDepthPitch)
+        {
+            UNREFERENCED_PARAMETER(pDstResource);
+            UNREFERENCED_PARAMETER(DstSubresource);
+            UNREFERENCED_PARAMETER(pDstBox);
+            UNREFERENCED_PARAMETER(pSrcData);
+            UNREFERENCED_PARAMETER(SrcRowPitch);
+            UNREFERENCED_PARAMETER(SrcDepthPitch);
+            VERIFY_FAIL();
+        }
+
+        virtual void STDMETHODCALLTYPE ReadFromSubresource(_Out_ void* pDstData, _In_ UINT DstRowPitch, _In_ UINT DstDepthPitch, _In_ ID3D11Resource* pSrcResource, _In_ UINT SrcSubresource, _In_opt_ const D3D11_BOX* pSrcBox)
+        {
+            UNREFERENCED_PARAMETER(pDstData);
+            UNREFERENCED_PARAMETER(DstRowPitch);
+            UNREFERENCED_PARAMETER(DstDepthPitch);
+            UNREFERENCED_PARAMETER(pSrcResource);
+            UNREFERENCED_PARAMETER(SrcSubresource);
+            UNREFERENCED_PARAMETER(pSrcBox);
+            VERIFY_FAIL();
+        }
+
+        //
+        //  ID3D11Device4
+        //
+        virtual HRESULT STDMETHODCALLTYPE RegisterDeviceRemovedEvent(_In_ HANDLE hEvent, _Out_ DWORD* pdwCookie)
+        {
+            UNREFERENCED_PARAMETER(hEvent);
+            // Return a dummy cookie value
+            *pdwCookie = 1;
+            return S_OK;
+        }
+
+        virtual void STDMETHODCALLTYPE UnregisterDeviceRemoved(_In_ DWORD dwCookie)
+        {
+            UNREFERENCED_PARAMETER(dwCookie);
         }
 
         //
