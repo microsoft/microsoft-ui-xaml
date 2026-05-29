@@ -1,6 +1,4 @@
-# PR build for WinUI (OSS). Product-only compile gate (DXAML + controls).
-# Tests/signing/Helix run in internal ADO; mirrors WinUI-BuildMUXProject-Steps.yml
-# via per-solution msbuild. Skips MUXControls.sln (test infra only).
+# PR build (OSS). Product-only compile gate; tests and signing run in internal ADO.
 
 name: PR Build
 
@@ -116,66 +114,14 @@ jobs:
           }
 
       # init.cmd /nopgo (PGO needs internal feed); bypass Build.cmd (ERRORLEVEL-clobber bug).
-      # No /pipeline: Initialize-Restore.ps1 supplies .NET runtime + ARM64 ATL/SDK on OSS.
       - name: Initialize build environment and build
         working-directory: src
         shell: pwsh
         run: |
-          # Scrub runner secrets - binlogs are uploaded as a public artifact.
-          foreach ($v in 'ACTIONS_RUNTIME_TOKEN','ACTIONS_RUNTIME_URL','ACTIONS_RESULTS_URL','ACTIONS_CACHE_URL','ACTIONS_ID_TOKEN_REQUEST_TOKEN','ACTIONS_ID_TOKEN_REQUEST_URL','GITHUB_TOKEN') {
-            Remove-Item "env:$v" -ErrorAction SilentlyContinue
-          }
-
-          $flavor   = $env:WINUI_INIT_FLAVOR
-          $platform = $env:WINUI_BUILD_PLATFORM
-          $config   = $env:WINUI_BUILD_CONFIGURATION
-          $binlogDir = "BuildOutput\binlogs"
-
-          Write-Host "flavor=$flavor platform=$platform configuration=$config"
-
-          if (-not (Test-Path $binlogDir)) { New-Item -ItemType Directory -Force -Path $binlogDir | Out-Null }
-
-          $commonArgs = "/restore /m /ds:false"
-
-          # Mirrors Build.cmd L155-167: LMR is internal-only; fall back to the public nupkg on OSS.
-          $lmrSentinel = "src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlTypeUniverse.cs"
-          if (Test-Path $lmrSentinel) {
-            Write-Host "LMR present - building XamlCompilerPrerequisites.sln"
-            $prereqSteps = @(
-              "msbuild XamlCompilerPrerequisites.sln /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\XamlCompilerPrerequisites.$platform.$config.binlog"
-            )
-          } else {
-            Write-Host "OSS path - using XamlCompilerPublic.csproj + BuildGenXbfForMSBuild.csproj"
-            $prereqSteps = @(
-              "msbuild XamlCompilerPublic.csproj                              /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\XamlCompilerPublic.$platform.$config.binlog",
-              "msbuild eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\BuildGenXbfForMSBuild.$platform.$config.binlog"
-            )
-          }
-
-          # Mirrors Build.cmd _targetProduct (L22-25): Microsoft.UI.Xaml-Product.sln + Microsoft.UI.Xaml.Controls.vcxproj + mock package.
-          # dxaml\Microsoft.UI.Xaml.sln is the prod+test umbrella; MUXControls.sln is test infra. Both out of scope for PR.
-          $sequence = $prereqSteps + @(
-            "msbuild Microsoft.UI.Xaml-Product.sln                       /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml-Product.$platform.$config.binlog",
-            "msbuild controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.Controls.$platform.$config.binlog",
-            "pack.component.cmd /version 3.0.0-dev"
-          )
-
-          # Single cmd shell so init's env vars persist into msbuild; && aborts on first failure.
-          $chain = ("init.cmd $flavor /nopgo") + " && " + ($sequence -join " && ")
-          Write-Host $chain
-
-          cmd /c $chain
-          $cmdExit = $LASTEXITCODE
-          if ($cmdExit -ne 0) {
-            Write-Host "::error::Build chain exited with code $cmdExit."
-            exit $cmdExit
-          }
-
-      - name: Show available disk space (post-build)
-        if: always()
-        shell: pwsh
-        run: |
-          Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,2)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,2)}} | Format-Table
+          & "${{ github.workspace }}/.github/scripts/build-pr.ps1" `
+            -Flavor $env:WINUI_INIT_FLAVOR `
+            -Platform $env:WINUI_BUILD_PLATFORM `
+            -Configuration $env:WINUI_BUILD_CONFIGURATION
 
       - name: Upload MSBuild binlogs
         if: always()
