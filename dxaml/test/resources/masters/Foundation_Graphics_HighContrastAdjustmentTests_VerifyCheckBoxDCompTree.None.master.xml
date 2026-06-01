@@ -1105,9 +1105,6 @@
                     </Mask>
                   </MaskBrush>
                 </wucSpriteVisual>
-                <wucSpriteVisual SizeX="20" SizeY="32" BorderMode="Soft" OffsetX="0" OffsetY="64" OffsetZ="0">
-                  <ColorBrush Color="#00000000" />
-                </wucSpriteVisual>
                 <wucSpriteVisual SizeX="11" SizeY="8" BorderMode="Hard" OffsetX="5" OffsetY="76" OffsetZ="0">
                   <MaskBrush>
                     <Source>

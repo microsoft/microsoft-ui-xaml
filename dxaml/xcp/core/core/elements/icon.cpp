@@ -191,6 +191,7 @@ CIconElement::RemoveChildElement()
     // If we don't have a child, then there's no element for us to remove.
     if (GetFirstChildNoAddRef())
     {
+        ASSERT(GetFirstChildNoAddRef()->OfTypeByIndex<KnownTypeIndex::Grid>());
         IFC_RETURN(GetFirstChildNoAddRef()->RemoveChild(GetChildElementNoRef()));
     }
 
@@ -763,7 +764,9 @@ _Check_return_ HRESULT CFontIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
     HRESULT hr = S_OK;
     CTextBlock* pTextBlock = NULL;
 
-    if (!GetChildElementNoRef())
+    // Check if we already have a child - use the appropriate method based on optimization flag
+    CUIElement* existingChild = IsFontIconNoGridOptimizationEnabled() ? GetFirstChildNoAddRef() : GetChildElementNoRef();
+    if (!existingChild)
     {
         CValue horizontalAlignment;
         CValue verticalAlignment;
@@ -771,11 +774,21 @@ _Check_return_ HRESULT CFontIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
         CValue accessibilityView;
         CValue isTextScaleFactorEnabled;
         CValue style;
+        CValue glyph;
 
         // Create a new TextBlock
         CREATEPARAMETERS cp(GetContext());
         IFC(CTextBlock::Create(reinterpret_cast<CDependencyObject**>(&pTextBlock), &cp));
-        IFC(AddChildElement(pTextBlock));
+
+        // Add directly or via Grid wrapper based on optimization flag
+        if (IsFontIconNoGridOptimizationEnabled())
+        {
+            IFC(AddChild(pTextBlock));
+        }
+        else
+        {
+            IFC(AddChildElement(pTextBlock));
+        }
 
         // Set the TextBlock's style to null so an implicit style doesn't affect it.
         style.SetNull();
@@ -792,7 +805,15 @@ _Check_return_ HRESULT CFontIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
         IFC(pTextBlock->SetValueByKnownIndex(KnownPropertyIndex::TextBlock_IsTextScaleFactorEnabled, isTextScaleFactorEnabled));
 
         // Set our glyph string as the text of the TextBlock
-        IFC(UpdateLinkedChildProperty(KnownPropertyIndex::FontIcon_Glyph, KnownPropertyIndex::TextBlock_Text));
+        if (IsFontIconNoGridOptimizationEnabled())
+        {
+            IFC(GetValue(GetPropertyByIndexInline(KnownPropertyIndex::FontIcon_Glyph), &glyph));
+            IFC(pTextBlock->SetValueByKnownIndex(KnownPropertyIndex::TextBlock_Text, glyph));
+        }
+        else
+        {
+            IFC(UpdateLinkedChildProperty(KnownPropertyIndex::FontIcon_Glyph, KnownPropertyIndex::TextBlock_Text));
+        }
 
         // Set the TextBlock's attached AccessibilityView property to "Raw" so that its text
         // won't be picked up by automation/accessibility tools
@@ -832,7 +853,20 @@ CFontIcon::OnPropertyChanged(_In_ const PropertyChangedParams& args)
     {
         case KnownPropertyIndex::FontIcon_Glyph:
             {
-                IFC_RETURN(UpdateLinkedChildProperty(KnownPropertyIndex::FontIcon_Glyph, KnownPropertyIndex::TextBlock_Text));
+                if (IsFontIconNoGridOptimizationEnabled())
+                {
+                    CUIElement* pChild = GetFirstChildNoAddRef();
+                    if (pChild)
+                    {
+                        CValue glyph;
+                        IFC_RETURN(GetValue(GetPropertyByIndexInline(KnownPropertyIndex::FontIcon_Glyph), &glyph));
+                        IFC_RETURN(pChild->SetValueByKnownIndex(KnownPropertyIndex::TextBlock_Text, glyph));
+                    }
+                }
+                else
+                {
+                    IFC_RETURN(UpdateLinkedChildProperty(KnownPropertyIndex::FontIcon_Glyph, KnownPropertyIndex::TextBlock_Text));
+                }
                 break;
             }
         case KnownPropertyIndex::FrameworkElement_FlowDirection:
@@ -1023,12 +1057,23 @@ _Check_return_ HRESULT CBitmapIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
     CImage* pImage = NULL;
     CValue foregroundBrushValue = {};
 
-    if (!GetChildElementNoRef())
+    // Check if we already have a child - use the appropriate method based on optimization flag
+    CUIElement* existingChild = IsBitmapIconNoGridOptimizationEnabled() ? GetFirstChildNoAddRef() : GetChildElementNoRef();
+    if (!existingChild)
     {
         // Create the new Image object.
         CREATEPARAMETERS cp(GetContext());
         IFC(CImage::Create(reinterpret_cast<CDependencyObject**>(&pImage), &cp));
-        IFC(AddChildElement(pImage));
+
+        // Add directly or via Grid wrapper based on optimization flag
+        if (IsBitmapIconNoGridOptimizationEnabled())
+        {
+            IFC(AddChild(pImage));
+        }
+        else
+        {
+            IFC(AddChildElement(pImage));
+        }
 
         if (m_pWriteableBitmap != NULL)
         {
@@ -1036,7 +1081,7 @@ _Check_return_ HRESULT CBitmapIcon::ApplyTemplate(_Inout_ bool& fAddedVisuals)
             value.WrapObjectNoRef(m_pWriteableBitmap);
 
             // Set the value on the image's source property
-            IFC(GetChildElementNoRef()->SetValueByKnownIndex(KnownPropertyIndex::Image_Source, value));
+            IFC(pImage->SetValueByKnownIndex(KnownPropertyIndex::Image_Source, value));
         }
 
         fAddedVisuals = true;
@@ -1275,7 +1320,7 @@ CBitmapIcon::CreateWritableBitmapFromSource()
     }
 
     // Update our child image's source to point to our new writeable bitmap.
-    pChildImage = GetChildElementNoRef();
+    pChildImage = IsBitmapIconNoGridOptimizationEnabled() ? GetFirstChildNoAddRef() : GetChildElementNoRef();
     if (pChildImage != NULL)
     {
         CValue value;
@@ -1350,11 +1395,12 @@ CBitmapIcon::ApplyForegroundColorToImage(_In_opt_ const CSolidColorBrush* pBrush
 
         // Update the child image's opacity based on foreground brush's
         // alpha value.
-        if (GetChildElementNoRef() != NULL)
+        CUIElement* pChildImage = IsBitmapIconNoGridOptimizationEnabled() ? GetFirstChildNoAddRef() : GetChildElementNoRef();
+        if (pChildImage != NULL)
         {
             CValue value;
             value.SetFloat(static_cast<XFLOAT>(alpha) / 255.f);
-            IFC_RETURN(GetChildElementNoRef()->SetValueByKnownIndex(KnownPropertyIndex::UIElement_Opacity, value));
+            IFC_RETURN(pChildImage->SetValueByKnownIndex(KnownPropertyIndex::UIElement_Opacity, value));
         }
 
         IFC_RETURN(m_pWriteableBitmap->Invalidate());
@@ -1392,7 +1438,7 @@ void
 CBitmapIcon::ReleaseWriteableBitmapResources()
 {
     // Unset the source of our child image.
-    CUIElement* pChildImage = GetChildElementNoRef();
+    CUIElement* pChildImage = IsBitmapIconNoGridOptimizationEnabled() ? GetFirstChildNoAddRef() : GetChildElementNoRef();
     if (pChildImage != NULL)
     {
         CValue value;

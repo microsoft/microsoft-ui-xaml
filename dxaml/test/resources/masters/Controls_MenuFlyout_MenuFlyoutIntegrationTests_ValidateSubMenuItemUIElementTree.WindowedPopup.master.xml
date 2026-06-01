@@ -451,28 +451,21 @@
                                                         <Property Name="Width" Value="16" />
                                                       </Properties>
                                                       <ChildElements>
-                                                        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                                        <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
                                                           <Properties>
-                                                            <Property Name="Background" Value="#00000000" />
+                                                            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                                            <Property Name="HorizontalAlignment" Value="3" />
+                                                            <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                                                            <Property Name="Style" Value="[NULL]" />
+                                                            <Property Name="Text" Value="" />
+                                                            <Property Name="TextAlignment" Value="0" />
+                                                            <Property Name="VerticalAlignment" Value="1" />
                                                           </Properties>
                                                           <ChildElements>
-                                                            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                            <Element Type="Microsoft.UI.Xaml.Documents.Run">
                                                               <Properties>
-                                                                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                                                                <Property Name="HorizontalAlignment" Value="3" />
-                                                                <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                                                                <Property Name="Style" Value="[NULL]" />
                                                                 <Property Name="Text" Value="" />
-                                                                <Property Name="TextAlignment" Value="0" />
-                                                                <Property Name="VerticalAlignment" Value="1" />
                                                               </Properties>
-                                                              <ChildElements>
-                                                                <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                                                                  <Properties>
-                                                                    <Property Name="Text" Value="" />
-                                                                  </Properties>
-                                                                </Element>
-                                                              </ChildElements>
                                                             </Element>
                                                           </ChildElements>
                                                         </Element>
@@ -657,28 +650,21 @@
                                                         <Property Name="MirroredWhenRightToLeft" Value="True" />
                                                       </Properties>
                                                       <ChildElements>
-                                                        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                                        <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
                                                           <Properties>
-                                                            <Property Name="Background" Value="#00000000" />
+                                                            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                                            <Property Name="HorizontalAlignment" Value="3" />
+                                                            <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                                                            <Property Name="Style" Value="[NULL]" />
+                                                            <Property Name="Text" Value="" />
+                                                            <Property Name="TextAlignment" Value="0" />
+                                                            <Property Name="VerticalAlignment" Value="1" />
                                                           </Properties>
                                                           <ChildElements>
-                                                            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                            <Element Type="Microsoft.UI.Xaml.Documents.Run">
                                                               <Properties>
-                                                                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                                                                <Property Name="HorizontalAlignment" Value="3" />
-                                                                <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                                                                <Property Name="Style" Value="[NULL]" />
                                                                 <Property Name="Text" Value="" />
-                                                                <Property Name="TextAlignment" Value="0" />
-                                                                <Property Name="VerticalAlignment" Value="1" />
                                                               </Properties>
-                                                              <ChildElements>
-                                                                <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                                                                  <Properties>
-                                                                    <Property Name="Text" Value="" />
-                                                                  </Properties>
-                                                                </Element>
-                                                              </ChildElements>
                                                             </Element>
                                                           </ChildElements>
                                                         </Element>
@@ -1161,28 +1147,21 @@
                                                         <Property Name="Width" Value="16" />
                                                       </Properties>
                                                       <ChildElements>
-                                                        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                                        <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
                                                           <Properties>
-                                                            <Property Name="Background" Value="#00000000" />
+                                                            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                                            <Property Name="HorizontalAlignment" Value="3" />
+                                                            <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                                                            <Property Name="Style" Value="[NULL]" />
+                                                            <Property Name="Text" Value="" />
+                                                            <Property Name="TextAlignment" Value="0" />
+                                                            <Property Name="VerticalAlignment" Value="1" />
                                                           </Properties>
                                                           <ChildElements>
-                                                            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                            <Element Type="Microsoft.UI.Xaml.Documents.Run">
                                                               <Properties>
-                                                                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                                                                <Property Name="HorizontalAlignment" Value="3" />
-                                                                <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                                                                <Property Name="Style" Value="[NULL]" />
                                                                 <Property Name="Text" Value="" />
-                                                                <Property Name="TextAlignment" Value="0" />
-                                                                <Property Name="VerticalAlignment" Value="1" />
                                                               </Properties>
-                                                              <ChildElements>
-                                                                <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                                                                  <Properties>
-                                                                    <Property Name="Text" Value="" />
-                                                                  </Properties>
-                                                                </Element>
-                                                              </ChildElements>
                                                             </Element>
                                                           </ChildElements>
                                                         </Element>
@@ -1367,28 +1346,21 @@
                                                         <Property Name="MirroredWhenRightToLeft" Value="True" />
                                                       </Properties>
                                                       <ChildElements>
-                                                        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                                        <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
                                                           <Properties>
-                                                            <Property Name="Background" Value="#00000000" />
+                                                            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                                            <Property Name="HorizontalAlignment" Value="3" />
+                                                            <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                                                            <Property Name="Style" Value="[NULL]" />
+                                                            <Property Name="Text" Value="" />
+                                                            <Property Name="TextAlignment" Value="0" />
+                                                            <Property Name="VerticalAlignment" Value="1" />
                                                           </Properties>
                                                           <ChildElements>
-                                                            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                            <Element Type="Microsoft.UI.Xaml.Documents.Run">
                                                               <Properties>
-                                                                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                                                                <Property Name="HorizontalAlignment" Value="3" />
-                                                                <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                                                                <Property Name="Style" Value="[NULL]" />
                                                                 <Property Name="Text" Value="" />
-                                                                <Property Name="TextAlignment" Value="0" />
-                                                                <Property Name="VerticalAlignment" Value="1" />
                                                               </Properties>
-                                                              <ChildElements>
-                                                                <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                                                                  <Properties>
-                                                                    <Property Name="Text" Value="" />
-                                                                  </Properties>
-                                                                </Element>
-                                                              </ChildElements>
                                                             </Element>
                                                           </ChildElements>
                                                         </Element>
@@ -1486,28 +1458,21 @@
                                                         <Property Name="MirroredWhenRightToLeft" Value="True" />
                                                       </Properties>
                                                       <ChildElements>
-                                                        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                                                        <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
                                                           <Properties>
-                                                            <Property Name="Background" Value="#00000000" />
+                                                            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                                            <Property Name="HorizontalAlignment" Value="3" />
+                                                            <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                                                            <Property Name="Style" Value="[NULL]" />
+                                                            <Property Name="Text" Value="" />
+                                                            <Property Name="TextAlignment" Value="0" />
+                                                            <Property Name="VerticalAlignment" Value="1" />
                                                           </Properties>
                                                           <ChildElements>
-                                                            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                                            <Element Type="Microsoft.UI.Xaml.Documents.Run">
                                                               <Properties>
-                                                                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                                                                <Property Name="HorizontalAlignment" Value="3" />
-                                                                <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                                                                <Property Name="Style" Value="[NULL]" />
                                                                 <Property Name="Text" Value="" />
-                                                                <Property Name="TextAlignment" Value="0" />
-                                                                <Property Name="VerticalAlignment" Value="1" />
                                                               </Properties>
-                                                              <ChildElements>
-                                                                <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                                                                  <Properties>
-                                                                    <Property Name="Text" Value="" />
-                                                                  </Properties>
-                                                                </Element>
-                                                              </ChildElements>
                                                             </Element>
                                                           </ChildElements>
                                                         </Element>

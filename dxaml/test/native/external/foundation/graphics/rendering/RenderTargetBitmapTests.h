@@ -175,6 +175,33 @@ public:
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
     END_TEST_METHOD()
 
+    // FontIcon RTB tests
+    BEGIN_TEST_METHOD(FontIconSizeToContentRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a FontIcon that sizes to content.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(FontIconLargerThanIconRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a FontIcon with explicit size larger than the glyph.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(FontIconEllipsisRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a FontIcon with an ellipsis glyph (odd-sized glyph).")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    // BitmapIcon RTB tests
+    BEGIN_TEST_METHOD(BitmapIconSizeToContentRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a BitmapIcon that sizes to content.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(BitmapIconLargerThanIconRTBWUCFull)
+        TEST_METHOD_PROPERTY(L"Description", L"Invokes RenderTargetBitmap.RenderAsync for a BitmapIcon with explicit size larger than the source image.")
+        TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+    END_TEST_METHOD()
+
 private:
     void BasicRenderTargetBitmapInternal();
     void PopupChildRTBInternal();
@@ -196,6 +223,11 @@ private:
     void RenderSameElementInternal();
     void TiledTextInternal(Microsoft::UI::Xaml::Tests::Common::DCompRendering rendering);
     void RTB0SizeInternal();
+    void FontIconSizeToContentInternal();
+    void FontIconLargerThanIconInternal();
+    void FontIconEllipsisInternal();
+    void BitmapIconSizeToContentInternal();
+    void BitmapIconLargerThanIconInternal();
 
     // TODO: Should add the following tests in the future:
     //                 - TiledImages
@@ -221,6 +253,12 @@ private:
     unsigned int PixelIndex(unsigned int x, unsigned int y, unsigned int w);
     uint32_t RgbaToUint32(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
     void TestShapeInternal(Platform::String^ fileName, std::function<void(Platform::Array<uint32_t>^, int, int)> verifyFunc);
+    void IconElementTestHelper(
+        Platform::String^ fileName,
+        Platform::String^ iconElementName,
+        int expectedWidth,
+        int expectedHeight,
+        bool verifyNonEmpty = true);
 };
 } } } } } }
 

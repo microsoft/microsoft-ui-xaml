@@ -1419,6 +1419,36 @@ void RenderTargetBitmapTests::RTB0SizeWUCFull()
     RTB0SizeInternal();
 }
 
+void RenderTargetBitmapTests::FontIconSizeToContentRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    FontIconSizeToContentInternal();
+}
+
+void RenderTargetBitmapTests::FontIconLargerThanIconRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    FontIconLargerThanIconInternal();
+}
+
+void RenderTargetBitmapTests::FontIconEllipsisRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    FontIconEllipsisInternal();
+}
+
+void RenderTargetBitmapTests::BitmapIconSizeToContentRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    BitmapIconSizeToContentInternal();
+}
+
+void RenderTargetBitmapTests::BitmapIconLargerThanIconRTBWUCFull()
+{
+    WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
+    BitmapIconLargerThanIconInternal();
+}
+
 void RenderTargetBitmapTests::EllipseTest()
 {
     WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
@@ -1682,6 +1712,186 @@ void RenderTargetBitmapTests::RasterizationScale()
     wh->WaitForIdle();
 
     u->VerifyMockDCompOutput(MockDComp::SurfaceComparison::ReferencedOnly);
+}
+
+//------------------------------------------------------------------------
+//
+// Helper method for testing RenderTargetBitmap with icon elements.
+// Renders an icon element to a RenderTargetBitmap and verifies the result
+// is non-empty (contains at least some non-transparent pixels).
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::IconElementTestHelper(
+    Platform::String^ fileName,
+    Platform::String^ iconElementName,
+    int expectedWidth,
+    int expectedHeight,
+    bool verifyNonEmpty)
+{
+    TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 300));
+
+    auto renderedEvent = std::make_shared<Event>();
+    auto getPixelsEvent = std::make_shared<Event>();
+
+    RenderTargetBitmap^ rtb = nullptr;
+    wf::IAsyncOperation<IBuffer^>^ getPixelsAsyncOperation = nullptr;
+    IBuffer^ buffer = nullptr;
+    StackPanel^ rootStackPanel = safe_cast<StackPanel^>(LoadXamlFileOnUIThread(GetResourcesPath() + fileName));
+
+    RunOnUIThread([&]()
+    {
+        TestServices::WindowHelper->WindowContent = rootStackPanel;
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        auto iconElement = safe_cast<FrameworkElement^>(rootStackPanel->FindName(iconElementName));
+        VERIFY_IS_NOT_NULL(iconElement);
+
+        rtb = ref new RenderTargetBitmap();
+        LOG_OUTPUT(L"Invoking RenderTargetBitmap::RenderAsync.");
+
+        create_task(rtb->RenderAsync(iconElement)).then([&renderedEvent]()
+        {
+            LOG_OUTPUT(L"RenderTargetBitmap::RenderAsync completed.");
+            renderedEvent->Set();
+        });
+    });
+
+    renderedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        auto iconElement = safe_cast<FrameworkElement^>(rootStackPanel->FindName(iconElementName));
+        Image^ img = safe_cast<Image^>(rootStackPanel->FindName(L"img"));
+        VERIFY_IS_NOT_NULL(img);
+
+        img->Source = rtb;
+        img->Width = iconElement->ActualWidth;
+        img->Height = iconElement->ActualHeight;
+        LOG_OUTPUT(L"iconElement->ActualWidth = %f, iconElement->ActualHeight = %f", iconElement->ActualWidth, iconElement->ActualHeight);
+    });
+
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        getPixelsAsyncOperation = rtb->GetPixelsAsync();
+
+        auto getPixelsCallback = ref new wf::AsyncOperationCompletedHandler<IBuffer^>(
+            [&buffer, getPixelsEvent](wf::IAsyncOperation<IBuffer^>^ operation, wf::AsyncStatus)
+        {
+            LOG_OUTPUT(L"GetPixelsAsync operation completed.");
+            buffer = operation->GetResults();
+            getPixelsEvent->Set();
+        });
+        VERIFY_IS_NOT_NULL(getPixelsCallback);
+        getPixelsAsyncOperation->Completed = getPixelsCallback;
+    });
+
+    getPixelsEvent->WaitForDefault();
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        LOG_OUTPUT(L"Verifying bitmap content.");
+        LOG_OUTPUT(L"RTB PixelWidth = %d, RTB PixelHeight = %d", rtb->PixelWidth, rtb->PixelHeight);
+
+        // Verify the RTB has non-zero dimensions
+        VERIFY_IS_GREATER_THAN(rtb->PixelWidth, 0);
+        VERIFY_IS_GREATER_THAN(rtb->PixelHeight, 0);
+        VERIFY_ARE_EQUAL(rtb->PixelWidth, expectedWidth);
+        VERIFY_ARE_EQUAL(rtb->PixelHeight, expectedHeight);
+
+        if (verifyNonEmpty)
+        {
+            DataReader^ dataReader = DataReader::FromBuffer(buffer);
+            Platform::Array<byte>^ generatedImage = ref new Platform::Array<byte>(buffer->Length);
+            dataReader->ReadBytes(generatedImage);
+
+            // Verify that the bitmap contains at least some non-transparent pixels
+            // This confirms that the icon was actually rendered
+            bool foundNonTransparentPixel = false;
+            for (unsigned int i = 3; i < buffer->Length; i += 4)  // Check alpha channel
+            {
+                if (generatedImage[i] > 0)
+                {
+                    foundNonTransparentPixel = true;
+                    break;
+                }
+            }
+            VERIFY_IS_TRUE(foundNonTransparentPixel, L"RTB should contain non-transparent pixels");
+        }
+    });
+}
+
+//------------------------------------------------------------------------
+//
+// FontIcon size-to-content test
+// Tests RenderTargetBitmap.RenderAsync for a FontIcon that sizes itself
+// based on its FontSize.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::FontIconSizeToContentInternal()
+{
+    IconElementTestHelper(L"RTBTests-FontIcon-SizeToContent.xaml", L"fontIcon", 32, 32);
+}
+
+//------------------------------------------------------------------------
+//
+// FontIcon explicit size larger than icon test
+// Tests RenderTargetBitmap.RenderAsync for a FontIcon with explicit
+// Width/Height larger than the glyph.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::FontIconLargerThanIconInternal()
+{
+    // Note: The expectedHeight=24 here is a change in behavior from before the new FontIcon
+    // implementation which doesn't add the extra Grid: RenderTargetBitmap will now tightly fit
+    // the height of FontIcon's TextBlock instead of including the full bounds of the TextBlock
+    // which the Grid forced in the old implementation.
+    // FUTURE: It seems like a bug that RTB is fitting to only the rendered height but using the
+    // full width including the left and right padding. In the future, consider changing this to
+    // be consistent and fit to either the full bounds or the rendered bounds in both dimensions.
+    IconElementTestHelper(L"RTBTests-FontIcon-LargerThanIcon.xaml", L"fontIcon", 100, 24);
+}
+
+//------------------------------------------------------------------------
+//
+// FontIcon ellipsis (odd-sized glyph) test
+// Tests RenderTargetBitmap.RenderAsync for a FontIcon with an ellipsis
+// glyph which may have a different width/height ratio.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::FontIconEllipsisInternal()
+{
+    IconElementTestHelper(L"RTBTests-FontIcon-Ellipsis.xaml", L"fontIcon", 20, 20);
+}
+
+//------------------------------------------------------------------------
+//
+// BitmapIcon size-to-content test
+// Tests RenderTargetBitmap.RenderAsync for a BitmapIcon that sizes itself
+// based on its source image.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::BitmapIconSizeToContentInternal()
+{
+    IconElementTestHelper(L"RTBTests-BitmapIcon-SizeToContent.xaml", L"bitmapIcon", 80, 80);
+}
+
+//------------------------------------------------------------------------
+//
+// BitmapIcon explicit size larger than source test
+// Tests RenderTargetBitmap.RenderAsync for a BitmapIcon with explicit
+// Width/Height larger than the source image.
+//
+//------------------------------------------------------------------------
+void RenderTargetBitmapTests::BitmapIconLargerThanIconInternal()
+{
+    IconElementTestHelper(L"RTBTests-BitmapIcon-LargerThanIcon.xaml", L"bitmapIcon", 150, 150);
 }
 
 } } } } } }

@@ -178,7 +178,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     THROW_IF_FAILED(manager->ReferenceTrackingStarted());
                     auto guard = wil::scope_exit([manager] { THROW_IF_FAILED(manager->ReferenceTrackingCompleted()); });
                     // Over half of the descendant count belongs to just the scrollbars...
-                    VERIFY_ARE_EQUAL(gridMemoryInfo->GetCountOfDescendantUIElements(), 60);
+                    VERIFY_ARE_EQUAL(gridMemoryInfo->GetCountOfDescendantUIElements(), 58);
                 }
 
                 // Invoke again on same object; things shouldn't have changed
@@ -186,7 +186,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     LOG_OUTPUT(L"Verifying UIElement count starting at root");
                     THROW_IF_FAILED(manager->ReferenceTrackingStarted());
                     auto guard = wil::scope_exit([manager] { THROW_IF_FAILED(manager->ReferenceTrackingCompleted()); });
-                    VERIFY_ARE_EQUAL(gridMemoryInfo->GetCountOfDescendantUIElements(), 60);
+                    VERIFY_ARE_EQUAL(gridMemoryInfo->GetCountOfDescendantUIElements(), 58);
                 }
             });
         }
