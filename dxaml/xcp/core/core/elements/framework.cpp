@@ -18,6 +18,7 @@
 #include "DXamlServices.h"
 #include "RootScale.h"
 #include "XamlTelemetry.h"
+#include "MetadataAPI.h"
 
 using namespace Theming;
 using namespace DirectUI;
@@ -95,6 +96,25 @@ CFrameworkElement::~CFrameworkElement()
 _Check_return_ HRESULT
 CFrameworkElement::CreationComplete()
 {
+#ifdef TRACE_RESOURCELOOKUPS
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "ResourceLookup_CFrameworkElement_CreationComplete",
+        TraceLoggingWideString(DirectUI::MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetFullName().GetBuffer(), "Type"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ThisPointer"),
+        TraceLoggingBoolean(true, "IsEnter"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    auto endEvent = wil::scope_exit([&]()
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "ResourceLookup_CFrameworkElement_CreationComplete",
+            TraceLoggingWideString(DirectUI::MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetFullName().GetBuffer(), "Type"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ThisPointer"),
+            TraceLoggingBoolean(false, "IsEnter"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    });
+#endif
+
     // Apply style
     if (m_eImplicitStyleProvider == ImplicitStyleProvider::None || GetStyle())
     {
@@ -729,6 +749,19 @@ CFrameworkElement::OnStyleChanged(
     unsigned int oldStylePropertyCount = 0;
     const bool isSettingFromManaged = GetContextInterface()->IsSettingValueFromManaged(this);
     const bool shouldStoreSourceInfo = DXamlServices::ShouldStoreSourceInformation();
+
+#ifdef TRACE_RESOURCELOOKUPS
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "ResourceLookup_OnStyleChanged",
+        TraceLoggingWideString(DirectUI::MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetFullName().GetBuffer(), "Type"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "CFrameworkElement Pointer"),
+        TraceLoggingWideString(baseValueSource == BaseValueSourceStyle ? L"BaseValueSourceStyle" : baseValueSource == BaseValueSourceBuiltInStyle ? L"BaseValueSourceBuiltInStyle" : L"Unknown", "Operation"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pOldStyle), "OldStyle"),
+        TraceLoggingUInt64(pOldStyle ? (pOldStyle->m_pSetters ? pOldStyle->m_pSetters->GetCount() : 0) : 0, "OldStyleSetterCount"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(pNewStyle), "NewStyle"),
+        TraceLoggingUInt64(pNewStyle ? (pNewStyle->m_pSetters ? pNewStyle->m_pSetters->GetCount() : 0) : 0, "NewStyleSetterCount"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
 
     TraceElementStyleChangedInfo((XUINT64)this, (XUINT64)pNewStyle);
 

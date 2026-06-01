@@ -29,6 +29,7 @@
 #include <DesignMode.h>
 #include "CColor.h"
 #include "ThemeWalkResourceCache.h"
+#include "XamlTelemetry.h"
 
 // Imports from DXAML to support NullKeyedResource
 #include <DependencyObject.h>
@@ -584,6 +585,10 @@ CResourceDictionary::GetImplicitStyleKeyNoRef(
     _Out_opt_ xref_ptr<CResourceDictionary>* dictionaryReadFrom)
 {
     *keyNoRef = nullptr;
+
+#ifdef TRACE_RESOURCELOOKUPS
+    Diagnostics::SearchImplicitStyleLogger logger(m_pResourceLookupLoggerNoRef, this, strKey);
+#endif
 
     if (dictionaryReadFrom)
     {
