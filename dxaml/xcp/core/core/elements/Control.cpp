@@ -15,6 +15,7 @@
 #include "CVisualStateManager2.h"
 #include <Theme.h>
 #include "XamlTelemetry.h"
+#include "MetadataAPI.h"
 
 //  Class:  CControl
 //
@@ -1010,6 +1011,25 @@ _Check_return_
 HRESULT
 CControl::CreationComplete()
 {
+#ifdef TRACE_RESOURCELOOKUPS
+    TraceLoggingProviderWrite(
+        XamlTelemetry, "ResourceLookup_CControl_CreationComplete",
+        TraceLoggingWideString(DirectUI::MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetFullName().GetBuffer(), "Type"),
+        TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ThisPointer"),
+        TraceLoggingBoolean(true, "IsEnter"),
+        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+    auto endEvent = wil::scope_exit([&]()
+    {
+        TraceLoggingProviderWrite(
+            XamlTelemetry, "ResourceLookup_CControl_CreationComplete",
+            TraceLoggingWideString(DirectUI::MetadataAPI::GetClassInfoByIndex(GetTypeIndex())->GetFullName().GetBuffer(), "Type"),
+            TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ThisPointer"),
+            TraceLoggingBoolean(false, "IsEnter"),
+            TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    });
+#endif
+
     // Call base implementation. This will apply any explicit styles.
     IFC_RETURN(CFrameworkElement::CreationComplete());
 

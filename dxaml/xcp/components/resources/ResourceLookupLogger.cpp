@@ -155,6 +155,7 @@ namespace Diagnostics
 #endif
         m_messageBuilder = std::make_shared<XStringBuilder>();
         m_indentationLevel = 0;
+        m_etwIndentationLevel = 0;
 
         // If the caller provides a Uri for the document that referenced this resource then output that first.  This allows app
         // developers to tell which .xaml file contained the missing resource.
@@ -221,7 +222,7 @@ namespace Diagnostics
         if (IsLogging())
         {
             auto id = GenerateIdentifierForResourceDictionary(dictionary);
-            auto indentedDictionary = IndentString(m_indentationLevel, id);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id);
 
             TraceLoggingProviderWrite(
                 XamlTelemetry, "ResourceLookup_Dictionary",
@@ -254,7 +255,7 @@ namespace Diagnostics
             DecrementIndentationLevel();
 
             auto id = GenerateIdentifierForResourceDictionary(dictionary);
-            auto indentedDictionary = IndentString(m_indentationLevel, id);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id);
 
             TraceLoggingProviderWrite(
                 XamlTelemetry, "ResourceLookup_Dictionary",
@@ -293,7 +294,7 @@ namespace Diagnostics
             }
 
             auto id = GenerateIdentifierForResourceDictionary(dictionary);
-            auto indentedDictionary = IndentString(m_indentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Merged "), indexAsString);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Merged "), indexAsString);
 
             TraceLoggingProviderWrite(
                 XamlTelemetry, "ResourceLookup_MergedDictionary",
@@ -336,7 +337,7 @@ namespace Diagnostics
             }
 
             auto id = GenerateIdentifierForResourceDictionary(dictionary);
-            auto indentedDictionary = IndentString(m_indentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Merged "), indexAsString);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Merged "), indexAsString);
 
             TraceLoggingProviderWrite(
                 XamlTelemetry, "ResourceLookup_MergedDictionary",
@@ -368,7 +369,7 @@ namespace Diagnostics
             IFC_RETURN(ConvertThemeToString(theme, themeAsString));
 
             auto id = GenerateIdentifierForResourceDictionary(dictionary);
-            auto indentedDictionary = IndentString(m_indentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Theme "), themeAsString);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Theme "), themeAsString);
 
             TraceLoggingProviderWrite(
                 XamlTelemetry, "ResourceLookup_ThemeDictionary",
@@ -404,7 +405,7 @@ namespace Diagnostics
             IFC_RETURN(ConvertThemeToString(theme, themeAsString));
 
             auto id = GenerateIdentifierForResourceDictionary(dictionary);
-            auto indentedDictionary = IndentString(m_indentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Theme "), themeAsString);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id, XSTRING_PTR_EPHEMERAL(L" Theme "), themeAsString);
 
             TraceLoggingProviderWrite(
                 XamlTelemetry, "ResourceLookup_ThemeDictionary",
@@ -432,7 +433,7 @@ namespace Diagnostics
         if (IsLogging())
         {
             auto id = GenerateIdentifierForResourceDictionary(dictionary);
-            auto indentedDictionary = IndentString(m_indentationLevel, id);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id);
             uint64_t etwEventIndex = GetNextEtwIndex();
 
             TraceLoggingProviderWrite(
@@ -447,18 +448,76 @@ namespace Diagnostics
         return S_OK;
     }
 
+    _Check_return_ HRESULT ResourceLookupLogger::OnEnterImplicitStyle(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex)
+    {
+        if (IsLogging())
+        {
+            auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id);
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_ImplicitStyle",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "DictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt32(dictionary->GetCount(), "Count"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingBoolean(true, "IsEnter"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+            IncrementEtwIndentationLevel();
+        }
+
+        return S_OK;
+    }
+
+    _Check_return_ HRESULT ResourceLookupLogger::OnLeaveImplicitStyle(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex)
+    {
+        if (IsLogging())
+        {
+            DecrementEtwIndentationLevel();
+
+            auto id = GenerateIdentifierForResourceDictionary(dictionary);
+            auto indentedDictionary = IndentString(m_etwIndentationLevel, id);
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_ImplicitStyle",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "DictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt32(dictionary->GetCount(), "Count"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingBoolean(false, "IsEnter"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+        }
+
+        return S_OK;
+    }
+
     void ResourceLookupLogger::IncrementIndentationLevel()
     {
         ASSERT(m_indentationLevel <= (std::numeric_limits<decltype(m_indentationLevel)>::max() - 1));
-
         ++m_indentationLevel;
+        IncrementEtwIndentationLevel();
     }
 
     void ResourceLookupLogger::DecrementIndentationLevel()
     {
         ASSERT(m_indentationLevel >= (std::numeric_limits<decltype(m_indentationLevel)>::min() + 1));
-
         --m_indentationLevel;
+        DecrementEtwIndentationLevel();
+    }
+
+    void ResourceLookupLogger::IncrementEtwIndentationLevel()
+    {
+        ASSERT(m_etwIndentationLevel <= (std::numeric_limits<decltype(m_etwIndentationLevel)>::max() - 1));
+        ++m_etwIndentationLevel;
+    }
+
+    void ResourceLookupLogger::DecrementEtwIndentationLevel()
+    {
+        ASSERT(m_etwIndentationLevel >= (std::numeric_limits<decltype(m_etwIndentationLevel)>::min() + 1));
+        --m_etwIndentationLevel;
     }
 
     _Check_return_ HRESULT ResourceLookupLogger::StartNewLineWithIndentation()

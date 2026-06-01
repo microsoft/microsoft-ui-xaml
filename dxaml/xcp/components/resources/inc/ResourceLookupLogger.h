@@ -36,15 +36,22 @@ namespace Diagnostics
 
         _Check_return_ HRESULT OnFoundResource(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey);
 
+        _Check_return_ HRESULT OnEnterImplicitStyle(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex);
+        _Check_return_ HRESULT OnLeaveImplicitStyle(CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey, uint64_t etwEventIndex);
+
     private:
         void IncrementIndentationLevel();
         void DecrementIndentationLevel();
+
+        void IncrementEtwIndentationLevel();
+        void DecrementEtwIndentationLevel();
 
         _Check_return_ HRESULT StartNewLineWithIndentation();
 
         std::shared_ptr<XStringBuilder> m_messageBuilder;
         xstring_ptr m_traceMessage;
         std::uint32_t m_indentationLevel = 0;
+        std::uint32_t m_etwIndentationLevel = 0;    // Etw logs more details with its own indentation
 #ifdef TRACE_RESOURCELOOKUPS
         bool m_isLogging = true;
 #else
@@ -152,6 +159,38 @@ namespace Diagnostics
         Diagnostics::ResourceLookupLogger* m_logger;
         CResourceDictionary* m_dictionary;
         Theming::Theme m_theme;
+        const xstring_ptr_view& m_resourceKey;
+        uint64_t m_etwEventIndex;
+    };
+
+    class SearchImplicitStyleLogger
+    {
+    public:
+        SearchImplicitStyleLogger(Diagnostics::ResourceLookupLogger* logger, CResourceDictionary* dictionary, const xstring_ptr_view& resourceKey)
+            : m_logger(logger->IsLogging() ? logger : nullptr)
+            , m_dictionary(dictionary)
+            , m_resourceKey(resourceKey)
+        {
+            if (m_logger) // For best performance, the call should pass null for the logger if logging is disabled
+            {
+                m_etwEventIndex = m_logger->GetNextEtwIndex();
+                IGNOREHR(m_logger->OnEnterImplicitStyle(m_dictionary, m_resourceKey, m_etwEventIndex));
+            }
+        }
+        ~SearchImplicitStyleLogger()
+        {
+            if (m_logger)
+            {
+                IGNOREHR(m_logger->OnLeaveImplicitStyle(m_dictionary, m_resourceKey, m_etwEventIndex));
+            }
+        }
+        SearchImplicitStyleLogger(const SearchImplicitStyleLogger&) = delete;
+        SearchImplicitStyleLogger& operator=(const SearchImplicitStyleLogger&) = delete;
+        SearchImplicitStyleLogger(SearchImplicitStyleLogger&&) = delete;
+        SearchImplicitStyleLogger& operator=(SearchImplicitStyleLogger&&) = delete;
+    private:
+        Diagnostics::ResourceLookupLogger* m_logger;
+        CResourceDictionary* m_dictionary;
         const xstring_ptr_view& m_resourceKey;
         uint64_t m_etwEventIndex;
     };
