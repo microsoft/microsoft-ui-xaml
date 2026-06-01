@@ -62,7 +62,7 @@ jobs:
       WINUI_BUILD_PLATFORM: ${{ matrix.platform }}
       WINUI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
       BuildPlatform: ${{ matrix.platform }}
-      NUGET_PACKAGES: ${{ github.workspace }}\src\packages
+      NUGET_PACKAGES: ${{ github.workspace }}\packages
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
       # Cap CL.exe parallelism: hosted runner has 2 vCPUs; default /m:4 OOMs (C1076).
@@ -79,18 +79,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            src\packages
-            src\.tools
+            packages
+            .tools
             ~\.nuget\packages
-          key: winui-nuget-${{ runner.os }}-${{ hashFiles('src/packages.config', 'src/packages.*.config', 'src/eng/versions.props', 'src/Packages.props', 'src/NuGet.config') }}
+          key: winui-nuget-${{ runner.os }}-${{ hashFiles('packages.config', 'packages.*.config', 'eng/versions.props', 'Packages.props', 'NuGet.config') }}
           restore-keys: |
             winui-nuget-${{ runner.os }}-
 
       - name: Cache .NET SDK
         uses: actions/cache@v4
         with:
-          path: src\.dotnet
-          key: winui-dotnet-${{ runner.os }}-${{ hashFiles('src/global.json') }}
+          path: .dotnet
+          key: winui-dotnet-${{ runner.os }}-${{ hashFiles('global.json') }}
           restore-keys: |
             winui-dotnet-${{ runner.os }}-
 
@@ -115,7 +115,6 @@ jobs:
 
       # init.cmd /nopgo (PGO needs internal feed); bypass Build.cmd (ERRORLEVEL-clobber bug).
       - name: Initialize build environment and build
-        working-directory: src
         shell: pwsh
         run: |
           & "${{ github.workspace }}/.github/scripts/build-pr.ps1" `
@@ -128,7 +127,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: binlogs-${{ matrix.flavor }}
-          path: src/BuildOutput/**/*.binlog
+          path: BuildOutput/**/*.binlog
           if-no-files-found: ignore
           retention-days: 7
 
@@ -137,6 +136,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vs-buildtools-logs-${{ matrix.flavor }}
-          path: src/msbuild-install-logs/**
+          path: msbuild-install-logs/**
           if-no-files-found: ignore
           retention-days: 7
