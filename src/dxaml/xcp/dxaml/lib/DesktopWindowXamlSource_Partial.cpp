@@ -579,6 +579,38 @@ _Check_return_ HRESULT DesktopWindowXamlSource::put_ShouldConstrainPopupsToWorkA
     return S_OK;
 }
 
+_Check_return_ HRESULT DesktopWindowXamlSource::get_IsBackgroundTransparentImpl(_Out_ boolean* pValue)
+{
+    // Islands are transparent by default (see XamlIsland::Initialize), so report
+    // that unless the underlying island root tells us otherwise.
+    *pValue = true;
+
+    if (m_spXamlIslandRoot)
+    {
+        CXamlIslandRoot* pXamlIslandCore =
+            static_cast<CXamlIslandRoot*>(m_spXamlIslandRoot.Cast<XamlIslandRoot>()->GetHandle());
+        *pValue = pXamlIslandCore->HasTransparentBackground();
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowXamlSource::put_IsBackgroundTransparentImpl(_In_ boolean value)
+{
+    // Toggle the enforced opaque (theme-colored) background of the island. When
+    // disabled, the pixels the XAML tree leaves transparent are transparent in
+    // the composition output, so the parent HWND's content / host-window
+    // backdrop shows through.  See microsoft-ui-xaml issue #11134.
+    if (m_spXamlIslandRoot)
+    {
+        CXamlIslandRoot* pXamlIslandCore =
+            static_cast<CXamlIslandRoot*>(m_spXamlIslandRoot.Cast<XamlIslandRoot>()->GetHandle());
+        pXamlIslandCore->SetHasTransparentBackground(!!value);
+    }
+
+    return S_OK;
+}
+
 _Check_return_
 HRESULT DesktopWindowXamlSource::GetGotFocusEventSourceNoRef(_Outptr_ GotFocusEventSourceType** ppEventSource)
 {
