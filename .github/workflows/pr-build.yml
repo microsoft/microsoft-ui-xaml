@@ -75,6 +75,8 @@ jobs:
           fetch-depth: 1
           show-progress: false
 
+      # Per-flavor key: NuGet content (e.g. crossgen2.win-x86 vs .win-arm64) differs
+      # per leg, so a shared key races (5 of 6 saves fail with "Unable to reserve cache").
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
@@ -82,9 +84,9 @@ jobs:
             packages
             .tools
             ~\.nuget\packages
-          key: winui-nuget-${{ runner.os }}-${{ hashFiles('packages.config', 'packages.*.config', 'eng/versions.props', 'Packages.props', 'NuGet.config') }}
+          key: winui-nuget-${{ runner.os }}-${{ matrix.flavor }}-${{ hashFiles('packages.config', 'packages.*.config', 'eng/versions.props', 'Packages.props', 'NuGet.config') }}
           restore-keys: |
-            winui-nuget-${{ runner.os }}-
+            winui-nuget-${{ runner.os }}-${{ matrix.flavor }}-
 
       - name: Cache .NET SDK
         uses: actions/cache@v4
@@ -129,6 +131,18 @@ jobs:
           name: binlogs-${{ matrix.flavor }}
           path: BuildOutput/**/*.binlog
           if-no-files-found: ignore
+          retention-days: 7
+
+      # Unsigned, no-PGO, OSS-only build outputs for local sideload testing.
+      # Reviewers can download this artifact to test the PR's product DLLs locally.
+      - name: Upload product runtime payload
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: winui-product-${{ matrix.flavor }}
+          path: |
+            BuildOutput/packaging/${{ matrix.configuration }}/runtimes-framework/win-${{ matrix.platform }}/**
+          if-no-files-found: warn
           retention-days: 7
 
       - name: Upload VS BuildTools install logs (on failure)
