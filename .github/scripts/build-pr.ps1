@@ -6,6 +6,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# init.cmd's UAC fallback fails non-interactively; ensure long-path support up front.
+$lp = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+if ((Get-ItemProperty -Path $lp -Name 'LongPathsEnabled' -ErrorAction SilentlyContinue).LongPathsEnabled -ne 1) {
+    New-ItemProperty -Path $lp -Name 'LongPathsEnabled' -Value 1 -PropertyType DWord -Force | Out-Null
+}
+
 foreach ($v in 'ACTIONS_RUNTIME_TOKEN','ACTIONS_RUNTIME_URL','ACTIONS_RESULTS_URL','ACTIONS_CACHE_URL','ACTIONS_ID_TOKEN_REQUEST_TOKEN','ACTIONS_ID_TOKEN_REQUEST_URL','GITHUB_TOKEN') {
     Remove-Item "env:$v" -ErrorAction SilentlyContinue
 }

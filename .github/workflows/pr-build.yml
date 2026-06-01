@@ -75,47 +75,6 @@ jobs:
           fetch-depth: 1
           show-progress: false
 
-      # Per-flavor key: NuGet content (e.g. crossgen2.win-x86 vs .win-arm64) differs
-      # per leg, so a shared key races (5 of 6 saves fail with "Unable to reserve cache").
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            packages
-            .tools
-            ~\.nuget\packages
-          key: winui-nuget-${{ runner.os }}-${{ matrix.flavor }}-${{ hashFiles('packages.config', 'packages.*.config', 'eng/versions.props', 'Packages.props', 'NuGet.config') }}
-          restore-keys: |
-            winui-nuget-${{ runner.os }}-${{ matrix.flavor }}-
-
-      - name: Cache .NET SDK
-        uses: actions/cache@v4
-        with:
-          path: .dotnet
-          key: winui-dotnet-${{ runner.os }}-${{ hashFiles('global.json') }}
-          restore-keys: |
-            winui-dotnet-${{ runner.os }}-
-
-      - name: Show available disk space (pre-build)
-        shell: pwsh
-        run: |
-          Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,2)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,2)}} | Format-Table
-
-      # init.cmd's UAC fallback fails non-interactively; set the regkey here.
-      - name: Enable Win32 long path support
-        shell: pwsh
-        run: |
-          $key  = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
-          $name = 'LongPathsEnabled'
-          $current = (Get-ItemProperty -Path $key -Name $name -ErrorAction SilentlyContinue).$name
-          if ($current -ne 1) {
-            Write-Host "LongPathsEnabled currently '$current'; setting to 1."
-            New-ItemProperty -Path $key -Name $name -Value 1 -PropertyType DWord -Force | Out-Null
-          } else {
-            Write-Host "LongPathsEnabled already 1."
-          }
-
-      # init.cmd /nopgo (PGO needs internal feed); bypass Build.cmd (ERRORLEVEL-clobber bug).
       - name: Initialize build environment and build
         shell: pwsh
         run: |
@@ -125,7 +84,7 @@ jobs:
             -Configuration $env:WINUI_BUILD_CONFIGURATION
 
       - name: Upload MSBuild binlogs
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: binlogs-${{ matrix.flavor }}
@@ -134,22 +93,11 @@ jobs:
           retention-days: 7
 
       # Unsigned, no-PGO, OSS-only build outputs for local sideload testing.
-      # Reviewers can download this artifact to test the PR's product DLLs locally.
       - name: Upload product runtime payload
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: winui-product-${{ matrix.flavor }}
           path: |
             BuildOutput/packaging/${{ matrix.configuration }}/runtimes-framework/win-${{ matrix.platform }}/**
           if-no-files-found: warn
-          retention-days: 7
-
-      - name: Upload VS BuildTools install logs (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: vs-buildtools-logs-${{ matrix.flavor }}
-          path: msbuild-install-logs/**
-          if-no-files-found: ignore
           retention-days: 7
