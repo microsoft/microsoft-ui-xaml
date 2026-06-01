@@ -3349,28 +3349,22 @@
                               <Property Name="Glyph" Value="" />
                               <Property Name="Name" Value="Arrow" />
                               <Property Name="RenderSize" Value="16x16" />
-                              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                                <Property Name="ActualHeight" Value="16" />
-                                <Property Name="ActualWidth" Value="16" />
-                                <Property Name="Background" Value="#00000000" />
-                                <Property Name="RenderSize" Value="16x16" />
-                                <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                                  <Property Name="ActualHeight" Value="8" />
-                                  <Property Name="ActualWidth" Value="8" />
-                                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                                  <Property Name="HorizontalAlignment" Value="3" />
-                                  <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
-                                  <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                                  <Property Name="RenderSize" Value="16x8" />
-                                  <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
-                                  <Property Name="Style" Value="[NULL]" />
+                              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                <Property Name="ActualHeight" Value="8" />
+                                <Property Name="ActualWidth" Value="8" />
+                                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                <Property Name="HorizontalAlignment" Value="3" />
+                                <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                                <Property Name="RenderSize" Value="16x8" />
+                                <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                                <Property Name="Style" Value="[NULL]" />
+                                <Property Name="Text" Value="" />
+                                <Property Name="TextAlignment" Value="0" />
+                                <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                                <Property Name="VerticalAlignment" Value="1" />
+                                <Element Type="Microsoft.UI.Xaml.Documents.Run">
                                   <Property Name="Text" Value="" />
-                                  <Property Name="TextAlignment" Value="0" />
-                                  <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
-                                  <Property Name="VerticalAlignment" Value="1" />
-                                  <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                                    <Property Name="Text" Value="" />
-                                  </Element>
                                 </Element>
                               </Element>
                             </Element>
@@ -3517,28 +3511,22 @@
                               <Property Name="Glyph" Value="" />
                               <Property Name="Name" Value="Arrow" />
                               <Property Name="RenderSize" Value="16x16" />
-                              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                                <Property Name="ActualHeight" Value="16" />
-                                <Property Name="ActualWidth" Value="16" />
-                                <Property Name="Background" Value="#00000000" />
-                                <Property Name="RenderSize" Value="16x16" />
-                                <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                                  <Property Name="ActualHeight" Value="8" />
-                                  <Property Name="ActualWidth" Value="8" />
-                                  <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                                  <Property Name="HorizontalAlignment" Value="3" />
-                                  <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
-                                  <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                                  <Property Name="RenderSize" Value="16x8" />
-                                  <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
-                                  <Property Name="Style" Value="[NULL]" />
+                              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                                <Property Name="ActualHeight" Value="8" />
+                                <Property Name="ActualWidth" Value="8" />
+                                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                                <Property Name="HorizontalAlignment" Value="3" />
+                                <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                                <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                                <Property Name="RenderSize" Value="16x8" />
+                                <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                                <Property Name="Style" Value="[NULL]" />
+                                <Property Name="Text" Value="" />
+                                <Property Name="TextAlignment" Value="0" />
+                                <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                                <Property Name="VerticalAlignment" Value="1" />
+                                <Element Type="Microsoft.UI.Xaml.Documents.Run">
                                   <Property Name="Text" Value="" />
-                                  <Property Name="TextAlignment" Value="0" />
-                                  <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
-                                  <Property Name="VerticalAlignment" Value="1" />
-                                  <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                                    <Property Name="Text" Value="" />
-                                  </Element>
                                 </Element>
                               </Element>
                             </Element>

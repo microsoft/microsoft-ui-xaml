@@ -61,11 +61,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(imageIcon.Foreground is SolidColorBrush);
                 Verify.AreEqual(Microsoft.UI.Colors.Red, (imageIcon.Foreground as SolidColorBrush).Color);
                 Verify.AreEqual(uri, ((SvgImageSource)imageIcon.Source).UriSource);
-                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
-                {
-                    var image = ((Image)VisualTreeHelper.GetChild(VisualTreeHelper.GetChild(imageIcon, 0), 0));
-                    Verify.IsTrue(image.IsLoaded);
-                }
+
+                var image = (Image)VisualTreeHelper.GetChild(imageIcon, 0);
+                Verify.IsTrue(image.IsLoaded);
             });
         }
     }

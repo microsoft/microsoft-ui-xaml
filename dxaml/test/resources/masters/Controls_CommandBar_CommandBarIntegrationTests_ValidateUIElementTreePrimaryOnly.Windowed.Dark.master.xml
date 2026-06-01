@@ -339,25 +339,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -708,25 +702,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -1077,25 +1065,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -1457,25 +1439,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -1850,25 +1826,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -2243,25 +2213,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -2630,25 +2594,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -3005,25 +2963,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -3380,25 +3332,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -3758,25 +3704,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -4149,25 +4089,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -4540,25 +4474,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -4924,25 +4852,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -5296,25 +5218,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -5668,25 +5584,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -6046,25 +5956,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -6437,25 +6341,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>
@@ -6827,25 +6725,19 @@
                     <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
                     <Property Name="RenderSize" Value="20x3" />
                     <Property Name="VerticalAlignment" Value="1" />
-                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
-                      <Property Name="ActualHeight" Value="3" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="20" />
                       <Property Name="ActualWidth" Value="20" />
-                      <Property Name="Background" Value="#00000000" />
-                      <Property Name="RenderSize" Value="20x3" />
-                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
-                        <Property Name="ActualHeight" Value="20" />
-                        <Property Name="ActualWidth" Value="20" />
-                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
-                        <Property Name="HorizontalAlignment" Value="3" />
-                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
-                        <Property Name="RenderSize" Value="20x20" />
-                        <Property Name="Style" Value="[NULL]" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="HorizontalAlignment" Value="3" />
+                      <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Property Name="Style" Value="[NULL]" />
+                      <Property Name="Text" Value="" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="VerticalAlignment" Value="1" />
+                      <Element Type="Microsoft.UI.Xaml.Documents.Run">
                         <Property Name="Text" Value="" />
-                        <Property Name="TextAlignment" Value="0" />
-                        <Property Name="VerticalAlignment" Value="1" />
-                        <Element Type="Microsoft.UI.Xaml.Documents.Run">
-                          <Property Name="Text" Value="" />
-                        </Element>
                       </Element>
                     </Element>
                   </Element>

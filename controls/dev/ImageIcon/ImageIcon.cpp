@@ -15,9 +15,17 @@ ImageIcon::ImageIcon()
 void ImageIcon::OnApplyTemplate()
 {
     winrt::IInspectable diagnostics{};
-    if (auto const grid = winrt::VisualTreeHelper::GetChild(*this, 0).as<winrt::Grid>())
+    auto const firstChild = winrt::VisualTreeHelper::GetChild(*this, 0);
+
+    // The first child may be a Grid (old behavior) or directly an Image (new behavior).
+    if (auto const grid = firstChild.try_as<winrt::Grid>())
     {
         auto const image = winrt::VisualTreeHelper::GetChild(grid, 0).as<winrt::Image>();
+        image.Source(Source());
+        m_rootImage.set(image);
+    }
+    else if (auto const image = firstChild.try_as<winrt::Image>())
+    {
         image.Source(Source());
         m_rootImage.set(image);
     }

@@ -3861,29 +3861,16 @@
                                           Name=Arrow
                                           RenderSize=12,8
                                           Visibility=Visible
-                                        [Microsoft.UI.Xaml.Controls.Grid]
-                                            Background=#00000000
-                                            BorderBrush=[NULL]
-                                            BorderThickness=0,0,0,0
-                                            CornerRadius=0,0,0,0
+                                        [Microsoft.UI.Xaml.Controls.TextBlock]
                                             FocusVisualPrimaryBrush=#E4000000
                                             FocusVisualPrimaryThickness=2,2,2,2
                                             FocusVisualSecondaryBrush=#B3FFFFFF
                                             FocusVisualSecondaryThickness=1,1,1,1
+                                            Foreground=#72000000
                                             Margin=0,0,0,0
                                             Padding=0,0,0,0
                                             RenderSize=12,8
                                             Visibility=Visible
-                                          [Microsoft.UI.Xaml.Controls.TextBlock]
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Foreground=#72000000
-                                              Margin=0,0,0,0
-                                              Padding=0,0,0,0
-                                              RenderSize=12,8
-                                              Visibility=Visible
                                   [Microsoft.UI.Xaml.Controls.Primitives.RepeatButton]
                                       Background=#B3FFFFFF
                                       BorderBrush=Microsoft.UI.Xaml.Media.LinearGradientBrush
@@ -4012,29 +3999,16 @@
                                           Name=Arrow
                                           RenderSize=12,8
                                           Visibility=Visible
-                                        [Microsoft.UI.Xaml.Controls.Grid]
-                                            Background=#00000000
-                                            BorderBrush=[NULL]
-                                            BorderThickness=0,0,0,0
-                                            CornerRadius=0,0,0,0
+                                        [Microsoft.UI.Xaml.Controls.TextBlock]
                                             FocusVisualPrimaryBrush=#E4000000
                                             FocusVisualPrimaryThickness=2,2,2,2
                                             FocusVisualSecondaryBrush=#B3FFFFFF
                                             FocusVisualSecondaryThickness=1,1,1,1
+                                            Foreground=#72000000
                                             Margin=0,0,0,0
                                             Padding=0,0,0,0
                                             RenderSize=12,8
                                             Visibility=Visible
-                                          [Microsoft.UI.Xaml.Controls.TextBlock]
-                                              FocusVisualPrimaryBrush=#E4000000
-                                              FocusVisualPrimaryThickness=2,2,2,2
-                                              FocusVisualSecondaryBrush=#B3FFFFFF
-                                              FocusVisualSecondaryThickness=1,1,1,1
-                                              Foreground=#72000000
-                                              Margin=0,0,0,0
-                                              Padding=0,0,0,0
-                                              RenderSize=12,8
-                                              Visibility=Visible
                                 [Microsoft.UI.Xaml.Controls.Grid]
                                     Background=[NULL]
                                     BorderBrush=[NULL]
