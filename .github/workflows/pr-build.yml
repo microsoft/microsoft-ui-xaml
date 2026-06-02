@@ -67,11 +67,10 @@ jobs:
       DOTNET_NOLOGO: '1'
       # Cap CL.exe parallelism: hosted runner has 2 vCPUs; default /m:4 OOMs (C1076).
       CL: '/MP2'
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 1
           show-progress: false
@@ -86,7 +85,7 @@ jobs:
 
       - name: Upload MSBuild binlogs
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: binlogs-${{ matrix.flavor }}
           path: BuildOutput/**/*.binlog
@@ -94,7 +93,7 @@ jobs:
           retention-days: 7
 
       - name: Upload product runtime payload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: winui-product-${{ matrix.flavor }}
           path: |
