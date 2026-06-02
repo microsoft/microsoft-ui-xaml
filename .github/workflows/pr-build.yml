@@ -67,6 +67,7 @@ jobs:
       DOTNET_NOLOGO: '1'
       # Cap CL.exe parallelism: hosted runner has 2 vCPUs; default /m:4 OOMs (C1076).
       CL: '/MP2'
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
     steps:
       - name: Checkout
@@ -92,7 +93,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      # Unsigned, no-PGO, OSS-only build outputs for local sideload testing.
       - name: Upload product runtime payload
         uses: actions/upload-artifact@v4
         with:
