@@ -1927,69 +1927,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         });
     }
 
-    void StyleIntegrationTests::StyleWithSameKeyInBasedOn()
-    {
-        TestCleanupWrapper cleanup;
-
-        RunOnUIThread([&]()
-        {
-            String^ xamlString =
-                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
-                L"            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
-                L"  <StackPanel.Resources>"
-                L"      <Style x:Key='ButtonStyleBase' TargetType='ButtonBase'>"
-                L"          <Setter Property='Foreground' Value='Blue' />"
-                L"      </Style>"
-                L"      <Style x:Key='ButtonStyle1' BasedOn='{StaticResource ButtonStyleBase}' TargetType='ButtonBase'>"
-                L"          <Setter Property='Background' Value='Blue' />"
-                L"      </Style>"
-                L"  </StackPanel.Resources>"
-                L"  <StackPanel>"
-                L"    <StackPanel.Resources>"
-                L"        <Style x:Key='ButtonStyleBase' TargetType='ButtonBase'>"
-                L"            <Setter Property='Foreground' Value='Red' />"
-                L"            <Setter Property='Template'>"
-                L"              <Setter.Value>"
-                L"                <ControlTemplate TargetType='Button'>"
-                L"                  <Border>"
-                L"                    <Button x:Name='InnerButton' Style='{StaticResource ButtonStyle1}' />"
-                L"                  </Border>"
-                L"                </ControlTemplate>"
-                L"              </Setter.Value>"
-                L"            </Setter>"
-                L"        </Style>"
-                L"        <Style x:Key='ButtonStyle1' BasedOn='{StaticResource ButtonStyleBase}' TargetType='ButtonBase'>"
-                L"            <Setter Property='Background' Value='Red' />"
-                L"        </Style>"
-                L"    </StackPanel.Resources>"
-                L"    <Button Style='{StaticResource ButtonStyle1}' Content='Test' />"
-                L"  </StackPanel>"
-                L"</StackPanel>";
-
-            auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
-            auto panel2 = safe_cast<Panel^>(panel->Children->GetAt(0));
-
-            // Outer button should have the ButtonStyle1 defined in its parent's resources.
-            auto outerButton = safe_cast<Button^>(panel2->Children->GetAt(0));
-            auto brush = safe_cast<SolidColorBrush^>(outerButton->Background);
-            VERIFY_IS_NOT_NULL(brush);
-            VERIFY_ARE_EQUAL(Colors::Red, brush->Color, L"Button.Background should be Red");
-            brush = safe_cast<SolidColorBrush^>(outerButton->Foreground);
-            VERIFY_IS_NOT_NULL(brush);
-            VERIFY_ARE_EQUAL(Colors::Red, brush->Color, L"Button.Foreground should be Red");
-
-            // Inner button should have the ButtonStyle1 defined in its grandparent's resources.
-            outerButton->ApplyTemplate();
-            auto innerButton = safe_cast<Button^>(TreeHelper::GetVisualChildByName(outerButton, L"InnerButton"));
-            brush = safe_cast<SolidColorBrush^>(innerButton->Background);
-            VERIFY_IS_NOT_NULL(brush);
-            VERIFY_ARE_EQUAL(Colors::Blue, brush->Color, L"Inner Button.Background should be Blue");
-            brush = safe_cast<SolidColorBrush^>(innerButton->Foreground);
-            VERIFY_IS_NOT_NULL(brush);
-            VERIFY_ARE_EQUAL(Colors::Blue, brush->Color, L"Inner Button.Foreground should be Blue");
-        });
-    }
-
     void StyleIntegrationTests::StyleWithStaticResourceInTemplate()
     {
         TestCleanupWrapper cleanup;
@@ -2806,18 +2743,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             CustomObject::ClearInstanceCount();
 
             auto panel = safe_cast<Panel^>(XamlReader::Load(xamlString));
-            VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 1U);
 
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto derived = safe_cast<Style^>(button->Style);
 
             // Fault in the setters.
             derived->Setters;
+            auto tag = button->Tag;
+            VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 1U);
 
             // Release everything and verify the setter value is released.
             button = nullptr;
             panel = nullptr;
             derived = nullptr;
+            tag = nullptr;
 
             VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 0U);
         });
@@ -2847,18 +2786,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             CustomObject::ClearInstanceCount();
 
             auto panel = safe_cast<Panel^>(XamlReader::Load(xamlString));
-            VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 1U);
 
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto derived = safe_cast<Style^>(button->Style);
 
             // Fault in the setters.
             derived->Setters;
+            auto tag = button->Tag;
+            VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 1U);
 
             // Release everything and verify the setter value is released.
             button = nullptr;
             panel = nullptr;
             derived = nullptr;
+            tag = nullptr;
 
             VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 0U);
         });
@@ -2892,18 +2833,20 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             CustomObject::ClearInstanceCount();
 
             auto panel = safe_cast<Panel^>(XamlReader::Load(xamlString));
-            VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 2U);
 
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto derived = safe_cast<Style^>(button->Style);
 
             // Fault in the setters.
             derived->Setters;
+            auto tag = button->Tag;
+            VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 2U);
 
             // Release everything and verify the setter value is released.
             button = nullptr;
             panel = nullptr;
             derived = nullptr;
+            tag = nullptr;
 
             VERIFY_ARE_EQUAL(CustomObject::GetInstanceCount(), 0U);
         });

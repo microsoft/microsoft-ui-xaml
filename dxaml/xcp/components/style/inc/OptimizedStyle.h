@@ -18,6 +18,7 @@ class CDependencyPropertyProxy;
 class CCoreServices;
 class StyleCustomRuntimeData;
 class CustomWriterRuntimeContext;
+class CustomWriterRuntimeObjectCreator;
 
 namespace Theming {
     enum class Theme : uint8_t;
@@ -32,7 +33,7 @@ private:
 
     _Check_return_ HRESULT Initialize(
         _In_ std::shared_ptr<StyleCustomRuntimeData> runtimeData,
-        _In_ const std::unique_ptr<CustomWriterRuntimeContext>& runtimeContext);
+        _In_ std::shared_ptr<CustomWriterRuntimeContext> runtimeContext);
 public:
 
     static _Check_return_ HRESULT Create(_In_ CStyle* const style, _Out_ std::unique_ptr<OptimizedStyle>* pValue)
@@ -46,18 +47,18 @@ public:
     static _Check_return_ HRESULT Create(
         _In_ CStyle* const style,
         _In_ std::shared_ptr<StyleCustomRuntimeData> runtimeData,
-        _In_ const std::unique_ptr<CustomWriterRuntimeContext>& runtimeContext,
+        _In_ std::shared_ptr<CustomWriterRuntimeContext> runtimeContext,
         _Out_ std::unique_ptr<OptimizedStyle>* pValue)
     {
         std::unique_ptr<OptimizedStyle> opStyle(new OptimizedStyle(style));
-        IFC_RETURN(opStyle->Initialize(runtimeData, runtimeContext));
+        IFC_RETURN(opStyle->Initialize(std::move(runtimeData), std::move(runtimeContext)));
         *pValue = std::move(opStyle);
         return S_OK;
     }
 
     ~OptimizedStyle();
 
-    _Check_return_ HRESULT FaultInOwnedSetters(_In_ const xref_ptr<CSetterBaseCollection>& setters) const;
+    _Check_return_ HRESULT FaultInOwnedSetters(_In_ const xref_ptr<CSetterBaseCollection>& setters);
 
     // Returns the count of the style's setters.
     unsigned int GetSetterCount() const
@@ -133,8 +134,20 @@ private:
     size_t m_basedOnBegin;
     CValue m_latestFoundBasedOnValue;
 
+    // Deferred loading state — only populated when created from XBF data.
+    // When m_runtimeData is non-null, values may be deferred and m_realizedStates
+    // tracks which entries in m_values have been realized.
+    std::shared_ptr<StyleCustomRuntimeData> m_runtimeData;
+    std::shared_ptr<CustomWriterRuntimeContext> m_runtimeContext;
+    std::unique_ptr<CustomWriterRuntimeObjectCreator> m_spObjectCreator; // Destruct before m_spRuntimeContext, has raw pointer to it.
+    containers::bit_vector m_realizedStates;
+    std::vector<unsigned int> m_dataIndices;
+
     _Check_return_ HRESULT OptimizeSetterCollection(_In_ CSetterBaseCollection* setters, bool isBasedOn);
     _Check_return_ HRESULT AddSetterInfo(_In_ KnownPropertyIndex propertyId, _In_ CValue&& value);
+    void AddDeferredSetterInfo(_In_ KnownPropertyIndex propertyId, _In_ unsigned int dataIndex);
     void AddBasedOnSetterInfo(_In_ KnownPropertyIndex propertyId);
     _Check_return_ HRESULT AddPeerRefIfNecessary(_In_opt_ CDependencyObject* depObj, _Out_ bool* pResult) const;
+    _Check_return_ HRESULT EnsureValueRealized(_In_ size_t index);
+    _Check_return_ HRESULT EnsureAllValuesRealized();
 };

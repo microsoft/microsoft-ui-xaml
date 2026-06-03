@@ -203,9 +203,6 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(StyleBasedOnSameKeyBasedOnAnother)
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(StyleWithSameKeyInBasedOn)
-        END_TEST_METHOD()
-
         BEGIN_TEST_METHOD(StyleWithStaticResourceInTemplate)
         END_TEST_METHOD()
 

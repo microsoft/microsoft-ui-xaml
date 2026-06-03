@@ -560,9 +560,13 @@ CStyle::SetCustomWriterRuntimeData(_In_ std::shared_ptr<CustomWriterRuntimeData>
 
     ASSERT(m_targetTypeIndex != KnownTypeIndex::UnknownType);
 
+    // Convert to shared_ptr so the context can be shared between OptimizedStyle
+    // (for deferred value materialization) and diagnostics (for Edit & Continue).
+    auto sharedContext = std::shared_ptr<CustomWriterRuntimeContext>(std::move(context));
+
     // Create optimized style from runtime data.
     std::shared_ptr<StyleCustomRuntimeData> styleData = std::static_pointer_cast<StyleCustomRuntimeData>(data);
-    IFC_RETURN(OptimizedStyle::Create(this, std::move(styleData), context, &m_optimizedStyle));
+    IFC_RETURN(OptimizedStyle::Create(this, std::move(styleData), sharedContext, &m_optimizedStyle));
 
     // For styles, cache the runtime context. This is needed for IVisualTreeService3.ResolveResource which is used during
     // Edit & Continue for resolving resources at runtime. Currently, Style's (nor the OptimizedStyle) cache the runtime data
@@ -570,7 +574,7 @@ CStyle::SetCustomWriterRuntimeData(_In_ std::shared_ptr<CustomWriterRuntimeData>
     if (DirectUI::DXamlServices::ShouldStoreSourceInformation())
     {
         const auto resourceGraph = Diagnostics::GetResourceGraph();
-        resourceGraph->CacheRuntimeContext(this, std::move(context));
+        resourceGraph->CacheRuntimeContext(this, std::move(sharedContext));
     }
 
     return S_OK;
