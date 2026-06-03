@@ -26,6 +26,20 @@
 	<Import Project="$(ProjectRoot)\eng\WebView2ProjectionWorkaround.targets" />
 
     <!--
+      Since in Directory.Build.props we prevented C++/WinRT from automatically injecting /await, we
+      need to add /await:strict in order to allow C++17 projects to use C++20-compliant coroutines.
+
+      While strictly speaking it's overly broad to enable this for _all_ C++17 projects, there is no
+      harm in doing so as all the switch does is _enable_ compiler support for coroutines; if a project
+      doesn't use coroutines then the presence of the switch has no effect.
+    -->
+    <ItemDefinitionGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+        <ClCompile>
+            <AdditionalOptions Condition="'%(ClCompile.LanguageStandard)' == 'stdcpp17'">%(AdditionalOptions) /await:strict</AdditionalOptions>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <!--
       Workaround for CS0016 build failures when CodeQL is active in the pipeline.
 
       The CodeQL3000Init task sets the MSBuild property EmitCompilerGeneratedFiles=true so that

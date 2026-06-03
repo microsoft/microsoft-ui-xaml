@@ -162,7 +162,6 @@
         <XamlCppOptionsForWinRt>
             /AI"$(ProjectSDKMetadataPath)"
             /AI"$(VCToolsInstallDir)lib\x86\store\references"
-            /await
             /Brepro
             /d1import_no_registry
             /d1ReturnUdtEHInline

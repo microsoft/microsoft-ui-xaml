@@ -19,9 +19,6 @@
 #include "RuleTesterHelper.h"
 #include <ThemeHelper.h>
 
-#include <experimental/resumable>
-#include <pplawait.h>
-
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Media;
 using namespace Microsoft::UI::Xaml::Media::Animation;
