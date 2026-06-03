@@ -11,7 +11,7 @@
 
 namespace Diagnostics
 {
-    StyleContext::StyleContext(std::unique_ptr<CustomWriterRuntimeContext> context)
+    StyleContext::StyleContext(std::shared_ptr<CustomWriterRuntimeContext> context)
         : m_cachedContext(std::move(context))
         , m_flags(StyleContextFlags::ParserContext)
     {

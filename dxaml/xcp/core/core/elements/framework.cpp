@@ -1377,6 +1377,12 @@ CFrameworkElement::InvokeFocus(
 //         </Setter for Template>
 //     </Style>
 //
+//  Note that the template cycle could be caused by a forward reference (a Static/ThemeResource that refers to a resource
+//  defined later in the same ResourceDictionary). We had an old test for an old bug fix where the test set up a template
+//  cycle, but it ran fine when we eagerly applied Styles and evaluated Setters. After adding an optimization of deferring
+//  this work (to avoid loading a Template that would get overridden by another style later on), the test tripped this cycle
+//  detection because we were evaluating the template later.
+//
 //-------------------------------------------------------------------------
 bool CFrameworkElement::CompareForCircularReference(_In_ CFrameworkElement *pTreeChild)
 {

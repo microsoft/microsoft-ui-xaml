@@ -8,7 +8,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
     public static class BaselineResources
     {
-        public static readonly IList<String> BaselineResourcesList2dot5Stable = new ReadOnlyCollection<string>(new List<string>{
+        public static readonly IList<String> BaselineResourcesList2dot5Stable_perf2026 = new ReadOnlyCollection<string>(new List<string>{
 "SystemControlTransparentBrush",
 "SystemControlBackgroundTransparentRevealBorderBrush",
 "SystemControlHighlightAltTransparentRevealBorderBrush",
@@ -1869,5 +1869,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 "AppBarButtonContentViewboxCollapsedMargin",
 "AppBarButtonContentHeight",
 "AccentButtonStyle",});
+
+        public static readonly IList<String> BaselineResourcesList2dot5Stable =
+            new ReadOnlyCollection<string>(new List<string>(BaselineResourcesList2dot5Stable_perf2026)
+            {
+            });
     }
 }
