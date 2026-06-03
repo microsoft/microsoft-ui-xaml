@@ -14,9 +14,6 @@
 #include <FlyoutHelper.h>
 #include <ChangeDPI.h>
 
-#include <experimental/resumable>
-#include <pplawait.h>
-
 #include "DisableDCompLeakDetectionScopeGuard.h"
 
 using namespace Microsoft::UI::Xaml::Tests::Common;

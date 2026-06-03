@@ -3,6 +3,13 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <IsInWinUIRepo>true</IsInWinUIRepo>
+    <!-- Prevent the C++/WinRT NuGet package from injecting the deprecated /await switch;
+         injecting /await causes C++/WinRT to pull in the hard-deprecated (as of MSVC 14.51)
+         <experimental/coroutine> header.
+
+         We add /await:strict in Directory.Build.targets instead; /await:strict enables standard
+         C++20 coroutine support even when compiling in C++17 mode. -->
+    <CppWinRTEnableLegacyCoroutines>false</CppWinRTEnableLegacyCoroutines>
     <!-- Locations for props/targets that can be included to directly consume binaries from the build -->
     <ConsumeBinariesProps>$(MSBuildThisFileDirectory)eng\consumebinaries.props</ConsumeBinariesProps>
     <ConsumeBinariesTargets>$(MSBuildThisFileDirectory)eng\consumebinaries.targets</ConsumeBinariesTargets>

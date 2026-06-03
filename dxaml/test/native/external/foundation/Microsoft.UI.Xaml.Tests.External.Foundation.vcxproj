@@ -50,7 +50,6 @@
         $(WinUIDetailsIncludePath)\abi;
         $(WinUIDetailsIncludePath)\MockDComp;
       </AdditionalIncludeDirectories>
-      <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
     </ClCompile>
     <Link>
     <AdditionalDependencies>
