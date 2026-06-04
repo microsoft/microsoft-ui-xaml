@@ -146,7 +146,7 @@
 
   <!-- Generate the test data to use for the WinUIGallery tests-->
   <PropertyGroup>
-    <WinUIGalleryControlInfoDataPath>$(ProjectRoot)\Samples\WinUIGallery\WinUIGallery\Samples\Data\ControlInfoData.json</WinUIGalleryControlInfoDataPath>
+    <WinUIGalleryControlInfoDataPath>$(ProjectRoot)\Samples\WinUIGallery\WinUIGallery\SampleSupport\Data\ControlInfoData.json</WinUIGalleryControlInfoDataPath>
     <WinUIGalleryTestDataOutputPath>$(ArtifactsBinRoot)\$(TestBinplaceDestinationPath)\WinUIGalleryTestData.xml</WinUIGalleryTestDataOutputPath>
   </PropertyGroup>
   <Target Name="GenerateWinUIGalleryTestData" AfterTargets="AfterBuild" Inputs="$(WinUIGalleryControlInfoDataPath)" Outputs="$(WinUIGalleryTestDataOutputPath)">

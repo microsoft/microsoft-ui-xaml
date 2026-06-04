@@ -1,7 +1,7 @@
 ﻿[CmdLetBinding()]
 Param(
     [Parameter(mandatory=$true)]
-    [string]$InputWinUIGalleryJsonFilePath = "$($env:RepoRoot)\Samples\WinUIGallery\WinUIGallery\Samples\Data\ControlInfoData.json",
+    [string]$InputWinUIGalleryJsonFilePath = "$($env:RepoRoot)\Samples\WinUIGallery\WinUIGallery\SampleSupport\Data\ControlInfoData.json",
 
     [Parameter(mandatory=$true)]
     [string]$OutputXmlFilePath

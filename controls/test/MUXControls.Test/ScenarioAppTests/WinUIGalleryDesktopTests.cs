@@ -35,7 +35,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     "WinUI 3 Gallery",
 #endif
                     "WinUIGallery.exe",
-                    "WinUIGallery.Desktop", // Installer name
+                    "WinUIGallery", // Installer name (single-project MSIX; CreateTestPayload.ps1 renames the published <bundle>_<config>_<plat>.msix to WinUIGallery.msix)
                     isUwpApp: false,
                     TestApplicationInfo.MUXCertSerialNumber,
                     TestApplicationInfo.MUXBaseAppxDir
