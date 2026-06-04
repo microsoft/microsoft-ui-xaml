@@ -264,7 +264,26 @@ CGeneralTransform::TransformRect(_In_ const XRECTF& source, _Out_ XRECTF* pTrans
         {source.X, source.Y+source.Height}};
     XPOINTF resultPoints[pointCount];
 
-    IFC_RETURN(TransformPoints(points, resultPoints, pointCount));
+    IFC_RETURN(TransformPoints(points, resultPoints, pointCount, false /* inverse */));
+
+    BoundPoints(resultPoints, pointCount, pTransformedRect);
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT
+CGeneralTransform::TransformRectInverse(_In_ const XRECTF& source, _Out_ XRECTF* pTransformedRect)
+{
+    const int pointCount = 4;
+    XPOINTF points[pointCount] = {
+        {source.X, source.Y},
+        {source.X+source.Width, source.Y},
+        {source.X+source.Width, source.Y+source.Height},
+        {source.X, source.Y+source.Height}};
+    XPOINTF resultPoints[pointCount];
+
+    // Use the inverse transform
+    IFC_RETURN(TransformPoints(points, resultPoints, pointCount, true /* inverse */));
 
     BoundPoints(resultPoints, pointCount, pTransformedRect);
 

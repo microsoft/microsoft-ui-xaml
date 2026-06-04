@@ -71,7 +71,6 @@
         <ClCompile Include="..\templatebindingextension.cpp"/>
         <ClCompile Include="..\binding.cpp"/>
         <ClCompile Include="..\templatenamescope.cpp"/>
-        <ClCompile Include="..\GeneralTransformHelper.cpp"/>
         <ClCompile Include="..\transforms.cpp"/>
         <ClCompile Include="..\transform.cpp"/>
         <ClCompile Include="..\CompositeTransform.cpp"/>

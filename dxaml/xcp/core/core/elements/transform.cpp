@@ -6,11 +6,21 @@
 _Check_return_ HRESULT CTransform::TransformPoints(
     _In_reads_(cPoints) XPOINTF *pptOriginal,
     _Inout_updates_(cPoints) XPOINTF *pptTransformed,
-    XUINT32 cPoints
+    XUINT32 cPoints,
+    bool fInverse
     )
 {
     CMILMatrix mat;
     GetTransform(&mat);
+
+    if (fInverse)
+    {
+        if (!mat.Invert())
+        {
+            IFC_RETURN(E_FAIL);
+        }
+    }
+
     mat.Transform(pptOriginal, pptTransformed, cPoints);
     RRETURN(S_OK);
 }

@@ -37,15 +37,19 @@ public:
     // Transform a rect.  Returns a bounding box if the rect is transformed
     _Check_return_ HRESULT TransformRect(_In_ const XRECTF& source, _Out_ XRECTF* pTransformedRect);
 
+    _Check_return_ HRESULT TransformRectInverse(_In_ const XRECTF& source, _Out_ XRECTF* pTransformedRect);
+
     virtual _Check_return_ HRESULT TransformPoints(
         _In_reads_(cPoints) XPOINTF *pptOriginal,
         _Inout_updates_(cPoints) XPOINTF *pptTransformed,
-        XUINT32 cPoints = 1
+        XUINT32 cPoints = 1,
+        bool fInverse = false
         )
     {
         UNREFERENCED_PARAMETER(pptOriginal);
         UNREFERENCED_PARAMETER(pptTransformed);
         UNREFERENCED_PARAMETER(cPoints);
+        UNREFERENCED_PARAMETER(fInverse);
         RRETURN(E_NOTIMPL);
     }
 };

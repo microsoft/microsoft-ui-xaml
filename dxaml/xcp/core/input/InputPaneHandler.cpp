@@ -7,7 +7,6 @@
 #include <FocusRectManager.h>
 #include "InputServices.h"
 #include <RootScale.h>
-#include <GeneralTransformHelper.h>
 #include <XamlOneCoreTransforms.h>
 #include <BringIntoViewHandler.h>
 
@@ -262,7 +261,7 @@ CInputPaneHandler::EnsureFocusedElementBringIntoView(
         isIHMShowing,
         forceIntoView,
         animateIfBringIntoView));
-    
+
     return S_OK;
 }
 
