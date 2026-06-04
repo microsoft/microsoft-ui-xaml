@@ -4,22 +4,6 @@
 #include "precomp.h"
 #include "LoadLibraryAbs.h"
 
-// Temporary wchar_t mangling compatibility shim for microsoft.internal.winuidetails NuGet package.
-// The NuGet was compiled with /Zc:wchar_t- (wchar_t = unsigned short).
-// This repo now uses /Zc:wchar_t (wchar_t = native type).
-// These aliases let the NuGet's InputHelpers.obj resolve GetModuleHandleExWAbs.
-// Remove once the NuGet is rebuilt with native wchar_t.
-#  if defined(_M_X64) || defined(_M_ARM64EC) || defined(_M_ARM64)
-#    pragma comment(linker, "/alternatename:?GetModuleHandleExWAbs@@YAHKPEBGPEAPEAUHINSTANCE__@@@Z=?GetModuleHandleExWAbs@@YAHKPEB_WPEAPEAUHINSTANCE__@@@Z")
-#
-#    if defined(_M_ARM64EC)
-#      pragma comment(linker, "/alternatename:?GetModuleHandleExWAbs@@$$hYAHKPEBGPEAPEAUHINSTANCE__@@@Z=?GetModuleHandleExWAbs@@$$hYAHKPEB_WPEAPEAUHINSTANCE__@@@Z")
-#    endif
-#
-#  elif defined(_M_IX86)
-#    pragma comment(linker, "/alternatename:?GetModuleHandleExWAbs@@YGHKPBGPAPAUHINSTANCE__@@@Z=?GetModuleHandleExWAbs@@YGHKPB_WPAPAUHINSTANCE__@@@Z")
-#  endif
-
 #include <windows.h>
 #include <string>
 #include <minerror.h>
