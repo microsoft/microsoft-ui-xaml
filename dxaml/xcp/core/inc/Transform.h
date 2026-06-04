@@ -45,7 +45,8 @@ public:
     _Check_return_ HRESULT TransformPoints(
         _In_reads_(cPoints) XPOINTF *pptOriginal,
         _Inout_updates_(cPoints) XPOINTF *pptTransformed,
-        XUINT32 cPoints = 1
+        XUINT32 cPoints = 1,
+        bool fInverse = false
         ) final;
 
     virtual void GetTransform(_Out_ CMILMatrix *pMatrix) = 0;

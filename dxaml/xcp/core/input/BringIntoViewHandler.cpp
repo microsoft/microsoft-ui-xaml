@@ -7,7 +7,6 @@
 #include <FocusRectManager.h>
 #include "InputServices.h"
 #include <RootScale.h>
-#include <GeneralTransformHelper.h>
 #include <XamlOneCoreTransforms.h>
 
 static const float CaretAlignmentThreshold = 0.75 /* 3/4 position of width or height */;
@@ -22,7 +21,7 @@ static const unsigned int ExtraPixelsForBringIntoView = 20;
 //      Returns the first scroller that's parent of the specified element.
 //
 //------------------------------------------------------------------------
-CUIElement* const CBringIntoViewHandler::GetInnerScroller(_In_ const CUIElement* const element) 
+CUIElement* const CBringIntoViewHandler::GetInnerScroller(_In_ const CUIElement* const element)
 {
     ASSERT(element);
 
@@ -232,7 +231,7 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
     // on the root visual.
     IFC(GetScrollerGlobalBounds(innerScroller, &rectInnerScrollerGlobal));
 
-    // rectInnerScrollerGlobal is used to compute innerScrollerWidth & innerScrollerHeight, and is handed off 
+    // rectInnerScrollerGlobal is used to compute innerScrollerWidth & innerScrollerHeight, and is handed off
     // to GetFocusedElementBoundingRectForPadding. In all cases, it needs to be expressed in physical pixels instead of DIPs.
     DipsToPhysicalPixels(innerScroller, rectInnerScrollerGlobal, &rectInnerScrollerGlobal);
 
@@ -249,7 +248,7 @@ CBringIntoViewHandler::BringFocusedElementIntoView(
             DipsToPhysicalPixels(rootElement, rectFocusedElementGlobal, &rectFocusedElementGlobal);
         }
     }
-    
+
     // Determine how large the scroller's viewport is compared to the scroller's entire size.
     IFC(FxCallbacks::UIElement_GetScrollContentPresenterViewportRatios(innerScroller, static_cast<CDependencyObject*>(focusedElement), &sizeViewportRatios));
 
@@ -834,14 +833,9 @@ CBringIntoViewHandler::TransformGlobalToLocal(
     // Calculate local rect based on reverse transform to root
     xref_ptr<CGeneralTransform> transform;
     IFC_RETURN(element->TransformToVisual(nullptr, &transform));
-    xref_ptr<CGeneralTransform> inverse(GetInverseTransform(transform));
-    if (inverse != nullptr)
+    if(FAILED(transform->TransformRectInverse(rectLocalTmp, rectLocal)))
     {
-        IFC_RETURN(inverse->TransformRect(rectLocalTmp, rectLocal));
-    }
-    else
-    {
-        EmptyRectF(rectLocal); // In case GetInverseTransform returns null, just return empty rect to have default BringIntoView behavior on element
+        EmptyRectF(rectLocal); // In case we can't invert the transform, just return empty rect to have default BringIntoView behavior on element
     }
 
     return S_OK;

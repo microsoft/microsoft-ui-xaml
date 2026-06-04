@@ -634,9 +634,14 @@ public:
     _Check_return_ HRESULT TransformPoints(
         _In_reads_(cPoints) XPOINTF *pptOriginal,
         _Inout_updates_(cPoints) XPOINTF *pptTransformed,
-        XUINT32 cPoints = 1
+        XUINT32 cPoints = 1,
+        bool fInverse = false
         ) override
     {
+        // GeneralTransform is a public API handed out to apps, but apps can only ever forward transform. Xaml internally
+        // doesn't use this to do reverse transformations either.
+        FAIL_FAST_ASSERT(!fInverse);
+
         if (m_pTransformer)
         {
             if (m_fUseReverse)

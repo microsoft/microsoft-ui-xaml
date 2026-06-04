@@ -12,7 +12,6 @@
 #include <PerfOptIn.h>
 #include "Transform3D.h"
 #include "HitTestParams.h"
-#include <GeneralTransformHelper.h>
 #include <DependencyObjectDCompRegistry.h>
 #include "ICollectionChangeCallback.h"
 #include "OcclusivityTester.h"
@@ -3012,7 +3011,7 @@ CUIElement::TransformToVisualHelperGetTransformer(
         // For app-compat reasons, use this code path when not in an island scenario.
         // TODO:  Can we delete this code path altogether?
         // Update: If we can host media controls on the media root then it would be possible to hit this path even
-        //         in a Lifted island scenario. 
+        //         in a Lifted island scenario.
         //         Theoretically, we could combine these two code paths now that GetTreeRoot will stop at the
         //         the island roots, since for the media root it will stop at the same place, but, it is unclear
         //         what the purpose of the RootScale check is and why we switch to the public root and whether it
@@ -3933,7 +3932,7 @@ CUIElement::Measure(XSIZEF availableSize)
     bool wasInNonClippingTree = false;
 
     auto scopedParentLock = LockParent();
-    
+
     pLayoutManager = VisualTree::GetLayoutManagerForElement(this);
     IFCPTR(pLayoutManager);
 
@@ -4643,13 +4642,11 @@ CUIElement::TransformToElementCoordinateSpaceThroughViewports(
     XRECTF transformedRect = {};
     for (const auto& transformToViewport : transformsToViewports)
     {
-        xref_ptr<CGeneralTransform> inverse(GetInverseTransform(transformToViewport.GetTransform()));
-        IFC_RETURN(inverse->TransformRect(rect, &transformedRect));
+        IFC_RETURN(transformToViewport.GetTransform()->TransformRectInverse(rect, &transformedRect));
         rect = transformedRect;
         transformedRect = {};
     }
-    xref_ptr<CGeneralTransform> inverse(GetInverseTransform(transform));
-    IFC_RETURN(inverse->TransformRect(rect, &transformedRect));
+    IFC_RETURN(transform->TransformRectInverse(rect, &transformedRect));
     rect = transformedRect;
 
     return S_OK;

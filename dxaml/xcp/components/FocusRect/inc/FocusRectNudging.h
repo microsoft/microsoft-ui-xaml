@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <GeneralTransformHelper.h>
 #include <FocusProperties.h>
 #include <FxCallbacks.h>
 
@@ -505,14 +504,7 @@ _Check_return_ HRESULT GetFocusRectWithNudging(
     }
 
     // invert Client elementTransform and xform focusRectInClientSpace back to element space
-    xref_ptr<CGeneralTransform> clientToElementTransform(GetInverseTransform(elementToClientTransform));
-
-    // ClientToElementTransform can be null if elementToClientTransform is not invertable
-    if (!clientToElementTransform)
-    {
-        IFC_RETURN(E_FAIL);
-    }
-    IFC_RETURN(clientToElementTransform->TransformRect(focusRectBoundsInClientSpace, &transformedClientToElementRect));
+    IFC_RETURN(elementToClientTransform->TransformRectInverse(focusRectBoundsInClientSpace, &transformedClientToElementRect));
 
     return S_OK;
 }

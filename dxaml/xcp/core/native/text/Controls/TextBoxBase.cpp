@@ -34,7 +34,6 @@
 
 #include "RootScale.h"
 #include "XamlOneCoreTransforms.h"
-#include <GeneralTransformHelper.h>
 #include <FeatureFlags.h>
 #include <windows.ui.viewmanagement.h>
 #include <CValueBoxer.h>
@@ -492,11 +491,7 @@ _Check_return_ HRESULT CTextBoxBase::ClientToTextBox(_Inout_ XPOINTF* point)
 {
     xref_ptr<CGeneralTransform> transform;
     IFC_RETURN(m_pView->TransformToVisual(nullptr, &transform));
-    xref_ptr<CGeneralTransform> inverse(GetInverseTransform(transform));
-    if (inverse != nullptr)
-    {
-        IFC_RETURN(inverse->TransformPoints(point, point, 1));
-    }
+    IFC_RETURN(transform->TransformPoints(point, point, 1, true /* fInverse */));
 
     return S_OK;
 }
