@@ -314,6 +314,13 @@ CResourceDictionary::AddKey(
         InvalidateNotFoundCache(true, key);
     }
 
+#ifdef TRACE_RESOURCELOOKUPS
+    if (auto* style = do_pointer_cast<CStyle>(pValue))
+    {
+        style->SetResourceKey(keyStorage.GetKey());
+    }
+#endif
+
     return S_OK;
 }
 

@@ -40,6 +40,9 @@
 #include <ParserErrorService.h>
 #include <xcperrorresource.h>
 #include <PerfOptIn.h>
+#include "Template.h"
+#include "XamlTelemetry.h"
+#include "corep.h"
 
 using namespace DirectUI;
 
@@ -362,6 +365,22 @@ _Check_return_ HRESULT OptimizedStyle::EnsureValueRealized(_In_ size_t index)
     KnownPropertyIndex prop = m_properties[index];
     CValue val;
 
+#ifdef TRACE_RESOURCELOOKUPS
+    auto logger = m_style->GetContext()->GetResourceLookupLogger();
+    auto leaveEvent = wil::scope_exit([this, logger]()
+    {
+        logger->PopResourceLookupContext(this);
+    });
+    if (prop == KnownPropertyIndex::Control_Template)
+    {
+        logger->PushResourceLookupContext(Diagnostics::ResourceLookupLogger::Context_ParseTemplate, this, m_style->GetResourceKey());
+    }
+    else
+    {
+        logger->PushResourceLookupContext(Diagnostics::ResourceLookupLogger::Context_ParseStyle, this, m_style->GetResourceKey());
+    }
+#endif
+
     ASSERT(m_runtimeData != nullptr);
     if (m_runtimeData->SetterHasContainerValue(i))
     {
@@ -481,6 +500,16 @@ _Check_return_ HRESULT OptimizedStyle::EnsureValueRealized(_In_ size_t index)
                 val.SetNull();
             }
         }
+
+#ifdef TRACE_RESOURCELOOKUPS
+        if (prop == KnownPropertyIndex::Control_Template && depObj)
+        {
+            auto controlTemplate = do_pointer_cast<CControlTemplate>(depObj.get());
+            ASSERT(controlTemplate);
+
+            controlTemplate->SetResourceKey(m_style->GetResourceKey());
+        }
+#endif
     }
 
     // Store the realized value

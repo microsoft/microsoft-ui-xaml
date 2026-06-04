@@ -18,7 +18,7 @@
 #include "DXamlServices.h"
 #include "RootScale.h"
 #include "XamlTelemetry.h"
-#include "MetadataAPI.h"
+#include <PerfOptIn.h>
 
 using namespace Theming;
 using namespace DirectUI;
@@ -1264,8 +1264,11 @@ _Check_return_
 HRESULT
 CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
 {
-    HRESULT hr = S_OK;
     bool fAddedVisuals = false;
+    auto setAddedVisuals = wil::scope_exit([&fAddedVisuals, bAddedVisuals]()
+    {
+        *bAddedVisuals = fAddedVisuals;
+    });
 
     // Even though ApplyTemplate is defined at the CFrameworkElement level, only CControl has template bindings/overloads.
     // You also must be a CControl to receive OnApplyTemplate notification.
@@ -1273,7 +1276,7 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
 
     if (EventEnabledApplyTemplateBegin())
     {
-        IFC(EnsureClassName());
+        IFC_RETURN(EnsureClassName());
         TraceApplyTemplateBegin((UINT64)this, m_strClassName.GetBuffer());
 
         TraceLoggingProviderWrite(
@@ -1286,23 +1289,38 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
     }
 
-    IFC(ApplyTemplate(fAddedVisuals));
+    IFC_RETURN(ApplyTemplate(fAddedVisuals));
 
     if (auto visualTree = VisualTree::GetForElementNoRef(pControl))
     {
         // Create VisualState StateTriggers and perform evaulation to determine initial state,
         // if we're in the visual tree (since we need it to get our qualifier context).
         // If we're not in the visual tree, we'll do this when we enter it.
-        IFC(CVisualStateManager2::InitializeStateTriggers(this));
+        IFC_RETURN(CVisualStateManager2::InitializeStateTriggers(this));
     }
 
     if (fAddedVisuals)
     {
+#ifdef TRACE_RESOURCELOOKUPS
+        auto logger = GetContext()->GetResourceLookupLogger();
+        auto pTemplate = GetTemplate();
+
+        // Elements like CRootVisual won't actually have a template here.
+        if (pTemplate)
+        {
+            logger->PushResourceLookupContext(Diagnostics::ResourceLookupLogger::Context_PostApplyTemplate, this, pTemplate);
+        }
+        auto scopeExit = wil::scope_exit([this, logger]()
+        {
+            logger->PopResourceLookupContext(this);
+        });
+#endif
+
         if (pControl)
         {
             // Run all of the bindings that were created and set the
             // properties to the values from this control
-            IFC(pControl->RefreshTemplateBindings(TemplateBindingsRefreshType::All));
+            IFC_RETURN(pControl->RefreshTemplateBindings(TemplateBindingsRefreshType::All));
         }
         // If the object has a managed peer that is a custom type, then it might have
         // an overloaded OnApplyTemplate. Reverse P/Invoke to get that overload, if any.
@@ -1310,11 +1328,11 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
         // which will just P/Invoke back to the native CControl::OnApplyTemplate.
         if (HasManagedPeer() && IsCustomType())
         {
-            IFC(FxCallbacks::FrameworkElement_OnApplyTemplate(this));
+            IFC_RETURN(FxCallbacks::FrameworkElement_OnApplyTemplate(this));
         }
         else
         {
-            IFC(OnApplyTemplate());
+            IFC_RETURN(OnApplyTemplate());
         }
     }
 
@@ -1325,7 +1343,7 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
     if (pControl &&
         pControl->NeedsTemplateBindingRefresh())
     {
-        IFC(pControl->RefreshTemplateBindings(TemplateBindingsRefreshType::WithoutInitialUpdate));
+        IFC_RETURN(pControl->RefreshTemplateBindings(TemplateBindingsRefreshType::WithoutInitialUpdate));
     }
 
     TraceApplyTemplateEnd();
@@ -1336,10 +1354,7 @@ CFrameworkElement::InvokeApplyTemplate(_Out_ BOOLEAN* bAddedVisuals)
         TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
-Cleanup:
-    *bAddedVisuals = fAddedVisuals;
-
-    RRETURN(hr);
+    return S_OK;
 }
 
 //------------------------------------------------------------------------
@@ -1453,6 +1468,15 @@ _Check_return_ HRESULT CFrameworkElement::ApplyTemplate(_Out_ bool& fAddedVisual
                 }
             }
 
+
+#ifdef TRACE_RESOURCELOOKUPS
+            auto logger = GetContext()->GetResourceLookupLogger();
+            logger->PushResourceLookupContext(Diagnostics::ResourceLookupLogger::Context_LoadContent, this, pTemplate);
+            auto stopLogging = wil::scope_exit([logger, this]()
+            {
+                logger->PopResourceLookupContext(this);
+            });
+#endif
 
             // Do not do the lookup of subscriptions when expanding the template
             SetIsUpdatingBindings(TRUE);
@@ -1588,6 +1612,19 @@ CFrameworkElement::MeasureCore(XSIZEF availableSize, XSIZEF& desiredSize)
     {
         // Templates should be applied here.
         IFC_RETURN(InvokeApplyTemplate(&bTemplateApplied));
+
+#ifdef TRACE_RESOURCELOOKUPS
+        // The matching pop is in CUIElement::Measure. Do not move this into InvokeApplyTemplate itself - there are places
+        // that call InvokeApplyTemplate directly outside of CUIElement::Measure, and in those cases we'd be missing the
+        // corresponding pop.
+        auto logger = GetContext()->GetResourceLookupLogger();
+        auto pTemplate = GetTemplate();
+        if (pTemplate)
+        {
+            // The matching pop is in CUIElement::Measure
+            logger->PushResourceLookupContext(Diagnostics::ResourceLookupLogger::Context_ReturnToMeasure, this, pTemplate);
+        }
+#endif
 
         roundedMarginWidth = m_pLayoutProperties->m_margin.left + m_pLayoutProperties->m_margin.right;
         roundedMarginHeight = m_pLayoutProperties->m_margin.top + m_pLayoutProperties->m_margin.bottom;

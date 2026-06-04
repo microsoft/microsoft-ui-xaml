@@ -12,8 +12,9 @@
 #include <XamlTraceLogging.h>
 #include <XStringUtils.h>
 #include "XamlTelemetry.h"
-
 #include "ResourceLookupLogger.h"
+#include "template.h"
+#include "MetadataAPI.h"
 
 namespace
 {
@@ -436,6 +437,17 @@ namespace Diagnostics
             auto indentedDictionary = IndentString(m_etwIndentationLevel, id);
             uint64_t etwEventIndex = GetNextEtwIndex();
 
+#ifdef TRACE_RESOURCELOOKUPS
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "ResourceLookup_ResourceFound",
+                TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
+                TraceLoggingWideString(ShouldLogResourceLookupContext() ? m_resourceLookupContextStack.m_vector.back().m_resourceContextString.GetBuffer() : nullptr, "ShortContext"),
+                TraceLoggingWideString(ShouldLogResourceLookupContext() ? m_fullResourceLookupContextString.GetBuffer() : nullptr, "FullContext"),
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(dictionary), "ParentDictionaryPointer"),
+                TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
+                TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#else
             TraceLoggingProviderWrite(
                 XamlTelemetry, "ResourceLookup_ResourceFound",
                 TraceLoggingWideString(resourceKey.GetBuffer(), "ResourceKey"),
@@ -443,6 +455,7 @@ namespace Diagnostics
                 TraceLoggingWideString(indentedDictionary.GetBuffer(), "Dictionary"),
                 TraceLoggingUInt64(etwEventIndex, "ETWEventIndex"),
                 TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+#endif
         }
 
         return S_OK;
@@ -532,4 +545,114 @@ namespace Diagnostics
 
         return S_OK;
     }
+
+#ifdef TRACE_RESOURCELOOKUPS
+    bool ResourceLookupLogger::ShouldLogResourceLookupContext() const
+    {
+        return !m_resourceLookupContextStack.m_vector.empty()
+            // We only log resource lookups that are associated with templates - loading them via the parser, LoadContent
+            // stamping out elements, entering the expanded template into the tree, and post-ApplyTemplate work. If we're
+            // doing a lookup outside of ApplyTemplate (and outside of the parser loading a Setter.Valye), we don't associate
+            // the resource lookup with a template. We can get into these cases when doing Measure inside an expanded template,
+            // while not expanding a nested template.
+            && m_resourceLookupContextStack.m_vector.back().m_contextType != ContextType::Context_ReturnToMeasure;
+    }
+
+    void ResourceLookupLogger::PushResourceLookupContext(ContextType contextType, _In_ void* pointer, _In_ const xstring_ptr& resourceKey)
+    {
+        if (!m_resourceLookupContextBuilder)
+        {
+            m_resourceLookupContextBuilder = std::make_unique<XStringBuilder>();
+        }
+
+        xstring_ptr resourceLookupContextString;
+        IFCFAILFAST(m_resourceLookupContextBuilder->Append(resourceKey));
+        switch (contextType)
+        {
+            case ContextType::Context_ParseStyle:
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L" (P_Style)")));
+                break;
+
+            case ContextType::Context_ParseTemplate:
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L" (P_Template)")));
+                break;
+
+            case ContextType::Context_LoadContent:
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L" (LoadC)")));
+                break;
+
+            case ContextType::Context_PostApplyTemplate:
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L" (PostAT)")));
+                break;
+
+            case ContextType::Context_ReturnToMeasure:
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L" (Measure)")));
+                break;
+        }
+        IFCFAILFAST(m_resourceLookupContextBuilder->DetachString(&resourceLookupContextString));
+
+        m_resourceLookupContextStack.m_vector.push_back({ contextType, pointer, resourceLookupContextString });
+
+        IFCFAILFAST(m_resourceLookupContextBuilder->Append(m_fullResourceLookupContextString));
+        if (m_resourceLookupContextBuilder->GetCount() > 0)
+        {
+            IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L", ")));
+        }
+        IFCFAILFAST(m_resourceLookupContextBuilder->Append(resourceLookupContextString));
+        IFCFAILFAST(m_resourceLookupContextBuilder->DetachString(&m_fullResourceLookupContextString));
+    }
+
+    void ResourceLookupLogger::PushResourceLookupContext(ContextType contextType, _In_ void* pointer, _In_ CControlTemplate* pTemplate)
+    {
+        auto resourceKey = pTemplate->GetResourceKey();
+        if (resourceKey.IsNullOrEmpty())
+        {
+            if (!m_resourceLookupContextBuilder)
+            {
+                m_resourceLookupContextBuilder = std::make_unique<XStringBuilder>();
+            }
+
+            if (pTemplate->OfTypeByIndex(KnownTypeIndex::DisplayMemberTemplate))
+            {
+                // Xaml's default template for ContentPresenters
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L"[DMT]")));
+            }
+            else
+            {
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L"[TT: ")));
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(DirectUI::MetadataAPI::GetClassInfoByIndex(pTemplate->GetTargetTypeIndex())->GetFullName()));
+                IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L"]")));
+            }
+            IFCFAILFAST(m_resourceLookupContextBuilder->DetachString(&resourceKey));
+        }
+        PushResourceLookupContext(contextType, pointer, resourceKey);
+    }
+
+    void ResourceLookupLogger::PopResourceLookupContext(_In_ void* pointer)
+    {
+        if (!m_resourceLookupContextStack.m_vector.empty())
+        {
+            if (m_resourceLookupContextStack.m_vector.back().m_pointer == pointer)
+            {
+                m_resourceLookupContextStack.m_vector.pop_back();
+
+                if (!m_resourceLookupContextBuilder)
+                {
+                    m_resourceLookupContextBuilder = std::make_unique<XStringBuilder>();
+                }
+
+                for (const auto& resourceLookupContext : m_resourceLookupContextStack.m_vector)
+                {
+                    if (m_resourceLookupContextBuilder->GetCount() > 0)
+                    {
+                        IFCFAILFAST(m_resourceLookupContextBuilder->Append(XSTRING_PTR_EPHEMERAL(L", ")));
+                    }
+                    IFCFAILFAST(m_resourceLookupContextBuilder->Append(resourceLookupContext.m_resourceContextString));
+                }
+
+                IFCFAILFAST(m_resourceLookupContextBuilder->DetachString(&m_fullResourceLookupContextString));
+            }
+        }
+    }
+#endif
 }

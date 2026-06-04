@@ -4,6 +4,7 @@
 #pragma once
 
 #include "NoParentShareableDependencyObject.h"
+#include "XamlTelemetry.h"
 
 class CType;
 struct XamlQualifiedObject;
@@ -26,14 +27,14 @@ public:
     // We will keep a reference to this type on the managed
     // side when this object is assigned to a property to ensure
     // that the managed peer stays alive.
-    // We only need to do this if there's an event root assigned to this 
+    // We only need to do this if there's an event root assigned to this
     // template, or we're cacheing resource references,
-    // otherwise the managed peer can be recreated as needed. 
+    // otherwise the managed peer can be recreated as needed.
     // This works because the event root is the only piece of state that is kept
-    // on the managed side. 
+    // on the managed side.
     // the base implementation takes into account any subclasses of templates
     XUINT32 ParticipatesInManagedTreeInternal() override
-    { 
+    {
         if( HasManagedPeer() && m_fHasEventRoot )
             return PARTICIPATES_IN_MANAGED_TREE;
         else
@@ -130,12 +131,24 @@ public:
         m_connectionId = id;
     }
 
+#ifdef TRACE_RESOURCELOOKUPS
+    const xstring_ptr& GetResourceKey() const { return m_resourceKey; }
+    void SetResourceKey(const xstring_ptr& key) { m_resourceKey = key; }
+#endif
+
 private:
     std::shared_ptr<XamlQualifiedObject> CreateXBindConnector(_In_ CDependencyObject* templatedParent);
     _Check_return_ HRESULT ConnectTemplate(const std::shared_ptr<XamlQualifiedObject>& xBindConnector);
 
     // TODO: We could perhaps store this up on a derived class since it may pack better
     int32_t m_connectionId = -1;
+
+#ifdef TRACE_RESOURCELOOKUPS
+    // The resource key associated with the style that contains this ControlTemplate, propagated from CStyle's m_resourceKey,
+    // which was populated when it was first inserted into any dictionary. Not cleared out on removal and not updated if the
+    // CStyle or CControlTemplate are reparented.
+    xstring_ptr m_resourceKey;
+#endif
 };
 
 class CDataTemplate: public CControlTemplate
