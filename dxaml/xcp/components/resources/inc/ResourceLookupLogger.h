@@ -6,9 +6,11 @@
 #include <xstring_ptr.h>
 #include <XStringBuilder.h>
 #include <theming\inc\theme.h>
+#include <stack_vector.h>
 #include "XamlTelemetry.h"
 
 class CResourceDictionary;
+class CControlTemplate;
 
 namespace Diagnostics
 {
@@ -52,10 +54,75 @@ namespace Diagnostics
         xstring_ptr m_traceMessage;
         std::uint32_t m_indentationLevel = 0;
         std::uint32_t m_etwIndentationLevel = 0;    // Etw logs more details with its own indentation
+
 #ifdef TRACE_RESOURCELOOKUPS
         bool m_isLogging = true;
 #else
         bool m_isLogging = false;
+#endif
+
+#ifdef TRACE_RESOURCELOOKUPS
+        //
+        // ResourceLookupContext
+        //
+        // Xaml does lots of resource lookups as it loads the tree during startup, and it's helpful to know why we're doing the look
+        // up. Most of the resources tend to be in control templates in styles. Controls also tend to be nested. These fields help us
+        // track what controls/templates are currently being loaded, so we can see where the expensive templates are.
+        //
+        // The first place that a template contributes to resource lookups is when it's being loaded by the parser. Templates are
+        // typically declared as part of a Style, in a Setter for the Control.Template property. Property setters are defer loaded,
+        // meaning they're only loaded when the Control.Template valus is needed, rather than when the parent Style is loaded.
+        //
+        // Other property Setters in a Style can also contribute to resource lookups. We'll log those too for convenience.
+        //
+        // Templates can also contribute to resource lookups when they are being applied to a control. Applying a template isn't
+        // straightforward. CFrameworkElement::ApplyTemplate is the function that applies a template, but when nested templates are
+        // involved it isn't a recursive function. For example, a ListView's template might include a ScrollViewer, which has its own
+        // template. CFE::ApplyTemplate will expand the ListView template down to the ScrollViewer and enter it into the tree, but it
+        // will not apply the ScrollViewer's template recursively. Instead, ListView's ApplyTemplate completes and returns up to Measure,
+        // then we run Measure on the expanded template. When Measure gets to the ScrollViewer we'll do another ApplyTemplate call for
+        // the ScrollViewer to apply its template, and at this point ListView's ApplyTemplate has already completed and is no longer on
+        // the stack.
+        //
+        // Things get trickier because there are also controls that explicitly call ApplyTemplate on their template parts (e.g. NavigationView
+        // calls ApplyTemplate on its NavigationViewItem containers), and this breaks the Measure-ApplyTemplate pattern and instead makes
+        // ApplyTemplate recursive. We need to work for both these scenarios.
+        //
+        // Controls that explicitly call ApplyTemplate can also result in multiple ApplyTemplate calls for the same element. For example,
+        // NavigationViewItem::GetPresenter explicitly calls ApplyTemplate on its NavigationViewItemPresenter. We later apply a built-in
+        // template on the same NVIP via a VisualState, like MUX_NavigationViewItemPresenterStyleWhenOnLeftPane.
+        //
+        // CFrameworkElement::InvokeApplyTemplate also calls out to the subclass after applying a template. Controls like ScrollViewer will
+        // do more resource lookups at this point. We capture that as part of the resource context as well.
+        //
+    public:
+        enum ContextType
+        {
+            Context_ParseTemplate,      // Setter.Value for the Control.Template property
+            Context_ParseStyle,         // Setter.Value for any other property
+            Context_LoadContent,        // CFrameworkElement::ApplyTemplate calling CControlTemplate::LoadContent and entering the expanded template into the tree
+            Context_PostApplyTemplate,  // CFrameworkElement::InvokeApplyTemplate calling out to the subclass after applying a template
+            Context_ReturnToMeasure,    // Returning to Measure after InvokeApplyTemplate, used to capture non-recursive nested templates
+        };
+
+        void PushResourceLookupContext(ContextType contextType, _In_ void* pointer, _In_ const xstring_ptr& resourceKey);
+        void PushResourceLookupContext(ContextType contextType, _In_ void* pointer, _In_ CControlTemplate* pTemplate);
+        void PopResourceLookupContext(_In_ void* pointer);
+
+    private:
+
+        struct ResourceLookupContext
+        {
+            ContextType m_contextType;
+            void* m_pointer;
+            const xstring_ptr m_resourceContextString;
+        };
+
+        bool ShouldLogResourceLookupContext() const;
+
+        Jupiter::stack_vector<ResourceLookupContext, 8> m_resourceLookupContextStack;
+        xstring_ptr m_fullResourceLookupContextString;
+        std::unique_ptr<XStringBuilder> m_resourceLookupContextBuilder;
 #endif
     };
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <wil/TraceLogging.h>
+#include <TraceLoggingInterop.h>
 
 // Uncomment to trace allocations via ETW
 //#define TRACE_ALLOC 1

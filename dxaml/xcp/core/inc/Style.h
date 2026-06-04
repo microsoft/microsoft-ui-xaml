@@ -5,6 +5,7 @@
 
 #include <NoParentShareableDependencyObject.h>
 #include <ICustomWriterRuntimeDataReceiver.h>
+#include "XamlTelemetry.h"
 
 class OptimizedStyle;
 class StyleCustomRuntimeData;
@@ -111,6 +112,11 @@ public:
     void SubscribeToMutableSetters();
     void UnsubscribeFromMutableSetters();
 
+#ifdef TRACE_RESOURCELOOKUPS
+    const xstring_ptr& GetResourceKey() const { return m_resourceKey; }
+    void SetResourceKey(const xstring_ptr& key) { m_resourceKey = key; }
+#endif
+
 private:
     // Used for optimizing style's setters
     _Check_return_ HRESULT EnsureOptimizedStyle();
@@ -134,4 +140,10 @@ private:
     // indicates if style is in a basedon circular ref. 0 if it is not, 1 if there is a cycle in its basedon hierarchy
     // but it is not part of that cycle, 2 if it is part of basedon circular reference.
     std::uint8_t m_cBasedOnCircularRefCount = 0;
+
+#ifdef TRACE_RESOURCELOOKUPS
+    // The resource key associated with this style. If it's stored in multiple ResourceDictionaries, this is the key
+    // when it was first inserted into any dictionary. Not cleared out on removal.
+    xstring_ptr m_resourceKey;
+#endif
 };

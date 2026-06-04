@@ -4048,6 +4048,14 @@ Cleanup:
         pLayoutManager->SetIsInNonClippingTree(wasInNonClippingTree);
         VERIFY_COND(pLayoutManager->PopCurrentLayoutElement(), == this);
     }
+
+#ifdef TRACE_RESOURCELOOKUPS
+    // The matching push is in CFrameworkElement::MeasureCore, when we returned to Measure after doing ApplyTemplate.
+    // If this element never did an ApplyTemplate, this pop will be ignored because the top of the stack won't have a matching pointer.
+    auto logger = GetContext()->GetResourceLookupLogger();
+    logger->PopResourceLookupContext(this);
+#endif
+
     RRETURN(hr);
 }
 
