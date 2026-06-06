@@ -751,6 +751,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                     L"</Page>";
 
                 auto page = safe_cast<xaml_controls::Page^> (xaml_markup::XamlReader::Load(xamlString));
+                TestServices::WindowHelper->WindowContent = page;
 
                 auto panel = safe_cast<xaml_controls::Panel^>(page->Content);
                 auto button = safe_cast<Button^>(panel->Children->GetAt(0));
@@ -767,6 +768,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                     page,
                     ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/framework/resourcedictionary/RDWithXConnectionIdAndXName.xaml"),
                     Primitives::ComponentResourceLocation::Application);
+                TestServices::WindowHelper->WindowContent = page;
 
                 auto panel = safe_cast<xaml_controls::Panel^>(page->Content);
                 auto button = safe_cast<Button^>(panel->Children->GetAt(0));
@@ -783,6 +785,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                     page,
                     ref new ::Windows::Foundation::Uri("ms-appx:///resources/native/framework/resourcedictionary/RDWithXConnectionIdAndXNameAndXKey.xaml"),
                     Primitives::ComponentResourceLocation::Application);
+                TestServices::WindowHelper->WindowContent = page;
 
                 auto panel = safe_cast<xaml_controls::Panel^>(page->Content);
                 auto button = safe_cast<Button^>(panel->Children->GetAt(0));
@@ -1012,6 +1015,7 @@ namespace Microsoft { namespace UI { namespace Xaml {
                     L"</StackPanel>";
 
                 auto panel = safe_cast<xaml_controls::Panel^> (xaml_markup::XamlReader::Load(xamlString));
+                TestServices::WindowHelper->WindowContent = panel;
                 auto button = safe_cast<Button^>(panel->Children->GetAt(0));
                 auto brush = safe_cast<SolidColorBrush^>(button->Background);
                 VERIFY_IS_NOT_NULL(brush);

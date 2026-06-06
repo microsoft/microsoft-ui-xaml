@@ -16,6 +16,7 @@
 #include <Theme.h>
 #include "XamlTelemetry.h"
 #include "MetadataAPI.h"
+#include <OptionalChangeState.h>
 
 //  Class:  CControl
 //
@@ -1033,11 +1034,17 @@ CControl::CreationComplete()
     // Call base implementation. This will apply any explicit styles.
     IFC_RETURN(CFrameworkElement::CreationComplete());
 
-    // Only do this if it is a Control that has been subclassed in user code.
-    // ASSERT(!m_fIsBuiltInStyleApplied);
-    if (!m_fIsBuiltInStyleApplied && SupportsBuiltInStyles())
+    // Apply style if we're active. If we're not active, we'll apply the style when we become active in EnterImpl.
+    // Compat mode: If perf opt-in is not enabled, apply the style even if we're not active.
+    const bool alwaysApplyStyle = !OptionalChangeState::IsDelayApplyStyleOptimizationEnabled();
+    if (IsActive() || alwaysApplyStyle)
     {
-        IFC_RETURN(ApplyBuiltInStyle());
+        // Only do this if it is a Control that has been subclassed in user code.
+        // ASSERT(!m_fIsBuiltInStyleApplied);
+        if (!m_fIsBuiltInStyleApplied && SupportsBuiltInStyles())
+        {
+            IFC_RETURN(ApplyBuiltInStyle());
+        }
     }
 
     return S_OK;

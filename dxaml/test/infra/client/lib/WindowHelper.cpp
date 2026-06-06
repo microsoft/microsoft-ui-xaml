@@ -2009,6 +2009,88 @@ HRESULT WindowHelper::InitializeXaml()
     COM_END
 }
 
+// Helper: acquire IXamlOptionalChangesStatics from the in-proc DLL factory.
+static ComPtr<xaml_settings::IXamlOptionalChangesStatics> GetXamlOptionalChangesStatics()
+{
+    HMODULE hModXAML{};
+    LogThrow_IfFalse(
+        GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                          L"Microsoft.UI.Xaml.dll", &hModXAML), E_UNEXPECTED,
+        L"Unable to get the handle for Microsoft.UI.Xaml.dll.");
+
+    typedef HRESULT(WINAPI* FpnDllGetActivationFactory)(HSTRING, IActivationFactory**);
+    auto pfn = reinterpret_cast<FpnDllGetActivationFactory>(
+        GetProcAddress(hModXAML, "DllGetActivationFactory"));
+    LogThrow_If(!pfn, E_UNEXPECTED, "DllGetActivationFactory not found");
+
+    wrl::ComPtr<IActivationFactory> factory;
+    LogThrow_IfFailed(pfn(
+        wrl_wrappers::HStringReference(
+            L"Microsoft.UI.Xaml.Settings.XamlOptionalChanges").Get(),
+        &factory));
+
+    wrl::ComPtr<xaml_settings::IXamlOptionalChangesStatics> statics;
+    LogThrow_IfFailed(factory.As(&statics));
+    return statics;
+}
+
+// Helper: Return parsed "Data:XamlOptionalChanges" TAEF property
+std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChangesTestOverrides()
+{
+    std::vector<std::pair<xaml_settings::XamlChangeId, bool>> changeOverrides;
+    WEX::Common::String xamlOptInString;
+    if (SUCCEEDED(WEX::TestExecution::TestData::TryGetValue(L"XamlOptionalChanges", xamlOptInString)))
+    {
+        // Parse format: "{Name:true|Name2:false}"
+        std::wstring input((const wchar_t*)xamlOptInString);
+        size_t pos = 0;
+
+        // Strip leading/trailing braces
+        if (!input.empty() && input.front() == L'{') pos = 1;
+        if (!input.empty() && input.back() == L'}') input.pop_back();
+
+        while (pos < input.size())
+        {
+            size_t colonPos = input.find(L':', pos);
+            if (colonPos == std::wstring::npos) break;
+            std::wstring name = input.substr(pos, colonPos - pos);
+
+            size_t sepPos = input.find(L'|', colonPos + 1);
+            if (sepPos == std::wstring::npos) sepPos = input.size();
+            std::wstring value = input.substr(colonPos + 1, sepPos - (colonPos + 1));
+
+            bool enabled = (_wcsicmp(value.c_str(), L"true") == 0);
+
+            xaml_settings::XamlChangeId changeId = xaml_settings::XamlChangeId__Reserved;
+            if (_wcsicmp(name.c_str(), L"IconNoGridOptimization") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_IconNoGridOptimization;
+            }
+            else if (_wcsicmp(name.c_str(), L"DelayApplyStyleOptimization") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_DelayApplyStyleOptimization;
+            }
+
+            if (changeId == xaml_settings::XamlChangeId__Reserved)
+            {
+                LOG_ERROR(L"Unknown XamlOptionalChanges XamlChangeId: %s", name.c_str());
+                LogThrow_If(false, E_INVALIDARG, "Unknown XamlOptionalChanges name specified.");
+            }
+
+            changeOverrides.push_back({ changeId, enabled });
+
+            pos = sepPos + 1;
+        }
+
+        for (const auto& [changeId, enabled] : changeOverrides)
+        {
+            LOG_OUTPUT(L"XamlOptionalChanges test override: XamlChangeId=%d -> %s", static_cast<int>(changeId), enabled ? L"enabled" : L"disabled");
+        }
+    }
+
+    return changeOverrides;
+}
+
 void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* customProvider)
 {
     // Since we shutdown xaml, we need to reset the foreground window check in case this test doesn't
@@ -2035,6 +2117,16 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
         }
     }
 
+    // Check if any XamlOptionalChanges need to be enabled/disabled based on a TAEF parameter. Tests
+    // declare TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{<XamlChangeId name>:false}") or
+    // L"{<XamlChangeId name>:true}" in the header, and TAEF makes the value available via TestData
+    // during TestSetup. Multiple values can be specified by separating with pipe (|), such as:
+    //     L"{IconNoGridOptimization:false|DelayApplyStyleOptimization:false}"
+    // (Do not use commas or semicolons, since TAEF interprets those as parameter-set separators,
+    // per: https://learn.microsoft.com/windows-hardware/drivers/taef/light-weight-data-driven-testing )
+    // Test-specified values override the defaults and the "test-default" states set below.
+    auto changeOverrides = GetXamlOptionalChangesTestOverrides();
+
     bool wasPreviouslyEnabled = false;
 
     wrl::ComPtr<IXamlTestHooks> windowTestHooks = nullptr;
@@ -2049,7 +2141,26 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
             RuntimeFeatureBehavior::RuntimeEnabledFeature::ForcePerfOptIn,
             perfOptInValue,
             nullptr);
-        });
+
+        // Set the test-default XamlOptionalChanges state.
+        windowTestHooks->ResetOptionalChanges();
+        auto optionalChangesStatics = GetXamlOptionalChangesStatics();
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_IconNoGridOptimization);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DelayApplyStyleOptimization);
+
+        // Apply per-test overrides from XamlOptionalChanges test data.
+        for (const auto& [changeId, enabled] : changeOverrides)
+        {
+            if (enabled)
+            {
+                optionalChangesStatics->EnableChange(changeId);
+            }
+            else
+            {
+                optionalChangesStatics->DisableChange(changeId);
+            }
+        }
+    });
 
     HostingMode hostingMode = HostingMode::UAP;
     LogThrow_IfFailed(GetHostingMode(&hostingMode));

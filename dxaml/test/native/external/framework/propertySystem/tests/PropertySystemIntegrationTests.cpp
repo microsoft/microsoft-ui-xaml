@@ -1104,6 +1104,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"</Grid>";
 
                 auto panel = safe_cast<Panel^>(XamlReader::Load(xamlString));
+                TestServices::WindowHelper->WindowContent = panel; // Set the content to make sure the style is applied
+
                 auto myRectangle = safe_cast<Microsoft::UI::Xaml::Shapes::Rectangle^>(panel->FindName(L"myRectangle"));
                 VERIFY_ARE_EQUAL(Colors::Red, static_cast<SolidColorBrush^>(myRectangle->Fill)->Color);
 
@@ -1140,6 +1142,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                     L"</Grid>";
 
                 auto panel = safe_cast<Panel^>(XamlReader::Load(xamlString));
+                TestServices::WindowHelper->WindowContent = panel; // Set the content to make sure the style is applied
+
                 auto myRectangle = safe_cast<Microsoft::UI::Xaml::Shapes::Rectangle^>(panel->FindName(L"myRectangle"));
                 VERIFY_ARE_EQUAL(Colors::Red, static_cast<SolidColorBrush^>(myRectangle->Fill)->Color);
 

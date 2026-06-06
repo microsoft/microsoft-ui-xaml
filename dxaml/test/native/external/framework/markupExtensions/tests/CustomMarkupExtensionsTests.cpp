@@ -14,6 +14,7 @@
 #include <MarkupExtensionTests.CustomMarkupExtension.h>
 #include <MarkupExtensionTests.CustomButton.h>
 #include <CustomMetadataRegistrar.h>
+#include <RuntimeEnabledFeatureOverride.h>
 
 using namespace Microsoft::UI::Xaml;
 using namespace Microsoft::UI::Xaml::Controls;
@@ -200,6 +201,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         void CustomMarkupExtensionTests::CanUseCustomMarkupExtensionInStyle()
         {
             TestCleanupWrapper cleanup;
+            // Run this test in compat mode so style is applied immediately (during CreationComplete) without needing to be added to the tree.
+            VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
 
             std::vector<std::tuple<const wchar_t*, int>> verificationParams;
             verificationParams.push_back(std::make_tuple(L"TextBlock0", 0));

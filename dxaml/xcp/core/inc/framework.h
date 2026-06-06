@@ -418,9 +418,10 @@ public:
 private:
     // Allow 8 byte alignment on amd64
     ImplicitStyleProvider m_eImplicitStyleProvider : 4;
+    bool                  m_initialStyleApplied    : 1;
     bool                  m_firedLoadingEvent      : 1;
     bool                  m_hasLocalResources      : 1;
-    // unsigned int                                : 26;    // 7 - 32 Unused on amd64
+    // unsigned int                                : 25;    // 8 - 32 Unused on amd64
 
     // Maintained by CFrameworkElement::OnPropertyChanged when FrameworkElement.Resources changes.
     void SetHasLocalResources(bool value) { m_hasLocalResources = value; }

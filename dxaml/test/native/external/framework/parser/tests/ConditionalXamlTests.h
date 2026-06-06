@@ -75,6 +75,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(VerifyConditionalXamlInStyle)
             TEST_METHOD_PROPERTY(L"Description", L"Validates behavior when a Style uses conditional XAML.")
+            // This test runs in compat mode to apply style immediately.
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DelayApplyStyleOptimization:false}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(VerifyConditionalXamlInVsm)

@@ -3531,6 +3531,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     static void ValidateKeyboardTabNavigationWrapsInGroupingScenarioWithLocalNavigation(bool forward)
     {
         TestCleanupWrapper cleanup;
+        // Run this test in compat mode so style is applied immediately (during CreationComplete) without needing to be added to the tree.
+        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
 
         xaml_controls::StackPanel^ rootPanel = nullptr;
         xaml_data::CollectionViewSource^ cvs = nullptr;

@@ -222,10 +222,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
         BEGIN_TEST_METHOD(ValidateKeyboardTabNavigationWrapsInGroupingScenarioWithLocalNavigationForward)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that tabbing will wrap from the LV to outside if LV is the last control on page")
+            // This test runs in compat mode to apply style immediately.
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DelayApplyStyleOptimization:false}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ValidateKeyboardTabNavigationWrapsInGroupingScenarioWithLocalNavigationBackward)
             TEST_METHOD_PROPERTY(L"Description", L"Validates that shift-tabbing will wrap from the LV to outside if LV is the first control on page")
+            // This test runs in compat mode to apply style immediately.
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DelayApplyStyleOptimization:false}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(SuspendListViewBuildTreeWhileCollapsed)

@@ -80,6 +80,19 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that we can set a style directly inside an element")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(StyleAvailableInCompatModeEvenWhenNotLive)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a style is available in compat mode even when not live")
+            // This test expects style to be applied during CreationComplete to test the old mode. Disable the optimization.
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DelayApplyStyleOptimization:false}")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(StyleNotAvailableInNewPerfOptInBehaviorWhenNotLive)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Verify that a style is not available in the new PerfOptIn behavior when not live")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(CanSetStyleDirectlyInsideElement_TargetPropertyPath)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verify that we can set a style directly inside an element using Setter.Target instead of Setter.Property")
@@ -192,6 +205,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StyleWithReferenceCycleError)
+            // This test crashes if the element is added to the tree. Leave it in compat mode where the style is applied during CreationComplete.
+            TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DelayApplyStyleOptimization:false}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StyleBasedOnSameKey)

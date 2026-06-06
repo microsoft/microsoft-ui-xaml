@@ -18,7 +18,7 @@
 #include "DXamlServices.h"
 #include "RootScale.h"
 #include "XamlTelemetry.h"
-#include <PerfOptIn.h>
+#include <OptionalChangeState.h>
 
 using namespace Theming;
 using namespace DirectUI;
@@ -26,6 +26,7 @@ using namespace DirectUI;
 CFrameworkElement::CFrameworkElement(_In_ CCoreServices *pCore)
     : CUIElement(pCore)
     , m_eImplicitStyleProvider(ImplicitStyleProvider::None)
+    , m_initialStyleApplied(false)
     , m_eWidth(static_cast<XFLOAT>(XDOUBLE_NAN))
     , m_eHeight(static_cast<XFLOAT>(XDOUBLE_NAN))
     , m_eMouseCursor((MouseCursor)0)
@@ -118,7 +119,13 @@ CFrameworkElement::CreationComplete()
     // Apply style
     if (m_eImplicitStyleProvider == ImplicitStyleProvider::None || GetStyle())
     {
-        IFC_RETURN(ApplyStyle());
+        // Apply style if we're active. If we're not active, we'll apply the style when we become active in EnterImpl.
+        // Compat mode: If perf opt-in is not enabled, apply the style even if we're not active.
+        const bool alwaysApplyStyle = !OptionalChangeState::IsDelayApplyStyleOptimizationEnabled();
+        if (IsActive() || alwaysApplyStyle)
+        {
+            IFC_RETURN(ApplyStyle());
+        }
     }
 
     // call base implementation.
@@ -288,6 +295,7 @@ CFrameworkElement::SetValue(_In_ const SetValueParams& args)
                 CStyle * pNewStyle = GetActiveStyle();
                 if (!IsParsing() && oldStyle != pNewStyle)
                 {
+                    m_initialStyleApplied = true; // Consider the initial style to have been applied, even if the new style is null. This covers the case of styles being cleared after being set.
                     IFC_RETURN(OnStyleChanged(oldStyle.get(), pNewStyle, BaseValueSourceStyle));
                 }
                 break;
@@ -617,6 +625,8 @@ void CFrameworkElement::EvaluateIsRightToLeft()
 _Check_return_ HRESULT
 CFrameworkElement::ApplyStyle()
 {
+    m_initialStyleApplied = true; // Ensure style is only force-applied once
+
     CStyle *pOldStyle = nullptr;
     CStyle *pNewStyle = GetStyle();
 
@@ -2494,7 +2504,8 @@ CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Enter
     {
         if (m_eImplicitStyleProvider == ImplicitStyleProvider::None)
         {
-            if (!GetStyle())
+            const bool forceApplyStyle = !m_initialStyleApplied && OptionalChangeState::IsDelayApplyStyleOptimizationEnabled();
+            if (forceApplyStyle || !GetStyle())
             {
                 IFC_RETURN(ApplyStyle());
             }

@@ -433,7 +433,63 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             VERIFY_ARE_EQUAL(32, canvas->Width, L"Canvas.Width property should be set by the style");
+        });
+    }
+
+    void StyleIntegrationTests::StyleAvailableInCompatModeEvenWhenNotLive()
+    {
+        // This test expects style to be applied during CreationComplete when the DelayApplyStyleOptimization is disabled
+        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
+
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            Platform::String^ xamlString =
+                L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
+                L"    <Canvas.Style>"
+                L"        <Style TargetType='Canvas'>"
+                L"            <Style.Setters>"
+                L"                <Setter Property='Width' Value='32'/>"
+                L"            </Style.Setters>"
+                L"        </Style>"
+                L"    </Canvas.Style>"
+                L"</Canvas>";
+
+            auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            // Don't set the window content to the canvas, so that the canvas won't be live. In the new behavior,
+            // this would mean the style doesn't get applied, but in compat mode, the style should still be applied.
+            // TestServices::WindowHelper->WindowContent = canvas;
+            VERIFY_ARE_EQUAL(32, canvas->Width, L"Canvas.Width property should be set by the style");
+        });
+    }
+
+    void StyleIntegrationTests::StyleNotAvailableInNewPerfOptInBehaviorWhenNotLive()
+    {
+        // This test requires the new DelayApplyStyleOptimization behavior where style is not applied during CreationComplete,
+        // to confirm the new style indeed is not set in this case.
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
+
+        TestCleanupWrapper cleanup;
+        RunOnUIThread([]()
+        {
+            Platform::String^ xamlString =
+                L"<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
+                L"    <Canvas.Style>"
+                L"        <Style TargetType='Canvas'>"
+                L"            <Style.Setters>"
+                L"                <Setter Property='Width' Value='32'/>"
+                L"            </Style.Setters>"
+                L"        </Style>"
+                L"    </Canvas.Style>"
+                L"</Canvas>";
+
+            auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            // Don't set the window content to the canvas, so that the canvas won't be live. In the new behavior,
+            // this would mean the style doesn't get applied. Verify the style indeed is not applied.
+            // TestServices::WindowHelper->WindowContent = canvas;
+            VERIFY_IS_TRUE(!!_isnan(canvas->Width), L"Canvas.Width property should not be set by the style");
         });
     }
 
@@ -454,6 +510,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             VERIFY_ARE_EQUAL(32, canvas->Width, L"Canvas.Width property should be set by the style");
         });
     }
@@ -477,6 +534,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto targetControl = safe_cast<CustomControl^>(canvas->Children->GetAt(0));
 
             VERIFY_IS_TRUE(L"Attached String" == ControlWithAttachedProperty::GetCustomAttached(targetControl), L"ControlWithAttachedProperty.CustomAttached property should be set by the style");
@@ -504,6 +562,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto targetControl = safe_cast<CustomControl^>(canvas->Children->GetAt(0));
 
             VERIFY_IS_TRUE(L"Attached String" == ControlWithAttachedProperty::GetCustomAttached(targetControl), L"ControlWithAttachedProperty.CustomAttached property should be set by the style");
@@ -529,6 +588,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button = safe_cast<Button^>(canvas->Children->GetAt(0));
 
             VERIFY_IS_TRUE(L"Abc" == button->Content->ToString(), L"Button.Content property was not set");
@@ -604,6 +664,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             VERIFY_IS_NOT_NULL(canvas);
 
             auto button = safe_cast<Button^>(canvas->FindName(L"button"));
@@ -637,6 +698,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
             auto button2 = safe_cast<Button^>(canvas->FindName(L"button2"));
 
@@ -701,6 +763,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             }
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
 
             // Force seal the style to ensure style is optimized
@@ -750,6 +813,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             }
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
 
             // Force seal the style to ensure style is optimized
@@ -803,6 +867,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             }
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
 
             // Force seal the style to ensure style is optimized
@@ -860,6 +925,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             }
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
 
             // Force seal the style to ensure style is optimized
@@ -893,6 +959,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
 
             // Force seal the style to ensure style is optimized
@@ -939,6 +1006,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
 
             // Force seal the style to ensure style is optimized
@@ -992,6 +1060,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
 
             // Force seal the style to ensure style is optimized
@@ -1041,6 +1110,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Canvas>";
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button1 = safe_cast<Button^>(canvas->FindName(L"button1"));
 
             // Force seal the style to ensure style is optimized
@@ -1464,6 +1534,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         RunOnUIThread([&]()
         {
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color, L"Button.Background should be Blue");
@@ -1478,6 +1549,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         RunOnUIThread([&]()
         {
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color, L"Button.Background should be Blue");
@@ -1529,6 +1601,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         RunOnUIThread([&]()
         {
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color, L"Button.Background should be Blue");
@@ -1547,6 +1620,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         RunOnUIThread([&]()
         {
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color, L"Button.Background should be Blue");
@@ -1679,6 +1753,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         RunOnUIThread([&]()
         {
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color, L"Button.Background should be Blue");
@@ -1714,6 +1789,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             customResourceLoader->AddResource(L"blueBrush", L"Microsoft.UI.Xaml.Setter", L"Value", L"Windows.Foundation.Object", blueBrush);
 
             auto canvas = safe_cast<Canvas^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = canvas;
             auto button = safe_cast<Button^>(canvas->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color, L"Button.Background should be Blue");
@@ -1781,6 +1857,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         TestServices::ErrorHandlingHelper->IgnoreLeaksForTest();
 
         TestCleanupWrapper cleanup;
+        // This test crashes if the element is added to the tree. Leave it in compat mode where the style is applied during CreationComplete.
+        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
 
         RunOnUIThread([&]()
         {
@@ -1842,6 +1920,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</StackPanel>";
 
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto panel2 = safe_cast<Panel^>(panel->Children->GetAt(0));
             auto button = safe_cast<Button^>(panel2->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
@@ -1872,6 +1951,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</StackPanel>";
 
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
             VERIFY_IS_NOT_NULL(brush);
@@ -1912,6 +1992,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</StackPanel>";
 
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto panel2 = safe_cast<Panel^>(panel->Children->GetAt(0));
             auto button = safe_cast<Button^>(panel2->Children->GetAt(0));
 
@@ -1974,6 +2055,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</StackPanel>";
 
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto outerButton = safe_cast<Button^>(panel->Children->GetAt(0));
             outerButton->ApplyTemplate();
             auto innerButton1 = safe_cast<Button^>(TreeHelper::GetVisualChildByName(outerButton, L"InnerButton1"));
@@ -2037,6 +2119,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</StackPanel>";
 
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             VERIFY_IS_TRUE(button->HorizontalContentAlignment == HorizontalAlignment::Stretch, L"Button.HorizontalContentAlignment should be Stretch");
         });
@@ -2061,6 +2144,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</StackPanel>";
 
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto control = safe_cast<CustomControl^>(panel->Children->GetAt(0));
             VERIFY_IS_TRUE(control->CustomEnum == CustomEnumValues::CustomEnumValue1, L"CustomControl.CustomEnum should be CustomEnumValue1");
         });
@@ -2093,6 +2177,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // If the binding were set directly (instead of via a setter),
             // the value would be the same as the referenced resource.
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             VERIFY_IS_NULL(button->Background, L"Button.Background should be null");
 
@@ -2137,6 +2222,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // Verify that a binding with Source set to a StaticResource works.
             // Check that bindings work in multiple setters.
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             auto brush = safe_cast<SolidColorBrush^>(button->Background);
             VERIFY_IS_NOT_NULL(brush);
@@ -2277,6 +2363,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             // If the binding were set directly (instead of via a setter),
             // the value would be equal to the source (100.0).
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
             auto button = safe_cast<Button^>(panel->Children->GetAt(0));
             VERIFY_IS_TRUE(!!_isnan(button->Width), L"Button.Width should be NaN");
 
@@ -2316,6 +2403,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</Button>";
 
             auto control = safe_cast<Button^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = control;
             VERIFY_IS_NOT_NULL(control->Style);
 
             control->ApplyTemplate();
@@ -3525,6 +3613,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             XamlResourcePropertyBagOverrider propertyBagOverride(&map);
 
             Panel^ panel = safe_cast<Panel^>(XamlReader::Load(xaml1));
+            TestServices::WindowHelper->WindowContent = panel;
             auto brush = safe_cast<SolidColorBrush^>(panel->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
         });
@@ -3535,6 +3624,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             XamlResourcePropertyBagOverrider propertyBagOverride(&map);
 
             Panel^ panel = safe_cast<Panel^>(XamlReader::Load(xaml1));
+            TestServices::WindowHelper->WindowContent = panel;
             auto brush = safe_cast<SolidColorBrush^>(panel->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
 
@@ -3566,6 +3656,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             XamlResourcePropertyBagOverrider propertyBagOverride(&map);
 
             Panel^ panel = safe_cast<Panel^>(XamlReader::Load(xaml2));
+            TestServices::WindowHelper->WindowContent = panel;
             auto brush = safe_cast<SolidColorBrush^>(panel->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
             VERIFY_ARE_EQUAL(100, panel->Height);
@@ -3579,6 +3670,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             XamlResourcePropertyBagOverrider propertyBagOverride(&map);
 
             Panel^ panel = safe_cast<Panel^>(XamlReader::Load(xaml2));
+            TestServices::WindowHelper->WindowContent = panel;
             auto brush = safe_cast<SolidColorBrush^>(panel->Background);
             VERIFY_ARE_EQUAL(Colors::Blue, brush->Color);
             VERIFY_ARE_EQUAL(100, panel->Height);
@@ -3593,6 +3685,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, true);
 
             Panel^ panel = safe_cast<Panel^>(XamlReader::Load(xaml2));
+            TestServices::WindowHelper->WindowContent = panel;
             auto brush = safe_cast<SolidColorBrush^>(panel->Background);
             VERIFY_ARE_EQUAL(Colors::Red, brush->Color);
             VERIFY_ARE_EQUAL(100, panel->Height);
@@ -3605,6 +3698,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             RuntimeEnabledFeatureOverride featureOverride(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnforceXbfV2Stream, false);
 
             Panel^ panel = safe_cast<Panel^>(XamlReader::Load(xaml2));
+            TestServices::WindowHelper->WindowContent = panel;
             auto brush = safe_cast<SolidColorBrush^>(panel->Background);
             VERIFY_ARE_EQUAL(Colors::Red, brush->Color);
             VERIFY_ARE_EQUAL(100, panel->Height);
@@ -4292,6 +4386,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</StackPanel>";
 
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
 
             auto button1 = safe_cast<Button^>(panel->Children->GetAt(0));
             VERIFY_IS_NULL(button1->Background);
@@ -4328,6 +4423,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"</StackPanel>";
 
             auto panel = static_cast<Panel^>(XamlReader::Load(xamlString));
+            TestServices::WindowHelper->WindowContent = panel;
 
             auto button1 = safe_cast<Button^>(panel->Children->GetAt(0));
             VERIFY_IS_NULL(button1->Background);

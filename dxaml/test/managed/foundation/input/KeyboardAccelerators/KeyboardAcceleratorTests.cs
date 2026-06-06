@@ -240,6 +240,7 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
                 UIExecutor.Execute(() =>
                 {
                     rootPanel = (StackPanel)XamlMarkup.XamlReader.Load(rootPanelXaml);
+                    TestServices.WindowHelper.WindowContent = rootPanel;
                     appBarButton = (AppBarButton)rootPanel.FindName("AppBarButton");
                     appBarTButton = (AppBarToggleButton)rootPanel.FindName("AppBarTButton");
                     menuFlyoutItem = (MenuFlyoutItem)rootPanel.FindName("MenuFlyoutItem");

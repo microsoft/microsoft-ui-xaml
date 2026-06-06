@@ -517,6 +517,7 @@ namespace Microsoft.UI.Xaml.Settings
     {
         _Reserved,
         IconNoGridOptimization = 61276805,
+        DelayApplyStyleOptimization = 61697456,
     };
 }
 

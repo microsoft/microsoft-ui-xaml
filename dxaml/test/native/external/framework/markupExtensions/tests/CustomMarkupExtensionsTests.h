@@ -40,6 +40,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(CanUseCustomMarkupExtensionInStyle)
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies using a custom markup extension, both with and without "
                     L"the 'Extension' suffix, in a Style")
+                // This test runs in compat mode to apply style immediately.
+                TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
+                TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DelayApplyStyleOptimization:false}")
             END_TEST_METHOD()
 
             BEGIN_TEST_METHOD(CanUseCustomMarkupExtensionAsResource)
