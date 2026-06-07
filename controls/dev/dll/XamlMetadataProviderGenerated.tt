@@ -158,7 +158,7 @@ struct Entry
     WriteLine(";");
 
     WriteLine("");
-    WriteLine("hstring c_knownNamespacePrefixes[] =");
+    WriteLine("std::wstring_view c_knownNamespacePrefixes[] =");
     StatementBlock(() =>
     {
         foreach (var knownNamespacePrefix in knownNamespacePrefixes.OrderBy(ns => ns))

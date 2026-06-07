@@ -34,7 +34,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingBringingIntoViewEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingScrollCompletedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingScrollAnimationStartingEventArgs.h" />
@@ -51,10 +51,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ZoomFactorChange.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ZoomFactorChangeWithAdditionalVelocity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingZoomOptions.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooks.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksFactory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksAnchorEvaluatedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooks.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksFactory.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksAnchorEvaluatedEventArgs.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTypeLogging.h" />
   </ItemGroup>
   <ItemGroup>
@@ -70,7 +70,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollAnimationStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomStartingEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomAnimationStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingAnchorRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterPrivate.cpp" />
@@ -78,10 +78,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollOptions.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomCompletedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomOptions.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooks.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksFactory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksAnchorEvaluatedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooks.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksFactory.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksAnchorEvaluatedEventArgs.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTypeLogging.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerAsyncOperation.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerOwner.cpp" />

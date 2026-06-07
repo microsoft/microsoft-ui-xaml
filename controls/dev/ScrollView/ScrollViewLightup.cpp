@@ -10,7 +10,9 @@
 #include "RuntimeProfiler.h"
 #include "FocusHelper.h"
 #include "RegUtil.h"
+#ifdef DBG
 #include "ScrollViewTestHooks.h"
+#endif
 
 
 // explicitly instantiate deletion of ScrollView::AutoHideScrollBarsState in this translation unit
@@ -77,6 +79,7 @@ bool ScrollView::AreScrollControllersAutoHiding()
 
     m_autoHideScrollControllersValid = true;
 
+#ifdef DBG
     if (auto globalTestHooks = ScrollViewTestHooks::GetGlobalTestHooks())
     {
         winrt::IReference<bool> autoHideScrollControllers = globalTestHooks->GetAutoHideScrollControllers(*this);
@@ -88,6 +91,7 @@ bool ScrollView::AreScrollControllersAutoHiding()
             return m_autoHideScrollControllers;
         }
     }
+#endif
 
     if (m_autoHideScrollBarsState->m_uiSettings5)
     {

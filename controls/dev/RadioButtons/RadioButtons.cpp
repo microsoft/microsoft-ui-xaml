@@ -8,7 +8,9 @@
 #include "Vector.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#ifdef DBG
 #include "RadioButtonsTestHooks.h"
+#endif
 
 RadioButtons::RadioButtons()
 {
@@ -574,7 +576,9 @@ RadioButtons::~RadioButtons()
 
 void RadioButtons::OnLayoutChanged(const winrt::ColumnMajorUniformToLargestGridLayout&, const winrt::IInspectable&)
 {
+#ifdef DBG
     RadioButtonsTestHooks::NotifyLayoutChanged(*this);
+#endif
 }
 
 int RadioButtons::GetRows()

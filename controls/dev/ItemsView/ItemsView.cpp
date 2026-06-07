@@ -7,7 +7,9 @@
 #include "TypeLogging.h"
 #include "ItemsView.h"
 #include "RuntimeProfiler.h"
+#ifdef DBG
 #include "ItemsViewTestHooks.h"
+#endif
 #include "ItemsViewItemInvokedEventArgs.h"
 #include "ItemsViewSelectionChangedEventArgs.h"
 #include "ItemsViewAutomationPeer.h"

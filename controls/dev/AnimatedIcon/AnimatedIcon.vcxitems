@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIcon.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.h" />
@@ -29,7 +29,7 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AnimatedIcon.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIcon.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)AnimatedIconTestHooks.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedAcceptVisualSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedGlobalNavigationButtonVisualSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimatedVisuals\AnimatedBackVisualSource.cpp" />

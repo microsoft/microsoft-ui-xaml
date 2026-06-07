@@ -36,3 +36,17 @@ unsealed runtimeclass AnimatedIcon : Microsoft.UI.Xaml.Controls.IconElement
 }
 
 }
+
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+[MUX_INTERNAL]
+[webhosthidden]
+enum AnimatedIconAnimationQueueBehavior
+{
+    Cut,
+    QueueOne,
+    SpeedUpQueueOne,
+};
+
+}

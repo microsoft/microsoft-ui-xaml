@@ -19,7 +19,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsElementFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtons.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ColumnMajorUniformToLargestGridLayout.properties.cpp" />
@@ -28,7 +28,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsElementFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\RadioButtons.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtons.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml">

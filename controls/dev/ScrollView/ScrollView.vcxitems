@@ -23,16 +23,16 @@
       <XamlLightup>true</XamlLightup>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewBringIntoViewOperation.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewTestHooksFactory.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollViewTestHooksFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollBarController.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewBringIntoViewOperation.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewTrace.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewTestHooksFactory.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ScrollViewTestHooksFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ScrollView.xaml">

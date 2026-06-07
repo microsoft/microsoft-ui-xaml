@@ -7949,7 +7949,7 @@ Entry c_typeEntries[] =
     },
 };
 
-hstring c_knownNamespacePrefixes[] =
+std::wstring_view c_knownNamespacePrefixes[] =
 {
     L"Microsoft.UI.Composition.",
     L"Microsoft.UI.Xaml.",

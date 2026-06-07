@@ -6,7 +6,9 @@
 #include "AnimatedIcon.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#ifdef DBG
 #include <AnimatedIconTestHooks.h>
+#endif
 #include "Utils.h"
 #include <mutex>
 
@@ -408,7 +410,9 @@ void AnimatedIcon::TransitionStates(const winrt::hstring& fromState, const winrt
                 }
             }
             m_lastAnimationSegment = transitionName;
+#ifdef DBG
             AnimatedIconTestHooks::NotifyLastAnimationSegmentChanged(*this);
+#endif
         }
     }
 }

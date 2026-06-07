@@ -12,7 +12,9 @@
 #include "ScrollingScrollOptions.h"
 #include "ScrollingZoomOptions.h"
 #include "ScrollPresenterAutomationPeer.h"
+#ifdef DBG
 #include "ScrollPresenterTestHooks.h"
+#endif
 #include "Vector.h"
 #include "RegUtil.h"
 #include "MuxcTraceLogging.h"
@@ -3260,9 +3262,8 @@ winrt::CompositionAnimation ScrollPresenter::GetPositionAnimation(
     const int64_t distance = static_cast<int64_t>(sqrt(pow(zoomedHorizontalOffset - m_zoomedHorizontalOffset, 2.0) + pow(zoomedVerticalOffset - m_zoomedVerticalOffset, 2.0)));
     const winrt::Compositor compositor = winrt::ElementCompositionPreview::GetElementVisual(*this).Compositor();
     winrt::Vector3KeyFrameAnimation positionAnimation = compositor.CreateVector3KeyFrameAnimation();
-    com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
-
-    if (globalTestHooks)
+#ifdef DBG
+    if (auto globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks())
     {
         int unitDurationTestOverride;
         int minDurationTestOverride;
@@ -3274,6 +3275,7 @@ winrt::CompositionAnimation ScrollPresenter::GetPositionAnimation(
         maxDuration = maxDurationTestOverride;
         unitDuration = unitDurationTestOverride;
     }
+#endif
 
     const winrt::float2 endPosition = ComputePositionFromOffsets(zoomedHorizontalOffset, zoomedVerticalOffset);
 
@@ -3319,9 +3321,8 @@ winrt::CompositionAnimation ScrollPresenter::GetZoomFactorAnimation(
     const int64_t distance = static_cast<int64_t>(abs(zoomFactor - m_zoomFactor));
     const winrt::Compositor compositor = winrt::ElementCompositionPreview::GetElementVisual(*this).Compositor();
     winrt::ScalarKeyFrameAnimation zoomFactorAnimation = compositor.CreateScalarKeyFrameAnimation();
-    com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
-
-    if (globalTestHooks)
+#ifdef DBG
+    if (auto globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks())
     {
         int unitDurationTestOverride;
         int minDurationTestOverride;
@@ -3333,6 +3334,7 @@ winrt::CompositionAnimation ScrollPresenter::GetZoomFactorAnimation(
         maxDuration = maxDurationTestOverride;
         unitDuration = unitDurationTestOverride;
     }
+#endif
 
     zoomFactorAnimation.InsertKeyFrame(1.0f, zoomFactor);
     zoomFactorAnimation.Duration(winrt::TimeSpan::duration(std::clamp(distance * unitDuration, minDuration, maxDuration) * 10000));
@@ -3445,15 +3447,15 @@ void ScrollPresenter::StopTransformExpressionAnimations(
 {
     if (content)
     {
-        auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollPresenterDimension::Scroll);
-
         content.StopAnimation(m_translationExpressionAnimation);
-        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
-
-        auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollPresenterDimension::ZoomFactor);
+#ifdef DBG
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, GetVisualTargetedPropertyName(ScrollPresenterDimension::Scroll) /*propertyName*/);
+#endif
 
         content.StopAnimation(m_zoomFactorExpressionAnimation);
-        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
+#ifdef DBG
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, GetVisualTargetedPropertyName(ScrollPresenterDimension::ZoomFactor) /*propertyName*/);
+#endif
     }
 }
 
@@ -3702,16 +3704,16 @@ winrt::ScrollingAnimationMode ScrollPresenter::GetComputedAnimationMode(
     {
         const bool isAnimationsEnabled = []()
         {
-            auto globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
-
-            if (globalTestHooks && globalTestHooks->IsAnimationsEnabledOverride())
+#ifdef DBG
+            if (auto globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks())
             {
-                return globalTestHooks->IsAnimationsEnabledOverride().Value();
+                if (globalTestHooks->IsAnimationsEnabledOverride())
+                {
+                    return globalTestHooks->IsAnimationsEnabledOverride().Value();
+                }
             }
-            else
-            {
-                return SharedHelpers::IsAnimationsEnabled();
-            }
+#endif
+            return SharedHelpers::IsAnimationsEnabled();
         }();
 
         return isAnimationsEnabled ? winrt::ScrollingAnimationMode::Enabled : winrt::ScrollingAnimationMode::Disabled;
@@ -5707,9 +5709,8 @@ void ScrollPresenter::OnContentLayoutOffsetChanged(ScrollPresenterDimension dime
     }
 #endif
 
-    com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
-
-    if (globalTestHooks)
+#ifdef DBG
+    if (auto globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks())
     {
         if (dimension == ScrollPresenterDimension::HorizontalScroll)
         {
@@ -5720,6 +5721,7 @@ void ScrollPresenter::OnContentLayoutOffsetChanged(ScrollPresenterDimension dime
             globalTestHooks->NotifyContentLayoutOffsetYChanged(*this);
         }
     }
+#endif
 
     if (m_minPositionExpressionAnimation && m_maxPositionExpressionAnimation)
     {
@@ -7513,24 +7515,30 @@ void ScrollPresenter::UnhookVerticalScrollControllerPanningInfoEvents()
 
 void ScrollPresenter::RaiseInteractionSourcesChanged()
 {
-    com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
-
-    if (globalTestHooks && globalTestHooks->AreInteractionSourcesNotificationsRaised())
+#ifdef DBG
+    if (auto globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks())
     {
-        globalTestHooks->NotifyInteractionSourcesChanged(*this, m_interactionTracker.InteractionSources());
+        if (globalTestHooks->AreInteractionSourcesNotificationsRaised())
+        {
+            globalTestHooks->NotifyInteractionSourcesChanged(*this, m_interactionTracker.InteractionSources());
+        }
     }
+#endif
 }
 
 void ScrollPresenter::RaiseExpressionAnimationStatusChanged(
     bool isExpressionAnimationStarted,
     wstring_view const& propertyName)
 {
-    com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
-
-    if (globalTestHooks && globalTestHooks->AreExpressionAnimationStatusNotificationsRaised())
+#ifdef DBG
+    if (auto globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks())
     {
-        globalTestHooks->NotifyExpressionAnimationStatusChanged(*this, isExpressionAnimationStarted, propertyName);
+        if (globalTestHooks->AreExpressionAnimationStatusNotificationsRaised())
+        {
+            globalTestHooks->NotifyExpressionAnimationStatusChanged(*this, isExpressionAnimationStarted, propertyName);
+        }
     }
+#endif
 }
 
 void ScrollPresenter::RaiseExtentChanged()

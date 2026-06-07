@@ -7,7 +7,9 @@
 #include "TypeLogging.h"
 #include "ItemsView.h"
 #include "RuntimeProfiler.h"
+#ifdef DBG
 #include "ItemsViewTestHooks.h"
+#endif
 #include "ItemsViewItemInvokedEventArgs.h"
 #include "NullSelector.h"
 #include "SharedHelpers.h"
@@ -1407,9 +1409,8 @@ void ItemsView::UpdateKeyboardNavigationReference()
 
     ITEMSVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, TypeLogging::RectToString(m_keyboardNavigationReferenceRect).c_str(), m_keyboardNavigationReferenceIndex);
 
-    com_ptr<ItemsViewTestHooks> globalTestHooks = ItemsViewTestHooks::GetGlobalTestHooks();
-
-    if (globalTestHooks != nullptr)
+#ifdef DBG
+    if (auto globalTestHooks = ItemsViewTestHooks::GetGlobalTestHooks())
     {
         const winrt::Point newKeyboardNavigationReferenceOffset = GetKeyboardNavigationReferenceOffset();
         const winrt::IndexBasedLayoutOrientation indexBasedLayoutOrientation = GetLayoutIndexBasedLayoutOrientation();
@@ -1420,4 +1421,5 @@ void ItemsView::UpdateKeyboardNavigationReference()
             globalTestHooks->NotifyKeyboardNavigationReferenceOffsetChanged(*this);
         }
     }
+#endif
 }

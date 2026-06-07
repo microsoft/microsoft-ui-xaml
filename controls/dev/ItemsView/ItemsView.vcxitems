@@ -22,8 +22,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsViewInteractions.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsViewItemInvokedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsViewSelectionChangedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsViewTestHooks.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsViewTestHooksFactory.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ItemsViewTestHooks.cpp" />
+    <ClCompile Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ItemsViewTestHooksFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectorBase.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NullSelector.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SingleSelector.cpp" />
@@ -37,8 +37,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsViewItemInvokedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsViewSelectionChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsViewTrace.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsViewTestHooks.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsViewTestHooksFactory.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ItemsViewTestHooks.h" />
+    <ClInclude Condition="'$(Configuration)'=='Debug'" Include="$(MSBuildThisFileDirectory)ItemsViewTestHooksFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectorBase.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NullSelector.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SingleSelector.h" />

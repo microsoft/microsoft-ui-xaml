@@ -8,7 +8,9 @@
 #include "ResourceAccessor.h"
 #include "TeachingTipClosingEventArgs.h"
 #include "TeachingTipClosedEventArgs.h"
+#ifdef DBG
 #include "TeachingTipTestHooks.h"
+#endif
 #include "TeachingTipAutomationPeer.h"
 #include "../ResourceHelper/Utils.h"
 #include <enum_array.h>
@@ -190,14 +192,18 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
         SetPopupAutomationProperties();
         if (ToggleVisibilityForEmptyContent(c_TitleTextBlockVisibleStateName, c_TitleTextBlockCollapsedStateName, Title()))
         {
+#ifdef DBG
             TeachingTipTestHooks::NotifyTitleVisibilityChanged(*this);
+#endif
         }
     }
     else if (property == s_SubtitleProperty)
     {
         if (ToggleVisibilityForEmptyContent(c_SubtitleTextBlockVisibleStateName, c_SubtitleTextBlockCollapsedStateName, Subtitle()))
         {
+#ifdef DBG
             TeachingTipTestHooks::NotifySubtitleVisibilityChanged(*this);
+#endif
         }
     }
     else if (property == s_ActionButtonContentProperty)
@@ -300,7 +306,9 @@ bool TeachingTip::UpdateTail()
     if (placement != m_currentEffectiveTipPlacementMode)
     {
         m_currentEffectiveTipPlacementMode = placement;
+#ifdef DBG
         TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
+#endif
     }
 
     auto&& nullableTailOcclusionGrid = m_tailOcclusionGrid.get();
@@ -461,7 +469,9 @@ void TeachingTip::PositionPopup()
         IsOpen(false);
     }
 
+#ifdef DBG
     TeachingTipTestHooks::NotifyOffsetChanged(*this);
+#endif
 }
 
 bool TeachingTip::PositionTargetedPopup()
@@ -783,7 +793,9 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToTopImpl()
     if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Top)
     {
         m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Top;
+#ifdef DBG
         TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
+#endif
     }
 }
 
@@ -801,7 +813,9 @@ void TeachingTip::UpdateDynamicHeroContentPlacementToBottomImpl()
     if (m_currentHeroContentEffectivePlacementMode != winrt::TeachingTipHeroContentPlacementMode::Bottom)
     {
         m_currentHeroContentEffectivePlacementMode = winrt::TeachingTipHeroContentPlacementMode::Bottom;
+#ifdef DBG
         TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(*this);
+#endif
     }
 }
 
@@ -823,7 +837,9 @@ void TeachingTip::OnIsOpenChanged()
                 {
                     strongThis->IsOpenChangedToClose();
                 }
+#ifdef DBG
                 TeachingTipTestHooks::NotifyOpenedStatusChanged(*strongThis);
+#endif
             }
             else
             {
@@ -990,7 +1006,9 @@ void TeachingTip::IsOpenChangedToClose()
     m_previewKeyDownForF6Revoker.revoke();
     m_popupPreviewKeyDownForF6Revoker.revoke();
     m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
+#ifdef DBG
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
+#endif
 }
 
 void TeachingTip::CreateNewPopup()
@@ -1093,7 +1111,9 @@ void TeachingTip::OnHeroContentPlacementChanged()
     // algorithm. If we did not do this and the popup was opened the algorithm would maintain the current effective placement mode, which we don't want
     // since the hero content placement contributes to the choice of tip placement mode.
     m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
+#ifdef DBG
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
+#endif
     if (IsOpen())
     {
         PositionPopup();
@@ -1105,7 +1125,9 @@ void TeachingTip::OnContentSizeChanged(const winrt::IInspectable&, const winrt::
     UpdateSizeBasedTemplateSettings();
     // Reset the currentEffectivePlacementMode so that the tail will be updated for the new size as well.
     m_currentEffectiveTipPlacementMode = winrt::TeachingTipPlacementMode::Auto;
+#ifdef DBG
     TeachingTipTestHooks::NotifyEffectivePlacementChanged(*this);
+#endif
     if (IsOpen())
     {
         PositionPopup();
@@ -2461,7 +2483,9 @@ void TeachingTip::SetIsIdle(bool isIdle)
     if (m_isIdle != isIdle)
     {
         m_isIdle = isIdle;
+#ifdef DBG
         TeachingTipTestHooks::NotifyIdleStatusChanged(*this);
+#endif
     }
 }
 

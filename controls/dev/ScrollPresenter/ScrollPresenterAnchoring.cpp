@@ -7,7 +7,9 @@
 #include "ScrollPresenterTypeLogging.h"
 #include "ScrollPresenter.h"
 #include "DoubleUtil.h"
+#ifdef DBG
 #include "ScrollPresenterTestHooks.h"
+#endif
 
 // Used when ScrollPresenter.HorizontalAnchorRatio or ScrollPresenter.VerticalAnchorRatio is 0.0 or 1.0 to determine whether the Content is scrolled to an edge.
 // It is declared at an edge if it's within 1/10th of a pixel.
@@ -315,12 +317,15 @@ void ScrollPresenter::ResetAnchorElement()
         m_anchorElementBounds = winrt::Rect{};
         m_isAnchorElementDirty = false;
 
-        com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
-
-        if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
+#ifdef DBG
+        if (auto globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks())
         {
-            globalTestHooks->NotifyAnchorEvaluated(*this, nullptr /*anchorElement*/, DoubleUtil::NaN /*viewportAnchorPointHorizontalOffset*/, DoubleUtil::NaN /*viewportAnchorPointVerticalOffset*/);
+            if (globalTestHooks->AreAnchorNotificationsRaised())
+            {
+                globalTestHooks->NotifyAnchorEvaluated(*this, nullptr /*anchorElement*/, DoubleUtil::NaN /*viewportAnchorPointHorizontalOffset*/, DoubleUtil::NaN /*viewportAnchorPointVerticalOffset*/);
+            }
         }
+#endif
     }
 }
 
@@ -350,7 +355,9 @@ void ScrollPresenter::EnsureAnchorElementSelection()
         return;
     }
 
+#ifdef DBG
     com_ptr<ScrollPresenterTestHooks> globalTestHooks = ScrollPresenterTestHooks::GetGlobalTestHooks();
+#endif
     double viewportAnchorPointHorizontalOffset{ 0.0 };
     double viewportAnchorPointVerticalOffset{ 0.0 };
 
@@ -379,10 +386,12 @@ void ScrollPresenter::EnsureAnchorElementSelection()
         m_anchorElement.set(requestedAnchorElement);
         m_anchorElementBounds = GetDescendantBounds(content, requestedAnchorElement);
 
+#ifdef DBG
         if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
         {
             globalTestHooks->NotifyAnchorEvaluated(*this, requestedAnchorElement, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
         }
+#endif
 
         SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, m_anchorElement.get(), L"m_anchorElement set from ScrollingAnchorRequestedEventArgs.");
         SCROLLPRESENTER_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str(), L"m_anchorElementBounds set from ScrollingAnchorRequestedEventArgs.");
@@ -446,10 +455,12 @@ void ScrollPresenter::EnsureAnchorElementSelection()
             anchorCandidates ? L"m_anchorElementBounds set from anchorCandidates." : L"m_anchorElementBounds set from m_anchorCandidates.");
     }
 
+#ifdef DBG
     if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())
     {
         globalTestHooks->NotifyAnchorEvaluated(*this, m_anchorElement.get(), viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
     }
+#endif
 }
 
 // Checks if the provided anchor candidate is better than the current best, based on its distance to the viewport anchor point,

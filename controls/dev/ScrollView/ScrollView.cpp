@@ -10,7 +10,9 @@
 #include "RuntimeProfiler.h"
 #include "FocusHelper.h"
 #include "RegUtil.h"
+#ifdef DBG
 #include "ScrollViewTestHooks.h"
+#endif
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollViewTrace::s_IsDebugOutputEnabled{ false };

@@ -2,15 +2,6 @@
 {
 
 [MUX_INTERNAL]
-[webhosthidden]
-enum AnimatedIconAnimationQueueBehavior
-{
-    Cut,
-    QueueOne,
-    SpeedUpQueueOne,
-};
-
-[MUX_INTERNAL]
 [default_interface]
 [webhosthidden]
 runtimeclass AnimatedIconTestHooks

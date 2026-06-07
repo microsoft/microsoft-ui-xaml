@@ -9,7 +9,9 @@
 #include "Vector.h"
 #include "SwipeItem.h"
 #include "RuntimeProfiler.h"
+#ifdef DBG
 #include "SwipeTestHooks.h"
+#endif
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool SwipeControlTrace::s_IsDebugOutputEnabled{ false };
@@ -50,10 +52,12 @@ SwipeControl::~SwipeControl()
         if (lastInteractedWithSwipeControl == static_cast<winrt::SwipeControl>(*this))
         {
             s_lastInteractedWithSwipeControl = nullptr;
+#ifdef DBG
             if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
             {
                 globalTestHooks->NotifyLastInteractedWithSwipeControlChanged();
             }
+#endif
         }
     }
 }
@@ -182,10 +186,12 @@ void SwipeControl::CustomAnimationStateEntered(
     if (m_isIdle)
     {
         m_isIdle = false;
+#ifdef DBG
         if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
         {
             globalTestHooks->NotifyIdleStatusChanged(*this);
         }
+#endif
     }
 }
 
@@ -233,10 +239,12 @@ void SwipeControl::IdleStateEntered(
     if (!m_isIdle)
     {
         m_isIdle = true;
+#ifdef DBG
         if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
         {
             globalTestHooks->NotifyIdleStatusChanged(*this);
         }
+#endif
     }
 }
 
@@ -248,10 +256,12 @@ void SwipeControl::InteractingStateEntered(
     if (m_isIdle)
     {
         m_isIdle = false;
+#ifdef DBG
         if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
         {
             globalTestHooks->NotifyIdleStatusChanged(*this);
         }
+#endif
     }
 
     m_lastActionWasClosing = false;
@@ -279,10 +289,12 @@ void SwipeControl::InertiaStateEntered(
     if (m_isIdle)
     {
         m_isIdle = false;
+#ifdef DBG
         if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
         {
             globalTestHooks->NotifyIdleStatusChanged(*this);
         }
+#endif
     }
 
     //It is possible that the user has flicked from a negative position to a position that would result in the interaction
@@ -351,10 +363,12 @@ void SwipeControl::ValuesChanged(
         auto weakThis {winrt::make_weak(static_cast<winrt::SwipeControl>(*this))};
         s_lastInteractedWithSwipeControl = weakThis;
 
+#ifdef DBG
         if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
         {
             globalTestHooks->NotifyLastInteractedWithSwipeControlChanged();
         }
+#endif
     }
 
     float value = 0.0f;
@@ -1580,10 +1594,12 @@ void SwipeControl::UpdateIsOpen(bool isOpen)
                 AttachDismissingHandlers();
             }
 
+#ifdef DBG
             if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
             {
                 globalTestHooks->NotifyOpenedStatusChanged(*this);
             }
+#endif
         }
     }
     else
@@ -1596,10 +1612,12 @@ void SwipeControl::UpdateIsOpen(bool isOpen)
             m_interactionTracker.get().Properties().InsertBoolean(s_isFarOpenPropertyName, false);
             m_interactionTracker.get().Properties().InsertBoolean(s_isNearOpenPropertyName, false);
 
+#ifdef DBG
             if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
             {
                 globalTestHooks->NotifyOpenedStatusChanged(*this);
             }
+#endif
         }
     }
 }

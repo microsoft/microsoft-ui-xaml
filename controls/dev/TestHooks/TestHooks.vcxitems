@@ -17,6 +17,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MUXControlsTestHooksFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)MUXControlsTestHooksLoggingMessageEventArgs.cpp" />
+    <ClCompile Condition="'$(Configuration)'!='Debug'" Include="$(MSBuildThisFileDirectory)TestHooksReleaseStubs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)MUXControlsTestHooks.h" />

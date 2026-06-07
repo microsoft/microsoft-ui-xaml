@@ -5,7 +5,6 @@
 #include "common.h"
 #include "ResourceAccessor.h"
 #include "ItemsView.h"
-#include "ItemsViewTestHooks.h"
 #include "Utils.h"
 #include "ItemsViewAutomationPeer.h"
 #include "ItemsViewAutomationPeer.properties.cpp"
@@ -67,7 +66,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> ItemsViewAutomationPeer::GetS
             {
                 if (selectedIndices.Size() > 0)
                 {
-                    if (const auto repeater = ItemsViewTestHooks::GetItemsRepeaterPart(*itemsView))
+                    if (const auto repeater = itemsView->GetItemsRepeaterPart())
                     {
                         for (const auto& indexPath : selectedIndices)
                         {

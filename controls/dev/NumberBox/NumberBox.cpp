@@ -23,12 +23,11 @@ static constexpr wstring_view c_numberBoxPopupContentRootName{ L"PopupContentRoo
 static constexpr double c_popupShadowDepth = 16.0;
 static constexpr wstring_view c_numberBoxPopupShadowDepthName{ L"NumberBoxPopupShadowDepth"sv };
 
-// Shockingly, there is no standard function for trimming strings.
-const std::wstring c_whitespace = L" \n\r\t\f\v";
 std::wstring trim(const std::wstring& s)
 {
-    const size_t start = s.find_first_not_of(c_whitespace);
-    const size_t end = s.find_last_not_of(c_whitespace);
+    constexpr wchar_t whitespace[] = L" \n\r\t\f\v";
+    const size_t start = s.find_first_not_of(whitespace);
+    const size_t end = s.find_last_not_of(whitespace);
     return (start == std::wstring::npos || end == std::wstring::npos) ? L"" : s.substr(start, end - start + 1);
 }
 
