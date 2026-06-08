@@ -677,12 +677,14 @@ namespace DirectUI
     };
     DEFINE_ENUM_FLAG_OPERATORS(CoreFontWeight);
 
-    enum class DataPackageOperation : uint8_t
+    enum class DataPackageOperation 
     {
         DataPackageOperation_None = 0,
         DataPackageOperation_Copy = 1,
         DataPackageOperation_Move = 2,
         DataPackageOperation_Link = 4,
+        DataPackageOperation_NewTarget = 1073741824,
+        DataPackageOperation_BackgroundTarget = 536870912,
     };
     DEFINE_ENUM_FLAG_OPERATORS(DataPackageOperation);
 

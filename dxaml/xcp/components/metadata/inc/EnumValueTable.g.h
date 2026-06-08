@@ -546,6 +546,8 @@ extern __declspec(selectany) const XTABLE satDataPackageOperation[] =
     { XSTRING_PTR_STORAGE(L"DataPackageOperation_Copy"), 1 },
     { XSTRING_PTR_STORAGE(L"DataPackageOperation_Move"), 2 },
     { XSTRING_PTR_STORAGE(L"DataPackageOperation_Link"), 4 },
+    { XSTRING_PTR_STORAGE(L"DataPackageOperation_NewTarget"), 1073741824 },
+    { XSTRING_PTR_STORAGE(L"DataPackageOperation_BackgroundTarget"), 536870912 },
 };
 
 extern __declspec(selectany) const XTABLE satDayOfWeek[] =

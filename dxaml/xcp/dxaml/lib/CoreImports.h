@@ -70,7 +70,7 @@ enum XDMContentType;
 namespace ABI::Windows::Foundation { struct Rect; }
 namespace ABI::Windows::System { enum VirtualKeyModifiers : unsigned int; }
 namespace DirectUI { enum class ClockState : uint8_t; }
-namespace DirectUI { enum class DataPackageOperation : uint8_t; }
+namespace DirectUI { enum class DataPackageOperation : int; }
 namespace DirectUI { enum class DragDropMessageType : uint8_t; }
 namespace DirectUI { enum class FocusState : uint8_t; }
 namespace DirectUI { enum class InputPaneState : uint8_t; }

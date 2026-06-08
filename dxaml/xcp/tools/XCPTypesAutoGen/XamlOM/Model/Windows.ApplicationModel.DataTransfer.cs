@@ -29,6 +29,10 @@ namespace Windows.ApplicationModel.DataTransfer
         [NativeValueName("XcpDataPackageOperation_Move")]
         DataPackageOperation_Move    = 2,
         [NativeValueName("XcpDataPackageOperation_Link")]
-        DataPackageOperation_Link    = 4
+        DataPackageOperation_Link    = 4,
+        [NativeValueName("XcpDataPackageOperation_NewTarget")]
+        DataPackageOperation_NewTarget        = 0x40000000,
+        [NativeValueName("XcpDataPackageOperation_BackgroundTarget")]
+        DataPackageOperation_BackgroundTarget = 0x20000000
     }
 }

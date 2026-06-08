@@ -5338,7 +5338,7 @@ extern const MetaDataType c_aTypes[KnownTypeCount] =
     {
         KnownTypeIndex::DataPackageOperation, // Index name
         KnownTypeIndex::UnknownType, // Base index name
-        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum) | static_cast<UINT>(MetaDataTypeInfoFlags::IsCompactEnum)), // Type flags
+        static_cast<MetaDataTypeInfoFlags>(static_cast<UINT>(MetaDataTypeInfoFlags::IsPublic) | static_cast<UINT>(MetaDataTypeInfoFlags::IsValueType) | static_cast<UINT>(MetaDataTypeInfoFlags::HasTypeConverter) | static_cast<UINT>(MetaDataTypeInfoFlags::IsEnum)), // Type flags
     },
     // Windows.Globalization.DayOfWeek
     {
