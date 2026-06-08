@@ -8,7 +8,7 @@
 
         target_link_libraries(<your-target>
             PRIVATE
-                Microsoft.WindowsAppSDK.WinUI_SelfContained  # or _Framework
+                Microsoft.WindowsAppSDK.WinUI
         )
 
     License:
@@ -20,7 +20,7 @@ if(CMAKE_VERSION VERSION_LESS 3.31)
     message(FATAL_ERROR "Microsoft.WindowsAppSDK.WinUI requires at least CMake 3.31, but CMake ${CMAKE_VERSION} is in use.")
 endif()
 
-
+find_package(Microsoft.WindowsAppSDK.Base CONFIG REQUIRED)
 find_package(Microsoft.WindowsAppSDK.Foundation CONFIG QUIET)
 find_package(Microsoft.WindowsAppSDK.InteractiveExperiences CONFIG QUIET)
 
@@ -76,6 +76,13 @@ block(SCOPE_FOR VARIABLES)
             ${PACKAGE_LOCATION}/include
     )
 
+    # Forward-declare deployment-mode variant targets adjacent to the basic target.
+    add_library(Microsoft.WindowsAppSDK.WinUI_Framework INTERFACE)
+    add_library(Microsoft.WindowsAppSDK.WinUI_SelfContained INTERFACE)
+
+    # Basic target as variant selector. This will link either the _Framework or _SelfContained variant based on the consumer's WindowsAppSDKSelfContained property value.
+    wasdk_link_component_variant(WinUI)
+
     #[[====================================================================================================================
         Target: Microsoft.WindowsAppSDK.WinUI_SelfContained
     ====================================================================================================================]]#
@@ -83,7 +90,7 @@ block(SCOPE_FOR VARIABLES)
     file(GLOB FRAMEWORK_DLLS "${FRAMEWORK_PATH}/*.dll")
     file(GLOB FRAMEWORK_EXTRA "${FRAMEWORK_PATH}/*.pri")
 
-    add_library(Microsoft.WindowsAppSDK.WinUI_SelfContained INTERFACE)
+    # _SelfContained interface target was forward-declared near the basic target above.
 
     wasdk_transform_appxfragment(
         Microsoft.WindowsAppSDK.WinUI_SelfContained
@@ -104,7 +111,7 @@ block(SCOPE_FOR VARIABLES)
     #[[====================================================================================================================
         Target: Microsoft.WindowsAppSDK.WinUI_Framework
     ====================================================================================================================]]#
-    add_library(Microsoft.WindowsAppSDK.WinUI_Framework INTERFACE)
+    # _Framework interface target was forward-declared near the basic target above.
 
     target_link_libraries(Microsoft.WindowsAppSDK.WinUI_Framework
         INTERFACE
