@@ -1,10 +1,13 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
 #include "CompositorTreeHost.h"
 #include "HWTextureMgr.h"
 #include "RenderTargetBitmapWaitExecutor.h"
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_62216616 62216616, WinAppSDK_2_1_5
 #include <UIThreadScheduler.h>
 #include <D3D11Device.h>
 #include <WindowsGraphicsDeviceManager.h>
@@ -521,7 +524,17 @@ CRenderTargetBitmapManager::PreCommit(
                         FALSE /* bSignaled */,
                         FALSE /* bManual */));
 
-                    IFC_RETURN(renderTargetElement->PreCommit(renderTarget, completionEvent));
+                    // PreCommit may fail if the target element has left the visual tree
+                    // (e.g., popup closed). Call the outer FailRender to properly transition
+                    // to Idle and complete the async action with an error.
+                    // scope_exit closes the event; no wait was submitted so no hang.
+                    HRESULT preCommitHr = renderTargetElement->PreCommit(renderTarget, completionEvent);
+                    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62216616>() && FAILED(preCommitHr))
+                    {
+                        IGNOREHR(renderTargetElement->FailRender(preCommitHr));
+                        current = next;
+                        continue;
+                    }
 
                     AddWaitItem(renderTargetElement, completionEvent);
 
@@ -954,6 +967,43 @@ CRenderTargetBitmapManager::CountElementJobs(
     IterateList(m_pDrawingListNoRef, countCallback);
 
     return elementJobs;
+}
+
+//------------------------------------------------------------------------
+//
+//  Synopsis:
+//      Cancels RTB operations targeting the given element that have not
+//      yet reached the capture phase (pending and rendering lists only).
+//      RTBs in the drawing list have already completed CaptureAsync and
+//      will finish safely without accessing the element's composition peer.
+//      Called when an element leaves the visual tree (e.g., popup close)
+//      to prevent PreCommit from accessing stale composition state.
+//      Uses IterateList which safely captures 'next' before the callback,
+//      so FailRender can safely modify the list during iteration.
+//
+//------------------------------------------------------------------------
+_Check_return_ HRESULT
+CRenderTargetBitmapManager::CancelRenderForElement(
+    _In_ CUIElement* pElement)
+{
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62216616>())
+    {
+        return S_OK;
+    }
+
+    auto cancelCallback = [&] (_In_ IRenderTargetElement* element)
+    {
+        if ((element->GetRenderTargetElementData() != nullptr) &&
+            (element->GetRenderTargetElementData()->GetRenderElement() == pElement))
+        {
+            IGNOREHR(element->FailRender(E_ABORT));
+        }
+    };
+
+    IterateList(m_pPendingListNoRef, cancelCallback);
+    IterateList(m_pRenderingListNoRef, cancelCallback);
+
+    return S_OK;
 }
 
 void

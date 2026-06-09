@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
@@ -23,6 +23,9 @@
 #include <transforms.h>
 #include <winpal.h>
 #include "RenderTargetBitmapImplUsingSpriteVisuals.h"
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_62216616 62216616, WinAppSDK_2_1_5
 #include "LockableGraphicsPointer.h"
 #include "D3D11.h"
 #include "D3D11Device.h"
@@ -113,9 +116,15 @@ RenderTargetBitmapImplUsingSpriteVisuals::PreCommit(
     HWCompTreeNode* elementCompNodeNoRef = m_uiElement->GetCompositionPeer();
     if (elementCompNodeNoRef == nullptr)
     {
-        // The element is being rendered with a LayoutTransitionElement, and doesn't have a comp node. Instead, get the comp node
-        // from the LTE itself. The LTE will contain all the SpriteVisual content in the element's subtree.
-        ASSERT(m_uiElement->IsHiddenForLayoutTransition());
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62216616>())
+        {
+            // The composition peer can be null for reasons other than layout transitions.
+            // Check for an LTE before dereferencing.
+            if (!m_uiElement->IsHiddenForLayoutTransition())
+            {
+                return E_FAIL;
+            }
+        }
         elementCompNodeNoRef = m_uiElement->GetFirstLTETargetingThis()->GetCompositionPeer();
     }
 

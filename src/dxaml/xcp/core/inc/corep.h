@@ -1705,9 +1705,7 @@ public:
     void FlushPendingImageUpdates();
     void ClearPendingImageUpdates();
 
-    static HINSTANCE GetInstanceHandle();
-
-    // Mostly useful for optimizations.  If there are no XamlIslandRoots now, there could still
+    // Mostly useful for optimizations. If there are no XamlIslandRoots now, there could still
     // be some in the future.
     bool HasXamlIslandRoots() const;
 

@@ -8,19 +8,64 @@
 #include <minerror.h>
 #include <shlwapi.h>
 #include <strsafe.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62040515: [2.0 Servicing] Fix GetModuleHandle ambiguity in WinUI causing FailFast when same-named multiple modules are loaded
+#define WINAPPSDK_CHANGEID_62040515 62040515, WinAppSDK_2_1_0
+
+std::wstring GetModuleFileNameHelper(_In_ HMODULE hModule)
+{
+    WCHAR buffer[MAX_PATH];
+    DWORD len = GetModuleFileNameW(hModule, buffer, _countof(buffer));
+    IFCW32FAILFAST(len);
+
+    if (len < _countof(buffer))
+    {
+        return std::wstring(buffer, len);
+    }
+
+    auto max_buffer{ std::make_unique<WCHAR[]>(UNICODE_STRING_MAX_CHARS) };
+    len = GetModuleFileNameW(hModule, max_buffer.get(), UNICODE_STRING_MAX_CHARS);
+    if (len == 0 || len == UNICODE_STRING_MAX_CHARS)
+    {
+        IFCFAILFAST(HRESULT_FROM_WIN32(GetLastError()));
+    }
+    return std::wstring(max_buffer.get(), len);
+}
 
 static const std::wstring& GetMuxPath()
 {
     static const std::wstring muxPath = [] {
-        WCHAR muxPathBuffer[MAX_PATH];
-        GetModuleFileName(GetModuleHandle(L"Microsoft.UI.Xaml.dll"), muxPathBuffer, MAX_PATH);
-        FAIL_FAST_ASSERT(PathRemoveFileSpecW(muxPathBuffer) != 0);
-        std::wstring result(muxPathBuffer);
-        if (result.back() != L'\\')
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62040515>())
         {
-            result += L"\\";
+            // Use GetModuleHandleEx with FROM_ADDRESS to avoid ambiguity when multiple
+            // modules named Microsoft.UI.Xaml.dll are loaded (e.g. WinUI2 and WinUI3).
+            HMODULE hModule = nullptr;
+
+            IFCW32FAILFAST(GetModuleHandleExW(
+                    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                    reinterpret_cast<LPCWSTR>(&GetMuxPath),
+                    &hModule));
+
+            std::wstring result = GetModuleFileNameHelper(hModule);
+            // Remove the filename to get the directory path.
+            auto lastSlash = result.find_last_of(L'\\');
+            FAIL_FAST_ASSERT(lastSlash != std::wstring::npos);
+            result.resize(lastSlash + 1); // Keep trailing backslash — caller(s) append filenames directly.
+            return result;
         }
-        return result;
+        else
+        {
+            WCHAR muxPathBuffer[MAX_PATH];
+            GetModuleFileName(GetModuleHandle(L"Microsoft.UI.Xaml.dll"), muxPathBuffer, MAX_PATH);
+            FAIL_FAST_ASSERT(PathRemoveFileSpecW(muxPathBuffer) != 0);
+            std::wstring result(muxPathBuffer);
+            if (result.back() != L'\\')
+            {
+                result += L"\\";
+            }
+            return result;
+        }
     }();
 
     return muxPath;
