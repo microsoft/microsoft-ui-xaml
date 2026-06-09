@@ -11,6 +11,9 @@
 #include <roapi.h>
 #include <atomic>
 #include "LifetimeHandler.h"
+#include <crtdbg.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 using namespace Microsoft::WRL;
 
@@ -225,6 +228,32 @@ int32_t __stdcall MuxcActivationHandler(
 
 } // anonymous namespace
 
+#ifdef _DEBUG
+// In debug builds, suppress CRT dialog boxes that hang automated test
+// runs and crash immediately on CRT asserts/errors so failures are
+// never silently swallowed.
+namespace {
+    int __cdecl CrashOnCrtFailure(int reportType, wchar_t* filename, int linenumber, wchar_t*, wchar_t* message)
+    {
+        if (reportType == _CRT_ASSERT || reportType == _CRT_ERROR)
+        {
+            wchar_t buf[512];
+            swprintf_s(buf, L"*** CRT %s: %s [%s:%d]\n",
+                reportType == _CRT_ASSERT ? L"ASSERT" : L"ERROR",
+                message ? message : L"(no message)",
+                filename ? filename : L"(unknown)", linenumber);
+            OutputDebugStringW(buf);
+
+            // Break into debugger if attached, then failfast so WER
+            // collects a crash dump for the test harness.
+            if (IsDebuggerPresent()) __debugbreak();
+            __fastfail(FAST_FAIL_FATAL_APP_EXIT);
+        }
+        return -1;  // _CRT_WARN: suppress dialog, keep running
+    }
+}
+#endif
+
 STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void *)
 {
     if (DLL_PROCESS_ATTACH == reason)
@@ -232,7 +261,17 @@ STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void
         g_hInstance = hInstance;
         DisableThreadLibraryCalls(hInstance);
         RegisterTraceLogging();
+
+#ifdef _DEBUG
+        // Suppress CRT dialog boxes; crash on asserts/errors.
+        _set_error_mode(_OUT_TO_STDERR);
         _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+        _CrtSetReportMode(_CRT_ERROR,  _CRTDBG_MODE_DEBUG);
+        _CrtSetReportMode(_CRT_WARN,   _CRTDBG_MODE_DEBUG);
+        _CrtSetReportHookW2(_CRT_RPTHOOK_INSTALL, CrashOnCrtFailure);
+        _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
+        SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
+#endif
 
         // Route MUX type activations directly to MUX, skipping RoGetActivationFactory.
         // Cpp/WinRT will call our winrt_activation_handler when activating types for this DLL.

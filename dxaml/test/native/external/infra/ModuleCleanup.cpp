@@ -5,6 +5,10 @@
 #include <ResourcesPriHelper.h>
 #include <WexTestClass.h>
 
+#include <crtdbg.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <Windows.h>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -57,9 +61,58 @@ namespace StringHelpers
     }
 }
 
+// In debug builds, suppress CRT dialog boxes that hang automated test
+// runs, and crash immediately on CRT asserts/errors.  TAEF spawns
+// multiple Te.ProcessHost.exe processes; ModuleSetup only runs in one
+// of them.  A static constructor runs in ALL processes that load this
+// DLL, so the suppression is always active.
+#ifdef _DEBUG
+namespace {
+    int __cdecl CrashOnCrtFailure(int reportType, wchar_t* filename, int linenumber, wchar_t*, wchar_t* message)
+    {
+        if (reportType == _CRT_ASSERT || reportType == _CRT_ERROR)
+        {
+            wchar_t buf[512];
+            swprintf_s(buf, L"*** CRT %s: %s [%s:%d]\n",
+                reportType == _CRT_ASSERT ? L"ASSERT" : L"ERROR",
+                message ? message : L"(no message)",
+                filename ? filename : L"(unknown)", linenumber);
+            OutputDebugStringW(buf);
+            fwprintf(stderr, L"%s", buf);
+
+            // Break into debugger if attached, then failfast so WER
+            // collects a crash dump for the test harness.
+            if (IsDebuggerPresent()) __debugbreak();
+            __fastfail(FAST_FAIL_FATAL_APP_EXIT);
+        }
+        return -1;  // _CRT_WARN: suppress dialog, keep running
+    }
+
+    void ApplyCrtSuppression()
+    {
+        _set_error_mode(_OUT_TO_STDERR);
+        _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+        _CrtSetReportMode(_CRT_ERROR,  _CRTDBG_MODE_DEBUG);
+        _CrtSetReportMode(_CRT_WARN,   _CRTDBG_MODE_DEBUG);
+        _CrtSetReportHookW2(_CRT_RPTHOOK_INSTALL, CrashOnCrtFailure);
+        _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
+        SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX);
+    }
+
+    struct CrtSuppressor {
+        CrtSuppressor() { ApplyCrtSuppression(); }
+    } g_crtSuppressor;
+}
+#endif
+
 bool ModuleSetup()
 {
-    // Configure the resources.pri file for native tests
+#ifdef _DEBUG
+    // Re-apply: other DLLs loaded since the static constructor may
+    // have overridden our CRT report settings.
+    ApplyCrtSuppression();
+#endif
+
     VERIFY_SUCCEEDED(ConfigureResourcesPri(false /* configureManaged */));
     VERIFY_SUCCEEDED(RpcServerStart());
     return true;
