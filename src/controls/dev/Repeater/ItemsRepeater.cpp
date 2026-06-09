@@ -12,6 +12,10 @@
 #include "ViewportManagerWithPlatformFeatures.h"
 #include "RuntimeProfiler.h"
 #include "ItemTemplateWrapper.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 61574370: [1.8 Servicing][WASDK] Fix ItemsRepeater RecyclePool reference cycle memory leak
+#define WINAPPSDK_CHANGEID_61574370 61574370, WinAppSDK_1_8_9
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ItemsRepeaterTrace::s_IsDebugOutputEnabled{ false };
@@ -644,7 +648,18 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     // recycling as opposed to the DataTemplate.
     if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
     {
-        m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61574370>())
+        {
+            auto wrapper = winrt::make_self<ItemTemplateWrapper>(dataTemplate);
+            // Enable reference tracking so the XAML tracker can detect and break the
+            // RecyclePool cycle. See ItemTemplateWrapper::EnableTracking for details.
+            wrapper->EnableTracking(this);
+            m_itemTemplateWrapper = wrapper.as<winrt::IElementFactory>();
+        }
+        else
+        {
+            m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+        }
         if (auto content = dataTemplate.LoadContent().as<winrt::FrameworkElement>())
         {
             // Due to bug https://github.com/microsoft/microsoft-ui-xaml/issues/3057, we need to get the framework
@@ -662,6 +677,9 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     }
     else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
     {
+        // No EnableTracking needed: the wrapper holds the selector, not individual
+        // DataTemplates. The RecyclePool cycle doesn't form because there's no
+        // persistent reference from the wrapper to any DataTemplate with a pool.
         m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(selector);
     }
     else if (auto customElementFactory = newValue.try_as<winrt::IElementFactory>())
