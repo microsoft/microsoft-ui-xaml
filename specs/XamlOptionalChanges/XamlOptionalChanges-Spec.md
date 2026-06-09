@@ -10,11 +10,8 @@ behavior some apps may have inadvertently relied on.  Shipping these changes as
 always-on by default risks breaking existing apps on update.
 
 WinUI needs a general-purpose mechanism for you to say "I've tested my app with
-change X, please enable it."  The closest existing precedent in WinUI is
-[Application.RequestedTheme][], which can only be set inside the `App`
-constructor before XAML markup has been loaded.
-
-_Spec note: internally enforced by `SetRequestedThemeNotSettable()`_
+change X, please enable it."  An API that lets apps explicitly enable breaking
+changes early in its life.
 
 `XamlOptionalChanges` follows a similar early-lock-down pattern but generalizes
 it: you opt in to (or explicitly opt out of) individually identified changes
@@ -24,8 +21,6 @@ per-feature knobs on `Application`, keeps the API surface evergreen (enum
 values can be deprecated and eventually removed when a change becomes
 unconditionally enabled), and provides a single place for documentation and
 tooling to enumerate available optional changes.
-
-[application.requestedtheme]: https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.requestedtheme
 
 ### Why an enum + methods instead of individual properties?
 
@@ -92,9 +87,7 @@ The optional-changes state is automatically **locked** when XAML is
 initialized; specifically, at the entry point of `Application.Start()`
 or `WindowsXamlManager.InitializeForCurrentThread()`, whichever is
 called first in the process.  After locking, any call to
-`EnableChange` or `DisableChange` will throw an `InvalidOperationException` for
-recognized `XamlChangeId`s.  Calls with unrecognized values are ignored
-silently.
+`EnableChange` or `DisableChange` will throw an `InvalidOperationException`.
 
 You can also call `XamlOptionalChanges.Lock()` yourself if you want
 to freeze the state even earlier (for example, library authors who
@@ -199,7 +192,7 @@ int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 ``` csharp
 if (XamlOptionalChanges.IsChangeEnabled(XamlChangeId.Perf2026))
 {
-    // App (or the platform default) has this change active.
+    // App has this change active.
 }
 ```
 
@@ -252,9 +245,9 @@ documented in the WinUI release notes.  The numeric value is the internal
 tracking ID for the change, which keeps `enum` names stable even if friendly
 descriptions evolve.
 
-| Value      | Numeric  | Description                                      |
-|------------|----------|--------------------------------------------------|
-| `Perf2026` | 60952725 | Opt in to breaking perf changes shipped in 2026. |
+| Value      | Numeric  | Description                            | Default |
+|------------|----------|----------------------------------------|---------|
+| `Perf2026` | 60952725 | Breaking perf changes shipped in 2026. | False   |
 
 _Spec note: The team will add new values here as future optional changes
 are introduced.  Values that have been promoted to always-on across all
@@ -293,8 +286,7 @@ All methods are static; you do not instantiate this class.
   serialized; `IsChangeEnabled` and `IsLocked` are lock-free reads once the
   state has been locked.
 * After locking, `EnableChange` and `DisableChange` throw
-  `InvalidOperationException` for recognized `XamlChangeId`s.  Calls with
-  unrecognized values are ignored silently, even after locking.
+  `InvalidOperationException`, even for unrecognized values.
   `IsChangeEnabled`, `Lock`, and `IsLocked` never throw.
 
 
@@ -330,10 +322,8 @@ public static void DisableChange(XamlChangeId changeId);
 ```
 
 Explicitly disables the optional change identified by `changeId`.
-
-You typically do not need to call this, because all optional changes
-default to disabled.  However, `DisableChange` is useful in the
-following situations:
+ 
+`DisableChange` is useful in the following situations:
 
 * A future WinUI release changes a `XamlChangeId` from
   *default-off* to *default-on*.  If you are not yet ready to adopt
@@ -390,13 +380,9 @@ You do not normally need to call `Lock()`.  The platform auto-locks
 when `Application.Start()` or
 `WindowsXamlManager.InitializeForCurrentThread()` is called.
 
-`Lock()` is primarily useful for:
-
-* **Library authors** who want to defensively ensure no downstream code
-  mutates the state after their initialization logic.
-* **Apps with non-deterministic thread startup** (e.g. a plug-in host
-  where a thread might optionally initialize XAML) that want to make
-  the locked state explicit and independent of thread scheduling.
+`Lock()` is primarily useful for **Apps with non-deterministic thread startup**
+(e.g. a plug-in host where a thread might optionally initialize XAML) that want
+to make the locked state explicit and independent of thread scheduling.
 
 
 ## XamlOptionalChanges.IsLocked method
@@ -524,12 +510,19 @@ The `InvalidOperationException` message should be educative and conclusive:
 > `Application.Start() or`
 > `WindowsXamlManager.InitializeForCurrentThread().`
 
+## Related APIs
+
+Windows App SDK’s [RuntimeCompatibilityOptions][] is a similar but that’s for bug fixes,
+not explicitly introduced breaking changes to move WinUI forward.
+
+.NET’s [AppContext][] switches -- process-global, set-early opt-in/-out for
+behavioural breaking changes -- is for a similar purpose for .NET apps.
+
+[runtimecompatibilityoptions]: https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.windowsappruntime.runtimecompatibilityoptions?view=windows-app-sdk-2.0
+[appcontext]: https://learn.microsoft.com/en-us/dotnet/fundamentals/runtime-libraries/system-appcontext
+
 ## Future considerations
 
-* **Default-on changes:** In a future release, a `XamlChangeId` value
-  may transition to *default-on*.  Apps that cannot adopt the change
-  would call `DisableChange` during their startup window.  Release
-  notes will clearly call out any such transitions.
 * **Telemetry / diagnostics:** The locked snapshot of enabled changes
   is a natural payload for diagnostic telemetry, making it easy to
   correlate crashes or performance data with a specific set of opt-ins.
