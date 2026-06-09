@@ -87,7 +87,7 @@
     <MicrosoftCsWinRTPackageVersion>2.1.1</MicrosoftCsWinRTPackageVersion>
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>38</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
     <WebView2PackageVersion>1.0.3719.77</WebView2PackageVersion>
-    <dotNetSdkChannel>8.0.4xx</dotNetSdkChannel>
+    <dotNetSdkChannel>9.0.3xx</dotNetSdkChannel>
     <dotNetSdkVNextChannel>9.0.xx</dotNetSdkVNextChannel>
     <CppWinRTVersion>2.0.230706.1</CppWinRTVersion>
     <Win2DWinUIVersion>1.4.0</Win2DWinUIVersion>

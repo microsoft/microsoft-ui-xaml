@@ -1,15 +1,15 @@
 {
   "comments": {
     "description": "This section of the JSON is not used by the repo, but instead describes this file's functionality.",
-    "sdk_version": "Controls the .NET SDK used by the repo.  version should always be set to the current .NET 8 SDK.",
+    "sdk_version": "Controls the .NET SDK used by the repo.  version should always be set to the current .NET 9 SDK.",
     "sdk_rollForward1": "Will roll forward to a newer .NET SDK if it's been downloaded because of the rollForward=LatestMajor line.",
-    "sdk_rollForward2": "However, will always respect the .NET version specified by init.cmd (newer .NET SDKs can produce .NET 8 apps)",
+    "sdk_rollForward2": "However, will always respect the .NET version specified by init.cmd (newer .NET SDKs can produce .NET 9 apps)",
     "msbuild-sdks_NoTargets1": "Installs the Microsoft.Build.NoTargets SDK, used for .NET SDK-style projects that",
     "msbuild-sdks_NoTargets2": "don't actually need .NET.  These projects perform build operations like binplacing.",
     "msbuild-sdks_EngCommon": "Used by Maestro for managing packages/dependencies"
   },
   "sdk": {
-    "version": "8.0.415",
+    "version": "9.0.313",
     "rollForward": "latestMajor",
     "allowPrerelease": true
   },
