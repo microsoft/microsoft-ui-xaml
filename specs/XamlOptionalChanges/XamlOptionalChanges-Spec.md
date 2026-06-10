@@ -245,9 +245,9 @@ documented in the WinUI release notes.  The numeric value is the internal
 tracking ID for the change, which keeps `enum` names stable even if friendly
 descriptions evolve.
 
-| Value      | Numeric  | Description                            | Default |
-|------------|----------|----------------------------------------|---------|
-| `Perf2026` | 60952725 | Breaking perf changes shipped in 2026. | False   |
+| Value      | Numeric  | Description                            | Default  |
+|------------|----------|----------------------------------------|----------|
+| `Perf2026` | 60952725 | Breaking perf changes shipped in 2026. | Disabled |
 
 _Spec note: The team will add new values here as future optional changes
 are introduced.  Values that have been promoted to always-on across all
@@ -265,6 +265,10 @@ supported SDK versions will be marked `[Deprecated]` and eventually removed._
   `XamlChangeId` will be deprecated.  Your existing `EnableChange` call will
   continue to compile and run without error, but the change will be active
   regardless.
+* The typical progression is: introduced as default-off, promoted to
+  default-on in a later major version (apps can still opt out via
+  `DisableChange`), then made permanent (old code path removed, enum
+  value becomes a no-op).
 
 ## XamlOptionalChanges class
 
