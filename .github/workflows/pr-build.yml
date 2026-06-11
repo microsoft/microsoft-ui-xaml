@@ -1,0 +1,197 @@
+# PR build for WinUI (OSS). Product-only compile gate (DXAML + controls).
+# Tests/signing/Helix run in internal ADO; mirrors WinUI-BuildMUXProject-Steps.yml
+# via per-solution msbuild. Skips MUXControls.sln (test infra only).
+
+name: PR Build
+
+on:
+  pull_request:
+    branches:
+      - main
+      - winui3/main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - '.github/policies/**'
+      - 'LICENSE'
+      - 'NOTICE.md'
+      - 'PRIVACY.md'
+      - 'privacy.md'
+      - 'SECURITY.md'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CONTRIBUTING.md'
+      - 'CONTRIBUTING_feedback_and_requests.md'
+  workflow_dispatch: {}
+
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.flavor }})
+    runs-on: windows-2025
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - flavor: x86chk
+            platform: x86
+            configuration: Debug
+          - flavor: x86fre
+            platform: x86
+            configuration: Release
+          - flavor: x64chk
+            platform: x64
+            configuration: Debug
+          - flavor: x64fre
+            platform: x64
+            configuration: Release
+          - flavor: arm64chk
+            platform: arm64
+            configuration: Debug
+          - flavor: arm64fre
+            platform: arm64
+            configuration: Release
+          # arm64ec deferred: cross-toolchain on windows-2025 unverified.
+    env:
+      WINUI_INIT_FLAVOR: ${{ matrix.flavor }}
+      # Use 'x86' (not 'Win32') - SLNs declare Debug|x86 directly, no Win32 alias.
+      WINUI_BUILD_PLATFORM: ${{ matrix.platform }}
+      WINUI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
+      BuildPlatform: ${{ matrix.platform }}
+      NUGET_PACKAGES: ${{ github.workspace }}\src\packages
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      # Cap CL.exe parallelism: hosted runner has 2 vCPUs; default /m:4 OOMs (C1076).
+      CL: '/MP2'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            src\packages
+            src\.tools
+            ~\.nuget\packages
+          key: winui-nuget-${{ runner.os }}-${{ hashFiles('src/packages.config', 'src/packages.*.config', 'src/eng/versions.props', 'src/Packages.props', 'src/NuGet.config') }}
+          restore-keys: |
+            winui-nuget-${{ runner.os }}-
+
+      - name: Cache .NET SDK
+        uses: actions/cache@v4
+        with:
+          path: src\.dotnet
+          key: winui-dotnet-${{ runner.os }}-${{ hashFiles('src/global.json') }}
+          restore-keys: |
+            winui-dotnet-${{ runner.os }}-
+
+      - name: Show available disk space (pre-build)
+        shell: pwsh
+        run: |
+          Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,2)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,2)}} | Format-Table
+
+      # init.cmd's UAC fallback fails non-interactively; set the regkey here.
+      - name: Enable Win32 long path support
+        shell: pwsh
+        run: |
+          $key  = 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem'
+          $name = 'LongPathsEnabled'
+          $current = (Get-ItemProperty -Path $key -Name $name -ErrorAction SilentlyContinue).$name
+          if ($current -ne 1) {
+            Write-Host "LongPathsEnabled currently '$current'; setting to 1."
+            New-ItemProperty -Path $key -Name $name -Value 1 -PropertyType DWord -Force | Out-Null
+          } else {
+            Write-Host "LongPathsEnabled already 1."
+          }
+
+      # init.cmd /nopgo (PGO needs internal feed); bypass Build.cmd (ERRORLEVEL-clobber bug).
+      # No /pipeline: Initialize-Restore.ps1 supplies .NET runtime + ARM64 ATL/SDK on OSS.
+      - name: Initialize build environment and build
+        working-directory: src
+        shell: pwsh
+        run: |
+          # Scrub runner secrets - binlogs are uploaded as a public artifact.
+          foreach ($v in 'ACTIONS_RUNTIME_TOKEN','ACTIONS_RUNTIME_URL','ACTIONS_RESULTS_URL','ACTIONS_CACHE_URL','ACTIONS_ID_TOKEN_REQUEST_TOKEN','ACTIONS_ID_TOKEN_REQUEST_URL','GITHUB_TOKEN') {
+            Remove-Item "env:$v" -ErrorAction SilentlyContinue
+          }
+
+          $flavor   = $env:WINUI_INIT_FLAVOR
+          $platform = $env:WINUI_BUILD_PLATFORM
+          $config   = $env:WINUI_BUILD_CONFIGURATION
+          $binlogDir = "BuildOutput\binlogs"
+
+          Write-Host "flavor=$flavor platform=$platform configuration=$config"
+
+          if (-not (Test-Path $binlogDir)) { New-Item -ItemType Directory -Force -Path $binlogDir | Out-Null }
+
+          $commonArgs = "/restore /m /ds:false"
+
+          # Mirrors Build.cmd L155-167: LMR is internal-only; fall back to the public nupkg on OSS.
+          $lmrSentinel = "src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlTypeUniverse.cs"
+          if (Test-Path $lmrSentinel) {
+            Write-Host "LMR present - building XamlCompilerPrerequisites.sln"
+            $prereqSteps = @(
+              "msbuild XamlCompilerPrerequisites.sln /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\XamlCompilerPrerequisites.$platform.$config.binlog"
+            )
+          } else {
+            Write-Host "OSS path - using XamlCompilerPublic.csproj + BuildGenXbfForMSBuild.csproj"
+            $prereqSteps = @(
+              "msbuild XamlCompilerPublic.csproj                              /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\XamlCompilerPublic.$platform.$config.binlog",
+              "msbuild eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\BuildGenXbfForMSBuild.$platform.$config.binlog"
+            )
+          }
+
+          # Product-only: Microsoft.UI.Xaml.sln pulls in controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj.
+          # MUXControls.sln is test infra (~292 of 305 projects); test execution is out of scope for PR.
+          $sequence = $prereqSteps + @(
+            "msbuild dxaml\Microsoft.UI.Xaml.sln    /p:Platform=$platform /p:Configuration=$config $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml.$platform.$config.binlog",
+            "pack.component.cmd /version 3.0.0-dev"
+          )
+
+          # Single cmd shell so init's env vars persist into msbuild; && aborts on first failure.
+          $chain = ("init.cmd $flavor /nopgo") + " && " + ($sequence -join " && ")
+          Write-Host $chain
+
+          cmd /c $chain
+          $cmdExit = $LASTEXITCODE
+          if ($cmdExit -ne 0) {
+            Write-Host "::error::Build chain exited with code $cmdExit."
+            exit $cmdExit
+          }
+
+      - name: Show available disk space (post-build)
+        if: always()
+        shell: pwsh
+        run: |
+          Get-PSDrive -PSProvider FileSystem | Select-Object Name, @{N='Free(GB)';E={[math]::Round($_.Free/1GB,2)}}, @{N='Used(GB)';E={[math]::Round($_.Used/1GB,2)}} | Format-Table
+
+      - name: Upload MSBuild binlogs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: binlogs-${{ matrix.flavor }}
+          path: src/BuildOutput/**/*.binlog
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload VS BuildTools install logs (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vs-buildtools-logs-${{ matrix.flavor }}
+          path: src/msbuild-install-logs/**
+          if-no-files-found: ignore
+          retention-days: 7
