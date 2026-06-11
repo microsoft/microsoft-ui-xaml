@@ -1,0 +1,76 @@
+﻿<!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  <PropertyGroup>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
+    <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+    <RootNamespace>Private.Infrastructure</RootNamespace>
+    <Platforms>x64;x86;ARM64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <WebView2UseWinRT>true</WebView2UseWinRT>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(ProjectRoot)\src\projection\private\Microsoft.WinUI.csproj" />
+    <ProjectReference Include="$(InfraTestPath)\client\idl\Private.Infrastructure.vcxproj" Project="{e076fa9c-3b19-431a-a566-3e771f962428}" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+    <ProjectReference Include="$(InfraTestPath)\Win32Hosting\idl\Private.Infrastructure.Hosting.vcxproj" Project="{3fd1b03c-df81-4bc7-8204-c48d16026cfb}" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+    <ProjectReference Include="$(XamlSourcePath)\xcp\dxaml\tools\AppAnalysis\idl\Microsoft.Diagnostics.AppAnalysis.vcxproj" Project="{e1f36d19-f82d-474a-be26-fea52da5b6e6}" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+  </ItemGroup>
+
+  <Target Name="GenerateProjection" BeforeTargets="XamlPreCompile;CoreCompile">
+    <PropertyGroup>
+      <CsWinrtExe Condition="'$(CsWinrtExe)'==''">$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName).$(MicrosoftCsWinRTPackageVersion)\cswinrt.exe</CsWinrtExe>
+      <CsWinRTVerbosity>high</CsWinRTVerbosity>
+      <CsWinRTResponseFile>$(IntermediateOutputPath)cswinrt_platform.rsp</CsWinRTResponseFile>
+      <CsWinRTCommand>$(CsWinrtExe) %40"$(CsWinRTResponseFile)"</CsWinRTCommand>
+    </PropertyGroup>
+    <PropertyGroup>
+      <CsWinRTParams>
+        -verbose
+        -in $(TargetPlatformVersion)
+        -in "$(PrivateMergedWinMDDir)\Microsoft.UI.winmd"
+        -in "$(PrivateMergedWinMDDir)\Microsoft.UI.Xaml.winmd"
+        -in "$(PrivateInfrastructureMergedWinMdPath)\Private.Infrastructure.winmd"
+        -in "$(InfraTestObjPath)\Win32Hosting\idl\Merged\Private.Infrastructure.Hosting.winmd"
+        -in "$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl\microsoft.diagnostics.appanalysis.winmd"
+        -in "$(XamlBinaryPath)\xcp\dxaml\tools\AppAnalysis\idl\microsoft.diagnostics.appanalysis.internal.winmd"
+        -in "$(WinUIDetailsLibPath)\MockDComp.winmd"
+        -out "$(GeneratedFilesDir.TrimEnd('\'))"
+        -exclude Microsoft
+        -exclude Windows
+        -include Private
+        -include MockDComp
+        -include Microsoft.Diagnostics
+      </CsWinRTParams>
+    </PropertyGroup>
+    <MakeDir Directories="$(GeneratedFilesDir)" Condition="!Exists('$(GeneratedFilesDir)')" />
+    <WriteLinesToFile File="$(CsWinRTResponseFile)" Lines="$(CsWinRTParams)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <Message Text="$(CsWinRTCommand)" Importance="$(CsWinRTVerbosity)" />
+    <Exec Command="$(CsWinRTCommand)" />
+    <ItemGroup>
+      <Compile Include="$(GeneratedFilesDir)\*.cs" Exclude="@(Compile)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <BinplaceItem Include="$(NugetPackageDirectory)\$(MicrosoftCsWinRtPackageName)\$(MicrosoftCsWinRTPackageVersion)\lib\$(_DotNetMoniker)\winrt.runtime.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+    <!--
+      Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage publishes
+      Microsoft.InteractiveExperiences.Projection.dll only under
+      lib\net6.0-windows<CurrentLiftedIXPTargetPlatformVersion>\ - there is no net8.0-windows variant yet.
+      The .NET 6 projection assembly is forward-compatible with .NET 8 consumers, so we continue to
+      reference the net6.0-windows folder here. Update once the IXP transport package ships a net8.0-windows lib.
+    -->
+    <BinplaceItem Include="$(NugetPackageDirectory)\$(LiftedIXPTransportPackageName)\$(IxpTransportPackageVersion)\lib\net6.0-windows$(CurrentLiftedIXPTargetPlatformVersion)\Microsoft.InteractiveExperiences.Projection.dll">
+      <Destination>$(TestBinplaceDestinationPath)</Destination>
+    </BinplaceItem>
+  </ItemGroup>
+</Project>

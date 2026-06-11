@@ -1,0 +1,1160 @@
+//  Copyright (c) Microsoft Corporation.  All rights reserved.
+
+#include "sdkddkver.h"
+
+import "oaidl.idl";
+import "inspectable.idl";
+import "microsoft.ui.xaml.idl";
+import "microsoft.ui.xaml.coretypes.idl";
+import "microsoft.ui.xaml.coretypes2.idl";
+import "microsoft.ui.xaml.controls.controls.idl";
+import "microsoft.ui.xaml.controls.controls2.idl";
+import "eventtoken.idl";
+import "windows.foundation.idl";
+import "Windows.Foundation.Numerics.idl";
+import "Windows.Graphics.idl";
+import "MockDComp.idl";
+import "microsoft.diagnostics.appanalysis.internal.idl";
+import "Private.Infrastructure.Hosting.idl";
+import "windows.ui.viewmanagement.idl";
+
+// We're purposely avoiding putting this in the Windows.* namespace
+// to avoid the restriction placed on consuming WinRT classes from
+// the CLR that requires them to be placed in the system32 directory.
+namespace Private.Infrastructure
+{
+    #pragma region ThemingHelper class
+
+    runtimeclass ThemingHelper;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef [v1_enum] enum HighContrastTheme
+    {
+        None,
+        Test,       // Sets an HC palette where all colors are different.
+        Default,    // Sets an HC palette corresponding to the "High Contrast #1" theme from settings.
+        Black,      // Sets an HC palette corresponding to the "High Contrast Black" theme from settings.
+        White,      // Sets an HC palette corresponding to the "High Contrast White" theme from settings.
+        Custom,     // Sets an HC palette corresponding to the "High Contrast Custom" theme from settings.
+
+    } HighContrastTheme;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(07d9c510-11d4-403d-9aed-140a6a2be218)]
+    [exclusiveto(ThemingHelper)]
+    interface IThemingHelper : IInspectable
+    {
+        HRESULT SetApplicationRequestedTheme([in] Microsoft.UI.Xaml.ApplicationTheme theme);
+        HRESULT UnsetApplicationRequestedTheme();
+        HRESULT SimulateThemeChanged();
+        HRESULT RestoreDefaultState();
+        HRESULT RemoveThemingOverrides();
+
+        [propput] HRESULT SystemTheme([in] Microsoft.UI.Xaml.ApplicationTheme theme);
+        [propget] HRESULT SystemTheme([out, retval] Microsoft.UI.Xaml.ApplicationTheme* theme);
+        [propput] HRESULT HighContrastTheme([in]HighContrastTheme theme);
+        [propget] HRESULT HighContrastTheme([out, retval]HighContrastTheme* theme);
+        [propput] HRESULT AccentColor([in] unsigned int accentColor);
+        [propget] HRESULT AccentColor([out, retval] unsigned int* accentColor);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    runtimeclass ThemingHelper
+    {
+        [default]interface IThemingHelper;
+    }
+
+    #pragma endregion
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef [v1_enum] enum DCompRendering
+    {
+        WUCShapesSynchronousCompTree,
+        WUCCompleteSynchronousCompTree,
+    } DCompRendering;
+
+    #pragma region Utilities class
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef [v1_enum] enum DesignMode
+    {
+        None = 0,
+        V2 = 2,
+    } DesignMode;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef [v1_enum] enum DisplayDPIRange
+    {
+        PreviousDefaultSecond = -2,
+        PreviousDefaultFirst = -1,
+        Default = 0,
+        AboveDefaultFirst = 1,
+        AboveDefaultSecond = 2,
+    } DisplayDPIRange;
+
+    runtimeclass Utilities;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(61CD4B0B-15E7-4B7E-91BA-35760DB3991C)]
+    [exclusiveto(Utilities)]
+    interface IUtilities : IInspectable
+    {
+        [propget] HRESULT IsOneCore([out, retval] BOOLEAN* isOneCore);
+        [propget] HRESULT IsXBox([out, retval] BOOLEAN* isXBox);
+        HRESULT SetRegKey([in] HSTRING path, [in] HSTRING name, [in] DWORD dwValue, [out] BOOLEAN* nameExisted, [in] BOOLEAN currentUser);
+        HRESULT DeleteRegKey([in] HSTRING path, [in] HSTRING name, [in] BOOLEAN currentUser);
+
+        HRESULT EnableChangingTimeZone([in] BOOLEAN enable);
+        HRESULT SetTimeZone([in] HSTRING timezoneId);
+
+        [overload("RunCommandLine"), default_overload]
+        HRESULT RunCommandLine([in] HSTRING commandLine);
+        [overload("RunCommandLine")]
+        HRESULT RunCommandLineWithExitCode([in] HSTRING commandLine, [out] DWORD* pExitCode);
+
+        HRESULT TerminateProcess([in] HSTRING processName);
+
+        [overload("VerifyMockDCompOutput"), default_overload]
+        HRESULT VerifyMockDCompOutput(
+            [in] MockDComp.SurfaceComparison surfaceComparison
+            );
+
+        [overload("VerifyMockDCompOutput")]
+        HRESULT VerifyMockDCompOutputWithOptions(
+            [in] MockDComp.SurfaceComparison surfaceComparison,
+            [in] MockDComp.SaveToFileOptions xmlOptions
+            );
+
+        [overload("VerifyMockDCompOutput")]
+        HRESULT VerifyMockDCompOutputWithAnimation(
+            [in] MockDComp.AnimationComparison animationComparison,
+            [in] HSTRING variation
+            );
+
+        [overload("VerifyMockDCompOutput"), default_overload]
+        HRESULT VerifyMockDCompOutputForVariation(
+            [in] MockDComp.SurfaceComparison surfaceComparison,
+            [in] HSTRING variation
+            );
+
+        [overload("VerifyMockDCompOutput")]
+        HRESULT VerifyMockDCompOutputForVariationWithOptions(
+            [in] MockDComp.SurfaceComparison surfaceComparison,
+            [in] HSTRING variation,
+            [in] MockDComp.SaveToFileOptions xmlOptions
+            );
+
+        [overload("VerifyMockDCompOutput")]
+        HRESULT VerifyMockDCompOutputForVariationWithDataCollectionOnFailure(
+            [in] MockDComp.AnimationComparison animationComparison,
+            [in] MockDComp.SurfaceComparison surfaceComparison,
+            [in] HSTRING variation,
+            [in] BOOLEAN captureProcessDumpOnFailure
+            );
+
+        [overload("VerifyMockDCompOutput"), default_overload]
+        HRESULT VerifyMockDCompOutputForVariationWithSucceededFlag(
+            [in] MockDComp.SurfaceComparison surfaceComparison,
+            [in] HSTRING variation,
+            [in] BOOLEAN ignoreVerification,
+            [out] BOOLEAN* succeeded
+            );
+
+        HRESULT SaveMockDCompOutput(
+            [in] MockDComp.AnimationComparison animationComparison,
+            [in] MockDComp.SurfaceComparison surfaceComparison,
+            [in] HSTRING variation
+            );
+
+        [overload("VerifyUIElementTree"), default_overload]
+        HRESULT VerifyUIElementTree([out, retval] BOOLEAN* result);
+
+        HRESULT VerifyUIElementTreeWithRoot([in] Microsoft.UI.Xaml.DependencyObject* root, [out, retval] BOOLEAN* result);
+
+        [overload("VerifyUIElementTree"), default_overload]
+        HRESULT VerifyUIElementTreeForVariation([in] HSTRING variation, [out, retval] BOOLEAN* result);
+
+        [overload("VerifyUIElementTreeWithRules"), default_overload]
+        HRESULT VerifyUIElementTreeWithRules([in] HSTRING rulesFilename, [out, retval] BOOLEAN* result);
+
+        [overload("VerifyUIElementTreeWithRules")]
+        HRESULT VerifyUIElementTreeForVariationWithRules([in] HSTRING variation, [in] HSTRING rulesFilename, [out, retval] BOOLEAN* result);
+
+        [overload("VerifyUIElementTreeWithRulesInline"), default_overload]
+        HRESULT VerifyUIElementTreeWithRulesInline([in] HSTRING inlineRulesXml, [out, retval] BOOLEAN* result);
+
+        [overload("VerifyUIElementTreeWithRulesInline")]
+        HRESULT VerifyUIElementTreeForVariationWithRulesInline([in] HSTRING variation, [in] HSTRING inlineRulesXml, [out, retval] BOOLEAN* result);
+
+        [overload("VerifyUIElementTreeWithRulesInline")]
+        HRESULT VerifyUIElementTreeForVariationWithRulesInlineWithIgnorePopupsOption([in] HSTRING variation, [in] HSTRING inlineRulesXml, [in] BOOLEAN ignorePopups, [out, retval] BOOLEAN* result);
+
+        // Verifies that the UIElement tree only contains the colors that are specified in the given set.
+        HRESULT VerifyUIElementTreeContainsOnlyValidColors([in] HSTRING variation, [in]  Windows.Foundation.Collections.IVector<unsigned int>* validColors);
+
+        HRESULT SetRuntimeEnabledFeatureOverride([in] INT feature, [in] BOOLEAN enabled, [out] BOOLEAN* wasPreviouslyEnabled);
+        HRESULT ClearAllRuntimeEnabledFeatureOverrides();
+        HRESULT OverrideTrimImageResourceDelay([in] BOOLEAN enabled);
+
+        // This method assumes that one of the primary validation methods was called prior to
+        // calling this and has generated an output file in the app's temp folder.
+        HRESULT VerifyOutputFileHighContrastColors([in] HSTRING variation, [in] HighContrastTheme theme);
+
+        // Some CommandBars (such as ones from PickerFlyouts) are hidden and can't be queried by
+        // using the VisualTreeHelper.  This method provides a mechanism to work around that.
+        HRESULT RetrieveOpenBottomCommandBar([in] Microsoft.UI.Xaml.XamlRoot* xamlRoot, [out, retval] Microsoft.UI.Xaml.Controls.CommandBar** cmdBar);
+        HRESULT SetMockDCompSwapChainIdentifier([in] unsigned __int64 identifierValue, [in] unsigned int identifierID);
+        HRESULT SetMockDCompSurfaceIdMode([in] MockDComp.SurfaceIdMode mode);
+        HRESULT ResetMockDCompSurfaceId();
+        HRESULT SimulateAllSurfacesDiscarded();
+        HRESULT SetReturnDeviceLostWhenCreatingSurfaces([in] BOOLEAN returnDeviceLostWhenCreatingSurfaces);
+
+        // This method will simulate a device lost from DComp during an attempt to
+        // create a surface.
+        HRESULT ResetMockDCompGraphicsDevice();
+        HRESULT SimulateDeviceLostOnOffThreadImageUpload();
+        HRESULT SimulateSwallowedDeviceLostOnStartup();
+        HRESULT SimulateDeviceLostOnMetadataParse();
+        HRESULT SimulateDeviceLostOnCreatingSvgDecoder();
+
+        HRESULT SetDCompDeviceLeakDetectionEnabled([in] BOOLEAN enableLeakDetection);
+
+        HRESULT ResetWasCommitInvoked();
+        [propget] HRESULT WasCommitInvoked([out, retval] BOOLEAN* wasCommitInvoked);
+
+        HRESULT VerifyAreSurfaceResourcesOffered([in] BOOLEAN value);
+
+        HRESULT ResetMetadata();
+
+        HRESULT CreateLoopingSelector([out] IInspectable** ppLoopingSelector);
+
+        // Simulates a Back button pressed event.
+        // On Phone the Back button is the hardware back button on the device.
+        // On Desktop, the Back button is an optional piece of Shell Chrome drawn in the title bar.
+        // This test hook injects the back pressed event directly into the Xaml layer. It does not call out to the shell to trigger the event.
+        HRESULT InjectBackButtonPress([out] BOOLEAN* pHandled);
+
+        HRESULT ResetAtlasSizeHint();
+
+        HRESULT ShrinkApplicationViewVisibleBounds([in] BOOLEAN enabled);
+
+        HRESULT ClearDefaultLanguageString();
+
+        HRESULT IsWindowFocused([out] BOOLEAN* isFocused, [in] Microsoft.UI.Xaml.XamlRoot* xamlRoot);
+
+        HRESULT GetPopupOverlayElement([in] Microsoft.UI.Xaml.Controls.Primitives.Popup* popup, [out, retval] Microsoft.UI.Xaml.FrameworkElement** overlayElement);
+
+        HRESULT DeletePlatformFamilyCache();
+
+        HRESULT DeleteResourceDictionaryCaches();
+
+        HRESULT CreateRenderingScopeGuard(
+            [in] DCompRendering rendering,
+            [in] BOOLEAN resizeWindow,
+            [in] BOOLEAN injectMockDComp,
+            [in] BOOLEAN resetDevice,
+            [in] BOOLEAN resetWindowContent,
+            [out, retval] Windows.Foundation.IClosable** pGuard);
+
+        HRESULT CaptureScreenAndProcess([in] HSTRING variation);
+
+        HRESULT CaptureScreen([in] HSTRING variation);
+
+        [propget] HRESULT IsMockDCompDisabled([out, retval] BOOLEAN* isMockDCompDisabled);
+
+        HRESULT SetMockUIAClientsListening();
+        HRESULT ClearMockUIAClientsListening();
+
+        [propget] HRESULT IsDesktop([out, retval] BOOLEAN* isDesktop);
+
+        HRESULT SetGenericXamlFilePathForMUX([in] HSTRING filePath);
+
+        HRESULT RestoreDefaultFlipViewScrollWheelDelay();
+        HRESULT SetFlipViewScrollWheelDelay([in] int scrollWheelDelayMS);
+
+        HRESULT SetMockEnergySaverStatus([in] Windows.System.Power.EnergySaverStatus energyStatus);
+
+        HRESULT SetMockPowerSupplyStatus([in] Windows.System.Power.PowerSupplyStatus powerStatus);
+
+        HRESULT SetMockBatteryStatus([in] Windows.System.Power.BatteryStatus batteryStatus);
+
+        HRESULT SetMockRemainingChargePercent([in] int value);
+
+        HRESULT SetMockRemainingDischargeTime([in] Windows.Foundation.TimeSpan value);
+
+        HRESULT SetApplicationLanguageOverride([in] HSTRING languageName);
+        HRESULT ClearApplicationLanguageOverride();
+
+        HRESULT SetDpi(
+            [in] Windows.Graphics.DisplayAdapterId displayAdapterId,
+            [in] UINT DisplayAdapterTargetId,
+            [in] DisplayDPIRange dpiRange,
+            [out, retval] Windows.Foundation.IClosable** pRestoreDpi);
+
+        HRESULT SetForceDebugSettingsTracingEvents([in] BOOLEAN value);
+
+        [propget] HRESULT IsWPF([out, retval] BOOLEAN* isWPF);
+
+        // XamlOptionalChanges test hooks
+        HRESULT ResetOptionalChanges();
+   }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    runtimeclass Utilities
+    {
+        [default]interface IUtilities;
+    }
+
+    #pragma endregion
+
+    #pragma region InputHelper class
+
+    runtimeclass InputHelper;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef [v1_enum] enum FlickDirection
+    {
+        NorthWest,
+        North,
+        NorthEast,
+        East,
+        SouthEast,
+        South,
+        SouthWest,
+        West
+    } FlickDirection;
+
+    // NB: This must be kept in sync with MouseButton in InputManager.h in the WinUIDetails repo.
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef[v1_enum] enum MouseButton
+    {
+        Left = 0,
+        Right = 1,
+        Middle = 2
+    } MouseButton;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef[v1_enum] enum PointerFinger
+    {
+        Finger1 = 1,
+        Finger2 = 2,
+        Finger3 = 3,
+        Finger4 = 4
+    } PointerFinger;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(414689F2-247E-473E-9A52-80C58549077B)]
+    [exclusiveto(InputHelper)]
+    interface IInputHelper : IInspectable
+    {
+        [overload("LeftMouseClick"), default_overload]
+        HRESULT LeftMouseClick([in] Microsoft.UI.Xaml.FrameworkElement* element);
+        [overload("LeftMouseClick")]
+        HRESULT LeftMouseClickOnPoint([in] Windows.Foundation.Point position);
+
+        HRESULT DoubleTap([in] Microsoft.UI.Xaml.FrameworkElement* element);
+
+        [overload("Tap"), default_overload]
+        HRESULT Tap([in] Microsoft.UI.Xaml.FrameworkElement* element);
+
+        [overload("Tap")]
+        HRESULT TapAtPercent([in] Microsoft.UI.Xaml.FrameworkElement* element, float fractionOfWidth, float fractionOfHeight);
+
+        [overload("Tap")]
+        HRESULT TapOnPoint([in] Windows.Foundation.Point point);
+
+        [overload("Hold"), default_overload]
+        HRESULT Hold([in] Microsoft.UI.Xaml.FrameworkElement* element);
+
+        [overload("Hold")]
+        HRESULT HoldOnPoint([in] Windows.Foundation.Point point);
+
+        [overload("Hold")]
+        HRESULT HoldForSpecifiedDuration([in] Microsoft.UI.Xaml.FrameworkElement* element, UINT32 holdDuration);
+
+        [overload("MoveMouse"), default_overload]
+        HRESULT MoveMouse([in] Microsoft.UI.Xaml.FrameworkElement* element);
+
+        [overload("MoveMouse")]
+        HRESULT MoveMouseFromCenter([in] Microsoft.UI.Xaml.FrameworkElement* element, INT relX, INT relY);
+
+        [overload("MoveMouse")]
+        HRESULT MoveMouseOnPoint([in] Windows.Foundation.Point point);
+
+        [overload("ClickMouseButton"), default_overload]
+        HRESULT ClickMouseButton(MouseButton button, [in] Microsoft.UI.Xaml.FrameworkElement* element);
+
+        [overload("ClickMouseButton")]
+        HRESULT ClickMouseButtonWithOffset(MouseButton button, [in] Microsoft.UI.Xaml.FrameworkElement* element, INT dx, INT dy);
+
+        [overload("ClickMouseButton")]
+        HRESULT ClickMouseButtonOnPoint(MouseButton button, Windows.Foundation.Point position);
+
+        [overload("ScrollMouseWheel"), default_overload]
+        HRESULT ScrollMouseWheel([in] Microsoft.UI.Xaml.FrameworkElement* element, INT numberOfWheelClicks);
+
+        HRESULT Flick([in] Microsoft.UI.Xaml.FrameworkElement* element, FlickDirection direction);
+        HRESULT PanFromCenter([in] Microsoft.UI.Xaml.FrameworkElement* element, INT relX, INT relY, DOUBLE velocityFactor);
+        HRESULT PressHoldAndPanFromCenter([in] Microsoft.UI.Xaml.FrameworkElement* element, INT relX, INT relY, DOUBLE velocityFactor, UINT holdTime);
+        HRESULT DragFromCenter([in] Microsoft.UI.Xaml.FrameworkElement* element, INT relX, INT relY, DOUBLE velocityFactor);
+        HRESULT DragToCenter([in] Microsoft.UI.Xaml.FrameworkElement* element, INT relX, INT relY, DOUBLE velocityFactor);
+        HRESULT DragBetweenElements([in] Microsoft.UI.Xaml.FrameworkElement* sourceElement, [in] Microsoft.UI.Xaml.FrameworkElement* targetElement, DOUBLE velocityFactor);
+        HRESULT PenStrokeFromCenter([in] Microsoft.UI.Xaml.FrameworkElement* element, INT relX, INT relY, DOUBLE velocityFactor);
+        HRESULT PenHold([in] Microsoft.UI.Xaml.FrameworkElement* element);
+        HRESULT PenTap([in] Microsoft.UI.Xaml.FrameworkElement* element);
+        HRESULT PenDoubleTap([in] Microsoft.UI.Xaml.FrameworkElement* element);
+        HRESULT PenBarrelTap([in] Microsoft.UI.Xaml.FrameworkElement* element);
+        HRESULT PenWriteLetterT([in] Microsoft.UI.Xaml.FrameworkElement* element);
+        HRESULT PenWriteDash([in] Microsoft.UI.Xaml.FrameworkElement* element);
+        HRESULT InjectDragWithPenBarrelDown([in] Microsoft.UI.Xaml.FrameworkElement* pElement, [in] INT32 relX, [in] INT32 relY, [in] DOUBLE velocityFactor);
+        HRESULT ZoomInToEdges([in] Microsoft.UI.Xaml.FrameworkElement* element, UINT equidistanceFromEdges, Microsoft.UI.Xaml.Controls.Orientation orientation, DOUBLE velocityFactor);
+        HRESULT ZoomOutFromEdges([in] Microsoft.UI.Xaml.FrameworkElement* element, UINT equidistanceFromEdges, Microsoft.UI.Xaml.Controls.Orientation orientation, DOUBLE velocityFactor);
+        HRESULT InjectRotate([in] Microsoft.UI.Xaml.FrameworkElement* element, [in] Windows.Foundation.Point startFinger1, [in] Windows.Foundation.Point startFinger2, [in] DOUBLE rotationAngleDegrees,
+            [in] UINT32 durationMs, [in] BOOLEAN pivotRotate);
+
+        // Methods not relative to xaml elements.
+        HRESULT Swipe(Windows.Foundation.Point start, Windows.Foundation.Point end);
+
+        // More advanced "dynamic press" APIs, allow you to separately inject pointer down/up events
+        HRESULT DynamicPressCenter([in] Microsoft.UI.Xaml.FrameworkElement* element, INT dx, INT dy, PointerFinger finger);
+        HRESULT DynamicRelease(PointerFinger finger);
+
+        HRESULT DynamicPenPressCenter([in] Microsoft.UI.Xaml.FrameworkElement* element, INT dx, INT dy);
+        HRESULT DynamicPenRelease();
+
+        // Allows to press a mouse button, drag and release.
+        [overload("MouseButtonDown"), default_overload]
+        HRESULT MouseButtonDown([in] Microsoft.UI.Xaml.FrameworkElement* element, INT dx, INT dy, MouseButton button);
+        [overload("MouseButtonDown")]
+        HRESULT MouseButtonDownOnPoint(Windows.Foundation.Point point, MouseButton button);
+        [overload("MouseButtonUp"), default_overload]
+        HRESULT MouseButtonUp([in] Microsoft.UI.Xaml.FrameworkElement* element, INT dx, INT dy, MouseButton button);
+        [overload("MouseButtonUp")]
+        HRESULT MouseButtonUpOnPoint(Windows.Foundation.Point point, MouseButton button);
+        [overload("MouseDrag"), default_overload]
+        HRESULT MouseDrag([in] Microsoft.UI.Xaml.FrameworkElement* elementSrc, INT dxSrc, INT dySrc, Microsoft.UI.Xaml.FrameworkElement* elementDest, INT dxDest, INT dyDest, MouseButton button);
+        [overload("MouseDrag")]
+        HRESULT MouseDragOnPoints(Windows.Foundation.Point pointSrc, Windows.Foundation.Point pointDest, MouseButton button);
+
+        HRESULT SuppressGestureStateReset([out, retval]Windows.Foundation.IClosable** suppressionScope);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    runtimeclass InputHelper
+    {
+        [default]interface IInputHelper;
+    }
+
+    #pragma endregion
+
+    #pragma region KeyboardHelper class
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef[v1_enum] enum KeyboardWaitKind
+    {
+        None                      = 0x00,
+        WaitForEvent              = 0x01,
+        WaitForIdleBefore         = WaitForEvent | 0x02,
+        WaitForIdleAfter          = WaitForEvent | 0x04,
+        WaitForIdleBeforeAndAfter = WaitForIdleBefore | WaitForIdleAfter,
+        Sleep                     = 0x08,
+        Default                   = WaitForEvent,
+    } KeyboardWaitKind;
+
+    runtimeclass KeyboardHelper;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(83CF4B0B-04D6-4B7E-91BA-4687AEC4002D)]
+    [exclusiveto(KeyboardHelper)]
+    interface IKeyboardHelper : IInspectable
+    {
+        HRESULT SetWaitKind(KeyboardWaitKind waitKind);
+        HRESULT Enter();
+        HRESULT Space();
+        HRESULT Escape();
+        HRESULT CtrlTab();
+        HRESULT ShiftTab();
+        HRESULT AltTab();
+        HRESULT Tab();
+        HRESULT Up();
+        HRESULT Down();
+        HRESULT Left();
+        HRESULT Right();
+        HRESULT Home();
+        HRESULT End();
+        HRESULT PageUp();
+        HRESULT PageDown();
+        HRESULT Backspace();
+        HRESULT Insert();
+        HRESULT Delete();
+        HRESULT Alt();
+        HRESULT Control();
+        HRESULT GamepadA();
+        HRESULT GamepadB();
+        HRESULT GamepadDpadRight();
+        HRESULT GamepadDpadDown();
+        HRESULT GamepadDpadUp();
+        HRESULT GamepadDpadLeft();
+        HRESULT GamepadLeftShoulder();
+        HRESULT GamepadLeftTrigger();
+        HRESULT GamepadRightShoulder();
+        HRESULT GamepadRightTrigger();
+        HRESULT GamePadLeftThumbStickRight();
+        HRESULT GamePadLeftThumbStickDown();
+        HRESULT GamePadLeftThumbStickUp();
+        HRESULT GamePadLeftThumbStickLeft();
+        HRESULT GamePadRightThumbStickRight();
+        HRESULT GamePadRightThumbStickDown();
+        HRESULT GamePadRightThumbStickUp();
+        HRESULT GamePadRightThumbStickLeft();
+        HRESULT GamePadMenu();
+        HRESULT Copy();
+        HRESULT Paste();
+        HRESULT Cut();
+        HRESULT PressKeySequence(HSTRING keySeq);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    runtimeclass KeyboardHelper
+    {
+        [default]interface IKeyboardHelper;
+    }
+
+    #pragma endregion
+
+    #pragma region FontHelper class
+
+    runtimeclass FontHelper;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(9672968d-a080-49eb-b3fa-5d04413003a2)]
+    [exclusiveto(FontHelper)]
+    interface IFontHelper : IInspectable
+    {
+        HRESULT ClearSystemFontCollectionOverride();
+        [propget] HRESULT IsCustomSystemFontCollectionInUse([out, retval] BOOLEAN* isCustomSystemFontCollection);
+        HRESULT UpdateFontScale([in] float scale);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    runtimeclass FontHelper
+    {
+        [default]interface IFontHelper;
+    }
+
+    #pragma endregion
+
+    #pragma region IslandHelper class
+
+    runtimeclass IslandHelper;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(57ce2c9e-3048-4b82-9550-46149f7ac887)]
+    [exclusiveto(IslandHelper)]
+    interface IIslandHelperStatics : IInspectable
+    {
+        HRESULT CreateOnNewUIThreadAndNewWindow([in] DWORD windowClassAtom, [out, retval] IslandHelper** value);
+
+        HRESULT CreateOnCurrentThreadAndNewWindow([in] DWORD windowClassAtom, [out, retval] IslandHelper** value);
+
+        HRESULT CreateOnCurrentThreadAndWindow([in] Microsoft.UI.WindowId windowId, [out, retval] IslandHelper** value);
+
+        // Note: This doesn't actually take the island object, because we don't want to take a ref on it. This kind of
+        // IslandHelper exists only to call into test hooks.
+        HRESULT CreateWithExistingIsland([in] Microsoft.UI.Dispatching.DispatcherQueue* dq, [out, retval] IslandHelper** value);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(d9c1e710-2d38-4ec9-b3b0-02d08b3a156e)]
+    [exclusiveto(IslandHelper)]
+    interface IIslandHelper : IInspectable
+    {
+        // Note: type is IInspectable because Microsoft.UI.Xaml.Hosting.DesktopWindowXamlSource is experimental
+        [propget] HRESULT DesktopWindowXamlSource([out, retval] IInspectable** dwxs);
+
+        [propget] HRESULT DispatcherQueue([out, retval] Microsoft.UI.Dispatching.DispatcherQueue** dq);
+
+        // Given any UIElement, walk up to a popup or an island and return its ContentSiteBridge/ContentIsland
+        // Note: types are IInspectable because Microsoft.UI.Content.ContentIsland and Microsoft.UI.Content.IContentSiteBridge are experimental
+        HRESULT GetIslandAndBridge(
+            [in] Microsoft.UI.Xaml.FrameworkElement* element,
+            [in] BOOLEAN followPopups,
+            [out] IInspectable** island,
+            [out] IInspectable** bridge);
+
+        HRESULT LeftMouseClick([in] Microsoft.UI.Xaml.FrameworkElement* element);
+
+        HRESULT ThrottleImageTaskDispatcher([in] BOOLEAN enableThrottling, [in] unsigned int numberOfTasksAllowedToDispatch);
+
+        HRESULT SimulateDeviceLost();
+
+        HRESULT MarkDeviceInstanceLost();
+
+        HRESULT GetD3D11GraphicsDeviceAddress([out] INT64 * device);
+
+        HRESULT GetAllContentIslands([out, retval] Windows.Foundation.Collections.IVectorView<IInspectable*>** contentIslands);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [static(IIslandHelperStatics, NTDDI_WINTHRESHOLD)]
+    runtimeclass IslandHelper
+    {
+        [default] interface IIslandHelper;
+    }
+
+    #pragma endregion
+
+    #pragma region VisualTreeVerifier class
+
+    runtimeclass VisualTreeVerifier;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(0dfd28bd-a9da-4d78-bd49-347e1abebed8)]
+    [exclusiveto(VisualTreeVerifier)]
+    interface IVisualTreeVerifierStatics : IInspectable
+    {
+        HRESULT CreateFromElement([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] VisualTreeVerifier** value);
+
+        HRESULT CreateFromVisual([in] Microsoft.UI.Composition.Visual* visual, [out, retval] VisualTreeVerifier** value);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(08d5b550-451a-4557-9e10-63c4fb54f9f4)]
+    [exclusiveto(VisualTreeVerifier)]
+    interface IVisualTreeVerifier : IInspectable
+    {
+        HRESULT WalkToTaggedChild(UINT tag, [out, retval] VisualTreeVerifier** value);
+        HRESULT WalkThroughSimpleCompNode([out, retval] VisualTreeVerifier** value);
+        HRESULT WalkToChildAtIndex(UINT childIndex, UINT expectedChildCount, [out, retval] VisualTreeVerifier** value);
+
+        HRESULT VerifyNoTaggedChild(UINT tag);
+        HRESULT VerifyChildCount(UINT childCount);
+
+        HRESULT VerifyVisualOffset(float x, float y);
+        HRESULT VerifyVisualSize(float width, float height);
+        HRESULT VerifyTransformMatrix_Scale(float x, float y);
+        HRESULT VerifyRoundedCornerClip(float left, float top, float right, float bottom, float cornerRadius);
+        HRESULT VerifyRoundedCornerClipCorners(float topLeft, float topRight, float bottomRight, float bottomLeft);
+
+        HRESULT GetVisualOffset([out, retval] Windows.Foundation.Numerics.Vector3* offset);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [static(IVisualTreeVerifierStatics, NTDDI_WINTHRESHOLD)]
+    runtimeclass VisualTreeVerifier
+    {
+        [default] interface IVisualTreeVerifier;
+    }
+
+    #pragma endregion
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [object]
+    [uuid(7f04f11a-e2f0-403e-b50d-1003599bf6d0)]
+    delegate HRESULT GCCollectCallback();
+
+    #pragma region SecondaryView class
+
+    runtimeclass SecondaryView;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [object]
+    [uuid(1A715B56-5878-4BC9-9F38-DA9F74DC2238)]
+    delegate HRESULT ViewCreatedCallback();
+
+    [version(NTDDI_WIN10_RS3)]
+    [uuid(41D8FC81-09BA-4D3F-A90A-E958E7B06CF4)]
+    [exclusiveto(SecondaryView)]
+    interface ISecondaryView : IInspectable
+        requires Windows.Foundation.IClosable
+    {
+        [propget] HRESULT View([out, retval] Windows.ApplicationModel.Core.CoreApplicationView** view);
+        [propget] HRESULT Dispatcher([out, retval] Microsoft.UI.Dispatching.DispatcherQueue** dispatcher);
+    }
+
+    [version(NTDDI_WIN10_RS3)]
+    runtimeclass SecondaryView
+    {
+        [default]interface ISecondaryView;
+    }
+
+    #pragma endregion
+
+    #pragma region WindowHelper class
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [object]
+    [uuid(491041fc-cd21-41fa-8985-3ee9e0ed5189)]
+    delegate HRESULT PostTickCallback();
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid("B4F0A992-3DE9-403A-B0DD-E06F3ACBB3DA")]
+    interface IXamlErrorTestHooks : IInspectable
+    {
+    }
+
+    [version(NTDDI_WIN10_RS3)]
+    [object]
+    [uuid(4d1248ff-cff1-f1fa-1915-3119e0ed5d8a)]
+    delegate HRESULT PlayingSoundNodeCallback([in] Microsoft.UI.Xaml.ElementSoundKind sound, [in] BOOLEAN isSpatialAudio, [in] float x, [in] float y, [in] float z, [in] double volume);
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [object]
+    [uuid(2741F4DF-0D14-4650-B590-2C091F4ED50F)]
+    delegate HRESULT ManagedDispatcherQueueCallback();
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(DDB2A0A1-6409-4D78-A78B-696018DED4FC)]
+    interface ICustomMetadataRegistrar : IInspectable
+        requires Windows.Foundation.IClosable
+    {
+        HRESULT RegisterMetadata();
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef[v1_enum] enum LastInputDeviceType
+    {
+        None = 0,
+        Mouse = 1,
+        Touch = 2,
+        Pen = 3,
+        Keyboard = 4,
+        GamepadOrRemote = 5,
+    } LastInputDeviceType;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    typedef [v1_enum] enum LTEParentMode
+    {
+        NormalTree,
+        PopupRoot,
+        RootVisual,
+    } LTEParentMode;
+
+    runtimeclass WindowHelper;
+
+    [version(NTDDI_WIN10_RS3)]
+    [uuid(7F891EFC-4B4C-4FA8-BA81-E53AEB354DEC)]
+    [exclusiveto(WindowHelper)]
+    interface IWindowHelper : IInspectable
+    {
+        HRESULT SetupSimulatedAppPage([out, retval] Microsoft.UI.Xaml.Controls.Page** page);
+        [overload("WaitForIdle"), default_overload]
+        HRESULT WaitForIdle();
+        [overload("WaitForIdle")]
+        HRESULT WaitForIdleWithBuildTreeOption([in] BOOLEAN waitForBuildTreeWork);
+        HRESULT WaitForTreeReset();
+        HRESULT ResetWindowContentAndWaitForIdle();
+        HRESULT GetCurrentWindowScale([out, retval] float* scale);
+        HRESULT ResetWindowContentAndScaleWaitForIdle([in] float scale);
+        HRESULT WaitForImplicitShowHideComplete();
+        HRESULT SynchronouslyTickUIThread(unsigned int ticks);
+        HRESULT SetPostTickCallback([in] PostTickCallback* callback);
+        HRESULT RestoreForegroundWindow();
+        HRESULT VerifyTestCleanup();
+        [propput] HRESULT WindowContent([in] Microsoft.UI.Xaml.UIElement* pElement);
+        [propget] HRESULT WindowContent([out, retval] Microsoft.UI.Xaml.UIElement** content);
+        [propget] HRESULT WindowBounds([out, retval] Windows.Foundation.Rect* bounds);
+        [propget] HRESULT VisibleBounds([out, retval] Windows.Foundation.Rect* bounds);
+        [propget] HRESULT MonitorBounds([out, retval] Windows.Foundation.Rect* bounds);
+        HRESULT ShowWindow();
+        HRESULT HideWindow();
+        HRESULT MoveWindow([in] int x, [in] int y, [in] int width, [in] int height);
+        HRESULT InjectMockDComp();
+        HRESULT DetachMockDComp();
+        HRESULT StopMockDCompDetours();
+        [propget] HRESULT MockDCompDevice([out, retval] MockDComp.MockDCompDevice **value);
+        HRESULT SimulateDeviceLost();
+        HRESULT ConvertToPhysicalPixels([in] Windows.Foundation.Point pointIn, [out, retval] Windows.Foundation.Point* pPointOut);
+        HRESULT ConvertToPhysicalDisplayLocation([in] Windows.Foundation.Point pointIn, [out, retval] Windows.Foundation.Point* pPointOut);
+        [propget] HRESULT IsInputPaneOpen([out, retval] BOOLEAN* isInputPaneOpen);
+        [propget] HRESULT IsForegroundWindow([out, retval] BOOLEAN* isForegroundWindow);
+        [propget] HRESULT IsFocusedWindow([out, retval] BOOLEAN* isFocusedWindow);
+        HRESULT SetWindowSizeOverride([in] Windows.Foundation.Size size);
+        HRESULT SetWindowSizeOverrideWithLayoutBounds([in] Windows.Foundation.Size size, [in] Windows.Foundation.Rect layoutBounds);
+        HRESULT SetWindowSizeOverrideWithScale([in] Windows.Foundation.Size size, float zoomScaleOverride);
+        HRESULT SetWindowSizeOverrideWithWindowScale([in] Windows.Foundation.Size size, float zoomScaleOverride);
+        HRESULT PrepareForPopupMenuWait();
+        HRESULT WaitForPopupMenuCommandInvoked([in] UINT32 timeoutMilliseconds, [out, retval] BOOLEAN* success);
+        HRESULT Popup_SetWindowed([in] Microsoft.UI.Xaml.Controls.Primitives.Popup* pPopup);
+        HRESULT FlyoutBase_GetWindow([in] Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase* pFlyoutBase, [out, retval] UINT64* hwnd);
+        HRESULT Popup_GetWindow([in] Microsoft.UI.Xaml.Controls.Primitives.Popup* pPopup, [out, retval] UINT64* hwnd);
+        HRESULT ToolTip_GetWindow([in] Microsoft.UI.Xaml.Controls.ToolTip* pToolTip, [out, retval] UINT64* hwnd);
+        HRESULT SetDesktopWindowSize([in] unsigned int width, [in] unsigned int height);
+        HRESULT MoveDesktopWindow([in] unsigned int x, [in] unsigned int y);
+        HRESULT MaximizeDesktopWindow();
+        HRESULT IsDesktopWindowMaximized([out, retval] BOOL* isMaximized);
+        HRESULT RequestReplayPreviousPointerUpdate_TempTestHook();
+        HRESULT SimulateSuspendToPauseAnimations();
+        HRESULT SimulateResumeToResumeAnimations();
+        HRESULT SetIsSuspended([in] BOOLEAN isSuspended);
+        HRESULT SetIsRenderEnabled([in] BOOLEAN value);
+        HRESULT ForceDisconnectRootOnSuspend([in] BOOLEAN forceDisconnectRootOnSuspend);
+        HRESULT TriggerSuspend([in] BOOLEAN isTriggeredByResourceTimer, [in] BOOLEAN allowOfferResources);
+        HRESULT TriggerResume();
+        HRESULT TriggerLowMemory();
+        HRESULT SetTimeManagerClockOverrideConstant([in] double timeoutMilliseconds);
+        HRESULT FireDCompAnimationCompleted([in] Microsoft.UI.Xaml.Media.Animation.Storyboard* storyboard);
+        HRESULT CleanUpAfterTest();
+        HRESULT ResetDeviceAndVisuals();
+        HRESULT ResetDeviceOnly();
+        HRESULT FrameworkElement_HasPeer([in] Microsoft.UI.Xaml.FrameworkElement* pRoot, [in] HSTRING name, [out, retval] BOOLEAN* pHasPeer);
+        HRESULT TestGetGlobalBoundsForUIElement([in] Microsoft.UI.Xaml.UIElement* element, [in] BOOLEAN ignoreClipping, [out, retval] Windows.Foundation.Rect* bounds);
+        HRESULT GetAvailableMonitorBounds(
+            [in] Microsoft.UI.Xaml.UIElement* element,
+            [in] Windows.Foundation.Point targetPointClientLogical,
+            [out] Windows.Foundation.Rect* availableMonitorRectClientLogicalResult,
+            [out] Windows.Foundation.Point* screenOffset,
+            [out] Windows.Foundation.Point* targetPointScreenPhysical,
+            [out] Windows.Foundation.Rect* inputPaneOccludeRectScreenLogical);
+        HRESULT SetLastInputMethod([in] LastInputDeviceType lastInputType, [in] Microsoft.UI.Xaml.XamlRoot* xamlRoot);
+        HRESULT GetLastInputMethod([in] Microsoft.UI.Xaml.XamlRoot* xamlRoot, [out, retval] LastInputDeviceType* lastDeviceType);
+        HRESULT SetLastLayoutExceptionElement([in] Microsoft.UI.Xaml.UIElement* element);
+        HRESULT ResetVisualTree();
+        HRESULT ShutdownXaml();
+        HRESULT EnsureSatelliteDLLCustomDPCleanup();
+        [overload("InitializeXaml"), default_overload]
+        HRESULT InitializeXaml();
+        [overload("InitializeXaml")]
+        HRESULT InitializeXamlWithCustomMetadata([in] Microsoft.UI.Xaml.Markup.IXamlMetadataProvider* customProvider, ICustomMetadataRegistrar* registrar);
+        [overload("InitializeXaml")]
+        HRESULT InitializeXamlWithProvider([in] Microsoft.UI.Xaml.Markup.IXamlMetadataProvider* customProvider);
+        HRESULT InjectWindowMessage([in] UINT msg, [in] UINT wParam, [in] UINT lParam, [in] Microsoft.UI.Xaml.XamlRoot* xamlRoot);
+        HRESULT SetPrimaryPointerLastPositionOverride([in] Windows.Foundation.Point value, [in] Microsoft.UI.Xaml.XamlRoot* xamlRoot);
+        HRESULT ClearPrimaryPointerLastPositionOverride([in] Microsoft.UI.Xaml.XamlRoot* xamlRoot);
+        HRESULT SetVisibleBounds([in] Windows.Foundation.Rect visibleBounds);
+        HRESULT SetForceIsFullScreen([in] BOOLEAN forceIsFullScreen);
+        HRESULT CancelAllConnectedAnimationsAndResetDefaults();
+        HRESULT SendWindowMessage([in] UINT msg, [in] UINT wParam, [in] UINT lParam, [out] UINT* returnValue);
+        HRESULT SetIsHolographic([in] BOOLEAN value);
+        HRESULT CreateNewView([in] ViewCreatedCallback* uiSetupCallback, [out, retval] SecondaryView** newView);
+        HRESULT BringSecondaryViewToFront([in] SecondaryView* view);
+        HRESULT BringMainViewToFront();
+        [propget] HRESULT CurrentDispatcher([out, retval] Microsoft.UI.Dispatching.DispatcherQueue** currentDispatcher);
+        HRESULT SimulateInputPaneOccludedRect([in] Microsoft.UI.Xaml.XamlRoot* xamlRoot, [in] Windows.Foundation.Rect occludedRect);
+        HRESULT GetLightsTargetingElement([in] Microsoft.UI.Xaml.UIElement* target, [in] Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.Media.XamlLight*>* lights);
+        HRESULT GetElementsTargetedByLight([in] Microsoft.UI.Xaml.Media.XamlLight* light, [in] Windows.Foundation.Collections.IVector<Microsoft.UI.Xaml.UIElement*>* targets);
+        HRESULT GetCountOfVisualsTargeted([in] Microsoft.UI.Xaml.Media.XamlLight* light, [in] Microsoft.UI.Xaml.UIElement* element, [out] int* returnValue);
+        HRESULT IsWindowActivated([in] Microsoft.UI.Xaml.XamlRoot* xamlRoot, [out, retval] BOOLEAN* active);
+        HRESULT GetRealCompositionSurface([in] Microsoft.UI.Xaml.Media.LoadedImageSurface *loadedImageSurface, [out, retval] Microsoft.UI.Composition.ICompositionSurface **realCompositionSurface);
+        HRESULT SetHdrOutputOverride([in] BOOLEAN value);
+        HRESULT GetWantsRenderingEvent([out, retval] BOOLEAN* wantsRenderingEvent);
+        HRESULT GetWantsCompositionTargetRenderedEvent([out, retval] BOOLEAN* wantsCompositionTargetRenderedEvent);
+        HRESULT SetThreadingAssertOverride([in] BOOLEAN value);
+        HRESULT AddTestLTE([in] Microsoft.UI.Xaml.UIElement* lteTarget, [in] Microsoft.UI.Xaml.UIElement* lteParent, [in] LTEParentMode lteParentMode, [in] BOOLEAN isAbsolutelyPositioned, [out, retval] Microsoft.UI.Xaml.UIElement** lte);
+        HRESULT RemoveTestLTE([in] Microsoft.UI.Xaml.UIElement* lte);
+        HRESULT ClearTestLTEs();
+        HRESULT SetPlayingSoundNodeCallback([in] PlayingSoundNodeCallback* callback);
+        HRESULT IsTrackingEffectiveVisibility([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] BOOLEAN* isTracking);
+        HRESULT IsKeepingVisible([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] BOOLEAN* isKeepingVisible);
+        HRESULT RequestKeepAlive([in] Microsoft.UI.Xaml.UIElement* element);
+        HRESULT ReleaseKeepAlive([in] Microsoft.UI.Xaml.UIElement* element);
+        HRESULT TestGetActualToolTip([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] Microsoft.UI.Xaml.Controls.ToolTip** ppValue);
+        HRESULT GetAnimatedTranslation([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] Windows.Foundation.Numerics.Vector3* translation);
+        HRESULT GetAnimatedRotation([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] float* rotation);
+        HRESULT GetAnimatedScale([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] Windows.Foundation.Numerics.Vector3* scale);
+        HRESULT GetAnimatedTransformMatrix([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] Windows.Foundation.Numerics.Matrix4x4* transformMatrix);
+        HRESULT GetAnimatedRotationAxis([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] Windows.Foundation.Numerics.Vector3* rotationAxis);
+        HRESULT GetAnimatedCenterPoint([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] Windows.Foundation.Numerics.Vector3* centerPoint);
+        HRESULT WaitForAnimatedFacadePropertyChanges([in] int count);
+        HRESULT IsStoryboardActive([in] Microsoft.UI.Xaml.Media.Animation.Storyboard* storyboard, [out, retval] BOOLEAN* isActive);
+        HRESULT GetElementInputWindow([in] Microsoft.UI.Xaml.UIElement* element, [out, retval] UINT64* inputHwnd);
+        HRESULT SetSuspendOffThreadDecoding([in] BOOLEAN isOffThreadDecodingSuspended);
+        HRESULT SetSuspendSurfaceUpdates([in] BOOLEAN isSuspended);
+
+        HRESULT ThrottleImageTaskDispatcher([in] BOOLEAN enableThrottling, [in] unsigned int numberOfTasksAllowedToDispatch);
+        HRESULT RequestExecuteImageTaskDispatcher();
+
+        // IRawElementProviderFragment is not a WinRT interface, so we return IInspectable* and let the caller cast it manually.
+        HRESULT GetUIAWindow([out] IInspectable** uiaWindow_IRawElementProviderFragment);
+        HRESULT ApplyElevationEffect([in] Microsoft.UI.Xaml.UIElement* element, [in] UINT depth);
+        HRESULT SetCaretBrowsingModeGlobal([in] BOOLEAN caretBrowsingModeEnable, [in] BOOLEAN caretBrowsingDialogNotPopAgain);
+
+        HRESULT SetGCCollectCallback( [in] GCCollectCallback* callback);
+        HRESULT GetUIAWindowHandle([out, retval] UINT64* hwnd);
+
+        HRESULT ForceShadowsPolicy([in] BOOLEAN forceShadowsOn);
+        HRESULT ClearShadowPolicyOverrides();
+
+        // This is a one-time override. To clear it, call it again with true
+        HRESULT SetXamlVisibilityOverride([in] BOOLEAN isVisible);
+
+        // Microsoft.UI.Composition.ICompositionBrush is exclusive to composition IDL, use IInspectable*
+        HRESULT SetBrushForXamlRoot([in] Microsoft.UI.Xaml.Media.XamlCompositionBrushBase* xcbb, [in] IInspectable* xamlRoot, [in] IInspectable* compBrush);
+        HRESULT GetBrushForXamlRoot([in] Microsoft.UI.Xaml.Media.XamlCompositionBrushBase* xcbb, [in] IInspectable* xamlRoot, [out, retval] IInspectable** compBrush);
+
+        HRESULT GetElementsRenderedCount([out, retval] int* elementsRendered);
+
+        HRESULT PauseNewDispatchForTest();
+        HRESULT ResumeNewDispatchForTest();
+
+        HRESULT GetImageSourceMaxSize([in] Microsoft.UI.Xaml.Media.ImageSource* imageSource, [out, retval] Windows.Foundation.Size* size);
+
+        HRESULT GetInputPaneForMainView([out, retval] Windows.UI.ViewManagement.InputPane** inputPane);
+
+        HRESULT GetXamlRoots([out, retval] Windows.Foundation.Collections.IVectorView<Microsoft.UI.Xaml.XamlRoot*>** value);
+
+        HRESULT GetWindows([out, retval] Windows.Foundation.Collections.IVectorView<Microsoft.UI.Xaml.Window*>** value);
+
+        HRESULT DetachMemoryManagerEvents();
+
+        HRESULT GetElementRenderedVisuals([in] Microsoft.UI.Xaml.UIElement* element, [in] Windows.Foundation.Collections.IVector<IInspectable*>* visuals);
+
+        HRESULT GetErrorHandlingTestHooks([out, retval] IXamlErrorTestHooks** errorTestHooks);
+
+        HRESULT GCCollect();
+
+        // Allocation statistics for memory tracking tests
+        HRESULT GetAllocationCount([out, retval] UINT64* count);
+        HRESULT GetAllocationSize([out, retval] UINT64* size);
+        HRESULT GetDeallocationCount([out, retval] UINT64* count);
+    }
+
+    [version(NTDDI_WIN10_RS3)]
+    [uuid(9b02a6cd-956f-4cae-a40a-26ed1b31adb7)]
+    interface IWindowHelperStatics : IInspectable
+    {
+        HRESULT WrapInAgileDispatcherQueueHandler([in] ManagedDispatcherQueueCallback* callback, [out, retval] Microsoft.UI.Dispatching.DispatcherQueueHandler** handler);
+    }
+
+    [version(NTDDI_WIN10_RS3)]
+    [marshaling_behavior(agile)]
+    [static(IWindowHelperStatics, NTDDI_WIN10_RS3)]
+    runtimeclass WindowHelper
+    {
+        [default]interface IWindowHelper;
+    }
+
+    #pragma endregion
+
+    #pragma region TraceConsumer class
+
+    runtimeclass TraceConsumer;
+
+    [version(NTDDI_WINBLUE)]
+    [uuid(274A765F-709A-4DE1-9897-9C38DA9D16BF)]
+    interface ITraceConsumer : IInspectable
+    {
+    }
+
+    [version(NTDDI_WINBLUE)]
+    [uuid(E967FC35-9147-497D-81CE-DAE9FC47752D)]
+    interface ITraceConsumerStatics : IInspectable
+    {
+        HRESULT EnableTracingByEventId([in] int eventId);
+
+        [overload("Start"), default_overload]
+        HRESULT Start();
+        [overload("Start")]
+        HRESULT StartProvider([in] GUID xamlProvider);
+
+        HRESULT Stop();
+        [overload("VerifyEventTraced"), default_overload]
+        HRESULT VerifyEventTraced([in] HSTRING @event, [in] UINT count);
+        [overload("VerifyEventTraced")]
+        HRESULT VerifyEventTracedById([in] int eventId, [in] UINT count);
+        [overload("VerifyEventTraced")]
+        HRESULT VerifyEventTracedMoreThanOnce([in] int eventId);
+    }
+
+    [version(NTDDI_WINBLUE)]
+    [static(ITraceConsumerStatics, NTDDI_WINBLUE)]
+    runtimeclass TraceConsumer
+    {
+        [default]interface ITraceConsumer;
+    }
+
+    #pragma endregion
+
+    #pragma region ETWWaiterHelper class
+
+    runtimeclass ETWWaiterHelper;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(6409918c-7cba-4f14-9d83-5d400709cc91)]
+    interface IETWWaiterHelper : IInspectable
+    {
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(4b81b99e-377b-4acd-9ba2-ae2930bd8161)]
+    interface IETWWaiterHelperStatics : IInspectable
+    {
+        HRESULT Start(GUID providerGuid, unsigned long eventId);
+        HRESULT StartWithTaskName(GUID providerGuid, [in] HSTRING taskName);
+        HRESULT StartWithPayload(GUID providerGuid, unsigned long eventId, [in] HSTRING payloadCriteria);
+        HRESULT Wait(GUID providerGuid, unsigned long eventId, unsigned int timeoutMs);
+        HRESULT WaitForTaskName(GUID providerGuid, [in] HSTRING taskName, unsigned int timeoutMs);
+        HRESULT Stop(GUID providerGuid, unsigned long eventId);
+        HRESULT GetActiveWaiterCount([out] unsigned int *waiterCount);
+        HRESULT StopTaskName(GUID providerGuid, [in] HSTRING taskName);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [static(IETWWaiterHelperStatics, NTDDI_WINTHRESHOLD)]
+    runtimeclass ETWWaiterHelper
+    {
+        [default]interface IETWWaiterHelper;
+    }
+
+    #pragma endregion
+
+    #pragma region ErrorHandlingHelper class
+
+    runtimeclass ErrorHandlingHelper;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(E10475CF-3EBD-4688-9979-CBE5C4B44978)]
+    [exclusiveto(ErrorHandlingHelper)]
+    interface IErrorHandlingHelper : IInspectable
+    {
+        [propput] HRESULT PrintStacksOnJupiterFailure([in] BOOLEAN enable);
+        [propget] HRESULT PrintStacksOnJupiterFailure([out, retval] BOOLEAN* enable);
+
+        HRESULT IgnoreLeaksForTest();
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    runtimeclass ErrorHandlingHelper
+    {
+        [default]interface IErrorHandlingHelper;
+    }
+
+    #pragma endregion
+
+    #pragma region StoryboardMonitor class
+
+    runtimeclass StoryboardMonitor;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [object]
+    [uuid(17572765-bfe2-49a7-b53a-d4c86264d5a4)]
+    [webhosthidden]
+    delegate HRESULT StoryboardEventHandler([in] Microsoft.UI.Xaml.Media.Animation.Storyboard* pStoryboard, [in] Microsoft.UI.Xaml.UIElement* pTarget);
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(f6e015ab-d36d-48d9-a335-77f17be370fe)]
+    [exclusiveto(StoryboardMonitor)]
+    interface IStoryboardMonitorStatics : IInspectable
+    {
+        [eventadd] HRESULT StoryboardStarted([in] StoryboardEventHandler* pHandler, [out, retval] EventRegistrationToken* pToken);
+        [eventremove] HRESULT StoryboardStarted([in] EventRegistrationToken token);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [static(IStoryboardMonitorStatics, NTDDI_WINTHRESHOLD)]
+    runtimeclass StoryboardMonitor
+    {
+    }
+
+    #pragma endregion
+
+    #pragma region TestServices class
+
+    // The design right now is for all the helper classes to be
+    // available as properties on a static TestServices instance.
+    // This makes it a little easier to author additional helpers,
+    // gives us a central place to do initialization, and seems like
+    // the right design for now.
+    runtimeclass TestServices;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid(BB47E6B9-B079-43EE-843C-E1F41A2C0256)]
+    interface ITestServices : IInspectable
+    {
+    }
+
+    [version(NTDDI_WIN10_RS3)]
+    [uuid(FA2E1559-40BC-4999-850F-F99AE6B165C6)]
+    interface ITestServicesStatics : IInspectable
+    {
+        HRESULT EnsureInitialized();
+
+        [propget] HRESULT Utilities([out, retval] Utilities** value);
+        [propget] HRESULT FontHelper([out, retval] FontHelper** value);
+        [propget] HRESULT InputHelper([out, retval] InputHelper** value);
+        [propget] HRESULT WindowHelper([out, retval] WindowHelper** value);
+        [propget] HRESULT KeyboardHelper([out, retval] KeyboardHelper** value);
+        [propget] HRESULT ErrorHandlingHelper([out, retval] ErrorHandlingHelper** value);
+        [propget] HRESULT ThemingHelper([out, retval] ThemingHelper** value);
+        [propget] HRESULT Win32Host([out, retval] Private.Infrastructure.Hosting.IWin32Host** value);
+
+        HRESULT EnsureInitializedForBVT();
+
+        [overload("InitializeHost"), default_overload]
+        HRESULT InitializeHost();
+        [overload("InitializeHost")]
+        HRESULT InitializeHostAndDpiAwarenessContext([in] boolean initializeDpiAwarenessContext);
+        [overload("InitializeHost")]
+        HRESULT InitializeHostAndDpiAwarenessContextAndCore([in] boolean initializeDpiAwarenessContext, [in] boolean initializeCore);
+        HRESULT DeInitializeHost();
+    }
+
+    [version(NTDDI_WIN10_RS3)]
+    [static(ITestServicesStatics, NTDDI_WIN10_RS3)]
+    runtimeclass TestServices
+    {
+        [default]interface ITestServices;
+    }
+
+    #pragma endregion
+
+#pragma region AppAnalysisClientHelper class
+
+    runtimeclass AppAnalysisClientHelper;
+
+    [version(NTDDI_WIN10_RS1)]
+    [uuid(5CE69D4D-59D4-492C-B8FB-D6B0C6DCBAF9)]
+    interface IAppAnalysisClientHelper : IInspectable
+    {
+    }
+
+    [version(NTDDI_WIN10_RS1)]
+    [uuid(AD6B08B3-A92A-4D8C-9D34-6352ACEE28C6)]
+    interface IAppAnalysisClientHelperStatics : IInspectable
+    {
+        // NOTE: These methods should all take [in] parameters rather than [out]. The reason being is that the out-of-proc server
+        // is where the tracing session is being controlled from and has the ability to save the .etl log for investigation
+        // if one of these methods throws. If you gather information from the out-of-proc server and fail the test in-proc, you will
+        // lose this ability, which is a shame. This is because the server assumes your wrote a test that succeeds (it tends to be a little
+        // too trustworthy at times) and will delete the .etl log unless it explicitly throws.
+        HRESULT EnableRule([in] HSTRING ruleId, [in] HSTRING testIdentifier, [in] BOOLEAN shouldHaveSourceInfo);
+        HRESULT VerifyRuleTriggered([in] unsigned int expectedCount);
+        HRESULT VerifyRuleNotTriggered();
+        HRESULT VerifyMeasurement([in] unsigned int infoIndex, [in] Microsoft.Diagnostics.AppAnalysis.Measurement measurement);
+        HRESULT VerifySourceInfo([in] unsigned int infoIndex, [in] Microsoft.Diagnostics.AppAnalysis.SourceInfo sourceInfo);
+        HRESULT VerifyCanLinkToLVT([in] unsigned int infoIndex, [in] unsigned long long lvtHandle);
+        HRESULT VerifyDescription([in] unsigned int infoIndex, [in] Microsoft.Diagnostics.AppAnalysis.ResourceString* description);
+        HRESULT DisableCurrentRule();
+    }
+
+    [version(NTDDI_WIN10_RS1)]
+    [static(IAppAnalysisClientHelperStatics, NTDDI_WIN10_RS1)]
+    runtimeclass AppAnalysisClientHelper
+    {
+        [default]interface IAppAnalysisClientHelper;
+    }
+
+#pragma endregion
+
+#pragma region TestHostSettings class
+
+    runtimeclass TestHostSettings;
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [uuid("CC335843-260C-42EB-8671-27E3337EB719")]
+    [exclusiveto(TestHostSettings)]
+    interface ITestHostSettingsStatics : IInspectable
+    {
+        [propput] HRESULT Win32HostFactory([in] Private.Infrastructure.Hosting.IWin32HostFactory* dq);
+        [propget] HRESULT Win32HostFactory([out, retval] Private.Infrastructure.Hosting.IWin32HostFactory** dq);
+    }
+
+    [version(NTDDI_WINTHRESHOLD)]
+    [static(ITestHostSettingsStatics, NTDDI_WINTHRESHOLD)]
+    runtimeclass TestHostSettings
+    {
+    }
+
+    #pragma endregion
+
+}

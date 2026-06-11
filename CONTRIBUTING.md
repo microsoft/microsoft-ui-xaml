@@ -10,7 +10,7 @@ Note that all community interactions must abide by the [Code of Conduct](CODE_OF
 
 For reporting security issues please see the [Security Policy](SECURITY.md).
 
-Contributions from the community in the form of feature requests and bugs are handled according to our [contribution handling](docs/contribution_handling.md) guidelines.
+Contributions from the community in the form of feature requests and bugs are handled according to our [contribution handling](docs/external/contribution_handling.md) guidelines.
 
 ## New contributors
 
@@ -48,8 +48,8 @@ PRs are merged using **squash merge** by default.
 
 ### Proposing new public APIs or UI
 
-Please follow the [New Feature or API Process](docs/feature_proposal_process.md) before adding, removing, or changing public APIs or UI.
-All new public APIs, new UI, or breaking changes to existing features **must** go through that process before submitting code changes.
+Please follow the [New Feature or API Process](docs/external/feature_proposal_process.md) before adding, removing, or changing public APIs or UI.  
+All new public APIs, new UI, or breaking changes to existing features **must** go through that process before submitting code changes.  
 You don't need to follow that process for bug fixes or other small changes.
 
 ### Contribution bar
@@ -62,8 +62,10 @@ While we strive to accept all community contributions that meet the guidelines o
 
 For details see:
 
-* [Getting Started — build prerequisites and instructions](GettingStarted.md)
-* [Contribution workflow](docs/contribution_workflow.md)
+* [Setup and build environment](docs/developer_guide.md#Prerequisites)
+* [Source code structure](docs/source_code_structure.md)
+* [Contribution workflow](docs/external/contribution_workflow.md)
+* [Coding style and conventions](docs/code_style_and_conventions.md)
 
 ### Contributor License Agreement
 
