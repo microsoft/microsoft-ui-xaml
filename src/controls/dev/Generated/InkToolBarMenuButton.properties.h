@@ -12,14 +12,9 @@ public:
     void IsExtensionGlyphShown(bool value);
     bool IsExtensionGlyphShown();
 
-    void MenuKind(winrt::InkToolBarMenuKind const& value);
-    winrt::InkToolBarMenuKind MenuKind();
-
     static winrt::DependencyProperty IsExtensionGlyphShownProperty() { return s_IsExtensionGlyphShownProperty; }
-    static winrt::DependencyProperty MenuKindProperty() { return s_MenuKindProperty; }
 
     static GlobalDependencyProperty s_IsExtensionGlyphShownProperty;
-    static GlobalDependencyProperty s_MenuKindProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

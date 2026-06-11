@@ -9,17 +9,52 @@ class InkCanvasProperties
 public:
     InkCanvasProperties();
 
+    void AllowedInputTypes(winrt::InkInputType const& value);
+    winrt::InkInputType AllowedInputTypes();
+
+    void DefaultDrawingAttributes(winrt::InkDrawingAttributes const& value);
+    winrt::InkDrawingAttributes DefaultDrawingAttributes();
+
     void IsEnabled(bool value);
     bool IsEnabled();
 
-    static winrt::DependencyProperty IsEnabledProperty() { return s_IsEnabledProperty; }
+    void Mode(winrt::InkCanvasMode const& value);
+    winrt::InkCanvasMode Mode();
 
+    static winrt::DependencyProperty AllowedInputTypesProperty() { return s_AllowedInputTypesProperty; }
+    static winrt::DependencyProperty DefaultDrawingAttributesProperty() { return s_DefaultDrawingAttributesProperty; }
+    static winrt::DependencyProperty IsEnabledProperty() { return s_IsEnabledProperty; }
+    static winrt::DependencyProperty ModeProperty() { return s_ModeProperty; }
+
+    static GlobalDependencyProperty s_AllowedInputTypesProperty;
+    static GlobalDependencyProperty s_DefaultDrawingAttributesProperty;
     static GlobalDependencyProperty s_IsEnabledProperty;
+    static GlobalDependencyProperty s_ModeProperty;
+
+    winrt::event_token StrokeCollected(winrt::TypedEventHandler<winrt::InkCanvas, winrt::InkCanvasStrokeCollectedEventArgs> const& value);
+    void StrokeCollected(winrt::event_token const& token);
+    winrt::event_token StrokesErased(winrt::TypedEventHandler<winrt::InkCanvas, winrt::InkCanvasStrokesErasedEventArgs> const& value);
+    void StrokesErased(winrt::event_token const& token);
+
+    event_source<winrt::TypedEventHandler<winrt::InkCanvas, winrt::InkCanvasStrokeCollectedEventArgs>> m_strokeCollectedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::InkCanvas, winrt::InkCanvasStrokesErasedEventArgs>> m_strokesErasedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
 
+    static void OnAllowedInputTypesPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnDefaultDrawingAttributesPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnIsEnabledPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnModePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };
