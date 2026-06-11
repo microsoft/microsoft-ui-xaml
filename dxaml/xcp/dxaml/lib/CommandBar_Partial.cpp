@@ -246,7 +246,7 @@ CommandBar::SetAccessKeyAutomationPropertyOnExpandButton()
 {
     // If CommandBar has an AccessKey, we display the KeyTip on the expand button.
     // We also update the expand buttons AccessKey AutomationProperty so that Narrator will read the accesskey of the CommandBar
-    // when the expand button has focus. This is necessary because the CommandBar itself typically does not recieve focus and so
+        // when the expand button has focus. This is necessary because the CommandBar itself typically does not receive focus and so
     // Narrator will not read its AccessKey.
     if (m_tpExpandButton)
     {

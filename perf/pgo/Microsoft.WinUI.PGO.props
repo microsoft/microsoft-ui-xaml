@@ -79,6 +79,12 @@
       <PGCPath>$(PGCRootPath)\Microsoft.UI.Xaml.Phone.dll</PGCPath>
     </PGDFile>
 
+    <PGDFile Include="WinUIEdit.pgd">
+      <PGCFiles Condition="'$(Platform)' == 'x86'">XamlPGO.HelloWorld.Cs.pgc</PGCFiles>
+      <PGCFiles Condition="'$(Platform)' != 'x86'">explorer.pgc</PGCFiles>
+      <PGCPath>$(PGCRootPath)\WinUIEdit.dll</PGCPath>
+    </PGDFile>
+
 
   </ItemGroup> 
 
