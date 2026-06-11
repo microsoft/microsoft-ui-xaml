@@ -259,8 +259,9 @@ supported SDK versions will be marked `[Deprecated]` and eventually removed._
   contains the corresponding change.
 * You do **not** need to reference a specific WinUI NuGet version to enable a
   change -- you only need a version that recognizes the enum value.  If you pass
-  an unrecognized value to `EnableChange`, the call is silently ignored (the
-  change simply does not exist in that build); querying it returns `false`.
+  an unrecognized value to `EnableChange`, the call returns `false` (the change
+  simply does not exist in that build); querying it via `IsChangeEnabled` also
+  returns `false`.
 * Over time a change may be promoted to **always-on**, at which point its
   `XamlChangeId` will be deprecated.  Your existing `EnableChange` call will
   continue to compile and run without error, but the change will be active
@@ -297,10 +298,13 @@ All methods are static; you do not instantiate this class.
 ## XamlOptionalChanges.EnableChange method
 
 ```csharp
-public static void EnableChange(XamlChangeId changeId);
+public static bool EnableChange(XamlChangeId changeId);
 ```
 
 Enables the optional change identified by `changeId`.
+
+Returns `true` if the change is now enabled, `false` if the value is
+unrecognized in this SDK version (the change does not exist in this build).
 
 Call this before XAML is initialized (see
 [Remarks on XamlOptionalChanges](#xamloptionalchanges-class)).
@@ -309,7 +313,7 @@ Call this before XAML is initialized (see
 
 | Exception                   | Condition                                                                |
 |-----------------------------|--------------------------------------------------------------------------|
-| `InvalidOperationException` | Valid `XamlChangeId` and optional-changes state has already been locked. |
+| `InvalidOperationException` | Optional-changes state has already been locked.                          |
 
 ### Example
 
@@ -322,11 +326,15 @@ XamlOptionalChanges.EnableChange(XamlChangeId.Perf2026);
 ## XamlOptionalChanges.DisableChange method
 
 ```csharp
-public static void DisableChange(XamlChangeId changeId);
+public static bool DisableChange(XamlChangeId changeId);
 ```
 
 Explicitly disables the optional change identified by `changeId`.
- 
+
+Returns `true` if the change is now disabled, `false` if the change
+cannot be disabled (unrecognized value, or a permanent change that is
+always enabled).
+
 `DisableChange` is useful in the following situations:
 
 * A future WinUI release changes a `XamlChangeId` from
@@ -336,11 +344,25 @@ Explicitly disables the optional change identified by `changeId`.
 * Your app needs to explicitly document that a change is intentionally
   **not** enabled, for diagnostic or auditing purposes.
 
+### Detecting permanent changes
+
+When a change has been promoted to permanent, `DisableChange` returns
+`false` and `IsChangeEnabled` returns `true`.  Apps that depend on
+opting out should verify:
+
+```csharp
+if (!XamlOptionalChanges.DisableChange(XamlChangeId.Perf2026)
+    && XamlOptionalChanges.IsChangeEnabled(XamlChangeId.Perf2026))
+{
+    // Perf2026 is permanent in this SDK — cannot opt out.
+}
+```
+
 ### Exceptions
 
 | Exception                   | Condition                                                                |
 |-----------------------------|--------------------------------------------------------------------------|
-| `InvalidOperationException` | Valid `XamlChangeId` and optional-changes state has already been locked. |
+| `InvalidOperationException` | Optional-changes state has already been locked.                          |
 
 
 ## XamlOptionalChanges.IsChangeEnabled method
@@ -403,8 +425,8 @@ otherwise.  This method never throws.
 
 | Name                            | Description                                                                            |
 |---------------------------------|----------------------------------------------------------------------------------------|
-| `EnableChange(XamlChangeId)`    | Enables the specified optional change. Throws `InvalidOperationException` after lock.  |
-| `DisableChange(XamlChangeId)`   | Disables the specified optional change. Throws `InvalidOperationException` after lock. |
+| `EnableChange(XamlChangeId)`    | Enables the specified change. Returns `true` if now enabled. Throws after lock.        |
+| `DisableChange(XamlChangeId)`   | Disables the specified change. Returns `true` if now disabled. Throws after lock.      |
 | `IsChangeEnabled(XamlChangeId)` | Returns whether the specified change is enabled. Safe to call at any time.             |
 | `Lock()`                        | Freezes the state. Returns `true` if this call performed the lock.                     |
 | `IsLocked()`                    | Returns whether the state is currently locked.                                         |
@@ -427,13 +449,13 @@ namespace Microsoft.UI.Xaml.Settings
     [static_name("Microsoft.UI.Xaml.Settings.IXamlOptionalChangesStatics")]
     static runtimeclass XamlOptionalChanges
     {
-        /// Enables the specified optional change. Must be called before XAML
-        /// initialization; otherwise throws InvalidOperationException.
-        static void EnableChange(XamlChangeId changeId);
+        /// Enables the specified optional change. Returns true if the change
+        /// is now enabled, false if unrecognized. Throws after lock.
+        static Boolean EnableChange(XamlChangeId changeId);
 
-        /// Explicitly disables the specified optional change. Must be called
-        /// before XAML initialization; otherwise throws InvalidOperationException.
-        static void DisableChange(XamlChangeId changeId);
+        /// Disables the specified optional change. Returns true if the change
+        /// is now disabled, false if unrecognized or permanent. Throws after lock.
+        static Boolean DisableChange(XamlChangeId changeId);
 
         /// Returns true if the specified change is currently enabled.
         /// Safe to call at any time (before or after locking).
