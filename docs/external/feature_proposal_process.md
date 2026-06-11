@@ -48,7 +48,7 @@ Code contributions are greatly appreciated: feel free to work on any reviewed fe
 Our contribution guidelines can be found [here](../../CONTRIBUTING.md).
 
 7. **Merge**  
-Once a feature is complete and tested according to the [contribution guidelines](../../CONTRIBUTING.md) you can send us a PR to merge it to main.
+Once a feature is complete and tested according to the [contribution guidelines](../../CONTRIBUTING.md) you can send us a PR to merge it to main.  
 
 8. **Documentation and sample updates**  
 We will update the [documentation on docs.microsoft.com](https://learn.microsoft.com/windows/uwp) and if applicable add a sample to the [WinUI 3 Gallery](https://github.com/microsoft/WinUI-Gallery) app.

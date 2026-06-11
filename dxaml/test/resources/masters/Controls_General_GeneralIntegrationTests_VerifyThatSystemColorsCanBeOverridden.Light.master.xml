@@ -1,0 +1,1938 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VisualTreeDump>
+  <VisualRoot>
+    <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+      <Property Name="ActualHeight" Value="696" />
+      <Property Name="ActualWidth" Value="1024" />
+      <Property Name="Background" Value="#FFFFFFFF" />
+      <Property Name="RenderSize" Value="1024x696" />
+      <Property Name="RequestedTheme" Value="1" />
+      <Element Type="Microsoft.UI.Xaml.Controls.Button">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="65" />
+        <Property Name="Background" Value="#33000000" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="BorderThickness" Value="2,2,2,2" />
+        <Property Name="Content" Value="Button" />
+        <Property Name="FocusState" Value="1" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Padding" Value="8,4,8,4" />
+        <Property Name="RenderSize" Value="65x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="65" />
+          <Property Name="Background" Value="#33000000" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="65x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="65" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Content" Value="Button" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="Button" />
+            <Property Name="HorizontalContentAlignment" Value="1" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="Padding" Value="8,4,8,4" />
+            <Property Name="RenderSize" Value="65x32" />
+            <Property Name="VerticalContentAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="19.9512" />
+              <Property Name="ActualWidth" Value="44.5313" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="45x20" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Button" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="VerticalAlignment" Value="0" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.ToggleSwitch">
+        <Property Name="ActualHeight" Value="60" />
+        <Property Name="ActualWidth" Value="154" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="Header" Value="ToggleSwitch" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsOn" Value="True" />
+        <Property Name="ManipulationMode" Value="65537" />
+        <Property Name="MinWidth" Value="154" />
+        <Property Name="RenderSize" Value="154x60" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ToggleSwitchTemplateSettings]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="60" />
+          <Property Name="ActualWidth" Value="154" />
+          <Property Name="Background" Value="[NULL]" />
+          <Property Name="BorderBrush" Value="[NULL]" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="RenderSize" Value="154x60" />
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="154" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="ToggleSwitch" />
+            <Property Name="ContentTemplate" Value="[NULL]" />
+            <Property Name="DataContext" Value="ToggleSwitch" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="Grid.ColumnSpan" Value="4" />
+            <Property Name="IsHitTestVisible" Value="False" />
+            <Property Name="Name" Value="HeaderContentPresenter" />
+            <Property Name="RenderSize" Value="154x20" />
+            <Property Name="Visibility" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="19.9512" />
+              <Property Name="ActualWidth" Value="87.0483" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="88x20" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="ToggleSwitch" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="VerticalAlignment" Value="0" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="30" />
+            <Property Name="ActualWidth" Value="77" />
+            <Property Name="Background" Value="#00FFFFFF" />
+            <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+            <Property Name="Grid.ColumnSpan" Value="3" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Grid.RowSpan" Value="3" />
+            <Property Name="Margin" Value="0,5,0,5" />
+            <Property Name="Name" Value="SwitchAreaGrid" />
+            <Property Name="RenderSize" Value="77x30" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="21" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="Off" />
+            <Property Name="ContentTemplate" Value="[NULL]" />
+            <Property Name="DataContext" Value="Off" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="Grid.Column" Value="2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Grid.RowSpan" Value="3" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="IsHitTestVisible" Value="False" />
+            <Property Name="Name" Value="OffContentPresenter" />
+            <Property Name="Opacity" Value="0" />
+            <Property Name="RenderSize" Value="21x20" />
+            <Property Name="VerticalAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="19.9512" />
+              <Property Name="ActualWidth" Value="20.6982" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="21x20" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Off" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="VerticalAlignment" Value="0" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="On" />
+            <Property Name="ContentTemplate" Value="[NULL]" />
+            <Property Name="DataContext" Value="On" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="Grid.Column" Value="2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Grid.RowSpan" Value="3" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="IsHitTestVisible" Value="True" />
+            <Property Name="Name" Value="OnContentPresenter" />
+            <Property Name="Opacity" Value="1" />
+            <Property Name="RenderSize" Value="20x20" />
+            <Property Name="VerticalAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="19.9512" />
+              <Property Name="ActualWidth" Value="19.7974" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="On" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="VerticalAlignment" Value="0" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="44" />
+            <Property Name="Fill" Value="#00FFFFFF" />
+            <Property Name="Grid.Row" Value="2" />
+            <Property Name="Height" Value="20" />
+            <Property Name="Name" Value="OuterBorder" />
+            <Property Name="Opacity" Value="0" />
+            <Property Name="RadiusX" Value="10" />
+            <Property Name="RadiusY" Value="10" />
+            <Property Name="RenderSize" Value="44x20" />
+            <Property Name="Stroke" Value="#CC00FFFF" />
+            <Property Name="StrokeThickness" Value="2" />
+            <Property Name="Width" Value="44" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="44" />
+            <Property Name="Fill" Value="#FF5B2EC5" />
+            <Property Name="Grid.Row" Value="2" />
+            <Property Name="Height" Value="20" />
+            <Property Name="Name" Value="SwitchKnobBounds" />
+            <Property Name="Opacity" Value="1" />
+            <Property Name="RadiusX" Value="10" />
+            <Property Name="RadiusY" Value="10" />
+            <Property Name="RenderSize" Value="44x20" />
+            <Property Name="Stroke" Value="#FF000000" />
+            <Property Name="StrokeThickness" Value="0" />
+            <Property Name="Width" Value="44" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Grid.Row" Value="2" />
+            <Property Name="Height" Value="20" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Name" Value="SwitchKnob" />
+            <Property Name="RenderSize" Value="20x20" />
+            <Property Name="RenderTransform" Value="[Microsoft.UI.Xaml.Media.TranslateTransform]" />
+            <Property Name="Width" Value="20" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="10" />
+              <Property Name="ActualWidth" Value="10" />
+              <Property Name="Fill" Value="#FFFFFFFF" />
+              <Property Name="Height" Value="10" />
+              <Property Name="Name" Value="SwitchKnobOn" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="10x10" />
+              <Property Name="Width" Value="10" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="10" />
+              <Property Name="ActualWidth" Value="10" />
+              <Property Name="Fill" Value="#CC00FFFF" />
+              <Property Name="Height" Value="10" />
+              <Property Name="Name" Value="SwitchKnobOff" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="10x10" />
+              <Property Name="Width" Value="10" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+            <Property Name="ActualHeight" Value="40" />
+            <Property Name="ActualWidth" Value="77" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Background" Value="#33000000" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="1,1,1,1" />
+            <Property Name="Grid.ColumnSpan" Value="3" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Grid.RowSpan" Value="3" />
+            <Property Name="IsTabStop" Value="False" />
+            <Property Name="Name" Value="SwitchThumb" />
+            <Property Name="RenderSize" Value="77x40" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="40" />
+              <Property Name="ActualWidth" Value="77" />
+              <Property Name="Fill" Value="#00FFFFFF" />
+              <Property Name="RenderSize" Value="77x40" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.CheckBox">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="120" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="CheckBox" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="MinHeight" Value="32" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,5,0,0" />
+        <Property Name="RenderSize" Value="120x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="120" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="120x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#FF5B2EC5" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="NormalRectangle" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="StrokeThickness" Value="0" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.FontIcon">
+              <Property Name="ActualHeight" Value="32" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="FontFamily" Value="Segoe MDL2 Assets" />
+              <Property Name="FontSize" Value="20" />
+              <Property Name="FontStyle" Value="0" />
+              <Property Name="FontWeight" Value="400" />
+              <Property Name="Foreground" Value="#FFFFFFFF" />
+              <Property Name="Glyph" Value="???" />
+              <Property Name="HighContrastAdjustment" Value="0" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x32" />
+              <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                <Property Name="ActualHeight" Value="20" />
+                <Property Name="ActualWidth" Value="20" />
+                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                <Property Name="HorizontalAlignment" Value="3" />
+                <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                <Property Name="RenderSize" Value="20x20" />
+                <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                <Property Name="Style" Value="[NULL]" />
+                <Property Name="Text" Value="???" />
+                <Property Name="TextAlignment" Value="0" />
+                <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                <Property Name="VerticalAlignment" Value="1" />
+              </Element>
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="65" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="CheckBox" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="CheckBox" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,5,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="65x20" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="19.9512" />
+              <Property Name="ActualWidth" Value="64.2773" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="65x20" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="CheckBox" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RadioButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="120" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="RadioButton" />
+        <Property Name="FocusVisualMargin" Value="-7,-3,-7,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="0" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="MinWidth" Value="120" />
+        <Property Name="Padding" Value="8,6,0,0" />
+        <Property Name="RenderSize" Value="120x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Property Name="VerticalContentAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="120" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="120x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="20" />
+            <Property Name="Height" Value="32" />
+            <Property Name="RenderSize" Value="20x32" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#00FFFFFF" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="OuterEllipse" />
+              <Property Name="Opacity" Value="0" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#CC00FFFF" />
+              <Property Name="StrokeThickness" Value="2" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="Fill" Value="#00FFFFFF" />
+              <Property Name="Height" Value="20" />
+              <Property Name="Name" Value="CheckOuterEllipse" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Property Name="Stroke" Value="#FF5B2EC5" />
+              <Property Name="StrokeThickness" Value="2" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="20" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Shapes.Ellipse">
+              <Property Name="ActualHeight" Value="10" />
+              <Property Name="ActualWidth" Value="10" />
+              <Property Name="Fill" Value="#CC00FFFF" />
+              <Property Name="Height" Value="10" />
+              <Property Name="Name" Value="CheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="10x10" />
+              <Property Name="Stroke" Value="#00FFFFFF" />
+              <Property Name="UseLayoutRounding" Value="False" />
+              <Property Name="Width" Value="10" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="83" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Content" Value="RadioButton" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="RadioButton" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="Margin" Value="8,6,0,0" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="83x20" />
+            <Property Name="TextWrapping" Value="2" />
+            <Property Name="VerticalAlignment" Value="0" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="19.9512" />
+              <Property Name="ActualWidth" Value="82.3901" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="83x20" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="RadioButton" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+              <Property Name="VerticalAlignment" Value="0" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.Slider">
+        <Property Name="ActualHeight" Value="44" />
+        <Property Name="ActualWidth" Value="1024" />
+        <Property Name="Background" Value="#6600FFFF" />
+        <Property Name="BorderThickness" Value="0,0,0,0" />
+        <Property Name="FocusVisualMargin" Value="-7,0,-7,0" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF5B2EC5" />
+        <Property Name="IntermediateValue" Value="40" />
+        <Property Name="IsFocusEngagementEnabled" Value="True" />
+        <Property Name="ManipulationMode" Value="0" />
+        <Property Name="Maximum" Value="100" />
+        <Property Name="Minimum" Value="0" />
+        <Property Name="RenderSize" Value="1024x44" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="Value" Value="40" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="44" />
+          <Property Name="ActualWidth" Value="1024" />
+          <Property Name="Margin" Value="0,0,0,0" />
+          <Property Name="RenderSize" Value="1024x44" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="44" />
+            <Property Name="ActualWidth" Value="1024" />
+            <Property Name="Background" Value="#00FFFFFF" />
+            <Property Name="Control.IsTemplateFocusTarget" Value="True" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Name" Value="SliderContainer" />
+            <Property Name="RenderSize" Value="1024x44" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="44" />
+              <Property Name="ActualWidth" Value="1024" />
+              <Property Name="MinHeight" Value="44" />
+              <Property Name="Name" Value="HorizontalTemplate" />
+              <Property Name="RenderSize" Value="1024x44" />
+              <Property Name="Visibility" Value="0" />
+              <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                <Property Name="ActualHeight" Value="2" />
+                <Property Name="ActualWidth" Value="1024" />
+                <Property Name="Fill" Value="#6600FFFF" />
+                <Property Name="Grid.ColumnSpan" Value="3" />
+                <Property Name="Grid.Row" Value="1" />
+                <Property Name="Height" Value="2" />
+                <Property Name="Name" Value="HorizontalTrackRect" />
+                <Property Name="RenderSize" Value="1024x2" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                <Property Name="ActualHeight" Value="2" />
+                <Property Name="ActualWidth" Value="406" />
+                <Property Name="Fill" Value="#FF5B2EC5" />
+                <Property Name="Grid.Column" Value="0" />
+                <Property Name="Grid.Row" Value="1" />
+                <Property Name="Name" Value="HorizontalDecreaseRect" />
+                <Property Name="RenderSize" Value="406x2" />
+                <Property Name="Width" Value="406.4" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="Fill" Value="#6600FFFF" />
+                <Property Name="Grid.ColumnSpan" Value="3" />
+                <Property Name="Height" Value="4" />
+                <Property Name="Margin" Value="0,0,0,4" />
+                <Property Name="Name" Value="TopTickBar" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="VerticalAlignment" Value="2" />
+                <Property Name="Visibility" Value="1" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="Fill" Value="#FFFF0000" />
+                <Property Name="Grid.ColumnSpan" Value="3" />
+                <Property Name="Grid.Row" Value="1" />
+                <Property Name="Height" Value="2" />
+                <Property Name="Name" Value="HorizontalInlineTickBar" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="0" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="Fill" Value="#6600FFFF" />
+                <Property Name="Grid.ColumnSpan" Value="3" />
+                <Property Name="Grid.Row" Value="2" />
+                <Property Name="Height" Value="4" />
+                <Property Name="Margin" Value="0,4,0,0" />
+                <Property Name="Name" Value="BottomTickBar" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="VerticalAlignment" Value="0" />
+                <Property Name="Visibility" Value="1" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                <Property Name="ActualHeight" Value="24" />
+                <Property Name="ActualWidth" Value="8" />
+                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                <Property Name="Background" Value="#FF5B2EC5" />
+                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                <Property Name="BorderThickness" Value="0,0,0,0" />
+                <Property Name="DataContext" Value="40" />
+                <Property Name="FocusVisualMargin" Value="-14,-6,-14,-6" />
+                <Property Name="Grid.Column" Value="1" />
+                <Property Name="Grid.Row" Value="0" />
+                <Property Name="Grid.RowSpan" Value="3" />
+                <Property Name="Height" Value="24" />
+                <Property Name="IsTabStop" Value="False" />
+                <Property Name="Name" Value="HorizontalThumb" />
+                <Property Name="RenderSize" Value="8x24" />
+                <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                <Property Name="Width" Value="8" />
+                <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                  <Property Name="ActualHeight" Value="24" />
+                  <Property Name="ActualWidth" Value="8" />
+                  <Property Name="Background" Value="#FF5B2EC5" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="BorderThickness" Value="0,0,0,0" />
+                  <Property Name="CornerRadius" Value="4,4,4,4" />
+                  <Property Name="RenderSize" Value="8x24" />
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="0" />
+              <Property Name="ActualWidth" Value="0" />
+              <Property Name="MinWidth" Value="44" />
+              <Property Name="Name" Value="VerticalTemplate" />
+              <Property Name="RenderSize" Value="0x0" />
+              <Property Name="Visibility" Value="1" />
+              <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="Fill" Value="#6600FFFF" />
+                <Property Name="Grid.Column" Value="1" />
+                <Property Name="Grid.RowSpan" Value="3" />
+                <Property Name="Name" Value="VerticalTrackRect" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Width" Value="2" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="Fill" Value="#FF5B2EC5" />
+                <Property Name="Grid.Column" Value="1" />
+                <Property Name="Grid.Row" Value="2" />
+                <Property Name="Name" Value="VerticalDecreaseRect" />
+                <Property Name="RenderSize" Value="0x0" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="Fill" Value="#6600FFFF" />
+                <Property Name="Grid.RowSpan" Value="3" />
+                <Property Name="HorizontalAlignment" Value="2" />
+                <Property Name="Margin" Value="0,0,4,0" />
+                <Property Name="Name" Value="LeftTickBar" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Property Name="Width" Value="4" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="Fill" Value="#FFFF0000" />
+                <Property Name="Grid.Column" Value="1" />
+                <Property Name="Grid.RowSpan" Value="3" />
+                <Property Name="Name" Value="VerticalInlineTickBar" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="0" />
+                <Property Name="Width" Value="2" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Primitives.TickBar">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="Fill" Value="#6600FFFF" />
+                <Property Name="Grid.Column" Value="2" />
+                <Property Name="Grid.RowSpan" Value="3" />
+                <Property Name="HorizontalAlignment" Value="0" />
+                <Property Name="Margin" Value="4,0,0,0" />
+                <Property Name="Name" Value="RightTickBar" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Visibility" Value="1" />
+                <Property Name="Width" Value="4" />
+              </Element>
+              <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Thumb">
+                <Property Name="ActualHeight" Value="0" />
+                <Property Name="ActualWidth" Value="0" />
+                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                <Property Name="Background" Value="#FF5B2EC5" />
+                <Property Name="BorderBrush" Value="#00FFFFFF" />
+                <Property Name="BorderThickness" Value="0,0,0,0" />
+                <Property Name="DataContext" Value="40" />
+                <Property Name="FocusVisualMargin" Value="-6,-14,-6,-14" />
+                <Property Name="Grid.Column" Value="0" />
+                <Property Name="Grid.ColumnSpan" Value="3" />
+                <Property Name="Grid.Row" Value="1" />
+                <Property Name="Height" Value="8" />
+                <Property Name="IsTabStop" Value="False" />
+                <Property Name="Name" Value="VerticalThumb" />
+                <Property Name="RenderSize" Value="0x0" />
+                <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+                <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                <Property Name="ToolTipService.ToolTip" Value="[Microsoft.UI.Xaml.Controls.ToolTip]" />
+                <Property Name="Width" Value="24" />
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.HyperlinkButton">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="108" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="BorderThickness" Value="0,0,0,0" />
+        <Property Name="Content" Value="HyperlinkButton" />
+        <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF5B2EC5" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Padding" Value="0,6,0,6" />
+        <Property Name="RenderSize" Value="108x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="108" />
+          <Property Name="Name" Value="RootGrid" />
+          <Property Name="RenderSize" Value="108x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="108" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Background" Value="#00FFFFFF" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="0,0,0,0" />
+            <Property Name="Content" Value="HyperlinkButton" />
+            <Property Name="ContentTransitions" Value="[NULL]" />
+            <Property Name="DataContext" Value="HyperlinkButton" />
+            <Property Name="HorizontalContentAlignment" Value="1" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="Padding" Value="0,6,0,6" />
+            <Property Name="RenderSize" Value="108x32" />
+            <Property Name="VerticalContentAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="19.9512" />
+              <Property Name="ActualWidth" Value="107.527" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="108x20" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="HyperlinkButton" />
+              <Property Name="TextDecorations" Value="1" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="VerticalAlignment" Value="0" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.AppBarButton">
+        <Property Name="ActualHeight" Value="60" />
+        <Property Name="ActualWidth" Value="68" />
+        <Property Name="AllowFocusOnInteraction" Value="False" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Accept" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Icon" Value="[Microsoft.UI.Xaml.Controls.SymbolIcon]" />
+        <Property Name="RenderSize" Value="68x60" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="0" />
+        <Property Name="Width" Value="68" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="60" />
+          <Property Name="ActualWidth" Value="68" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="MaxWidth" Value="inf" />
+          <Property Name="MinWidth" Value="0" />
+          <Property Name="Name" Value="Root" />
+          <Property Name="RenderSize" Value="68x60" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="60" />
+            <Property Name="ActualWidth" Value="68" />
+            <Property Name="MinHeight" Value="60" />
+            <Property Name="Name" Value="ContentRoot" />
+            <Property Name="RenderSize" Value="68x60" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Viewbox">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.ContentPresenter]" />
+              <Property Name="Height" Value="20" />
+              <Property Name="HorizontalAlignment" Value="3" />
+              <Property Name="Margin" Value="0,14,0,4" />
+              <Property Name="Name" Value="ContentViewbox" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                <Property Name="ActualHeight" Value="20" />
+                <Property Name="ActualWidth" Value="20" />
+                <Property Name="RenderSize" Value="20x20" />
+                <Property Name="RenderTransform" Value="[Microsoft.UI.Xaml.Media.ScaleTransform]" />
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Property Name="ActualHeight" Value="20" />
+                  <Property Name="ActualWidth" Value="20" />
+                  <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.SymbolIcon]" />
+                  <Property Name="Foreground" Value="#FF000000" />
+                  <Property Name="Height" Value="20" />
+                  <Property Name="Name" Value="Content" />
+                  <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Viewbox]" />
+                  <Property Name="RenderSize" Value="20x20" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.SymbolIcon">
+                    <Property Name="ActualHeight" Value="20" />
+                    <Property Name="ActualWidth" Value="20" />
+                    <Property Name="RenderSize" Value="20x20" />
+                    <Property Name="Symbol" Value="57611" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                      <Property Name="ActualHeight" Value="20" />
+                      <Property Name="ActualWidth" Value="20" />
+                      <Property Name="Background" Value="#00000000" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                        <Property Name="ActualHeight" Value="20" />
+                        <Property Name="ActualWidth" Value="20" />
+                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                        <Property Name="FontFamily" Value="Segoe MDL2 Assets" />
+                        <Property Name="FontSize" Value="20" />
+                        <Property Name="FontStyle" Value="0" />
+                        <Property Name="FontWeight" Value="400" />
+                        <Property Name="HorizontalAlignment" Value="3" />
+                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                        <Property Name="RenderSize" Value="20x20" />
+                        <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                        <Property Name="Style" Value="[NULL]" />
+                        <Property Name="Text" Value="???" />
+                        <Property Name="TextAlignment" Value="0" />
+                        <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                        <Property Name="VerticalAlignment" Value="1" />
+                      </Element>
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="15.9609" />
+              <Property Name="ActualWidth" Value="0" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="FontFamily" Value="Segoe UI" />
+              <Property Name="FontSize" Value="12" />
+              <Property Name="Foreground" Value="#FF000000" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="Margin" Value="2,0,2,6" />
+              <Property Name="Name" Value="TextLabel" />
+              <Property Name="RenderSize" Value="64x16" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="NULL" />
+              <Property Name="TextAlignment" Value="0" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="0" />
+              <Property Name="ActualWidth" Value="0" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="FontFamily" Value="Segoe UI" />
+              <Property Name="FontSize" Value="15" />
+              <Property Name="Foreground" Value="#FF000000" />
+              <Property Name="HorizontalAlignment" Value="3" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="Margin" Value="12,0,12,0" />
+              <Property Name="Name" Value="OverflowTextLabel" />
+              <Property Name="Padding" Value="0,5,0,7" />
+              <Property Name="RenderSize" Value="0x0" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="NULL" />
+              <Property Name="TextAlignment" Value="1" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextTrimming" Value="3" />
+              <Property Name="TextWrapping" Value="1" />
+              <Property Name="VerticalAlignment" Value="1" />
+              <Property Name="Visibility" Value="1" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.AppBarToggleButton">
+        <Property Name="ActualHeight" Value="60" />
+        <Property Name="ActualWidth" Value="68" />
+        <Property Name="AllowFocusOnInteraction" Value="False" />
+        <Property Name="Background" Value="#00FFFFFF" />
+        <Property Name="BorderBrush" Value="#00FFFFFF" />
+        <Property Name="Content" Value="Back" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontWeight" Value="400" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="Icon" Value="[Microsoft.UI.Xaml.Controls.SymbolIcon]" />
+        <Property Name="IsChecked" Value="True" />
+        <Property Name="RenderSize" Value="68x60" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="UseSystemFocusVisuals" Value="True" />
+        <Property Name="VerticalAlignment" Value="0" />
+        <Property Name="Width" Value="68" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="60" />
+          <Property Name="ActualWidth" Value="68" />
+          <Property Name="Background" Value="#00FFFFFF" />
+          <Property Name="BorderBrush" Value="#00FFFFFF" />
+          <Property Name="BorderThickness" Value="0,0,0,0" />
+          <Property Name="MaxWidth" Value="inf" />
+          <Property Name="MinWidth" Value="0" />
+          <Property Name="Name" Value="Root" />
+          <Property Name="RenderSize" Value="68x60" />
+          <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+            <Property Name="ActualHeight" Value="60" />
+            <Property Name="ActualWidth" Value="68" />
+            <Property Name="Fill" Value="#FF5B2EC5" />
+            <Property Name="Name" Value="CheckedHighlightBackground" />
+            <Property Name="Opacity" Value="1" />
+            <Property Name="RenderSize" Value="68x60" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+            <Property Name="ActualHeight" Value="60" />
+            <Property Name="ActualWidth" Value="68" />
+            <Property Name="Fill" Value="#00FFFFFF" />
+            <Property Name="Name" Value="AccentOverlayBackground" />
+            <Property Name="RenderSize" Value="68x60" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+            <Property Name="ActualHeight" Value="60" />
+            <Property Name="ActualWidth" Value="68" />
+            <Property Name="MinHeight" Value="60" />
+            <Property Name="Name" Value="ContentRoot" />
+            <Property Name="RenderSize" Value="68x60" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="0" />
+              <Property Name="ActualWidth" Value="0" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="FontFamily" Value="Segoe MDL2 Assets" />
+              <Property Name="FontSize" Value="16" />
+              <Property Name="Foreground" Value="#FF000000" />
+              <Property Name="Height" Value="14" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="Margin" Value="12,6,12,6" />
+              <Property Name="Name" Value="OverflowCheckGlyph" />
+              <Property Name="Opacity" Value="1" />
+              <Property Name="RenderSize" Value="0x0" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="???" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="VerticalAlignment" Value="1" />
+              <Property Name="Visibility" Value="1" />
+              <Property Name="Width" Value="14" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.Viewbox">
+              <Property Name="ActualHeight" Value="20" />
+              <Property Name="ActualWidth" Value="20" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.ContentPresenter]" />
+              <Property Name="Height" Value="20" />
+              <Property Name="HorizontalAlignment" Value="3" />
+              <Property Name="Margin" Value="0,14,0,4" />
+              <Property Name="Name" Value="ContentViewbox" />
+              <Property Name="RenderSize" Value="20x20" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                <Property Name="ActualHeight" Value="20" />
+                <Property Name="ActualWidth" Value="20" />
+                <Property Name="RenderSize" Value="20x20" />
+                <Property Name="RenderTransform" Value="[Microsoft.UI.Xaml.Media.ScaleTransform]" />
+                <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                  <Property Name="ActualHeight" Value="20" />
+                  <Property Name="ActualWidth" Value="20" />
+                  <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.SymbolIcon]" />
+                  <Property Name="Foreground" Value="#FF00FFFF" />
+                  <Property Name="Name" Value="Content" />
+                  <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Viewbox]" />
+                  <Property Name="RenderSize" Value="20x20" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.SymbolIcon">
+                    <Property Name="ActualHeight" Value="20" />
+                    <Property Name="ActualWidth" Value="20" />
+                    <Property Name="RenderSize" Value="20x20" />
+                    <Property Name="Symbol" Value="57618" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                      <Property Name="ActualHeight" Value="20" />
+                      <Property Name="ActualWidth" Value="20" />
+                      <Property Name="Background" Value="#00000000" />
+                      <Property Name="RenderSize" Value="20x20" />
+                      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                        <Property Name="ActualHeight" Value="20" />
+                        <Property Name="ActualWidth" Value="20" />
+                        <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                        <Property Name="FontFamily" Value="Segoe MDL2 Assets" />
+                        <Property Name="FontSize" Value="20" />
+                        <Property Name="FontStyle" Value="0" />
+                        <Property Name="FontWeight" Value="400" />
+                        <Property Name="HorizontalAlignment" Value="3" />
+                        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                        <Property Name="IsTextScaleFactorEnabled" Value="False" />
+                        <Property Name="RenderSize" Value="20x20" />
+                        <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                        <Property Name="Style" Value="[NULL]" />
+                        <Property Name="Text" Value="???" />
+                        <Property Name="TextAlignment" Value="0" />
+                        <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                        <Property Name="VerticalAlignment" Value="1" />
+                      </Element>
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="15.9609" />
+              <Property Name="ActualWidth" Value="0" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="FontFamily" Value="Segoe UI" />
+              <Property Name="FontSize" Value="12" />
+              <Property Name="Foreground" Value="#FF00FFFF" />
+              <Property Name="Grid.Row" Value="1" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="Margin" Value="2,0,2,6" />
+              <Property Name="Name" Value="TextLabel" />
+              <Property Name="RenderSize" Value="64x16" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="NULL" />
+              <Property Name="TextAlignment" Value="0" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextWrapping" Value="2" />
+            </Element>
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="0" />
+              <Property Name="ActualWidth" Value="0" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="FontFamily" Value="Segoe UI" />
+              <Property Name="FontSize" Value="15" />
+              <Property Name="Foreground" Value="#FF000000" />
+              <Property Name="HorizontalAlignment" Value="3" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="Margin" Value="38,0,12,0" />
+              <Property Name="Name" Value="OverflowTextLabel" />
+              <Property Name="Padding" Value="0,5,0,7" />
+              <Property Name="RenderSize" Value="0x0" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="NULL" />
+              <Property Name="TextAlignment" Value="1" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="TextTrimming" Value="3" />
+              <Property Name="TextWrapping" Value="1" />
+              <Property Name="VerticalAlignment" Value="1" />
+              <Property Name="Visibility" Value="1" />
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.DatePicker">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="296" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="IsTabStop" Value="False" />
+        <Property Name="MaxWidth" Value="456" />
+        <Property Name="MinWidth" Value="296" />
+        <Property Name="Orientation" Value="1" />
+        <Property Name="RenderSize" Value="296x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="296" />
+          <Property Name="FlowDirection" Value="0" />
+          <Property Name="Margin" Value="0,0,0,0" />
+          <Property Name="Name" Value="LayoutRoot" />
+          <Property Name="RenderSize" Value="296x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Button">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="296" />
+            <Property Name="AutomationProperties.Name" Value=" ???May??? ???11???, ???2017 date picker" />
+            <Property Name="Background" Value="[NULL]" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+            <Property Name="ElementSoundMode" Value="1" />
+            <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+            <Property Name="FontFamily" Value="Segoe UI" />
+            <Property Name="FontSize" Value="15" />
+            <Property Name="FontWeight" Value="400" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="HorizontalAlignment" Value="3" />
+            <Property Name="HorizontalContentAlignment" Value="3" />
+            <Property Name="IsEnabled" Value="True" />
+            <Property Name="Name" Value="FlyoutButton" />
+            <Property Name="Padding" Value="8,4,8,4" />
+            <Property Name="RenderSize" Value="296x32" />
+            <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="False" />
+            <Property Name="VerticalAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="32" />
+              <Property Name="ActualWidth" Value="296" />
+              <Property Name="Background" Value="[NULL]" />
+              <Property Name="RenderSize" Value="296x32" />
+              <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                <Property Name="ActualHeight" Value="32" />
+                <Property Name="ActualWidth" Value="296" />
+                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                <Property Name="Background" Value="#66FF0000" />
+                <Property Name="BorderBrush" Value="#6600FFFF" />
+                <Property Name="BorderThickness" Value="2,2,2,2" />
+                <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+                <Property Name="Foreground" Value="#FF000000" />
+                <Property Name="HorizontalContentAlignment" Value="3" />
+                <Property Name="Name" Value="ContentPresenter" />
+                <Property Name="RenderSize" Value="296x32" />
+                <Property Name="VerticalContentAlignment" Value="3" />
+                <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                  <Property Name="ActualHeight" Value="28" />
+                  <Property Name="ActualWidth" Value="292" />
+                  <Property Name="Name" Value="FlyoutButtonContentGrid" />
+                  <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
+                  <Property Name="RenderSize" Value="292x28" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                    <Property Name="ActualHeight" Value="27.9512" />
+                    <Property Name="ActualWidth" Value="16.1719" />
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="FontFamily" Value="Segoe UI" />
+                    <Property Name="FontSize" Value="15" />
+                    <Property Name="FontWeight" Value="400" />
+                    <Property Name="Grid.Column" Value="2" />
+                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                    <Property Name="Name" Value="DayTextBlock" />
+                    <Property Name="Padding" Value="0,3,0,5" />
+                    <Property Name="RenderSize" Value="78x28" />
+                    <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                    <Property Name="Text" Value="???11" />
+                    <Property Name="TextAlignment" Value="0" />
+                    <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                    <Property Name="Visibility" Value="0" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                    <Property Name="ActualHeight" Value="27.9512" />
+                    <Property Name="ActualWidth" Value="38.3594" />
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="FontFamily" Value="Segoe UI" />
+                    <Property Name="FontSize" Value="15" />
+                    <Property Name="FontWeight" Value="400" />
+                    <Property Name="Grid.Column" Value="0" />
+                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                    <Property Name="Name" Value="MonthTextBlock" />
+                    <Property Name="Padding" Value="10,3,0,5" />
+                    <Property Name="RenderSize" Value="132x28" />
+                    <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                    <Property Name="Text" Value="May" />
+                    <Property Name="TextAlignment" Value="1" />
+                    <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                    <Property Name="Visibility" Value="0" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                    <Property Name="ActualHeight" Value="27.9512" />
+                    <Property Name="ActualWidth" Value="32.3438" />
+                    <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                    <Property Name="FontFamily" Value="Segoe UI" />
+                    <Property Name="FontSize" Value="15" />
+                    <Property Name="FontWeight" Value="400" />
+                    <Property Name="Grid.Column" Value="4" />
+                    <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                    <Property Name="Name" Value="YearTextBlock" />
+                    <Property Name="Padding" Value="0,3,0,5" />
+                    <Property Name="RenderSize" Value="78x28" />
+                    <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                    <Property Name="Text" Value="???2017" />
+                    <Property Name="TextAlignment" Value="0" />
+                    <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                    <Property Name="Visibility" Value="0" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="28" />
+                    <Property Name="ActualWidth" Value="2" />
+                    <Property Name="Fill" Value="#3300FFFF" />
+                    <Property Name="Grid.Column" Value="1" />
+                    <Property Name="HorizontalAlignment" Value="1" />
+                    <Property Name="Name" Value="FirstPickerSpacing" />
+                    <Property Name="RenderSize" Value="2x28" />
+                    <Property Name="Visibility" Value="0" />
+                    <Property Name="Width" Value="2" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="28" />
+                    <Property Name="ActualWidth" Value="2" />
+                    <Property Name="Fill" Value="#3300FFFF" />
+                    <Property Name="Grid.Column" Value="3" />
+                    <Property Name="HorizontalAlignment" Value="1" />
+                    <Property Name="Name" Value="SecondPickerSpacing" />
+                    <Property Name="RenderSize" Value="2x28" />
+                    <Property Name="Visibility" Value="0" />
+                    <Property Name="Width" Value="2" />
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.TimePicker">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="242" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="IsTabStop" Value="False" />
+        <Property Name="MaxWidth" Value="456" />
+        <Property Name="MinWidth" Value="242" />
+        <Property Name="RenderSize" Value="242x32" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="VerticalAlignment" Value="1" />
+        <Element Type="Microsoft.UI.Xaml.Controls.StackPanel">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="242" />
+          <Property Name="FlowDirection" Value="0" />
+          <Property Name="Margin" Value="0,0,0,0" />
+          <Property Name="Name" Value="LayoutRoot" />
+          <Property Name="RenderSize" Value="242x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Button">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="242" />
+            <Property Name="AutomationProperties.Name" Value=" ???10???:???45??? ???PM time picker" />
+            <Property Name="Background" Value="[NULL]" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+            <Property Name="ElementSoundMode" Value="1" />
+            <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+            <Property Name="FontFamily" Value="Segoe UI" />
+            <Property Name="FontSize" Value="15" />
+            <Property Name="FontWeight" Value="400" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="HorizontalAlignment" Value="3" />
+            <Property Name="HorizontalContentAlignment" Value="3" />
+            <Property Name="IsEnabled" Value="True" />
+            <Property Name="Name" Value="FlyoutButton" />
+            <Property Name="Padding" Value="8,4,8,4" />
+            <Property Name="RenderSize" Value="242x32" />
+            <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="False" />
+            <Property Name="VerticalAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+              <Property Name="ActualHeight" Value="32" />
+              <Property Name="ActualWidth" Value="242" />
+              <Property Name="Background" Value="[NULL]" />
+              <Property Name="RenderSize" Value="242x32" />
+              <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+                <Property Name="ActualHeight" Value="32" />
+                <Property Name="ActualWidth" Value="242" />
+                <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                <Property Name="Background" Value="#66FF0000" />
+                <Property Name="BorderBrush" Value="#6600FFFF" />
+                <Property Name="BorderThickness" Value="2,2,2,2" />
+                <Property Name="Content" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+                <Property Name="Foreground" Value="#FF000000" />
+                <Property Name="HorizontalContentAlignment" Value="3" />
+                <Property Name="Name" Value="ContentPresenter" />
+                <Property Name="RenderSize" Value="242x32" />
+                <Property Name="VerticalContentAlignment" Value="3" />
+                <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                  <Property Name="ActualHeight" Value="28" />
+                  <Property Name="ActualWidth" Value="238" />
+                  <Property Name="Name" Value="FlyoutButtonContentGrid" />
+                  <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.Button]" />
+                  <Property Name="RenderSize" Value="238x28" />
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="28" />
+                    <Property Name="ActualWidth" Value="78" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+                    <Property Name="Grid.Column" Value="0" />
+                    <Property Name="Name" Value="FirstPickerHost" />
+                    <Property Name="RenderSize" Value="78x28" />
+                    <Property Name="Visibility" Value="0" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="27.9512" />
+                      <Property Name="ActualWidth" Value="16.1719" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="FontFamily" Value="Segoe UI" />
+                      <Property Name="FontSize" Value="15" />
+                      <Property Name="FontWeight" Value="400" />
+                      <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                      <Property Name="Name" Value="HourTextBlock" />
+                      <Property Name="Padding" Value="0,3,0,5" />
+                      <Property Name="RenderSize" Value="78x28" />
+                      <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                      <Property Name="Text" Value="10" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                    </Element>
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="28" />
+                    <Property Name="ActualWidth" Value="2" />
+                    <Property Name="Fill" Value="#3300FFFF" />
+                    <Property Name="Grid.Column" Value="1" />
+                    <Property Name="HorizontalAlignment" Value="1" />
+                    <Property Name="Name" Value="FirstColumnDivider" />
+                    <Property Name="RenderSize" Value="2x28" />
+                    <Property Name="Visibility" Value="0" />
+                    <Property Name="Width" Value="2" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="28" />
+                    <Property Name="ActualWidth" Value="78" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+                    <Property Name="Grid.Column" Value="2" />
+                    <Property Name="Name" Value="SecondPickerHost" />
+                    <Property Name="RenderSize" Value="78x28" />
+                    <Property Name="Visibility" Value="0" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="27.9512" />
+                      <Property Name="ActualWidth" Value="16.1719" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="FontFamily" Value="Segoe UI" />
+                      <Property Name="FontSize" Value="15" />
+                      <Property Name="FontWeight" Value="400" />
+                      <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                      <Property Name="Name" Value="MinuteTextBlock" />
+                      <Property Name="Padding" Value="0,3,0,5" />
+                      <Property Name="RenderSize" Value="78x28" />
+                      <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                      <Property Name="Text" Value="45" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                    </Element>
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Shapes.Rectangle">
+                    <Property Name="ActualHeight" Value="28" />
+                    <Property Name="ActualWidth" Value="2" />
+                    <Property Name="Fill" Value="#3300FFFF" />
+                    <Property Name="Grid.Column" Value="3" />
+                    <Property Name="HorizontalAlignment" Value="1" />
+                    <Property Name="Name" Value="SecondColumnDivider" />
+                    <Property Name="RenderSize" Value="2x28" />
+                    <Property Name="Visibility" Value="0" />
+                    <Property Name="Width" Value="2" />
+                  </Element>
+                  <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                    <Property Name="ActualHeight" Value="28" />
+                    <Property Name="ActualWidth" Value="78" />
+                    <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.TextBlock]" />
+                    <Property Name="Grid.Column" Value="4" />
+                    <Property Name="Name" Value="ThirdPickerHost" />
+                    <Property Name="RenderSize" Value="78x28" />
+                    <Property Name="Visibility" Value="0" />
+                    <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+                      <Property Name="ActualHeight" Value="27.9512" />
+                      <Property Name="ActualWidth" Value="21.8701" />
+                      <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+                      <Property Name="FontFamily" Value="Segoe UI" />
+                      <Property Name="FontSize" Value="15" />
+                      <Property Name="FontWeight" Value="400" />
+                      <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+                      <Property Name="Name" Value="PeriodTextBlock" />
+                      <Property Name="Padding" Value="0,3,0,5" />
+                      <Property Name="RenderSize" Value="78x28" />
+                      <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+                      <Property Name="Text" Value="PM" />
+                      <Property Name="TextAlignment" Value="0" />
+                      <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+                    </Element>
+                  </Element>
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.ComboBox">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="87" />
+        <Property Name="Background" Value="#66FF0000" />
+        <Property Name="BorderBrush" Value="#6600FFFF" />
+        <Property Name="BorderThickness" Value="2,2,2,2" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="GroupStyle" Value="[TrackerCollection&lt;T>]" />
+        <Property Name="HorizontalAlignment" Value="0" />
+        <Property Name="HorizontalContentAlignment" Value="3" />
+        <Property Name="IsDropDownOpen" Value="False" />
+        <Property Name="ItemsPanel" Value="[Microsoft.UI.Xaml.Controls.ItemsPanelTemplate]" />
+        <Property Name="MinWidth" Value="64" />
+        <Property Name="Padding" Value="12,5,0,7" />
+        <Property Name="RenderSize" Value="87x32" />
+        <Property Name="ScrollViewer.BringIntoViewOnFocusChange" Value="True" />
+        <Property Name="ScrollViewer.HorizontalScrollBarVisibility" Value="0" />
+        <Property Name="ScrollViewer.HorizontalScrollMode" Value="0" />
+        <Property Name="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Property Name="ScrollViewer.IsVerticalRailEnabled" Value="True" />
+        <Property Name="ScrollViewer.VerticalScrollBarVisibility" Value="1" />
+        <Property Name="ScrollViewer.VerticalScrollMode" Value="2" />
+        <Property Name="SelectedIndex" Value="1" />
+        <Property Name="SelectedItem" Value="[Microsoft.UI.Xaml.Controls.ComboBoxItem]" />
+        <Property Name="SelectedValue" Value="[Microsoft.UI.Xaml.Controls.ComboBoxItem]" />
+        <Property Name="SelectionBoxItem" Value="Item 2" />
+        <Property Name="SelectionBoxItemTemplate" Value="[NULL]" />
+        <Property Name="TabNavigation" Value="2" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="TemplateSettings" Value="[Microsoft.UI.Xaml.Controls.Primitives.ComboBoxTemplateSettings]" />
+        <Property Name="VerticalAlignment" Value="0" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="87" />
+          <Property Name="Name" Value="LayoutRoot" />
+          <Property Name="RenderSize" Value="87x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Border">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="87" />
+            <Property Name="Background" Value="#66FF0000" />
+            <Property Name="BorderBrush" Value="#6600FFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Name" Value="Background" />
+            <Property Name="RenderSize" Value="87x32" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Border">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="87" />
+            <Property Name="Background" Value="#FF5B2EC5(Opacity=0.40)" />
+            <Property Name="BorderBrush" Value="#66000000" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Name" Value="HighlightBackground" />
+            <Property Name="Opacity" Value="0" />
+            <Property Name="RenderSize" Value="87x32" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="20" />
+            <Property Name="ActualWidth" Value="43" />
+            <Property Name="Content" Value="Item 2" />
+            <Property Name="ContentTemplate" Value="[NULL]" />
+            <Property Name="ContentTemplateSelector" Value="[NULL]" />
+            <Property Name="DataContext" Value="Item 2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="HorizontalAlignment" Value="3" />
+            <Property Name="Margin" Value="12,5,0,7" />
+            <Property Name="Name" Value="ContentPresenter" />
+            <Property Name="RenderSize" Value="43x20" />
+            <Property Name="VerticalAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="19.9512" />
+              <Property Name="ActualWidth" Value="42.0337" />
+              <Property Name="HorizontalAlignment" Value="0" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="RenderSize" Value="43x20" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Text" Value="Item 2" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="VerticalAlignment" Value="0" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.FontIcon">
+            <Property Name="ActualHeight" Value="12" />
+            <Property Name="ActualWidth" Value="12" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="FontFamily" Value="Segoe MDL2 Assets" />
+            <Property Name="FontSize" Value="12" />
+            <Property Name="FontStyle" Value="0" />
+            <Property Name="FontWeight" Value="400" />
+            <Property Name="Foreground" Value="#CC00FFFF" />
+            <Property Name="Glyph" Value="???" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="HorizontalAlignment" Value="2" />
+            <Property Name="IsHitTestVisible" Value="False" />
+            <Property Name="Margin" Value="0,10,10,10" />
+            <Property Name="Name" Value="DropDownGlyph" />
+            <Property Name="RenderSize" Value="12x12" />
+            <Property Name="VerticalAlignment" Value="1" />
+            <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+              <Property Name="ActualHeight" Value="12" />
+              <Property Name="ActualWidth" Value="12" />
+              <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+              <Property Name="HorizontalAlignment" Value="3" />
+              <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+              <Property Name="IsTextScaleFactorEnabled" Value="False" />
+              <Property Name="RenderSize" Value="12x12" />
+              <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+              <Property Name="Style" Value="[NULL]" />
+              <Property Name="Text" Value="???" />
+              <Property Name="TextAlignment" Value="0" />
+              <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+              <Property Name="VerticalAlignment" Value="1" />
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Primitives.Popup">
+            <Property Name="ActualHeight" Value="0" />
+            <Property Name="ActualWidth" Value="55" />
+            <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Canvas]" />
+            <Property Name="Name" Value="Popup" />
+            <Property Name="RenderSize" Value="55x0" />
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.TextBox">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="1024" />
+        <Property Name="Background" Value="#66FF0000" />
+        <Property Name="BorderBrush" Value="#6600FFFF" />
+        <Property Name="BorderThickness" Value="2,2,2,2" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="MinHeight" Value="32" />
+        <Property Name="MinWidth" Value="64" />
+        <Property Name="Padding" Value="10,3,6,5" />
+        <Property Name="RenderSize" Value="1024x32" />
+        <Property Name="ScrollViewer.HorizontalScrollBarVisibility" Value="2" />
+        <Property Name="ScrollViewer.HorizontalScrollMode" Value="2" />
+        <Property Name="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Property Name="ScrollViewer.VerticalScrollBarVisibility" Value="2" />
+        <Property Name="ScrollViewer.VerticalScrollMode" Value="2" />
+        <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+        <Property Name="SelectionHighlightColorWhenNotFocused" Value="#00FFFFFF" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Property Name="Text" Value="TextBox" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="1024" />
+          <Property Name="RenderSize" Value="1024x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Border">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="1024" />
+            <Property Name="Background" Value="#66FF0000" />
+            <Property Name="BorderBrush" Value="#6600FFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Grid.RowSpan" Value="1" />
+            <Property Name="Name" Value="BorderElement" />
+            <Property Name="RenderSize" Value="1024x32" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ScrollViewer">
+            <Property Name="ActualHeight" Value="28" />
+            <Property Name="ActualWidth" Value="1020" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Background" Value="#00FFFFFF" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="0,0,0,0" />
+            <Property Name="ComputedHorizontalScrollBarVisibility" Value="1" />
+            <Property Name="ComputedVerticalScrollBarVisibility" Value="1" />
+            <Property Name="Content" Value="[Microsoft.UI.Xaml.FrameworkElement]" />
+            <Property Name="ExtentHeight" Value="20" />
+            <Property Name="ExtentWidth" Value="1004" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="HorizontalContentAlignment" Value="0" />
+            <Property Name="IsTabStop" Value="False" />
+            <Property Name="Margin" Value="2,2,2,2" />
+            <Property Name="Name" Value="ContentElement" />
+            <Property Name="Padding" Value="10,3,6,5" />
+            <Property Name="RenderSize" Value="1020x28" />
+            <Property Name="ScrollViewer.HorizontalScrollBarVisibility" Value="2" />
+            <Property Name="ScrollViewer.HorizontalScrollMode" Value="2" />
+            <Property Name="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+            <Property Name="ScrollViewer.IsHorizontalRailEnabled" Value="True" />
+            <Property Name="ScrollViewer.IsVerticalRailEnabled" Value="True" />
+            <Property Name="ScrollViewer.VerticalScrollBarVisibility" Value="2" />
+            <Property Name="ScrollViewer.VerticalScrollMode" Value="2" />
+            <Property Name="ScrollViewer.ZoomMode" Value="0" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="True" />
+            <Property Name="VerticalContentAlignment" Value="0" />
+            <Property Name="ViewportHeight" Value="20" />
+            <Property Name="ViewportWidth" Value="1004" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="28" />
+              <Property Name="ActualWidth" Value="1020" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="BorderThickness" Value="0,0,0,0" />
+              <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+              <Property Name="RenderSize" Value="1020x28" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="28" />
+                <Property Name="ActualWidth" Value="1020" />
+                <Property Name="Background" Value="#00FFFFFF" />
+                <Property Name="RenderSize" Value="1020x28" />
+                <Element Type="Microsoft.UI.Xaml.Controls.ScrollContentPresenter">
+                  <Property Name="ActualHeight" Value="20" />
+                  <Property Name="ActualWidth" Value="1004" />
+                  <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+                  <Property Name="Content" Value="[Microsoft.UI.Xaml.FrameworkElement]" />
+                  <Property Name="Grid.ColumnSpan" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="2" />
+                  <Property Name="Margin" Value="10,3,6,5" />
+                  <Property Name="Name" Value="ScrollContentPresenter" />
+                  <Property Name="RenderSize" Value="1004x20" />
+                  <Element Type="Microsoft.UI.Xaml.FrameworkElement">
+                    <Property Name="ActualHeight" Value="20" />
+                    <Property Name="ActualWidth" Value="1004" />
+                    <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.ScrollViewer]" />
+                    <Property Name="RenderSize" Value="1004x20" />
+                  </Element>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                  <Property Name="ActualHeight" Value="28" />
+                  <Property Name="ActualWidth" Value="1020" />
+                  <Property Name="Grid.ColumnSpan" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="2" />
+                  <Property Name="RenderSize" Value="1020x28" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ScrollBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Background" Value="#00FFFFFF" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="Foreground" Value="#00FFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Maximum" Value="0" />
+                  <Property Name="MinHeight" Value="16" />
+                  <Property Name="MinWidth" Value="16" />
+                  <Property Name="Minimum" Value="0" />
+                  <Property Name="Name" Value="VerticalScrollBar" />
+                  <Property Name="Orientation" Value="0" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="Value" Value="0" />
+                  <Property Name="ViewportSize" Value="20" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ScrollBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Background" Value="#00FFFFFF" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="Foreground" Value="#00FFFFFF" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Maximum" Value="0" />
+                  <Property Name="MinHeight" Value="16" />
+                  <Property Name="MinWidth" Value="16" />
+                  <Property Name="Minimum" Value="0" />
+                  <Property Name="Name" Value="HorizontalScrollBar" />
+                  <Property Name="Orientation" Value="1" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="Value" Value="0" />
+                  <Property Name="ViewportSize" Value="1004" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Background" Value="#FFCC0000(Opacity=0.90)" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="ScrollBarSeparator" />
+                  <Property Name="Opacity" Value="0" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentPresenter">
+            <Property Name="ActualHeight" Value="0" />
+            <Property Name="ActualWidth" Value="0" />
+            <Property Name="Content" Value="[NULL]" />
+            <Property Name="Foreground" Value="#9900FFFF" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="IsHitTestVisible" Value="False" />
+            <Property Name="Margin" Value="2,2,2,2" />
+            <Property Name="Name" Value="PlaceholderTextContentPresenter" />
+            <Property Name="Padding" Value="10,3,6,5" />
+            <Property Name="RenderSize" Value="0x0" />
+            <Property Name="TextWrapping" Value="1" />
+            <Property Name="Visibility" Value="1" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Button">
+            <Property Name="ActualHeight" Value="0" />
+            <Property Name="ActualWidth" Value="0" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="AutomationProperties.Name" Value="Delete" />
+            <Property Name="Background" Value="#33000000" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+            <Property Name="FontFamily" Value="Segoe UI" />
+            <Property Name="FontSize" Value="15" />
+            <Property Name="FontWeight" Value="400" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="IsPointerOver" Value="False" />
+            <Property Name="IsPressed" Value="False" />
+            <Property Name="IsTabStop" Value="False" />
+            <Property Name="Margin" Value="0,0,-2,0" />
+            <Property Name="MinWidth" Value="34" />
+            <Property Name="Name" Value="DeleteButton" />
+            <Property Name="Padding" Value="8,4,8,4" />
+            <Property Name="RenderSize" Value="0x0" />
+            <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="True" />
+            <Property Name="VerticalAlignment" Value="3" />
+            <Property Name="Visibility" Value="1" />
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.TextBlock">
+        <Property Name="ActualHeight" Value="19.9512" />
+        <Property Name="ActualWidth" Value="61.6113" />
+        <Property Name="Inlines" Value="[Microsoft.UI.Xaml.Documents.InlineCollection]" />
+        <Property Name="RenderSize" Value="1024x20" />
+        <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+        <Property Name="Text" Value="TextBlock" />
+        <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.PasswordBox">
+        <Property Name="ActualHeight" Value="32" />
+        <Property Name="ActualWidth" Value="1024" />
+        <Property Name="Background" Value="#66FF0000" />
+        <Property Name="BorderBrush" Value="#6600FFFF" />
+        <Property Name="BorderThickness" Value="2,2,2,2" />
+        <Property Name="FontFamily" Value="Segoe UI" />
+        <Property Name="FontSize" Value="15" />
+        <Property Name="Foreground" Value="#FF000000" />
+        <Property Name="MinHeight" Value="32" />
+        <Property Name="MinWidth" Value="64" />
+        <Property Name="Padding" Value="10,3,6,5" />
+        <Property Name="Password" Value="Password" />
+        <Property Name="RenderSize" Value="1024x32" />
+        <Property Name="ScrollViewer.HorizontalScrollBarVisibility" Value="2" />
+        <Property Name="ScrollViewer.HorizontalScrollMode" Value="2" />
+        <Property Name="ScrollViewer.VerticalScrollBarVisibility" Value="2" />
+        <Property Name="ScrollViewer.VerticalScrollMode" Value="2" />
+        <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+        <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+        <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+          <Property Name="ActualHeight" Value="32" />
+          <Property Name="ActualWidth" Value="1024" />
+          <Property Name="RenderSize" Value="1024x32" />
+          <Element Type="Microsoft.UI.Xaml.Controls.Border">
+            <Property Name="ActualHeight" Value="32" />
+            <Property Name="ActualWidth" Value="1024" />
+            <Property Name="Background" Value="#66FF0000" />
+            <Property Name="BorderBrush" Value="#6600FFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="Grid.RowSpan" Value="1" />
+            <Property Name="Name" Value="BorderElement" />
+            <Property Name="RenderSize" Value="1024x32" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ScrollViewer">
+            <Property Name="ActualHeight" Value="28" />
+            <Property Name="ActualWidth" Value="1020" />
+            <Property Name="AutomationProperties.AccessibilityView" Value="0" />
+            <Property Name="Background" Value="#00FFFFFF" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="0,0,0,0" />
+            <Property Name="ComputedHorizontalScrollBarVisibility" Value="1" />
+            <Property Name="ComputedVerticalScrollBarVisibility" Value="1" />
+            <Property Name="Content" Value="[Microsoft.UI.Xaml.FrameworkElement]" />
+            <Property Name="ExtentHeight" Value="20" />
+            <Property Name="ExtentWidth" Value="1004" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="HorizontalContentAlignment" Value="0" />
+            <Property Name="IsTabStop" Value="False" />
+            <Property Name="Margin" Value="2,2,2,2" />
+            <Property Name="Name" Value="ContentElement" />
+            <Property Name="Padding" Value="10,3,6,5" />
+            <Property Name="RenderSize" Value="1020x28" />
+            <Property Name="ScrollViewer.HorizontalScrollBarVisibility" Value="2" />
+            <Property Name="ScrollViewer.HorizontalScrollMode" Value="2" />
+            <Property Name="ScrollViewer.IsHorizontalRailEnabled" Value="True" />
+            <Property Name="ScrollViewer.IsVerticalRailEnabled" Value="True" />
+            <Property Name="ScrollViewer.VerticalScrollBarVisibility" Value="2" />
+            <Property Name="ScrollViewer.VerticalScrollMode" Value="2" />
+            <Property Name="ScrollViewer.ZoomMode" Value="0" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="True" />
+            <Property Name="VerticalContentAlignment" Value="0" />
+            <Property Name="ViewportHeight" Value="20" />
+            <Property Name="ViewportWidth" Value="1004" />
+            <Element Type="Microsoft.UI.Xaml.Controls.Border">
+              <Property Name="ActualHeight" Value="28" />
+              <Property Name="ActualWidth" Value="1020" />
+              <Property Name="BorderBrush" Value="#00FFFFFF" />
+              <Property Name="BorderThickness" Value="0,0,0,0" />
+              <Property Name="Child" Value="[Microsoft.UI.Xaml.Controls.Grid]" />
+              <Property Name="RenderSize" Value="1020x28" />
+              <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                <Property Name="ActualHeight" Value="28" />
+                <Property Name="ActualWidth" Value="1020" />
+                <Property Name="Background" Value="#00FFFFFF" />
+                <Property Name="RenderSize" Value="1020x28" />
+                <Element Type="Microsoft.UI.Xaml.Controls.ScrollContentPresenter">
+                  <Property Name="ActualHeight" Value="20" />
+                  <Property Name="ActualWidth" Value="1004" />
+                  <Property Name="Clip" Value="[Microsoft.UI.Xaml.Media.RectangleGeometry]" />
+                  <Property Name="Content" Value="[Microsoft.UI.Xaml.FrameworkElement]" />
+                  <Property Name="Grid.ColumnSpan" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="2" />
+                  <Property Name="Margin" Value="10,3,6,5" />
+                  <Property Name="Name" Value="ScrollContentPresenter" />
+                  <Property Name="RenderSize" Value="1004x20" />
+                  <Element Type="Microsoft.UI.Xaml.FrameworkElement">
+                    <Property Name="ActualHeight" Value="20" />
+                    <Property Name="ActualWidth" Value="1004" />
+                    <Property Name="Parent" Value="[Microsoft.UI.Xaml.Controls.ScrollViewer]" />
+                    <Property Name="RenderSize" Value="1004x20" />
+                  </Element>
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Grid">
+                  <Property Name="ActualHeight" Value="28" />
+                  <Property Name="ActualWidth" Value="1020" />
+                  <Property Name="Grid.ColumnSpan" Value="2" />
+                  <Property Name="Grid.RowSpan" Value="2" />
+                  <Property Name="RenderSize" Value="1020x28" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ScrollBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Background" Value="#00FFFFFF" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="Foreground" Value="#00FFFFFF" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="HorizontalAlignment" Value="2" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Maximum" Value="0" />
+                  <Property Name="MinHeight" Value="16" />
+                  <Property Name="MinWidth" Value="16" />
+                  <Property Name="Minimum" Value="0" />
+                  <Property Name="Name" Value="VerticalScrollBar" />
+                  <Property Name="Orientation" Value="0" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="Value" Value="0" />
+                  <Property Name="ViewportSize" Value="20" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ScrollBar">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Background" Value="#00FFFFFF" />
+                  <Property Name="BorderBrush" Value="#00FFFFFF" />
+                  <Property Name="Foreground" Value="#00FFFFFF" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="IsTabStop" Value="False" />
+                  <Property Name="Maximum" Value="0" />
+                  <Property Name="MinHeight" Value="16" />
+                  <Property Name="MinWidth" Value="16" />
+                  <Property Name="Minimum" Value="0" />
+                  <Property Name="Name" Value="HorizontalScrollBar" />
+                  <Property Name="Orientation" Value="1" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+                  <Property Name="Value" Value="0" />
+                  <Property Name="ViewportSize" Value="1004" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+                <Element Type="Microsoft.UI.Xaml.Controls.Border">
+                  <Property Name="ActualHeight" Value="0" />
+                  <Property Name="ActualWidth" Value="0" />
+                  <Property Name="Background" Value="#FFCC0000(Opacity=0.90)" />
+                  <Property Name="Grid.Column" Value="1" />
+                  <Property Name="Grid.Row" Value="1" />
+                  <Property Name="Name" Value="ScrollBarSeparator" />
+                  <Property Name="Opacity" Value="0" />
+                  <Property Name="RenderSize" Value="0x0" />
+                  <Property Name="Visibility" Value="1" />
+                </Element>
+              </Element>
+            </Element>
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.ContentControl">
+            <Property Name="ActualHeight" Value="0" />
+            <Property Name="ActualWidth" Value="0" />
+            <Property Name="Content" Value="[NULL]" />
+            <Property Name="Foreground" Value="#9900FFFF" />
+            <Property Name="Grid.ColumnSpan" Value="2" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="HorizontalContentAlignment" Value="0" />
+            <Property Name="IsHitTestVisible" Value="False" />
+            <Property Name="IsTabStop" Value="False" />
+            <Property Name="Margin" Value="2,2,2,2" />
+            <Property Name="Name" Value="PlaceholderTextContentPresenter" />
+            <Property Name="Padding" Value="10,3,6,5" />
+            <Property Name="RenderSize" Value="0x0" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="VerticalContentAlignment" Value="0" />
+            <Property Name="Visibility" Value="1" />
+          </Element>
+          <Element Type="Microsoft.UI.Xaml.Controls.Primitives.ToggleButton">
+            <Property Name="ActualHeight" Value="0" />
+            <Property Name="ActualWidth" Value="0" />
+            <Property Name="AutomationProperties.Name" Value="Show Password" />
+            <Property Name="Background" Value="#33000000" />
+            <Property Name="BorderBrush" Value="#00FFFFFF" />
+            <Property Name="BorderThickness" Value="2,2,2,2" />
+            <Property Name="FocusVisualMargin" Value="-3,-3,-3,-3" />
+            <Property Name="FontFamily" Value="Segoe UI" />
+            <Property Name="FontSize" Value="15" />
+            <Property Name="FontWeight" Value="400" />
+            <Property Name="Foreground" Value="#FF000000" />
+            <Property Name="Grid.Column" Value="1" />
+            <Property Name="Grid.Row" Value="1" />
+            <Property Name="HorizontalAlignment" Value="0" />
+            <Property Name="IsChecked" Value="False" />
+            <Property Name="IsPointerOver" Value="False" />
+            <Property Name="IsPressed" Value="False" />
+            <Property Name="IsTabStop" Value="False" />
+            <Property Name="Margin" Value="0,0,-2,0" />
+            <Property Name="MinWidth" Value="34" />
+            <Property Name="Name" Value="RevealButton" />
+            <Property Name="Padding" Value="8,4,8,4" />
+            <Property Name="RenderSize" Value="0x0" />
+            <Property Name="Style" Value="[Microsoft.UI.Xaml.Style]" />
+            <Property Name="Template" Value="[Microsoft.UI.Xaml.Controls.ControlTemplate]" />
+            <Property Name="UseSystemFocusVisuals" Value="True" />
+            <Property Name="VerticalAlignment" Value="3" />
+            <Property Name="Visibility" Value="1" />
+          </Element>
+        </Element>
+      </Element>
+      <Element Type="Microsoft.UI.Xaml.Controls.RichTextBlock">
+        <Property Name="ActualHeight" Value="19.95" />
+        <Property Name="ActualWidth" Value="279.41" />
+        <Property Name="Blocks" Value="[Microsoft.UI.Xaml.Documents.BlockCollection]" />
+        <Property Name="RenderSize" Value="1024x20" />
+        <Property Name="SelectionHighlightColor" Value="#FF5B2EC5" />
+        <Property Name="TextHighlighters" Value="[Microsoft.UI.Xaml.DependencyObject]" />
+      </Element>
+    </Element>
+  </VisualRoot>
+</VisualTreeDump>

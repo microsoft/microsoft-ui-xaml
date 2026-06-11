@@ -1,0 +1,102 @@
+# PR build (OSS). Product-only compile gate; tests and signing run in internal ADO.
+
+name: PR Build
+
+on:
+  pull_request:
+    branches:
+      - main
+      - winui3/main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - '.github/policies/**'
+      - 'LICENSE'
+      - 'NOTICE.md'
+      - 'PRIVACY.md'
+      - 'privacy.md'
+      - 'SECURITY.md'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CONTRIBUTING.md'
+      - 'CONTRIBUTING_feedback_and_requests.md'
+  workflow_dispatch: {}
+
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.flavor }})
+    runs-on: windows-2022
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - flavor: x86chk
+            platform: x86
+            configuration: Debug
+          - flavor: x86fre
+            platform: x86
+            configuration: Release
+          - flavor: x64chk
+            platform: x64
+            configuration: Debug
+          - flavor: x64fre
+            platform: x64
+            configuration: Release
+          - flavor: arm64chk
+            platform: arm64
+            configuration: Debug
+          - flavor: arm64fre
+            platform: arm64
+            configuration: Release
+    env:
+      WINUI_INIT_FLAVOR: ${{ matrix.flavor }}
+      WINUI_BUILD_PLATFORM: ${{ matrix.platform }}
+      WINUI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
+      BuildPlatform: ${{ matrix.platform }}
+      NUGET_PACKAGES: ${{ github.workspace }}\packages
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      # Cap CL.exe parallelism: hosted runner has 2 vCPUs; default /m:4 OOMs (C1076).
+      CL: '/MP2'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Initialize build environment and build
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/.github/scripts/build-pr.ps1" `
+            -Flavor $env:WINUI_INIT_FLAVOR `
+            -Platform $env:WINUI_BUILD_PLATFORM `
+            -Configuration $env:WINUI_BUILD_CONFIGURATION
+
+      - name: Upload MSBuild binlogs
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: binlogs-${{ matrix.flavor }}
+          path: BuildOutput/**/*.binlog
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload product runtime payload
+        uses: actions/upload-artifact@v6
+        with:
+          name: winui-product-${{ matrix.flavor }}
+          path: |
+            BuildOutput/packaging/${{ matrix.configuration }}/runtimes-framework/win-${{ matrix.platform }}/**
+          if-no-files-found: warn
+          retention-days: 7

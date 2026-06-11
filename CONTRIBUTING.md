@@ -48,8 +48,8 @@ PRs are merged using **squash merge** by default.
 
 ### Proposing new public APIs or UI
 
-Please follow the [New Feature or API Process](docs/external/feature_proposal_process.md) before adding, removing, or changing public APIs or UI.
-All new public APIs, new UI, or breaking changes to existing features **must** go through that process before submitting code changes.
+Please follow the [New Feature or API Process](docs/external/feature_proposal_process.md) before adding, removing, or changing public APIs or UI.  
+All new public APIs, new UI, or breaking changes to existing features **must** go through that process before submitting code changes.  
 You don't need to follow that process for bug fixes or other small changes.
 
 ### Contribution bar
