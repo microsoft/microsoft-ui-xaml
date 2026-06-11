@@ -2269,6 +2269,11 @@ namespace Microsoft.UI.Xaml.Hosting
         {
             Boolean ShouldConstrainPopupsToWorkArea;
         }
+
+        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        {
+            Boolean IsBackgroundTransparent;
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 5)]

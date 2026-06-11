@@ -301,6 +301,16 @@ namespace Microsoft.UI.Xaml.Hosting
             set;
         }
 
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [PropertyKind(PropertyKind.PropertyOnly)]
+        [TypeTable(IsExcludedFromDXaml = true)]
+        [Version(3)]
+        public bool IsBackgroundTransparent
+        {
+            get;
+            set;
+        }
+
         public XamlSourceFocusNavigationResult NavigateFocus(XamlSourceFocusNavigationRequest request)
         {
             return default(XamlSourceFocusNavigationResult);
