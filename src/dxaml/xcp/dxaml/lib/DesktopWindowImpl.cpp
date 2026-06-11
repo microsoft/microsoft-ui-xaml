@@ -136,6 +136,72 @@ void DesktopWindowImpl::OnCreate() noexcept
     // instead of whenever user code calls appwindow api, providing subclassing consistency
     ctl::ComPtr<ixp::IAppWindow> appWindow;
     IFCFAILFAST(get_AppWindowImpl(&appWindow));
+
+    // Set a default window icon from the application's executable.
+    //
+    // The WinUI window class is registered with hIcon=NULL because g_hInstance refers
+    // to the WinUI framework DLL, which does not contain the app's icon. As a result,
+    // windows start with no icon in the taskbar, Alt+Tab, and title bar.
+    //
+    // For packaged apps (including sparse-packaged apps), the shell may briefly show the
+    // correct icon from the package manifest during launch, but once the WinUI window is
+    // created with a NULL-icon class, the icon reverts to the system default.
+    // See: https://github.com/microsoft/microsoft-ui-xaml/issues/10856
+    //      https://github.com/microsoft/WinUI-Gallery/issues/1512
+    //
+    // We load the icon from the host executable (not the framework DLL) using
+    // GetModuleHandleW(nullptr). This works for both packaged and unpackaged apps:
+    // - Packaged apps: packaging tools embed the app icon into the exe as a resource
+    // - Unpackaged apps: the exe typically contains its own icon resource
+    //
+    // If the exe has no icon resource, LoadImageW returns NULL and we silently skip —
+    // preserving the existing behavior (no icon). Apps can always override this default
+    // by calling AppWindow.SetIcon() after window creation.
+    {
+        HMODULE hExeModule = ::GetModuleHandleW(nullptr);
+        if (hExeModule)
+        {
+            // Enumerate the first icon group resource in the executable — this is the icon
+            // the shell uses for the .exe file. Unlike a hardcoded resource ID (which varies
+            // by project template), EnumResourceNamesW always finds the first icon group
+            // regardless of its ID.
+            // LR_SHARED lets the system manage the icon lifetime — no DestroyIcon needed.
+            struct IconSearchContext { LPCWSTR resourceId; };
+            IconSearchContext ctx { nullptr };
+
+            ::EnumResourceNamesW(hExeModule, RT_GROUP_ICON,
+                [](HMODULE, LPCWSTR, LPWSTR lpName, LONG_PTR lParam) -> BOOL
+                {
+                    auto* pCtx = reinterpret_cast<IconSearchContext*>(lParam);
+                    pCtx->resourceId = lpName;
+                    return FALSE; // stop after first
+                },
+                reinterpret_cast<LONG_PTR>(&ctx));
+
+            if (ctx.resourceId)
+            {
+                UINT dpi = ::GetDpiForWindow(m_hwnd.get());
+                HICON hIconLarge = static_cast<HICON>(::LoadImageW(
+                    hExeModule, ctx.resourceId, IMAGE_ICON,
+                    ::GetSystemMetricsForDpi(SM_CXICON, dpi), ::GetSystemMetricsForDpi(SM_CYICON, dpi),
+                    LR_DEFAULTCOLOR | LR_SHARED));
+
+                HICON hIconSmall = static_cast<HICON>(::LoadImageW(
+                    hExeModule, ctx.resourceId, IMAGE_ICON,
+                    ::GetSystemMetricsForDpi(SM_CXSMICON, dpi), ::GetSystemMetricsForDpi(SM_CYSMICON, dpi),
+                    LR_DEFAULTCOLOR | LR_SHARED));
+
+                if (hIconLarge)
+                {
+                    ::SendMessageW(m_hwnd.get(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIconLarge));
+                }
+                if (hIconSmall)
+                {
+                    ::SendMessageW(m_hwnd.get(), WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIconSmall));
+                }
+            }
+        }
+    }
 }
 
 DesktopWindowImpl::~DesktopWindowImpl()
