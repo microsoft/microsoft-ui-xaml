@@ -51,10 +51,10 @@ Our contribution guidelines can be found [here](../../CONTRIBUTING.md).
 Once a feature is complete and tested according to the [contribution guidelines](../../CONTRIBUTING.md) you can send us a PR to merge it to main.  
 
 8. **Documentation and sample updates**  
-We will update the [documentation on docs.microsoft.com](https://docs.microsoft.com/windows/uwp) and if applicable add a sample to the [Xaml Controls Gallery](https://github.com/Microsoft/Xaml-Controls-Gallery) app.  
+We will update the [documentation on docs.microsoft.com](https://learn.microsoft.com/windows/uwp) and if applicable add a sample to the [WinUI 3 Gallery](https://github.com/microsoft/WinUI-Gallery) app.  
 Feel free to also contribute to docs and samples!  
 Once the docs and samples are updated we'll close the issue.
 
 9. **Binaries**  
-We periodically produce signed prerelease binaries from the main branch which are published to [NuGet](https://www.nuget.org/profiles/winui): see the [Roadmap](roadmap.md) for info on build frequency.   
+We periodically produce signed prerelease binaries from the main branch which are published to [NuGet](https://www.nuget.org/profiles/winui): see the [Windows App SDK Roadmap](https://github.com/microsoft/WindowsAppSDK/blob/main/docs/roadmap.md) for info on build frequency.   
 After the feature has been sufficiently validated as part of a prerelease package we will include it in the next stable binary release on NuGet.
