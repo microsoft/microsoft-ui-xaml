@@ -1,4 +1,4 @@
-![WinUI hero image](docs/images/header.png)
+![WinUI hero image](docs/external/images/header.png)
 
 <h1 align="center">
     WinUI
@@ -26,7 +26,7 @@ WinUI is a user interface layer that contains modern controls and styles for bui
 - **Powers key experiences in Windows:** Windows experiences and apps are built with WinUI. Its rich control set and styles make it easy to develop high-quality experiences used by millions every day.
 
 <p align="center">
-  <img src="docs/images/winui_os.png" alt="Powers key experiences in Windows" width="480"/>
+  <img src="docs/external/images/winui_os.png" alt="Powers key experiences in Windows" width="480"/>
 </p>
 
 ## 📋 Getting started with WinUI
@@ -46,13 +46,13 @@ The full documentation of WinUI can be found on [Microsoft Learn](https://learn.
 Make sure to also check out the [WinUI 3 Gallery](https://aka.ms/winui-gallery), our interactive sample experience showing everything you can do with WinUI.
 
 <p align="center">
-<img src="docs/images/winui-gallery.png" alt="WinUI 3 Gallery" width="400"/>
+<img src="docs/external/images/winui-gallery.png" alt="WinUI 3 Gallery" width="400"/>
 </p>
 <p align="center">
   <a style="text-decoration:none" href="https://apps.microsoft.com/detail/9P3JFPWWDZRC?launch=true&mode=full">
     <picture>
-      <source media="(prefers-color-scheme: light)" srcset="docs/images/StoreBadge-dark.png" width="220" />
-      <img src="docs/images/StoreBadge-light.png" width="220" />
+      <source media="(prefers-color-scheme: light)" srcset="docs/external/images/StoreBadge-dark.png" width="220" />
+      <img src="docs/external/images/StoreBadge-light.png" width="220" />
   </picture></a>
 </p>
 
@@ -61,7 +61,7 @@ The WinUI Community Call is your opportunity to learn about WinUI and to engage 
 
 ## 📢 Contributing to WinUI
 
-The WinUI team welcomes your feedback! To understand how we handle incoming feature requests and bugs, please see our [contribution handling](docs/contribution_handling.md) guidelines.
+The WinUI team welcomes your feedback! To understand how we handle incoming feature requests and bugs, please see our [contribution handling](docs/external/contribution_handling.md) guidelines.
 
 For information on how to contribute, please see [Contributing to WinUI](CONTRIBUTING.md).
 
@@ -69,7 +69,7 @@ For information on how to contribute, please see [Contributing to WinUI](CONTRIB
 > We're not yet ready to accept code contributions, but we are working towards that goal. It is now
 > possible to build the WinUI product binaries, with work in progress to share test code and enabling
 > locally running tests. To get started building WinUI from source and see more details on current
-> limitations, see [Getting started with building WinUI](src/GettingStarted.md). See the
+> limitations, see [Getting started with building WinUI](GettingStarted.md). See the
 > [WinUI OSS Update post](https://github.com/microsoft/microsoft-ui-xaml/discussions/10700) to check the
 > latest status.
 >
