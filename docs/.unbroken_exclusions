@@ -1,7 +1,0 @@
-# Azure DevOps URLs return HTTP 203 (non-authoritative) to unauthenticated clients;
-# unbroken only accepts 200, so it retries 5 times and reports failure.
-URL not found https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21 while parsing external/contribution_workflow.md after 5 retries
-URL not found https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20 while parsing external/contribution_workflow.md after 5 retries
-
-# Microsoft Store returns HTTP 403 to non-browser user agents
-URL not found https://www.microsoft.com/store/p/windbg/9pgjgd53tn86 while parsing external/debugging_crashes.md (HTTP 403)
