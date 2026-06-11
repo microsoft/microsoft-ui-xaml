@@ -99,7 +99,7 @@ define them here:
 
 #### [WinUI-Public-MUX-CI](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20)
 
-This pipeline extends [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) 
+This pipeline extends WinUI-Public-MUX-PR
 to validate more platforms, adding Debug and ARM. It is run after your changes are merged to 
 main.
 
