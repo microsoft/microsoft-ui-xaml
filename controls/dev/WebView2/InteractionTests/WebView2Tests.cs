@@ -2312,6 +2312,21 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
+        public void TransparentAcrylicBackdropTest()
+        {
+            using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
+            {
+                ChooseTest("TransparentAcrylicBackdropTest");
+                CompleteTestAndWaitForResult("TransparentAcrylicBackdropTest");
+                Wait.ForIdle();
+                ElementCache.Clear();
+
+                WebView2Temporary.WebView2RenderingVerifier.VerifyAcrylicRendering("MyWebView2");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
         public void LifetimeTabTest()
         {
             using (var setup = new WebView2TestSetupHelper(new[] { "WebView2 Tests", "navigateToBasicWebView2" }))
@@ -3186,6 +3201,105 @@ namespace WebView2Temporary
             var windowHandle = root.NativeWindowHandle;
 
             CheckWindowPixel(windowHandle, testName);
+        }
+
+        public static void VerifyAcrylicRendering(string webViewName)
+        {
+            UIObject root = TestEnvironment.Application.ApplicationFrameWindow ?? TestEnvironment.Application.CoreWindow;
+            var windowHandle = root.NativeWindowHandle;
+
+            CheckAcrylicRendering(windowHandle, webViewName);
+        }
+
+        static void CheckAcrylicRendering(IntPtr targetHwnd, string webViewName)
+        {
+            Log.Comment("Checking hwnd 0x{0:x6} for acrylic (non-solid) rendering in {1}.", targetHwnd, webViewName);
+
+            var targetRect = new NativeMethods.RECT();
+            _ = NativeMethods.GetWindowRect(targetHwnd, ref targetRect);
+
+            IntPtr targetHdc = NativeMethods.GetDC(targetHwnd);
+            Verify.AreNotEqual(targetHdc, IntPtr.Zero);
+            if (targetHdc == IntPtr.Zero)
+            {
+                return;
+            }
+
+            IntPtr memoryHdc = NativeMethods.CreateCompatibleDC(targetHdc);
+            Verify.AreNotEqual(memoryHdc, IntPtr.Zero);
+            if (memoryHdc == IntPtr.Zero)
+            {
+                NativeMethods.ReleaseDC(targetHwnd, targetHdc);
+                return;
+            }
+
+            var width = targetRect.Right - targetRect.Left;
+            var height = targetRect.Bottom - targetRect.Top;
+
+            IntPtr memoryBitmap = NativeMethods.CreateCompatibleBitmap(targetHdc, width, height);
+            Verify.AreNotEqual(memoryBitmap, IntPtr.Zero);
+            if (memoryBitmap != IntPtr.Zero)
+            {
+                NativeMethods.SelectObject(memoryHdc, memoryBitmap);
+                NativeMethods.PrintWindow(targetHwnd, memoryHdc, NativeMethods.PW_RENDERFULLCONTENT);
+
+                var dpi = NativeMethods.GetDpiForWindow(targetHwnd);
+                var scale = dpi / 96.0;
+
+                VerifyWebViewNonSolidColor(webViewName, scale, memoryHdc);
+
+                NativeMethods.DeleteObject(memoryBitmap);
+            }
+
+            NativeMethods.DeleteDC(memoryHdc);
+            NativeMethods.ReleaseDC(targetHwnd, targetHdc);
+        }
+
+        // Samples multiple points spread across the WebView2 and verifies that not all of them
+        // are the same color, indicating that acrylic (or some non-solid compositor effect) is
+        // being composited through the transparent WebView2 background.
+        static void VerifyWebViewNonSolidColor(string webViewName, double scale, IntPtr memoryHdc)
+        {
+            var webview = FindElement.ById(webViewName);
+            Rectangle bounds = webview.BoundingRectangle;
+
+            // Sample a grid of points spread over most of the WebView2 area (avoiding edges)
+            var samplePoints = new[]
+            {
+                (x: bounds.X + bounds.Width / 4,     y: bounds.Y + bounds.Height / 4),
+                (x: bounds.X + bounds.Width / 2,     y: bounds.Y + bounds.Height / 4),
+                (x: bounds.X + 3 * bounds.Width / 4, y: bounds.Y + bounds.Height / 4),
+                (x: bounds.X + bounds.Width / 4,     y: bounds.Y + bounds.Height / 2),
+                (x: bounds.X + bounds.Width / 2,     y: bounds.Y + bounds.Height / 2),
+                (x: bounds.X + 3 * bounds.Width / 4, y: bounds.Y + bounds.Height / 2),
+                (x: bounds.X + bounds.Width / 4,     y: bounds.Y + 3 * bounds.Height / 4),
+                (x: bounds.X + bounds.Width / 2,     y: bounds.Y + 3 * bounds.Height / 4),
+                (x: bounds.X + 3 * bounds.Width / 4, y: bounds.Y + 3 * bounds.Height / 4),
+            };
+
+            uint? firstColor = null;
+            bool foundVariation = false;
+            foreach (var pt in samplePoints)
+            {
+                int px = Convert.ToInt32(pt.x * scale);
+                int py = Convert.ToInt32(pt.y * scale);
+                uint color = NativeMethods.GetPixel(memoryHdc, px, py);
+                Log.Comment("Acrylic sample at ({0},{1}): 0x{2:x6}", px, py, color);
+
+                if (firstColor == null)
+                {
+                    firstColor = color;
+                }
+                else if (color != firstColor.Value)
+                {
+                    foundVariation = true;
+                    break;
+                }
+            }
+
+            Log.Warning("Acrylic non-solid check may fail locally if monitor DPI is not 100% or if the desktop is a uniform color.");
+            Verify.IsTrue(foundVariation,
+                string.Format("TransparentAcrylicBackdropTest: Expected non-solid color across WebView2 sample points, but all sampled pixels were 0x{0:x6}. Acrylic backdrop may not be rendering through the transparent WebView2.", firstColor ?? 0));
         }
 
         static void CheckWindowPixel(IntPtr targetHwnd, string testName)
