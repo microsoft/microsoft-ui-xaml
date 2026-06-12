@@ -19,6 +19,9 @@ pr:
 
 name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
 
+variables:
+  WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
+
 resources:
   repositories:
     - repository: templates
