@@ -1,0 +1,98 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+# GitHub-facing bootstrap for Azure Pipelines PR validation.
+#
+# This file is intentionally separate from the internal Azure Repos PR pipeline
+# so the existing ADO PR validation path can remain unchanged while we validate
+# the GitHub-backed ADO pipeline path.
+
+trigger: none
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - main
+    - winui3/main
+  drafts: true
+
+name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked'
+    git:
+      submodules: false
+    globalsdl:
+      tsa:
+        enabled: false
+      codeql:
+        tsandjs:
+          enabled: false
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: false
+      prefast:
+        enabled: false
+      apiscan:
+        enabled: false
+      binskim:
+        enabled: false
+
+    stages:
+    - stage: Bootstrap
+      displayName: Validate GitHub PR trigger bootstrap
+      jobs:
+      - job: ValidateGitHubPrContext
+        displayName: Validate GitHub PR context
+        pool:
+          type: windows
+        variables:
+          ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+        steps:
+        - checkout: self
+          submodules: false
+          fetchDepth: 1
+          fetchTags: false
+
+        - task: PowerShell@2
+          displayName: Validate GitHub PR trigger context
+          inputs:
+            targetType: inline
+            script: |
+              $ErrorActionPreference = 'Stop'
+
+              Write-Host "Build.Reason=$env:BUILD_REASON"
+              Write-Host "Build.Repository.Provider=$env:BUILD_REPOSITORY_PROVIDER"
+              Write-Host "Build.Repository.Name=$env:BUILD_REPOSITORY_NAME"
+              Write-Host "Build.SourceBranch=$env:BUILD_SOURCEBRANCH"
+              Write-Host "System.PullRequest.TargetBranch=$env:SYSTEM_PULLREQUEST_TARGETBRANCH"
+
+              if ($env:BUILD_REPOSITORY_PROVIDER -notin @('GitHub', 'GitHubEnterprise')) {
+                throw "Expected a GitHub-backed Azure Pipelines run, but Build.Repository.Provider was '$env:BUILD_REPOSITORY_PROVIDER'."
+              }
+
+              if ($env:BUILD_REASON -eq 'PullRequest') {
+                $allowedTargetBranches = @('main', 'winui3/main', 'refs/heads/main', 'refs/heads/winui3/main')
+                if ($allowedTargetBranches -notcontains $env:SYSTEM_PULLREQUEST_TARGETBRANCH) {
+                  throw "Unexpected GitHub PR target branch '$env:SYSTEM_PULLREQUEST_TARGETBRANCH'."
+                }
+              }
+
+              Write-Host "GitHub PR bootstrap validation completed."
