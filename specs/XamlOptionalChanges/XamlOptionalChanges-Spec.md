@@ -18,9 +18,9 @@ it: you opt in to (or explicitly opt out of) individually identified changes
 before XAML is initialized, after which the selections are locked and
 cannot be modified.  This avoids the need for separate Boolean properties or
 per-feature knobs on `Application`, keeps the API surface evergreen (enum
-values can be deprecated and eventually removed when a change becomes
-unconditionally enabled), and provides a single place for documentation and
-tooling to enumerate available optional changes.
+values are deprecated when a change becomes unconditionally enabled), and
+provides a single place for documentation and tooling to enumerate available
+optional changes.
 
 ### Why an enum + methods instead of individual properties?
 
@@ -29,8 +29,8 @@ rather than per-change properties allows us to:
 
 * Add new opt-in changes without growing the `Application` or `Window` API
   surface.
-* Deprecate and ultimately *remove* an enum value in the future when a change
-  is promoted to always-on -- far simpler than removing a property.
+* Deprecate an enum value when a change is promoted to always-on -- far
+  simpler than removing a property.
 * Keep a single audit point (`IsChangeEnabled`) that both app code and
   platform internals can query.
 
@@ -250,8 +250,10 @@ descriptions evolve.
 | `Perf2026` | 60952725 | Breaking perf changes shipped in 2026. | Disabled |
 
 _Spec note: The team will add new values here as future optional changes
-are introduced.  Values that have been promoted to always-on across all
-supported SDK versions will be marked `[Deprecated]` and eventually removed._
+are introduced.  When a value is promoted to default-on it will be marked
+`[deprecated(..., deprecate)]` (compiler warning).  When the value becomes
+permanent it will be re-marked `[deprecated(..., remove)]` (compiler error
+once tooling supports it; warning today)._
 
 ### Remarks
 
@@ -262,14 +264,18 @@ supported SDK versions will be marked `[Deprecated]` and eventually removed._
   an unrecognized value to `EnableChange`, the call returns `false` (the change
   simply does not exist in that build); querying it via `IsChangeEnabled` also
   returns `false`.
-* Over time a change may be promoted to **always-on**, at which point its
-  `XamlChangeId` will be deprecated.  Your existing `EnableChange` call will
-  continue to compile and run without error, but the change will be active
-  regardless.
 * The typical progression is: introduced as default-off, promoted to
   default-on in a later major version (apps can still opt out via
   `DisableChange`), then made permanent (old code path removed, enum
   value becomes a no-op).
+* When a change is promoted to **default-on**, its `XamlChangeId` value is
+  marked `[deprecated(..., deprecate)]` — the compiler emits a warning.
+  Your existing `EnableChange`/`DisableChange` calls continue to work.
+* When a change becomes **permanent**, the attribute is upgraded to
+  `[deprecated(..., remove)]`.  Today this produces a warning (tooling
+  does not yet distinguish the two); when tooling catches up it will
+  produce a compile error, giving a stronger signal to remove dead
+  opt-out code.
 
 ## XamlOptionalChanges class
 
@@ -346,9 +352,15 @@ always enabled).
 
 ### Detecting permanent changes
 
-When a change has been promoted to permanent, `DisableChange` returns
-`false` and `IsChangeEnabled` returns `true`.  Apps that depend on
-opting out should verify:
+At compile time, a permanent `XamlChangeId` value is marked
+`[deprecated(..., remove)]` — the compiler emits a warning (or an error
+once tooling supports the `remove` deprecation type), giving you an early
+signal to remove opt-out code.  For apps that target multiple SDK
+versions, the runtime check below handles the case where the change is
+permanent on newer platforms but still optional on older ones.
+
+`DisableChange` returns `false` and `IsChangeEnabled` returns `true`.
+Apps that depend on opting out should verify:
 
 ```csharp
 if (!XamlOptionalChanges.DisableChange(XamlChangeId.Perf2026)
