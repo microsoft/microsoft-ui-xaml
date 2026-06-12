@@ -1,11 +1,10 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-# GitHub-facing bootstrap for Azure Pipelines PR validation.
+# GitHub-facing wrapper for Azure Pipelines PR validation.
 #
 # This file is intentionally separate from the internal Azure Repos PR pipeline
-# so the existing ADO PR validation path can remain unchanged while we validate
-# the GitHub-backed ADO pipeline path.
+# so the existing ADO PR validation path can remain unchanged.
 
 trigger: none
 
@@ -22,7 +21,7 @@ name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
 
 parameters:
 - name: runFullValidation
-  displayName: "Run shared WinUI PR validation stages"
+  displayName: "Run full WinUI PR validation stages"
   type: boolean
   default: true
 - name: MUXFinalRelease
@@ -101,8 +100,8 @@ extends:
         break: true
 
     stages:
-    - stage: Bootstrap
-      displayName: Validate GitHub PR trigger bootstrap
+    - stage: ValidateGitHubPrContext
+      displayName: Validate GitHub PR context
       jobs:
       - job: ValidateGitHubPrContext
         displayName: Validate GitHub PR context
@@ -117,7 +116,7 @@ extends:
           fetchTags: false
 
         - task: PowerShell@2
-          displayName: Validate GitHub PR trigger context
+          displayName: Validate GitHub PR context
           inputs:
             targetType: inline
             script: |
@@ -140,7 +139,7 @@ extends:
                 }
               }
 
-              Write-Host "GitHub PR bootstrap validation completed."
+              Write-Host "GitHub PR context validation completed."
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
