@@ -20,14 +20,47 @@ pr:
 
 name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
 
+parameters:
+- name: runFullValidation
+  displayName: "Run shared WinUI PR validation stages"
+  type: boolean
+  default: true
+- name: MUXFinalRelease
+  type: boolean
+  default: false
+- name: runArm64Tests
+  displayName: "Enable running tests on arm64"
+  type: boolean
+  default: true
+- name: runStaticAnalysis
+  displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
+  type: boolean
+  default: false
+
 variables:
-  WindowsContainerImage: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
+- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: build\AzurePipelinesTemplates\WinUI-BuildVariables.yml@WinUIInternal
+- group: WinUI-Variable-Library
+- name: WindowsContainerImage
+  value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
 
 resources:
   repositories:
     - repository: templates
       type: git
       name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: WinUIInternal
+      type: git
+      name: WinUI/microsoft-ui-xaml-lift
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+    - repository: WindowsAppSDKVersionConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
       ref: refs/heads/main
 
 extends:
@@ -45,19 +78,27 @@ extends:
     globalsdl:
       tsa:
         enabled: false
+      enableXFGCheck: false
       codeql:
         tsandjs:
-          enabled: false
+          enabled: true
         python:
           enabled: false
         psscriptanalyzer:
-          enable: false
+          enable: true
       prefast:
-        enabled: false
+        ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+          enabled: true
+        ${{ else }}:
+          enabled: false
+        break: true
       apiscan:
         enabled: false
+        break: false
       binskim:
-        enabled: false
+        enabled: true
+        analyzeTargetGlob: $(BinskimExclusion)
+        break: true
 
     stages:
     - stage: Bootstrap
@@ -100,3 +141,41 @@ extends:
               }
 
               Write-Host "GitHub PR bootstrap validation completed."
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: PR
+          buildScenarioApps: true
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+      - template: build\AzurePipelinesTemplates\WinUI-TestMockWinAppSDKPackageUpdate-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: PR
+          buildScenarioApps: false
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+      - ${{ if eq(parameters.MUXFinalRelease, 'false') }}:
+        - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+          parameters:
+            stageName: Build_MUXFinalRelease
+            pipelineKind: PR-2
+            buildScenarioApps: false
+            MUXFinalRelease: true
+            runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+      - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: PR
+
+      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
+        parameters:
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+
+      - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: PR
+          dependsOn: Build
+          runArm64Tests: ${{ parameters.runArm64Tests }}
