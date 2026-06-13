@@ -1,203 +1,423 @@
-<!--
-    Before submitting, delete all "<!-- TEMPLATE marked" comments in this file,
-    and the following quote banner:
--->
-> See comments in Markdown for how to use this spec template
-
-<!-- TEMPLATE
-    The purpose of this spec is to describe new APIs, in a way
-    that will transfer to docs.microsoft.com (DMC).
-
-    There are two audiences for the spec. The first are people that want to evaluate and
-    give feedback on the API, as part of the submission process.
-    When it's complete it will be incorporated into the public documentation at
-    http://docs.microsoft.com (DMC).
-    Hopefully we'll be able to copy it mostly verbatim. So the second audience is
-    everyone that reads there to learn how and why to use this API.
-    Some of this text also shows up in Visual Studio Intellisense.
-
-    For example, much of the examples and descriptions in the `RadialGradientBrush` API spec
-    (https://github.com/microsoft/microsoft-ui-xaml-specs/blob/master/active/RadialGradientBrush/RadialGradientBrush.md)
-    were carried over to the public API page on DMC
-    (https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.media.radialgradientbrush?view=winui-2.5)
-
-    Once the API is on DMC, that becomes the official copy, and this spec becomes an archive.
-    For example if the description is updated, that only needs to happen on DMC and needn't
-    be duplicated here.
-
-    Examples:
-    * New class (RadialGradientBrush):
-      https://github.com/microsoft/microsoft-ui-xaml-specs/blob/master/active/RadialGradientBrush/RadialGradientBrush.md
-    * New member on an existing class (UIElement.ProtectedCursor):
-      https://github.com/microsoft/microsoft-ui-xaml-specs/blob/master/active/UIElement/ElementCursor.md
-
-    Style guide:
-    * Use second person; speak to the developer who will be learning/using this API.
-    (For example "you use this to..." rather than "the developer uses this to...")
-    * Use hard returns to keep the page width within ~100 columns.
-    (Otherwise it's more difficult to leave comments in a GitHub PR.)
-    * Talk about an API's behavior, not its implementation.
-    (Speak to the developer using this API, not to the team implementing it.)
-    * A picture is worth a thousand words.
-    * An example is worth a million words.
-    * Keep examples realistic but simple; don't add unrelated complications.
-    (An example that passes a stream needn't show the process of launching the File-Open dialog.)
-
--->
-
-Title
+Window.Width and Window.Height
 ===
 
 # Background
 
-<!-- TEMPLATE
-    Use this section to provide background context for the new API(s) 
-    in this spec. Try to briefly provide enough information to be able to read
-    the rest of the document.
+_(This section will not be part of public docs)_
 
-    This section and the appendix are the only sections that likely
-    do not get copied to DMC; they're just an aid to reading this spec.
+The WinUI 3 [Window](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window)
+class is the host for XAML content in a desktop app. Until now, the only way to
+change a Window's size from code has been to drop down to the Win32 HWND (via
+`IWindowNative`) and call `SetWindowPos`, or to go through `AppWindow.Resize(...)`,
+which works in physical pixels.
 
-    For example this is a place to provide a brief explanation of some dependent
-    area, just explanation enough to understand this new API, rather than telling
-    the reader "go read 100 pages of background information posted at ...".
+App developers keep asking for a more natural managed way to do this, the same
+way they have it in WPF. This spec adds two new properties to
+`Microsoft.UI.Xaml.Window`:
 
-    For example this section is a place to explain why you're adding this new API rather than
-    using an existing related API.
+- `Window.Width` (Double, in DIPs)
+- `Window.Height` (Double, in DIPs)
 
-    For a simple example see the spec for the UIElement.ProtectedCursor property
-    (https://github.com/microsoft/microsoft-ui-xaml-specs/blob/master/active/UIElement/ElementCursor.md)
-    which has some of the thinking about how this Xaml API relates to existing
-    Composition and WPF APIs. This is interesting background both for the current reader
-    and the future reader trying to understand why we designed it this way,
-    but not the kind of information
-    that would land on DMC.
--->
+These mirror what people expect from
+[`System.Windows.Window.Width`](https://learn.microsoft.com/dotnet/api/system.windows.window.width)
+and `System.Windows.Window.Height` in WPF, with a couple of important
+differences (see the WPF compare/contrast section below).
+
+These APIs ship as **experimental** first (`[feature(Feature_ExperimentalApi)]`),
+so the behavior may change based on early adopter feedback before they get
+promoted to stable.
 
 # Conceptual pages (How To)
 
 _(This is conceptual documentation that will go to docs.microsoft.com "how to" page)_
 
-<!-- TEMPLATE
-    (Optional)
+WinUI Window already has a read-only
+[`Bounds`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window.bounds)
+property that returns the **client area** of the window in DIPs. The 
+`Width` and `Height` properties round out that surface:
 
-    All APIs have a page on DMC, some APIs or groups of APIs have an additional high level,
-    conceptual page (called a "how-to" page). This section can be used for that content.
+- The getters return the **client area** width and height in DIPs. In the
+  Normal and Fullscreen states this matches `Bounds.Width` / `Bounds.Height`.
+  In the Maximized or Minimized states the getter returns the **restore** size,
+  the size the window will have when it goes back to Normal, so that
+  `Width`/`Height` round-trip with the setter in those states. (Fullscreen is
+  the one state where they do not round-trip; see below.)
+- The setters change the **client area** size in DIPs.
 
-    For example, there are several Xaml controls for different forms of text input,
-    each with an API page, and then there's also a conceptual page that
-    discusses them collectively
-    (https://docs.microsoft.com/windows/uwp/design/controls-and-patterns/text-controls).
+```csharp
+// Code-behind in a packaged WinUI desktop app
+public MainWindow()
+{
+    this.InitializeComponent();
 
-    Another way to use this section is as a draft of a blog post that introduces the new feature.
+    // 800 x 600 DIP client area, no matter the monitor DPI.
+    this.Width  = 800;
+    this.Height = 600;
+}
+```
 
-    Sometimes it's difficult to decide if text belongs on a how-to page or an API page.
-    It's not important to make a final decision on that in this spec; we can always
-    adjust it when copying to DMC.
--->
+You set `Width` and `Height` from code (C# or C++/WinRT), the same way you set
+`Title` or `ExtendsContentIntoTitleBar`. They are not declarable in XAML markup
+on `<Window>`. See the Bindings and XAML markup remarks on the `Window.Width` page.
+
+## A note on units: DIPs vs physical pixels
+
+There are two windowing surfaces in the platform and they use different units, so
+it is worth being clear up front:
+
+- **`Microsoft.UI.Xaml.Window`** (this class) works in **DIPs**. `Bounds`,
+  and now `Width` and `Height`, are all DIPs. The plan going forward is that
+  every size-related property on `Xaml.Window` stays in DIPs, so you do not have
+  to remember which one is which.
+- **`Microsoft.UI.Windowing.AppWindow`** and its presenters work in **physical
+  pixels** (they take `SizeInt32`). That includes `AppWindow.Size`,
+  `AppWindow.Resize(...)`, and `AppWindow.ResizeClient(...)`.
+
+So `Window.Width = 800` (DIPs) and `AppWindow.ResizeClient(new SizeInt32(800, 600))`
+(physical pixels) are NOT the same on a scaled display. To go from DIPs to
+physical pixels, multiply by `GetDpiForWindow(hwnd) / 96.0`.
+
+If you want to size the **outer** window (chrome included) instead of the client
+area, use `AppWindow.Resize(...)` (physical pixels). For a physical-pixel client
+size, use `AppWindow.ResizeClient(...)`.
+
+## WPF compare/contrast
+
+WPF developers work with the WPF `Window.Width` and `Window.Height` properties. The
+WinUI properties are meant to feel familiar but they are **not identical**.
+Here is a side-by-side:
+
+| Aspect                    | WPF `Window.Width/Height`                            | WinUI `Window.Width/Height` (this spec)         |
+| ------------------------- | ---------------------------------------------------- | ----------------------------------------------- |
+| Unit                      | DIPs (1/96 inch)                                     | DIPs (1/96 inch), same                          |
+| What it measures          | **Outer** window (includes chrome)                   | **Client area** (matches `Window.Bounds`)       |
+| Default / initial value   | `Double.NaN` (auto-size to content)                  | The current actual client size (never NaN)      |
+| Setting `NaN`             | Allowed; means "size to content"                     | **Throws `E_INVALIDARG`**. No size-to-content.  |
+| Setting negative          | Throws `ArgumentException`                           | Throws `E_INVALIDARG`                           |
+| Setting `Infinity`        | Throws `ArgumentException`                           | Throws `E_INVALIDARG`                           |
+| `MinWidth` / `MaxWidth`   | Exists and is enforced                               | Not part of this spec (may follow later)        |
+| Behavior when Maximized   | Updates *restore* size; window stays maximized       | Updates *restore* size; window stays maximized  |
+| Behavior when Minimized   | Updates *restore* size; window stays minimized       | Updates *restore* size; window stays minimized  |
+| Behavior when Fullscreen  | WPF has no built-in fullscreen mode                  | **No-op** (stays fullscreen, restore not updated; subject to change) |
+| Dependency property       | Yes; bindable                                        | Plain WinRT property; not bindable              |
+
+The most important difference is **client rect vs window rect**. WPF picked window bounds
+because WPF windows draw their own chrome. WinUI Windows usually host system
+chrome (caption buttons drawn by DWM), so the client area is the more useful
+unit for laying out app content. It also means `Width`/`Height` round-trip with
+`Window.Bounds` right away:
+
+```csharp
+this.Width  = 800;
+this.Height = 600;
+Debug.Assert(this.Bounds.Width  == this.Width);
+Debug.Assert(this.Bounds.Height == this.Height);
+```
+
+That round-trip holds in Normal, Maximized, and Minimized states. In the
+Maximized and Minimized states the setter updates the *restore* bounds and the
+getter reads them back, so both directions agree on the same value even though
+the live window is a different size:
+
+```csharp
+// Window is maximized, live client area is e.g. 1920 x 1040.
+this.Width = 800;        // updates the restore width only; live window unchanged
+double w = this.Width;   // == 800 (restore width, NOT 1920)
+// The live window is still maximized at 1920 x 1040.
+// Un-maximize, then:
+double w2 = this.Width;  // == 800 (now the live width too)
+```
+
+The one exception is Fullscreen: the setter is a silent no-op and the getter
+returns the live fullscreen size, so they do not round-trip. See the per-state
+table below.
+
+## Where Width/Height equals Bounds and where it does not
+
+`Window.Bounds` always reports the **live** client area. `Width`/`Height`
+diverge from it in the Maximized and Minimized states because the getters
+return the restore size instead:
+
+| Window state | `Width`/`Height` returns | `Bounds.Width`/`Bounds.Height` returns | Same? |
+| ------------ | ------------------------ | -------------------------------------- | ----- |
+| Normal       | Live client size         | Live client size                       | Yes   |
+| Maximized    | **Restore** size         | Live maximized size                    | **No** |
+| Minimized    | **Restore** size         | Live minimized size                    | **No** |
+| Fullscreen   | Live fullscreen size     | Live fullscreen size                   | Yes   |
+| CompactOverlay | Live client size       | Live client size                       | Yes   |
+
+In short: `Width == Bounds.Width` when the window is in its "natural" state
+(Normal, Fullscreen, or CompactOverlay). In the Maximized and Minimized states,
+`Width` and `Height` tell you what the window *will be* when restored, while
+`Bounds` tells you what the window *is right now*.
+
+If you want to size by outer bounds instead, you can still call
+`AppWindow.Resize(...)` (physical pixels, not DIPs; see the units note above).
+
+## Porting from WPF: watch the unit change
+
+A WPF app that does `this.Width = 800` makes a window whose outer **window** rectangle
+is 800 DIPs wide, so the usable client area inside is something like ~784 DIPs
+after chrome. The same line in WinUI gives a **client area** of exactly 800
+DIPs, so the outer window is ~816 DIPs. Both behaviors are self-consistent; the
+cross-framework number just does not carry over 1:1.
+
+This was a deliberate choice for WinUI. `Window.Bounds` was already the client
+area, so the new setters round-trip with it right away (`Width == Bounds.Width`).
+Making the setters mean "outer window" would have produced two different units on one
+Window object, which is even more confusing.
 
 # API Pages
 
 _(Each of the following L2 sections correspond to a page that will be on docs.microsoft.com)_
 
-<!-- TEMPLATE
+## Window.Width property
 
-  Each of the L2 sections in this "API Pages" section corresponds to a page on DMC.
+Gets or sets the width of the Window's **client area** in device-independent
+pixels (DIPs, 1/96 inch).
 
-  It's not necessary to have a section for every class member though:
-  * If its purpose and usage is obvious from it's name/type, it's not necessary to
-    create a section for it.
-  * If its purpose and usage is fully explained by brief description, either
-      put it in a table in the "Other [class] members" section
-      put it with /// comments in the IDL section
-
-  Create an L2 section here for each API that needs more description or examples.
-  For a new class with members, the members should go in their own L2 section.
-
-  Example layout
-    ## MyClass
-    ## MyClass.Member1
-    ## MyClass.Member2
-    ## Other MyClass members
-    ## MyOtherClass
-    ## ...
-
-  Notes:
-  * The first line of each of these sections should become that first line on the DMC page,
-    which then becomes the description you see in Intellisense.
-  * Each page can have description, examples, and remarks.
-    Remarks are where the documentation calls out special considerations that the developer
-    should be aware of.
-  * It can be helpful at the top of an API page (or after the Intellisense text) to add the
-    API signature in C#
-  * Add a "_Spec note: ..._" to add a note that's useful in this spec but shouldn't go to DMC.
-  * Show _examples_, not _samples_; an example is a snippet, a sample is a full working app.
-
--->
-
-## MyExample class
-
-Brief description of this class.
-
-Introduction to one or more example usages of a MyExample class:
-
-```c#
-void SampleMethod() 
-{
-  var show = new MyExample();
-  show.SomeMembers = AndWhyItMight(be, interesting)
-}
-```
-Remarks about the MyExample class. For example,
-APIs should only throw exceptions in exceptional conditions; basically,
-only when there's a bug in the caller, such as argument exception.  But if for some
-reason it's necessary for a caller to catch an exception from an API, call that
-out with an explanation either here or in the Examples
-
-## MyExample.PropertyOne property
-
-Brief description of the MyExample.PropertyOne property.
-
-Paragraph with more detail about the property.
-
-_Spec note: internal comment about this property that won't go into the public docs._
-
-Introduction to one or more usages of the MyExample.PropertyOne property.
-
-```c#
-...
+```csharp
+public double Width { get; set; }
 ```
 
-## Other MyExample members
+**Getter**: returns the current client-area width in DIPs. In the Normal and
+Fullscreen states this equals `Window.Bounds.Width`. In the Maximized or
+Minimized state the getter returns the **restore** width, the width the window
+will have when it goes back to Normal, so the getter round-trips with the
+setter in those states.
 
-| Name | Description |
-|-|-|
-| PropertyTwo | Brief description of the PropertyTwo property (defaults to ...) |
-| MethodOne | Brief description of the MethodOne method |
+**Setter**: changes the window so its client area is `value` DIPs wide. The
+window's non-client chrome (caption, borders, and so on) gets added on top of
+`value` to work out the outer window rectangle, using the current per-monitor
+DPI. Height is left unchanged.
+
+Throws `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
+
+### Behavior by window state
+
+These four behaviors are driven by the window's show state, not directly by the
+`AppWindow` presenter. The only presenter the setter special-cases is
+`FullScreen` (see below). An `Overlapped` presenter maps to Normal / Maximized /
+Minimized based on its state, and `CompactOverlay` maps to Normal.
+
+- **Normal**: the window resizes right away to the requested client width.
+  Position is preserved.
+- **Maximized**: the live (maximized) window does not resize. The *restore*
+  bounds (the size the window snaps to when un-maximized) get updated. The other
+  axis (Height) of the restore bounds is preserved.
+- **Minimized**: same as Maximized. The *restore* bounds get updated and the
+  window stays minimized (it snaps to the new size when restored). The other
+  axis of the restore bounds is preserved.
+- **Fullscreen** (via `AppWindowPresenterKind.FullScreen`): the call is a
+  silent **no-op** for now. The live window stays fullscreen and the restore
+  bounds are not updated. We deliberately do not commit to "stash and apply on
+  exit" or "throw" yet. A silent no-op keeps us free to pick a stronger contract
+  later without breaking apps. Apps that need a specific post-fullscreen size
+  should stash it themselves and re-apply after leaving fullscreen.
+- **CompactOverlay** (picture-in-picture, via
+  `AppWindowPresenterKind.CompactOverlay`): treated the same as Normal. The
+  setter resizes the live compact-overlay window to the requested client size
+  and the getter reads it back from `Bounds`. Note the CompactOverlay presenter
+  may clamp the window to its own allowed size range, so the value you read back
+  can differ from what you set. This path is not special-cased and is currently
+  untested, so the behavior may change.
+
+### Remarks
+
+**Units and DPI.** The setter converts the requested DIP value to physical
+pixels using the window's current per-monitor DPI:
+
+```
+physicalPixels = round(dips * GetDpiForWindow(hwnd) / 96.0)
+```
+
+Because of integer-pixel rounding, the value you read back from the getter may
+differ from the value you passed to the setter by up to a couple of DIPs. The
+scenario tests allow a 2-DIP tolerance when comparing.
+
+**DPI changes during the window's lifetime.** If the window moves to a monitor
+with a different scale factor after you call the setter, the OS re-scales the
+window per its normal rules. The client-area size in DIPs is preserved across
+the move.
+
+**Interaction with ExtendsContentIntoTitleBar.**
+`Window.ExtendsContentIntoTitleBar` changes what the OS treats as "client area".
+When it is **off** (the default), DWM draws the caption bar as non-client chrome,
+so the client area starts below it. When it is **on**, the client area stretches
+up to include the caption region, so app content can render behind the caption
+buttons.
+
+Because `Width` and `Height` measure the client area, the same pixel values mean
+slightly different things in each mode:
+
+```
+  ExtendsContentIntoTitleBar = false          ExtendsContentIntoTitleBar = true
+  +---[caption / min|max|close]---+           +---[   min|max|close  ]---+
+  |                               |           |   (caption region)       |
+  +-------------------------------+           |   now part of client     |
+  |                               |           |                          |
+  |   client area                 |           |   client area            |
+  |   (Height measures this)      |           |   (Height measures       |
+  |                               |           |    ALL of this)          |
+  |                               |           |                          |
+  +-------------------------------+           +--------------------------+
+```
+
+In both modes, `Width` and `Height` equal `Bounds.Width` and `Bounds.Height` in
+the Normal state. The difference is only in how much non-client chrome sits
+outside that client rect:
+
+| Aspect                    | ECITB off (default)                  | ECITB on                                 |
+| ------------------------- | ------------------------------------ | ---------------------------------------- |
+| Top chrome                | Resize border + caption bar          | Resize border only (a few px)            |
+| Side + bottom chrome      | Resize borders                       | Resize borders (same)                    |
+| `Height = 600` means      | 600 DIPs of content below caption    | 600 DIPs including caption region        |
+| Outer window height       | 600 + caption + borders              | 600 + borders (smaller outer window)     |
+| Usable content height     | 600 DIPs (all content)               | ~570 DIPs (600 minus ~30 caption region) |
+
+The setter handles this for you. If you set `Height = 600` and then flip
+`ExtendsContentIntoTitleBar`, the OS recalculates the client area, so
+`Bounds.Height` (and the getter) will change because the boundary between client
+and non-client moved, even though the outer window size did not. If pixel-perfect
+sizing matters after toggling, call the setter again.
+
+**XAML markup.** Width and Height are settable from C# / C++/WinRT code-behind
+only. They are **not** surfaced in XAML markup on `<Window>` for this
+experimental release, so there is no markup attribute to set (and therefore no
+markup-vs-code mismatch to trip over). XAML markup support could be added later
+if there is demand and a sensible parsing order, that is, Width/Height applied
+after Activate.
+
+**Bindings.** Width and Height are not `DependencyProperty`-backed. They do not
+take part in data binding and do not raise change notifications. This matches the
+rest of `Window`'s mutable surface (Title, ExtendsContentIntoTitleBar) and keeps
+the experimental surface small.
+
+**Threading.** You must set these properties on the thread that owns the Window
+(the dispatcher thread). Calls from other threads return the standard
+`RPC_E_WRONG_THREAD` error from the XAML framework.
+
+### Errors
+
+| Input                         | Result                              |
+| ----------------------------- | ----------------------------------- |
+| `value < 0`                   | Throws `E_INVALIDARG`               |
+| `Double.NaN`                  | Throws `E_INVALIDARG`               |
+| `Double.PositiveInfinity`     | Throws `E_INVALIDARG`               |
+| `Double.NegativeInfinity`     | Throws `E_INVALIDARG`               |
+| Window is fullscreen          | Silent no-op (the call succeeds; the live window stays fullscreen and the restore size is unchanged). Subject to change in a future release. |
+| `0`                           | Allowed. The window resizes so the client area has zero width (or height). The OS may clamp to a minimum tracking size; nothing crashes. |
+| Very large value (> screen)   | Allowed. The OS clamps to its tracking-size maximum; the window grows as large as the OS allows. |
+
+## Window.Height property
+
+Gets or sets the height of the Window's **client area** in device-independent
+pixels (DIPs, 1/96 inch).
+
+```csharp
+public double Height { get; set; }
+```
+
+Same semantics as [Window.Width](#windowwidth-property), just for the
+client-area height instead of width. The getter, setter, per-state behavior,
+DPI handling, ECITB interaction, errors, and threading rules are all identical.
 
 # API Details
 
-```c# (but really MIDL3)
-namespace Microsoft.Name.Space
+```csharp
+namespace Microsoft.UI.Xaml
 {
-  runtimeclass MyExample
-  {
-      Int32 PropertyOne;
-      String PropertyTwo { get; }
-      void MethodOne();
+    [contentproperty("Content")]
+    unsealed runtimeclass Window
+    {
+        // ... existing members ...
 
-       /// Brief description of the MethodTwo method
-      void MethodTwo();
-  }
+        // New, behind Feature_ExperimentalApi:
+        Double Width;
+        Double Height;
+    }
+}
+```
+
+In MIDL3 form, matching the existing IDL in
+`dxaml/xcp/dxaml/idl/winrt/core/microsoft.ui.xaml.coretypes2.idl`:
+
+```idl
+[contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+[feature(Feature_ExperimentalApi)]
+[interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
+{
+    Double Width;
+    Double Height;
 }
 ```
 
 # Appendix
 
-<!-- TEMPLATE
-  Anything else that you want to write down about implementation notes and for posterity,
-  but that isn't necessary to understand the purpose and usage of the API.
+_(This section will not be part of public docs)_
 
-  This or the Background section are a good place to describe alternative designs
-  and why they were rejected.
--->
+## Implementation notes
+
+These are implementation details, not part of the public contract. They are
+here for posterity, not for DMC.
+
+**Applying the size.** The setter computes the matching *outer* window rectangle
+by adding the window's non-client chrome to the requested client size, then
+applies it with `SetWindowPos` (Normal state) or by updating `rcNormalPosition`
+via `SetWindowPlacement` (Maximized or Minimized). Fullscreen is a silent no-op.
+
+**Where the chrome comes from.** For desktop (HWND) windows in Normal state, the
+chrome is taken from the window's *observed* outer-window-minus-client delta rather than
+from a purely style-based calculation (`AdjustWindowRectExForDpi`). This is what
+makes `ExtendsContentIntoTitleBar` work correctly. When the window is Maximized
+or Minimized, the live rects do not represent normal chrome, so the style-based
+calculation is used instead, with a correction that zeros out the top chrome when
+ECITB is active.
+
+**Reading the size back.** The getter returns client-area size in DIPs. In the
+Normal and Fullscreen states it reads from `Window.Bounds`. In the Maximized or
+Minimized state it computes the restore client size from the `rcNormalPosition`
+stored in `WINDOWPLACEMENT`, subtracting the same non-client chrome and DPI scale
+the setter used. So the getter/setter round-trip in every state except
+Fullscreen.
+
+**UWP host.** When a `Window` is hosted by a UWP `CoreWindow` (legacy path), the
+setter calls `SetWindowPos` directly with physical pixels (computed once via
+`AdjustWindowRectExForDpi`). We deliberately bypass `CoreWindowWrapper::SetPosition`
+here because that wrapper takes DIPs and re-scales internally. Going through it
+would double-scale and produce a window roughly `scale^2` larger than requested.
+
+## Design rationale
+
+The big decision was **client area vs outer window** as the unit. WinUI picked
+client area so `Width`/`Height` round-trip with `Window.Bounds`, which already
+ships as the client area. The alternative (outer window bounds, like WPF) would have put
+two different units on one Window object. See the "Porting from WPF" section for
+the user-visible impact.
+
+## Open questions
+
+1. Should `Width` and `Height` become `DependencyProperty`-backed before
+   promoting out of experimental? That would enable XAML markup setters and data
+   binding, at the cost of a larger ABI commitment.
+   **No**, because Window is not a DependencyObject (unlike WPF).
+2. Should `Window.Bounds` change to track only the *desired* size (the most
+   recent setter value) rather than the actual current size? No.
+   `Window.Bounds` has shipped as the actual size and changing it would be a
+   breaking change.
+3. Do we add matching `MinWidth` / `MaxWidth` properties? Out of scope for now,
+   coming back to this soon.
+4. How should we expose "size to content" (the WPF `NaN` behavior)? Out of scope.
+5. Implementation: should we call to the AppWindow for window-related operations
+   whenever possible?
+6. Presenters: the setter only special-cases the `FullScreen` presenter.
+   `CompactOverlay`, and `Overlapped` windows configured as non-resizable
+   (`IsResizable = false`), currently flow through the normal live-resize path
+   and are untested. Should any of these be a no-op, throw, or clamp explicitly
+   instead of relying on the OS/presenter to clamp?
+
+## Acknowledgements
+
+This API is based on community contribution
+[microsoft/microsoft-ui-xaml#11052](https://github.com/microsoft/microsoft-ui-xaml/pull/11052)
+by external contributors. Thanks!
