@@ -180,5 +180,3 @@ extends:
           dependsOn: Build
           runArm64Tests: ${{ parameters.runArm64Tests }}
 
-
-
