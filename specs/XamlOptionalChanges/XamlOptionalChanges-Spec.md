@@ -18,7 +18,8 @@ it: you opt in to (or explicitly opt out of) individually identified changes
 before XAML is initialized, after which the selections are locked and
 cannot be modified.  This avoids the need for separate Boolean properties or
 per-feature knobs on `Application`, keeps the API surface evergreen (enum
-values are deprecated when a change becomes unconditionally enabled), and
+values are deprecated and eventually removed when a change becomes
+unconditionally enabled), and
 provides a single place for documentation and tooling to enumerate available
 optional changes.
 
@@ -252,8 +253,8 @@ descriptions evolve.
 _Spec note: The team will add new values here as future optional changes
 are introduced.  When a value is promoted to default-on it will be marked
 `[deprecated(..., deprecate)]` (compiler warning).  When the value becomes
-permanent it will be re-marked `[deprecated(..., remove)]` (compiler error
-once tooling supports it; warning today)._
+permanent it will be removed from the enum entirely — any remaining
+reference becomes a compile error._
 
 ### Remarks
 
@@ -267,15 +268,13 @@ once tooling supports it; warning today)._
 * The typical progression is: introduced as default-off, promoted to
   default-on in a later major version (apps can still opt out via
   `DisableChange`), then made permanent (old code path removed, enum
-  value becomes a no-op).
+  value removed from the IDL).
 * When a change is promoted to **default-on**, its `XamlChangeId` value is
   marked `[deprecated(..., deprecate)]` — the compiler emits a warning.
   Your existing `EnableChange`/`DisableChange` calls continue to work.
-* When a change becomes **permanent**, the attribute is upgraded to
-  `[deprecated(..., remove)]`.  Today this produces a warning (tooling
-  does not yet distinguish the two); when tooling catches up it will
-  produce a compile error, giving a stronger signal to remove dead
-  opt-out code.
+* When a change becomes **permanent**, its `XamlChangeId` value is
+  removed from the enum.  Any remaining reference is a compile error —
+  no special annotation is needed.
 
 ## XamlOptionalChanges class
 
@@ -352,9 +351,8 @@ always enabled).
 
 ### Detecting permanent changes
 
-At compile time, a permanent `XamlChangeId` value is marked
-`[deprecated(..., remove)]` — the compiler emits a warning (or an error
-once tooling supports the `remove` deprecation type), giving you an early
+At compile time, a permanent `XamlChangeId` value is removed from the
+enum — any remaining reference is a compile error, giving you a clear
 signal to remove opt-out code.  For apps that target multiple SDK
 versions, the runtime check below handles the case where the change is
 permanent on newer platforms but still optional on older ones.
