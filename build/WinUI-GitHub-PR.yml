@@ -53,7 +53,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/main
+      ref: refs/heads/feature/ado-public-validation-guards
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -179,4 +179,6 @@ extends:
           pipelineKind: PR
           dependsOn: Build
           runArm64Tests: ${{ parameters.runArm64Tests }}
+
+
 
