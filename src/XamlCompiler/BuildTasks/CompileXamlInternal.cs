@@ -1277,6 +1277,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             {
                 e.Target = LoadAssemblyFromSystemExtraReferences(fileName);
             }
+
+            // This "System.Runtime.dll" check is a workaround which is believed to only be needed
+            // if an app specifies a package reference to Microsoft.Windows.SDK.Contracts, like this:
+            //     <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="$(MicrosoftWindowsSDKContractsVersion)" />
+            // Ideally, apps should simply remove that package reference, but it isn't clear if there
+            // may be a need for it in some cases. Consider removing this in the future.
+            if (e.Target == null && fileName == "System.Runtime.dll")
+            {
+                e.Target = s_typeUniverse.GetSystemAssembly();
+            }
         }
 
         /// <summary>
