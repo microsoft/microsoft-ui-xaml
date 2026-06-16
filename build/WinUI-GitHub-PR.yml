@@ -149,3 +149,4 @@ extends:
           buildScenarioApps: false
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+          pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
