@@ -145,7 +145,7 @@ extends:
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
         parameters:
-          pipelineKind: PR
+          pipelineKind: GitHubPR
           buildScenarioApps: false
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
