@@ -2145,19 +2145,20 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
         // Set the test-default XamlOptionalChanges state.
         windowTestHooks->ResetOptionalChanges();
         auto optionalChangesStatics = GetXamlOptionalChangesStatics();
-        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_IconNoGridOptimization);
-        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DelayApplyStyleOptimization);
+        BOOLEAN mutated = FALSE;
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_IconNoGridOptimization, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DelayApplyStyleOptimization, &mutated);
 
         // Apply per-test overrides from XamlOptionalChanges test data.
         for (const auto& [changeId, enabled] : changeOverrides)
         {
             if (enabled)
             {
-                optionalChangesStatics->EnableChange(changeId);
+                optionalChangesStatics->EnableChange(changeId, &mutated);
             }
             else
             {
-                optionalChangesStatics->DisableChange(changeId);
+                optionalChangesStatics->DisableChange(changeId, &mutated);
             }
         }
     });

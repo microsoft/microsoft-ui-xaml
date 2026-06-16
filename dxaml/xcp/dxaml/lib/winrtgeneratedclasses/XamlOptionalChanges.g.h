@@ -93,8 +93,8 @@ namespace DirectUI
         // Attached properties.
 
         // Static methods.
-        IFACEMETHOD(EnableChange)(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId) override;
-        IFACEMETHOD(DisableChange)(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId) override;
+        IFACEMETHOD(EnableChange)(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult) override;
+        IFACEMETHOD(DisableChange)(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(IsChangeEnabled)(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(Lock)(_Out_ BOOLEAN* pResult) override;
         IFACEMETHOD(IsLocked)(_Out_ BOOLEAN* pResult) override;
@@ -112,8 +112,8 @@ namespace DirectUI
         // Customized static properties.
 
         // Customized static  methods.
-         _Check_return_ HRESULT EnableChangeImpl(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId); 
-         _Check_return_ HRESULT DisableChangeImpl(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId); 
+         _Check_return_ HRESULT EnableChangeImpl(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult); 
+         _Check_return_ HRESULT DisableChangeImpl(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult); 
          _Check_return_ HRESULT IsChangeEnabledImpl(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult); 
          _Check_return_ HRESULT LockImpl(_Out_ BOOLEAN* pResult); 
          _Check_return_ HRESULT IsLockedImpl(_Out_ BOOLEAN* pResult); 
