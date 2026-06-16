@@ -146,37 +146,6 @@ extends:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
         parameters:
           pipelineKind: PR
-          buildScenarioApps: true
-          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-
-      - template: build\AzurePipelinesTemplates\WinUI-TestMockWinAppSDKPackageUpdate-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: PR
           buildScenarioApps: false
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-
-      - ${{ if eq(parameters.MUXFinalRelease, 'false') }}:
-        - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
-          parameters:
-            stageName: Build_MUXFinalRelease
-            pipelineKind: PR-2
-            buildScenarioApps: false
-            MUXFinalRelease: true
-            runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-
-      - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: PR
-
-      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
-        parameters:
-          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-
-      - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: PR
-          dependsOn: Build
-          runArm64Tests: ${{ parameters.runArm64Tests }}
-
