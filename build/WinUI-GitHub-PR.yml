@@ -53,7 +53,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/user/hmishra/gh-ado-muxfinalrelease-restore
+      ref: refs/heads/user/hmishra/gh-ado-static-tests-restore
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -152,6 +152,15 @@ extends:
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
           dependsOn: ValidateGitHubPrContext
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
+        parameters:
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          enableForGitHubValidation: true
+          checkoutInternalStaticTestSources: true
+          staticTestSourceRoot: '$(Pipeline.Workspace)\WinUIInternal'
+          nugetConfigPath: '$(Pipeline.Workspace)\WinUIInternal\nuget.config'
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
