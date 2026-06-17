@@ -23,6 +23,9 @@ These mirror what people expect from
 and `System.Windows.Window.Height` in WPF, with a couple of important
 differences (see the WPF compare/contrast section below).
 
+A driving scenario behind this work is setting Width and Height directly in XAML markup -- something WPF developers
+already do and find natural.
+
 These APIs ship as **experimental** first (`[feature(Feature_ExperimentalApi)]`),
 so the behavior may change based on early adopter feedback before they get
 promoted to stable.
@@ -45,21 +48,44 @@ property that returns the **client area** of the window in DIPs. The
   setter is a no-op there; see below.)
 - The setters change the **client area** size in DIPs.
 
+You can set the Width and Height properties in XAML markup and in code-behind.
+
+It's often natural to set your Window's initial size in your XAML markup near the markup for your app:
+
+```
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="MyApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MyApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Width="800"
+    Height="600"
+    Title="MyApp">
+
+    <!-- window content -->
+</Window>
+```
+
+You can also set it from code-behind:
+
 ```csharp
-// Code-behind in a packaged WinUI desktop app
+// Code-behind in a WinUI desktop app
 public MainWindow()
 {
     this.InitializeComponent();
 
-    // 800 x 600 DIP client area, no matter the monitor DPI.
+    // Set client area to 800 x 600 (DIPs)
     this.Width  = 800;
     this.Height = 600;
 }
 ```
 
-You set `Width` and `Height` from code (C# or C++/WinRT), the same way you set
-`Title` or `ExtendsContentIntoTitleBar`. They are not declarable in XAML markup
-on `<Window>`.
+Note you can use x:bind (`{x:Bind ...}`} bindings to set the Width/Height properties, but you CAN'T use classic data binding
+(`{Binding ...}`) to set them.  This is because the Window type is not a FrameworkElement.
 
 ## Three sets of APIs size the same window: `Window`, `AppWindow`, and Win32
 
@@ -248,7 +274,7 @@ window's non-client chrome (caption, borders, and so on) gets added on top of
 `value` to work out the window rect, using the current per-monitor
 DPI. Height is left unchanged.
 
-Throws `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
+Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 
 ### Behavior by window state
 
@@ -295,15 +321,13 @@ the client area, toggling `Window.ExtendsContentIntoTitleBar` changes what count
 as client area, so the getter (and `Bounds`) can change even though the window
 rect did not; re-apply the setter if you need a specific size after toggling.
 
-**XAML markup.** Width and Height are settable from C# / C++/WinRT code-behind
-only. They are **not** surfaced in XAML markup on `<Window>`, so there is no
-markup attribute to set (and therefore no markup-vs-code mismatch to trip over).
-XAML markup support could be added later if there is demand and a sensible
-parsing order, that is, Width/Height applied after Activate.
+**XAML markup.** Width and Height are settable from C++/WinRT code-behind
+AND from XAML on the `<Window>` object.
 
 **Bindings.** Width and Height are not `DependencyProperty`-backed. They do not
-take part in data binding and do not raise change notifications. This matches the
-rest of `Window`'s mutable surface (Title, ExtendsContentIntoTitleBar).
+take part in data binding and do not raise change notifications. (This matches the
+rest of `Window`'s API surface).  You can, however, use `x:Bind` to set them
+in XAML markup.
 
 **Threading.** You must set these properties on the thread that owns the Window
 (the dispatcher thread). Calls from other threads return the standard
@@ -311,12 +335,14 @@ rest of `Window`'s mutable surface (Title, ExtendsContentIntoTitleBar).
 
 ### Errors
 
+All errors will call RoOriginateError and set an error message to help the app developer diagnose the problem.
+
 | Input                         | Result                              |
 | ----------------------------- | ----------------------------------- |
-| `value < 0`                   | Throws `E_INVALIDARG`               |
-| `Double.NaN`                  | Throws `E_INVALIDARG`               |
-| `Double.PositiveInfinity`     | Throws `E_INVALIDARG`               |
-| `Double.NegativeInfinity`     | Throws `E_INVALIDARG`               |
+| `value < 0`                   | Returns `E_INVALIDARG`              |
+| `Double.NaN`                  | Returns `E_INVALIDARG`              |
+| `Double.PositiveInfinity`     | Returns `E_INVALIDARG`              |
+| `Double.NegativeInfinity`     | Returns `E_INVALIDARG`              |
 | Window in a non-default presenter | Silent no-op (the call succeeds; the live window is unchanged) when the window uses the `FullScreen` or `CompactOverlay` presenter. Subject to change in a future release. |
 | `0`                           | Allowed. The window resizes so the client area has zero width. The OS may apply a minimum size. |
 | Very large value (> screen)   | Allowed. The OS clamps to its tracking-size maximum; the window grows as large as the OS allows. |
@@ -341,7 +367,7 @@ window's non-client chrome (caption, borders, and so on) gets added on top of
 `value` to work out the window rect, using the current per-monitor DPI. Width is
 left unchanged.
 
-Throws `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
+Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 
 ### Behavior by window state
 
@@ -390,15 +416,13 @@ rect did not; re-apply the setter if you need a specific size after toggling.
 Height is the axis most affected, since the caption region is at the top of the
 window.
 
-**XAML markup.** Width and Height are settable from C# / C++/WinRT code-behind
-only. They are **not** surfaced in XAML markup on `<Window>`, so there is no
-markup attribute to set (and therefore no markup-vs-code mismatch to trip over).
-XAML markup support could be added later if there is demand and a sensible
-parsing order, that is, Width/Height applied after Activate.
+**XAML markup.** Width and Height are settable from C++/WinRT code-behind
+AND from XAML on the `<Window>` object.
 
 **Bindings.** Width and Height are not `DependencyProperty`-backed. They do not
-take part in data binding and do not raise change notifications. This matches the
-rest of `Window`'s mutable surface (Title, ExtendsContentIntoTitleBar).
+take part in data binding and do not raise change notifications. (This matches the
+rest of `Window`'s API surface).  You can, however, use `x:Bind` to set them
+in XAML markup.
 
 **Threading.** You must set these properties on the thread that owns the Window
 (the dispatcher thread). Calls from other threads return the standard
@@ -406,12 +430,14 @@ rest of `Window`'s mutable surface (Title, ExtendsContentIntoTitleBar).
 
 ### Errors
 
+All errors will call RoOriginateError and set an error message to help the app developer diagnose the problem.
+
 | Input                         | Result                              |
 | ----------------------------- | ----------------------------------- |
-| `value < 0`                   | Throws `E_INVALIDARG`               |
-| `Double.NaN`                  | Throws `E_INVALIDARG`               |
-| `Double.PositiveInfinity`     | Throws `E_INVALIDARG`               |
-| `Double.NegativeInfinity`     | Throws `E_INVALIDARG`               |
+| `value < 0`                   | Returns `E_INVALIDARG`               |
+| `Double.NaN`                  | Returns `E_INVALIDARG`               |
+| `Double.PositiveInfinity`     | Returns `E_INVALIDARG`               |
+| `Double.NegativeInfinity`     | Returns `E_INVALIDARG`               |
 | Window in a non-default presenter | Silent no-op (the call succeeds; the live window is unchanged) when the window uses the `FullScreen` or `CompactOverlay` presenter. Subject to change in a future release. |
 | `0`                           | Allowed. The window resizes so the client area has zero height; the OS may apply a minimum size. |
 | Very large value (> screen)   | Allowed. The OS clamps to its tracking-size maximum; the window grows as tall as the OS allows. |
@@ -478,11 +504,8 @@ chrome and DPI scale the setter used. So the getter/setter round-trip in every
 state except the non-default presenters (`FullScreen` and `CompactOverlay`),
 where the setter is a no-op.
 
-**UWP host.** When a `Window` is hosted by a UWP `CoreWindow` (legacy path), the
-setter calls `SetWindowPos` directly with physical pixels (computed once via
-`AdjustWindowRectExForDpi`). We deliberately bypass `CoreWindowWrapper::SetPosition`
-here because that wrapper takes DIPs and re-scales internally. Going through it
-would double-scale and produce a window roughly `scale^2` larger than requested.
+**UWP host.** The implementation will provide basic UWP support to keep
+existing UWP tests running.
 
 ## Design rationale
 
@@ -518,12 +541,16 @@ the user-visible impact.
 
 ## FAQ
 
-These came up as questions during design and now have answers.
+These came up as questions during design.
 
-**Will `Width` and `Height` be dependency properties so I can set or bind them in
-XAML markup?** No. `Window` is not a `DependencyObject` (unlike WPF), so these are
-plain WinRT properties you set from code, not `DependencyProperty`-backed and not
-bindable.
+**Will `Width` and `Height` be dependency properties so I can bind to them in XAML markup?**
+No. `Window` is not a `DependencyObject` (unlike WPF), so these are
+plain WinRT properties that you can't set with classic Bindings.
+You *can* however use `x:Bind` to set the properties from markup.
+
+**Can we change `Window` to be a `FrameworkElement` to allow binding and other scenarios?**
+Not in the short term.  We may consider it later if it unblocks a lot of scenarios and we
+can find a compat-friendly way to do it.
 
 **Will `Window.Bounds` change to report the *desired* size (the most recent setter
 value) instead of the actual current size?** No. `Window.Bounds` has shipped as
