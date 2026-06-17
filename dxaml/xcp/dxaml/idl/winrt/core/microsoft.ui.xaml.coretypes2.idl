@@ -519,6 +519,7 @@ namespace Microsoft.UI.Xaml.Settings
         IconNoGridOptimization = 61276805,
         OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
+        DeferContextFlyoutInit = 61098986,
     };
 }
 

@@ -2074,6 +2074,10 @@ std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChanges
             {
                 changeId = xaml_settings::XamlChangeId_DefaultStyleOptimizations;
             }
+            else if (_wcsicmp(name.c_str(), L"DeferContextFlyoutInit") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_DeferContextFlyoutInit;
+            }
 
             if (changeId == xaml_settings::XamlChangeId__Reserved)
             {
@@ -2153,6 +2157,7 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_IconNoGridOptimization, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_OptimizeApplyStyles, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DefaultStyleOptimizations, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DeferContextFlyoutInit, &mutated);
 
         // Apply per-test overrides from XamlOptionalChanges test data.
         for (const auto& [changeId, enabled] : changeOverrides)

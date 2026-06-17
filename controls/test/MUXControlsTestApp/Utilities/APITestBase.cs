@@ -85,6 +85,7 @@ namespace MUXControlsTestApp.Utilities
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.IconNoGridOptimization));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.OptimizeApplyStyles));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DefaultStyleOptimizations));
+            Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DeferContextFlyoutInit));
         }
 
         public void UpdateXamlOptionalChanges()
@@ -167,6 +168,10 @@ namespace MUXControlsTestApp.Utilities
                         else if (string.Equals(name, "DefaultStyleOptimizations", StringComparison.OrdinalIgnoreCase))
                         {
                             changeId = XamlChangeId.DefaultStyleOptimizations;
+                        }
+                        else if (string.Equals(name, "DeferContextFlyoutInit", StringComparison.OrdinalIgnoreCase))
+                        {
+                            changeId = XamlChangeId.DeferContextFlyoutInit;
                         }
 
                         Verify.AreNotEqual(changeId, XamlChangeId._Reserved, "Unknown XamlChangeId: " + name);

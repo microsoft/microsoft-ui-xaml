@@ -27,6 +27,7 @@ namespace OptionalChangeState
     constexpr int BitIndex_IconNoGridOptimization = 0;
     constexpr int BitIndex_OptimizeApplyStyles = 1;
     constexpr int BitIndex_DefaultStyleOptimizations = 2;
+    constexpr int BitIndex_DeferContextFlyoutInit = 3;
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
     {
@@ -47,5 +48,10 @@ namespace OptionalChangeState
     inline bool AreOptimizedStylesEnabled()
     {
         return IsOptionalChangeEnabled(BitIndex_DefaultStyleOptimizations);
+    }
+
+    inline bool IsDeferContextFlyoutInitEnabled()
+    {
+        return IsOptionalChangeEnabled(BitIndex_DeferContextFlyoutInit) || IsPerfOptInEnabled();
     }
 }

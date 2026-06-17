@@ -10,6 +10,7 @@
 #include <DependencyLocator.h>
 #include <FrameworkTheming.h>
 #include <PerfOptIn.h>
+#include <OptionalChangeState.h>
 #include "Transform3D.h"
 #include "HitTestParams.h"
 #include <DependencyObjectDCompRegistry.h>
@@ -1339,7 +1340,7 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
     // Pass updated params to children.
     IFC_RETURN(CDependencyObject::EnterImpl(pNamescopeOwner, params));
 
-    if (IsPerfOptInEnabled())
+    if (OptionalChangeState::IsDeferContextFlyoutInitEnabled())
     {
         // PR 655767 (July 2017) added the GetContextFlyout() + Enter here so that keyboard
         // accelerators on flyout menu items could register with the live accelerator
@@ -1820,7 +1821,7 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
 
     IFC_RETURN(CDependencyObject::LeaveImpl(pNamescopeOwner, params));
 
-    if (IsPerfOptInEnabled())
+    if (OptionalChangeState::IsDeferContextFlyoutInitEnabled())
     {
         // See the comment in EnterImpl for why this GetContextFlyout() + Leave is skipped.
     }
