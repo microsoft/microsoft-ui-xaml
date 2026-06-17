@@ -25,7 +25,7 @@ namespace OptionalChangeState
     // XamlOptionalChanges_Partial.cpp and the XamlChangeId enum in
     // Microsoft.UI.Xaml.Settings.cs.
     constexpr int BitIndex_IconNoGridOptimization = 0;
-    constexpr int BitIndex_DelayApplyStyleOptimization = 1;
+    constexpr int BitIndex_OptimizeApplyStyles = 1;
     constexpr int BitIndex_DefaultStyleOptimizations = 2;
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
@@ -39,9 +39,9 @@ namespace OptionalChangeState
         return IsOptionalChangeEnabled(BitIndex_IconNoGridOptimization) || IsPerfOptInEnabled();
     }
 
-    inline bool IsDelayApplyStyleOptimizationEnabled()
+    inline bool IsOptimizeApplyStylesEnabled()
     {
-        return IsOptionalChangeEnabled(BitIndex_DelayApplyStyleOptimization) || IsPerfOptInEnabled();
+        return IsOptionalChangeEnabled(BitIndex_OptimizeApplyStyles) || IsPerfOptInEnabled();
     }
 
     inline bool AreOptimizedStylesEnabled()

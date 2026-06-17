@@ -83,7 +83,7 @@ namespace MUXControlsTestApp.Utilities
         {
             Log.Comment($"> XamlOptionalChanges test override: Enabling all XamlOptionalChanges by default");
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.IconNoGridOptimization));
-            Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DelayApplyStyleOptimization));
+            Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.OptimizeApplyStyles));
             Verify.IsTrue(XamlOptionalChanges.EnableChange(XamlChangeId.DefaultStyleOptimizations));
         }
 
@@ -160,9 +160,9 @@ namespace MUXControlsTestApp.Utilities
                         {
                             changeId = XamlChangeId.IconNoGridOptimization;
                         }
-                        else if (string.Equals(name, "DelayApplyStyleOptimization", StringComparison.OrdinalIgnoreCase))
+                        else if (string.Equals(name, "OptimizeApplyStyles", StringComparison.OrdinalIgnoreCase))
                         {
-                            changeId = XamlChangeId.DelayApplyStyleOptimization;
+                            changeId = XamlChangeId.OptimizeApplyStyles;
                         }
                         else if (string.Equals(name, "DefaultStyleOptimizations", StringComparison.OrdinalIgnoreCase))
                         {

@@ -17,7 +17,7 @@ namespace Microsoft.UI.Xaml.Settings
         // and a bit-index constant in OptionalChangeState.h.
         _Reserved = 0,
         IconNoGridOptimization = 61276805,
-        DelayApplyStyleOptimization = 61697456,
+        OptimizeApplyStyles = 61697456,
         DefaultStyleOptimizations = 60995620,
     }
 

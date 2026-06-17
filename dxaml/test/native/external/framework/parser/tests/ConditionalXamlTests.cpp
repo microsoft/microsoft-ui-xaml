@@ -559,7 +559,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     {
         TestCleanupWrapper cleanup;
         // Run this test in compat mode so style is applied immediately (during CreationComplete) without needing to be added to the tree.
-        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
+        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
 
         LOG_OUTPUT(L"Validating that conditional XAML can be used inside a Style's Setter.Value(s).");
         const wchar_t markup[] =
