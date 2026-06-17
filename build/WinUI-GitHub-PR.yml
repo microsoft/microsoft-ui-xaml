@@ -53,7 +53,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/user/hmishra/gh-ado-public-validation-guards
+      ref: refs/heads/user/hmishra/gh-ado-muxfinalrelease-restore
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -151,3 +151,16 @@ extends:
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
+          dependsOn: ValidateGitHubPrContext
+
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+        parameters:
+          stageName: Build_MUXFinalRelease
+          pipelineKind: PR-2
+          buildScenarioApps: false
+          MUXFinalRelease: true
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+          pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
+          buildProductOnly: true
+          dependsOn: ValidateGitHubPrContext
