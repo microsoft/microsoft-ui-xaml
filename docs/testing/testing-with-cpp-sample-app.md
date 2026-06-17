@@ -1,7 +1,7 @@
 # Testing WinUI 3 Changes with Sample C++ App (Dev Package)
 
 ## 1. Build the WinUI repo
-1. Follow [developer guide](developer-guide.md)
+1. Follow [developer guide](../building/developer-guide.md)
 
 
 ## 2. Get Visual Studio template

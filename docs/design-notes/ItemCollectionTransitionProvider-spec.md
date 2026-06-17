@@ -147,7 +147,7 @@ Namespace: Microsoft.UI.Xaml.Controls
 | CollectionChangeAdd | 1 | A data object was added to a collection, causing transition animations to occur. |
 | CollectionChangeRemove | 2 | A data object was removed from a collection, causing transition animations to occur. |
 | CollectionChangeReset | 4 | A collection of data objects was significantly changed (e.g., reset to empty), causing transition animations to occur. |
-| LayoutTransition | 8 | A layout transition occured (e.g., window resized), causing transition animations to occur. |
+| LayoutTransition | 8 | A layout transition occurred (e.g., window resized), causing transition animations to occur. |
 
 C#
 ```cs

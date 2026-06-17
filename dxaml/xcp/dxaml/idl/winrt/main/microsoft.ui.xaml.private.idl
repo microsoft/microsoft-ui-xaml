@@ -344,10 +344,10 @@ namespace Microsoft.UI.Xaml
 
     [contract(Microsoft.UI.Xaml.PrivateApiContract, 1)]
     [webhosthidden]
-    [default_interface]
     runtimeclass DxamlCoreTestHooks
     {
         DxamlCoreTestHooks();
+        void ResetOptionalChanges();
         static Microsoft.UI.Xaml.DxamlCoreTestHooks GetForCurrentThread();
         static void PerformProcessWideLeakDetection(Int32 threshold);
     };

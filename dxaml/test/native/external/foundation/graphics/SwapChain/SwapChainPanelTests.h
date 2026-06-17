@@ -145,12 +145,14 @@ public:
 
     BEGIN_TEST_METHOD(CreateCoreIndependentInputSource)
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Task 62658820: Re-enable after fixing AV crash (0xC0000005) in Microsoft.UI.Input.dll from the IXP transport bump.
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(HitTestingOnlySwapChainPanel)
         TEST_METHOD_PROPERTY(L"Description", L"Validates that we use a transparent solid color visual for a SwapChainPanel with CreateCoreIndependentInputSource meant for off-thread input")
         TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
         TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        TEST_METHOD_PROPERTY(L"Ignore", L"TRUE") // Task 62658820: Re-enable after fixing AV crash (0xC0000005) in Microsoft.UI.Input.dll from the IXP transport bump.
     END_TEST_METHOD()
 
 private:

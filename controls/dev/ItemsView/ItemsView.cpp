@@ -112,10 +112,10 @@ bool ItemsView::TryGetItemIndex(
 // Invokes UIElement::StartBringIntoView with the provided BringIntoViewOptions instance, if any,
 // for the element associated with the given data index.
 // If that element is currently virtualized, it is realized and synchronously layed out, before that StartBringIntoView call.
-// Note that because of lines 111-112 of ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindow() and line 295 of
-// ViewportManagerWithPlatformFeatures::OnBringIntoViewRequested(...), animated bring-into-view operations are not supported.
-// ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindow snaps the RealizationWindow to 0,0 while
-// ViewportManagerWithPlatformFeatures::OnBringIntoViewRequested turns off BringIntoViewRequestedEventArgs::AnimationDesired.
+// Note that because of lines 111-112 of ViewportManager::GetLayoutVisibleWindow() and line 295 of
+// ViewportManager::OnBringIntoViewRequested(...), animated bring-into-view operations are not supported.
+// ViewportManager::GetLayoutVisibleWindow snaps the RealizationWindow to 0,0 while
+// ViewportManager::OnBringIntoViewRequested turns off BringIntoViewRequestedEventArgs::AnimationDesired.
 void ItemsView::StartBringItemIntoView(
     int32_t index,
     const winrt::BringIntoViewOptions& options)

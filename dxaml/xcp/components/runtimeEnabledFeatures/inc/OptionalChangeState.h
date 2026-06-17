@@ -26,6 +26,7 @@ namespace OptionalChangeState
     // Microsoft.UI.Xaml.Settings.cs.
     constexpr int BitIndex_IconNoGridOptimization = 0;
     constexpr int BitIndex_DelayApplyStyleOptimization = 1;
+    constexpr int BitIndex_DefaultStyleOptimizations = 2;
 
     inline bool IsOptionalChangeEnabled(int bitIndex)
     {
@@ -41,5 +42,10 @@ namespace OptionalChangeState
     inline bool IsDelayApplyStyleOptimizationEnabled()
     {
         return IsOptionalChangeEnabled(BitIndex_DelayApplyStyleOptimization) || IsPerfOptInEnabled();
+    }
+
+    inline bool AreOptimizedStylesEnabled()
+    {
+        return IsOptionalChangeEnabled(BitIndex_DefaultStyleOptimizations);
     }
 }

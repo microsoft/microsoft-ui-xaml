@@ -3,7 +3,7 @@
 set IXP_MODULES=
 @REM set HELIX_CORRELATION_PAYLOAD=.
 
-set MODULES=Microsoft.UI.Xaml.dll!Microsoft.UI.Xaml.Controls.dll
+set MODULES=Microsoft.UI.Xaml.dll!Microsoft.UI.Xaml.Controls.dll!WinUIEdit.dll
 call %HELIX_CORRELATION_PAYLOAD%\RunPerfWorkItemHelper.cmd packaged XamlPGO.HelloWorld.Cs %MODULES% 40000
 
 set MODULES=Microsoft.UI.Xaml.dll!Microsoft.UI.Xaml.Controls.dll!Microsoft.UI.Xaml.Phone.dll!%IXP_MODULES%

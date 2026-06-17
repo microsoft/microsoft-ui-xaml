@@ -14,6 +14,9 @@
 <#  foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { #>
 #include "<#=includeFile#>"
 <#  }#>
+<#  if (ProjectInfo.EnabledXamlOptionalChanges.Count > 0 || ProjectInfo.DisabledXamlOptionalChanges.Count > 0) { #>
+#include "winrt/<#=KnownNamespaces.XamlSettings#>.h"
+<#  } #>
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
@@ -58,12 +61,21 @@ extern "C"
 
 #ifndef DISABLE_XAML_GENERATED_MAIN
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
+#else
+int __stdcall wXamlGeneratedMain(HINSTANCE, HINSTANCE, PWSTR, int)
+#endif
 {
 <#  if (ProjectInfo.IsWin32App) { #>
     winrt::init_apartment(winrt::apartment_type::single_threaded);
 <#  } else { #>
     winrt::init_apartment();
 <#  }#>
+<#  foreach (var change in ProjectInfo.EnabledXamlOptionalChanges) { #>
+    <#=Projection(KnownNamespaces.XamlSettings)#>::XamlOptionalChanges::EnableChange(<#= int.TryParse(change, out _) ? $"static_cast<{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId>({change})" : $"{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId::{change}" #>);
+<#  } #>
+<#  foreach (var change in ProjectInfo.DisabledXamlOptionalChanges) { #>
+    <#=Projection(KnownNamespaces.XamlSettings)#>::XamlOptionalChanges::DisableChange(<#= int.TryParse(change, out _) ? $"static_cast<{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId>({change})" : $"{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId::{change}" #>);
+<#  } #>
     <#=Projection(KnownNamespaces.Xaml)#>::Application::Start(
         [](auto&&)
         {
@@ -72,4 +84,3 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 
     return 0;
 }
-#endif

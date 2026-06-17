@@ -70,7 +70,6 @@ None.
   * ScrollView: Shows one blank frame when jumping to disconnected offset
 
 - Active Backlog / Enhancement / Committed work  
-  * ItemsRepeater: eliminate ViewportManagerDownlevel class
   * ItemsRepeater - slow scrolling performance
   * [Store] ItemsRepeater should support incremental loading
   * [Store] ItemsRepeater should have something similar to ListViewPersistenceHelper that helps restore scrolling position
@@ -110,7 +109,7 @@ You may want to set breakpoints in these methods:
 - FlowLayoutAlgorithm's Measure, Generate and GetAnchorIndex for StackLayout & UniformGridLayout.
 - ElementManager::EnsureElementRealized
 - VirtualizationInfo::MoveOwnershipToXXXX
-- ViewportManagerWithPlatformFeatures::SetLayoutExtent
+- ViewportManager::SetLayoutExtent
 - Many APIs in ItemsRepeater.idl are still in Preview. Some will probably be made public when a new TableView control is made public.
 
 
@@ -121,7 +120,6 @@ by multiple ItemsRepeater at the same time. The common fields are stored in Stac
 stored in StackLayoutState / UniformGridLayoutState classes.
 - The LinedFlowLayout layout does not do this. There is no separate LinedFlowLayoutState class.
 - The LinedFlowLayout layout was created after the other layouts, specifically for the File Explorer Photos Gallery view.
-- The unused ViewportManagerDownlevel class can be deleted.
 
 
 # Controls that use the ItemsRepeater

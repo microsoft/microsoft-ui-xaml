@@ -27,5 +27,6 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Check links
-        run: npx unbroken
+        run: npx --yes unbroken
         working-directory: docs
+        timeout-minutes: 10

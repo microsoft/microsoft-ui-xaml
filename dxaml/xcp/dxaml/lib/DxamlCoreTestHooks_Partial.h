@@ -298,6 +298,7 @@ namespace DirectUI
 
         // XamlOptionalChanges test hooks
         IFACEMETHOD_(void, ResetOptionalChanges)() override;
+        _Check_return_ HRESULT ResetOptionalChangesImpl();
 
         IFACEMETHOD(PauseNewDispatchForTest)() override;
         IFACEMETHOD(ResumeNewDispatchForTest)() override;

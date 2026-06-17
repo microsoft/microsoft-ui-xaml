@@ -518,6 +518,7 @@ namespace Microsoft.UI.Xaml.Settings
         _Reserved,
         IconNoGridOptimization = 61276805,
         DelayApplyStyleOptimization = 61697456,
+        DefaultStyleOptimizations = 60995620,
     };
 }
 
@@ -2348,8 +2349,8 @@ namespace Microsoft.UI.Xaml.Settings
     [default_interface]
     runtimeclass XamlOptionalChanges
     {
-        static void EnableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
-        static void DisableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean EnableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean DisableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
         static Boolean IsChangeEnabled(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
         static Boolean Lock();
         static Boolean IsLocked();
