@@ -18,6 +18,7 @@ namespace Microsoft.UI.Xaml.Settings
         _Reserved = 0,
         IconNoGridOptimization = 61276805,
         DelayApplyStyleOptimization = 61697456,
+        DefaultStyleOptimizations = 60995620,
     }
 
     // Provides static methods to opt in to or out of individual breaking or

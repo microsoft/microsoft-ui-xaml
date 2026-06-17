@@ -2210,6 +2210,7 @@ namespace DirectUI
         _Reserved = 0,
         IconNoGridOptimization = 61276805,
         DelayApplyStyleOptimization = 61697456,
+        DefaultStyleOptimizations = 60995620,
     };
     DEFINE_ENUM_FLAG_OPERATORS(XamlChangeId);
 

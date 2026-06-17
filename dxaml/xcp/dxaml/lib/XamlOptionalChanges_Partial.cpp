@@ -40,6 +40,8 @@ static int GetBitIndex(xaml_settings::XamlChangeId id)
         return OptionalChangeState::BitIndex_IconNoGridOptimization;
     case xaml_settings::XamlChangeId_DelayApplyStyleOptimization:
         return OptionalChangeState::BitIndex_DelayApplyStyleOptimization;
+    case xaml_settings::XamlChangeId_DefaultStyleOptimizations:
+        return OptionalChangeState::BitIndex_DefaultStyleOptimizations;
     default:
         return -1;
     }

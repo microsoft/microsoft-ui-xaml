@@ -2070,6 +2070,10 @@ std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChanges
             {
                 changeId = xaml_settings::XamlChangeId_DelayApplyStyleOptimization;
             }
+            else if (_wcsicmp(name.c_str(), L"DefaultStyleOptimizations") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_DefaultStyleOptimizations;
+            }
 
             if (changeId == xaml_settings::XamlChangeId__Reserved)
             {
@@ -2148,6 +2152,7 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
         BOOLEAN mutated = FALSE;
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_IconNoGridOptimization, &mutated);
         optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DelayApplyStyleOptimization, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DefaultStyleOptimizations, &mutated);
 
         // Apply per-test overrides from XamlOptionalChanges test data.
         for (const auto& [changeId, enabled] : changeOverrides)
