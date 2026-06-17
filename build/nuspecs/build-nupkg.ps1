@@ -145,15 +145,23 @@ if ($lastexitcode -ne 0)
 if ($InstallPackage)
 {
     $PackageCache = Join-Path "$scriptDirectory\..\.." "packages"
-    $NugetConfigPath = Join-Path "$scriptDirectory\..\.." "NuGet.config"    
-    # Remove existing package if it exists to force reinstallation
+    $NugetConfigPath = Join-Path "$scriptDirectory\..\.." "NuGet.config"
     $ExistingPackagePath = Join-Path $PackageCache "Microsoft.WindowsAppSDK.WinUI.$VersionOverride"
+    $PackageRefCachePath = Join-Path $PackageCache "microsoft.windowsappsdk.winui\$VersionOverride"
+
     if (Test-Path $ExistingPackagePath)
     {
-        Write-Host "Removing existing package: $ExistingPackagePath" -ForegroundColor Yellow
+        Write-Host "Removing stale package: $ExistingPackagePath" -ForegroundColor Yellow
         Remove-Item $ExistingPackagePath -Recurse -Force
     }
-    
+    # Also remove the PackageReference-style cache folder (lowercase, nested version directory)
+    # so that NuGet re-extracts the updated package for C# projects using PackageReference.
+    if (Test-Path $PackageRefCachePath)
+    {
+        Write-Host "Removing stale PackageReference cache: $PackageRefCachePath" -ForegroundColor Yellow
+        Remove-Item $PackageRefCachePath -Recurse -Force
+    }
+
     Write-Host "nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath"
     nuget install Microsoft.WindowsAppSDK.WinUI -Version $VersionOverride -OutputDirectory $PackageCache -ConfigFile $NugetConfigPath
 

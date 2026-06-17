@@ -68,6 +68,7 @@
 #include "HWWalk.h"
 #include "LoadLibraryAbs.h"
 #include "xcpwindow.h"
+#include "OptionalChangeState.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -2046,7 +2047,13 @@ IFACEMETHODIMP DxamlCoreTestHooks::GetElementsRenderedCount(_Out_ int* elementsR
 
 IFACEMETHODIMP_(void) DxamlCoreTestHooks::ResetOptionalChanges()
 {
+    IFCFAILFAST(ResetOptionalChangesImpl());
+}
+
+_Check_return_ HRESULT DxamlCoreTestHooks::ResetOptionalChangesImpl()
+{
     DirectUI::XamlOptionalChanges::ResetInternal();
+    return S_OK;
 }
 
 IFACEMETHODIMP DxamlCoreTestHooks::PauseNewDispatchForTest()

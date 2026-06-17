@@ -3075,6 +3075,7 @@ enum class KnownMethodIndex: UINT16
     Duration_FromTimeSpan,
     DxamlCoreTestHooks_GetForCurrentThread,
     DxamlCoreTestHooks_PerformProcessWideLeakDetection,
+    DxamlCoreTestHooks_ResetOptionalChanges,
     ElementSoundPlayer_Play,
     ElementSoundPlayer_RequestInteractionSoundForElement,
     ElementSoundPlayer_GetEffectiveSoundMode,
