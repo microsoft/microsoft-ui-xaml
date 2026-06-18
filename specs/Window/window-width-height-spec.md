@@ -1,7 +1,38 @@
 Window.Width and Window.Height
 ===
 
-# Background
+Table of Contents
+
+- [Window.Width and Window.Height](#windowwidth-and-windowheight)
+- [1. Background](#1-background)
+- [2. Conceptual pages (How To)](#2-conceptual-pages-how-to)
+  - [2.1. Three sets of APIs size the same window: `Window`, `AppWindow`, and Win32](#21-three-sets-of-apis-size-the-same-window-window-appwindow-and-win32)
+    - [2.1.1. How the AppWindow presenter affects sizing](#211-how-the-appwindow-presenter-affects-sizing)
+  - [2.2. Where Width/Height equals Bounds and where it does not](#22-where-widthheight-equals-bounds-and-where-it-does-not)
+  - [2.3. WPF Comparison](#23-wpf-comparison)
+- [3. Examples](#3-examples)
+  - [3.1. Set Initial Window Size in XAML Markup](#31-set-initial-window-size-in-xaml-markup)
+  - [3.2. Set Initial Window Size with x:Bind](#32-set-initial-window-size-with-xbind)
+  - [3.3. Set Window Size in Code-Behind](#33-set-window-size-in-code-behind)
+- [4. API Pages](#4-api-pages)
+  - [4.1. Window.Width property](#41-windowwidth-property)
+    - [4.1.1. Behavior by window state](#411-behavior-by-window-state)
+    - [4.1.2. Remarks](#412-remarks)
+    - [4.1.3. Errors](#413-errors)
+  - [4.2. Window.Height property](#42-windowheight-property)
+    - [4.2.1. Behavior by window state](#421-behavior-by-window-state)
+    - [4.2.2. Remarks](#422-remarks)
+    - [4.2.3. Errors](#423-errors)
+- [5. API Details](#5-api-details)
+- [6. Appendix](#6-appendix)
+  - [6.1. Implementation notes](#61-implementation-notes)
+  - [6.2. Design rationale](#62-design-rationale)
+  - [6.3. Open questions](#63-open-questions)
+  - [6.4. FAQ](#64-faq)
+  - [6.5. Acknowledgements](#65-acknowledgements)
+
+
+# 1. Background
 
 _(This section will not be part of public docs)_
 
@@ -30,7 +61,7 @@ These APIs ship as **experimental** first (`[feature(Feature_ExperimentalApi)]`)
 so the behavior may change based on early adopter feedback before they get
 promoted to stable.
 
-# Conceptual pages (How To)
+# 2. Conceptual pages (How To)
 
 _(This is conceptual documentation that will go to docs.microsoft.com "how to" page)_
 
@@ -52,44 +83,10 @@ You can set the Width and Height properties in XAML markup and in code-behind.
 If you need the current client-area size for layout, use `Bounds` -- it always
 reflects the live size, even when the window is maximized.
 
-It's often natural to set your Window's initial size in your XAML markup near the markup for your app:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<Window
-    x:Class="MyApp.MainWindow"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:MyApp"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    Width="800"
-    Height="600"
-    Title="MyApp">
-
-    <!-- window content -->
-</Window>
-```
-
-You can also set it from code-behind:
-
-```csharp
-// Code-behind in a WinUI desktop app
-public MainWindow()
-{
-    this.InitializeComponent();
-
-    // Set client area to 800 x 600 (DIPs)
-    this.Width  = 800;
-    this.Height = 600;
-}
-```
-
 Note you can use x:bind (`{x:Bind ...}`} bindings to set the Width/Height properties, but you CAN'T use classic data binding
 (`{Binding ...}`) to set them.  This is because the Window type is not a FrameworkElement.
 
-## Three sets of APIs size the same window: `Window`, `AppWindow`, and Win32
+## 2.1. Three sets of APIs size the same window: `Window`, `AppWindow`, and Win32
 
 Every WinUI desktop window is, underneath, a single Win32 `HWND`. Three different
 API layers can read and size that same window, and they do **not** all agree on
@@ -152,7 +149,7 @@ For **physical pixels**, use `AppWindow.ResizeClient(...)` (client) or
 friends) only when you need something the WinUI surfaces do not expose; mixing it
 with the XAML window means you own the DIP/pixel conversion yourself.
 
-### How the AppWindow presenter affects sizing
+### 2.1.1. How the AppWindow presenter affects sizing
 
 The same sizing APIs behave differently depending on which `AppWindowPresenter`
 the window is using. You pick a presenter with `AppWindow.SetPresenter(...)`.
@@ -192,7 +189,7 @@ the lower-level `AppWindow.ResizeClient(...)` does:
 If you need to resize a window in one of these presenters, drop down to
 `AppWindow.ResizeClient(...)` (physical pixels).
 
-## Where Width/Height equals Bounds and where it does not
+## 2.2. Where Width/Height equals Bounds and where it does not
 
 `Window.Bounds` always reports the **live** client area. `Width`/`Height`
 diverge from it in the Maximized and Minimized states because the getters
@@ -217,7 +214,7 @@ tells you what it *is right now*.
 If you want to size by the window rect instead, you can still call
 `AppWindow.Resize(...)` (physical pixels, not DIPs; see the three-layers section above).
 
-## WPF Comparison
+## 2.3. WPF Comparison
 
 WPF developers work with the WPF `Window.Width` and `Window.Height` properties. The
 WinUI properties are meant to feel familiar but they are **not identical**.
@@ -244,7 +241,107 @@ Here is a side-by-side breakdown of more WPF vs WinUI behavior:
 | Behavior in non-default presenter | WPF has no built-in fullscreen/PiP modes     | Returns `E_NOT_VALID_STATE` in `FullScreen` and `CompactOverlay` |
 | Dependency property       | Yes; bindable                                        | Plain WinRT property; bindable only with x:Bind |
 
-# API Pages
+# 3. Examples
+
+## 3.1. Set Initial Window Size in XAML Markup
+
+It's often natural to set your Window's initial size in your XAML markup near the markup for your app.
+
+For example, Contoso's PointOfSale app defines its main window's size at development time via XAML markup:
+
+```xml
+<!-- MainWindow.xaml -->
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="PointOfSale.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PointOfSale"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Contoso PointOfSale"
+    Width="800"
+    Height="600"
+    >
+
+    <!-- window content -->
+</Window>
+```
+
+## 3.2. Set Initial Window Size with x:Bind
+
+Here, Contoso PointOfSale binds Width/Height to code-behind:
+
+```xml
+<!-- MainWindow.xaml -->
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="PointOfSale.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PointOfSale"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Contoso PointOfSale"
+    Width="{x:Bind InitialWindowClientWidth}"
+    Height="{x:Bind InitialWindowClientHeight}"
+    >
+
+    <!-- window content -->
+</Window>
+```
+
+In code-behind, the PointOfSale app defaults to a smaller size when a private variable `_isAppUsingCompactView`
+is set:
+
+```cs
+// MainWindow.xaml.cs
+namespace PointOfSale
+{
+    public sealed partial class MainWindow : Window
+    {
+        private bool _isAppUsingCompactView;
+
+        // ...
+
+        public double InitialWindowClientWidth => _isAppUsingCompactView ? 400 : 800;
+        public double InitialWindowClientHeight => _isAppUsingCompactView ? 200 : 600;
+    }
+}
+```
+
+## 3.3. Set Window Size in Code-Behind
+
+The PointOfSale app also has a button users can click to enter its compact view.  The app sets Window.Width and Window.Height
+in code-behind to change the window's size.
+
+
+```xml
+<!-- MainWindow.xaml -->
+  <!-- Inside the app's XAML markup -->
+  <Button Click="SwitchToCompactView_Button_Click">Switch to Compact View</Button>
+```
+
+```cs
+// MainWindow.xaml.cs
+namespace PointOfSale
+{
+    public sealed partial class MainWindow : Window
+    {
+        // ...
+        private async void SwitchToCompactView_Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.Width = 400;
+            this.Height = 200;
+        }
+    }
+}
+```        
+
+
+# 4. API Pages
 
 _(Each of the following L2 sections correspond to a page that will be on docs.microsoft.com)_
 
@@ -252,7 +349,7 @@ _(Each of the following L2 sections correspond to a page that will be on docs.mi
 > intentionally near-identical so each can stand alone as its own docs page. If
 > you change behavior in one, make the matching change in the other.
 
-## Window.Width property
+## 4.1. Window.Width property
 
 Gets or sets the width of the Window's **client area** in device-independent
 pixels (DIPs, 1/96 inch).
@@ -274,7 +371,7 @@ DPI. Height is left unchanged.
 
 Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 
-### Behavior by window state
+### 4.1.1. Behavior by window state
 
 These behaviors split by presenter. The default `Overlapped` presenter honors
 the setter and maps to Normal / Maximized / Minimized based on its show state.
@@ -294,7 +391,7 @@ The non-default presenters, `FullScreen` and `CompactOverlay`, return an error.
   `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen, returns
   `E_NOT_VALID_STATE`.
 
-### Remarks
+### 4.1.2. Remarks
 
 **Units and DPI.** The setter converts the requested DIP value to physical
 pixels using the window's current per-monitor DPI:
@@ -317,8 +414,7 @@ the client area, toggling `Window.ExtendsContentIntoTitleBar` changes what count
 as client area, so the getter (and `Bounds`) can change even though the window
 rect did not; re-apply the setter if you need a specific size after toggling.
 
-**XAML markup.** Width and Height are settable from C++/WinRT code-behind
-AND from XAML on the `<Window>` object.
+**XAML markup.** Width and Height are settable from code-behind AND from XAML on the `<Window>` object.
 
 **Bindings.** Width and Height are not `DependencyProperty`-backed. They do not
 take part in data binding and do not raise change notifications. (This matches the
@@ -329,7 +425,7 @@ in XAML markup.
 (the dispatcher thread). Calls from other threads return the standard
 `RPC_E_WRONG_THREAD` error from the XAML framework.
 
-### Errors
+### 4.1.3. Errors
 
 For all errors the runtime calls RoOriginateError with a specific error message to help the app developer diagnose the problem.
 
@@ -343,7 +439,7 @@ For all errors the runtime calls RoOriginateError with a specific error message 
 | `0`                           | Allowed. The window resizes so the client area has zero width. The OS may apply a minimum size. |
 | Very large value (> screen)   | Allowed. The OS clamps to its tracking-size maximum; the window grows as large as the OS allows. |
 
-## Window.Height property
+## 4.2. Window.Height property
 
 Gets or sets the height of the Window's **client area** in device-independent
 pixels (DIPs, 1/96 inch).
@@ -365,7 +461,7 @@ left unchanged.
 
 Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 
-### Behavior by window state
+### 4.2.1. Behavior by window state
 
 These behaviors split by presenter. The default `Overlapped` presenter honors
 the setter and maps to Normal / Maximized / Minimized based on its show state.
@@ -385,7 +481,7 @@ The non-default presenters, `FullScreen` and `CompactOverlay`, return an error.
   `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen, returns
   `E_NOT_VALID_STATE`.
 
-### Remarks
+### 4.2.2. Remarks
 
 **Units and DPI.** The setter converts the requested DIP value to physical
 pixels using the window's current per-monitor DPI:
@@ -422,7 +518,7 @@ in XAML markup.
 (the dispatcher thread). Calls from other threads return the standard
 `RPC_E_WRONG_THREAD` error from the XAML framework.
 
-### Errors
+### 4.2.3. Errors
 
 For all errors the runtime calls RoOriginateError with a specific error message to help the app developer diagnose the problem.
 
@@ -436,28 +532,59 @@ For all errors the runtime calls RoOriginateError with a specific error message 
 | `0`                           | Allowed. The window resizes so the client area has zero height; the OS may apply a minimum size. |
 | Very large value (> screen)   | Allowed. The OS clamps to its tracking-size maximum; the window grows as tall as the OS allows. |
 
-# API Details
+# 5. API Details
 
+Initially the API will be **experimental**:
 ```c# (but really MIDL3)
+// For experimental release
 namespace Microsoft.UI.Xaml
 {
+  [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+  [webhosthidden]
+  [contentproperty("Content")]
   unsealed runtimeclass Window // existing type
   {
     // ...existing APIs...
 
     // New: 
-    Double Width;
-    Double Height;
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]   // 12 is the contract version we're using for WASDK 3.0
+    [feature(Feature_ExperimentalApi)]
+    [interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
+    {
+      Double Width;
+      Double Height;
+    }
   }
 }
 ```
 
+We plan for this API to be made **stable**:
+```c# (but really MIDL3)
+// For stable release
+namespace Microsoft.UI.Xaml
+{
+  [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
+  [webhosthidden]
+  [contentproperty("Content")]
+  unsealed runtimeclass Window // existing type
+  {
+    // ...existing APIs...
 
-# Appendix
+    // New: 
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]   // 12 is the contract version we're using for WASDK 3.0
+    {
+      Double Width;
+      Double Height;
+    }
+  }
+}
+```
+
+# 6. Appendix
 
 _(This section will not be part of public docs)_
 
-## Implementation notes
+## 6.1. Implementation notes
 
 These are implementation details, not part of the public contract. They are
 here for posterity, not for the public docs.
@@ -475,7 +602,7 @@ from a purely style-based calculation (`AdjustWindowRectExForDpi`). This is what
 makes `ExtendsContentIntoTitleBar` work correctly. When the window is Maximized
 or Minimized, the live rects do not represent normal chrome, so the style-based
 calculation is used instead, with a correction that zeros out the top chrome when
-ECITB is active.
+`ExtendsContentIntoTitleBar` is active.
 
 **Reading the size back.** The getter returns client-area size in DIPs. In the
 Normal, Fullscreen, and CompactOverlay states it reads from `Window.Bounds`. In
@@ -488,7 +615,7 @@ where the setter returns an error.
 **UWP host.** The implementation will provide basic UWP support to keep
 existing UWP tests running.
 
-## Design rationale
+## 6.2. Design rationale
 
 The big decision was **client area vs window rect** as the unit. WinUI picked
 client area so `Width`/`Height` round-trip with `Window.Bounds`, which already
@@ -496,10 +623,10 @@ ships as the client area. The alternative (the window rect, like WPF) would have
 two different units on one Window object. See the "Porting from WPF" section for
 the user-visible impact.
 
-## Open questions
+## 6.3. Open questions
 
 
-## FAQ
+## 6.4. FAQ
 
 These came up as questions during design.
 
@@ -522,7 +649,7 @@ It is out of scope for now, but we expect to come back to it soon.
 **Is there a "size to content" behavior, like setting WPF's `Width` to `NaN`?** No,
 that is out of scope. Setting `NaN` returns `E_INVALIDARG`.
 
-## Acknowledgements
+## 6.5. Acknowledgements
 
 This API is based on community contribution
 [microsoft/microsoft-ui-xaml#11052](https://github.com/microsoft/microsoft-ui-xaml/pull/11052)
