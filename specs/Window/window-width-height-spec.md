@@ -49,6 +49,9 @@ property that returns the **client area** of the window in DIPs. The
 
 You can set the Width and Height properties in XAML markup and in code-behind.
 
+If you need the current client-area size for layout, use `Bounds` -- it always
+reflects the live size, even when the window is maximized.
+
 It's often natural to set your Window's initial size in your XAML markup near the markup for your app:
 
 ```xml
