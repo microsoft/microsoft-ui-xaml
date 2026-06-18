@@ -16,7 +16,7 @@
 #include <TypeNameHelper.h>
 #include "xcperrorresource.h"
 #include <wininet.h>
-#include <PerfOptIn.h>
+#include <OptionalChangeState.h>
 
 using namespace DirectUI;
 using namespace xaml_hosting;
@@ -357,7 +357,7 @@ _Check_return_ HRESULT StyleCache::GetFrameworkStyles(_Outptr_ ResourceDictionar
         // In case we should use XBF
         if (!IsGenericXamlFilePathAvailableFromMUX())
         {
-            if (IsPerfOptInEnabled())
+            if (OptionalChangeState::AreOptimizedStylesEnabled())
             {
                 IFC(LoadStylesFromResource(
                     XSTRING_PTR_EPHEMERAL(L"Styles_perf2026.xbf"),
@@ -452,7 +452,7 @@ _Check_return_ HRESULT StyleCache::LoadThemeResources()
     if (useXbf)
     {
         ctl::ComPtr<ResourceDictionary> themeResources;
-        if (IsPerfOptInEnabled())
+        if (OptionalChangeState::AreOptimizedStylesEnabled())
         {
             IFC_RETURN(LoadStylesFromResource(
                 XSTRING_PTR_EPHEMERAL(L"ThemeResources_perf2026.xbf"),

@@ -5484,7 +5484,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_ARE_EQUAL(4, indicatorShownCount);
     }
 
-    void ScrollViewerIntegrationTests::ValidateUIElementTree()
+    void ScrollViewerIntegrationTests::ValidateUIElementTree_OptimizedStyles()
+    {
+        ValidateUIElementTreeHelper();
+    }
+
+    void ScrollViewerIntegrationTests::ValidateUIElementTree_OldStyles()
+    {
+        // The optimization is turned off via Data:XamlOptionalChanges
+        ValidateUIElementTreeHelper();
+    }
+
+    void ScrollViewerIntegrationTests::ValidateUIElementTreeHelper()
     {
         ControlHelper::ValidateUIElementTree(
             wf::Size(400, 600),
@@ -7454,14 +7465,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                     viewChangedEvent->Set();
                 }
             }));
-            
+
 
             scrollViewer->IsTabStop = true;
             scrollViewer->Focus(FocusState::Keyboard);
 
             oldVerticalOffset = scrollViewer->VerticalOffset;
             LOG_OUTPUT(L"Current ScrollViewer view is (x, y, z) = (%f, %f, %f).", scrollViewer->HorizontalOffset, scrollViewer->VerticalOffset, scrollViewer->ZoomFactor);
-        
+
         });
 
         gotFocusEvent->WaitForDefault();
@@ -7581,7 +7592,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 rootStackPanel,
                 [&]()
                 {
-                    loadedEvent->Set(); 
+                    loadedEvent->Set();
                 });
 
             TestServices::WindowHelper->WindowContent = rootStackPanel;
