@@ -511,7 +511,7 @@ namespace Microsoft.UI.Xaml.Hosting
 namespace Microsoft.UI.Xaml.Settings
 {
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
     [webhosthidden]
     enum XamlChangeId
     {
@@ -2339,7 +2339,7 @@ namespace Microsoft.UI.Xaml.Hosting
 }
 namespace Microsoft.UI.Xaml.Settings
 {
-    [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
     [webhosthidden]
     [default_interface]
     runtimeclass XamlOptionalChanges
