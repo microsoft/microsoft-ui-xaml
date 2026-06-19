@@ -53,7 +53,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/user/hmishra/gh-ado-public-validation-guards
+      ref: refs/heads/main
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
