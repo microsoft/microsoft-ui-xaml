@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -44,28 +44,6 @@ namespace MUXControlsTestApp.Utilities
             {
                 UpdateXamlOptionalChanges();
 
-                // XamlOptionalChanges for the test might have selected different styles. Load them if needed. Note that the
-                // styles are in XamlControlsResources, which selected a Source depending on the XamlOptionalChanges at the
-                // time and have already been loaded. We don't reevaluate the Source for the current XamlControlsResources,
-                // because updating a live dictionary calls InvalidateImplicitStyles, which walks the tree and triggers
-                // resource updates, which can cause resource not found errors while we're updating the dictionary. Instead
-                // we just insert a new instance of XamlControlsResources and throw the old one away. As an optimization,
-                // we'll check the Source of the new XCR aginst the existing XCR and only replace if they're different.
-                var mergedDicts = Application.Current.Resources.MergedDictionaries;
-                for (int i = 0; i < mergedDicts.Count; i++)
-                {
-                    if (mergedDicts[i] is XamlControlsResources)
-                    {
-                        var newXamlControlsResources = new XamlControlsResources();
-                        if (newXamlControlsResources.Source != mergedDicts[i].Source)
-                        {
-                            mergedDicts.RemoveAt(i);
-                            mergedDicts.Insert(i, newXamlControlsResources);
-                        }
-                        break;
-                    }
-                }
-
                 _host = new Border();
                 _host.Loaded += delegate { hostLoaded.Set(); };
                 MUXControlsTestApp.App.TestContentRoot = _host;
@@ -100,30 +78,49 @@ namespace MUXControlsTestApp.Utilities
             // Test-specified values override the defaults and the "test-default" states set below.
             var changeOverrides = GetXamlOptionalChangesTestOverrides(TestContext);
 
-            if (changeOverrides.Count > 0)
+            RunOnUIThread.Execute(() =>
             {
-                RunOnUIThread.Execute(() =>
-                {
-                    DxamlCoreTestHooks.GetForCurrentThread().ResetOptionalChanges();
-                    EnableAllXamlOptionalChanges();
+                DxamlCoreTestHooks.GetForCurrentThread().ResetOptionalChanges();
+                EnableAllXamlOptionalChanges();
 
-                    // Apply per-test overrides from XamlOptionalChanges test data.
-                    foreach (var changeId in changeOverrides.Keys)
+                // Apply per-test overrides from XamlOptionalChanges test data.
+                foreach (var changeId in changeOverrides.Keys)
+                {
+                    var enabled = changeOverrides[changeId];
+                    if (enabled)
                     {
-                        var enabled = changeOverrides[changeId];
-                        if (enabled)
-                        {
-                            Log.Comment($"> XamlOptionalChanges test override: Enabling {changeId}");
-                            Verify.IsTrue(XamlOptionalChanges.EnableChange(changeId));
-                        }
-                        else
-                        {
-                            Log.Comment($"> XamlOptionalChanges test override: Disabling {changeId}");
-                            Verify.IsTrue(XamlOptionalChanges.DisableChange(changeId));
-                        }
+                        Log.Comment($"> XamlOptionalChanges test override: Enabling {changeId}");
+                        Verify.IsTrue(XamlOptionalChanges.EnableChange(changeId));
                     }
-                });
-            }
+                    else
+                    {
+                        Log.Comment($"> XamlOptionalChanges test override: Disabling {changeId}");
+                        Verify.IsTrue(XamlOptionalChanges.DisableChange(changeId));
+                    }
+                }
+
+                // XamlOptionalChanges for the test might have selected different styles. Load them if needed. Note that the
+                // styles are in XamlControlsResources, which selected a Source depending on the XamlOptionalChanges at the
+                // time and have already been loaded. We don't reevaluate the Source for the current XamlControlsResources,
+                // because updating a live dictionary calls InvalidateImplicitStyles, which walks the tree and triggers
+                // resource updates, which can cause resource not found errors while we're updating the dictionary. Instead
+                // we just insert a new instance of XamlControlsResources and throw the old one away. As an optimization,
+                // we'll check the Source of the new XCR aginst the existing XCR and only replace if they're different.
+                var mergedDicts = Application.Current.Resources.MergedDictionaries;
+                for (int i = 0; i < mergedDicts.Count; i++)
+                {
+                    if (mergedDicts[i] is XamlControlsResources)
+                    {
+                        var newXamlControlsResources = new XamlControlsResources();
+                        if (newXamlControlsResources.Source != mergedDicts[i].Source)
+                        {
+                            mergedDicts.RemoveAt(i);
+                            mergedDicts.Insert(i, newXamlControlsResources);
+                        }
+                        break;
+                    }
+                }
+            });
         }
 
         public Dictionary<XamlChangeId, bool> GetXamlOptionalChangesTestOverrides(TestContext testContext)
