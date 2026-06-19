@@ -964,8 +964,6 @@ protected:
 
 private:
 
-    wrl::ComPtr<ixp::IInputKeyboardSourceStatics> m_keyboardInputStatics;
-
     double  m_eFrequency;
     PerfMarkerType m_perfMarkerType;
     XINT32 m_perfCheckCompleted;

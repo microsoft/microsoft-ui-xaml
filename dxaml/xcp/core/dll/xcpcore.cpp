@@ -293,6 +293,7 @@ void ActivationFactoryCache::ResetCache()
     m_inputSystemCursorStatics.Reset();
     m_contentIslandStatics.Reset();
     m_inputFocusControllerStatics.Reset();
+    m_inputKeyboardSourceStatics.Reset();
     m_inputKeyboardSourceStatics2.Reset();
     m_inputPreTranslateKeyboardSourceStatics.Reset();
     m_inputPointerSourceStatics.Reset();
@@ -645,6 +646,20 @@ ixp::IInputFocusControllerStatics* ActivationFactoryCache::GetInputFocusControll
     }
 
     return m_inputFocusControllerStatics.Get();
+}
+
+ixp::IInputKeyboardSourceStatics* ActivationFactoryCache::GetInputKeyboardSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputKeyboardSourceStatics)
+    {
+        // InputKeyboardSource is already activated for the v2 interface.
+        wrl::ComPtr<ixp::IInputKeyboardSourceStatics2> keyboardSourceStatics2 = GetInputKeyboardSourceStatics2();
+        IFCFAILFAST(keyboardSourceStatics2.As(&m_inputKeyboardSourceStatics));
+    }
+
+    return m_inputKeyboardSourceStatics.Get();
 }
 
 ixp::IInputKeyboardSourceStatics2* ActivationFactoryCache::GetInputKeyboardSourceStatics2()
