@@ -25,11 +25,12 @@ Table of Contents
     - [4.2.3. Errors](#423-errors)
 - [5. API Details](#5-api-details)
 - [6. Appendix](#6-appendix)
-  - [6.1. Implementation notes](#61-implementation-notes)
-  - [6.2. Design rationale](#62-design-rationale)
-  - [6.3. Open questions](#63-open-questions)
-  - [6.4. FAQ](#64-faq)
-  - [6.5. Acknowledgements](#65-acknowledgements)
+  - [6.1. Release plan](#61-release-plan)
+  - [6.2. Implementation notes](#62-implementation-notes)
+  - [6.3. Design rationale](#63-design-rationale)
+  - [6.4. Open questions](#64-open-questions)
+  - [6.5. FAQ](#65-faq)
+  - [6.6. Acknowledgements](#66-acknowledgements)
 
 
 # 1. Background
@@ -146,8 +147,8 @@ A few things to notice:
 Rule of thumb: to size the **client** area in **DIPs**, set `Window.Width/Height`.
 For **physical pixels**, use `AppWindow.ResizeClient(...)` (client) or
 `AppWindow.Resize(...)` (the window rect). Reach for raw Win32 (`SetWindowPos` and
-friends) only when you need something the WinUI surfaces do not expose; mixing it
-with the XAML window means you own the DIP/pixel conversion yourself.
+related) only when you need something the WinUI surfaces do not expose; mixing it
+with the XAML window means you must handle the DIP/pixel conversion yourself.
 
 ### 2.1.1. How the AppWindow presenter affects sizing
 
@@ -534,44 +535,20 @@ For all errors the runtime calls RoOriginateError with a specific error message 
 
 # 5. API Details
 
-Initially the API will be **experimental**:
 ```c# (but really MIDL3)
-// For experimental release
 namespace Microsoft.UI.Xaml
 {
+  [contractversion(12)]
+  apicontract WinUIContract{};
+
   [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
   [webhosthidden]
   [contentproperty("Content")]
-  unsealed runtimeclass Window // existing type
+  unsealed runtimeclass Window
   {
-    // ...existing APIs...
-
-    // New: 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]   // 12 is the contract version we're using for WASDK 3.0
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [feature(Feature_ExperimentalApi)]
     [interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
-    {
-      Double Width;
-      Double Height;
-    }
-  }
-}
-```
-
-We plan for this API to be made **stable**:
-```c# (but really MIDL3)
-// For stable release
-namespace Microsoft.UI.Xaml
-{
-  [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
-  [webhosthidden]
-  [contentproperty("Content")]
-  unsealed runtimeclass Window // existing type
-  {
-    // ...existing APIs...
-
-    // New: 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]   // 12 is the contract version we're using for WASDK 3.0
     {
       Double Width;
       Double Height;
@@ -584,7 +561,12 @@ namespace Microsoft.UI.Xaml
 
 _(This section will not be part of public docs)_
 
-## 6.1. Implementation notes
+## 6.1. Release plan
+
+We plan to make the API experimental in WinUI3 main.  We plan to later make it stable for the WinAppSDK 3.0
+release, and possibly service it to WinAppSDK 2.x.
+
+## 6.2. Implementation notes
 
 These are implementation details, not part of the public contract. They are
 here for posterity, not for the public docs.
@@ -615,7 +597,7 @@ where the setter returns an error.
 **UWP host.** The implementation will provide basic UWP support to keep
 existing UWP tests running.
 
-## 6.2. Design rationale
+## 6.3. Design rationale
 
 The big decision was **client area vs window rect** as the unit. WinUI picked
 client area so `Width`/`Height` round-trip with `Window.Bounds`, which already
@@ -623,10 +605,9 @@ ships as the client area. The alternative (the window rect, like WPF) would have
 two different units on one Window object. See the "Porting from WPF" section for
 the user-visible impact.
 
-## 6.3. Open questions
+## 6.4. Open questions
 
-
-## 6.4. FAQ
+## 6.5. FAQ
 
 These came up as questions during design.
 
@@ -649,7 +630,11 @@ It is out of scope for now, but we expect to come back to it soon.
 **Is there a "size to content" behavior, like setting WPF's `Width` to `NaN`?** No,
 that is out of scope. Setting `NaN` returns `E_INVALIDARG`.
 
-## 6.5. Acknowledgements
+**Is it required the DPI mode to be per-mon-v2?** The Width and Height properties are implemented
+by calling win32 functions that are virtualized for DPI mode for the underlying HWND, so they will
+honor the DPI mode just as those functions do.
+
+## 6.6. Acknowledgements
 
 This API is based on community contribution
 [microsoft/microsoft-ui-xaml#11052](https://github.com/microsoft/microsoft-ui-xaml/pull/11052)
