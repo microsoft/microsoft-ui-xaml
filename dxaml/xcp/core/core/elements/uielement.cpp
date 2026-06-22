@@ -3939,11 +3939,22 @@ CUIElement::Measure(XSIZEF availableSize)
 
     pLayoutManager->PushCurrentLayoutElement(this);
 
+    bool hasMaxWidth = false;
+
+    // lets check if the element has width bounds
+	if (this->OfTypeByIndex<KnownTypeIndex::FrameworkElement>())
+	{
+		CFrameworkElement* parent = static_cast<CFrameworkElement*>(this);
+		XFLOAT maxWidth = parent->m_pLayoutProperties->m_eMaxWidth;
+
+		hasMaxWidth = !DirectUI::FloatUtil::IsNaN(maxWidth);
+	}
+
     // remember whether we need to set this value back
     wasInNonClippingTree = pLayoutManager->GetIsInNonClippingTree();
-    // once entering a tree that is non-clipping, we don't get out of it
+    // once entering a tree that is non-clipping, we don't get out of it until there is a width bounds
     // remember this for down-stream
-    pLayoutManager->SetIsInNonClippingTree(GetIsNonClippingSubtree() || wasInNonClippingTree);
+    pLayoutManager->SetIsInNonClippingTree((GetIsNonClippingSubtree() || wasInNonClippingTree) && !hasMaxWidth);
 
     SetIsOnMeasureStack(TRUE);
     SetIsAncestorDirty(FALSE);
