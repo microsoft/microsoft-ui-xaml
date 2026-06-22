@@ -12,10 +12,9 @@ pr:
   autoCancel: true
   branches:
     include:
-    - feature/ado-test
-    - feature/test-ado-pr
     - main
     - winui3/main
+    - feature/*
   drafts: true
 
 name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
@@ -134,8 +133,10 @@ extends:
               }
 
               if ($env:BUILD_REASON -eq 'PullRequest') {
-                $allowedTargetBranches = @('feature/ado-test', 'feature/test-ado-pr', 'main', 'winui3/main', 'refs/heads/feature/ado-test', 'refs/heads/feature/test-ado-pr', 'refs/heads/main', 'refs/heads/winui3/main')
-                if ($allowedTargetBranches -notcontains $env:SYSTEM_PULLREQUEST_TARGETBRANCH) {
+                $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+                $allowedExactTargetBranches = @('main', 'winui3/main', 'refs/heads/main', 'refs/heads/winui3/main')
+                $isAllowedFeatureBranch = $targetBranch -like 'feature/*' -or $targetBranch -like 'refs/heads/feature/*'
+                if (($allowedExactTargetBranches -notcontains $targetBranch) -and -not $isAllowedFeatureBranch) {
                   throw "Unexpected GitHub PR target branch '$env:SYSTEM_PULLREQUEST_TARGETBRANCH'."
                 }
               }
