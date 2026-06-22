@@ -175,7 +175,7 @@ CWinFile::SetEndOfFile()
 //
 //  Synopsis:
 //      Attempts to map a range of bytes into memory and returns a pointer to
-//  the begining of the mapped range.
+//  the beginning of the mapped range.
 //
 //------------------------------------------------------------------------
 

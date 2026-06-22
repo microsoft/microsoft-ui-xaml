@@ -237,7 +237,7 @@ CPointCollection::GetItemWithAddRef(_In_ UINT32 nIndex)
 //  Method:   IndexOf
 //
 //  Synopsis:
-//      Retreive the index of a value in the collection.
+//      Retrieve the index of a value in the collection.
 //
 //------------------------------------------------------------------------
 _Check_return_

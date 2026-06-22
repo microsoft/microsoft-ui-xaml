@@ -87,7 +87,7 @@ The main difference between this Pipeline and the others is that this Pipeline p
 
 ### WinUI-PGOInstrument
 WinUI-PGOInstrument
-This Pipeline runs our PGO instrumentation. See [perf-pgo.md](../perf-pgo.md) for details.
+This Pipeline runs our PGO instrumentation. See [perf-pgo.md](../performance/perf-pgo.md) for details.
 
 
 ## Common Pipeline Stages

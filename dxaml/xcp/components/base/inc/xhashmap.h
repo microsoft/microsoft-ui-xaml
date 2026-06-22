@@ -62,7 +62,7 @@
     { XWINRT_UNWIND_WITH(failure); }
 
 // PURPOSE
-//  propogate an existing failure
+//  propagate an existing failure
 #define XPROPOGATE( failure )\
     XWINRT_UNWIND_WITH(failure)
 

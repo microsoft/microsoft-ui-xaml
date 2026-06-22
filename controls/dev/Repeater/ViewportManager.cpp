@@ -673,7 +673,7 @@ winrt::UIElement ViewportManager::GetImmediateChildOfRepeater(winrt::UIElement c
 
     if (!parent)
     {
-        throw winrt::hresult_error(E_FAIL, L"OnBringIntoViewRequested called with args.target element not under the ItemsRepeater that recieved the call");
+        throw winrt::hresult_error(E_FAIL, L"OnBringIntoViewRequested called with args.target element not under the ItemsRepeater that received the call");
     }
 
     return targetChild;

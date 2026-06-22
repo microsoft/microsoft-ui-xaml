@@ -163,7 +163,7 @@ Represents the Xaml framework running on the thread, and allows you to control i
 ### Remarks
 Before initializing a **WindowsXamlManager**, a **DispatcherQueue** must already be running on the current thread.
 
-You can call **WindowsXamlManager.InitializeForCurrentThread** to ensure the the Xaml framework is running on the current thread.
+You can call **WindowsXamlManager.InitializeForCurrentThread** to ensure the Xaml framework is running on the current thread.
 For more information about the Xaml framework's lifetime, see "Conceptual pages (How To)".
 
 ## XamlSourceFocusNavigationRequest class

@@ -84,7 +84,7 @@ This requires that our lookup algorithm check the most verbose state name (i.e. 
 This requires that if at the end of the lookup algorithm we have not found a segment of the Lottie animation to play then we should not fail. I am proposing that we do not want to leave the animation in its current state, that might be the end of a pressed animation for example.  Instead I propose we cut to position 0.0 of the Lottie file, which will behave as the default position.
 
 ##### 3) Allow the designer to specify multiple transitions with the same marker if they have the same animation 
-There are three use cases I see here. First the designer doesn't care about one of the orthogonal state groups. In the proposed states maybe they only have animations for the ToggleSates, not the CommonStates.The designer should not have to specify NormalOn -> NormalOff, On -> Off should be sufficient. On->Off would also cover HoverOn->HoverOff PressedOn->PressedOff and DisabledOn->DisabledOff if those weren't seperately specified.
+There are three use cases I see here. First the designer doesn't care about one of the orthogonal state groups. In the proposed states maybe they only have animations for the ToggleStates, not the CommonStates.The designer should not have to specify NormalOn -> NormalOff, On -> Off should be sufficient. On->Off would also cover HoverOn->HoverOff PressedOn->PressedOff and DisabledOn->DisabledOff if those weren't separately specified.
 
 Second, the designer wants state transitions to play in reverse to undo a transition. For example if the designer only specifies NormalOn->NormalOff then in the NormalOff->NormalOn transition we would play the NormalOn->NormalOff in reverse.
 

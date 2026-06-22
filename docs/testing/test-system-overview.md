@@ -28,7 +28,7 @@ In our repo we have two main Pipelines:
 * WinUI-Xaml-Nightly: This runs nightly to produce a build of WinUI.
 * WinUI-Xaml-Official: This produces the official builds of WinUI that may end up shipping publicly.
 
-See [build-pipelines.md](build-pipelines.md) for more info on the build Pipelines that are used in this project.
+See [build-pipelines.md](../publishing/build-pipelines.md) for more info on the build Pipelines that are used in this project.
 
 ## Build Infrastructure and Agent Pools
 

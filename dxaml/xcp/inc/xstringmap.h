@@ -758,7 +758,7 @@ protected:
         // of chCurrent - chLow not being within chHigh - chLow.  PREFAST doesn't
         // realize that ppPackedNodes was allocated using the lowest and highest
         // chCurrents of the same set of nodes as we are iterating over here. (see
-        // the while() loop at the begining of the function.
+        // the while() loop at the beginning of the function.
         #pragma warning (push)
         #pragma warning (disable : 26010 26053)
 

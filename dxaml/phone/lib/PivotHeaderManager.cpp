@@ -361,7 +361,7 @@ PivotHeaderManager::SetSelectedIndex(_In_ INT32 idx, _In_ PivotAnimationDirectio
     // NOTE: Updating the ghost item invalidates the arrange of
     // PivotHeaderPanel by calling SyncParallax, which will in
     // turn cause a parametric curve update and
-    // propogate the new index down.
+    // propagate the new index down.
     IFC(UpdateGhostItem());
     IFC(UpdateItemsStates());
 
