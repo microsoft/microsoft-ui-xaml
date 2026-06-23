@@ -1,0 +1,154 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+# GitHub-facing wrapper for Azure Pipelines PR validation.
+#
+# This file is intentionally separate from the internal Azure Repos PR pipeline
+# so the existing ADO PR validation path can remain unchanged.
+
+trigger: none
+
+pr:
+  autoCancel: true
+  branches:
+    include:
+    - main
+    - winui3/main
+    - feature/*
+  drafts: true
+
+name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
+
+parameters:
+- name: runFullValidation
+  displayName: "Run full WinUI PR validation stages"
+  type: boolean
+  default: true
+- name: MUXFinalRelease
+  type: boolean
+  default: false
+- name: runArm64Tests
+  displayName: "Enable running tests on arm64"
+  type: boolean
+  default: true
+- name: runStaticAnalysis
+  displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
+  type: boolean
+  default: false
+
+variables:
+- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: build\AzurePipelinesTemplates\WinUI-BuildVariables.yml@WinUIInternal
+- group: WinUI-Variable-Library
+- name: WindowsContainerImage
+  value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: WinUIInternal
+      type: git
+      name: WinUI/microsoft-ui-xaml-lift
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+    - repository: WindowsAppSDKVersionConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked'
+    git:
+      submodules: false
+    globalsdl:
+      tsa:
+        enabled: false
+      enableXFGCheck: false
+      codeql:
+        tsandjs:
+          enabled: true
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: true
+      prefast:
+        ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+          enabled: true
+        ${{ else }}:
+          enabled: false
+        break: true
+      apiscan:
+        enabled: false
+        break: false
+      binskim:
+        enabled: true
+        analyzeTargetGlob: $(BinskimExclusion)
+        break: true
+
+    stages:
+    - stage: ValidateGitHubPrContext
+      displayName: Validate GitHub PR context
+      jobs:
+      - job: ValidateGitHubPrContext
+        displayName: Validate GitHub PR context
+        pool:
+          type: windows
+        variables:
+          ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+        steps:
+        - checkout: self
+          submodules: false
+          fetchDepth: 1
+          fetchTags: false
+
+        - task: PowerShell@2
+          displayName: Validate GitHub PR context
+          inputs:
+            targetType: inline
+            script: |
+              $ErrorActionPreference = 'Stop'
+
+              Write-Host "Build.Reason=$env:BUILD_REASON"
+              Write-Host "Build.Repository.Provider=$env:BUILD_REPOSITORY_PROVIDER"
+              Write-Host "Build.Repository.Name=$env:BUILD_REPOSITORY_NAME"
+              Write-Host "Build.SourceBranch=$env:BUILD_SOURCEBRANCH"
+              Write-Host "System.PullRequest.TargetBranch=$env:SYSTEM_PULLREQUEST_TARGETBRANCH"
+
+              if ($env:BUILD_REPOSITORY_PROVIDER -notin @('GitHub', 'GitHubEnterprise')) {
+                throw "Expected a GitHub-backed Azure Pipelines run, but Build.Repository.Provider was '$env:BUILD_REPOSITORY_PROVIDER'."
+              }
+
+              if ($env:BUILD_REASON -eq 'PullRequest') {
+                $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
+                $allowedExactTargetBranches = @('main', 'winui3/main', 'refs/heads/main', 'refs/heads/winui3/main')
+                $isAllowedFeatureBranch = $targetBranch -like 'feature/*' -or $targetBranch -like 'refs/heads/feature/*'
+                if (($allowedExactTargetBranches -notcontains $targetBranch) -and -not $isAllowedFeatureBranch) {
+                  throw "Unexpected GitHub PR target branch '$env:SYSTEM_PULLREQUEST_TARGETBRANCH'."
+                }
+              }
+
+              Write-Host "GitHub PR context validation completed."
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: GitHubPR
+          buildScenarioApps: false
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+          pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
+          buildProductOnly: true
