@@ -24,7 +24,7 @@ shift
 goto :parseArgs
 
 :main
-if EXIST "%RepoRoot%\pack.cmd" (
+if EXIST "%_root%pack.cmd" (
     call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration% -InstallPackage
 ) else (
     call %_root%\tools\PowershellWrapper.cmd %_root%\build\nuspecs\build-nupkg.ps1 -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec %_versionOption% -PackageRoot %_root%BuildOutput\packaging\%Configuration% -InstallPackage -UseDependencyOverrides
