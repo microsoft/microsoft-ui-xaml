@@ -52,7 +52,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/main
+      ref: refs/heads/user/hmishra/static-tests-restore-clean
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -152,3 +152,12 @@ extends:
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
+        parameters:
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          enableForGitHubValidation: true
+          checkoutInternalStaticTestSources: true
+          staticTestSourceRoot: '$(Pipeline.Workspace)\WinUIInternal'
+          nugetConfigPath: '$(Pipeline.Workspace)\WinUIInternal\nuget.config'
