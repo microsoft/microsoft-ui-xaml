@@ -70,7 +70,6 @@
     <!-- Force our build version to match the package version -->
     <WinUIVersion Condition="'$(WinUIVersion)'==''">3.0.0-dev</WinUIVersion>
     <WindowsAppSdkPackageConfig Condition="'$(WindowsAppSdkPackageConfig)'==''">$(Configuration)</WindowsAppSdkPackageConfig>
-    <WindowsAppSdkPackageVersion Condition="'$(WindowsAppSdkPackageVersion)'==''">999.0.0-mock-$(WinUIVersion)-$(BuildPlatform)-$(WindowsAppSdkPackageConfig)</WindowsAppSdkPackageVersion>
     <MicrosoftVisualStudioProjectSystemVersion>15.0.737</MicrosoftVisualStudioProjectSystemVersion>
     <WindowsAppSdkTargetPlatformVersion>10.0.17763.0</WindowsAppSdkTargetPlatformVersion>
     <CurrentLiftedIXPTargetPlatformVersion>$(WindowsAppSdkTargetPlatformVersion)</CurrentLiftedIXPTargetPlatformVersion>
@@ -95,7 +94,7 @@
     <WindowSdkMSIXVersion>1.7.251221100</WindowSdkMSIXVersion>
     <ColorCodeVersion>2.0.13</ColorCodeVersion>
     <CommunityToolkitWinUIVersion>8.0.230907</CommunityToolkitWinUIVersion>
-    <GraphicsWin2DVersion>1.3.2</GraphicsWin2DVersion>
+    <GraphicsWin2DVersion>1.4.0</GraphicsWin2DVersion>
     <NewtonsoftJsonVersion>13.0.2</NewtonsoftJsonVersion>
     <SystemTextJsonVersion>6.0.10</SystemTextJsonVersion>
     <MicrosoftTestNetSdkVersion>17.4.0</MicrosoftTestNetSdkVersion>
