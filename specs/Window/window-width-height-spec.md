@@ -8,8 +8,8 @@ Table of Contents
 - [2. Conceptual pages (How To)](#2-conceptual-pages-how-to)
   - [2.1. Three sets of APIs size the same window: `Window`, `AppWindow`, and Win32](#21-three-sets-of-apis-size-the-same-window-window-appwindow-and-win32)
     - [2.1.1. How the AppWindow presenter affects sizing](#211-how-the-appwindow-presenter-affects-sizing)
-  - [2.2. Where Width/Height equals Bounds and where it does not](#22-where-widthheight-equals-bounds-and-where-it-does-not)
-  - [2.3. WPF Comparison](#23-wpf-comparison)
+    - [2.1.2. How the Window sizing works with Window.ExtendsContentIntoTitleBar](#212-how-the-window-sizing-works-with-windowextendscontentintotitlebar)
+  - [2.2. WPF Comparison](#22-wpf-comparison)
 - [3. Examples](#3-examples)
   - [3.1. Set Initial Window Size in XAML Markup](#31-set-initial-window-size-in-xaml-markup)
   - [3.2. Set Initial Window Size with x:Bind](#32-set-initial-window-size-with-xbind)
@@ -66,23 +66,28 @@ promoted to stable.
 
 _(This is conceptual documentation that will go to docs.microsoft.com "how to" page)_
 
-WinUI Window already has a read-only
-[`Bounds`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.window.bounds)
-property that returns the **client area** of the window in DIPs. The 
-`Width` and `Height` properties round out that surface:
+`Width` and `Height` get or set the size of the window's client area (in DIPs) in its normal,
+restored state.  This is the size it returns to when it isn't maximized, minimized, or has a special
+presenter (more detail below).
 
-- The getters return the **client area** width and height in DIPs. In the
-  Normal, Fullscreen, and CompactOverlay states this matches `Bounds.Width` /
-  `Bounds.Height`. In the Maximized or Minimized states the getter returns the
-  **restore** size, the size the window will have when it goes back to Normal, so
-  that `Width`/`Height` round-trip with the setter in those states. (Fullscreen
-  and CompactOverlay return an error from the setter; see below.)
-- The setters change the **client area** size in DIPs.
+These properties represent the client area of the window, in DIPs.  They match the Win32 notion of
+"client rect" except that they correct for the window's DPI.  This client area is the same area your window's
+content is hosted, so generally when the window is in a normal state, `Window.Width` equals `Window.Content.ActualWidth`
+(and same for height).
+
+In the following conditions, setting the `Width` or `Height` property won't resize the window immediately:
+- When `Window.Activate` has not been called to show the window
+- When the window is maximized or minimized
+- When the `Window.AppWindow.Presenter` object is `FullScreen` or `CompactOverlay`
+
+In these cases, the new size is remembered for later as the "restore size".  The runtime resizes the window
+to the new size when the above conditions become false.  The getters return the "restore size" you set,
+so they will not always return the true "live size" of the window.
 
 You can set the Width and Height properties in XAML markup and in code-behind.
 
 If you need the current client-area size for layout, use `Bounds` -- it always
-reflects the live size, even when the window is maximized.
+reflects the live size, except when the window is minimized.
 
 Note you can use x:bind (`{x:Bind ...}`} bindings to set the Width/Height properties, but you CAN'T use classic data binding
 (`{Binding ...}`) to set them.  This is because the Window type is not a FrameworkElement.
@@ -116,10 +121,10 @@ Here is every sizing API across the three layers, side by side:
 
 | API                                         | Layer         | Unit         | Measures                  | Read / write    | Notes                              |
 | ------------------------------------------- | ------------- | ------------ | ------------------------- | --------------- | ---------------------------------- |
-| `Window.Width` / `Height`                   | `Xaml.Window` | DIPs         | **Client** area           | get **and** set | Restore size when Max/Min          |
-| `Window.Bounds`                             | `Xaml.Window` | DIPs         | **Client** area           | get only        | Always the live size               |
-| `AppWindow.ClientSize`                      | `AppWindow`   | Physical px  | **Client** area           | get only        | Always the live size               |
-| `AppWindow.Size`                            | `AppWindow`   | Physical px  | **Window** rect           | get only        | Always the live size               |
+| `Window.Width` / `Height`                   | `Xaml.Window` | DIPs         | **Client** area           | get **and** set | Restore size when in normal state  |
+| `Window.Bounds`                             | `Xaml.Window` | DIPs         | **Client** area           | get only        | Live size                          |
+| `AppWindow.ClientSize`                      | `AppWindow`   | Physical px  | **Client** area           | get only        | Live size                          |
+| `AppWindow.Size`                            | `AppWindow`   | Physical px  | **Window** rect           | get only        | Live size                          |
 | `AppWindow.ResizeClient(sz)`                | `AppWindow`   | Physical px  | **Client** area           | set (method)    | Acts on the live window            |
 | `AppWindow.Resize(sz)`                      | `AppWindow`   | Physical px  | **Window** rect           | set (method)    | Acts on the live window            |
 | `GetClientRect(hwnd, &r)`                   | Win32         | Physical px  | **Client** area           | get only        | Live size; origin is (0,0)         |
@@ -136,10 +141,12 @@ A few things to notice:
   `GetWindowRect`, and `SetWindowPos` / `MoveWindow` measure the **window rect**
   (caption and borders included).
 - **Live vs restore.** Almost every API reports the **live** window. The two that
-  deal in the **restore** size are `Window.Width/Height` (in the Max/Min states)
-  and Win32 `Get/SetWindowPlacement` (its `rcNormalPosition`). That is not a
-  coincidence: the `Width/Height` getter and setter are built on exactly that
-  placement rect.
+  deal in the **restore** size are `Window.Width/Height` (in any state other than
+  Normal) and Win32 `Get/SetWindowPlacement` (its `rcNormalPosition`). That is
+  not a coincidence: the `Width/Height` getter and setter are built on exactly
+  that placement rect.
+- **Minimized state.** The APIs that operate with "live size" use "restore size" when
+  then window is minimized (rather than returning the size "0,0")
 - **Read vs write.** `Window.Width/Height` is the only single member you both read
   and write. `AppWindow` splits it (a get-only property plus a separate method),
   and Win32 splits it across different functions too.
@@ -154,68 +161,53 @@ with the XAML window means you must handle the DIP/pixel conversion yourself.
 
 The same sizing APIs behave differently depending on which `AppWindowPresenter`
 the window is using. You pick a presenter with `AppWindow.SetPresenter(...)`.
-The dividing line is simple: **the default `Overlapped` presenter honors the
-setter; any non-default presenter (`FullScreen`, `CompactOverlay`) returns an
-error.** The `Overlapped` presenter also has three show states
-(Restored, Maximized, Minimized) that each behave on their own. Here is what the
-`Window.Width/Height` setter and getter do in each:
+
+When your window is using the default `Overlapped` presenter, it behaves like a
+"normal" window, and unless it's maximized or minimized, it's resized immediately
+when you set Width or Height.
+
+If/when your app sets a non-default presenter (`FullScreen`, `CompactOverlay`) on your
+window, that window is now considered to be in a special presenter mode, and any changes
+you make to `Width` and `Height` during this time won't be honored until you set the AppWindow's
+presenter back to `Overlapped`.
 
 | Presenter (`AppWindowPresenterKind`) | What it is                                   | `Window.Width/Height` **setter**                       | `Window.Width/Height` **getter** returns |
 | ------------------------------------ | -------------------------------------------- | ------------------------------------------------------ | ---------------------------------------- |
 | `Overlapped` - Restored (Normal)     | Standard window: caption + borders, resizable | Resizes the **live** window now                       | Live client size                         |
 | `Overlapped` - Maximized             | Fills the monitor work area                  | Updates the **restore** size only; live window unchanged | Restore size (not the live maximized size) |
 | `Overlapped` - Minimized             | Sits in the taskbar                          | Updates the **restore** size only; window stays minimized | Restore size                          |
-| `FullScreen`                         | Borderless, covers the whole monitor         | Returns `E_NOT_VALID_STATE`                            | Live fullscreen size                     |
-| `CompactOverlay`                     | Small always-on-top picture-in-picture window | Returns `E_NOT_VALID_STATE`                           | Live client size                         |
+| `FullScreen`                         | Borderless, covers the whole monitor         | Updates the **restore** size only; live window unchanged | Restore size                     |
+| `CompactOverlay`                     | Small always-on-top picture-in-picture window | Updates the **restore** size only; live window unchanged | Restore size                         |
 
-Notes:
-
-- **`Overlapped`** is the default presenter and the only one that honors the
-  setter. It is also the only one with multiple show states. `Restored` is the
-  "Normal" case where `Width == Bounds.Width`. Maximized and Minimized are where
-  the setter/getter switch to the *restore* size instead of the live size.
-- **`FullScreen` and `CompactOverlay`** are the non-default presenters. The
-  setter returns `E_NOT_VALID_STATE` for both. The getter reports the live size.
-
-For the two non-default presenters, this error behavior differs from what
-the lower-level `AppWindow.ResizeClient(...)` does:
-
-| Presenter        | `Window.Width/Height` setter | `AppWindow.ResizeClient(...)`            |
-| ---------------- | ---------------------------- | ---------------------------------------- |
-| `FullScreen`     | Returns `E_NOT_VALID_STATE`  | Resizes the client area                  |
-| `CompactOverlay` | Returns `E_NOT_VALID_STATE`  | Resizes the client area                  |
-
-`Width`/`Height` fails loudly so the app knows the call had no effect, while
-`ResizeClient` actually resizes in both cases.
 If you need to resize a window in one of these presenters, drop down to
 `AppWindow.ResizeClient(...)` (physical pixels).
 
-## 2.2. Where Width/Height equals Bounds and where it does not
+### 2.1.2. How the Window sizing works with Window.ExtendsContentIntoTitleBar
 
-`Window.Bounds` always reports the **live** client area. `Width`/`Height`
-diverge from it in the Maximized and Minimized states because the getters
-return the restore size instead:
+When you set `Window.ExtendsContentIntoTitleBar` to `true`, your this tells your window you want to draw the window's
+TitleBar yourself.  This effectively shifts the client area of your window ~30 DIPs upward on the y-axis. (depending on
+system settings)
 
-| Window state | `Width`/`Height` returns | `Bounds.Width`/`Bounds.Height` returns | Same? |
-| ------------ | ------------------------ | -------------------------------------- | ----- |
-| Normal       | Live client size         | Live client size                       | Yes   |
-| Maximized    | **Restore** size         | Live maximized size                    | **No** |
-| Minimized    | **Restore** size         | Live minimized size                    | **No** |
-| Fullscreen   | Live fullscreen size     | Live fullscreen size                   | Yes   |
-| CompactOverlay | Live client size       | Live client size                       | Yes   |
+If you previously set the `Window.Height` property and then toggle the `Window.ExtendsContentIntoTitleBar` property,
+the runtime will honor the `Window.Height` value you set earlier and hold the value unchanged.  This means the physical
+size of the window will shrink slightly to account for the missing TitleBar area.  If you didn't set `Window.Height`,
+the window size will _not_ change when you toggle `ExtendsContentIntoTitleBar`.
 
-In short: the getter equals `Bounds` in Normal, Fullscreen, and CompactOverlay,
-but for different reasons. In **Normal** the setter actually drove the window to
-that size. In **Fullscreen** and **CompactOverlay** the setter returns an error,
-so the getter just reflects whatever live size the presenter chose. In the **Maximized**
-and **Minimized** states the getter instead returns the *restore* size, so
-`Width`/`Height` tell you what the window *will be* when restored while `Bounds`
-tells you what it *is right now*.
+This means the order you set these properties in doesn't matter:
 
-If you want to size by the window rect instead, you can still call
-`AppWindow.Resize(...)` (physical pixels, not DIPs; see the three-layers section above).
+```cs
+window.Height = 300;                      // Changes window height to 330px
 
-## 2.3. WPF Comparison
+window.ExtendsContentIntoTitleBar = true; // Changes window height to 300px
+```
+versus:
+```cs
+window.ExtendsContentIntoTitleBar = true; // Reduce window height by 30px
+
+window.Height = 300;                      // Changes window height to approx 300px
+```
+
+## 2.2. WPF Comparison
 
 WPF developers work with the WPF `Window.Width` and `Window.Height` properties. The
 WinUI properties are meant to feel familiar but they are **not identical**.
@@ -239,7 +231,7 @@ Here is a side-by-side breakdown of more WPF vs WinUI behavior:
 | `MinWidth` / `MaxWidth`   | Exists and is enforced                               | Not part of this spec (may follow later)        |
 | Behavior when Maximized   | Updates *restore* size; window stays maximized       | Updates *restore* size; window stays maximized  |
 | Behavior when Minimized   | Updates *restore* size; window stays minimized       | Updates *restore* size; window stays minimized  |
-| Behavior in non-default presenter | WPF has no built-in fullscreen/PiP modes     | Returns `E_NOT_VALID_STATE` in `FullScreen` and `CompactOverlay` |
+| Behavior in non-default presenter | WPF has no built-in fullscreen/PiP modes     | Updates *restore* size; window unaffected       |
 | Dependency property       | Yes; bindable                                        | Plain WinRT property; bindable only with x:Bind |
 
 # 3. Examples
@@ -359,11 +351,11 @@ pixels (DIPs, 1/96 inch).
 public double Width { get; set; }
 ```
 
-**Getter**: returns the current client-area width in DIPs. In the Normal,
-Fullscreen, and CompactOverlay states this equals `Window.Bounds.Width`. In the
-Maximized or Minimized state the getter returns the **restore** width, the width
-the window will have when it goes back to Normal, so the getter round-trips with
-the setter in those states.
+**Getter**: returns the current client-area width in DIPs. In the Normal
+state this equals `Window.Bounds.Width`. In the Maximized, Minimized,
+Fullscreen, or CompactOverlay state the getter returns the **restore** width,
+the width the window will have when it goes back to Normal, so the getter
+round-trips with the setter in those states.
 
 **Setter**: changes the window so its client area is `value` DIPs wide. The
 window's non-client chrome (caption, borders, and so on) gets added on top of
@@ -376,7 +368,8 @@ Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 
 These behaviors split by presenter. The default `Overlapped` presenter honors
 the setter and maps to Normal / Maximized / Minimized based on its show state.
-The non-default presenters, `FullScreen` and `CompactOverlay`, return an error.
+The non-default presenters, `FullScreen` and `CompactOverlay`, update the
+restore size without affecting the live window.
 
 - **Normal**: the window resizes right away to the requested client width.
   Position is preserved.
@@ -386,11 +379,11 @@ The non-default presenters, `FullScreen` and `CompactOverlay`, return an error.
 - **Minimized**: same as Maximized. The *restore* bounds get updated and the
   window stays minimized (it snaps to the new size when restored). The other
   axis of the restore bounds is preserved.
-- **Fullscreen** (via `AppWindowPresenterKind.FullScreen`): returns
-  `E_NOT_VALID_STATE`. The live window stays fullscreen.
+- **Fullscreen** (via `AppWindowPresenterKind.FullScreen`): updates the
+  *restore* bounds only; the live window stays fullscreen.
 - **CompactOverlay** (picture-in-picture, via
-  `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen, returns
-  `E_NOT_VALID_STATE`.
+  `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen. Updates the
+  *restore* bounds only; the live window is unchanged.
 
 ### 4.1.2. Remarks
 
@@ -412,8 +405,10 @@ the move.
 
 **Interaction with ExtendsContentIntoTitleBar.** Because `Width`/`Height` measure
 the client area, toggling `Window.ExtendsContentIntoTitleBar` changes what counts
-as client area, so the getter (and `Bounds`) can change even though the window
-rect did not; re-apply the setter if you need a specific size after toggling.
+as client area. If you previously set `Width` or `Height`, the runtime honors
+that value and holds it unchanged when you toggle `ExtendsContentIntoTitleBar`.
+If you didn't set `Width`/`Height`, the window size does not change when you
+toggle it.
 
 **XAML markup.** Width and Height are settable from code-behind AND from XAML on the `<Window>` object.
 
@@ -436,7 +431,6 @@ For all errors the runtime calls RoOriginateError with a specific error message 
 | `Double.NaN`                  | Returns `E_INVALIDARG`              |
 | `Double.PositiveInfinity`     | Returns `E_INVALIDARG`              |
 | `Double.NegativeInfinity`     | Returns `E_INVALIDARG`              |
-| Window in a non-default presenter | Returns `E_NOT_VALID_STATE` when the window uses the `FullScreen` or `CompactOverlay` presenter. |
 | `0`                           | Allowed. The window resizes so the client area has zero width. The OS may apply a minimum size. |
 | Very large value (> screen)   | Allowed. The OS clamps to its tracking-size maximum; the window grows as large as the OS allows. |
 
@@ -449,11 +443,11 @@ pixels (DIPs, 1/96 inch).
 public double Height { get; set; }
 ```
 
-**Getter**: returns the current client-area height in DIPs. In the Normal,
-Fullscreen, and CompactOverlay states this equals `Window.Bounds.Height`. In the
-Maximized or Minimized state the getter returns the **restore** height, the height
-the window will have when it goes back to Normal, so the getter round-trips with
-the setter in those states.
+**Getter**: returns the current client-area height in DIPs. In the Normal
+state this equals `Window.Bounds.Height`. In the Maximized, Minimized,
+Fullscreen, or CompactOverlay state the getter returns the **restore** height,
+the height the window will have when it goes back to Normal, so the getter
+round-trips with the setter in those states.
 
 **Setter**: changes the window so its client area is `value` DIPs tall. The
 window's non-client chrome (caption, borders, and so on) gets added on top of
@@ -466,7 +460,8 @@ Returns `E_INVALIDARG` for negative, `NaN`, or `Infinity` values.
 
 These behaviors split by presenter. The default `Overlapped` presenter honors
 the setter and maps to Normal / Maximized / Minimized based on its show state.
-The non-default presenters, `FullScreen` and `CompactOverlay`, return an error.
+The non-default presenters, `FullScreen` and `CompactOverlay`, update the
+restore size without affecting the live window.
 
 - **Normal**: the window resizes right away to the requested client height.
   Position is preserved.
@@ -476,11 +471,11 @@ The non-default presenters, `FullScreen` and `CompactOverlay`, return an error.
 - **Minimized**: same as Maximized. The *restore* bounds get updated and the
   window stays minimized (it snaps to the new size when restored). The other
   axis of the restore bounds is preserved.
-- **Fullscreen** (via `AppWindowPresenterKind.FullScreen`): returns
-  `E_NOT_VALID_STATE`. The live window stays fullscreen.
+- **Fullscreen** (via `AppWindowPresenterKind.FullScreen`): updates the
+  *restore* bounds only; the live window stays fullscreen.
 - **CompactOverlay** (picture-in-picture, via
-  `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen, returns
-  `E_NOT_VALID_STATE`.
+  `AppWindowPresenterKind.CompactOverlay`): same as Fullscreen. Updates the
+  *restore* bounds only; the live window is unchanged.
 
 ### 4.2.2. Remarks
 
@@ -502,8 +497,10 @@ the move.
 
 **Interaction with ExtendsContentIntoTitleBar.** Because `Width`/`Height` measure
 the client area, toggling `Window.ExtendsContentIntoTitleBar` changes what counts
-as client area, so the getter (and `Bounds`) can change even though the window
-rect did not; re-apply the setter if you need a specific size after toggling.
+as client area. If you previously set `Width` or `Height`, the runtime honors
+that value and holds it unchanged when you toggle `ExtendsContentIntoTitleBar`.
+If you didn't set `Width`/`Height`, the window size does not change when you
+toggle it.
 Height is the axis most affected, since the caption region is at the top of the
 window.
 
@@ -529,7 +526,6 @@ For all errors the runtime calls RoOriginateError with a specific error message 
 | `Double.NaN`                  | Returns `E_INVALIDARG`               |
 | `Double.PositiveInfinity`     | Returns `E_INVALIDARG`               |
 | `Double.NegativeInfinity`     | Returns `E_INVALIDARG`               |
-| Window in a non-default presenter | Returns `E_NOT_VALID_STATE` when the window uses the `FullScreen` or `CompactOverlay` presenter. |
 | `0`                           | Allowed. The window resizes so the client area has zero height; the OS may apply a minimum size. |
 | Very large value (> screen)   | Allowed. The OS clamps to its tracking-size maximum; the window grows as tall as the OS allows. |
 
@@ -574,9 +570,7 @@ here for posterity, not for the public docs.
 **Applying the size.** The setter computes the matching *window rect*
 by adding the window's non-client chrome to the requested client size, then
 applies it with `SetWindowPos` (Normal state) or by updating `rcNormalPosition`
-via `SetWindowPlacement` (Maximized or Minimized). A non-default presenter
-(`FullScreen` or `CompactOverlay`) returns `E_NOT_VALID_STATE`; the setter checks
-the presenter kind up front and returns the error before touching the window.
+via `SetWindowPlacement` (Maximized, Minimized, or a non-default presenter).
 
 **Where the chrome comes from.** For desktop (HWND) windows in Normal state, the
 chrome is taken from the window's *observed* window-rect-minus-client delta rather than
@@ -587,12 +581,11 @@ calculation is used instead, with a correction that zeros out the top chrome whe
 `ExtendsContentIntoTitleBar` is active.
 
 **Reading the size back.** The getter returns client-area size in DIPs. In the
-Normal, Fullscreen, and CompactOverlay states it reads from `Window.Bounds`. In
-the Maximized or Minimized state it computes the restore client size from the
+Normal state it reads from `Window.Bounds`. In the Maximized, Minimized,
+Fullscreen, or CompactOverlay state it computes the restore client size from the
 `rcNormalPosition` stored in `WINDOWPLACEMENT`, subtracting the same non-client
 chrome and DPI scale the setter used. So the getter/setter round-trip in every
-state except the non-default presenters (`FullScreen` and `CompactOverlay`),
-where the setter returns an error.
+state.
 
 **UWP host.** The implementation will provide basic UWP support to keep
 existing UWP tests running.
