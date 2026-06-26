@@ -45,17 +45,22 @@ preserve backward compatibility.  These changes might improve performance, fix
 a long-standing bug, or align behavior with an updated specification.  Each
 change is identified by a [XamlChangeId](#xamlchangeid-enum) value.
 
-You enable (or disable) changes through the static
-[XamlOptionalChanges](#xamloptionalchanges-class) methods **before** starting
-XAML.  This means before calling `Application.Start()` (if WinUI 3 app) or
+Changes are enabled (or disabled) by calling the static
+[XamlOptionalChanges](#xamloptionalchanges-class) methods **before** XAML
+starts.  This means before `Application.Start()` (if a WinUI 3 app) or
 `WindowsXamlManager.InitializeForCurrentThread()` (apps just using XAML
-islands).
+islands) runs.  There are two ways to make those calls happen:
 
-WinUI apps depending on the XAML-generated main function should define
-`DISABLE_XAML_GENERATED_MAIN` project-wide.  You can then write your own main
-function where these API functions can be called _before_ calling
-`Microsoft.UI.Xaml.Application.Start` or
-`Microsoft.UI.Xaml.Hosting.WindowsXamlManager.InitializeForCurrentThread`.
+* **[Approach 1 — MSBuild properties (recommended)](#approach-1--msbuild-properties-recommended):**
+  List the changes you want in your project file.  The XAML compiler emits the
+  `EnableChange` / `DisableChange` calls for you, in the correct place inside the
+  generated entry point, before XAML is initialized.  No custom `Main` required.
+* **[Approach 2 — Custom entry point (advanced)](#approach-2--custom-entry-point-advanced):**
+  Define `DISABLE_XAML_GENERATED_MAIN` project-wide and write your own entry
+  point, calling the API _before_
+  `Microsoft.UI.Xaml.Application.Start` or
+  `Microsoft.UI.Xaml.Hosting.WindowsXamlManager.InitializeForCurrentThread`.
+  Use this only when you need full control over your entry point.
 
 ### The one rule
 
@@ -95,7 +100,59 @@ to freeze the state even earlier (for example, library authors who
 want to guarantee no downstream code mutates state after their
 initialization logic).
 
-### Example: WinUI 3 packaged / unpackaged app
+### Approach 1 — MSBuild properties (recommended)
+
+The simplest way to opt in is to declare the changes in your project file.  The
+XAML compiler reads two MSBuild properties and generates the corresponding
+`EnableChange` / `DisableChange` calls at the top of the generated entry point
+(`Main` for C#, `wWinMain` for C++/WinRT), before `Application.Start()` runs:
+
+| Property                       | Description                                                   |
+|--------------------------------|----------------------------------------------------------|
+| `EnabledXamlOptionalChanges`   | Comma-delimited list of changes to **enable**.           |
+| `DisabledXamlOptionalChanges`  | Comma-delimited list of changes to **disable**.          |
+
+Each list element is passed verbatim to the generated call.  You can use either
+the friendly `XamlChangeId` enum name or its numeric tracking ID.
+
+``` xml
+<!-- MyApp.csproj (C#) or MyApp.vcxproj (C++/WinRT) -->
+<PropertyGroup>
+  <!-- Enable one or more changes (comma-delimited). -->
+  <EnabledXamlOptionalChanges>Perf2026</EnabledXamlOptionalChanges>
+
+  <!-- Optionally, explicitly disable changes that are default-on. -->
+  <DisabledXamlOptionalChanges>SomeOtherFix</DisabledXamlOptionalChanges>
+</PropertyGroup>
+```
+
+With the properties above, the C# compiler generates roughly:
+
+``` csharp
+// Generated Main (simplified)
+static void Main(string[] args)
+{
+    XamlOptionalChanges.EnableChange(XamlChangeId.Perf2026);
+    XamlOptionalChanges.DisableChange(XamlChangeId.SomeOtherFix);
+
+    Application.Start((p) => { /* ... */ });
+}
+```
+
+### Approach 2 — Custom entry point (advanced)
+
+If you need full control over your entry point, define
+`DISABLE_XAML_GENERATED_MAIN` project-wide and write your own `Main` /
+`wWinMain`, calling the API _before_ XAML initialization.
+
+> **Note:** Defining `DISABLE_XAML_GENERATED_MAIN` no longer deletes the generated
+> entry point — it **renames** it (`XamlGeneratedProgram.XamlGeneratedMain` in
+> C#, `wXamlGeneratedMain` in C++/WinRT) so your custom entry point can still
+> delegate to it if desired.  Any optional-change calls produced by
+> [Approach 1](#approach-1--msbuild-properties-recommended) remain inside that
+> renamed generated body.
+
+#### Example: WinUI 3 packaged / unpackaged app
 
 ``` csharp
 // Program.cs
@@ -120,7 +177,7 @@ static class Program
 }
 ```
 
-### Example: XAML Island (C++ Win32) app
+#### Example: XAML Island (C++ Win32) app
 
 ``` cpp
 // App.xaml.h
