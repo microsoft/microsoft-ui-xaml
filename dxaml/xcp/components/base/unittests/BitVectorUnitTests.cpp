@@ -322,7 +322,7 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         containers::bit_vector v(maxCount);
 
         v.set(0, true);
-        v.set(maxCount - 2, true);
+        v.set(static_cast<size_t>(maxCount) - 2, true); // PREfast C26451 - widen before arithmetic
 
         for (int i = 0; i < maxCount - 2; ++i)
         {

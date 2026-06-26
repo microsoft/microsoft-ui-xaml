@@ -1442,7 +1442,7 @@ WindowHelper::StopMockDCompDetours()
 //----------------------------------------------------------------------------
 HRESULT
 WindowHelper::get_MockDCompDevice(
-    _Outptr_ mdc::IMockDCompDevice **ppMockDCompDevice
+    _Outptr_result_maybenull_ mdc::IMockDCompDevice **ppMockDCompDevice  // null when no mock device exists
     )
 {
     COM_START

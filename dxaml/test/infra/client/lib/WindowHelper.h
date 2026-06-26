@@ -49,7 +49,7 @@ namespace Private { namespace Infrastructure {
         IFACEMETHOD(DetachMockDComp)() override;
         IFACEMETHOD(StopMockDCompDetours)() override;
         IFACEMETHOD(get_MockDCompDevice)(
-            _Outptr_ mdc::IMockDCompDevice **ppMockDCompDevice
+            _Outptr_result_maybenull_ mdc::IMockDCompDevice **ppMockDCompDevice  // null when no mock device exists
             ) override;
         IFACEMETHOD(SimulateDeviceLost)() override;
         IFACEMETHOD(ResetDeviceAndVisuals)() override;

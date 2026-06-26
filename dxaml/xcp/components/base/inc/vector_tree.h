@@ -593,8 +593,8 @@ namespace containers { namespace detail {
 
         struct insertion_info
         {
-            const_iterator pos;
-            bool allowed;
+            const_iterator pos{};       // PREfast C26495 - initialize members
+            bool allowed = false;
         };
 
         // insertion_info carries a const_iterator, but

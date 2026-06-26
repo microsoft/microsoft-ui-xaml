@@ -53,7 +53,7 @@ public:
     _Check_return_ HRESULT GetManipulatedElement(
         _In_opt_ CDependencyObject* pPointedElement,
         _In_opt_ CUIElement* pChildElement,
-        _Outptr_ CUIElement** ppManipulatedElement) const;
+        _Outptr_result_maybenull_ CUIElement** ppManipulatedElement) const;  // null on success when the owning UIElement weakref is dead
 
     // Called to retrieve information about the manipulated element's viewport
     _Check_return_ HRESULT GetManipulationViewport(

@@ -869,7 +869,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::InitHashTable(_In_ UINT nBins, _In_ 
 
     if( bAllocNow )
     {
-        m_ppBins = new (std::nothrow) CNode*[nBins];
+        m_ppBins = new (std::nothrow) CNode*[static_cast<size_t>(nBins)];   // PREfast C26451 - widen count before the allocation-size multiply
         if( m_ppBins == NULL )
         {
             XRETURN(false);
@@ -1214,7 +1214,7 @@ HRESULT XHashMap< K, V, KTraits, VTraits >::Rehash(_In_ UINT nBins)
         XRETURN0();
     }
 
-    ppBins = new (std::nothrow) CNode*[nBins];
+    ppBins = new (std::nothrow) CNode*[static_cast<size_t>(nBins)];   // PREfast C26451 - widen count before the allocation-size multiply
     if (ppBins == NULL)
     {
 

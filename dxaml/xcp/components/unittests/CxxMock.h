@@ -81,7 +81,7 @@ public:
             {
                 ReportError("Out of Memory");
             } else {
-                memset(aT + m_nAllocSize, 0, sizeof(T) * (nNewAllocSize - m_nAllocSize));
+                memset(aT + m_nAllocSize, 0, (static_cast<size_t>(nNewAllocSize) - m_nAllocSize) * sizeof(T)); // PREfast C26451 - widen an operand before the subtraction so the arithmetic is done in 64-bit
 
                 m_nAllocSize = nNewAllocSize;
                 m_aT = aT;

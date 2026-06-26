@@ -105,7 +105,7 @@ void GestureConfigurationBuilderUnitTests::VerifyGestureConfigurationBuilderForI
 
 void GestureConfigurationBuilderUnitTests::VerifyGestureConfigurationBuilderForInteractionConfigPartial()
 {
-    INTERACTION_CONTEXT_CONFIGURATION configurationICM[4];
+    INTERACTION_CONTEXT_CONFIGURATION configurationICM[4] = {}; // PREfast C6001 - initialize local
 
     int count = GestureConfigurationBuilder(wui::GestureSettings::GestureSettings_None, true, false, false, true, DirectUI::ManipulationModes::None, configurationICM);
 

@@ -488,6 +488,8 @@ bool RevealFocusSource::IsTravelingFocusEnabled(_In_ DirectUI::FocusNavigationDi
 wf::TimeSpan RevealFocusSource::GetSpotLightDuration(_In_ DirectUI::FocusNavigationDirection direction) const
 {
     const float spotLightSpeed = GetTravelingDistance(direction) / GetDefaultValue(DefaultValue::SpotLightSpeed);
+    // PREfast C26451 - spotLightSpeed is a small, bounded focus-animation value; the HNS conversion cannot overflow int64.
+    #pragma warning(suppress: 26451)
     return wf::TimeSpan { static_cast<int64_t>(HNS_FROM_SECOND(spotLightSpeed)) };
 }
 

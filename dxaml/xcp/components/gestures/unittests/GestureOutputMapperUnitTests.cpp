@@ -470,9 +470,9 @@ void GestureOutputMapperUnitTests::VerifyManipulationInertiaStartingFiresOnce()
 
 void GestureOutputMapperUnitTests::VerifyManipulationUpdateIsInertiaUntilManipulationComplete()
 {
-    ixp::ManipulationDelta delta;
-    ixp::ManipulationDelta cumulativeDelta;
-    ixp::ManipulationVelocities velocities;
+    ixp::ManipulationDelta delta = {}; // PREfast C6001 - initialize local
+    ixp::ManipulationDelta cumulativeDelta = {}; // PREfast C6001 - initialize local
+    ixp::ManipulationVelocities velocities = {}; // PREfast C6001 - initialize local
 
     GestureOutputMapper mapper;
     TouchInteractionMsg msg = mapper.OnManipulationUpdated({ 200, 100 }, delta, cumulativeDelta, velocities);

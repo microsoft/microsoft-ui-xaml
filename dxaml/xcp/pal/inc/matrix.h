@@ -233,6 +233,11 @@ class CMILMatrix4x4
 public:
     CMILMatrix4x4() = default;
 
+    // PREfast C26495 is reported on this ctor (not the defaulted one): when fInitialize is false the
+    // matrix is intentionally left uninitialized for performance; callers pass true when an initialized (identity)
+    // matrix is required. Suppress at function scope because the warning is attributed to the ctor declaration.
+    #pragma warning(push)
+    #pragma warning(disable: 26495)
     explicit CMILMatrix4x4(bool fInitialize)
     {
         if (fInitialize)
@@ -240,6 +245,7 @@ public:
             SetToIdentity();
         }
     }
+    #pragma warning(pop)
 
     explicit CMILMatrix4x4(_In_ const CMILMatrix *pOther);
     explicit CMILMatrix4x4(_In_ const wfn::Matrix4x4& matrix4x4);
