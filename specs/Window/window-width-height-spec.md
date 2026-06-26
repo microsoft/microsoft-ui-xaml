@@ -66,23 +66,22 @@ promoted to stable.
 
 _(This is conceptual documentation that will go to docs.microsoft.com "how to" page)_
 
-`Width` and `Height` get or set the size of the window's client area (in DIPs) in its normal,
-restored state.  This is the size it returns to when it isn't maximized, minimized, or has a special
-presenter (more detail below).
+`Width` and `Height` get or set the size of the window's client area in DIPs.  They represent the
+window's "restore size" -- the size it snaps back to when it isn't maximized, minimized, or using a
+special presenter (more detail below).
 
-These properties represent the client area of the window, in DIPs.  They match the Win32 notion of
-"client rect" except that they correct for the window's DPI.  This client area is the same area your window's
-content is hosted, so generally when the window is in a normal state, `Window.Width` equals `Window.Content.ActualWidth`
-(and same for height).
+These match the Win32 notion of "client rect" except they correct for the window's DPI.  The client
+area is where your content lives, so in the normal state `Window.Width` equals
+`Window.Content.ActualWidth` (and same for height).
 
-In the following conditions, setting the `Width` or `Height` property won't resize the window immediately:
-- When `Window.Activate` has not been called to show the window
-- When the window is maximized or minimized
-- When the `Window.AppWindow.Presenter` object is `FullScreen` or `CompactOverlay`
+Setting `Width` or `Height` won't resize the window immediately when:
+- `Window.Activate` has not been called yet
+- The window is maximized or minimized
+- The `Window.AppWindow.Presenter` is `FullScreen` or `CompactOverlay`
 
-In these cases, the new size is remembered for later as the "restore size".  The runtime resizes the window
-to the new size when the above conditions become false.  The getters return the "restore size" you set,
-so they will not always return the true "live size" of the window.
+In these cases the new size is saved as the restore size.  The runtime applies it once the window
+returns to the normal restored state.  The getters return the restore size you set, so they won't
+always match the actual live size of the window.
 
 You can set the Width and Height properties in XAML markup and in code-behind.
 
@@ -145,8 +144,8 @@ A few things to notice:
   Normal) and Win32 `Get/SetWindowPlacement` (its `rcNormalPosition`). That is
   not a coincidence: the `Width/Height` getter and setter are built on exactly
   that placement rect.
-- **Minimized state.** The APIs that operate with "live size" use "restore size" when
-  then window is minimized (rather than returning the size "0,0")
+- **Minimized state.** The APIs that report "live size" use the restore size when
+  the window is minimized (rather than returning 0,0).
 - **Read vs write.** `Window.Width/Height` is the only single member you both read
   and write. `AppWindow` splits it (a get-only property plus a separate method),
   and Win32 splits it across different functions too.
@@ -162,14 +161,12 @@ with the XAML window means you must handle the DIP/pixel conversion yourself.
 The same sizing APIs behave differently depending on which `AppWindowPresenter`
 the window is using. You pick a presenter with `AppWindow.SetPresenter(...)`.
 
-When your window is using the default `Overlapped` presenter, it behaves like a
-"normal" window, and unless it's maximized or minimized, it's resized immediately
-when you set Width or Height.
+With the default `Overlapped` presenter the window behaves normally: unless it's
+maximized or minimized, setting Width or Height resizes it immediately.
 
-If/when your app sets a non-default presenter (`FullScreen`, `CompactOverlay`) on your
-window, that window is now considered to be in a special presenter mode, and any changes
-you make to `Width` and `Height` during this time won't be honored until you set the AppWindow's
-presenter back to `Overlapped`.
+If your app switches to a non-default presenter (`FullScreen`, `CompactOverlay`),
+the setter saves the value as the restore size but won't resize the window until
+you switch back to `Overlapped`.
 
 | Presenter (`AppWindowPresenterKind`) | What it is                                   | `Window.Width/Height` **setter**                       | `Window.Width/Height` **getter** returns |
 | ------------------------------------ | -------------------------------------------- | ------------------------------------------------------ | ---------------------------------------- |
@@ -184,16 +181,14 @@ If you need to resize a window in one of these presenters, drop down to
 
 ### 2.1.2. How the Window sizing works with Window.ExtendsContentIntoTitleBar
 
-When you set `Window.ExtendsContentIntoTitleBar` to `true`, your this tells your window you want to draw the window's
-TitleBar yourself.  This effectively shifts the client area of your window ~30 DIPs upward on the y-axis. (depending on
-system settings)
+Setting `Window.ExtendsContentIntoTitleBar` to `true` tells the window you want to draw its title bar
+yourself.  This shifts the client area ~30 DIPs upward (depending on system settings).
 
-If you previously set the `Window.Height` property and then toggle the `Window.ExtendsContentIntoTitleBar` property,
-the runtime will honor the `Window.Height` value you set earlier and hold the value unchanged.  This means the physical
-size of the window will shrink slightly to account for the missing TitleBar area.  If you didn't set `Window.Height`,
-the window size will _not_ change when you toggle `ExtendsContentIntoTitleBar`.
+If you set `Window.Height` and then toggle `ExtendsContentIntoTitleBar`, the runtime keeps the
+`Height` value you set.  The physical window shrinks slightly to account for the missing title bar
+area.  If you _didn't_ set `Height`, the window size does not change when you toggle it.
 
-This means the order you set these properties in doesn't matter:
+Setting them in either order works -- either way, the window's height comes out the same:
 
 ```cs
 window.Height = 300;                      // Changes window height to 330px
