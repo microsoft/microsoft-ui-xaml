@@ -1,0 +1,70 @@
+name: /needs-repro command
+
+# Lets maintainers request a reproduction by commenting `/needs-repro` on an
+# issue. The bot posts a message asking for a minimal repro (code snippet or,
+# ideally, a small self-contained WinUI project) and applies the needs-repro
+# and needs-author-feedback labels.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+
+jobs:
+  needs-repro:
+    # Only run on issues (not PRs), when the comment contains the command, and
+    # only when the commenter is a maintainer/collaborator of the repo.
+    if: >-
+      github.event.issue.pull_request == null &&
+      contains(github.event.comment.body, '/needs-repro') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Acknowledge the command
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
+            -H "Accept: application/vnd.github+json" \
+            -f content='eyes' || true
+
+      - name: Add labels
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue edit "$NUMBER" --repo "$REPO" \
+            --add-label "needs-repro" \
+            --add-label "needs-author-feedback"
+
+      - name: Post repro request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+          AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          gh issue comment "$NUMBER" --repo "$REPO" --body "$(cat <<EOF
+          Hi @$AUTHOR, thanks for filing this! To investigate we need to be able to reproduce the behavior on our side.
+
+          Could you please share a **minimal reproduction**? In order of preference:
+
+          1. **A small, self-contained WinUI 3 project** that builds and runs, and demonstrates the bug when launched — ideally a link to a GitHub repo, or a \`.zip\` attached to this issue (drag-and-drop into a comment). Please strip it down to the smallest project that still shows the problem.
+          2. **A minimal XAML + code-behind snippet** we can drop into a blank WinUI app to reproduce it.
+
+          Please also confirm:
+
+          - Exact **steps to reproduce** (what you click/do), and the **expected vs. actual** behavior.
+          - **Windows App SDK / WinUI version** and **Windows version** (e.g. \`winver\`).
+          - Whether it repros in a **clean, unpackaged and packaged** app, if known.
+
+          Once you add the repro, this issue will be re-triaged automatically. If we don't hear back within a reasonable time, the issue may be closed for housekeeping — but you're always welcome to comment to reopen the discussion. Thanks! 🙏
+          EOF
+          )"
