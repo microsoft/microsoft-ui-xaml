@@ -353,6 +353,36 @@ _Check_return_ HRESULT UWPWindowImpl::get_CompositorImpl(_Outptr_result_maybenul
     return S_OK;
 }
 
+_Check_return_ HRESULT UWPWindowImpl::get_WidthImpl(_Out_ DOUBLE* pValue)
+{
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    *pValue = bounds.Width;
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_WidthImpl(DOUBLE value)
+{
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    return SetClientSizeInDips(value, bounds.Height);
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_HeightImpl(_Out_ DOUBLE* pValue)
+{
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    *pValue = bounds.Height;
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_HeightImpl(DOUBLE value)
+{
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    return SetClientSizeInDips(bounds.Width, value);
+}
+
 _Check_return_ HRESULT UWPWindowImpl::get_TitleImpl(_Out_ HSTRING* pValue)
 {
     ctl::ComPtr<wuv::IApplicationViewStatics2> applicationViewStatics;
@@ -845,6 +875,43 @@ _Check_return_ HRESULT UWPWindowImpl::MoveWindowImpl(_In_ INT x, _In_ INT y, _In
 
 Cleanup:
     return(hr);
+}
+
+_Check_return_ HRESULT UWPWindowImpl::SetClientSizeInDips(DOUBLE width, DOUBLE height)
+{
+    IFCCHECK_RETURN(m_pCoreWindowWrapper);
+
+    if (width < 0.0 || height < 0.0 || DoubleUtil::IsNaN(width) || DoubleUtil::IsNaN(height) || DoubleUtil::IsInfinity(width) || DoubleUtil::IsInfinity(height))
+    {
+        IFC_RETURN(E_INVALIDARG);
+    }
+
+    const HWND hwnd = m_pCoreWindowWrapper->GetHWND();
+    IFCCHECK_RETURN(hwnd);
+
+    RECT windowRect{};
+    IFCW32_RETURN(::GetWindowRect(hwnd, &windowRect));
+
+    const UINT dpi = ::GetDpiForWindow(hwnd);
+    const float scale = static_cast<float>(dpi) / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
+
+    RECT desiredWindowRect
+    {
+        0,
+        0,
+        static_cast<LONG>(std::round(width * scale)),
+        static_cast<LONG>(std::round(height * scale))
+    };
+
+    const DWORD style = static_cast<DWORD>(::GetWindowLongPtrW(hwnd, GWL_STYLE));
+    const DWORD exStyle = static_cast<DWORD>(::GetWindowLongPtrW(hwnd, GWL_EXSTYLE));
+    IFCW32_RETURN(::AdjustWindowRectExForDpi(&desiredWindowRect, style, ::GetMenu(hwnd) != nullptr, exStyle, dpi));
+
+    return m_pCoreWindowWrapper->SetPosition(
+        windowRect.left,
+        windowRect.top,
+        desiredWindowRect.right - desiredWindowRect.left,
+        desiredWindowRect.bottom - desiredWindowRect.top);
 }
 
 _Check_return_ HRESULT UWPWindowImpl::get_TransparentBackgroundImpl(_Out_ BOOLEAN* pValue)

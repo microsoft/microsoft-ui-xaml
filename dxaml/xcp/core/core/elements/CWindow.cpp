@@ -98,6 +98,29 @@ _Check_return_ HRESULT CWindow::SetValue(_In_ const SetValueParams& args)
             IFC_RETURN(window->put_SystemBackdropImpl(isystemBackdrop.Get()));
         }
         return S_OK; // EARLY EXIT! We don't want to call super::SetValue() because we don't want to set the DP
+
+    // Window_Width and Window_Height are settable from markup. The parser sets them on
+    // the core object, so forward to the DXaml peer's setter to actually size the window.
+    case KnownPropertyIndex::Window_Width:
+    case KnownPropertyIndex::Window_Height:
+        {
+            // Get or create the DirectUI::Window DXaml peer.  'GetPeer' will create
+            // the DXaml peer if one does not already exist.
+            ctl::ComPtr<DirectUI::Window> window;
+            IFC_RETURN(DirectUI::DXamlCore::GetCurrent()->GetPeer<DirectUI::Window>(this, &window));
+            IFCPTR_RETURN(window);
+
+            const DOUBLE value = args.m_value.AsDouble();
+            if (args.m_pDP->GetIndex() == KnownPropertyIndex::Window_Width)
+            {
+                IFC_RETURN(window->put_Width(value));
+            }
+            else
+            {
+                IFC_RETURN(window->put_Height(value));
+            }
+        }
+        return S_OK; // EARLY EXIT! We don't want to call super::SetValue() because we don't want to set the DP
     }
 
     return CDependencyObject::SetValue(args);

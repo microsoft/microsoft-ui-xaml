@@ -302,6 +302,7 @@
 #define ERROR_FINDNEXTELEMENT_WITHOUT_FINDNEXTELEMENTOPTIONS_WIN32                      4153
 #define ERROR_TRYMOVEFOCUS_WITHOUT_FINDNEXTELEMENTOPTIONS_WIN32                         4154
 #define ERROR_XAMLROOT_REQUIRED                                                         4155
+#define ERROR_WINDOW_DESKTOP_WIDTH_HEIGHT_INVALID                                       4156
 
 //
 //

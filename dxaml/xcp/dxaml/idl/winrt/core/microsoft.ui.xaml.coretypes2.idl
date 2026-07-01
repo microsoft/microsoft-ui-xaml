@@ -853,6 +853,14 @@ namespace Microsoft.UI.Xaml
             Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
             Microsoft.UI.Windowing.AppWindow AppWindow{ get; };
         }
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
+        {
+            Double Width;
+            Double Height;
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
