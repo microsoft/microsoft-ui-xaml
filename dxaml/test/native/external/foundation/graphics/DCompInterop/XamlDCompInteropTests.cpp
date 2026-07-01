@@ -30,8 +30,6 @@ using namespace Concurrency;
 using namespace MockDComp;
 using namespace RuntimeFeatureBehavior;
 
-struct IDCompositionDesktopDevicePartner;
-
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Foundation { namespace Graphics {
 
 Platform::String^ XamlDCompInteropTests::GetResourcesPath() const

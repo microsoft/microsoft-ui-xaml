@@ -4343,10 +4343,10 @@ _Check_return_ HRESULT CCoreServices::Tick(
 
         FAIL_FAST_ASSERT(m_pNWWindowRenderTarget->GetDCompTreeHost() != nullptr);
 
-        // Wait for resource creation to complete and register the callback thread. Otherwise Xaml timelines can't add
-        // completed time events.
+        // Wait for resource creation to complete.
+        // $REVIEW: There are no more DComp animations, so we don't need to wait for D3D resources
+        // for that reason - but more investigation is needed before this wait can be removed.
         IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
-        m_pNWWindowRenderTarget->GetDCompTreeHost()->RegisterDCompAnimationCompletedCallbackThread();
 
         HRESULT hrTick = m_pTimeManager->Tick(
             FALSE /* newTimelinesOnly */,
@@ -10157,7 +10157,7 @@ CCoreServices::SimulateDeviceLost(bool resetVisuals, bool resetDManip)
 //------------------------------------------------------------------------------
 void
 CCoreServices::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+    _Outptr_ IDCompositionDevice2 **ppDCompDevice
     ) const
 {
     ASSERT(m_pNWWindowRenderTarget != nullptr);
@@ -11491,7 +11491,7 @@ HRESULT CCoreServices::GetLastConfirmedBatchId(_Out_ ULONG* lastConfirmedBatchId
     // beyond ensuring DCompTreeHost is created and initialized.
     IFCFAILFAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
 
-    IFC_RETURN(GetDCompTreeHost()->GetCompositionHelper()->GetLastConfirmedBatchId(lastConfirmedBatchId));
+    IFC_RETURN(GetDCompTreeHost()->GetCompositorPartner()->GetLastConfirmedBatchId(lastConfirmedBatchId));
     return S_OK;
 }
 
@@ -11503,7 +11503,7 @@ HRESULT CCoreServices::GetCurrentBatchID(_Out_ ULONG* currentBatchId)
     // beyond ensuring DCompTreeHost is created and initialized.
     IFCFAILFAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
 
-    IFC_RETURN(GetDCompTreeHost()->GetCompositionHelper()->GetCurrentBatchID(currentBatchId));
+    IFC_RETURN(GetDCompTreeHost()->GetCompositorPartner()->GetCurrentBatchID(currentBatchId));
     return S_OK;
 }
 

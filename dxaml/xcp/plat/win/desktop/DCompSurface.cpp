@@ -119,7 +119,7 @@ DCompSurface::CreateWithNoHardware(
         true    // requestAtlas
         ));
 
-    IFCFAILFAST(dcompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
+    IFCFAILFAST(dcompTreeHost->GetCompositorPartner()->CreateCompositionSurfaceForDCompositionSurface(
         nullptr, &dcompSurface->m_spWinRTSurface));
 
     dcompSurface->m_isVirtual = isVirtual;
@@ -162,7 +162,7 @@ DCompSurface::InitializeSurface(
     if (m_isVirtual)
     {
         ASSERT(m_requestAtlas);
-        IFCFAILFAST(pDCompTreeHost->GetCompositionHelper()->CreateVirtualSurface(
+        IFCFAILFAST(pDCompTreeHost->GetSurfaceFactory()->CreateVirtualSurface(
             GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
             GetHeightWithoutGutters(),
             compositionSurfaceFormat,
@@ -174,7 +174,8 @@ DCompSurface::InitializeSurface(
     }
     else
     {
-        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(pDCompTreeHost->GetCompositionHelper()->CreateSurface(
+        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(IxpStable_CreateSurface(
+            pDCompTreeHost->GetSurfaceFactory(),
             GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
             GetHeightWithoutGutters(),
             compositionSurfaceFormat,
@@ -190,7 +191,7 @@ DCompSurface::InitializeSurface(
     if (m_spWinRTSurface == nullptr)
     {
         // Wrap with an ICompositionSurface
-        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
+        IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(pDCompTreeHost->GetCompositorPartner()->CreateCompositionSurfaceForDCompositionSurface(
             m_pCompositionSurface, &m_spWinRTSurface));
     }
     else
@@ -242,7 +243,7 @@ DCompSurface::InitializeSurface(
         SetInterface(m_pCompositionSurface, m_pVirtualCompositionSurface);
 
         // Wrap with an ICompositionSurface
-        auto hr = pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
+        auto hr = pDCompTreeHost->GetCompositorPartner()->CreateCompositionSurfaceForDCompositionSurface(
             m_pVirtualCompositionSurface, &m_spWinRTSurface);
 
         // TODO_WinRTSprites: Handle not implemented on DComp.  Don't fail hard, just ignore for now.
@@ -256,7 +257,8 @@ DCompSurface::InitializeSurface(
     }
     else
     {
-        IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateSurface(pSurfaceFactory,
+        IFC_RETURN(IxpStable_CreateSurface(
+            pSurfaceFactory,
             GetWidthWithoutGutters(),   // DComp takes surface sizes without gutters
             GetHeightWithoutGutters(),
             DXGI_FORMAT_B8G8R8A8_UNORM, //GetDxgiFormat()
@@ -268,7 +270,7 @@ DCompSurface::InitializeSurface(
         UpdateMemoryFootprint(TRUE);
 
         // Wrap with an ICompositionSurface
-        IFC_RETURN(pDCompTreeHost->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
+        IFC_RETURN(pDCompTreeHost->GetCompositorPartner()->CreateCompositionSurfaceForDCompositionSurface(
             m_pCompositionSurface, &m_spWinRTSurface));
     }
 

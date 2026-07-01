@@ -1449,7 +1449,7 @@ void HWCompTreeNodeWinRT::UpdateDropShadowVisualBrush(_In_ DCompTreeHost *dcompT
         dropShadowVS->put_SourceSize(shadowVisualSize);
 
         // TODO: Make sure to test in high DPI
-        dcompTreeHost->GetCompositionHelper()->SetSurfaceRealizationSize(dropShadowVS.Get(), shadowVisualSize); // Required to avoid dwm.exe picking an arbitrary size that will cause bluriness.
+        CompositionVisualSurfaceHelper::SetSurfaceRealizationSize(dropShadowVS.Get(), shadowVisualSize); // Required to avoid dwm.exe picking an arbitrary size that will cause bluriness.
 
         wrl::ComPtr<ixp::ICompositionSurfaceBrush> dropShadowSurfaceBrush;
         wrl::ComPtr<ixp::ICompositionSurface> dropShadowSurface;
