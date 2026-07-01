@@ -291,3 +291,39 @@ _Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromObjectI
     IFC_RETURN(SetValueImpl(pDependencyObject, pPropertyToSet, pValue));
     return S_OK;
 }
+
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromThicknessImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, xaml::Thickness value)
+{
+    IFCPTR_RETURN(pDependencyObject);
+    IFCPTR_RETURN(pPropertyToSet);
+
+    CValue boxedValue;
+    BoxerBuffer buffer;
+    IFC_RETURN(CValueBoxer::BoxValue(&boxedValue, value, &buffer));
+    IFC_RETURN(SetValueImpl(pDependencyObject, pPropertyToSet, boxedValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromCornerRadiusImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, xaml::CornerRadius value)
+{
+    IFCPTR_RETURN(pDependencyObject);
+    IFCPTR_RETURN(pPropertyToSet);
+
+    CValue boxedValue;
+    BoxerBuffer buffer;
+    IFC_RETURN(CValueBoxer::BoxValue(&boxedValue, value, &buffer));
+    IFC_RETURN(SetValueImpl(pDependencyObject, pPropertyToSet, boxedValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT XamlBindingHelperFactoryGenerated::SetPropertyFromColorImpl(_In_ IInspectable* pDependencyObject, _In_ xaml::IDependencyProperty* pPropertyToSet, wu::Color value)
+{
+    IFCPTR_RETURN(pDependencyObject);
+    IFCPTR_RETURN(pPropertyToSet);
+
+    CValue boxedValue;
+    BoxerBuffer buffer;
+    IFC_RETURN(CValueBoxer::BoxValue(&boxedValue, value, &buffer));
+    IFC_RETURN(SetValueImpl(pDependencyObject, pPropertyToSet, boxedValue));
+    return S_OK;
+}
