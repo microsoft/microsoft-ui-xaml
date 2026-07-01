@@ -105,5 +105,5 @@ namespace Microsoft.UI.Xaml
   window has been closed, it will fail similarly to other WinUI 3 APIs and return a failure HRESULT.
 - There will be only one AppWindow object per top level HWND, created during Window object creation.
   No new AppWindow objects are created for child windows.
-- Future scope: Since this API is limited to top level HWND, there should be a way to get app window object
+- Future scope: Since this API is limited to top level HWND, there should be a way to get an `AppWindow` object
   for top level HWND from one of its nested children HWND which doesn’t require app developer writing a lot of code.

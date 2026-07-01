@@ -55,8 +55,8 @@ To allow pointer events to get to the source element, set the overlay's
 property to false.
 
 > [!NOTE]
-> The element set as the `SourceElement` cannot be an ancestor or in the descendancy of the `MonochromaticOverlayPresenter`.
-> However the `SourceElement` must be in the same XAML tree as the `MonochromaticOverlayPresenter`.
+> The element set as the `SourceElement` cannot be an ancestor of, or a descendant of, the `MonochromaticOverlayPresenter`.
+> However, the `SourceElement` must be in the same XAML tree as the `MonochromaticOverlayPresenter`.
 
 If the `ReplacementColor` property is set and has a nonzero Alpha value, then the `SourceElement`
 is treated as a mask: every non-transparent pixel will be replaced by this color. The RGB value
@@ -194,7 +194,7 @@ These visual changes to DatePicker and TimePicker will in part be made possible 
 
 <!-- Use this section to provide a brief description of the feature.
 For an example, see the introduction to the PasswordBox control 
-(http://learn.microsoft.com/windows/uwp/design/controls-and-patterns/password-box). -->
+(https://learn.microsoft.com/windows/uwp/design/controls-and-patterns/password-box). -->
 
 **DatePicker:**
 

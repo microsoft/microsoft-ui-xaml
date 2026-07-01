@@ -80,7 +80,7 @@ Sets the custom `IResourceManager` that should be used by WinUI to resolve MRT r
 current thread. If you leave the value `null` then the default `ResourceManager` will be used.
 
 ```csharp
-public IResourceManager ResourceManager { get; set; }
+public IResourceManager CustomResourceManager { get; set; }
 ```
 
 # API Details

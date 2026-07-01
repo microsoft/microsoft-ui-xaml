@@ -7,14 +7,14 @@ We are excited to formally re-introduce a community feedback process to our API 
 
 We assure our community that their input is invaluable to us, and we are dedicated to fostering a transparent and collaborative environment. By adopting this structured feedback process outlined below, we aim to set clear expectations and handle all contributions with the utmost professionalism and consideration.
 
-## Public Post on Github
+## Public Post on GitHub
 
-- The drafted spec from is posted as a PR under the `./specs/` directory.
+- The drafted spec is posted as a PR under the `./specs/` directory.
 
   - Example PR: [Popup placement properties API spec](https://github.com/microsoft/microsoft-ui-xaml/pull/4905)
   - Every spec will link to this public spec markdown file. <!-- TODO: Add link once it is public -->
 - A dedicated discussion thread will be created to announce that we are actively gathering feedback for the API.
-- A Github issue with `spec-review` tag will be created to represent the new API proposal. It will be tracked in the Github API Spec Review Board:
+- A GitHub issue with `spec-review` tag will be created to represent the new API proposal. It will be tracked in the GitHub API Spec Review Board:
 
 > [API Specs Review](https://github.com/orgs/microsoft/projects/1328/views/1)
 
@@ -25,7 +25,7 @@ We assure our community that their input is invaluable to us, and we are dedicat
 The issue is open for a predefined period of **1 month** to gather feedback from the community.
 The start and end dates will be outlined in the spec and in the [API Specs Review](https://github.com/orgs/microsoft/projects/1328/views/1) Board.
 
-- Community members can provide feedback by **commenting directly on the PR**, or through a **code suggestion** with Github tools.
+- Community members can provide feedback by **commenting directly on the PR**, or through a **code suggestion** with GitHub tools.
 - Feedback should be constructive and specific, addressing potential use cases, design concerns, and functionality.
 
 > **Examples of constructive feedback:**
