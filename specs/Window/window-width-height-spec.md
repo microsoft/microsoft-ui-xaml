@@ -46,8 +46,8 @@ App developers keep asking for a more natural managed way to do this, the same
 way they have it in WPF. This spec adds two new properties to
 `Microsoft.UI.Xaml.Window`:
 
-- `Window.Width` (Double, in DIPs)
-- `Window.Height` (Double, in DIPs)
+- `Window.Width` (Double, in logical pixels)
+- `Window.Height` (Double, in logical pixels)
 
 These mirror what people expect from
 [`System.Windows.Window.Width`](https://learn.microsoft.com/dotnet/api/system.windows.window.width)
@@ -65,7 +65,7 @@ promoted to stable.
 
 _(This is conceptual documentation that will go to docs.microsoft.com "how to" page)_
 
-`Width` and `Height` get or set the restored size of the window's client area in DIPs.
+`Width` and `Height` get or set the restored size of the window's client area in logical pixels.
 
 The **restored size** is conceptually the size the window is (or will be) when in the restored state -- when its
 AppWindow is using the default presenter, and it's not minimized or maximized. For the default WinUI `Window`,
@@ -85,7 +85,7 @@ In these cases, the getters work the same way: they return the restored size, no
 **A user resize wins over an app-set size.** If your app sets `Width`/`Height` and the user later drags the
 window to a new size, the user's size is the one that sticks. For example:
 
-1. App sets `Window.Width = 500` (the window becomes 500 DIPs wide).
+1. App sets `Window.Width = 500` (the window becomes 500 logical pixels wide).
 2. User drags the edge to resize it to 600.
 3. App enters the `FullScreen` presenter.
 4. App exits `FullScreen` (back to `Overlapped`).
@@ -108,8 +108,8 @@ units or on what they measure. Here is the whole picture in one place.
 
 The three layers:
 
-- **`Microsoft.UI.Xaml.Window`** (this class, the XAML window) works in **DIPs**.
-  `Bounds`, and now `Width` and `Height`, are all DIPs. 
+- **`Microsoft.UI.Xaml.Window`** (this class, the XAML window) works in **logical pixels**.
+  `Bounds`, and now `Width` and `Height`, are all logical pixels. 
 - **`Microsoft.UI.Windowing.AppWindow`** (you get it from `Window.AppWindow`) and
   its presenters work in **physical pixels** (they take and return `SizeInt32`).
 - **Raw Win32** on the `HWND` (get the handle from
@@ -117,16 +117,16 @@ The three layers:
   in C++) also works in **physical pixels**. These are the same functions any
   classic Win32 app uses, and can also be used to size the window.
 
-Because two of the three layers are in physical pixels and one is in DIPs,
-`Window.Width = 800` (DIPs) and `AppWindow.ResizeClient(new SizeInt32(800, 600))`
+Because two of the three layers are in physical pixels and one is in logical pixels,
+`Window.Width = 800` (logical pixels) and `AppWindow.ResizeClient(new SizeInt32(800, 600))`
 (pixels) are **not** the same on a scaled display.
 
 Here are the key sizing APIs across the three layers, side by side:
 
 | API                                         | Layer         | Unit         | Measures                  | Read / write    | Notes                              |
 | ------------------------------------------- | ------------- | ------------ | ------------------------- | --------------- | ---------------------------------- |
-| `Window.Width` / `Height`                   | `Xaml.Window` | DIPs         | **Client** area           | get **and** set | Restored size                       |
-| `Window.Bounds`                             | `Xaml.Window` | DIPs         | **Client** area           | get only        | Live size                          |
+| `Window.Width` / `Height`                   | `Xaml.Window` | Logical px   | **Client** area           | get **and** set | Restored size                       |
+| `Window.Bounds`                             | `Xaml.Window` | Logical px   | **Client** area           | get only        | Live size                          |
 | `AppWindow.ClientSize`                      | `AppWindow`   | Physical px  | **Client** area           | get only        | Live size                          |
 | `AppWindow.Size`                            | `AppWindow`   | Physical px  | **Window** rect           | get only        | Live size                          |
 | `AppWindow.ResizeClient(sz)`                | `AppWindow`   | Physical px  | **Client** area           | set (method)    | Acts on the live window            |
@@ -138,7 +138,7 @@ Here are the key sizing APIs across the three layers, side by side:
 
 A few things to notice:
 
-- **Unit.** `Xaml.Window` is DIPs. `AppWindow` and raw Win32 are physical pixels.
+- **Unit.** `Xaml.Window` is logical pixels. `AppWindow` and raw Win32 are physical pixels.
 - **Client vs window rect.** `Window.Width/Height`, `Window.Bounds`,
   `AppWindow.ClientSize`, and `GetClientRect` measure the **client** area (where
   your XAML content lives). `AppWindow.Size` / `AppWindow.Resize(...)`,
@@ -154,16 +154,16 @@ A few things to notice:
   and write. `AppWindow` splits it (a get-only property plus a separate method),
   and Win32 splits it across different functions too.
 
-Rule of thumb: to size the **client** area in **DIPs**, set `Window.Width/Height`.
+Rule of thumb: to size the **client** area in **logical pixels**, set `Window.Width/Height`.
 For **physical pixels**, use `AppWindow.ResizeClient(...)` (client) or
 `AppWindow.Resize(...)` (the window rect). Reach for raw Win32 (`SetWindowPos` and
 related) only when you need something the WinUI surfaces do not expose; mixing it
-with the XAML window means you must handle the DIP/pixel conversion yourself.
+with the XAML window means you must handle the logical/physical pixel conversion yourself.
 
 ## 2.2. How Window sizing works with Window.ExtendsContentIntoTitleBar
 
 Setting `Window.ExtendsContentIntoTitleBar` to `true` tells the window you want to draw its title bar
-yourself.  This shifts the client area ~30 DIPs upward (depending on system settings).
+yourself.  This shifts the client area ~30 logical pixels upward (depending on system settings).
 
 If you set `Window.Height` and then toggle `ExtendsContentIntoTitleBar`, the runtime keeps the
 `Height` value you set.  The physical window shrinks slightly to account for the missing title bar
@@ -194,16 +194,16 @@ WPF developers work with the WPF `Window.Width` and `Window.Height` properties. 
 WinUI properties are meant to feel familiar but they are **not identical**.
 
 A WPF app that does `this.Width = 800` makes a window whose **window rect**
-is 800 DIPs wide, so the usable client area inside is something like ~784 DIPs
+is 800 logical pixels wide, so the usable client area inside is something like ~784 logical pixels
 after chrome. The same line in WinUI gives a **client area** of exactly 800
-DIPs, so the window rect is ~816 DIPs. Both behaviors are self-consistent; the
+logical pixels, so the window rect is ~816 logical pixels. Both behaviors are self-consistent; the
 cross-framework number just does not carry over 1:1.
 
 Here is a side-by-side breakdown of more WPF vs WinUI behavior:
 
 | Aspect                    | WPF `Window.Width/Height`                            | WinUI `Window.Width/Height` (this spec)         |
 | ------------------------- | ---------------------------------------------------- | ----------------------------------------------- |
-| Unit                      | DIPs (1/96 inch)                                     | DIPs (1/96 inch), same                          |
+| Unit                      | Logical pixels                                       | Logical pixels, same                            |
 | What it measures          | **Window rect** (includes chrome)                    | **Client area** (matches `Window.Bounds`)       |
 | Default / initial value   | `Double.NaN` (auto-size to content)                  | The current actual client size (never NaN)      |
 | Setting `NaN`             | Allowed; means "size to content"                     | **Returns `E_INVALIDARG`**. No size-to-content.  |
@@ -328,14 +328,13 @@ _(Each of the following L2 sections correspond to a page that will be on docs.mi
 
 ## 4.1. Window.Width property
 
-Gets or sets the width of the Window's **client area** in device-independent
-pixels (DIPs, 1/96 inch).
+Gets or sets the width of the Window's **client area** in logical pixels.
 
 ```csharp
 public double Width { get; set; }
 ```
 
-**Getter**: returns the client-area width in DIPs.
+**Getter**: returns the client-area width in logical pixels.
 
 - In the **Restored** state this equals `Window.Bounds.Width`.
 - In the **Maximized** or **Minimized** state it returns the *restored* width -- the
@@ -346,7 +345,7 @@ public double Width { get; set; }
   (whether set by your code or by the user resizing), or a value you set on
   `Width` while in the non-default presenter.
 
-**Setter**: changes the window so its client area is `value` DIPs wide. The
+**Setter**: changes the window so its client area is `value` logical pixels wide. The
 window's non-client chrome (caption, borders, and so on) gets added on top of
 `value` to work out the window rect, using the current per-monitor
 DPI. Height is left unchanged.
@@ -379,20 +378,20 @@ affecting the live window in the meantime.
 
 ### 4.1.2. Remarks
 
-**Units and DPI.** The setter converts the requested DIP value to physical
+**Units and DPI.** The setter converts the requested logical-pixel value to physical
 pixels using the window's current per-monitor DPI:
 
 ```
-physicalPixels = round(dips * GetDpiForWindow(hwnd) / 96.0)
+physicalPixels = round(logicalPixels * GetDpiForWindow(hwnd) / 96.0)
 ```
 
 Because of integer-pixel rounding, the value you read back from the getter may
-differ from the value you passed to the setter by up to a couple of DIPs. The
-scenario tests allow a 2-DIP tolerance when comparing.
+differ from the value you passed to the setter by up to a couple of logical pixels. The
+scenario tests allow a 2-logical-pixel tolerance when comparing.
 
 **DPI changes during the window's lifetime.** If the window moves to a monitor
 with a different scale factor after you call the setter, the OS re-scales the
-window per its normal rules. The client-area size in DIPs is preserved across
+window per its normal rules. The client-area size in logical pixels is preserved across
 the move.
 
 **Interaction with ExtendsContentIntoTitleBar.** Because `Width`/`Height` measure
@@ -430,14 +429,13 @@ In .NET an `E_INVALIDARG` error is thrown as an `ArgumentException`.
 
 ## 4.2. Window.Height property
 
-Gets or sets the height of the Window's **client area** in device-independent
-pixels (DIPs, 1/96 inch).
+Gets or sets the height of the Window's **client area** in logical pixels.
 
 ```csharp
 public double Height { get; set; }
 ```
 
-**Getter**: returns the client-area height in DIPs.
+**Getter**: returns the client-area height in logical pixels.
 
 - In the **Restored** state this equals `Window.Bounds.Height`.
 - In the **Maximized** or **Minimized** state it returns the *restored* height -- the
@@ -448,7 +446,7 @@ public double Height { get; set; }
   (whether set by your code or by the user resizing), or a value you set on
   `Height` while in the non-default presenter.
 
-**Setter**: changes the window so its client area is `value` DIPs tall. The
+**Setter**: changes the window so its client area is `value` logical pixels tall. The
 window's non-client chrome (caption, borders, and so on) gets added on top of
 `value` to work out the window rect, using the current per-monitor DPI. Width is
 left unchanged.
@@ -481,20 +479,20 @@ affecting the live window in the meantime.
 
 ### 4.2.2. Remarks
 
-**Units and DPI.** The setter converts the requested DIP value to physical
+**Units and DPI.** The setter converts the requested logical-pixel value to physical
 pixels using the window's current per-monitor DPI:
 
 ```
-physicalPixels = round(dips * GetDpiForWindow(hwnd) / 96.0)
+physicalPixels = round(logicalPixels * GetDpiForWindow(hwnd) / 96.0)
 ```
 
 Because of integer-pixel rounding, the value you read back from the getter may
-differ from the value you passed to the setter by up to a couple of DIPs. The
-scenario tests allow a 2-DIP tolerance when comparing.
+differ from the value you passed to the setter by up to a couple of logical pixels. The
+scenario tests allow a 2-logical-pixel tolerance when comparing.
 
 **DPI changes during the window's lifetime.** If the window moves to a monitor
 with a different scale factor after you call the setter, the OS re-scales the
-window per its normal rules. The client-area size in DIPs is preserved across
+window per its normal rules. The client-area size in logical pixels is preserved across
 the move.
 
 **Interaction with ExtendsContentIntoTitleBar.** Because `Width`/`Height` measure
@@ -600,7 +598,7 @@ or minimized, the live rects do not represent normal chrome, so the style-based
 calculation is used instead, with a correction that zeros out the top chrome when
 `ExtendsContentIntoTitleBar` is active.
 
-**Reading the size back.** The getter always returns the restored client-area size in DIPs.
+**Reading the size back.** The getter always returns the restored client-area size in logical pixels.
 
 - In the pre-activated state, before ShowWindow is called, the getters return the
   restored size (same as `Window.Bounds` at that point, unless the app set a new value).
@@ -653,6 +651,20 @@ that is out of scope. Setting `NaN` returns `E_INVALIDARG`.
 **Is it required the DPI mode to be per-mon-v2?** The Width and Height properties are implemented
 by calling win32 functions that are virtualized for DPI mode for the underlying HWND, so they will
 honor the DPI mode just as those functions do.
+
+**If I set `Width` and then `Height`, will the window flicker between the two sizes?**
+In practice, no. Each setter resizes the window right away, so setting both is technically two
+resizes: one frame at the new width with the old height, then the final size. But both calls run in
+the same synchronous turn, before the next frame is drawn, so that in-between size doesn't actually
+show up on screen. This matches WPF, which also resizes immediately on each setter and has worked
+this way for years.
+
+If you want a single, guaranteed atomic resize -- for example, if you set the two values across an
+`await` -- you have a couple of options:
+
+- Set `Width` and `Height` before you call `Activate`. The window isn't shown yet, so there's
+  nothing to flicker.
+- Use `AppWindow.ResizeClient(...)`, which takes both dimensions in one call (physical pixels).
 
 ## 6.5. Acknowledgements
 
