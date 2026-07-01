@@ -152,3 +152,16 @@ extends:
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
+          dependsOn: ValidateGitHubPrContext
+
+    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+        parameters:
+          stageName: Build_MUXFinalRelease
+          pipelineKind: PR-2
+          buildScenarioApps: false
+          MUXFinalRelease: true
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+          pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
+          buildProductOnly: true
+          dependsOn: ValidateGitHubPrContext
