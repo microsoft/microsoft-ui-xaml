@@ -45,10 +45,12 @@ HRESULT DirectUI::WindowGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IWindow2>(this);
     }
-    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindow3)))
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
     {
-        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IWindow3>(this);
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi>(this);
     }
+#endif
     else
     {
         RRETURN(DirectUI::DependencyObject::QueryInterfaceImpl(iid, ppObject));
@@ -149,7 +151,17 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_ExtendsContentIntoTitleBar(_Out_ B
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::get_Height(_Out_ DOUBLE* pValue)
+IFACEMETHODIMP DirectUI::WindowGenerated::put_ExtendsContentIntoTitleBar(BOOLEAN value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_ExtendsContentIntoTitleBarImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_Height(_Out_ DOUBLE* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
@@ -159,23 +171,13 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Height(_Out_ DOUBLE* pValue)
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::put_Height(DOUBLE value)
-{
-    HRESULT hr = S_OK;
-
-    IFC(CheckThread());
-    IFC(DefaultStrictApiCheck(this));
-    IFC(static_cast<Window*>(this)->put_HeightImpl(value));
-Cleanup:
-    RRETURN(hr);
-}
-IFACEMETHODIMP DirectUI::WindowGenerated::put_ExtendsContentIntoTitleBar(BOOLEAN value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_Height(DOUBLE value)
 {
     HRESULT hr = S_OK;
     
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
-    IFC(static_cast<Window*>(this)->put_ExtendsContentIntoTitleBarImpl(value));
+    IFC(static_cast<Window*>(this)->put_HeightImpl(value));
 Cleanup:
     RRETURN(hr);
 }
@@ -249,7 +251,7 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Visible(_Out_ BOOLEAN* pValue)
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::get_Width(_Out_ DOUBLE* pValue)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_Width(_Out_ DOUBLE* pValue)
 {
     HRESULT hr = S_OK;
     ARG_VALIDRETURNPOINTER(pValue);
@@ -259,10 +261,10 @@ IFACEMETHODIMP DirectUI::WindowGenerated::get_Width(_Out_ DOUBLE* pValue)
 Cleanup:
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::WindowGenerated::put_Width(DOUBLE value)
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_Width(DOUBLE value)
 {
     HRESULT hr = S_OK;
-
+    
     IFC(CheckThread());
     IFC(DefaultStrictApiCheck(this));
     IFC(static_cast<Window*>(this)->put_WidthImpl(value));
@@ -502,6 +504,8 @@ IFACEMETHODIMP DirectUI::WindowFactory::CreateInstance(_In_opt_ IInspectable* pO
 }
 
 // Dependency properties.
+
+
 
 
 

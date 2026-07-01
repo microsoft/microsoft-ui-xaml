@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <optional>
+#include <memory>
+
 #include "Window.g.h"
 #include "ContentManager.h"
 #include <WindowImpl.h>
@@ -134,7 +137,49 @@ namespace DirectUI
         _Check_return_ HRESULT RaiseWindowSizeChangedEvent();
         _Check_return_ HRESULT RaiseWindowActivatedEvent(_In_ const xaml::WindowActivationState state);
         _Check_return_ HRESULT RaiseWindowVisibilityChangedEvent(_In_ const BOOLEAN visible);
-        _Check_return_ HRESULT SetClientSizeInDips(DOUBLE width, DOUBLE height);
+
+        // --------------------------------------------------
+        // Window sizing support
+        // --------------------------------------------------
+        // Shared getter helper: resolves the client size (in DIPs) the Width/Height getters report
+        // when no per-axis value is pending - the maximized/minimized restored size, the tracked
+        // restored size while in a non-sizing presenter, or otherwise the live size.
+        _Check_return_ HRESULT GetEffectiveClientSizeInDips(_Out_ wf::Size* pValue);
+        // Shared setter helper: records that the app opted into Width/Height, then either applies the
+        // requested client size now or remembers it (pending) to apply on first activation / when a
+        // sizing-capable presenter returns. Only the axis with a value is affected.
+        _Check_return_ HRESULT ApplyOrDeferClientSizeInDips(std::optional<double> width, std::optional<double> height);
+        _Check_return_ HRESULT SetRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height);
+        _Check_return_ HRESULT TryGetRestoredClientSizeInDips(_Out_ bool* pUseRestoredClientSize, _Out_ wf::Size* pValue);
+        _Check_return_ HRESULT GetRestoredChromeSizeInPixels(_Out_ SIZE* pChromeSize);
+        _Check_return_ HRESULT ValidateWidthHeightValue(DOUBLE value);
+        // Only Default and Overlapped presenters support Window.Width/Height sizing.
+        bool AppWindowPresenterSupportsSizing();
+        // True when the live window currently represents its restored geometry: a sizing-capable
+        // presenter (Default/Overlapped) and neither maximized nor minimized. In any other state the
+        // live window rect is the maximized / minimized / full-screen / compact rect, not the
+        // restored one. Both the restored-size capture and the ExtendsContentIntoTitleBar size
+        // preservation only act when the window is in this state.
+        bool IsInOverlappedRestoredState();
+        // True once the app has set Width or Height at least once (opted into the feature).
+        bool HasExplicitClientSize() const { return m_hasExplicitClientSize; }
+        // Records the current client size as the window's restored size, but only when the live
+        // window actually represents that restored size (see IsInOverlappedRestoredState). Invoked
+        // from a deferred re-evaluation (ScheduleUpdateLastRestoredClientSize) so the presenter state
+        // is settled (a presenter change resizes the window before AppWindow reports the change to us).
+        void UpdateLastRestoredClientSize();
+        // Schedules a deferred re-evaluation of the restored client size onto the dispatcher
+        // queue (rather than a posted window message, so apps watching this window's messages don't
+        // see it), coalescing the burst of WM_SIZE messages a drag produces via m_restoredSizeReevalPosted.
+        void ScheduleUpdateLastRestoredClientSize();
+        // Applies any Width/Height requested before the window was first shown
+        // (e.g. from XAML markup), or while a non-sizing presenter was active. Called
+        // on first activation and on presenter changes (OnAppWindowChanged).
+        _Check_return_ HRESULT ApplyPendingClientSize();
+        // Handles AppWindow.Changed so a Width/Height remembered while a non-sizing presenter
+        // (FullScreen/CompactOverlay) was active is applied once we return to Default/Overlapped.
+        _Check_return_ HRESULT OnAppWindowChanged(_In_ ixp::IAppWindow* sender, _In_ ixp::IAppWindowChangedEventArgs* args);
+        
         void ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
         void RepositionWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
         void Shutdown();
@@ -153,7 +198,34 @@ namespace DirectUI
         DXamlCore* m_dxamlCoreNoRef = nullptr;
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
+
+        // --------------------------------------------------
+        // Window sizing support
+        // --------------------------------------------------
+
+        // True once the app has set Width or Height at least once.
+        bool m_hasExplicitClientSize = false;
+
+        // When the app has set Width/Height, but we haven't been able to honor them yet,
+        // we store them here.
+        std::optional<double> m_pendingClientWidthDips;
+        std::optional<double> m_pendingClientHeightDips;
+
+        // The window's last known restored client and chrome size in DIPs - the size it has,
+        // or returns to, when it isn't maximized, minimized, or in a non-sizing presenter.
+        std::optional<wf::Size> m_lastRestoredClientSizeDips;
+        std::optional<wf::Size> m_lastRestoredChromeDips;
+
+        // We've scheduled an update of the restored client size onto the dispatcher queue
+        bool m_restoredSizeUpdateScheduled = false;
+
+        // True while the user is interactively moving/resizing the window.
+        bool m_inSizeMove = false;
+
+        std::shared_ptr<bool> m_isWindowAlive = std::make_shared<bool>(true);
+
         EventRegistrationToken m_takeFocusRequestedEventToken;
+        EventRegistrationToken m_appWindowChangedToken{};
         GUID m_lastTakeFocusRequestCorrelationId;
         HWND m_lastFocusedWindowHandle = NULL;
         HWND m_positioningBridgeWindowHandle = NULL;
@@ -187,4 +259,3 @@ namespace DirectUI
         ctl::ComPtr<DirectUI::DesktopWindowXamlSource> m_desktopWindowXamlSource;
     };
 }
-

@@ -9723,6 +9723,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         nullptr, // Storage ensure method
         0 // Storage offset
     },
+    // Microsoft.UI.Xaml.Window.Height
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
     // Microsoft.UI.Xaml.Window.SystemBackdrop
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
@@ -9738,6 +9745,13 @@ extern const MetaDataDependencyPropertyRuntimeData c_aDependencyPropertyRuntimeD
         0 // Storage offset
     },
     // Microsoft.UI.Xaml.Window.TransparentBackground
+    {
+        (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
+        nullptr, // Render changed callback
+        nullptr, // Storage ensure method
+        0 // Storage offset
+    },
+    // Microsoft.UI.Xaml.Window.Width
     {
         (METHODPFN)0, // Offset. Cast to METHODPFN to force it into the union.
         nullptr, // Render changed callback
