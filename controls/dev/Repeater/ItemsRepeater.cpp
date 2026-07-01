@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -9,7 +9,6 @@
 #include "ChildrenInTabFocusOrderIterable.h"
 #include "SharedHelpers.h"
 #include "RepeaterAutomationPeer.h"
-#include "ViewportManagerWithPlatformFeatures.h"
 #include "RuntimeProfiler.h"
 #include "ItemTemplateWrapper.h"
 
@@ -27,8 +26,6 @@ winrt::Rect ItemsRepeater::InvalidRect = { -1.f, -1.f, -1.f, -1.f };
 ItemsRepeater::ItemsRepeater()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ItemsRepeater);
-
-    m_viewportManager = std::make_shared<ViewportManagerWithPlatformFeatures>(this);
 
     winrt::AutomationProperties::SetAccessibilityView(*this, winrt::AccessibilityView::Raw);
     TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
@@ -61,7 +58,7 @@ winrt::IIterable<winrt::DependencyObject> ItemsRepeater::GetChildrenInTabFocusOr
 
 void ItemsRepeater::OnBringIntoViewRequested(winrt::BringIntoViewRequestedEventArgs const& e)
 {
-    m_viewportManager->OnBringIntoViewRequested(e);
+    m_viewportManager.OnBringIntoViewRequested(e);
 }
 
 #pragma endregion
@@ -93,13 +90,13 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
             ITEMSREPEATER_TRACE_INFO_DBG(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this, L"MeasureOverride shortcut - m_stackLayoutMeasureCounter:", m_stackLayoutMeasureCounter);
             // Shortcut the apparent layout cycle by returning the previous desired size.
             // This can occur when children have variable sizes that prevent the ItemsPresenter's desired size from settling.
-            const winrt::Rect layoutExtent = m_viewportManager->GetLayoutExtent();
+            const winrt::Rect layoutExtent = m_viewportManager.GetLayoutExtent();
             const winrt::Size desiredSize{ layoutExtent.Width - layoutExtent.X, layoutExtent.Height - layoutExtent.Y };
             return desiredSize;
         }
     }
 
-    m_viewportManager->OnOwnerMeasuring();
+    m_viewportManager.OnOwnerMeasuring();
 
     m_isLayoutInProgress = true;
     auto layoutInProgress = gsl::finally([this]()
@@ -151,7 +148,7 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         }
     }
 
-    m_viewportManager->SetLayoutExtent(extent);
+    m_viewportManager.SetLayoutExtent(extent);
 
     return desiredSize;
 }
@@ -219,7 +216,7 @@ winrt::Size ItemsRepeater::ArrangeOverride(winrt::Size const& finalSize)
         }
     }
 
-    m_viewportManager->OnOwnerArranged();
+    m_viewportManager.OnOwnerArranged();
     m_transitionManager.OnOwnerArranged();
 
     return arrangeSize;
@@ -279,7 +276,7 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
             m_processingItemsSourceChange.get().Action() == winrt::NotifyCollectionChangedAction::Reset);
 
     m_viewManager.ClearElement(element, isClearedDueToCollectionChange);
-    m_viewportManager->OnElementCleared(element);
+    m_viewportManager.OnElementCleared(element);
 }
 
 int ItemsRepeater::GetElementIndexImpl(const winrt::UIElement& element)
@@ -343,7 +340,7 @@ winrt::UIElement ItemsRepeater::GetOrCreateElementImpl(int index)
         element.Measure({ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() });
     }
 
-    m_viewportManager->OnMakeAnchor(element, isAnchorOutsideRealizedRange);
+    m_viewportManager.OnMakeAnchor(element, isAnchorOutsideRealizedRange);
     InvalidateMeasure();
 
     return element;
@@ -410,17 +407,17 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
     else if (property == s_HorizontalCacheLengthProperty)
     {
-        m_viewportManager->HorizontalCacheLength(unbox_value<double>(args.NewValue()));
+        m_viewportManager.HorizontalCacheLength(unbox_value<double>(args.NewValue()));
     }
     else if (property == s_VerticalCacheLengthProperty)
     {
-        m_viewportManager->VerticalCacheLength(unbox_value<double>(args.NewValue()));
+        m_viewportManager.VerticalCacheLength(unbox_value<double>(args.NewValue()));
     }
 }
 
 void ItemsRepeater::OnElementPrepared(const winrt::UIElement& element, int index)
 {
-    m_viewportManager->OnElementPrepared(element);
+    m_viewportManager.OnElementPrepared(element);
     if (m_elementPreparedEventSource)
     {
         if (!m_elementPreparedArgs)
@@ -500,8 +497,8 @@ void ItemsRepeater::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt:
     if (m_loadedCounter > m_unloadedCounter)
     {
         InvalidateMeasure();
-        m_viewportManager->ResetScrollers();
-        m_viewportManager->ResetLayoutRealizationWindowCacheBuffer();
+        m_viewportManager.ResetScrollers();
+        m_viewportManager.ResetLayoutRealizationWindowCacheBuffer();
     }
     ++m_loadedCounter;
 }
@@ -515,8 +512,8 @@ void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winr
     // The potential cache buffer is also reset so that the realization window regrows from scratch.
     if (m_unloadedCounter == m_loadedCounter)
     {
-        m_viewportManager->ResetScrollers();
-        m_viewportManager->ResetLayoutRealizationWindowCacheBuffer();
+        m_viewportManager.ResetScrollers();
+        m_viewportManager.ResetLayoutRealizationWindowCacheBuffer();
     }
 }
 
@@ -566,7 +563,7 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         if (auto const virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
             // After a data source change, reset the potential cache buffer so that the realization window regrows from scratch.
-            m_viewportManager->ResetLayoutRealizationWindowCacheBuffer();
+            m_viewportManager.ResetLayoutRealizationWindowCacheBuffer();
 
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
@@ -750,7 +747,7 @@ void ItemsRepeater::OnLayoutChanged(winrt::Layout oldValue, winrt::Layout newVal
     }
 
     bool isVirtualizingLayout = newValue != nullptr && newValue.try_as<winrt::VirtualizingLayout>() != nullptr;
-    m_viewportManager->OnLayoutChanged(isVirtualizingLayout);
+    m_viewportManager.OnLayoutChanged(isVirtualizingLayout);
     InvalidateMeasure();
 }
 

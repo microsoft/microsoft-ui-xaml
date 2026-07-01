@@ -89,10 +89,10 @@ public:
 
     winrt::IInspectable LayoutState() const { return m_layoutState.get(); }
     void LayoutState(const winrt::IInspectable& value) { m_layoutState.set(value); }
-    winrt::Rect VisibleWindow() const { return m_viewportManager->GetLayoutVisibleWindow(); }
-    winrt::Rect RealizationWindow() const { return m_viewportManager->GetLayoutRealizationWindow(); }
-    winrt::UIElement SuggestedAnchor() const { return m_viewportManager->SuggestedAnchor(); }
-    winrt::UIElement MadeAnchor() const { return m_viewportManager->MadeAnchor(); }
+    winrt::Rect VisibleWindow() const { return m_viewportManager.GetLayoutVisibleWindow(); }
+    winrt::Rect RealizationWindow() const { return m_viewportManager.GetLayoutRealizationWindow(); }
+    winrt::UIElement SuggestedAnchor() const { return m_viewportManager.SuggestedAnchor(); }
+    winrt::UIElement MadeAnchor() const { return m_viewportManager.MadeAnchor(); }
     winrt::Point LayoutOrigin() const { return m_layoutOrigin; }
     void LayoutOrigin(winrt::Point value) { m_layoutOrigin = value; }
 
@@ -152,7 +152,7 @@ private:
 
     ::TransitionManager m_transitionManager{ this };
     ::ViewManager m_viewManager{ this };
-    std::shared_ptr<::ViewportManager> m_viewportManager{ nullptr };
+    ::ViewportManager m_viewportManager{ this };
 
     tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
 

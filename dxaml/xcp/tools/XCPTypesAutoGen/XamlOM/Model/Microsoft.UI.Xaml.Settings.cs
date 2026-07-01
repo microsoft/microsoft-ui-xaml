@@ -8,17 +8,18 @@ namespace Microsoft.UI.Xaml.Settings
     // Identifies an individual optional change that can be enabled or disabled
     // through XamlOptionalChanges. Each value corresponds to a specific feature,
     // fix, or behavioral change documented in the WinUI release notes.
-    [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 9)]
+    [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 10)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     public enum XamlChangeId
     {
-        // Note: _Reserved is a toolchain placeholder (MIDLRT requires at least one enum member).
         // When adding a value, also add a case to GetBitIndex() in XamlOptionalChanges_Partial.cpp
         // and a bit-index constant in OptionalChangeState.h.
         _Reserved = 0,
         IconNoGridOptimization = 61276805,
-        DelayApplyStyleOptimization = 61697456,
+        OptimizeApplyStyles = 61697456,
+        DefaultStyleOptimizations = 60995620,
+        DeferContextFlyoutInit = 61098986,
     }
 
     // Provides static methods to opt in to or out of individual breaking or
@@ -29,7 +30,7 @@ namespace Microsoft.UI.Xaml.Settings
     // WindowsXamlManager.InitializeForCurrentThread(). The state is
     // automatically locked at the entry point of whichever of those methods
     // is called first in the process.
-    [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 9, ForcePrimaryInterfaceGeneration = true)]
+    [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 10, ForcePrimaryInterfaceGeneration = true)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     [ClassFlags(HasBaseTypeInDXamlInterface = false)]
@@ -40,15 +41,21 @@ namespace Microsoft.UI.Xaml.Settings
     {
         internal XamlOptionalChanges() { }
 
-        // Enables the specified optional change. Throws InvalidOperationException
-        // if the state has been locked and changeId is a recognized value.
+        // Enables the specified optional change. Returns true if the change is
+        // recognized in this SDK and is now enabled; returns false if the value
+        // is unrecognized (the change does not exist in this build).
+        // Throws InvalidOperationException (E_ILLEGAL_STATE_CHANGE) if the state
+        // has been locked, for any changeId (recognized or not).
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public static void EnableChange(XamlChangeId changeId) { }
+        public static bool EnableChange(XamlChangeId changeId) { return default(bool); }
 
-        // Explicitly disables the specified optional change. Throws InvalidOperationException
-        // if the state has been locked and changeId is a recognized value.
+        // Explicitly disables the specified optional change. Returns true if the
+        // change is recognized and is now disabled; returns false if the value is
+        // unrecognized (or a future permanent change that cannot be opted out of).
+        // Throws InvalidOperationException (E_ILLEGAL_STATE_CHANGE) if the state
+        // has been locked, for any changeId (recognized or not).
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
-        public static void DisableChange(XamlChangeId changeId) { }
+        public static bool DisableChange(XamlChangeId changeId) { return default(bool); }
 
         // Returns true if the specified change is currently enabled.
         // Safe to call at any time (before or after locking). Never throws.

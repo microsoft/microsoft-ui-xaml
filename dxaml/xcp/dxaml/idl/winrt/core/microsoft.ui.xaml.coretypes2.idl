@@ -511,13 +511,15 @@ namespace Microsoft.UI.Xaml.Hosting
 namespace Microsoft.UI.Xaml.Settings
 {
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
     [webhosthidden]
     enum XamlChangeId
     {
         _Reserved,
         IconNoGridOptimization = 61276805,
-        DelayApplyStyleOptimization = 61697456,
+        OptimizeApplyStyles = 61697456,
+        DefaultStyleOptimizations = 60995620,
+        DeferContextFlyoutInit = 61098986,
     };
 }
 
@@ -2337,13 +2339,13 @@ namespace Microsoft.UI.Xaml.Hosting
 }
 namespace Microsoft.UI.Xaml.Settings
 {
-    [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
     [webhosthidden]
     [default_interface]
     runtimeclass XamlOptionalChanges
     {
-        static void EnableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
-        static void DisableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean EnableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean DisableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
         static Boolean IsChangeEnabled(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
         static Boolean Lock();
         static Boolean IsLocked();

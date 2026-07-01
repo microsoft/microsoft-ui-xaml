@@ -1036,7 +1036,7 @@ CControl::CreationComplete()
 
     // Apply style if we're active. If we're not active, we'll apply the style when we become active in EnterImpl.
     // Compat mode: If perf opt-in is not enabled, apply the style even if we're not active.
-    const bool alwaysApplyStyle = !OptionalChangeState::IsDelayApplyStyleOptimizationEnabled();
+    const bool alwaysApplyStyle = !OptionalChangeState::IsOptimizeApplyStylesEnabled();
     if (IsActive() || alwaysApplyStyle)
     {
         // Only do this if it is a Control that has been subclassed in user code.

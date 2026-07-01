@@ -3312,7 +3312,7 @@ class TriageData
                 {
                     // Get the module symbol name of the next frame.
                     var nextFrameSymbol = host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[frameNum+1].ToDisplayString();
-                    if (nextFrameSymbol.indexOf("ntdll!") >= 0 && // skip: ntdll!RcFrameConsolidation
+                    if (nextFrameSymbol.indexOf("ntdll!") >= 0 && // skip: system frame consolidation routine
                         host.namespace.Debugger.State.DebuggerVariables.curstack.Frames.Count() > frameNum+2)
                     {
                         nextFrameSymbol = host.namespace.Debugger.State.DebuggerVariables.curstack.Frames[frameNum+2].ToDisplayString();
@@ -4204,7 +4204,7 @@ function invokeScript()
     //
     // See the following for more details:
     //
-    //     https://aka.ms/JsDbgExt
+    //     See debugger JavaScript extension documentation.
 
     // Debugging helper:
     //host.diagnostics.logUnhandledExceptions = true;

@@ -75,16 +75,17 @@ _Check_return_ HRESULT DirectUI::XamlOptionalChangesFactory::CheckActivationAllo
 // Static properties.
 
 // Static methods.
-IFACEMETHODIMP DirectUI::XamlOptionalChangesFactory::EnableChange(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId)
+IFACEMETHODIMP DirectUI::XamlOptionalChangesFactory::EnableChange(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
     {
         XamlTelemetry::PublicApiCall(true, 0, "XamlOptionalChanges_EnableChange", 0);
     }
+    ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     
-    
-    IFC(EnableChangeImpl(changeId));
+    IFC(EnableChangeImpl(changeId, pResult));
 Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {
@@ -92,16 +93,17 @@ Cleanup:
     }
     RRETURN(hr);
 }
-IFACEMETHODIMP DirectUI::XamlOptionalChangesFactory::DisableChange(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId)
+IFACEMETHODIMP DirectUI::XamlOptionalChangesFactory::DisableChange(ABI::Microsoft::UI::Xaml::Settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult)
 {
     HRESULT hr = S_OK;
     if (EventEnabledApiFunctionCallStart())
     {
         XamlTelemetry::PublicApiCall(true, 0, "XamlOptionalChanges_DisableChange", 0);
     }
+    ARG_VALIDRETURNPOINTER(pResult);
+    *pResult={};
     
-    
-    IFC(DisableChangeImpl(changeId));
+    IFC(DisableChangeImpl(changeId, pResult));
 Cleanup:
     if (EventEnabledApiFunctionCallStop())
     {

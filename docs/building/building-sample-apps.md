@@ -38,10 +38,10 @@ These apps are configured to be able to build in multiple different ways:
 Customers build WinUI apps by consuming a published Microsoft.WindowsAppSDK package. The sample apps can also be built
 against either a locally-produced WinUI component package or a published Microsoft.WindowsAppSDK package.
 
-The WinUI component package embeds the version of the WinUI transport package it contains.
+The WinUI component package (Microsoft.WindowsAppSDK.WinUI) embeds the version of the WinUI transport package it contains.
 
-* For local dev builds, the package is always named Microsoft.WindowsAppSDK.999.0.0-mock-3.0.0-dev.nupkg
-* For pipeline builds, the package will be named something like Microsoft.WindowsAppSDK.999.0.0-mock-3.0.0-zmain.230101.1-CI.nupkg
+* For local dev builds, the package is named Microsoft.WindowsAppSDK.WinUI.3.0.0-dev.nupkg
+* For pipeline builds, the package will be named something like Microsoft.WindowsAppSDK.WinUI.3.0.0-zmain.230101.1-CI.nupkg
 
 In any case, the procedure is the same, supplying the package version to the buildSample.cmd script.
 
@@ -49,14 +49,14 @@ In any case, the procedure is the same, supplying the package version to the bui
 
 ```shell
 init.cmd 
-scripts\buildSample WinUIGallery 999.0.0-mock-3.0.0-dev
+scripts\buildSample WinUIGallery 3.0.0-dev
 ```
 
 **WinUI component package from a pipeline run:**
 
 ```shell
 init.cmd 
-scripts\buildSample WinUIGallery 999.0.0-mock-3.0.0-zmain.230101.1-CI
+scripts\buildSample WinUIGallery 3.0.0-zmain.230101.1-CI
 ```
 
 When building the Sample Apps with this method, you do not need to build WinUI locally.

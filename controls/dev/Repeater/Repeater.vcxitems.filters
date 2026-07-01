@@ -118,7 +118,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ViewManager.cpp">
       <Filter>ItemsRepeater</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)ViewportManagerWithPlatformFeatures.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)ViewportManager.cpp">
       <Filter>ItemsRepeater</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementManager.cpp">
@@ -333,7 +333,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManager.h">
       <Filter>ItemsRepeater</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManagerWithPlatformFeatures.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)ViewportManager.h">
       <Filter>ItemsRepeater</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementManager.h">

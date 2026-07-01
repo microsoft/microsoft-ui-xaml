@@ -310,7 +310,7 @@ UINT32 FrameworkTheming::GetRootVisualBackground() const
 
 // HWND's background is decided this way :
 // 1. if highcontrast theme is applied, it overrides everything all
-// 2. else if top level element (XamlRoot.Content) has a requested theme property set, pick actualtheme of that (because requestedtheme can be overriden)
+// 2. else if top level element (XamlRoot.Content) has a requested theme property set, pick actualtheme of that (because requestedtheme can be overridden)
 // 3. else use the base theme
 UINT32 FrameworkTheming::GetHwndBackground(const Theming::Theme xamlRootTheme) const
 {

@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ExtensionPackage>
+  <Name>WinUI-DbgExt</Name>
+  <Version>1.0.0.0</Version>
+  <MinDebuggerSupported>10.0.16235.1007</MinDebuggerSupported>
+  <Description>WinUI Debugger Extension</Description>
+  <Components>
+    <ScriptComponent Name="WinUI-DbgExt" Type="Engine" File=".\winui-dbgext.js">
+      <LoadTriggers>
+        <TriggerSet>
+          <ModuleTrigger Name="microsoft.ui.xaml.dll" />
+        </TriggerSet>
+      </LoadTriggers>
+      <ObjectExtensionList>
+        <NamedExtension Name="Debugger.Models.Thread" Namespace="Debugger.Models.Thread.UI" Property="UI" />
+      </ObjectExtensionList>
+      <FunctionAliases>
+        <FunctionAlias Name="xamlthreads">
+          <AliasItem>
+            <Syntax>
+                <![CDATA[!xamlthreads]]>
+            </Syntax>
+            <Description>
+                <![CDATA[Finds all of the XAML threads and returns the primary XAML data for those threads.]]>
+            </Description>
+          </AliasItem>
+        </FunctionAlias>
+        <FunctionAlias Name="xamltriage">
+          <AliasItem>
+            <Syntax>
+                <![CDATA[!xamltriage]]>
+            </Syntax>
+            <Description>
+                <![CDATA[Finds and dumps the errors and stacks for a crash.  An optional parameter can be passed to limit the number of stacks which are printed out.]]>
+            </Description>
+          </AliasItem>
+        </FunctionAlias>
+        <FunctionAlias Name="xamlstowed">
+          <AliasItem>
+            <Syntax>
+                <![CDATA[!xamlstowed]]>
+            </Syntax>
+            <Description>
+                <![CDATA[Dumps the internal XAML stowed exceptions for the thread, if any.  An optional parameter can be passed to limit the number of stacks which are printed out.]]>
+            </Description>
+          </AliasItem>
+        </FunctionAlias>
+        <FunctionAlias Name="xamlelement">
+          <AliasItem>
+            <Syntax>
+                <![CDATA[!xamlelement elementPtr]]>
+            </Syntax>
+            <Description>
+                <![CDATA[Dumps information about the XAML element at the given pointer.]]>
+            </Description>
+          </AliasItem>
+        </FunctionAlias>
+        <FunctionAlias Name="xamlclrobj">
+          <AliasItem>
+            <Syntax>
+                <![CDATA[!xamlclrobj objPtr]]>
+            </Syntax>
+            <Description>
+                <![CDATA[Finds and provides info for the CLR object at the given address without requiring the mrt100sos extension.]]>
+            </Description>
+          </AliasItem>
+        </FunctionAlias>
+        <FunctionAlias Name="xamlclass">
+          <AliasItem>
+            <Syntax>
+                <![CDATA[!xamlclass classIndex]]>
+            </Syntax>
+            <Description>
+                <![CDATA[Dumps the XAML DependencyObject class at the given class index. Passing -1 for the class index will dump all "custom" classes (those not part of the core XAML dll).]]>
+            </Description>
+          </AliasItem>
+        </FunctionAlias>
+        <FunctionAlias Name="xamltools">
+          <AliasItem>
+            <Syntax>
+                <![CDATA[!xamltools]]>
+            </Syntax>
+            <Description>
+                <![CDATA[Some helpful commands for XAML debugging. !xamltools().xxx.Execute() can be used to run commands directly.]]>
+            </Description>
+          </AliasItem>
+        </FunctionAlias>
+      </FunctionAliases>
+    </ScriptComponent>
+  </Components>
+</ExtensionPackage>

@@ -243,7 +243,20 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("TestPass:MaxOSVer", "22621")] // This test is currently failing on 23h2, hence stop at 22h2 which is 22621.
-        public void VerifyVisualTree()
+        public void VerifyVisualTree_OptimizedStyles()
+        {
+            VerifyVisualTreeHelper("_OptimizedStyles");
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:MaxOSVer", "22621")] // This test is currently failing on 23h2, hence stop at 22h2 which is 22621.
+        [TestProperty("Data:XamlOptionalChanges", "{DefaultStyleOptimizations:false}")]
+        public void VerifyVisualTree_OldStyles()
+        {
+            VerifyVisualTreeHelper("_OldStyles");
+        }
+
+        public void VerifyVisualTreeHelper(string defaultStyleOptimizationsString)
         {
             using (VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
             {
@@ -266,7 +279,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Log.Comment($"Verify visual tree for NavigationViewScrolling");
                 var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
-                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewScrolling, verificationFileNamePrefix: "NavigationViewScrolling");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewScrolling, verificationFileNamePrefix: "NavigationViewScrolling" + defaultStyleOptimizationsString);
 
                 Log.Comment($"Verify visual tree for NavigationViewLeftPaneContent");
                 var leftNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Left);

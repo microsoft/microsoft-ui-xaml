@@ -67,57 +67,18 @@ the build as before.
 
 ### I am not ready to create a PR just yet, but still want to run a test pass.
 You can manually run a pipeline without creating a PR. Push your branch and then queue the pipeline against it.
-Here is a link to the WinUI-BuildAndTest pipeline. Navigate to the pipeline in Azure DevOps.
+Navigate to the WinUI-BuildAndTest pipeline in Azure DevOps.
 Click 'Run Pipeline' and select your branch.
 This will build x86chk and run the tests against the build.
 
-You can also use script [`test\RunBuildAndTestPipeline.ps1`](../../test/RunBuildAndTestPipeline.ps1) to queue this
-Pipeline from the command line.
-
-To use this script you will need to create a Personal Access Token.
-
-To create the token, go to the above url and click **New Token**. Give it a name and under **Scopes** make sure to
-check **Build: Read & execute**. After clicking Create, copy the token and store it somewhere. To pass the token to the
-script either specify it as a parameter:
-```
-RunBuildAndTestPipeline.ps1 -AzureDevOpsToken abcd1234
-```
-The token will be locally cached in AppData, so you only need to explicitly specify the token the first time you run the
-script. To update the cached token (e.g. because the token has expired), just run the script again with a new token.
-
-The script takes parameters like `-buildPlatform`, `-buildConfiguration` and `-testOS` that let you configure what to build and run.
-
-For example:
-```
-test\RunBuildAndTestPipeline.ps1 -buildPlatform x64 -buildConfiguration fre -testOS RS5
-```
-
-
 ### I want to do a lab test run, but I only need to run a subset of the tests.
-Use the `RunBuildAndTestPipeline.ps1` script mentioned above and specify a value for either
-`-taefSelectQuery` or `-taefTestNameFilter`
-
-For example:
-```
-RunBuildAndTestPipeline.ps1 -taefSelectQuery "@Name='*CommandBar*'"
-```
-
-Make sure to enclose the taef query in quotes to ensure that Powershell does not attempt to interpret the value.
-
-Or:
-```
-RunBuildAndTestPipeline.ps1 -taefTestNameFilter CommandBar
-```
-
-This will run all tests with 'CommandBar' in the name.
-
-If you don't want to queue the Pipeline manually instead of using the script: When you click 'Run Pipeline',
-select 'Variables' and then enter a value for 'taefQuery'. For example:
+When you click 'Run Pipeline', select 'Variables' and then enter a value for `taefQuery`. For example:
 ```
 @Name='*CommandBar*'
 ```
 
-Make sure to enter the taefQuery that you desire correctly or the results that you get might not be as expected.
+This will run all tests with 'CommandBar' in the name. Make sure to enter the `taefQuery` that you desire correctly or
+the results that you get might not be as expected.
 
 Note that unit tests will always run regardless of the value of taefQuery.
 
@@ -336,12 +297,12 @@ te.exe test\Microsoft.UI.Xaml.*.dll /name:...
 tttracer.exe -delete *
 ```
 
-> You must use the TTTracer you get by installing debuggers (usually into `c:\debuggers`).
+> You must use the TTTracer you get by installing Windows Debugging Tools.
 The default version of TTTracer.exe in `System32` isn't sufficient.
 
 > You must match bitness/arch.
 If you're running x86 tests (the default for PR pipeline), you must use the wow64 version of TTTracer
-(`c:\debuggers\ttd\wow64\tttracer.exe`)
+from the Windows Debugging Tools installation directory.
 
 #### The Time Travel Trace still isn't working!
 Some WPF-hosted tests and win32explicit tests run through `te.processhost.exe` instead of `taefhostapp.exe` or
@@ -354,7 +315,7 @@ and not the test infrastructure itself.
    /out c:\data /attach [PID]` and then let the test run.  You're done!
 
 If the wait _doesn't_ support tttracer, you need to attach a debugger to trigger the test to continue:
-1. Attach a normal debugger to the requested PID.  (ex: `c:\debuggers\cdb -p [PID]`)
+1. Attach a normal debugger to the requested PID.  (ex: `cdb -p [PID]`)
 2. While the debugger is attached and broken in, then in another command window run `tttracer.exe /out c:\data /attach
    [PID]`.
 3. Go back to your debugger and detach it.  (ex: `qd` in windbg/cdb)
@@ -556,9 +517,6 @@ tests on 20H2. But when you queue it, you can override this default. Under **Var
 to 'rs5' and queue the build against your user branch. If you only want to run a subset of tests, also set the
 **taefQuery** variable to the query that you want to run.
 
-You can also use the script `test\RunBuildAndTestPipeline.ps1` to queue this Pipeline from the command line. Run with
-`-testOS RS5` to run tests on RS5.
-
 ### How do I disable a test on a particular version of the OS?
 By default all tests will be enabled for any version of the OS. But this can be controlled by specifying test metadata,
 "TestPass:MinOSVer" and "TestPass:MaxOSVer" which control the minimum and maximum version of the OS that the test is
@@ -573,28 +531,14 @@ or C++: `TEST_METHOD_PROPERTY(L"TestPass:MinOSVer", WINDOWS_OS_VERSION_19H1)`
 ### How should I investigate tests that were disabled due to stability issues?
 Investigating failures for tests that have been disabled can be tricky, especially in the case where the test failures
 do not consistently repro locally and you want to try running them in the lab. You can schedule a Pipeline to run tests
-including those that have been disabled by using the -RunIgnoredTests flag on RunBuildAndTestPipeline.ps1.
+including those that have been disabled by setting queue-time variables when you manually run the Pipeline.
 
-For example:
+For example, set `taefQuery` to `@Name='*MenuBarTests*'` and set `runIgnoredTests` to `1`. This will schedule a Pipeline
+and run all MenuBar tests, even those that have been disabled, without you having to manually update the test code to
+remove [TestProperty("Ignore", "True")] from the test cases.
 
-`test\RunBuildAndTestPipeline.ps1 -taefTestNameFilter *MenuBarTests* -RunIgnoredTests `
-
-This will schedule a Pipeline and run all MenuBar tests, even those that have been disabled, without you having to
-manually update the test code to remove [TestProperty("Ignore", "True")] from the test cases.
-
-If you don't have any code changes that you need to build, you can skip the build stage of the Pipeline entirely by
-re-using the output of a previous Pipeline run, e.g.:
-
-`test\RunBuildAndTestPipeline.ps1 -taefTestNameFilter *MenuBarTests* -RunIgnoredTests -useBuildOutputFromBuildId 30744689 -useBuildOutputFromPipeline WinUI-CI`
-
-This will run all MenuBar tests against the build binaries produced by build id '30744689' from the CI Pipeline.
-
-Furthermore, in the case where a test is not failing consistently, you can have the tests be run multiple times to weed
-out any stability issues:
-
-`test\RunBuildAndTestPipeline.ps1 -taefTestNameFilter *MenuBarTests* -RunIgnoredTests -useBuildOutputFromBuildId 30744689 -useBuildOutputFromPipeline WinUI-CI -testExecutionMultiplier 10`
-
-This will run the MenuBar tests 10 times in a single Pipeline run.
+If a test is not failing consistently, set `testExecutionMultiplier` to the number of times that you want the selected
+tests to run in a single Pipeline run.
 
 ### Opening a test run log file gives the error: "This XML file does not appear to have any style information associated with it"
 

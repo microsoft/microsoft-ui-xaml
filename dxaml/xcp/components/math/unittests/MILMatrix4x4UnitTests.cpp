@@ -107,7 +107,7 @@ void MILMatrix4x4UnitTests::ValidateTransformWorldToLocal_RotationX()
     const XPOINTF input[] = { {1234, 4321}, {0, 0}, {-10, 30} };
     // Rotate X by 30 degrees = Y coordinate is scaled by root(3)/2, so 100 in local coords becomes 86.6 in screen space.
     // To go from screen space to local space, scale Y by 2/root(3).
-    const XPOINTF expected[] = { {1234, static_cast<float>(4321 * 2 / sqrt(3))}, {0, 0}, {-10, static_cast<float>(30 * 2 / sqrt(3))} };
+    const XPOINTF expected[] = { {1234, static_cast<float>(static_cast<double>(4321) * 2 / sqrt(3))}, {0, 0}, {-10, static_cast<float>(static_cast<double>(30) * 2 / sqrt(3))} }; // PREfast C26451 - widen before multiply
 
     matrix.SetToRotationX(30);
     VerifyPoints(matrix, input, expected);

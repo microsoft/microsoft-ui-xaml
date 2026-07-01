@@ -10,6 +10,7 @@ using System.Diagnostics;
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
+using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
@@ -43,6 +44,8 @@ namespace MUXControlsTestApp
 
                 DebugBreak();
             }
+
+            ApiTestBase.EnableAllXamlOptionalChanges();
 
             // This is the entry point for API tests rather than Program.Main, so we'll call that on another thread
             // in order to initialize the XAML application for API testing.  It needs to be on its own thread because

@@ -114,6 +114,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.IO
         // conditional XAML, etc.)
         // 2. XBF format version
         public bool IgnoreSpecifiedTargetPlatformMinVersion { get; set; }
+
+        public string EnabledXamlOptionalChanges { get; set; }
+        public string DisabledXamlOptionalChanges { get; set; }
         #endregion
 
         #region Task Input Properties

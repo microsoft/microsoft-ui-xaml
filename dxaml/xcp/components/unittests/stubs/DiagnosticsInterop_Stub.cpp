@@ -55,6 +55,10 @@ namespace Diagnostics
     }
 
     PropertyChainIterator::PropertyChainIterator()
+        // PREfast C26495 - initialize m_lastKnownIndex with an enum literal. m_data is default-constructed
+        // (PropertyChainData has a default ctor). Avoid EnumIterator<KnownPropertyIndex>::End(), whose definition is not
+        // linked into the stub libs (the stub previously left this ctor empty for that reason) -> would cause LNK2001.
+        : m_lastKnownIndex(KnownPropertyIndex::UnknownType_UnknownProperty)
     {
     }
 
@@ -63,7 +67,7 @@ namespace Diagnostics
         return *this;
     }
 
-    bool PropertyChainIterator::operator!=(_In_ const PropertyChainIterator& rhs) const
+    bool PropertyChainIterator::operator!=(const PropertyChainIterator& rhs) const // PREfast C28301 - match first declaration
     {   
         return true;
     }

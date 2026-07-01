@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>WinMDVersionVerifyLcr</id>
+    <version>1.0.2</version>
+    <title>WinMDVersionVerifyLcr</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <description>Provides access to WinMDVersionVerifyLcr.exe</description>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+  </metadata>
+  <files>
+    <file target="" src="WinMDVersionVerifyLcr.exe" />
+  </files>
+</package>

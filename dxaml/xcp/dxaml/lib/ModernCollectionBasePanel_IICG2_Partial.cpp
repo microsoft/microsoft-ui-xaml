@@ -823,8 +823,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RecycleLinkedContainer(_In_ xa
             IFC_RETURN(GetTrackedElement(&trackedElement));
             if (trackedElement.Get() == container)
             {
-                TraceGuardFailure(L"TrackedContainerRecycled");
                 // Re-elect a visually-adjacent realized element so the next measure pass doesn't seed from a recycled container.
+                TraceGuardFailure(L"TrackedContainerRecycled - NewTrackedElementElected");
                 IFC_RETURN(ElectNewTrackedElement());
             }
         }
@@ -895,8 +895,8 @@ _Check_return_ HRESULT ModernCollectionBasePanel::RecycleHeaderImpl( _In_ xaml::
             IFC_RETURN(GetTrackedElement(&trackedElement));
             if (trackedElement.Get() == header)
             {
-                TraceGuardFailure(L"TrackedHeaderRecycled");
                 // Re-elect a visually-adjacent realized element so the next measure pass doesn't seed from a recycled header.
+                TraceGuardFailure(L"TrackedHeaderRecycled - NewTrackedElementElected");
                 IFC_RETURN(ElectNewTrackedElement());
             }
         }

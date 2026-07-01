@@ -121,7 +121,7 @@ CFrameworkElement::CreationComplete()
     {
         // Apply style if we're active. If we're not active, we'll apply the style when we become active in EnterImpl.
         // Compat mode: If perf opt-in is not enabled, apply the style even if we're not active.
-        const bool alwaysApplyStyle = !OptionalChangeState::IsDelayApplyStyleOptimizationEnabled();
+        const bool alwaysApplyStyle = !OptionalChangeState::IsOptimizeApplyStylesEnabled();
         if (IsActive() || alwaysApplyStyle)
         {
             IFC_RETURN(ApplyStyle());
@@ -843,29 +843,23 @@ CFrameworkElement::OnStyleChanged(
             // is permanent for the duration of this style application, so the deferred
             // Setter.Value can never become effective and there's no need to realize/peg it.
             //
-            // We must NOT skip for transient sources like Local or Animation
-            // — those can be cleared (ClearValue, animation ending) and would then expose this
-            // style's value, which must already be realized at that point.  The upper bound
-            // (existingSource <= BaseValueSourceStyle) ensures only the Style-override case
-            // triggers the skip.
+            // We must NOT skip for transient sources like Local or Animation, since
+            // those can be cleared (ClearValue, animation ending) and would then expose this
+            // style's value, which must already be realized at that point.
             //
-            // Note: GetBaseValueSource conflates BuiltInStyle and Style on its output side
-            // (IsPropertySetByStyle is true for both, and the function always returns
-            // BaseValueSourceStyle in that case — it never returns BaseValueSourceBuiltInStyle).
-            // We must therefore read it BEFORE InvalidateProperty, otherwise the newly-applied
+            // IsPropertySetByStyle returns true for both BuiltInStyle and Style sources, so
+            // it must be read BEFORE InvalidateProperty, otherwise the newly-applied
             // BuiltInStyle would itself satisfy IsPropertySetByStyle and be misreported as a
             // "Style" override.
-            const BaseValueSource existingSource = GetBaseValueSource(pDP);
-            if (baseValueSource == BaseValueSourceUnknown ||
-                baseValueSource >= existingSource ||
-                existingSource > BaseValueSourceStyle)
+            bool canSkipNotify = OptionalChangeState::IsOptimizeApplyStylesEnabled() &&
+                baseValueSource != BaseValueSourceUnknown &&
+                baseValueSource < BaseValueSourceStyle &&
+                IsPropertySetByStyle(pDP);
+
+            IGNOREHR(InvalidateProperty(pDP, baseValueSource));
+            if (!canSkipNotify)
             {
-                IGNOREHR(InvalidateProperty(pDP, baseValueSource));
                 IFC(pNewStyle->NotifySetterApplied(i));
-            }
-            else
-            {
-                IGNOREHR(InvalidateProperty(pDP, baseValueSource));
             }
         }
 
@@ -2504,7 +2498,7 @@ CFrameworkElement::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ Enter
     {
         if (m_eImplicitStyleProvider == ImplicitStyleProvider::None)
         {
-            const bool forceApplyStyle = !m_initialStyleApplied && OptionalChangeState::IsDelayApplyStyleOptimizationEnabled();
+            const bool forceApplyStyle = !m_initialStyleApplied && OptionalChangeState::IsOptimizeApplyStylesEnabled();
             if (forceApplyStyle || !GetStyle())
             {
                 IFC_RETURN(ApplyStyle());

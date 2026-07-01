@@ -33,7 +33,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 /*
                 #3949 is created to re-enable this part
                 This is an unparented ImageIcon, so looking up the default foreground and verifying
-                is a bit wierd. The colors are also chaning, so this is going to fail with those changes
+                is a bit weird. The colors are also changing, so this is going to fail with those changes
                 So commenting this check out for now to make the test more resilient.
 
                 var theme = Application.Current.RequestedTheme;

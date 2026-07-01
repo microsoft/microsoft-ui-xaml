@@ -211,6 +211,11 @@ if ($Mode -eq "DevTestSuite")
         Publish-Item "$binpath\Symbols\Product\Microsoft.ui.xaml.pdb" "$outpath\Test"
         Publish-Item "$binpath\Symbols\Product\Microsoft.ui.xaml.controls.pdb" "$outpath\Test"
     }
+    else
+    {
+        # The recursive copy of Test\ picks up PDBs from UnpackagedApps/. Remove them.
+        Get-ChildItem "$outpath\Test" -Recurse -Filter *.pdb -ErrorAction SilentlyContinue | Remove-Item -Force
+    }
 }
 
 if ($Mode -eq "ScenarioTestSuite")

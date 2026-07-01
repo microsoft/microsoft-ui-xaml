@@ -35,12 +35,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         BEGIN_TEST_METHOD(EnableChangeFailsAfterLock)
             TEST_METHOD_PROPERTY(L"Description",
-                L"Verifies EnableChange returns E_ILLEGAL_STATE_CHANGE for recognized values after Lock")
+                L"Verifies EnableChange returns E_ILLEGAL_STATE_CHANGE after Lock for any changeId")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(DisableChangeFailsAfterLock)
             TEST_METHOD_PROPERTY(L"Description",
-                L"Verifies DisableChange returns E_ILLEGAL_STATE_CHANGE for recognized values after Lock")
+                L"Verifies DisableChange returns E_ILLEGAL_STATE_CHANGE after Lock for any changeId")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(IsChangeEnabledWorksAfterLock)
@@ -48,9 +48,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verifies IsChangeEnabled still returns correct value after Lock")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(UnrecognizedValueSilentlyIgnored)
+        BEGIN_TEST_METHOD(UnrecognizedValueContract)
             TEST_METHOD_PROPERTY(L"Description",
-                L"Verifies _Reserved silently no-ops and returns false, even after lock")
+                L"Verifies unrecognized values: pre-lock Enable/Disable returns FALSE, post-lock both throw E_ILLEGAL_STATE_CHANGE")
         END_TEST_METHOD()
     };
 

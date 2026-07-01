@@ -1,6 +1,6 @@
 # Debugging
 
-> See [Testing In WinUI FAQ](../testing-FAQ.md) and [WinUI CI Test System Overview](../test-system-overview.md)
+> See [Testing In WinUI FAQ](../testing/testing-FAQ.md) and [WinUI CI Test System Overview](../testing/test-system-overview.md)
 > for instruction for general debugging instructions for testing your changes.
 
 [Debugging Tips](debugging-tips.md) contains some useful tips for diagnosis and debugging. You are encouraged to update 
@@ -24,12 +24,12 @@ these docs if you have anything to add or amend.
 You first need to perform a full build using the `build.cmd` script in the root of the repo.
 
 To build and test any of the sample apps in the repo, including the WinUI Gallery, see 
-[building sample apps](../building-sample-apps.md)
+[building sample apps](../building/building-sample-apps.md)
 
 To create an app following all the same steps as someone externally using the preview builds, but using an 
 internal build. See [Writing an app against an official internal build](../writing-an-app-with-internal-build.md)
 
-To create a new app inside the repo using local bits, see [Creating a new test app in the repo](../building-new-repo-app.md)
+To create a new app inside the repo using local bits, see [Creating a new test app in the repo](../building/building-new-repo-app.md)
 
 ## Testing and debugging private bits in different app configurations
 One way to test updated product binaries with an app that's already installed is
@@ -40,7 +40,7 @@ approaches can be used to replace dlls/binaries used by corresponding app with o
 you provide to test your changes (and they can be debugged with corresponding PDBs)
 
 ### Testing against private bits within xaml repo
-If you are working in `lifted-xaml` repo, sample apps `(\<repo\>\samples\\)` always pick up dlls from `BuildOutput`. All you need is to build `lifted-xaml` repo the usual way and rebuild the any sample app. See [Testing In WinUI FAQ](testing-FAQ.md) for details.
+If you are working in `lifted-xaml` repo, sample apps `(\<repo\>\samples\\)` always pick up dlls from `BuildOutput`. All you need is to build `lifted-xaml` repo the usual way and rebuild any sample app. See [Testing In WinUI FAQ](../testing/testing-FAQ.md) for details.
 
 ### Overwriting WinUI binaries in a VS app
 

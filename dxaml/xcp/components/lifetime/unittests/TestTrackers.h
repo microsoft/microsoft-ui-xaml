@@ -89,7 +89,7 @@ namespace DirectUI
     private:
         unsigned m_pegCount = 0;
         unsigned m_unpegCount = 0;
-        WuxTracker* m_inner;
+        WuxTracker* m_inner = nullptr; // PREfast C26495 - initialize member
     };
 
 }

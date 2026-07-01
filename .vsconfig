@@ -30,6 +30,8 @@
     "Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64",
     "Microsoft.VisualStudio.Component.VC.14.44.17.14.ARM.Spectre",
     "Microsoft.VisualStudio.Component.VC.14.44.17.14.ARM64.Spectre",
-    "Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64.Spectre"
+    "Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64.Spectre",
+    "Microsoft.VisualStudio.Component.WindowsAppSdkSupport.Cpp",
+    "Microsoft.VisualStudio.Component.WindowsAppSdkSupport.CSharp"
   ]
 }

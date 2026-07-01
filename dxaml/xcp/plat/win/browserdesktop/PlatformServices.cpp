@@ -363,40 +363,36 @@ _Check_return_ HRESULT
         IFC_RETURN(E_INVALIDARG);
     }
 
-    if (!m_keyboardInputStatics)
-    {
-        IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
-            &m_keyboardInputStatics));
-    }
+    ixp::IInputKeyboardSourceStatics* keyboardStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetInputKeyboardSourceStatics();
+    IFCEXPECT_RETURN(keyboardStatics);
 
     wuc::CoreVirtualKeyStates keyState;
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Menu, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Menu, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_ALT;  // Alt key.
     }
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Control, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Control, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_CTRL;  // Ctrl key.
     }
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Shift, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Shift, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_SHIFT;  // Shift key.
     }
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_LeftWindows, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_LeftWindows, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_WINDOWS;  // Windows key.
     }
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_RightWindows, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_RightWindows, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_WINDOWS;  // Windows key.

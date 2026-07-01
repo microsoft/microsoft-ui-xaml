@@ -181,13 +181,6 @@ DXamlCore::~DXamlCore()
 
     ReleaseInterface(m_pControl);
 
-    // Release PageNavigation complete event, if exists
-    if (m_pPageNavigationCompleteEvent)
-    {
-        m_pPageNavigationCompleteEvent->Close();
-        m_pPageNavigationCompleteEvent = NULL;
-    }
-
     RemoveAutoHideScrollBarsChangedHandler();
     RemoveAnimationsEnabledChangedHandler();
 }
@@ -3599,71 +3592,11 @@ DXamlCore::XamlPalSetCoreWindow()
 
     IFC(m_hCore->InitWaitForIdleEvents());
 
-    // Open PageNavigation complete Named event created by TestAutomationHelper class.
-    IFC(RetrievePageNavigationCompleteEvent());
-
 Cleanup:
     return hr;
 }
 
 
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Retrieves the page navigation complete event,
-//      which are created by TestAutomationHelper.
-//
-//------------------------------------------------------------------------
-_Check_return_ HRESULT
-DXamlCore::RetrievePageNavigationCompleteEvent()
-{
-    HRESULT hr = S_OK;
-
-    IFC(gps->NamedEventCreate(
-        &m_pPageNavigationCompleteEvent,
-        InitModeOpenOrCreate,
-        FALSE /* bInitialState */,
-        FALSE /* bManualReset */,
-        XSTRING_PTR_EPHEMERAL(L"PageNavigationComplete"),
-        FALSE /* bReturnFailureIfCreationFailed */));
-
-Cleanup:
-    return hr;
-}
-
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Returns a value indicating whether or not the page navigation
-//      complete event has been successfully retrieved.
-//
-//------------------------------------------------------------------------
-bool
-DXamlCore::HasPageNavigationCompleteEvent()
-{
-    return m_pPageNavigationCompleteEvent != NULL;
-}
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Sets the page navigation complete event, if it exists.
-//
-//------------------------------------------------------------------------
-_Check_return_ HRESULT
-DXamlCore::SetPageNavigationCompleteEvent()
-{
-    HRESULT hr = S_OK;
-
-    if (m_pPageNavigationCompleteEvent != NULL)
-    {
-        IFC(m_pPageNavigationCompleteEvent->Set());
-    }
-
-Cleanup:
-    return hr;
-}
 
 //------------------------------------------------------------------------
 //

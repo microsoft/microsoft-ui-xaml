@@ -424,10 +424,17 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
         END_TEST_METHOD()
 
-        BEGIN_TEST_METHOD(ValidateUIElementTree)
+        BEGIN_TEST_METHOD(ValidateUIElementTree_OptimizedStyles)
             TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of ScrollViewer in various visual states.")
             TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
             TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(ValidateUIElementTree_OldStyles)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of ScrollViewer in various visual states.")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+            TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DefaultStyleOptimizations:false}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(ResizeUnconstrainedScrollViewer)
@@ -703,6 +710,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         void ValidateNoLayoutCycleWithScaledMargins(float scaleFactor);
         void ValidateNoLayoutCycleWithMaxOffset(float scaleFactor);
         void ValidateScrollBarTrackLengthWithContentChanged(bool isVerticalScenario);
+        void ValidateUIElementTreeHelper();
     };
 
 } } } } } }

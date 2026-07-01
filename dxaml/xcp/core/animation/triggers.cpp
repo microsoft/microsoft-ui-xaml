@@ -114,7 +114,7 @@ _Check_return_ HRESULT CEventTrigger::SetValue(_In_ const SetValueParams& args)
         //
         //  1. The text string doesn't contain a separator ".", (return value is XUINT32(~0)).
         //  2. Contains the "." separator at wrong position,
-        //     such as at the begining or at the end.
+        //     such as at the beginning or at the end.
         //
 
         const auto cOffsetSeparator = strStringValue.FindChar(L'.');

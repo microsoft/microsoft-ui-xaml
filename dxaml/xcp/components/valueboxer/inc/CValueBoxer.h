@@ -699,6 +699,8 @@ namespace DirectUI
                 ctl::ComPtr<IInspectable> spObj;
                 ctl::ComPtr<wf::IReference<U>> spObjAsRef;
 
+                // PREfast C6388 - the optional type-info parameter is intentionally null for enum unboxing.
+                #pragma warning(suppress: 6388)
                 IFC_RETURN(UnboxEnumValue(box, nullptr, &value));
                 IFC_RETURN(CreatorFn(static_cast<T>(value), &spObj));
                 IFC_RETURN(spObj.As(&spObjAsRef));

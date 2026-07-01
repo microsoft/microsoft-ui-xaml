@@ -496,11 +496,6 @@ namespace DirectUI
 
         _Check_return_ HRESULT XamlPalSetCoreWindow();
 
-        // Page waiter event Apis
-        _Check_return_ HRESULT RetrievePageNavigationCompleteEvent();
-        bool HasPageNavigationCompleteEvent();
-        _Check_return_ HRESULT SetPageNavigationCompleteEvent();
-
         void SetAtlasSizeHint(XUINT32 width, XUINT32 height);
         void ResetAtlasSizeHint();
         void DisableAtlas();
@@ -833,8 +828,6 @@ namespace DirectUI
 
         xstring_ptr m_genericXamlFilePathFromMUX;
         bool m_shouldCheckGenericXamlFilePathFromMUX {true};
-
-        IPALEvent *m_pPageNavigationCompleteEvent {nullptr};
 
         // Visual Diagnostics
         WCHAR                           m_pszVisualDiagEndpointName[35] = {0};

@@ -1915,6 +1915,67 @@ void XamlIslandTests::ShowTeachingTipWhileIslandClosing()
     ::Sleep(100);
 }
 
+// Regression test for bug 56349293 (Watson FailureHash 1ff4e5f0-fbf9-e1d3-0322-cffe35ae64af):
+// setting Content on a DesktopWindowXamlSource after it has been closed must not crash.
+// Before the fix, the call forwarded into the already-disposed core CXamlIslandRoot (whose
+// m_contentRoot is null) and access-violated in VisualTree::SetPublicRootVisual. After the fix,
+// clearing Content (= nullptr) is a benign no-op, and setting non-null Content fails cleanly with
+// E_UNEXPECTED. Run against an unfixed build this test crashes (AV); against a fixed build it passes.
+void XamlIslandTests::SetContentAfterCloseDoesNotCrash()
+{
+    XamlIslandTestHelper testHelper(this);
+    testHelper.StartAppOnCurrentThread();
+    testHelper.StartAndPrepNewUIThreadWithWindow();
+
+    DesktopWindowXamlSource^ dwxs;
+
+    testHelper.RunOnIslandUIThread([&]()
+    {
+        LOG_OUTPUT(L"  > Creating DesktopWindowXamlSource.");
+        dwxs = CreateDesktopWindowXamlSource(testHelper.m_topLevelHwnd, L"Button number 1");
+
+        // Create a spare element up front, while the source is still open, so the post-Close
+        // assignment below is the only thing under test.
+        Button^ lateContent = ref new Button();
+
+        LOG_OUTPUT(L"  > Closing DesktopWindowXamlSource.");
+        CloseObject(dwxs);
+
+        // (1) Clearing Content after Close() is a benign, idempotent no-op -- apps commonly set
+        //     Content = null during their own teardown. This must neither throw nor crash.
+        LOG_OUTPUT(L"  > Setting Content = nullptr after Close (expected: no-op, no crash).");
+        bool clearContentThrew = false;
+        try
+        {
+            dwxs->Content = nullptr;
+        }
+        catch (Platform::Exception^)
+        {
+            clearContentThrew = true;
+        }
+        VERIFY_IS_FALSE(clearContentThrew, L"Clearing Content after Close should be a no-op, not throw.");
+
+        // (2) Setting non-null Content after Close() is invalid (there is no re-open API). It must
+        //     fail cleanly with E_UNEXPECTED instead of access-violating.
+        LOG_OUTPUT(L"  > Setting non-null Content after Close (expected: E_UNEXPECTED).");
+        HRESULT setContentResult = S_OK;
+        try
+        {
+            dwxs->Content = lateContent;
+        }
+        catch (Platform::COMException^ e)
+        {
+            setContentResult = e->HResult;
+            LOG_OUTPUT(L"    Content setter threw hr=0x%08x.", setContentResult);
+        }
+        VERIFY_ARE_EQUAL(E_UNEXPECTED, setContentResult);
+
+        dwxs = nullptr;
+    });
+
+    ::Sleep(100);
+}
+
 ref class CustomBackdrop_TrackOnConnected : public SystemBackdrop
 {
 public:

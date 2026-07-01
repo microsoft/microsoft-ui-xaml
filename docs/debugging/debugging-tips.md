@@ -176,7 +176,7 @@ In this case `OverrideXamlResourcePropertyBag` is the only hint provided by the 
 function you'd realize that this is more or less a dead end. Another less-obvious hint is the file memory.cpp, which we 
 can examine to find the function `XcpCheckLeaks`.
 
-Run the test in question. For help running tests, see [Testing FAQ](../testing-FAQ.md). 
+Run the test in question. For help running tests, see [Testing FAQ](../testing/testing-FAQ.md). 
 In this case, the test command used was: 
 
 `te.exe test\Microsoft.UI.Xaml.Tests.External.Controls.TimePicker.dll /runas:UAP /select:"@Name='*TimePickerIntegrationTests::VerifyDefaultProperties'" /WaitForDebugger`

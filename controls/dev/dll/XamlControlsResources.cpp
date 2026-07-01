@@ -7,6 +7,19 @@
 #include "RevealBrush.h"
 #include "MUXControlsFactory.h"
 
+static bool AreDefaultStyleOptimizationsEnabled()
+{
+    try
+    {
+        return winrt::Microsoft::UI::Xaml::Settings::XamlOptionalChanges::IsChangeEnabled(
+            winrt::Microsoft::UI::Xaml::Settings::XamlChangeId::DefaultStyleOptimizations);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
 XamlControlsResources::XamlControlsResources()
 {
     // On Windows, we need to add theme resources manually.  We'll still add an instance of this element to get the rest of
@@ -39,14 +52,14 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
-    const bool isPerf2026Enabled = true; // TODO: Decide based on opt-in flag, task.ms/60958581
+    const bool arePerf2026StylesEnabled = AreDefaultStyleOptimizationsEnabled();
 
     // We choose the URI to use at runtime based on whether we want compact resources
     winrt::Uri uri{
-        [useCompactResources, isPerf2026Enabled]() -> hstring {
+        [useCompactResources, arePerf2026StylesEnabled]() -> hstring {
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-            hstring postfix = isPerf2026Enabled && !useCompactResources ? L"themeresources_perf2026.xaml" : L"themeresources.xaml";
+            hstring postfix = arePerf2026StylesEnabled && !useCompactResources ? L"themeresources_perf2026.xaml" : L"themeresources.xaml";
 
             return packagePrefix + compactPrefix + postfix;
         }()
@@ -70,8 +83,8 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
 
     if (auto control = controlProtected.try_as<winrt::IControl>())
     {
-        const bool isPerf2026Enabled = false; // TODO: Decide based on opt-in flag, task.ms/60958581
-        winrt::Uri uri{isPerf2026Enabled
+        const bool arePerf2026StylesEnabled = AreDefaultStyleOptimizationsEnabled();
+        winrt::Uri uri{arePerf2026StylesEnabled
             ? L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic_perf2026.xaml"
             : L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic.xaml"};
         control.DefaultStyleResourceUri(uri);

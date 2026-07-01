@@ -210,7 +210,7 @@ For more information about advanced build scenarios, see [Advanced build topics]
 
 For more information about building and using Sample apps, see [WinUI Sample Apps](building-sample-apps.md)
 For more information about manual testing and debugging, see [debugging](../debugging/debugging.md)
-For more information on creating a manual test app in VS and iterating on your changes see [Ad-Hoc testing of local build with fast innerloop](./ad-hoc-testing-of-local-build-with-fast-inner-loop.md).
+For more information on creating a manual test app in VS and iterating on your changes see [Ad-Hoc testing of local build with fast innerloop](../ad-hoc-testing-of-local-build-with-fast-inner-loop.md).
 For more information about automated testing, see [Testing In WinUI FAQ](../testing/testing-FAQ.md) and
 [WinUI CI Test System Overview](../testing/test-system-overview.md)
 

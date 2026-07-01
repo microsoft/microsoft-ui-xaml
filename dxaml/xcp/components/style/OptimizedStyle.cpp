@@ -39,7 +39,7 @@
 #include <LineInfo.h>
 #include <ParserErrorService.h>
 #include <xcperrorresource.h>
-#include <PerfOptIn.h>
+#include <OptionalChangeState.h>
 #include "Template.h"
 #include "XamlTelemetry.h"
 #include "corep.h"
@@ -191,7 +191,7 @@ _Check_return_ HRESULT OptimizedStyle::Initialize(
 
     m_basedOnBegin = m_properties.size();
 
-    if (!IsPerfOptInEnabled())
+    if (!OptionalChangeState::IsOptimizeApplyStylesEnabled())
     {
         IFC_RETURN(EnsureAllValuesRealized());
     }

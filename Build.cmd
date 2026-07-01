@@ -312,21 +312,11 @@ goto :eof
 
 
 :buildMockPackage
-if EXIST "%RepoRoot%\pack.cmd" (
-    if "%_fake%"=="1" (
-        echo COMMAND: call %RepoRoot%\pack.cmd /version %_version%
-        echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
-        goto :eof
-    )
-    call %RepoRoot%\pack.cmd /version %_version%
-    call %RepoRoot%\pack.component.cmd /version %_version%
-) else (
-    if "%_fake%"=="1" (
-        echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
-        goto :eof
-    )
-    call %RepoRoot%\pack.component.cmd /version %_version%
+if "%_fake%"=="1" (
+    echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
+    goto :eof
 )
+call %RepoRoot%\pack.component.cmd /version %_version%
 if ERRORLEVEL 1 goto :showDurationAndExit
 goto :eof
 

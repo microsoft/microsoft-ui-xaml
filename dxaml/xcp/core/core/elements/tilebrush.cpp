@@ -103,11 +103,26 @@ CTileBrush::ComputeStretchAndAlignment(
     XFLOAT rScaleY = 1.0f;
     XFLOAT rDeltaX = 0.0f;
     XFLOAT rDeltaY = 0.0f;
-    XFLOAT rAspectRatioXY = 1.0f;
 
     // Should we ASSERT this?  Currently we are regularly calling before the image bits
     // are downloaded, at which point the natural bounds are 0
     IFCCHECK_NOTRACE_RETURN((pNaturalBounds->Height > 0) && (pNaturalBounds->Width > 0));
+
+    // pRenderBounds can transiently be zero during initial layout or when the element has no
+    // visible area. Bail out when BOTH dimensions are non-positive so every stretch mode yields a
+    // "nothing to draw" result and the Uniform/UniformToFill paths below don't form rScaleX/rScaleY
+    // = 0/0 (a NaN that raises STATUS_FLOAT_INVALID_OPERATION on processes with unmasked FPU
+    // exceptions). Those paths compare the two scales directly (rScaleX > rScaleY) rather than via
+    // rScaleX / rScaleY > 1, so a single zero dimension can't divide by zero either. This is not an
+    // error — there is simply nothing to draw yet.
+    if (pRenderBounds->Height <= 0 && pRenderBounds->Width <= 0)
+    {
+        *pOffsetX = 0.0f;
+        *pOffsetY = 0.0f;
+        *pScaleX = 0.0f;
+        *pScaleY = 0.0f;
+        return S_OK;
+    }
 
     // Compute based on stretch mode
     switch (stretch)
@@ -131,8 +146,7 @@ CTileBrush::ComputeStretchAndAlignment(
         case DirectUI::Stretch::Uniform:
             rScaleX = pRenderBounds->Width / pNaturalBounds->Width;
             rScaleY = pRenderBounds->Height / pNaturalBounds->Height;
-            rAspectRatioXY = rScaleX / rScaleY;
-            if (rAspectRatioXY > 1.0)
+            if (rScaleX > rScaleY)
             {
                 rScaleX = rScaleY;
                 rDeltaY = 0.0f;
@@ -151,8 +165,7 @@ CTileBrush::ComputeStretchAndAlignment(
         case DirectUI::Stretch::UniformToFill:
             rScaleX = pRenderBounds->Width / pNaturalBounds->Width;
             rScaleY = pRenderBounds->Height / pNaturalBounds->Height;
-            rAspectRatioXY = rScaleX / rScaleY;
-            if (rAspectRatioXY > 1.0)
+            if (rScaleX > rScaleY)
             {
                 rScaleY = rScaleX;
                 rDeltaX = 0.0f;
@@ -363,8 +376,13 @@ CTileBrush::ComputeDeviceToSource(
     aggregateTransform = m_matTileMode;
 
     // Add relative transform - we need to have valid viewbox here.
+    // Skip when render bounds are non-positive: the matrix adjustment below divides by
+    // pRenderBounds->Width and pRenderBounds->Height (lines further down), which would produce
+    // 0/0 = NaN and raise a hardware STATUS_FLOAT_INVALID_OPERATION on processes with unmasked
+    // FPU exceptions. The early-return in ComputeStretchAndAlignment above already handles the
+    // analogous divides there; this guard handles the divides here.
     auto relativeTransform = GetRelativeTransform();
-    if (relativeTransform != nullptr)
+    if (relativeTransform != nullptr && pRenderBounds->Width > 0 && pRenderBounds->Height > 0)
     {
         // Get relative transform
         CMILMatrix matBrushRelative(FALSE);

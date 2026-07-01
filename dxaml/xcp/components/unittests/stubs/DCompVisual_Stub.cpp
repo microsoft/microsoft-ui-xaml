@@ -135,11 +135,16 @@ _Check_return_ HRESULT CD3D11Device::TakeLockAndCheckDeviceLost(_In_ CD3D11Share
     return E_NOTIMPL;
 }
 
+// PREfast C28196 (and C6387) false positive in test/stub code, reported at the function signature -
+// this stub intentionally returns nullptr. Suppress at function scope because the warning is attributed to the
+// declaration, not the return statement.
+#pragma warning(push)
+#pragma warning(disable: 28196 6387)
 _Ret_notnull_ ID3D11Device * CD3D11Device::GetDevice(_In_ const CD3D11SharedDeviceGuard* guard) const
 {
-    #pragma warning(suppress: 6387) // test function, return nullptr
     return nullptr;
 }
+#pragma warning(pop)
 
 ID3D11Device * CD3D11Device::TestHook_GetDevice() const
 {

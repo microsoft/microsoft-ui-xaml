@@ -23,9 +23,11 @@ static auto& s_srwLock        = OptionalChangeState::g_srwLock;
 // GetBitIndex
 //
 // Maps a XamlChangeId to its bit position in s_enabledChanges.
-// Returns -1 for any value not recognized by this build, which causes
-// EnableChange/DisableChange to silently no-op and IsChangeEnabled to
-// return false.
+// Returns -1 for any value not recognized by this build.  Recognized values
+// are toggled in s_enabledChanges; unrecognized values cause EnableChange /
+// DisableChange to return BOOLEAN FALSE pre-lock (no state change) and to
+// throw E_ILLEGAL_STATE_CHANGE post-lock, identical to the recognized-value
+// post-lock behavior.
 //
 // When adding a new XamlChangeId value to the model, add a corresponding
 // case here and a BitIndex_ constant in OptionalChangeState.h.
@@ -36,8 +38,12 @@ static int GetBitIndex(xaml_settings::XamlChangeId id)
     {
     case xaml_settings::XamlChangeId_IconNoGridOptimization:
         return OptionalChangeState::BitIndex_IconNoGridOptimization;
-    case xaml_settings::XamlChangeId_DelayApplyStyleOptimization:
-        return OptionalChangeState::BitIndex_DelayApplyStyleOptimization;
+    case xaml_settings::XamlChangeId_OptimizeApplyStyles:
+        return OptionalChangeState::BitIndex_OptimizeApplyStyles;
+    case xaml_settings::XamlChangeId_DefaultStyleOptimizations:
+        return OptionalChangeState::BitIndex_DefaultStyleOptimizations;
+    case xaml_settings::XamlChangeId_DeferContextFlyoutInit:
+        return OptionalChangeState::BitIndex_DeferContextFlyoutInit;
     default:
         return -1;
     }
@@ -47,23 +53,20 @@ static int GetBitIndex(xaml_settings::XamlChangeId id)
 // XamlOptionalChangesFactory — IXamlOptionalChangesStatics Impl methods
 // ---------------------------------------------------------------------------
 
-_Check_return_ HRESULT XamlOptionalChangesFactory::EnableChangeImpl(_In_ xaml_settings::XamlChangeId changeId)
+_Check_return_ HRESULT XamlOptionalChangesFactory::EnableChangeImpl(_In_ xaml_settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult)
 {
+    *pResult = FALSE;
+
     int bit = GetBitIndex(changeId);
-
-    // Silently ignore unrecognized values regardless of lock state.
-    if ((bit < 0) || (bit >= 64))
-    {
-        return S_OK;
-    }
-
     bool wasLocked;
+    bool mutated = false;
     {
         auto lock = wil::AcquireSRWLockExclusive(&s_srwLock);
         wasLocked = s_locked;
-        if (!wasLocked)
+        if (!wasLocked && bit >= 0 && bit < 64)
         {
             s_enabledChanges |= (1ULL << bit);
+            mutated = true;
         }
     }
 
@@ -77,26 +80,24 @@ _Check_return_ HRESULT XamlOptionalChangesFactory::EnableChangeImpl(_In_ xaml_se
                 L"WindowsXamlManager.InitializeForCurrentThread().").Get()));
     }
 
+    *pResult = mutated ? TRUE : FALSE;
     return S_OK;
 }
 
-_Check_return_ HRESULT XamlOptionalChangesFactory::DisableChangeImpl(_In_ xaml_settings::XamlChangeId changeId)
+_Check_return_ HRESULT XamlOptionalChangesFactory::DisableChangeImpl(_In_ xaml_settings::XamlChangeId changeId, _Out_ BOOLEAN* pResult)
 {
+    *pResult = FALSE;
+
     int bit = GetBitIndex(changeId);
-
-    // Silently ignore unrecognized values regardless of lock state.
-    if ((bit < 0) || (bit >= 64))
-    {
-        return S_OK;
-    }
-
     bool wasLocked;
+    bool mutated = false;
     {
         auto lock = wil::AcquireSRWLockExclusive(&s_srwLock);
         wasLocked = s_locked;
-        if (!wasLocked)
+        if (!wasLocked && bit >= 0 && bit < 64)
         {
             s_enabledChanges &= ~(1ULL << bit);
+            mutated = true;
         }
     }
 
@@ -110,6 +111,7 @@ _Check_return_ HRESULT XamlOptionalChangesFactory::DisableChangeImpl(_In_ xaml_s
                 L"WindowsXamlManager.InitializeForCurrentThread().").Get()));
     }
 
+    *pResult = mutated ? TRUE : FALSE;
     return S_OK;
 }
 

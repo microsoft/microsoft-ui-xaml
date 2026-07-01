@@ -115,7 +115,7 @@ CGradientBrush::~CGradientBrush()
 {
 }
 
-#pragma warning(suppress: 6387) // test function, only case initializing with nullptr is allowed
+#pragma warning(suppress: 6387 26495) // 6387: test function, nullptr init allowed. 26495: stub ctor, member values irrelevant for unit tests
 CLinearGradientBrush::CLinearGradientBrush(
     _In_ const CLinearGradientBrush& original,
     _Out_ HRESULT& hr )

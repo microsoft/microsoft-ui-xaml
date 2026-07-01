@@ -142,6 +142,8 @@ public:
 
     TEST_METHOD(ShowTeachingTipWhileIslandClosing)
 
+    TEST_METHOD(SetContentAfterCloseDoesNotCrash)
+
     BEGIN_TEST_METHOD(MultipleApplicationObjects)
         TEST_METHOD_PROPERTY(L"Ignore", L"TRUE")    // Apps crash when creating multiple Application objects. Should just throw an exception.
     END_TEST_METHOD()

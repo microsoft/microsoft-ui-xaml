@@ -1294,7 +1294,7 @@ __declspec(noinline) bool OnWarningEncountered(WarningContextLog::WarningContext
 {
     if (!IsWarningContextTLSInitialized())
     {
-        // Early out to save unneccessary work
+        // Early out to save unnecessary work
         return false;
     }
 

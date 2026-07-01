@@ -440,8 +440,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     void StyleIntegrationTests::StyleAvailableInCompatModeEvenWhenNotLive()
     {
-        // This test expects style to be applied during CreationComplete when the DelayApplyStyleOptimization is disabled
-        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
+        // This test expects style to be applied during CreationComplete when the OptimizeApplyStyles is disabled
+        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
 
         TestCleanupWrapper cleanup;
         RunOnUIThread([]()
@@ -467,9 +467,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     void StyleIntegrationTests::StyleNotAvailableInNewPerfOptInBehaviorWhenNotLive()
     {
-        // This test requires the new DelayApplyStyleOptimization behavior where style is not applied during CreationComplete,
+        // This test requires the new OptimizeApplyStyles behavior where style is not applied during CreationComplete,
         // to confirm the new style indeed is not set in this case.
-        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
+        VERIFY_IS_TRUE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
 
         TestCleanupWrapper cleanup;
         RunOnUIThread([]()
@@ -1858,7 +1858,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         TestCleanupWrapper cleanup;
         // This test crashes if the element is added to the tree. Leave it in compat mode where the style is applied during CreationComplete.
-        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
+        VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
 
         RunOnUIThread([&]()
         {

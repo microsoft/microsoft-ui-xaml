@@ -44,8 +44,8 @@ events with their anticipated view. The `ItemsRepeater` would detect that implem
 introduction of a new interface.
 Being only implemented and consumed by MuxC components, that interface could live in the MuxC dll.
 However, the `ItemsRepeater` already has a tight dependency on the `ScrollViewer` control and needs event more dependency
-on `ScrollPresenter` than these two new events - all those dependencies are implemented in the ViewportManagerWithPlatformFeatures
-class (soon to be renamed ViewportManager). So an IScrollPreviewProvider interface would not preserve
+on `ScrollPresenter` than these two new events - all those dependencies are implemented in the ViewportManager
+class. So an IScrollPreviewProvider interface would not preserve
 a strict decoupling of `ItemsRepeater` and the scrollers._
 * _The `ItemsRepeater` virtualized items generation is based on the `FrameworkElement`'s `EffectiveViewportChanged` event. 
 With an additional EffectiveViewportChanging event, the `ItemsRepeater` could listen to that new event and do 
