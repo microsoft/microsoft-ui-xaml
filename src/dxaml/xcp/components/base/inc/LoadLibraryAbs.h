@@ -5,6 +5,9 @@
 
 #include <windows.h>
 
+// Helper around GetModuleFileName that handles long paths and checks errors.
+std::wstring GetModuleFileNameHelper(_In_ HMODULE hModule);
+
 std::wstring GetMuxAbsPath(_In_ LPCWSTR lpLibFileName);
 
 HMODULE WINAPI LoadLibraryExWAbs(

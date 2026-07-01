@@ -5,6 +5,10 @@
 #include "ItemTemplateWrapper.h"
 #include "RecyclePool.h"
 #include "ItemsRepeater.common.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 61574373: [2.0 Servicing][WASDK] Fix ItemsRepeater RecyclePool reference cycle memory leak
+#define WINAPPSDK_CHANGEID_61574373 61574373, WinAppSDK_2_1_0
 
 ItemTemplateWrapper::ItemTemplateWrapper(winrt::DataTemplate const& dataTemplate)
 {
@@ -16,14 +20,47 @@ ItemTemplateWrapper::ItemTemplateWrapper(winrt::DataTemplateSelector const& data
     m_dataTemplateSelector = dataTemplateSelector;
 }
 
+void ItemTemplateWrapper::EnableTracking(const ITrackerHandleManager* owner)
+{
+    if (owner && m_dataTemplate)
+    {
+        m_trackedDataTemplate.emplace(owner, m_dataTemplate);
+        m_dataTemplate = nullptr;  // Release the raw ref; tracker_ref now owns it
+        m_isTracking = true;
+    }
+}
+
+winrt::DataTemplate ItemTemplateWrapper::GetDataTemplate() const
+{
+    return m_isTracking ? m_trackedDataTemplate->get() : m_dataTemplate;
+}
+
 winrt::DataTemplate ItemTemplateWrapper::Template()
 {
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61574373>())
+    {
+        return GetDataTemplate();
+    }
     return m_dataTemplate;
 }
 
 void ItemTemplateWrapper::Template(winrt::DataTemplate const& value)
 {
-    m_dataTemplate = value;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61574373>())
+    {
+        if (m_isTracking)
+        {
+            m_trackedDataTemplate->set(value);
+        }
+        else
+        {
+            m_dataTemplate = value;
+        }
+    }
+    else
+    {
+        m_dataTemplate = value;
+    }
 }
 
 winrt::DataTemplateSelector ItemTemplateWrapper::TemplateSelector()
@@ -40,7 +77,10 @@ void ItemTemplateWrapper::TemplateSelector(winrt::DataTemplateSelector const& va
 
 winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs const& args)
 {
-    auto selectedTemplate = m_dataTemplate ? m_dataTemplate : m_dataTemplateSelector.SelectTemplate(args.Data());
+    auto selectedTemplate = WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61574373>()
+        ? GetDataTemplate()
+        : m_dataTemplate;
+    selectedTemplate = selectedTemplate ? selectedTemplate : m_dataTemplateSelector.SelectTemplate(args.Data());
     // Check if selected template we got is valid
     if (selectedTemplate == nullptr)
     {
@@ -97,8 +137,11 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
 void ItemTemplateWrapper::RecycleElement(winrt::ElementFactoryRecycleArgs const& args)
 {
     auto element = args.Element();
-    winrt::DataTemplate selectedTemplate = m_dataTemplate? 
-        m_dataTemplate:
+    auto dataTemplate = WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61574373>()
+        ? GetDataTemplate()
+        : m_dataTemplate;
+    winrt::DataTemplate selectedTemplate = dataTemplate ?
+        dataTemplate :
         RecyclePool::GetOriginTemplate(element);
     auto recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
     if (!recyclePool)

@@ -209,6 +209,114 @@ namespace MUXControlsTestApp
             }
         }
 
+        // --- Drag Region API Test Handlers ---
+
+        private int addedChildCount = 0;
+
+        private void AutoRefreshDragRegionsCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (WindowingTitleBar != null)
+            {
+                WindowingTitleBar.AutoRefreshDragRegions = AutoRefreshDragRegionsCheckBox.IsChecked.Value;
+                DragRegionStatusTextBlock.Text = "AutoRefreshDragRegions:" + WindowingTitleBar.AutoRefreshDragRegions.ToString();
+            }
+        }
+
+        private void RecomputeDragRegionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (WindowingTitleBar != null)
+            {
+                try
+                {
+                    WindowingTitleBar.RecomputeDragRegions();
+                    DragRegionStatusTextBlock.Text = "RecomputeDragRegions:Success";
+                }
+                catch (Exception ex)
+                {
+                    DragRegionStatusTextBlock.Text = "RecomputeDragRegions:Error:" + ex.Message;
+                }
+            }
+        }
+
+        private void SetIsDragRegionTrueOnLabelButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentLabel != null)
+            {
+                TitleBar.SetIsDragRegion(ContentLabel, true);
+                var val = TitleBar.GetIsDragRegion(ContentLabel);
+                DragRegionStatusTextBlock.Text = "IsDragRegion_Label:" + (val.HasValue ? val.Value.ToString() : "null");
+            }
+        }
+
+        private void SetIsDragRegionFalseOnButtonButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentButton != null)
+            {
+                TitleBar.SetIsDragRegion(ContentButton, false);
+                var val = TitleBar.GetIsDragRegion(ContentButton);
+                DragRegionStatusTextBlock.Text = "IsDragRegion_Button:" + (val.HasValue ? val.Value.ToString() : "null");
+            }
+        }
+
+        private void ClearIsDragRegionButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentLabel != null)
+            {
+                ContentLabel.ClearValue(TitleBar.IsDragRegionProperty);
+            }
+            if (ContentButton != null)
+            {
+                ContentButton.ClearValue(TitleBar.IsDragRegionProperty);
+            }
+            DragRegionStatusTextBlock.Text = "IsDragRegion:Cleared";
+        }
+
+        private void AddChildButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (TitleBarContentPanel != null)
+            {
+                addedChildCount++;
+                var btn = new Button();
+                btn.Content = "Added" + addedChildCount;
+                btn.Name = "AddedButton" + addedChildCount;
+                Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(btn, "AddedButton" + addedChildCount);
+                TitleBarContentPanel.Children.Add(btn);
+                DragRegionStatusTextBlock.Text = "ChildCount:" + TitleBarContentPanel.Children.Count;
+            }
+        }
+
+        private void RemoveChildButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (TitleBarContentPanel != null && TitleBarContentPanel.Children.Count > 0)
+            {
+                TitleBarContentPanel.Children.RemoveAt(TitleBarContentPanel.Children.Count - 1);
+                DragRegionStatusTextBlock.Text = "ChildCount:" + TitleBarContentPanel.Children.Count;
+            }
+        }
+
+        private void GetAutoRefreshValueButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (WindowingTitleBar != null)
+            {
+                DragRegionStatusTextBlock.Text = "AutoRefreshDragRegions:" + WindowingTitleBar.AutoRefreshDragRegions.ToString();
+            }
+        }
+
+        private void GetIsDragRegionValuesButton_Click(object sender, RoutedEventArgs e)
+        {
+            string result = "";
+            if (ContentButton != null)
+            {
+                var val = TitleBar.GetIsDragRegion(ContentButton);
+                result += "Button:" + (val.HasValue ? val.Value.ToString() : "null");
+            }
+            if (ContentLabel != null)
+            {
+                var val = TitleBar.GetIsDragRegion(ContentLabel);
+                result += ",Label:" + (val.HasValue ? val.Value.ToString() : "null");
+            }
+            DragRegionStatusTextBlock.Text = result;
+        }
 
     }
 }

@@ -4,6 +4,10 @@
 #include "precomp.h"
 #include "MetadataAPI.h"
 #include "DeferredMapping.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62422195: WinAppSDK 2.0 Servicing: Peg peer in RemoveTemplateChild to prevent GetPeerPrivate crash during OnChildrenCleared
+#define WINAPPSDK_CHANGEID_62422195 62422195, WinAppSDK_2_1_5
 
 using namespace DirectUI;
 
@@ -1138,13 +1142,42 @@ _Check_return_
 HRESULT
 CContentPresenter::RemoveTemplateChild()
 {
+    HRESULT hr = S_OK;
     CCollection* pChildren = GetChildren();
+    bool peggedPeer = false;
+    bool peerIsPendingDelete = false;
     if (pChildren)
     {
-        IFC_RETURN(GetChildren()->Clear());
-        IFC_RETURN(FxCallbacks::ContentPresenter_OnChildrenCleared(this));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62422195>())
+        {
+            TryPegPeer(&peggedPeer, &peerIsPendingDelete);
+
+            IFC(GetChildren()->Clear());
+
+            if (!peerIsPendingDelete)
+            {
+                IFC(FxCallbacks::ContentPresenter_OnChildrenCleared(this));
+            }
+        }
+        else
+        {
+            // Changed IFC_RETURN to IFC as compiler won't allow both in same function.
+            IFC(GetChildren()->Clear());
+            IFC(FxCallbacks::ContentPresenter_OnChildrenCleared(this));
+        }
     }
-    return S_OK;
+
+Cleanup:
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62422195>())
+    {
+        if (peggedPeer)
+        {
+            UnpegManagedPeer();
+        }
+    }
+
+    return hr;
 }
 
 _Check_return_ HRESULT CContentPresenter::CreateDefaultContent(

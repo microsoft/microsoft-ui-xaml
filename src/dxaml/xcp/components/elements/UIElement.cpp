@@ -53,6 +53,10 @@
 #include "ExternalObjectReference.g.h"
 #include "PropertyTransitions.h"
 #include <FxCallbacks.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 61760863: [2.0 Servicing] Use weak reference in implicit animation completion callback to prevent crash
+#define WINAPPSDK_CHANGEID_61760863 61760863, WinAppSDK_2_1_0
 
 using namespace DirectUI;
 
@@ -1544,15 +1548,44 @@ void CUIElement::PlayImplicitAnimation(ImplicitAnimationInfo& info, ImplicitAnim
         scopedBatch->End();
 
         // Listen for animation completion
-        auto callback = wrl::Callback <
-            wrl::Implements <
-            wrl::RuntimeClassFlags<wrl::ClassicCom>,
-            wf::ITypedEventHandler<IInspectable*, WUComp::CompositionBatchCompletedEventArgs*>,
-            wrl::FtmBase >>
-            (this, iaType == ImplicitAnimationType::Show ? &CUIElement::OnImplicitShowAnimationCompleted : &CUIElement::OnImplicitHideAnimationCompleted);
-
         EventRegistrationToken token;
-        IFCFAILFAST(scopedBatch->add_Completed(callback.Get(), &token));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61760863>())
+        {
+            // Safe path: Use weak reference in lambda to prevent crash if element is destroyed.
+            xref::weakref_ptr<CUIElement> wrThis = xref::get_weakref(this);
+            auto callback = wrl::Callback<
+                wrl::Implements<
+                wrl::RuntimeClassFlags<wrl::ClassicCom>,
+                wf::ITypedEventHandler<IInspectable*, WUComp::CompositionBatchCompletedEventArgs*>,
+                wrl::FtmBase>>
+                ([wrThis, iaType](IInspectable* sender, WUComp::ICompositionBatchCompletedEventArgs* args) mutable -> HRESULT
+                {
+                    xref_ptr<CUIElement> spThis = wrThis.lock();
+                    if (spThis)
+                    {
+                        if (iaType == ImplicitAnimationType::Show)
+                        {
+                            return spThis->OnImplicitShowAnimationCompleted(sender, args);
+                        }
+                        else
+                        {
+                            return spThis->OnImplicitHideAnimationCompleted(sender, args);
+                        }
+                    }
+                    return S_OK;
+                });
+            IFCFAILFAST(scopedBatch->add_Completed(callback.Get(), &token));
+        }
+        else
+        {
+            auto callback = wrl::Callback <
+                wrl::Implements <
+                wrl::RuntimeClassFlags<wrl::ClassicCom>,
+                wf::ITypedEventHandler<IInspectable*, WUComp::CompositionBatchCompletedEventArgs*>,
+                wrl::FtmBase >>
+                (this, iaType == ImplicitAnimationType::Show ? &CUIElement::OnImplicitShowAnimationCompleted : &CUIElement::OnImplicitHideAnimationCompleted);
+            IFCFAILFAST(scopedBatch->add_Completed(callback.Get(), &token));
+        }
 
         DCompTreeHost::ImplicitAnimationsMap& iaMap = dcompTreeHost->GetImplicitAnimationsMap(iaType);
         auto itFind = iaMap.find(this);

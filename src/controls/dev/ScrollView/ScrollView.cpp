@@ -11,6 +11,10 @@
 #include "FocusHelper.h"
 #include "RegUtil.h"
 #include "ScrollViewTestHooks.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62255131: [2.1 Servicing] Fix use-after-free in ScrollView hide-indicators tick
+#define WINAPPSDK_CHANGEID_62255131 62255131, WinAppSDK_2_1_5
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollViewTrace::s_IsDebugOutputEnabled{ false };
@@ -1766,7 +1770,34 @@ void ScrollView::HideIndicatorsAfterDelay()
         {
             m_hideIndicatorsTimer = winrt::DispatcherTimer();
             m_hideIndicatorsTimer.Interval(winrt::TimeSpan::duration(s_noIndicatorCountdown));
-            m_hideIndicatorsTimer.Tick({ this, &ScrollView::OnHideIndicatorsTimerTick });
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62255131>())
+            {
+                // The DispatcherTimer keeps a reference to its Tick handler. Binding via
+                // { this, ... } captures a raw pointer to this ScrollView; if a tick is
+                // dispatched after the ScrollView has been destroyed (e.g. window closed
+                // before Stop() takes effect), invoking the handler would deref freed
+                // memory. Capture a weak reference instead and resolve it on tick.
+                // get_weak() can hit a refcount issue with ReferenceTracker, so use the
+                // make_weak(projected) pattern used elsewhere in this codebase.
+                auto weakThis{ winrt::make_weak(static_cast<winrt::ScrollView>(*this)) };
+                m_hideIndicatorsTimer.Tick([weakThis](auto const& sender, auto const& args)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        ScrollView* rawThis = winrt::get_self<ScrollView>(strongThis);
+                        rawThis->OnHideIndicatorsTimerTick(sender, args);
+                    }
+                    else
+                    {
+                        auto timer = sender.as<winrt::DispatcherTimer>();
+                        timer.Stop();
+                    }
+                });
+            }
+            else
+            {
+                m_hideIndicatorsTimer.Tick({ this, &ScrollView::OnHideIndicatorsTimerTick });
+            }
         }
 
         m_hideIndicatorsTimer.Start();

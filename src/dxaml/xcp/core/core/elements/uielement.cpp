@@ -57,6 +57,10 @@
 #include "XStringUtils.h"
 
 #include <CValueBoxer.h>
+#include <rendertargetbitmapmgr.h>
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_62216616 62216616, WinAppSDK_2_1_5
 
 using namespace DirectUI;
 using namespace DCompHelpers;
@@ -1627,6 +1631,21 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
     CCoreServices * const core = GetContext();
     const bool isParentEnabled = params.fCoercedIsEnabled;
     bool alreadyCanceledTransitions = false;
+
+    // If this element is targeted by an RTB, cancel the in-flight render.
+    // The composition peer is about to be removed, and PreCommit would crash
+    // trying to access it.
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62216616>())
+    {
+        if (params.fIsLive && m_isRenderTargetSource)
+        {
+            auto pRTBManager = core->GetRenderTargetBitmapManager();
+            if (pRTBManager != nullptr)
+            {
+                IGNOREHR(pRTBManager->CancelRenderForElement(this));
+            }
+        }
+    }
 
     // If parent is enabled, but local value of IsEnabled is FALSE, need to disable children.
     if (isParentEnabled && !GetIsEnabled())
