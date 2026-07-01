@@ -8,6 +8,10 @@
 #include "GripperPopup.h"
 #include <CColor.h>
 #include <XamlOneCoreTransforms.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62040515: [2.0 Servicing] Fix GetModuleHandle ambiguity in WinUI causing FailFast when same-named multiple modules are loaded
+#define WINAPPSDK_CHANGEID_62040515 62040515, WinAppSDK_2_1_0
 
 HANDLE TextServicesHost::s_mutex = 0;
 
@@ -1387,5 +1391,17 @@ Cleanup:
 //---------------------------------------------------------------------------
 HINSTANCE TextServicesHost::GetDirectUIInstance()
 {
-    return GetModuleHandle(L"Microsoft.UI.Xaml.dll");
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62040515>())
+    {
+        HMODULE hModule = nullptr;
+        IFCW32FAILFAST(GetModuleHandleExW(
+                GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                reinterpret_cast<LPCWSTR>(&TextServicesHost::GetDirectUIInstance),
+                &hModule));
+        return hModule;
+    }
+    else
+    {
+        return GetModuleHandle(L"Microsoft.UI.Xaml.dll");
+    }
 }

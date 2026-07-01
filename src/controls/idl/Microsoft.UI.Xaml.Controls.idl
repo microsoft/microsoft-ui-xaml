@@ -132,6 +132,7 @@ namespace Microsoft.UI.Xaml.CustomAttributes
 #define MUX_PUBLIC_V8 contract(Microsoft.UI.Xaml.XamlContract, 8)   // WinAppSDK 1.7
 #define MUX_PUBLIC_V9 contract(Microsoft.UI.Xaml.XamlContract, 9)   // WinAppSDK 1.8
 #define MUX_PUBLIC_V10 contract(Microsoft.UI.Xaml.XamlContract, 10) // WinAppSDK 2.0
+#define MUX_PUBLIC_V11 contract(Microsoft.UI.Xaml.XamlContract, 11) // WinAppSDK 2.1.0
 
 // Note: It's expected that these are the same version because we require internal be in a different namespace,
 // and we split out the public vs internal metadata by namespace as well as feature attributes.

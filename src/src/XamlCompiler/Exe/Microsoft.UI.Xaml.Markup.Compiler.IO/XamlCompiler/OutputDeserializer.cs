@@ -69,11 +69,24 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.IO
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(JsonFilePath))
+                {
+                    Log.LogError("JsonFilePath is not set or is whitespace. Please provide a valid path.");
+                    return false;
+                }
+                if (!File.Exists(JsonFilePath))
+                {
+                    // Output JSON was not written — the compiler may have crashed
+                    // before it could serialize results.
+                    Log.LogError($"XamlCompiler output file \"{JsonFilePath}\" was not created. The XAML compiler may have crashed.");
+                    return false;
+                }
+
                 using (FileStream jsonFileStream = new FileStream(JsonFilePath, FileMode.Open, FileAccess.Read))
                 {
                     CompilerOutputs outputs = JsonSerializer.Deserialize<CompilerOutputs>(jsonFileStream);
                     ExtractWrapperResults(outputs);
-                    return true;
+                    return !Log.HasLoggedErrors;
                 }
             }
             catch (Exception e)

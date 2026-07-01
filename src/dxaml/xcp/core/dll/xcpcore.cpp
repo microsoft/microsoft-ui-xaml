@@ -9150,12 +9150,6 @@ void CCoreServices::SetLastLayoutExceptionElement(_In_opt_ CUIElement *pElement)
     ReplaceInterface(m_pLastLayoutExceptionElement, pElement);
 }
 
-//static
-HINSTANCE CCoreServices::GetInstanceHandle()
-{
-    return ::GetModuleHandle(L"Microsoft.UI.Xaml.dll");
-}
-
 //------------------------------------------------------------------------
 //
 //  Synopsis:

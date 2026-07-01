@@ -39,9 +39,9 @@ cpp_quote("#undef GetCurrentTime")
 
 namespace Microsoft.UI.Xaml
 {
-    [contractversion(10)]
+    [contractversion(11)]
     apicontract WinUIContract{};
-    [contractversion(10)]
+    [contractversion(11)]
     apicontract XamlContract{};
 }
 

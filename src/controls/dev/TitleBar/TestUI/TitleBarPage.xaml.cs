@@ -30,5 +30,62 @@ namespace MUXControlsTestApp
             var newWindow = new TitleBarPageWindow();
             newWindow.Activate();
         }
+
+        private void GetAutoRefreshValueButton_Click(object sender, RoutedEventArgs e)
+        {
+            DragRegionStatusTextBlock.Text = "AutoRefresh:" + WindowingTitleBar.AutoRefreshDragRegions.ToString();
+        }
+
+        private void SetAutoRefreshTrueButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowingTitleBar.AutoRefreshDragRegions = true;
+            DragRegionStatusTextBlock.Text = "AutoRefresh:" + WindowingTitleBar.AutoRefreshDragRegions.ToString();
+        }
+
+        private void SetAutoRefreshFalseButton_Click(object sender, RoutedEventArgs e)
+        {
+            WindowingTitleBar.AutoRefreshDragRegions = false;
+            DragRegionStatusTextBlock.Text = "AutoRefresh:" + WindowingTitleBar.AutoRefreshDragRegions.ToString();
+        }
+
+        private void RecomputeDragRegionsButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WindowingTitleBar.RecomputeDragRegions();
+                DragRegionStatusTextBlock.Text = "RecomputeDragRegions:Success";
+            }
+            catch (System.Exception ex)
+            {
+                DragRegionStatusTextBlock.Text = "RecomputeDragRegions:Error:" + ex.Message;
+            }
+        }
+
+        private void SetIsDragRegionTrueButton_Click(object sender, RoutedEventArgs e)
+        {
+            TitleBar.SetIsDragRegion(AutoSuggestBoxInTitleBar, true);
+            var val = TitleBar.GetIsDragRegion(AutoSuggestBoxInTitleBar);
+            DragRegionStatusTextBlock.Text = "IsDragRegion:" + (val.HasValue ? val.Value.ToString() : "null");
+        }
+
+        private void SetIsDragRegionFalseButton_Click(object sender, RoutedEventArgs e)
+        {
+            TitleBar.SetIsDragRegion(AutoSuggestBoxInTitleBar, false);
+            var val = TitleBar.GetIsDragRegion(AutoSuggestBoxInTitleBar);
+            DragRegionStatusTextBlock.Text = "IsDragRegion:" + (val.HasValue ? val.Value.ToString() : "null");
+        }
+
+        private void GetIsDragRegionValueButton_Click(object sender, RoutedEventArgs e)
+        {
+            var val = TitleBar.GetIsDragRegion(AutoSuggestBoxInTitleBar);
+            DragRegionStatusTextBlock.Text = "IsDragRegion:" + (val.HasValue ? val.Value.ToString() : "null");
+        }
+
+        private void ClearIsDragRegionButton_Click(object sender, RoutedEventArgs e)
+        {
+            AutoSuggestBoxInTitleBar.ClearValue(TitleBar.IsDragRegionProperty);
+            var val = TitleBar.GetIsDragRegion(AutoSuggestBoxInTitleBar);
+            DragRegionStatusTextBlock.Text = "IsDragRegion:" + (val.HasValue ? val.Value.ToString() : "null");
+        }
     }
 }
