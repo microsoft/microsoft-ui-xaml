@@ -938,6 +938,12 @@ winrt::IAsyncAction WebView2::CreateCoreWebViewFromEnvironment(HWND hwndParent, 
 // This helps avoid flicker when CoreWebView2 is intializing or shutting down.
 winrt::Color WebView2::GetThemeBackgroundColor()
 {
+    // Allow full transparency to let system backdrop (e.g. Acrylic, Mica, Full Transparency) shine through
+    if (this->DefaultBackgroundColor() == winrt::Colors::Transparent())
+    {
+        return winrt::Colors::Transparent();
+    }
+
     bool isHighContrast = GetAccessibilitySettings().HighContrast();
     std::wstring helperBrushName = isHighContrast ? L"BrushForThemeBackgroundColor_HC" : L"BrushForThemeBackgroundColor";
 
