@@ -52,7 +52,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/user/hmishra/static-tests-mirror-clean
+      ref: refs/heads/main
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
