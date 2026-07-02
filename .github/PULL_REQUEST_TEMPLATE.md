@@ -41,12 +41,29 @@ Fixes #
 
 ## How Has This Been Tested?
 
-<!-- Describe how you validated your changes. -->
+<!-- Describe how you validated your changes, including the exact repro steps you followed to confirm the new behavior. -->
+
+**Verification / repro steps:**
+1.
+2.
+3.
 
 - [ ] I have performed a self-review of my own code
+- [ ] I have **run and verified the new behavior myself** (not just relied on tools or AI output)
 - [ ] I have added tests to cover my changes
 - [ ] Existing tests pass locally
 
-## Screenshots (if appropriate)
+## AI Assistance
 
-<!-- If you are making visual changes, include before/after screenshots. -->
+<!-- See the "Use of AI assistance" section in CONTRIBUTING.md. Disclosure is required. -->
+
+- [ ] AI coding tools (e.g. Copilot, Claude, Codex, Cursor) were used to author part or all of this change
+- [ ] I have read and understand every change in this PR, have verified it works, and can discuss and revise it in review
+
+## Screenshots / Screen recording
+
+<!--
+For any user-visible or behavior change, include a screenshot or short screen recording showing
+the new behavior (before/after where applicable). This is strongly encouraged for all UI changes.
+-->
+
