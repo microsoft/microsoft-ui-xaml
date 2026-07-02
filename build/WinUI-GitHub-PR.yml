@@ -152,6 +152,7 @@ extends:
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: false
+          additionalMSBuildOptions: '/p:IsInternalWinUIBuild=false'
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
