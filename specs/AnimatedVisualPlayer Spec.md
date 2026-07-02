@@ -10,7 +10,7 @@ control. `AnimatedVisualPlayer` can play any
 implementation, but the typical way to get an `IAnimatedVisual` implementation is to use
 the LottieGen tool to generate code from a JSON file that was created from Adobe AfterEffects.
 
-[More information on Lottie and AnimatedVisualPlayer](https://learn.microsoft.com/windows/communitytoolkit/animations/lottie)
+[More information about Lottie and AnimatedVisualPlayer](https://learn.microsoft.com/windows/communitytoolkit/animations/lottie)
 
 There are some performance issues with the current implementation of LottieGen and AnimatedVisualPlayer:
 
@@ -49,8 +49,8 @@ when the player is idle (when `PlayAsync` is not active).
 
 | Mode | Behavior |
 | ---- | -------- |
-|Latency| AnimatedVisualPlayer will pre-create animations even before `PlayAsync()` is called, and not destroy any when player is idle. |
-|Resources | AnimatedVisualPlayer will not create animations until `PlayAsync()` is called, and will destroy them when it completes.
+| Latency | AnimatedVisualPlayer will pre-create animations even before `PlayAsync()` is called, and not destroy any when player is idle. |
+| Resources | AnimatedVisualPlayer will not create animations until `PlayAsync()` is called, and will destroy them when it completes.
 If you call pause, this does not free up all resources of the player. To truly stop the animation, call Stop. |
 
 > [!NOTE]
@@ -117,7 +117,7 @@ that adds the ability to control when animation objects are created and destroye
 | Method | Meaning |
 |--------|---------|
 | CreateAnimations | Instantiates the animation visuals for the provided progress value of the animation. |
-| DestroyAnimations | Destroys all animation visuals for a given animation.|
+| DestroyAnimations | Destroys all animation visuals for a given animation. |
 
 ```csharp
 interface IAnimatedVisual2 requires IAnimatedVisual

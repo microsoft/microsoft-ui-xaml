@@ -4,12 +4,12 @@ Providing a custom MRT Core `IResourceManager` for WinUI 3 to use
 # Background
 
 The WinUI 3 framework instantiates an MRT Core
-[`ResourceManager`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.resourcemanager?view=windows-app-sdk-1.2)
+[ResourceManager](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.resourcemanager?view=windows-app-sdk-1.2)
 in order to resolve resource URIs. While this default `ResourceManager` is generally sufficient,
 there are some scenarios in which an app needs non-standard behavior in order to resolve a
 particular resource URI. In order to address this requirement, this document describes a new
 API that would allow an app to provide its own custom implementation of the
-[`IResourceManager`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
+[IResourceManager](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
 interface for WinUI to use in lieu of its default `ResourceManager`.
 
 # API Pages
@@ -19,7 +19,7 @@ _Each of the following level-two sections correspond to a page that will be on l
 ## Application.ResourceManagerRequested Event
 
 Raised during startup of a new WinUI thread to give the app a chance to provide its own
-[`IResourceManager`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
+[IResourceManager](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
 implementation to be used by the framework for resolving resource URIs.
 
 _Spec note: is there a version of the 'ResourceDictionary and XAML resource references' article that
@@ -66,7 +66,7 @@ public sealed class ResourceManagerRequestedEventArgs
 
 `ResourceManagerRequestedEventArgs` is used to provide the WinUI 3 framework with a custom
 implementation of the
-[`IResourceManager`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
+[IResourceManager](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.windows.applicationmodel.resources.iresourcemanager?view=windows-app-sdk-1.2)
 interface to be used for resolving resource URIs rather than the default `ResourceManager` that the
 framework creates. In the event handler, you should instantiate your custom `IResourceManager` and
 assign it to the `ResourceManagerRequestedEventArgs.CustomResourceManager` property. The value of this

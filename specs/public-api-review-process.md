@@ -33,7 +33,7 @@ The start and end dates will be outlined in the spec and in the [API Specs Revie
 > - Developer use cases and edge cases – sample code and screenshots of such scenarios are very much welcomed.
 >
 >   - ~~Don't: "You should use a ToggleButton and have it to the left"~~
->   - Do: "Can I customize the content here? Here is some code and screenshots showcasing my needed scenario.”
+>   - Do: "Can I customize the content here? Here is some code and screenshots showcasing my needed scenario."
 >
 > - Consistent API naming conventions – and comparisons of said APIs across WinUI and industry standards.
 >
@@ -47,12 +47,12 @@ The start and end dates will be outlined in the spec and in the [API Specs Revie
 > - Raised usability concerns with different languages
 >
 >   - ~~Don't: "This won't work support other languages."~~
->   - Do: “How will the control layout handle RTL languages? Here is an example of what could appear on the control.”
+>   - Do: "How will the control layout handle RTL languages? Here is an example of what could appear on the control."
 >
 > - Inquiries and suggestions regarding scenarios and usages
 >
 >   - ~~Don't: "This control is missing features."~~
->   - Do: “Does it have an orientation property to toggle horizontal and vertical? Here is an example of how this property can be used in different scenarios.”
+>   - Do: "Does it have an orientation property to toggle horizontal and vertical? Here is an example of how this property can be used in different scenarios."
 
 ## Handle Feedback
 
@@ -71,15 +71,15 @@ We are committed to respond to all feedback in different manners depending on th
 
   - Final post calling out specific points that influenced decisions
 
-        *and / or*
+        _and / or_
 
   - In-line response to comments
 
-        *and / or*
+        _and / or_
 
-  - “Resolve comment” to signify that the feedback has been incorporated into the spec draft
+  - "Resolve comment" to signify that the feedback has been incorporated into the spec draft
 
-        *and / or*
+        _and / or_
 
   - Directly commit the suggestion if it is done via code suggestion with Github tools, and it is appropriate
 
@@ -87,13 +87,13 @@ We are committed to respond to all feedback in different manners depending on th
 
   - In-line response to comments explaining reasoning
 
-        *and*
+        _and_
 
-  - “Resolve comment” to signify that it is not planned
+  - "Resolve comment" to signify that it is not planned
 
 - **Discussion:**
 
-  - An “eye” emoji by the author / poster to signify that it is read.
+  - An "eye" emoji by the author / poster to signify that it is read.
 
 ## Consolidate Feedback
 

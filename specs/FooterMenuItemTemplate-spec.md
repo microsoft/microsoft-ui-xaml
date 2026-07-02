@@ -1,10 +1,10 @@
 # Background
 
-The [`NavigationView.FooterMenuItems`](https://learn.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.navigationview.footermenuitems?view=winui-2.5) property provides a way to place NavigationView items into a bottom-aligned (or right-aligned, if your NavigationView is in top mode) section of a NavigationView. This is distinct from the [`NavigationView.PaneFooter`](https://learn.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.navigationview.panefooter?view=winui-2.5) property, as only Navigation items should be placed in the Footer menu, while any kind of content can be placed in the PaneFooter.
+The [NavigationView.FooterMenuItems](https://learn.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.navigationview.footermenuitems?view=winui-2.5) property provides a way to place NavigationView items into a bottom-aligned (or right-aligned, if your NavigationView is in top mode) section of a NavigationView. This is distinct from the [NavigationView.PaneFooter](https://learn.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.navigationview.panefooter?view=winui-2.5) property, as only Navigation items should be placed in the Footer menu, while any kind of content can be placed in the PaneFooter.
 
 <img src="images/footermenu-example.png" height="400" alt="Image of a NavigationView with labels pointing to main menu items and footer menu items"/>
 
-Currently, the DataTemplate that's assigned to the [`NavigationView.MenuItemTemplate`](https://learn.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.navigationview.menuitemtemplate?view=winui-2.5) property is applied to all Navigation items in the NavigationView. This means that if you add both regular NavigationView menu items and NavigationView footer menu items, they will automatically have the same data template applied. This is an issue as there's no current way to provide a standardized data template for all footer menu items that's separate/different from the data template used for all main menu items.
+Currently, the DataTemplate that's assigned to the [NavigationView.MenuItemTemplate](https://learn.microsoft.com/windows/winui/api/microsoft.ui.xaml.controls.navigationview.menuitemtemplate?view=winui-2.5) property is applied to all Navigation items in the NavigationView. This means that if you add both regular NavigationView menu items and NavigationView footer menu items, they will automatically have the same data template applied. This is an issue as there's no current way to provide a standardized data template for all footer menu items that's separate/different from the data template used for all main menu items.
 
 # Description
 
@@ -57,6 +57,8 @@ The following APIs are members of `NavigationView`.
 <!-- The exact API, in MIDL3 format (https://learn.microsoft.com/uwp/midl-3/) -->
 
 ```csharp
+// MIDL3
+
 [MUX_PREVIEW]
     {
         Windows.UI.Xaml.DataTemplate FooterMenuItemTemplate { get; set; };

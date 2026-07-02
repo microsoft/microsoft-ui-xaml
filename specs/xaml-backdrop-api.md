@@ -80,7 +80,7 @@ Use this class to set a backdrop on a
 [Popup](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Controls.Primitives.Popup)\*,
 or [FlyoutBase](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/Microsoft.UI.Xaml.Controls.Primitives.FlyoutBase)\* (such as a `Flyout` or `MenuFlyout`).
 
-- `Popup`/`MenuFlyout` `SystemBackdrop` support is not available in WinAppSDK 1.3.0, but is expected to light up in a subsequent release. Note also `SystemBackdrop` will only work in "windowed" popups, i.e. those with _ShouldConstrainToRootBounds=False_.
+\* `Popup`/`MenuFlyout` `SystemBackdrop` support is not available in WinAppSDK 1.3.0, but is expected to light up in a subsequent release. Note also `SystemBackdrop` will only work in "windowed" popups, i.e. those with `ShouldConstrainToRootBounds=False`.
 
 For example:
 
@@ -95,7 +95,7 @@ For example:
 ```
 
 > [!NOTE]
-> Note that `MicaBackdrop` isn't supported on all systems. In such cases a solid color will be used instead of the Mica effect.
+> `MicaBackdrop` isn't supported on all systems. In such cases a solid color will be used instead of the Mica effect.
 
 ## SystemBackdrop class
 
@@ -189,9 +189,9 @@ Override this method to be called when one of the properties (described above) o
 
 # API Details
 
-- MIDL3
-
 ```csharp
+// MIDL3
+
 namespace Microsoft.UI.Xaml.Media
 {
   [contract(Microsoft.UI.Xaml.WinUIContract, 4)]

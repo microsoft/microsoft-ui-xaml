@@ -83,9 +83,9 @@ New subclassing order with this new feature change:
 
 # API Details
 
-- MIDL3
-
 ```csharp
+// MIDL3
+
 namespace Microsoft.UI.Xaml
 {
    unsealed runtimeclass Window
@@ -106,4 +106,4 @@ namespace Microsoft.UI.Xaml
 - There will be only one AppWindow object per top level HWND, created during Window object creation.
   No new AppWindow objects are created for child windows.
 - Future scope: Since this API is limited to top level HWND, there should be a way to get an `AppWindow` object
-  for top level HWND from one of its nested children HWND which doesn’t require app developer writing a lot of code.
+  for top level HWND from one of its nested children HWND which doesn't require app developer writing a lot of code.

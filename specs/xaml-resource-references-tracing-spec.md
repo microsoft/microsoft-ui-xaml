@@ -49,7 +49,7 @@ class)_
 ## DebugSettings.XamlResourceReferenceFailed Event
 
 Occurs when a
-[XAML resource reference](https://learn.microsoft.com/en-us/windows/apps/design/style/xaml-resource-dictionary)
+[XAML resource reference](https://learn.microsoft.com/windows/apps/design/style/xaml-resource-dictionary)
 cannot be resolved.
 
 _Spec note: This API is similar to the `DebugSettings.BindingFailed` event. Like XAML resource references,

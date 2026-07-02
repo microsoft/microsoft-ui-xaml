@@ -142,7 +142,7 @@ article.
 | Name | Description |
 | --- | --- |
 | SourceElement | Gets or sets the UIElement to render inside the `MonochromaticOverlayPresenter`. |
-| ReplacementColor | Gets or sets the Color to use instead of the non-transparent pixels of the SourceElement.
+| ReplacementColor | Gets or sets the Color to use instead of the non-transparent pixels of the SourceElement. |
 
 # API Details
 
