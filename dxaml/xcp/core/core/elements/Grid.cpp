@@ -1321,6 +1321,11 @@ _Check_return_ HRESULT CGrid::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZE
             arrangeRect.Width = GetFinalSizeForRange(m_pColumns, columnIndex, GetColumnSpan(currentChild), columnSpacing);
             arrangeRect.Height = GetFinalSizeForRange(m_pRows, rowIndex, GetRowSpan(currentChild), rowSpacing);
 
+            if (currentChild->GetUseLayoutRounding())
+            {
+                AdjustRectForChildLayoutRounding(currentChild, arrangeRect, /* adjustX */ columnIndex > 0, /* adjustY */ rowIndex > 0);
+            }
+
             IFC_RETURN(currentChild->Arrange(arrangeRect));
         }
     }
@@ -1328,6 +1333,50 @@ _Check_return_ HRESULT CGrid::ArrangeOverride(_In_ XSIZEF finalSize, _Out_ XSIZE
     newFinalSize = finalSize;
 
     return S_OK;
+}
+
+
+//------------------------------------------------------------------------
+//
+//  Method:   CGrid::AdjustRectForChildLayoutRounding
+//
+//  Synopsis:
+//      Adjusts rect to correct for child element's layout rounding
+//
+//------------------------------------------------------------------------
+void CGrid::AdjustRectForChildLayoutRounding(
+    _In_ CUIElement* pChild,
+    _Inout_ XRECTF& rect,
+    bool adjustX,
+    bool adjustY
+    )
+{
+    // If the child's layout rounding would position it too far to the left or
+    // top, we adjust rect to force it to be positioned correctly.
+
+    XFLOAT inverseScale = 1.0f / pChild->GetScaleFactorForLayoutRounding();
+
+    if (adjustX)
+    {
+        XFLOAT roundedX = pChild->LayoutRound(rect.X);
+        if (roundedX < rect.X)
+        {
+            XFLOAT newX = roundedX + inverseScale;
+            rect.Width = std::max(0.0f, rect.Width - (newX - rect.X));
+            rect.X = newX;
+        }
+    }
+
+    if (adjustY)
+    {
+        XFLOAT roundedY = pChild->LayoutRound(rect.Y);
+        if (roundedY < rect.Y)
+        {
+            XFLOAT newY = roundedY + inverseScale;
+            rect.Height = std::max(0.0f, rect.Height - (newY - rect.Y));
+            rect.Y = newY;
+        }
+    }
 }
 
 
