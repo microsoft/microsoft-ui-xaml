@@ -12,10 +12,15 @@ on:
 permissions:
   issues: write
 
+concurrency:
+  group: needs-repro-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   needs-repro:
-    # Only run on issues (not PRs), when the comment contains the command, and
-    # only when the commenter is a maintainer/collaborator of the repo.
+    # Coarse gate: only on issues (not PRs), when the comment mentions the
+    # command, and only for maintainers/collaborators. The exact-match check
+    # below rejects loose matches (quoted replies, inline mentions, suffixes).
     if: >-
       github.event.issue.pull_request == null &&
       contains(github.event.comment.body, '/needs-repro') &&
@@ -24,7 +29,23 @@ jobs:
        github.event.comment.author_association == 'COLLABORATOR')
     runs-on: ubuntu-latest
     steps:
+      - name: Detect command
+        id: detect
+        env:
+          # Passed via env (not inlined into the script) to avoid injection.
+          BODY: ${{ github.event.comment.body }}
+        run: |
+          # Only treat it as the command if some line is exactly "/needs-repro"
+          # (ignoring surrounding whitespace). This rejects quoted replies
+          # ("> /needs-repro"), inline mentions, and suffixes ("/needs-repro-x").
+          if printf '%s' "$BODY" | grep -qE '^[[:space:]]*/needs-repro[[:space:]]*$'; then
+            echo "match=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "match=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Acknowledge the command
+        if: steps.detect.outputs.match == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -34,17 +55,8 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -f content='eyes' || true
 
-      - name: Add labels
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          NUMBER: ${{ github.event.issue.number }}
-        run: |
-          gh issue edit "$NUMBER" --repo "$REPO" \
-            --add-label "needs-repro" \
-            --add-label "needs-author-feedback"
-
       - name: Post repro request
+        if: steps.detect.outputs.match == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -68,3 +80,14 @@ jobs:
           Once you add the repro, this issue will be re-triaged automatically. If we don't hear back within a reasonable time, the issue may be closed for housekeeping — but you're always welcome to comment to reopen the discussion. Thanks! 🙏
           EOF
           )"
+
+      - name: Add labels
+        if: steps.detect.outputs.match == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue edit "$NUMBER" --repo "$REPO" \
+            --add-label "needs-repro" \
+            --add-label "needs-author-feedback" || true
