@@ -107,13 +107,20 @@ XAML compiler reads two MSBuild properties and generates the corresponding
 `EnableChange` / `DisableChange` calls at the top of the generated entry point
 (`Main` for C#, `wWinMain` for C++/WinRT), before `Application.Start()` runs:
 
-| Property                       | Description                                                   |
+| Property                       | Description                                              |
 |--------------------------------|----------------------------------------------------------|
 | `EnabledXamlOptionalChanges`   | Comma-delimited list of changes to **enable**.           |
 | `DisabledXamlOptionalChanges`  | Comma-delimited list of changes to **disable**.          |
 
 Each list element is passed verbatim to the generated call.  You can use either
 the friendly `XamlChangeId` enum name or its numeric tracking ID.
+
+**Note:** All `EnableChange` calls are emitted before all `DisableChange` calls and this behavior
+cannot be configured; if a change is specified within both properties then it will ultimately be
+disabled. Individual changes are enabled or disabled based on the order in which they are specified 
+within the corresponding MSBuild property.
+
+#### Example: Enabling/Disabling via project properties
 
 ``` xml
 <!-- MyApp.csproj (C#) or MyApp.vcxproj (C++/WinRT) -->
