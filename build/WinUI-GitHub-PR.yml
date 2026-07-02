@@ -165,3 +165,8 @@ extends:
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
           dependsOn: ValidateGitHubPrContext
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
+        parameters:
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
