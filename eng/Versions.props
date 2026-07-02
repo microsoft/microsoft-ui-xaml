@@ -69,6 +69,8 @@
     <WindowsSdkTargetPlatformVersion>$(PackageTargetPlatformVersion)</WindowsSdkTargetPlatformVersion>
     <!-- Force our build version to match the package version -->
     <WinUIVersion Condition="'$(WinUIVersion)'==''">3.0.0-dev</WinUIVersion>
+    <WinUIPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.2.1</WinUIPackageVersion>
+    <WinUIPackageVersion Condition="'$(WinUIPackageVersion)'==''">$(WinUIVersion)</WinUIPackageVersion>
     <WindowsAppSdkPackageConfig Condition="'$(WindowsAppSdkPackageConfig)'==''">$(Configuration)</WindowsAppSdkPackageConfig>
     <MicrosoftVisualStudioProjectSystemVersion>15.0.737</MicrosoftVisualStudioProjectSystemVersion>
     <WindowsAppSdkTargetPlatformVersion>10.0.17763.0</WindowsAppSdkTargetPlatformVersion>
