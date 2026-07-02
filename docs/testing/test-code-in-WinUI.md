@@ -212,7 +212,7 @@ Most of the test code is based on testing the public API surface of the product 
 necessary to call into private test hooks in the product code. This is done via the `IXamlTestHooks` interface which is
 not a part of WinUI's public API, but is available to test code.
 
-Definition: [`dxaml\xcp\inc\IXamlTestHooks-win.h`](../../dxaml/xcp/inc/IXamlTestHooks-win.h)
+Definition: [`dxaml/xcp/inc/IXamlTestHooks-win.h`](../../dxaml/xcp/inc/IXamlTestHooks-win.h)
 
 ### C++ Tests are written in C++/CX
 
