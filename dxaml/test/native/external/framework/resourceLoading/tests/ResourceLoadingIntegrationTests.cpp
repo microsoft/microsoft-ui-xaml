@@ -8,6 +8,7 @@
 #include "ResourceLoadingIntegrationTests.h"
 #include <TestCleanupWrapper.h>
 #include "CustomResourceLoader.h"
+#include "RootCustomResourceDialog.xaml.h"
 
 using namespace Platform;
 using namespace ::Windows::Foundation;
@@ -226,6 +227,59 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             auto panel = safe_cast<StackPanel^>(XamlReader::Load(xamlString));
 
             TestCustomResources(panel);
+        });
+    }
+
+    // Regression test for bug 50695292: a markup extension on a property of the ROOT element
+    // of a XAML document used to fail with E_XAMLPARSEFAILED "Markup extension could not provide
+    // value." because the root collapses to LiveDepth 1, so the parser took the provide-only path
+    // and never assigned the value. This requires a provided root instance (LoadComponent), which
+    // is exactly how an x:Class root such as a ContentDialog subclass is created.
+    void ResourceLoadingIntegrationTests::CanLoadCustomResourceOnRootElement()
+    {
+        TestCleanupWrapper cleanup([]()
+        {
+            RunOnUIThread([]()
+            {
+                Microsoft::UI::Xaml::Resources::CustomXamlResourceLoader::Current = nullptr;
+            });
+            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+        });
+
+        RunOnUIThread([]()
+        {
+            auto customResourceLoader = ref new CustomResourceLoader;
+            LoadCustomResources(customResourceLoader);
+
+            // Markup extension on the provided root element's own property (mirrors the ContentDialog repro).
+            auto rootTextBlock = ref new TextBlock;
+            LoadXamlComponent(rootTextBlock, L"CustomResourceOnRoot.xaml");
+
+            VERIFY_IS_TRUE(rootTextBlock->Text == L"Ren");
+        });
+    }
+
+    // Faithful repro for bug 50695292: instantiate a markup-COMPILED (genxbf) x:Class ContentDialog
+    // whose ROOT element sets PrimaryButtonText via {CustomResource} - exactly the reported scenario
+    // (compiled ContentDialog subclass, not loose XAML). The ctor calls LoadComponent(this, compiled xbf).
+    void ResourceLoadingIntegrationTests::CanLoadCustomResourceOnCompiledRootElement()
+    {
+        TestCleanupWrapper cleanup([]()
+        {
+            RunOnUIThread([]()
+            {
+                Microsoft::UI::Xaml::Resources::CustomXamlResourceLoader::Current = nullptr;
+            });
+            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+        });
+
+        RunOnUIThread([]()
+        {
+            auto customResourceLoader = ref new CustomResourceLoader;
+            LoadCustomResources(customResourceLoader);
+
+            auto dialog = ref new ::Tests::Native::External::Framework::ResourceLoading::RootCustomResourceDialog();
+            VERIFY_IS_TRUE(dialog->PrimaryButtonText == L"Ren");
         });
     }
 
