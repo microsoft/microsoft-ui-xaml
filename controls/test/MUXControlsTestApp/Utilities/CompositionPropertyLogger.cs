@@ -8,7 +8,6 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.UI.Composition;
-using Microsoft.UI.Composition.Experimental;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
