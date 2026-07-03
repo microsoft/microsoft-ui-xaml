@@ -52,7 +52,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/main
+      ref: refs/heads/user/hmishra/gh-ado-mock-package-update-restore-draft
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -153,6 +153,13 @@ extends:
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
           dependsOn: ValidateGitHubPrContext
+
+      - template: build\AzurePipelinesTemplates\WinUI-TestWinUIComponentPackageUpdate-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: GitHubPR
+          buildScenarioApps: false
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
