@@ -52,7 +52,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/main
+      ref: refs/heads/user/hmishra/gh-ado-scenario-tests-restore-draft
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -153,6 +153,12 @@ extends:
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
           dependsOn: ValidateGitHubPrContext
+
+      - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: GitHubPR
+          dependsOn: Build
+          runArm64Tests: ${{ parameters.runArm64Tests }}
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
