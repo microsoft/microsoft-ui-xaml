@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+  <ItemGroup Condition="'$(IsInWinUIRepo)' == 'true' and '$(MSBuildProjectName)' == 'WinUIGallery'">
+    <PackageReference Update="Microsoft.WindowsAppSDK" VersionOverride="2.2.2-experimental9" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(IsInWinUIRepo)' == 'true' and '$(MSBuildProjectName)' == 'WinUIGallery.UnitTests'">
+    <PackageReference Update="Microsoft.WindowsAppSDK" VersionOverride="2.2.2-experimental9" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="$(WinUIVersion)" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(IsInWinUIRepo)' == 'true' and '$(MSBuildProjectName)' == 'WinUIGallery.UnitTests' and '$(WindowsAppSdkSelfContained)' == ''">
+    <WindowsAppSdkSelfContained>true</WindowsAppSdkSelfContained>
+  </PropertyGroup>
+
+  <!-- Work around CreateWapProjPackageFiles, which copies mui files out of their locale folders into the package root.
+      Note that this should only be a potential issue for InApp mode customers, 
+      as otherwise the Project Reunion framework package supplies mui files. -->
+  <Target Name="CreateWapProjPackageFiles_Workaround" BeforeTargets="_GenerateAppxPackageFile;_GenerateAppxPackageRecipeFile" Outputs="@(AppxPackagePayload)">
+    <ItemGroup>
+      <AppxPackagePayload Remove="@(AppxPackagePayload)" Condition="'%(Extension)' == '.mui' and !$([System.String]::Copy(%(TargetPath)).Contains('\'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Work around to keep UWP samples building - add explicit reference to WinUI metadata. -->
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'UAP'" >
+    <ResolveAssemblyReferencesDependsOn>ReferenceWinUIUapMetadata;$(ResolveAssemblyReferencesDependsOn)</ResolveAssemblyReferencesDependsOn>
+  </PropertyGroup>
+  <Target Name="ReferenceWinUIUapMetadata">
+    <ItemGroup>
+      <_WinUIUapMetadata Include="$(_WinUIDllDir)..\..\..\lib\uap10.0\Microsoft.UI.Xaml.winmd" />
+      <Reference Include="@(_WinUIUapMetadata)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

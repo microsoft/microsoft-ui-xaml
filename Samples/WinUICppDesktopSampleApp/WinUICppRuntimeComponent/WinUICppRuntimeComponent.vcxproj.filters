@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>accd3aa8-1ba0-4223-9bbe-0c431709210b</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{926ab91d-31b4-48c3-b9a4-e681349f27f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\en-US">
+      <UniqueIdentifier>{9e5e60c5-f95e-41f9-a92b-e43742e37577}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources\es-ES">
+      <UniqueIdentifier>{b267db4a-3084-4e59-bd3e-773f29338064}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="CustomControl1.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="CustomControl1.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="UserControl1.idl" />
+    <Midl Include="ViewModel.idl" />
+    <Midl Include="CustomControl1.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="WinUICppRuntimeComponent.def" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="UserControl1.xaml" />
+    <Page Include="DictionaryWithXUid.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\en-US\Resources.resw">
+      <Filter>Resources\en-US</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\es-ES\Resources.resw">
+      <Filter>Resources\es-ES</Filter>
+    </PRIResource>
+  </ItemGroup>
+</Project>

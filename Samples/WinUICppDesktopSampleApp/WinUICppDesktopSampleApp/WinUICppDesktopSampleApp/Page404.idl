@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation and Contributors.
+// Licensed under the MIT License.
+
+namespace WinUICppDesktopSampleApp
+{
+    [default_interface]
+    runtimeclass Page404 : Microsoft.UI.Xaml.Controls.Page
+    {
+        Page404();
+    }
+}
