@@ -58,6 +58,7 @@
     <IxpTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.11-experimental</IxpTransportPackageVersion>
     <BasePackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.3-experimental1</BasePackageVersion>
     <WinUIDetailsNugetVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.10.0-experimental.20260603.0</WinUIDetailsNugetVersion>
+    <WinUIPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.2.1</WinUIPackageVersion>
     <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
     <FoundationPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationPackageVersion>
     <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.11-experimental</IXPPackageVersion>
@@ -69,7 +70,6 @@
     <WindowsSdkTargetPlatformVersion>$(PackageTargetPlatformVersion)</WindowsSdkTargetPlatformVersion>
     <!-- Force our build version to match the package version -->
     <WinUIVersion Condition="'$(WinUIVersion)'==''">3.0.0-dev</WinUIVersion>
-    <WinUIPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.2.1</WinUIPackageVersion>
     <WinUIPackageVersion Condition="'$(WinUIPackageVersion)'==''">$(WinUIVersion)</WinUIPackageVersion>
     <WindowsAppSdkPackageConfig Condition="'$(WindowsAppSdkPackageConfig)'==''">$(Configuration)</WindowsAppSdkPackageConfig>
     <MicrosoftVisualStudioProjectSystemVersion>15.0.737</MicrosoftVisualStudioProjectSystemVersion>
@@ -118,6 +118,7 @@
     <!-- Verify that we were able to retrieve all the versions from the configuration files. -->
     <Error Condition="'$(FoundationTransportPackageVersion)' == ''" Text="Unable to determine version for package $(ProjectReunionFoundationTransportPackageName)" />
     <Error Condition="'$(IxpTransportPackageVersion)' == ''" Text="Unable to determine version for package $(LiftedIXPTransportPackageName)" />
+    <Error Condition="'$(WinUIPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.WindowsAppSDK.WinUI" />
     <Error Condition="'$(LocalizedMUIFilesPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Internal.WinUILocalizationResources" />
     <Error Condition="'$(MicrosoftWindowsSDKContractsVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.SDK.Contracts" />
     <Error Condition="'$(TaefNugetPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Taef" />

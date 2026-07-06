@@ -61,6 +61,12 @@ foreach ($pkg in $mainPkgs)
 Write-Host -ForegroundColor Green Done.
 Write-Progress "Restoring packages for build platform $buildPlatform..." -Completed
 
+$restoreOssPinnedNativePackagesScript = Join-Path $repoRoot "build\PipelineScripts\RestoreOssPinnedNativePackages.ps1"
+if (Test-Path -LiteralPath $restoreOssPinnedNativePackagesScript)
+{
+    & $restoreOssPinnedNativePackagesScript -RepositoryRoot $repoRoot -PackagesDirectory "$repoRoot\packages" -NuGetConfigPath "$repoRoot\nuget.config" -Verbosity $Verbosity
+}
+
 . $repoRoot\build\DownloadDotNetCoreSdk.ps1
 . $repoRoot\build\DownloadDotNetRuntimeInstaller.ps1
 
