@@ -1,0 +1,13 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace NativeDesktopSample
+{
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        MainWindow();
+        Int32 MyProperty;
+        String Text;
+    }
+}

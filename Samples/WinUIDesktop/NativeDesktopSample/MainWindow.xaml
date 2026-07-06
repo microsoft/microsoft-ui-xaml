@@ -1,0 +1,18 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Window
+    x:Class="NativeDesktopSample.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NativeDesktopSample"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="{x:Bind Text, Mode=OneWay}">
+
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Button x:Name="myButton" Click="ClickHandler" Width="{x:Bind MyProperty}">Click Me</Button>
+        <TextBlock Text="{x:Bind Text, Mode=OneWay}" />
+        <TextBox Text="{x:Bind Text, Mode=TwoWay}"/>
+    </StackPanel>
+</Window>
