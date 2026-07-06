@@ -43,11 +43,11 @@ Try this:
 ### Ecosystem
 
 - It's helpful to be complete in explaining what another solution achieves for you and why it is important to you.
-  - Example:"I'd like WinUI 3 to work with \<framework, language, library, technology, etc.\>. Without this, I can't do \<goal\>."
+  - Example: "I'd like WinUI 3 to work with \<framework, language, library, technology, etc.\>. Without this, I can't do \<goal\>."
 
 ### Prioritization within WinUI
 
-- There is often trade-off required when adjusting priorities - please be clear in comparing what is more important vs. less important to you, and the reason why.
+- There is often trade-off required when adjusting priorities - please be clear in comparing what is more important versus less important to you, and the reason why.
   - Example: "I think \<specific area or feature set\> should be prioritized before \<other specific area or feature set\> so that I can achieve \<goal\>. Without this, I have to \<alternative\>. "  
 
 ### Engagement
@@ -58,9 +58,9 @@ Try this:
 
    Many of the resources we provide are also open source themselves! It can sometimes be more effective to leave feedback on the more specific repo. This includes:
 
-- [documentation](https://github.com/MicrosoftDocs/windows-uwp)
+- [Windows dev docs](https://github.com/MicrosoftDocs/windows-dev-docs)
 - [website (gh-pages branch of this repo)](https://github.com/microsoft/microsoft-ui-xaml/tree/gh-pages)
-- [XAML Controls Gallery (sample app)](https://github.com/microsoft/Xaml-Controls-Gallery/tree/master)
+- [WinUI 3 Gallery (sample app)](https://github.com/microsoft/WinUI-Gallery/tree/main)
   
 ### Team Process
 
