@@ -9,23 +9,23 @@ while also applying a monochromatic colorization effect.
 This allows the element to appear to be an overlay on top of the other element.
 
 `MonochromaticOverlayPresenter` element is similar to several precedents:
-* [CompositionMaskBrush](https://learn.microsoft.com/uwp/api/Windows.UI.Composition.CompositionMaskBrush),
+* [CompositionMaskBrush](https://docs.microsoft.com/uwp/api/Windows.UI.Composition.CompositionMaskBrush),
 which  is a brush that gets its content from another (source) brush.
-* WPF's [VisualBrush](https://learn.microsoft.com/dotnet/api/System.Windows.Media.VisualBrush),
+* WPF's [VisualBrush](https://docs.microsoft.com/dotnet/api/System.Windows.Media.VisualBrush),
 which uses an element's rendering to draw a brush.
 
 A key difference in this new type is that it only renders the portion of the source
 element which it intersects with in location.
 
 This new `MonochromaticOverlayPresenter` will be used in the rendering of the 
-[DatePicker](https://learn.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.DatePicker)
+[DatePicker](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls.DatePicker)
 control (see more info in the Appendix).
 
 # API Pages
 
 ## MonochromaticOverlayPresenter class
 
-A [Framework Element](https://learn.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement?view=winui-3.0-preview)
+A [Framework Element](https://docs.microsoft.com/windows/winui/api/microsoft.ui.xaml.frameworkelement?view=winui-3.0-preview)
 which renders another element at the same position (beneath it in the Z-order),
 while also optionally applying a monochromatic colorization effect.
 
