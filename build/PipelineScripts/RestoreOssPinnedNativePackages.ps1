@@ -107,10 +107,6 @@ $packages = @(
         Id = "Microsoft.WindowsAppSDK.Base"
         PropertyName = "BasePackageVersion"
     }
-    [pscustomobject]@{
-        Id = "Microsoft.WindowsAppSDK.WinUI"
-        PropertyName = "WinUIPackageVersion"
-    }
 )
 
 foreach ($package in $packages) {

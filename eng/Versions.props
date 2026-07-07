@@ -58,7 +58,6 @@
     <IxpTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.11-experimental</IxpTransportPackageVersion>
     <BasePackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.3-experimental1</BasePackageVersion>
     <WinUIDetailsNugetVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.10.0-experimental.20260603.0</WinUIDetailsNugetVersion>
-    <WinUIPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.2.1</WinUIPackageVersion>
     <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
     <FoundationPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationPackageVersion>
     <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.11-experimental</IXPPackageVersion>
