@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <optional>
+#include <memory>
+
 #include "Window.g.h"
 #include "ContentManager.h"
 #include <WindowImpl.h>
@@ -134,7 +137,47 @@ namespace DirectUI
         _Check_return_ HRESULT RaiseWindowSizeChangedEvent();
         _Check_return_ HRESULT RaiseWindowActivatedEvent(_In_ const xaml::WindowActivationState state);
         _Check_return_ HRESULT RaiseWindowVisibilityChangedEvent(_In_ const BOOLEAN visible);
-        _Check_return_ HRESULT SetClientSizeInDips(DOUBLE width, DOUBLE height);
+
+        // --------------------------------------------------
+        // Window sizing support
+        // --------------------------------------------------
+
+        // "RestoredClientSize" is WinUI's name for what the window's client size is when in the normal state and its
+        // AppWindow is using the default Overlapped presenter.
+        _Check_return_ HRESULT GetRestoredClientSizeInDips(_Out_ wf::Size* pValue);
+        _Check_return_ HRESULT SetRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height);
+        _Check_return_ HRESULT GetRestoredChromeSizeInPixels(_Out_ SIZE* pChromeSize);
+        
+        // Applies the requested client size now, or defers it (pending) until we can honor it.
+        _Check_return_ HRESULT ApplyOrDeferClientSizeInDips(std::optional<double> width, std::optional<double> height);
+        
+        // Reads the Win32 restore size (rcNormalPosition) while maximized/minimized. Sets the out flag
+        // only in that case; otherwise the caller falls back to another source.
+        _Check_return_ HRESULT TryGetWin32RestoredClientSizeInDips(_Out_ bool* pUseRestoredClientSize, _Out_ wf::Size* pValue);
+
+        // Live chrome (outer minus client) in pixels
+        _Check_return_ HRESULT MeasureLiveChromeInPixels(_Out_ SIZE* pChromeSize);
+        float GetWindowScale();
+        // Records the tracked restored size (client + chrome, both DIPs) as a unit.
+        void SetTrackedRestoredSize(wf::Size clientDips, wf::Size chromeDips);
+        _Check_return_ HRESULT ValidateWidthHeightValue(DOUBLE value);
+
+        // Only the Default/Overlapped presenters support Width/Height sizing.
+        bool AppWindowPresenterSupportsSizing();
+        // True when the live window represents its restored geometry (sizing presenter, not min/maxed).
+        bool IsInOverlappedRestoredState();
+        // True once the app has set Width or Height (opted into the feature).
+        bool HasExplicitClientSize() const { return m_hasExplicitClientSize; }
+
+        // Records the live client size as the restored size, but only while in the restored state.
+        void UpdateLastRestoredClientSize();
+        // Defers UpdateLastRestoredClientSize onto the dispatcher queue, coalescing WM_SIZE bursts.
+        void ScheduleUpdateLastRestoredClientSize();
+        // Applies a Width/Height remembered before first show or while in a non-sizing presenter.
+        _Check_return_ HRESULT ApplyPendingClientSizeIfNeeded();
+        // On AppWindow.Changed, applies a Width/Height remembered while in a non-sizing presenter.
+        _Check_return_ HRESULT OnAppWindowChanged(_In_ ixp::IAppWindow* sender, _In_ ixp::IAppWindowChangedEventArgs* args);
+        
         void ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
         void RepositionWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
         void Shutdown();
@@ -153,7 +196,44 @@ namespace DirectUI
         DXamlCore* m_dxamlCoreNoRef = nullptr;
         bool m_bMinimizedOrHidden = false;
         bool m_bInitialWindowActivation = true;
+
+        // --------------------------------------------------
+        // Window sizing support
+        // --------------------------------------------------
+
+        // True once the app has set Width or Height at least once.
+        bool m_hasExplicitClientSize = false;
+
+        // When the app has set Width/Height, but we haven't been able to honor them yet,
+        // we store them here.
+        std::optional<double> m_pendingClientWidthDips;
+        std::optional<double> m_pendingClientHeightDips;
+
+        // The window's last known restored size in DIPs - the client-area size and its non-client
+        // chrome (outer window rect minus client rect) the window has, or returns to, when it isn't
+        // maximized, minimized, or in a non-sizing presenter. Client and chrome are always tracked
+        // together (see SetTrackedRestoredSize).
+        struct TrackedRestoredSize
+        {
+            wf::Size client;
+            wf::Size chrome;
+        };
+        std::optional<TrackedRestoredSize> m_trackedRestoredSize;
+
+        // We've scheduled an update of the restored client size onto the dispatcher queue
+        bool m_restoredSizeUpdateScheduled = false;
+
+        // True while the user is interactively moving/resizing the window.
+        bool m_inSizeMove = false;
+
+        // Lifetime sentinel for deferred (DispatcherQueue) restored-size callbacks. Lazily allocated
+        // the first time we enqueue such a callback (ScheduleUpdateLastRestoredClientSize); stays null
+        // for windows that never schedule one. Shutdown() clears it so a callback outliving the window
+        // no-ops instead of touching freed memory.
+        std::shared_ptr<bool> m_isWindowAlive;
+
         EventRegistrationToken m_takeFocusRequestedEventToken;
+        EventRegistrationToken m_appWindowChangedToken{};
         GUID m_lastTakeFocusRequestCorrelationId;
         HWND m_lastFocusedWindowHandle = NULL;
         HWND m_positioningBridgeWindowHandle = NULL;
@@ -187,4 +267,3 @@ namespace DirectUI
         ctl::ComPtr<DirectUI::DesktopWindowXamlSource> m_desktopWindowXamlSource;
     };
 }
-

@@ -111,7 +111,6 @@ namespace DirectUI
         void SetShrinkApplicationViewVisibleBounds(bool enabled) override;
 
     private:
-        _Check_return_ HRESULT SetClientSizeInDips(DOUBLE width, DOUBLE height);
 
         _Check_return_ HRESULT OnCoreWindowSizeChanged(_In_ wuc::ICoreWindow* pSender, _In_ wuc::IWindowSizeChangedEventArgs* pArgs);
         _Check_return_ HRESULT OnApplicationViewVisibleBoundsChanged(_In_ wuv::IApplicationView* pSender, _In_ IInspectable* pArgs);
