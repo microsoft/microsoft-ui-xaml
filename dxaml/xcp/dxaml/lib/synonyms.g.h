@@ -112,6 +112,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IVisualTransition IVisualTransition;
     typedef ABI::Microsoft::UI::Xaml::IWindow IWindow;
     typedef ABI::Microsoft::UI::Xaml::IWindow2 IWindow2;
+    typedef ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi IWindowFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IWindowActivatedEventArgs IWindowActivatedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IWindowChrome IWindowChrome;
     typedef ABI::Microsoft::UI::Xaml::IWindowCreatedEventArgs IWindowCreatedEventArgs;

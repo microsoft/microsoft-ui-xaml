@@ -14639,7 +14639,7 @@ extern const MetaDataTypeProperties c_aTypeProperties[KnownTypeCount] =
         0, // First enter property = UnknownObject.UnknownProperty
         0, // First render property = UnknownObject.UnknownProperty
         0, // First object property = UnknownObject.UnknownProperty
-        12, // Property slot count
+        14, // Property slot count
     },
     // Microsoft.UI.Xaml.WindowCreatedEventArgs
     {
@@ -26540,6 +26540,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::Window, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsVisualTreeProperty)), // Property flags
     },
+    // Microsoft.UI.Xaml.Window.Height
+    {
+        KnownPropertyIndex::Window_Height, // Index name
+        KnownTypeIndex::Double, // Property type
+        KnownTypeIndex::Window, // Declaring type
+        KnownTypeIndex::Window, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
+    },
     // Microsoft.UI.Xaml.Window.SystemBackdrop
     {
         KnownPropertyIndex::Window_SystemBackdrop, // Index name
@@ -26563,6 +26571,14 @@ extern const MetaDataProperty c_aProperties[KnownPropertyCount] =
         KnownTypeIndex::Window, // Declaring type
         KnownTypeIndex::Window, // Target type
         static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse)), // Property flags
+    },
+    // Microsoft.UI.Xaml.Window.Width
+    {
+        KnownPropertyIndex::Window_Width, // Index name
+        KnownTypeIndex::Double, // Property type
+        KnownTypeIndex::Window, // Declaring type
+        KnownTypeIndex::Window, // Target type
+        static_cast<MetaDataPropertyInfoFlags>(static_cast<UINT>(MetaDataPropertyInfoFlags::IsSparse) | static_cast<UINT>(MetaDataPropertyInfoFlags::IsPublic)), // Property flags
     },
     // Microsoft.UI.Xaml.Input.XamlUICommand.AccessKey
     {
@@ -38888,10 +38904,12 @@ extern const KnownPropertyIndex c_aNextProperty[KnownPropertyCount] =
     KnownPropertyIndex::VisualTransition_Storyboard, // VisualTransition_GeneratedEasingFunction
     KnownPropertyIndex::VisualTransition_To, // VisualTransition_Storyboard
     KnownPropertyIndex::DependencyObject_Column, // VisualTransition_To
-    KnownPropertyIndex::Window_SystemBackdrop, // Window_Content
+    KnownPropertyIndex::Window_Height, // Window_Content
+    KnownPropertyIndex::Window_SystemBackdrop, // Window_Height
     KnownPropertyIndex::Window_Title, // Window_SystemBackdrop
     KnownPropertyIndex::Window_TransparentBackground, // Window_Title
-    KnownPropertyIndex::DependencyObject_Column, // Window_TransparentBackground
+    KnownPropertyIndex::Window_Width, // Window_TransparentBackground
+    KnownPropertyIndex::DependencyObject_Column, // Window_Width
     KnownPropertyIndex::XamlUICommand_Command, // XamlUICommand_AccessKey
     KnownPropertyIndex::XamlUICommand_Description, // XamlUICommand_Command
     KnownPropertyIndex::XamlUICommand_IconSource, // XamlUICommand_Description
@@ -40843,9 +40861,11 @@ extern const UINT8 c_aPropertySlot[KnownPropertyCount] =
     11, // VisualTransition_Storyboard
     12, // VisualTransition_To
     8, // Window_Content
-    9, // Window_SystemBackdrop
-    10, // Window_Title
-    11, // Window_TransparentBackground
+    9, // Window_Height
+    10, // Window_SystemBackdrop
+    11, // Window_Title
+    12, // Window_TransparentBackground
+    13, // Window_Width
     8, // XamlUICommand_AccessKey
     9, // XamlUICommand_Command
     10, // XamlUICommand_Description
@@ -42797,9 +42817,11 @@ extern const xstring_ptr_storage c_aPropertyNames[KnownPropertyCount] =
     XSTRING_PTR_STORAGE(L"Storyboard"),
     XSTRING_PTR_STORAGE(L"To"),
     XSTRING_PTR_STORAGE(L"Content"),
+    XSTRING_PTR_STORAGE(L"Height"),
     XSTRING_PTR_STORAGE(L"SystemBackdrop"),
     XSTRING_PTR_STORAGE(L"Title"),
     XSTRING_PTR_STORAGE(L"TransparentBackground"),
+    XSTRING_PTR_STORAGE(L"Width"),
     XSTRING_PTR_STORAGE(L"AccessKey"),
     XSTRING_PTR_STORAGE(L"Command"),
     XSTRING_PTR_STORAGE(L"Description"),
