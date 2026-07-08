@@ -815,9 +815,26 @@ void NavigationViewItem::ShowHideChildren()
                 // There seems to be a race condition happening which sometimes
                 // prevents the opening of the flyout. Queue callback as a workaround.
                 SharedHelpers::QueueCallbackForCompositionRendering(
-                    [strongThis = get_strong()]()
+                    [strongThis = get_strong(), this]()
                 {
-                    winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get());
+                    // Item may have collapsed, left flyout mode, or been recycled since this was queued.
+                    if (IsExpanded() && ShouldRepeaterShowInFlyout() && m_rootGrid.get() &&
+                        winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+                    {
+                        winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
+                    }
+                    else if (g_IsTelemetryProviderEnabled)
+                    {
+                        [[gsl::suppress(con.4)]] TraceLoggingWrite(
+                            g_hTelemetryProvider,
+                            "NavigationViewItem_SkippedDeferredFlyoutShow",
+                            TraceLoggingDescription("Deferred flyout show skipped because item state changed before the render callback ran"),
+                            TraceLoggingBoolean(IsExpanded(), "IsExpanded"),
+                            TraceLoggingBoolean(ShouldRepeaterShowInFlyout(), "ShouldRepeaterShowInFlyout"),
+                            TraceLoggingBoolean(m_rootGrid.get() && winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()) != nullptr, "HasAttachedFlyout"),
+                            TelemetryPrivacyDataTag(PDT_ProductAndServicePerformance),
+                            TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+                    }
                 });
             }
             else
