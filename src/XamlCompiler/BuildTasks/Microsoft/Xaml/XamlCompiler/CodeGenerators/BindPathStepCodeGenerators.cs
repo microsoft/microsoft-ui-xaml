@@ -404,7 +404,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                 return new LanguageSpecificString(
                     () => string.Format("safe_cast<::Windows::Foundation::Collections::IMap<::Platform::String^, {0}>^>({1})->Lookup(\"{2}\")",
                         Instance.ValueType.CppCXName(), parentPathExpression.CppCXName(), Instance.Key),
-                    () => string.Format("{1}.as<::winrt::Windows::Foundation::Collections::IMap<::winrt::hstring, {0}>>().Lookup(\"{2}\")",
+                    () => string.Format("{1}.as<::winrt::Windows::Foundation::Collections::IMap<::winrt::hstring, {0}>>().Lookup(L\"{2}\")",
                         Instance.ValueType.CppWinRTName(), parentPathExpression.CppWinRTName(), Instance.Key),
                     () => string.Format("{0}[\"{1}\"]", parentPathExpression.CSharpName(), Instance.Key),
                     () => string.Format("{0}(\"{1}\")", parentPathExpression.VBName(), Instance.Key));
