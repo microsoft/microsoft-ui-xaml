@@ -822,3 +822,49 @@ _Check_return_ HRESULT Window::get_AppWindowImpl(_Outptr_result_maybenull_ ixp::
     return S_OK;
 }
 
+_Check_return_ HRESULT Window::get_WidthImpl(_Out_ DOUBLE* pValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::IsWindowWidthHeightEnabled())
+    {
+        *pValue = 0.0;
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->get_WidthImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_WidthImpl(DOUBLE value)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::IsWindowWidthHeightEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->put_WidthImpl(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::get_HeightImpl(_Out_ DOUBLE* pValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::IsWindowWidthHeightEnabled())
+    {
+        *pValue = 0.0;
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->get_HeightImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_HeightImpl(DOUBLE value)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::IsWindowWidthHeightEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->put_HeightImpl(value));
+    return S_OK;
+}
+

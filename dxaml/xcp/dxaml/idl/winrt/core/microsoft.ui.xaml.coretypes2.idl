@@ -853,6 +853,14 @@ namespace Microsoft.UI.Xaml
             Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
             Microsoft.UI.Windowing.AppWindow AppWindow{ get; };
         }
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
+        {
+            Double Width;
+            Double Height;
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2117,7 +2125,7 @@ namespace Microsoft.UI.Xaml.Markup
         void Disable(Int32 lineNumber, Int32 columnNumber);
     };
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [webhosthidden]
     interface IXamlCondition 
     {
@@ -2236,7 +2244,7 @@ namespace Microsoft.UI.Xaml.Markup
         static void SetPropertyFromUri(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Windows.Foundation.Uri value);
         static void SetPropertyFromObject(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Object value);
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         {
             static void SetPropertyFromThickness(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Microsoft.UI.Xaml.Thickness value);
             static void SetPropertyFromCornerRadius(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Microsoft.UI.Xaml.CornerRadius value);

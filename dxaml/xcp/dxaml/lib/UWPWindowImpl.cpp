@@ -353,6 +353,39 @@ _Check_return_ HRESULT UWPWindowImpl::get_CompositorImpl(_Outptr_result_maybenul
     return S_OK;
 }
 
+// Window.Width/Height are a desktop-only feature; UWP windows are sized by the shell, not the app.
+// (WinUI does not currently support the UWP window path.) Report not-implemented like the other
+// desktop-only Window members here (e.g. ExtendsContentIntoTitleBar).
+_Check_return_ HRESULT UWPWindowImpl::get_WidthImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(IsWindowWidthHeightEnabled());
+    *pValue = 0.0;
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_WidthImpl(DOUBLE value)
+{
+    ASSERT(IsWindowWidthHeightEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_HeightImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(IsWindowWidthHeightEnabled());
+    *pValue = 0.0;
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_HeightImpl(DOUBLE value)
+{
+    ASSERT(IsWindowWidthHeightEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
 _Check_return_ HRESULT UWPWindowImpl::get_TitleImpl(_Out_ HSTRING* pValue)
 {
     ctl::ComPtr<wuv::IApplicationViewStatics2> applicationViewStatics;

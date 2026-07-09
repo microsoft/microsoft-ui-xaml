@@ -274,12 +274,20 @@ _Check_return_ HRESULT XamlNativeRuntime::SetValue(
         targetIsSimpleProperty = true;
     }
 
+    // A Window is not part of a visual/logical tree and has no DataContext, so a classic {Binding}
+    // (or {TemplateBinding}) on its sizing properties can never resolve. Left alone it would silently
+    // push the binding's default value (0), collapsing the window. Reject it at parse time with a
+    // helpful, property-named error instead - same treatment simple properties already get.
+    const bool bindingDisallowedOnProperty  =
+        (inProperty.GetHandle() == KnownPropertyIndex::Window_Width ||
+         inProperty.GetHandle() == KnownPropertyIndex::Window_Height);
+
     // TODO: this is a bit of a hack since we don't have a generic way to handle expressions in native code. Better way to do this?
     switch (inValueTypeIndex)
     {
         case KnownTypeIndex::Binding:
             {
-                if (targetIsSimpleProperty)
+                if (targetIsSimpleProperty || bindingDisallowedOnProperty)
                 {
                     std::shared_ptr<XamlProperty> spProperty;
                     std::shared_ptr<XamlSchemaContext> spSchemaContext;
@@ -307,7 +315,7 @@ _Check_return_ HRESULT XamlNativeRuntime::SetValue(
             break;
         case KnownTypeIndex::TemplateBinding:
             {
-                if (targetIsSimpleProperty)
+                if (targetIsSimpleProperty || bindingDisallowedOnProperty)
                 {
                     std::shared_ptr<XamlProperty> spProperty;
                     std::shared_ptr<XamlSchemaContext> spSchemaContext;

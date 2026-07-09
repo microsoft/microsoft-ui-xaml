@@ -12,6 +12,14 @@ namespace DirectUI
     {
         public:
             // ---------------------------------------------------------------
+            // Master containment switch for the experimental Window.Width/Height feature (returns
+            // true today). When contained off, the public getters/setters return E_NOTIMPL and none
+            // of the feature's side effects run (restored-size WM_SIZE tracking, ExtendsContentInto-
+            // TitleBar client-size preservation, pending/deferred application, and the
+            // AppWindow.Changed subscription), so a window behaves exactly as it did pre-feature.
+            static bool IsWindowWidthHeightEnabled() { return true; }
+
+            // ---------------------------------------------------------------
             // public Window API: IWindow
             // ---------------------------------------------------------------
             virtual _Check_return_ HRESULT get_BoundsImpl(_Out_ wf::Rect* pValue) = 0;
@@ -39,6 +47,10 @@ namespace DirectUI
 
             virtual _Check_return_ HRESULT get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor) = 0;
             virtual _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue) = 0;
+            virtual _Check_return_ HRESULT get_WidthImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_WidthImpl(DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_HeightImpl(DOUBLE value) = 0;
 
             virtual _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** systemBackdrop) = 0;
             virtual _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* systemBackdrop) = 0;

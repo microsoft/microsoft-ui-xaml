@@ -50,6 +50,10 @@ namespace DirectUI
 
         _Check_return_ HRESULT get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor) override;
         _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue) final;
+        _Check_return_ HRESULT get_WidthImpl(_Out_ DOUBLE* pValue) override;
+        _Check_return_ HRESULT put_WidthImpl(DOUBLE value) override;
+        _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue) override;
+        _Check_return_ HRESULT put_HeightImpl(DOUBLE value) override;
 
         _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** systemBackdrop) override;
         _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* systemBackdrop) override;
