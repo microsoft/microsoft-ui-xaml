@@ -1,0 +1,460 @@
+<Window
+    x:Class="XamlProfiler.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XamlProfiler"
+    xmlns:models="using:XamlProfiler.Models"
+    xmlns:helpers="using:XamlProfiler.Helpers"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    Title="XAML Profiler — Tree Visualizer">
+
+    <Grid x:Name="RootLayout">
+        <Grid.Resources>
+            <!-- The four trees couldn't scroll horizontally because the default WinUI TreeView
+                 template (controls/dev/TreeView/TreeView.xaml) hosts its rows in an inner
+                 TreeViewList but does NOT forward any ScrollViewer.* settings to it — so the
+                 ScrollViewer.HorizontalScrollMode set on the TreeView was read from the wrong
+                 element and ignored. These styles re-template the TreeView to push the scroll
+                 settings onto the TreeViewList, and left-align the row container so wide rows
+                 size to their content (overflowing → the horizontal scrollbar engages). -->
+            <Style x:Key="HScrollTreeViewItemStyle" TargetType="muxc:TreeViewItem">
+                <Setter Property="HorizontalAlignment" Value="Left"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+
+            <Style x:Key="HScrollTreeViewStyle" TargetType="muxc:TreeView">
+                <Setter Property="IsTabStop" Value="False"/>
+                <Setter Property="ItemContainerStyle" Value="{StaticResource HScrollTreeViewItemStyle}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="muxc:TreeView">
+                            <muxc:TreeViewList x:Name="ListControl"
+                                               Background="{TemplateBinding Background}"
+                                               ItemTemplate="{TemplateBinding ItemTemplate}"
+                                               ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                               ItemContainerStyle="{TemplateBinding ItemContainerStyle}"
+                                               ItemContainerStyleSelector="{TemplateBinding ItemContainerStyleSelector}"
+                                               ItemContainerTransitions="{TemplateBinding ItemContainerTransitions}"
+                                               CanDragItems="{TemplateBinding CanDragItems}"
+                                               AllowDrop="{TemplateBinding AllowDrop}"
+                                               CanReorderItems="{TemplateBinding CanReorderItems}"
+                                               ScrollViewer.HorizontalScrollMode="Enabled"
+                                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                               ScrollViewer.VerticalScrollMode="Enabled"
+                                               ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </Grid.Resources>
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="Escape" Invoked="ClearHighlightsAccelerator_Invoked"/>
+        </Grid.KeyboardAccelerators>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="220"/>
+        </Grid.RowDefinitions>
+
+        <!-- App picker toolbar -->
+        <Grid Grid.Row="0" Padding="12,8" Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="0,0,12,0" Spacing="8">
+                <RadioButton x:Name="ExeRadioButton" Content="Executable" GroupName="LaunchMode"
+                             IsChecked="True" Checked="LaunchModeChanged"/>
+                <RadioButton x:Name="PackageRadioButton" Content="App Package" GroupName="LaunchMode"
+                             Checked="LaunchModeChanged"/>
+            </StackPanel>
+
+            <!-- Executable path input -->
+            <Grid x:Name="ExePickerPanel" Grid.Column="2" Margin="0,0,8,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="ExePathTextBox" Grid.Column="0"
+                         PlaceholderText="Path to .exe" VerticalAlignment="Center"/>
+                <Button x:Name="BrowseButton" Content="Browse..." Click="BrowseButton_Click"
+                        Grid.Column="1" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                <Button x:Name="DefaultButton" Content="Default" Click="DefaultButton_Click"
+                        Grid.Column="2" Margin="4,0,0,0" VerticalAlignment="Center"
+                        ToolTipService.ToolTip="Set FolderTreeApp default path"/>
+            </Grid>
+
+            <!-- Package picker (hidden by default) -->
+            <ComboBox x:Name="PackageComboBox" Grid.Column="2" Margin="0,0,8,0"
+                      Visibility="Collapsed" HorizontalAlignment="Stretch"
+                      PlaceholderText="Select an app package..."
+                      MinWidth="300"/>
+
+            <Button x:Name="StartButton" Content="Launch and Listen" Click="StartButton_Click"
+                    Grid.Column="3" Margin="0,0,8,0" Style="{ThemeResource AccentButtonStyle}"/>
+            <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8">
+                <Button x:Name="TapButton" Content="Tap" Click="TapButton_Click" IsEnabled="False"
+                        ToolTipService.ToolTip="Inject the live-highlight tap into the observed app (click once its window is up)"/>
+                <ToggleButton x:Name="PickToggle" Content="Pick from app" Click="PickToggle_Click" IsEnabled="False"
+                        ToolTipService.ToolTip="Hover the target app and click an element to select its node here (the click is consumed, so the app's control won't fire)"/>
+                <Button x:Name="StopButton" Content="Stop" Click="StopButton_Click" IsEnabled="False"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Status bar -->
+        <Grid Grid.Row="1" Padding="12,4" Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="ProcessInfoText" Text="No process"
+                       Grid.Column="0" VerticalAlignment="Center" FontFamily="Consolas" FontSize="12"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+            <TextBlock x:Name="StatusText" Text="Select an app and click Launch and Listen"
+                       Grid.Column="1" VerticalAlignment="Center" Margin="12,0"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+            <TextBlock x:Name="EventCountText" Text="Events: 0"
+                       Grid.Column="2" VerticalAlignment="Center" FontWeight="SemiBold" Margin="8,0"/>
+
+            <CheckBox x:Name="SpotlightNewNodesCheck" Content="✨ Spotlight new nodes"
+                      Grid.Column="3" IsChecked="True" VerticalAlignment="Center" Margin="8,0"
+                      Click="SpotlightNewNodesCheck_Click"
+                      ToolTipService.ToolTip="Auto-scroll to and glow newly added nodes as the app's trees change (skips the initial tree flood)"/>
+
+            <CheckBox x:Name="IncludeMemoryAddressCheck" Content="🧬 Memory address"
+                      Grid.Column="4" IsChecked="True" VerticalAlignment="Center" Margin="8,0"
+                      Click="IncludeMemoryAddressCheck_Click"
+                      ToolTipService.ToolTip="Show the raw 0x memory address in each tree node's name (uncheck for type/name-only labels)"/>
+
+            <Button x:Name="ClearButton" Content="🗑 Clear Trees" Click="ClearButton_Click"
+                    Grid.Column="5" Padding="8,2"
+                    ToolTipService.ToolTip="Reset all four trees and the event count (does not just clear highlights)"/>
+        </Grid>
+
+        <!-- Column headers -->
+        <Grid Grid.Row="2" Padding="12,4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Logical Tree" FontSize="16" FontWeight="Bold"
+                           Foreground="#4CAF50" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Visual Tree" FontSize="16" FontWeight="Bold"
+                           Foreground="#2196F3" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Composition Tree" FontSize="16" FontWeight="Bold"
+                           Foreground="#FF9800" VerticalAlignment="Center"/>
+                <CheckBox x:Name="ResponsibleElementAddressCheck" Content="↪ element addr"
+                          FontSize="11" IsChecked="True" VerticalAlignment="Center"
+                          MinWidth="0"
+                          Click="ResponsibleElementAddressCheck_Click"
+                          ToolTipService.ToolTip="Show each comp node's responsible UIElement memory address (the → Element 0x... annotation)"/>
+            </StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="IVisual Tree" FontSize="16" FontWeight="Bold"
+                           Foreground="#9C27B0" VerticalAlignment="Center"/>
+                <TextBlock VerticalAlignment="Center" FontSize="11" FontStyle="Italic"
+                           Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                           Text="Ctrl+Click to highlight linked peers"/>
+                <Button x:Name="ClearHighlightsButton" Content="Clear Highlights"
+                        FontSize="11" Padding="8,2" VerticalAlignment="Center"
+                        Click="ClearHighlightsButton_Click"
+                        ToolTipService.ToolTip="Remove all cross-tree glow and the live app highlight (or press Esc)"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Four tree views side by side -->
+        <Grid Grid.Row="3" Padding="8,0,8,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Logical Tree -->
+            <TreeView x:Name="LogicalTreeView"
+                      Grid.Column="0"
+                      ItemsSource="{x:Bind Store.LogicalRoots}"
+                      ItemInvoked="OnTreeItemInvoked"
+                      Loaded="Tree_Loaded"
+                      Style="{StaticResource HScrollTreeViewStyle}">
+                <TreeView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TreeNode">
+                        <TreeViewItem ItemsSource="{x:Bind Children}"
+                                      IsExpanded="{x:Bind IsExpanded, Mode=OneWay}"
+                                      Loaded="TreeItem_Loaded">
+                            <Border Background="{x:Bind helpers:LinkHighlightHelper.GetBackgroundBrush(LinkHighlight), Mode=OneWay}"
+                                    BorderBrush="{x:Bind helpers:LinkHighlightHelper.GetBorderBrush(LinkHighlight), Mode=OneWay}"
+                                    BorderThickness="1"
+                                    CornerRadius="3"
+                                    Padding="3,0">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}"
+                                               TextWrapping="NoWrap"
+                                               Foreground="#4CAF50" FontFamily="Consolas" FontSize="12"/>
+                                </StackPanel>
+                            </Border>
+                        </TreeViewItem>
+                    </DataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <Border Grid.Column="1" Background="{ThemeResource ControlStrokeColorDefaultBrush}"/>
+
+            <!-- Visual Tree -->
+            <TreeView x:Name="VisualTreeView"
+                      Grid.Column="2"
+                      ItemsSource="{x:Bind Store.VisualRoots}"
+                      ItemInvoked="OnTreeItemInvoked"
+                      Loaded="Tree_Loaded"
+                      Style="{StaticResource HScrollTreeViewStyle}">
+                <TreeView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TreeNode">
+                        <TreeViewItem ItemsSource="{x:Bind Children}"
+                                      IsExpanded="{x:Bind IsExpanded, Mode=OneWay}"
+                                      Loaded="TreeItem_Loaded">
+                            <Border Background="{x:Bind helpers:LinkHighlightHelper.GetBackgroundBrush(LinkHighlight), Mode=OneWay}"
+                                    BorderBrush="{x:Bind helpers:LinkHighlightHelper.GetBorderBrush(LinkHighlight), Mode=OneWay}"
+                                    BorderThickness="1"
+                                    CornerRadius="3"
+                                    Padding="3,0">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}"
+                                               TextWrapping="NoWrap"
+                                               Foreground="#2196F3" FontFamily="Consolas" FontSize="12"/>
+                                </StackPanel>
+                            </Border>
+                        </TreeViewItem>
+                    </DataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <Border Grid.Column="3" Background="{ThemeResource ControlStrokeColorDefaultBrush}"/>
+
+            <!-- Composition Tree -->
+            <TreeView x:Name="CompositionTreeView"
+                      Grid.Column="4"
+                      Loaded="CompositionTreeView_Loaded"
+                      ItemsSource="{x:Bind Store.CompositionRoots}"
+                      ItemInvoked="OnTreeItemInvoked"
+                      Style="{StaticResource HScrollTreeViewStyle}">
+                <TreeView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TreeNode">
+                        <TreeViewItem ItemsSource="{x:Bind Children}"
+                                      IsExpanded="{x:Bind IsExpanded, Mode=OneWay}"
+                                      Loaded="TreeItem_Loaded">
+                            <Border Background="{x:Bind helpers:LinkHighlightHelper.GetBackgroundBrush(LinkHighlight), Mode=OneWay}"
+                                    BorderBrush="{x:Bind helpers:LinkHighlightHelper.GetBorderBrush(LinkHighlight), Mode=OneWay}"
+                                    BorderThickness="1"
+                                    CornerRadius="3"
+                                    Padding="3,0">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}"
+                                               TextWrapping="NoWrap"
+                                               Foreground="#FF9800" FontFamily="Consolas" FontSize="12"/>
+                                </StackPanel>
+                            </Border>
+                        </TreeViewItem>
+                    </DataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <Border Grid.Column="5" Background="{ThemeResource ControlStrokeColorDefaultBrush}"/>
+
+            <!-- WUC IVisual Tree -->
+            <TreeView x:Name="WucTreeView"
+                      Grid.Column="6"
+                      ItemsSource="{x:Bind Store.WucVisualRoots}"
+                      ItemInvoked="OnTreeItemInvoked"
+                      Loaded="Tree_Loaded"
+                      Style="{StaticResource HScrollTreeViewStyle}">
+                <TreeView.ItemTemplate>
+                    <DataTemplate x:DataType="models:TreeNode">
+                        <TreeViewItem ItemsSource="{x:Bind Children}"
+                                      IsExpanded="{x:Bind IsExpanded, Mode=OneWay}"
+                                      Loaded="TreeItem_Loaded">
+                            <Border Background="{x:Bind helpers:LinkHighlightHelper.GetBackgroundBrush(LinkHighlight), Mode=OneWay}"
+                                    BorderBrush="{x:Bind helpers:LinkHighlightHelper.GetBorderBrush(LinkHighlight), Mode=OneWay}"
+                                    BorderThickness="1"
+                                    CornerRadius="3"
+                                    Padding="3,0">
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{x:Bind DisplayName, Mode=OneWay}"
+                                               TextWrapping="NoWrap"
+                                               Foreground="#9C27B0" FontFamily="Consolas" FontSize="12"/>
+                                </StackPanel>
+                            </Border>
+                        </TreeViewItem>
+                    </DataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Grid>
+
+        <!-- Detail pane: left = event history, right = WUC visual properties. -->
+        <Border Grid.Row="4"
+                Margin="8,4,8,8"
+                Padding="12,8"
+                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="4"
+                Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header: kind, type, id, creation event -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12" Margin="0,0,0,6">
+                    <TextBlock x:Name="DetailTitleText"
+                               Text="Click a node to see its event history"
+                               FontWeight="SemiBold" FontSize="14"
+                               VerticalAlignment="Center"/>
+                    <Border x:Name="DetailCreatedBadge"
+                            Visibility="Collapsed"
+                            CornerRadius="2" Padding="6,1" VerticalAlignment="Center">
+                        <TextBlock x:Name="DetailCreatedText"
+                                   Foreground="White" FontFamily="Consolas"
+                                   FontSize="11" FontWeight="SemiBold"/>
+                    </Border>
+                    <TextBlock x:Name="DetailEventCountText"
+                               VerticalAlignment="Center"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               FontSize="12"/>
+                </StackPanel>
+
+                <!-- Two columns: history (left) | properties (right) -->
+                <Grid Grid.Row="1" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="2"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: event history list -->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="Event History" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,4"/>
+                        <ListView x:Name="DetailHistoryList"
+                                  Grid.Row="1"
+                                  SelectionMode="None"
+                                  IsItemClickEnabled="False"
+                                  ScrollViewer.VerticalScrollMode="Enabled"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="MinHeight" Value="0"/>
+                                    <Setter Property="Padding" Value="6,2"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:NodeEventLogEntry">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="130"/>
+                                            <ColumnDefinition Width="180"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{x:Bind TimeText}"
+                                                   FontFamily="Consolas" FontSize="11"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{x:Bind EventName}"
+                                                   FontFamily="Consolas" FontSize="11" FontWeight="SemiBold"/>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{x:Bind Summary}"
+                                                   FontFamily="Consolas" FontSize="11"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+
+                    <Border Grid.Column="1" Background="{ThemeResource ControlStrokeColorDefaultBrush}"/>
+
+                    <!-- Right: WUC IVisual properties -->
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="IVisual Properties" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#9C27B0" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="DetailPropertiesEmpty"
+                                   Grid.Row="1"
+                                   Text="Select an IVisual node to see its properties."
+                                   FontSize="12" FontStyle="Italic"
+                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                   TextWrapping="Wrap"/>
+                        <ListView x:Name="DetailPropertiesList"
+                                  Grid.Row="1"
+                                  Visibility="Collapsed"
+                                  SelectionMode="None"
+                                  IsItemClickEnabled="False"
+                                  ScrollViewer.VerticalScrollMode="Enabled"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="MinHeight" Value="0"/>
+                                    <Setter Property="Padding" Value="6,1"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:WucPropertyRow">
+                                    <Grid ColumnSpacing="10" Margin="{x:Bind helpers:PropertyRowHelper.GetRowMargin(IsHeader)}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{x:Bind Name}"
+                                                   FontFamily="Consolas" FontSize="11"
+                                                   FontWeight="{x:Bind helpers:PropertyRowHelper.GetNameWeight(IsHeader)}"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{x:Bind Value}"
+                                                   Visibility="{x:Bind helpers:PropertyRowHelper.GetValueVisibility(IsHeader)}"
+                                                   FontFamily="Consolas" FontSize="11"
+                                                   TextWrapping="Wrap"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
