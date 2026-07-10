@@ -969,15 +969,18 @@ CCoreServices::~CCoreServices() noexcept
 
     // Take down the visual tree.
     VERIFYHR(ResetCoreWindowVisualTree());
-    m_inputServices = nullptr;
 
     // Clean this up before the rest of the core as its contents may have
     // the final reference to CDependencyObjects. These will not expect
     // the core to be fully shut down before them.
 
     // End of pre-cleanup
+    ASSERT(m_inputServices != nullptr);
     delete m_pTextCore;
     m_pTextCore = NULL;
+
+    // Reset input services only after the text core teardown above, whose callbacks can re-enter input and deref a null CInputServices.
+    m_inputServices = nullptr;
 
     ReleaseInterface(m_pDeploymentTree);
     if (m_pAllSurfaceImageSources != NULL)
