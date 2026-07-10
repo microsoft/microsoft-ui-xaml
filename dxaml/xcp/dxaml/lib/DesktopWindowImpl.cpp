@@ -1692,6 +1692,9 @@ _Check_return_ HRESULT DesktopWindowImpl::RaiseWindowSizeChangedEvent()
 // ResizeWindowToDesktopWindowXamlSourceWindowDimensions is only called from Desktop Window's OnSizeChanged
 void DesktopWindowImpl::ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam)
 {
+    // A reentrant message during teardown finds m_desktopWindow already null.
+    if (m_bIsClosed) return;
+
     if (m_windowChrome)
     {
         m_windowChrome->ResizeContainer(wParam, lParam);
@@ -1701,6 +1704,9 @@ void DesktopWindowImpl::ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WP
 // ResizeWindowToDesktopWindowXamlSourceWindowDimensions is only called from Desktop Window's OnMoved
 void DesktopWindowImpl::RepositionWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam)
 {
+    // A reentrant message during teardown finds m_desktopWindow already null.
+    if (m_bIsClosed) return;
+
     if (m_windowChrome)
     {
         m_windowChrome->MoveContainer(wParam, lParam);
