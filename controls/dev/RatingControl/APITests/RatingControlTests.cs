@@ -90,30 +90,83 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RatingControl ratingControl = new RatingControl();
                 Verify.IsNotNull(ratingControl);
-                Verify.AreEqual(ratingControl.PlaceholderValue, -1);
-                Verify.AreEqual(ratingControl.Value, -1);
+                Verify.AreEqual(-1, ratingControl.PlaceholderValue);
+                Verify.AreEqual(-1, ratingControl.Value);
 
                 ratingControl.PlaceholderValue = 0.1;
                 ratingControl.Value = 0.1;
-                Verify.AreEqual(ratingControl.PlaceholderValue, 1.0, "Should coerce small PlaceholderValue values to 1.0");
-                Verify.AreEqual(ratingControl.Value, 1.0, "Should coerce small Value values to 1.0");
+                Verify.AreEqual(0.1, ratingControl.PlaceholderValue, "PlaceholderValue is just a display hint, so small fractional values should be preserved, not coerced to 1.0");
+                Verify.AreEqual(1.0, ratingControl.Value, "Should coerce small Value values to 1.0");
+
+                ratingControl.PlaceholderValue = 0.5;
+                Verify.AreEqual(0.5, ratingControl.PlaceholderValue, "PlaceholderValue of 0.5 should be preserved, not coerced up to 1.0");
+
+                ratingControl.PlaceholderValue = 0.0;
+                Verify.AreEqual(0.0, ratingControl.PlaceholderValue, "PlaceholderValue of 0 should be preserved, not coerced up to 1.0");
+
+                ratingControl.PlaceholderValue = -0.5;
+                Verify.AreEqual(-1.0, ratingControl.PlaceholderValue, "Negative PlaceholderValue should be coerced to the 'unset' sentinel value");
 
                 ratingControl.PlaceholderValue = 6.0;
                 ratingControl.Value = 6.0;
-                Verify.AreEqual(ratingControl.PlaceholderValue, 5.0, "Should coerce PlaceholderValue above MaxRating back to MaxRating");
-                Verify.AreEqual(ratingControl.Value, 5.0, "Should coerce Value above MaxRating back to MaxRating");
+                Verify.AreEqual(5.0, ratingControl.PlaceholderValue, "Should coerce PlaceholderValue above MaxRating back to MaxRating");
+                Verify.AreEqual(5.0, ratingControl.Value, "Should coerce Value above MaxRating back to MaxRating");
 
                 ratingControl.MaxRating = -2;
-                Verify.AreEqual(ratingControl.MaxRating, 1, "Should coerce MaxRating below 1 back up to 1.");
+                Verify.AreEqual(1, ratingControl.MaxRating, "Should coerce MaxRating below 1 back up to 1.");
 
-                Verify.AreEqual(ratingControl.PlaceholderValue, 1.0, "Should auto-coerce now outdated PlaceholderValue above MaxRating back to MaxRating [2]");
-                Verify.AreEqual(ratingControl.Value, 1.0, "Should auto-coerce now outdated Value above MaxRating back to MaxRating [2]");
+                Verify.AreEqual(1.0, ratingControl.PlaceholderValue, "Should auto-coerce now outdated PlaceholderValue above MaxRating back to MaxRating [2]");
+                Verify.AreEqual(1.0, ratingControl.Value, "Should auto-coerce now outdated Value above MaxRating back to MaxRating [2]");
 
                 ratingControl.PlaceholderValue = 6.0;
                 ratingControl.Value = 6.0;
-                Verify.AreEqual(ratingControl.PlaceholderValue, 1.0, "Should coerce set PlaceholderValue above MaxRating back to MaxRating");
-                Verify.AreEqual(ratingControl.Value, 1.0, "Should coerce set Value above MaxRating back to MaxRating");
+                Verify.AreEqual(1.0, ratingControl.PlaceholderValue, "Should coerce set PlaceholderValue above MaxRating back to MaxRating");
+                Verify.AreEqual(1.0, ratingControl.Value, "Should coerce set Value above MaxRating back to MaxRating");
             });
+        }
+
+        // Regression test: setting MaxRating to an invalid value (e.g. below 1) while the
+        // control is loaded used to be able to produce a transient invalid/negative width
+        // during layout, because Value/PlaceholderValue were re-coerced against the
+        // still-invalid MaxRating before it was normalized. This verifies that no exception
+        // occurs and that MaxRating, Value, and PlaceholderValue all settle on the
+        // corrected value of 1.
+        [TestMethod]
+        public void VerifyMaxRatingCoercionWhileLoadedDoesNotCrash()
+        {
+            ManualResetEvent loadedEvent = new(false);
+            RatingControl ratingControl = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                ratingControl = new RatingControl();
+                ratingControl.Loaded += (sender, e) => loadedEvent.Set();
+                Content = ratingControl;
+            });
+
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                ratingControl.Value = 6.0;
+                ratingControl.PlaceholderValue = 6.0;
+                ratingControl.UpdateLayout();
+
+                ratingControl.MaxRating = -2;
+                ratingControl.UpdateLayout();
+
+                Verify.AreEqual(1, ratingControl.MaxRating, "Should coerce MaxRating below 1 back up to 1.");
+                Verify.AreEqual(1.0, ratingControl.Value, "Should coerce Value down to the corrected MaxRating (1).");
+                Verify.AreEqual(1.0, ratingControl.PlaceholderValue, "Should coerce PlaceholderValue down to the corrected MaxRating (1), not the unset sentinel.");
+            });
+
+            RunOnUIThread.Execute(() =>
+            {
+                Content = null;
+            });
+
+            IdleSynchronizer.Wait();
         }
 
         [TestMethod]
