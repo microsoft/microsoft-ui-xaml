@@ -5,7 +5,7 @@ FrameworkElement.SetThemeResourceBinding
 
 XAML's [`{ThemeResource}`](https://learn.microsoft.com/windows/uwp/xaml-platform/themeresource-markup-extension)
 markup extension creates a live binding from a dependency property to a keyed resource, and
-re-resolves that resource whenever the app's theme or high-contrast setting changes.
+updates that resource to match the effective theme whenever the app's theme or high-contrast setting changes.
 It differs from [`{StaticResource}`](https://learn.microsoft.com/windows/uwp/xaml-platform/staticresource-markup-extension),
 which resolves the resource once and never updates.
 
@@ -40,8 +40,9 @@ Note that this means the API does not apply to `Setter` objects, because they do
 
 Establishes a live theme resource binding on the given dependency property, equivalent to setting
 `{ThemeResource key}` on that property in markup. The resource key is resolved immediately against
-the element's current position in the tree. The bound value is automatically re-resolved whenever
-the effective theme or high-contrast setting changes.
+the element's current position in the tree. The bound value is automatically updated to match the
+effective theme or high-contrast setting when it changes, and re-resolved if the element is later
+moved to a new location in the live tree.
 
 ```cs
 public void SetThemeResourceBinding(DependencyProperty property, string resourceKey)
@@ -65,9 +66,11 @@ in code. As with any binding:
 Setting a new theme resource binding on a property that already has one replaces the previous
 binding.
 
-> **Note:** This binding tracks **theme changes only**. It does not re-resolve if the element is
-> later reparented into a different resource scope, or if a matching resource is added to scope
-> after the binding is established. This matches the behavior of `{ThemeResource}` in markup.
+> **Note:** This binding tracks theme and high-contrast changes, updating the value to match the new
+> theme. It also re-resolves when the element is moved to a new location in the live tree, falling
+> back to the value from the resource scope that was initially captured when the binding was installed
+> if the key cannot be resolved in the new location. Merely adding a matching resource to an already-in-scope
+> dictionary does not, trigger re-resolution. This matches the behavior of `{ThemeResource}` in markup.
 
 ### Examples
 
@@ -138,7 +141,7 @@ The following behaviors are inherited from the existing `{ThemeResource}` mechan
 | Aspect | Behavior |
 |---|---|
 | Resolution timing | Eager, at call time, against the element's current tree location. |
-| Re-resolution | On theme / high-contrast change only. Not on reparent or late-added resources. |
+| Re-resolution | Updated to the matching theme / high-contrast value on change; fully re-resolved on reparent into a new live scope. |
 | Target property | Dependency properties only (including attached DPs); read-only DPs rejected. |
 | Clearing / overriding | A later `SetValue` or `ClearValue` removes the binding; no dedicated clear API. |
 | Missing key | Throws (matches markup, which fails the parse with `AG_E_PARSER_FAILED_RESOURCE_FIND`). |
