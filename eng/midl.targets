@@ -35,6 +35,7 @@
       <_WinUIAssembliesWithMatchingWinMD>
         Microsoft.UI.Xaml.Phone.dll;
         Microsoft.UI.Xaml.Controls.dll;
+        Microsoft.UI.Xaml.Controls.Tabular.dll;
       </_WinUIAssembliesWithMatchingWinMD>
     </PropertyGroup>
 

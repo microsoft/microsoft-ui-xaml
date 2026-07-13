@@ -2,10 +2,17 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <ProjectMergedIdl>$(IntermediateOutputPath)Microsoft.UI.Xaml.Controls.g.idl</ProjectMergedIdl>
-    <ProjectUnmergedWinmd>$(IntermediateOutputPath)Unmerged\Microsoft.UI.Xaml.Controls.g.winmd</ProjectUnmergedWinmd>
+    <ProjectMergedIdl>$(IntermediateOutputPath)$(TargetName).g.idl</ProjectMergedIdl>
+    <!-- Use TargetName for MUXC and Tabular winmd paths; UnstrippedMetadataWinmdPath is empty for the idl project. -->
+    <ProjectUnmergedWinmd>$(IntermediateOutputPath)Unmerged\$(TargetName).g.winmd</ProjectUnmergedWinmd>
   </PropertyGroup>
-  <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="SetMidlOutputFiles;Midl">
+  <!-- Scope each binary's roster to its own project so editing one binary's roster doesn't
+       invalidate another binary's merged-IDL incremental build. -->
+  <PropertyGroup>
+    <_TabularRosterInput Condition="'$(TargetName)' == '$(MUXTabularTargetName)'">$(MUXCProjectRoot)Tabular.ProjectImports.targets</_TabularRosterInput>
+  </PropertyGroup>
+  <!-- Track roster targets so changing imported controls regenerates the merged IDL. -->
+  <Target Name="MergeIDLFiles" Inputs="@(Midl);$(MSBuildThisFileFullPath);$(MUXCProjectRoot)ProjectImports.targets;$(_TabularRosterInput)" Outputs="$(ProjectMergedIdl)" BeforeTargets="SetMidlOutputFiles;Midl">
     <PropertyGroup>
       <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
 ')</MidlLines>
