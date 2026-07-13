@@ -90,18 +90,20 @@ foreach ($dependency in $versionDetails.Dependencies.ProductDependencies.Depende
 
 if ($UseDependencyOverrides)
 {
-    $foundationPkgPath = Join-Path "$scriptDirectory\..\.." "packages\microsoft.windowsappsdk.foundation"
-    if (!(Test-Path $foundationPkgPath))
-    {
-        Write-Error "Asked to use dependency overrides, but microsoft.windowsappsdk.foundation package not installed."
-        Exit 1
-    }
-
     # Extract the Foundation version to use from the last-known-good value in Versions.props
     $FOUNDATION_COMPONENT_VERSION = $VersionsPropsContent.SelectSingleNode('//FoundationTransportPackageVersion[@Condition]').InnerText
 
     # Extract the IXP and Base versions from the dependencies in the Foundation package
-    $foundationNuspecPath = "$foundationPkgPath\$FOUNDATION_COMPONENT_VERSION\microsoft.windowsappsdk.foundation.nuspec"
+    $repoRoot = Join-Path "$scriptDirectory\..\.." "."
+    $foundationPackageReferenceNuspecPath = Join-Path $repoRoot "packages\microsoft.windowsappsdk.foundation\$FOUNDATION_COMPONENT_VERSION\microsoft.windowsappsdk.foundation.nuspec"
+    $foundationPackagesConfigNuspecPath = Join-Path $repoRoot "packages\Microsoft.WindowsAppSDK.Foundation.$FOUNDATION_COMPONENT_VERSION\Microsoft.WindowsAppSDK.Foundation.nuspec"
+    $foundationNuspecPath = @($foundationPackageReferenceNuspecPath, $foundationPackagesConfigNuspecPath) | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (!$foundationNuspecPath)
+    {
+        Write-Error "Asked to use dependency overrides, but Microsoft.WindowsAppSDK.Foundation $FOUNDATION_COMPONENT_VERSION package is not installed."
+        Exit 1
+    }
+
     [xml]$FoundationNuspec = Get-Content $foundationNuspecPath 
     $IXP_COMPONENT_VERSION = ($FoundationNuspec.package.metadata.dependencies.dependency | Where-Object { $_.id -eq "Microsoft.WindowsAppSDK.InteractiveExperiences" }).version
     $BASE_COMPONENT_VERSION = ($FoundationNuspec.package.metadata.dependencies.dependency | Where-Object { $_.id -eq "Microsoft.WindowsAppSDK.Base" }).version

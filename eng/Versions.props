@@ -69,6 +69,7 @@
     <WindowsSdkTargetPlatformVersion>$(PackageTargetPlatformVersion)</WindowsSdkTargetPlatformVersion>
     <!-- Force our build version to match the package version -->
     <WinUIVersion Condition="'$(WinUIVersion)'==''">3.0.0-dev</WinUIVersion>
+    <WinUIPackageVersion Condition="'$(WinUIPackageVersion)'==''">$(WinUIVersion)</WinUIPackageVersion>
     <WindowsAppSdkPackageConfig Condition="'$(WindowsAppSdkPackageConfig)'==''">$(Configuration)</WindowsAppSdkPackageConfig>
     <MicrosoftVisualStudioProjectSystemVersion>15.0.737</MicrosoftVisualStudioProjectSystemVersion>
     <WindowsAppSdkTargetPlatformVersion>10.0.17763.0</WindowsAppSdkTargetPlatformVersion>
@@ -116,6 +117,7 @@
     <!-- Verify that we were able to retrieve all the versions from the configuration files. -->
     <Error Condition="'$(FoundationTransportPackageVersion)' == ''" Text="Unable to determine version for package $(ProjectReunionFoundationTransportPackageName)" />
     <Error Condition="'$(IxpTransportPackageVersion)' == ''" Text="Unable to determine version for package $(LiftedIXPTransportPackageName)" />
+    <Error Condition="'$(WinUIPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.WindowsAppSDK.WinUI" />
     <Error Condition="'$(LocalizedMUIFilesPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Internal.WinUILocalizationResources" />
     <Error Condition="'$(MicrosoftWindowsSDKContractsVersion)' == ''" Text="Unable to determine version for package Microsoft.Windows.SDK.Contracts" />
     <Error Condition="'$(TaefNugetPackageVersion)' == ''" Text="Unable to determine version for package Microsoft.Taef" />
