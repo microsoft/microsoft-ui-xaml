@@ -181,6 +181,86 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_Height(D
 Cleanup:
     RRETURN(hr);
 }
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_MaxHeight(_Out_ DOUBLE* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_MaxHeightImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_MaxHeight(DOUBLE value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_MaxHeightImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_MaxWidth(_Out_ DOUBLE* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_MaxWidthImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_MaxWidth(DOUBLE value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_MaxWidthImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_MinHeight(_Out_ DOUBLE* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_MinHeightImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_MinHeight(DOUBLE value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_MinHeightImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_MinWidth(_Out_ DOUBLE* pValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(pValue);
+    *pValue={};
+    IFC(CheckThread());
+    IFC(static_cast<Window*>(this)->get_MinWidthImpl(pValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::put_MinWidth(DOUBLE value)
+{
+    HRESULT hr = S_OK;
+    
+    IFC(CheckThread());
+    IFC(DefaultStrictApiCheck(this));
+    IFC(static_cast<Window*>(this)->put_MinWidthImpl(value));
+Cleanup:
+    RRETURN(hr);
+}
 _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::WindowGenerated::get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue)
 {
     HRESULT hr = S_OK;
@@ -504,6 +584,10 @@ IFACEMETHODIMP DirectUI::WindowFactory::CreateInstance(_In_opt_ IInspectable* pO
 }
 
 // Dependency properties.
+
+
+
+
 
 
 

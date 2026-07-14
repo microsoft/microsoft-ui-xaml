@@ -810,6 +810,98 @@ _Check_return_ HRESULT Window::put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN v
     return S_OK;
 }
 
+_Check_return_ HRESULT Window::get_MinWidthImpl(_Out_ DOUBLE* pValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        *pValue = 0.0;
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->get_MinWidthImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_MinWidthImpl(_In_ DOUBLE value)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->put_MinWidthImpl(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::get_MinHeightImpl(_Out_ DOUBLE* pValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        *pValue = 0.0;
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->get_MinHeightImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_MinHeightImpl(_In_ DOUBLE value)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->put_MinHeightImpl(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::get_MaxWidthImpl(_Out_ DOUBLE* pValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        *pValue = std::numeric_limits<double>::infinity();
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->get_MaxWidthImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_MaxWidthImpl(_In_ DOUBLE value)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->put_MaxWidthImpl(value));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::get_MaxHeightImpl(_Out_ DOUBLE* pValue)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        *pValue = std::numeric_limits<double>::infinity();
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->get_MaxHeightImpl(pValue));
+    return S_OK;
+}
+
+_Check_return_ HRESULT Window::put_MaxHeightImpl(_In_ DOUBLE value)
+{
+    // Contained off: the feature isn't present, so the API is not implemented.
+    if (!WindowImpl::AreNewWindowingApisEnabled())
+    {
+        return E_NOTIMPL;
+    }
+    IFC_RETURN(m_spWindowImpl->put_MaxHeightImpl(value));
+    return S_OK;
+}
+
 _Check_return_ HRESULT Window::SetTitleBarImpl(_In_opt_ xaml::IUIElement* pTitleBar)
 {
     IFC_RETURN(m_spWindowImpl->SetTitleBarImpl(pTitleBar));
@@ -825,7 +917,7 @@ _Check_return_ HRESULT Window::get_AppWindowImpl(_Outptr_result_maybenull_ ixp::
 _Check_return_ HRESULT Window::get_WidthImpl(_Out_ DOUBLE* pValue)
 {
     // Contained off: the feature isn't present, so the API is not implemented.
-    if (!WindowImpl::IsWindowWidthHeightEnabled())
+    if (!WindowImpl::AreNewWindowingApisEnabled())
     {
         *pValue = 0.0;
         return E_NOTIMPL;
@@ -837,7 +929,7 @@ _Check_return_ HRESULT Window::get_WidthImpl(_Out_ DOUBLE* pValue)
 _Check_return_ HRESULT Window::put_WidthImpl(DOUBLE value)
 {
     // Contained off: the feature isn't present, so the API is not implemented.
-    if (!WindowImpl::IsWindowWidthHeightEnabled())
+    if (!WindowImpl::AreNewWindowingApisEnabled())
     {
         return E_NOTIMPL;
     }
@@ -848,7 +940,7 @@ _Check_return_ HRESULT Window::put_WidthImpl(DOUBLE value)
 _Check_return_ HRESULT Window::get_HeightImpl(_Out_ DOUBLE* pValue)
 {
     // Contained off: the feature isn't present, so the API is not implemented.
-    if (!WindowImpl::IsWindowWidthHeightEnabled())
+    if (!WindowImpl::AreNewWindowingApisEnabled())
     {
         *pValue = 0.0;
         return E_NOTIMPL;
@@ -860,7 +952,7 @@ _Check_return_ HRESULT Window::get_HeightImpl(_Out_ DOUBLE* pValue)
 _Check_return_ HRESULT Window::put_HeightImpl(DOUBLE value)
 {
     // Contained off: the feature isn't present, so the API is not implemented.
-    if (!WindowImpl::IsWindowWidthHeightEnabled())
+    if (!WindowImpl::AreNewWindowingApisEnabled())
     {
         return E_NOTIMPL;
     }

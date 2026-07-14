@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <optional>
+#include <limits>
 #include <memory>
-
+#include <optional>
 #include "Window.g.h"
 #include "ContentManager.h"
 #include <WindowImpl.h>
@@ -55,6 +55,16 @@ namespace DirectUI
         _Check_return_ HRESULT put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN value) final;
         _Check_return_ HRESULT SetTitleBarImpl(_In_ xaml::IUIElement* pTitleBar) final;
         _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue) final;
+
+        // Restored client-size constraints (in DIPs), applied via OverlappedPresenter.
+        _Check_return_ HRESULT get_MinWidthImpl(_Out_ DOUBLE* pValue) override;
+        _Check_return_ HRESULT put_MinWidthImpl(_In_ DOUBLE value) override;
+        _Check_return_ HRESULT get_MinHeightImpl(_Out_ DOUBLE* pValue) override;
+        _Check_return_ HRESULT put_MinHeightImpl(_In_ DOUBLE value) override;
+        _Check_return_ HRESULT get_MaxWidthImpl(_Out_ DOUBLE* pValue) override;
+        _Check_return_ HRESULT put_MaxWidthImpl(_In_ DOUBLE value) override;
+        _Check_return_ HRESULT get_MaxHeightImpl(_Out_ DOUBLE* pValue) override;
+        _Check_return_ HRESULT put_MaxHeightImpl(_In_ DOUBLE value) override;
 
         _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** systemBackdrop) override;
         _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* systemBackdrop) override;
@@ -146,7 +156,7 @@ namespace DirectUI
         // AppWindow is using the default Overlapped presenter.
         _Check_return_ HRESULT GetRestoredClientSizeInDips(_Out_ wf::Size* pValue);
         _Check_return_ HRESULT SetRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height);
-        _Check_return_ HRESULT GetRestoredChromeSizeInPixels(_Out_ SIZE* pChromeSize);
+        _Check_return_ HRESULT GetSavedRestoreChromeSizeInPixels(_Out_ SIZE* pChromeSize);
         
         // Applies the requested client size now, or defers it (pending) until we can honor it.
         _Check_return_ HRESULT ApplyOrDeferClientSizeInDips(std::optional<double> width, std::optional<double> height);
@@ -175,7 +185,8 @@ namespace DirectUI
         void ScheduleUpdateLastRestoredClientSize();
         // Applies a Width/Height remembered before first show or while in a non-sizing presenter.
         _Check_return_ HRESULT ApplyPendingClientSizeIfNeeded();
-        // On AppWindow.Changed, applies a Width/Height remembered while in a non-sizing presenter.
+        // On AppWindow.Changed (presenter swap): applies a Width/Height remembered while in a non-sizing
+        // presenter, and re-applies the Min/Max size constraints once we're back on an OverlappedPresenter.
         _Check_return_ HRESULT OnAppWindowChanged(_In_ ixp::IAppWindow* sender, _In_ ixp::IAppWindowChangedEventArgs* args);
         
         void ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam);
@@ -186,6 +197,13 @@ namespace DirectUI
         _Check_return_ HRESULT OnDesktopWindowXamlSourceTakeFocusRequested(_In_ xaml::Hosting::IDesktopWindowXamlSource* desktopWindowXamlSource, _In_ xaml::Hosting::IDesktopWindowXamlSourceTakeFocusRequestedEventArgs* args);
         _Check_return_ HRESULT RestoreFocus(_Outptr_ xaml_hosting::IXamlSourceFocusNavigationResult** ppEventSource);
         void SetFocusToContentIsland();
+
+        // Min/max size helpers.
+        static _Check_return_ HRESULT ValidateMinConstraint(double value);
+        static _Check_return_ HRESULT ValidateMaxConstraint(double value);
+        _Check_return_ HRESULT TryGetOverlappedPresenter(_Outptr_result_maybenull_ ixp::IOverlappedPresenter3** ppPresenter);
+        _Check_return_ HRESULT ApplySizeConstraintsToPresenterIfOverlapped();
+        _Check_return_ HRESULT ClearOwnedConstraintsOnPresenterIfOverlapped();
 
         // ------------------------------------
         //     Desktop-specific State
@@ -239,6 +257,28 @@ namespace DirectUI
         HWND m_positioningBridgeWindowHandle = NULL;
         wrl::ComPtr<InputSiteHelper::IIslandInputSite> m_islandInputSite = nullptr;
         ctl::ComPtr<ixp::IAppWindowStatics> m_appWindowStatics;
+
+        // Restored client-size constraints, requested by the app in DIPs.
+        //
+        // Empty means the app never set that property, so we leave the matching presenter constraint alone
+        // (the app or system may manage it directly). Once set, we own that presenter constraint and keep it
+        // in sync, clearing it back to null when the app resets to the "no constraint" default (0 for a
+        // minimum, +Infinity for a maximum).
+        //
+        // Once set via Window, the app must not poke the matching Preferred Min/Max on the AppWindow's
+        // OverlappedPresenter directly - Window is the source of truth and re-applies its value on the next
+        // presenter swap or DPI change, overwriting whatever the app set.
+        std::optional<double> m_minWidth;
+        std::optional<double> m_minHeight;
+        std::optional<double> m_maxWidth;
+        std::optional<double> m_maxHeight;
+
+        // The app can set a constraint while a non-overlapped presenter (FullScreen, CompactOverlay) is
+        // active. With no OverlappedPresenter to push to, we keep the values stored and re-apply them from
+        // the shared AppWindow.Changed handler when the presenter changes back to overlapped. We hold the
+        // AppWindow so we can unsubscribe in Shutdown; m_appWindowChangedToken (declared above) is shared
+        // with the Width/Height feature, which watches the same event.
+        ctl::ComPtr<ixp::IAppWindow> m_appWindowForChangedEvent;
 
         // We use ::GetClientRect to report the window bounds, but that returns 0x0 if the window is minimized. In
         // that case we'll cache the most recently reported bounds and return that.

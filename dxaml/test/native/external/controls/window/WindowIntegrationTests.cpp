@@ -1,10 +1,11 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
 #include "WindowIntegrationTests.h"
 
 #include <cmath>
+#include <limits>
 #include <XamlTailored.h>
 #include <TestEvent.h>
 #include <SafeEventRegistration.h>
@@ -1917,6 +1918,475 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             VERIFY_IS_FALSE(areClose(preDragWidth, w), L"Width should not be the stale pre-drag value");
         });
     }
+
+    void WindowIntegrationTests::MinMaxSizeGetSet()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- Check the liberal defaults -----");
+            VERIFY_ARE_EQUAL(0.0, window1->MinWidth);
+            VERIFY_ARE_EQUAL(0.0, window1->MinHeight);
+            VERIFY_IS_TRUE(std::isinf(window1->MaxWidth) && window1->MaxWidth > 0.0);
+            VERIFY_IS_TRUE(std::isinf(window1->MaxHeight) && window1->MaxHeight > 0.0);
+
+            LOG_OUTPUT(L"----- Set and read back valid values -----");
+            window1->MinWidth = 320.0;
+            window1->MinHeight = 240.0;
+            window1->MaxWidth = 1600.0;
+            window1->MaxHeight = 1200.0;
+
+            VERIFY_ARE_EQUAL(320.0, window1->MinWidth);
+            VERIFY_ARE_EQUAL(240.0, window1->MinHeight);
+            VERIFY_ARE_EQUAL(1600.0, window1->MaxWidth);
+            VERIFY_ARE_EQUAL(1200.0, window1->MaxHeight);
+
+            LOG_OUTPUT(L"----- Min=0 removes the minimum, Max=+Infinity removes the maximum -----");
+            window1->MinWidth = 0.0;
+            window1->MaxWidth = std::numeric_limits<double>::infinity();
+            VERIFY_ARE_EQUAL(0.0, window1->MinWidth);
+            VERIFY_IS_TRUE(std::isinf(window1->MaxWidth) && window1->MaxWidth > 0.0);
+
+            LOG_OUTPUT(L"----- Min wins over max for effective sizing, but both stored values are preserved -----");
+            window1->MinWidth = 500.0;
+            window1->MaxWidth = 300.0;
+            VERIFY_ARE_EQUAL(500.0, window1->MinWidth);
+            VERIFY_ARE_EQUAL(300.0, window1->MaxWidth);
+        });
+    }
+
+    void WindowIntegrationTests::MinMaxSizeInvalidValuesThrow()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            const double nan = std::numeric_limits<double>::quiet_NaN();
+            const double posInf = std::numeric_limits<double>::infinity();
+            const double negInf = -std::numeric_limits<double>::infinity();
+
+            LOG_OUTPUT(L"----- Min rejects negative, NaN, and both infinities -----");
+            VERIFY_THROWS_WINRT(window1->MinWidth = -1.0, Platform::InvalidArgumentException^);
+            VERIFY_THROWS_WINRT(window1->MinHeight = nan, Platform::InvalidArgumentException^);
+            VERIFY_THROWS_WINRT(window1->MinWidth = posInf, Platform::InvalidArgumentException^);
+            VERIFY_THROWS_WINRT(window1->MinHeight = negInf, Platform::InvalidArgumentException^);
+
+            LOG_OUTPUT(L"----- Max rejects negative, NaN, and negative infinity, but allows positive infinity -----");
+            VERIFY_THROWS_WINRT(window1->MaxWidth = -1.0, Platform::InvalidArgumentException^);
+            VERIFY_THROWS_WINRT(window1->MaxHeight = nan, Platform::InvalidArgumentException^);
+            VERIFY_THROWS_WINRT(window1->MaxWidth = negInf, Platform::InvalidArgumentException^);
+            window1->MaxHeight = posInf; // no throw
+
+            LOG_OUTPUT(L"----- A rejected set must not change the stored value -----");
+            window1->MinWidth = 200.0;
+            VERIFY_THROWS_WINRT(window1->MinWidth = -5.0, Platform::InvalidArgumentException^);
+            VERIFY_ARE_EQUAL(200.0, window1->MinWidth);
+        });
+    }
+
+    void WindowIntegrationTests::SetMinMaxSizeInMarkup()
+    {
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
+                L"  MinWidth='320' MinHeight='240' MaxWidth='1600' MaxHeight='1200'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- Check the Min/Max size properties set in markup -----");
+            VERIFY_ARE_EQUAL(320.0, window1->MinWidth);
+            VERIFY_ARE_EQUAL(240.0, window1->MinHeight);
+            VERIFY_ARE_EQUAL(1600.0, window1->MaxWidth);
+            VERIFY_ARE_EQUAL(1200.0, window1->MaxHeight);
+        });
+    }
+
+    void WindowIntegrationTests::MinMaxSizeSurvivesPresenterSwap()
+    {
+        using namespace Microsoft::UI::Windowing;
+
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Helper: fetch the window's current presenter as an OverlappedPresenter (or null if it's some other kind).
+        auto currentOverlapped = [&]() -> OverlappedPresenter^
+        {
+            AppWindow^ appWindow = window1->AppWindow;
+            VERIFY_IS_NOT_NULL(appWindow);
+            return dynamic_cast<OverlappedPresenter^>(appWindow->Presenter);
+        };
+
+        // Captured from the baseline presenter so we can confirm the *same* pixel value survives the
+        // presenter churn (not just that some non-null value came back).
+        int baselineMinWidthPx = 0;
+        int baselineMaxWidthPx = 0;
+
+        // A window starts life with an OverlappedPresenter. Setting a constraint while overlapped should
+        // push straight through to that presenter (no swap needed).
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- Baseline: constraints set while overlapped land on the overlapped presenter -----");
+            OverlappedPresenter^ op = currentOverlapped();
+            VERIFY_IS_NOT_NULL(op); // a fresh window is overlapped
+
+            window1->MinWidth = 400.0;
+            window1->MaxWidth = 900.0;
+
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+            VERIFY_IS_NOT_NULL(op->PreferredMaximumWidth);
+
+            baselineMinWidthPx = op->PreferredMinimumWidth->Value;
+            baselineMaxWidthPx = op->PreferredMaximumWidth->Value;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Direction 1: overlapped -> compact overlay. There is no OverlappedPresenter now, so a constraint
+        // we set here has to be *stored* and applied later. Then come back to overlapped and confirm both the
+        // old (MinWidth/MaxWidth) and the new (MinHeight) constraints show up on the (brand new) presenter.
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- overlapped -> compact overlay: set a constraint while deferred -----");
+            AppWindow^ appWindow = window1->AppWindow;
+            appWindow->SetPresenter(AppWindowPresenterKind::CompactOverlay);
+
+            // No overlapped presenter right now - this value is stored, not pushed.
+            VERIFY_IS_NULL(currentOverlapped());
+            window1->MinHeight = 300.0;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- compact overlay -> overlapped: deferred constraints get re-applied -----");
+            AppWindow^ appWindow = window1->AppWindow;
+            appWindow->SetPresenter(AppWindowPresenterKind::Overlapped);
+        });
+        // The re-apply happens on the AppWindow.Changed callback, which is raised while the message queue
+        // drains - so wait for idle before reading the presenter back.
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            OverlappedPresenter^ op = currentOverlapped();
+            VERIFY_IS_NOT_NULL(op);
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);  // from the baseline, re-applied onto the new presenter
+            VERIFY_IS_NOT_NULL(op->PreferredMaximumWidth);
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumHeight); // set while in compact overlay, applied on the way back
+
+            // It's not just non-null - it's the *same* pixel value we saw on the original presenter. DPI is
+            // constant across the swap, so the pixel constraint should round-trip exactly.
+            VERIFY_ARE_EQUAL(baselineMinWidthPx, op->PreferredMinimumWidth->Value);
+            VERIFY_ARE_EQUAL(baselineMaxWidthPx, op->PreferredMaximumWidth->Value);
+
+            // The public getters report the stored DIP values, untouched by all the presenter churn.
+            VERIFY_ARE_EQUAL(400.0, window1->MinWidth);
+            VERIFY_ARE_EQUAL(300.0, window1->MinHeight);
+            VERIFY_ARE_EQUAL(900.0, window1->MaxWidth);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Direction 2: overlapped -> full screen -> overlapped, without touching any constraint in between.
+        // The round trip must leave the constraints intact (idempotent re-apply).
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- overlapped -> full screen -----");
+            AppWindow^ appWindow = window1->AppWindow;
+            appWindow->SetPresenter(AppWindowPresenterKind::FullScreen);
+            VERIFY_IS_NULL(currentOverlapped());
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- full screen -> overlapped: constraints survive the round trip -----");
+            AppWindow^ appWindow = window1->AppWindow;
+            appWindow->SetPresenter(AppWindowPresenterKind::Overlapped);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            OverlappedPresenter^ op = currentOverlapped();
+            VERIFY_IS_NOT_NULL(op);
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumHeight);
+            VERIFY_IS_NOT_NULL(op->PreferredMaximumWidth);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Direction 3: clearing constraints (Min=0, Max=+Infinity) while a non-overlapped presenter is active
+        // must also be honored when we come back - i.e. the presenter ends up with no min/max.
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- overlapped -> compact overlay: clear the width constraints while deferred -----");
+            AppWindow^ appWindow = window1->AppWindow;
+            appWindow->SetPresenter(AppWindowPresenterKind::CompactOverlay);
+
+            window1->MinWidth = 0.0;                                        // remove the minimum
+            window1->MaxWidth = std::numeric_limits<double>::infinity();    // remove the maximum
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            AppWindow^ appWindow = window1->AppWindow;
+            appWindow->SetPresenter(AppWindowPresenterKind::Overlapped);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- compact overlay -> overlapped: cleared width constraints stay cleared, height stays set -----");
+            OverlappedPresenter^ op = currentOverlapped();
+            VERIFY_IS_NOT_NULL(op);
+            VERIFY_IS_NULL(op->PreferredMinimumWidth);      // cleared
+            VERIFY_IS_NULL(op->PreferredMaximumWidth);      // cleared
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumHeight); // never cleared
+
+            VERIFY_ARE_EQUAL(0.0, window1->MinWidth);
+            VERIFY_ARE_EQUAL(300.0, window1->MinHeight);
+        });
+    }
+
+    void WindowIntegrationTests::MinMaxSizeClampsWindowSize()
+    {
+        using namespace Microsoft::UI::Windowing;
+
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Minimum: asking for a window far smaller than the minimum must be clamped back up.
+        // We read the presenter's pushed value (physical, outer-window pixels) and compare against it,
+        // so the check is DPI-independent - it works at 100%, 150%, 200%, whatever.
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- Shrinking below MinWidth/MinHeight is clamped up -----");
+            AppWindow^ appWindow = window1->AppWindow;
+            VERIFY_IS_NOT_NULL(appWindow);
+
+            window1->MinWidth = 600.0;
+            window1->MinHeight = 500.0;
+
+            OverlappedPresenter^ op = dynamic_cast<OverlappedPresenter^>(appWindow->Presenter);
+            VERIFY_IS_NOT_NULL(op);
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumHeight);
+            const int minW = op->PreferredMinimumWidth->Value;
+            const int minH = op->PreferredMinimumHeight->Value;
+
+            ::Windows::Graphics::SizeInt32 tiny;
+            tiny.Width = 50;
+            tiny.Height = 50;
+            appWindow->Resize(tiny);
+
+            ::Windows::Graphics::SizeInt32 sz = appWindow->Size;
+            LOG_OUTPUT(L"    requested 50x50 -> got %dx%d (min is %dx%d)", sz.Width, sz.Height, minW, minH);
+
+            // A small rounding slack keeps this off the razor's edge without letting a real 50px result pass.
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(sz.Width, minW - 4);
+            VERIFY_IS_GREATER_THAN_OR_EQUAL(sz.Height, minH - 4);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // Maximum: asking for a window far larger than the maximum must be clamped back down.
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- Growing beyond MaxWidth/MaxHeight is clamped down -----");
+            AppWindow^ appWindow = window1->AppWindow;
+
+            // Drop the minimum so it doesn't fight the maximum, then set a small maximum.
+            window1->MinWidth = 0.0;
+            window1->MinHeight = 0.0;
+            window1->MaxWidth = 400.0;
+            window1->MaxHeight = 350.0;
+
+            OverlappedPresenter^ op = dynamic_cast<OverlappedPresenter^>(appWindow->Presenter);
+            VERIFY_IS_NOT_NULL(op);
+            VERIFY_IS_NOT_NULL(op->PreferredMaximumWidth);
+            VERIFY_IS_NOT_NULL(op->PreferredMaximumHeight);
+            const int maxW = op->PreferredMaximumWidth->Value;
+            const int maxH = op->PreferredMaximumHeight->Value;
+
+            ::Windows::Graphics::SizeInt32 huge;
+            huge.Width = 5000;
+            huge.Height = 5000;
+            appWindow->Resize(huge);
+
+            ::Windows::Graphics::SizeInt32 sz = appWindow->Size;
+            LOG_OUTPUT(L"    requested 5000x5000 -> got %dx%d (max is %dx%d)", sz.Width, sz.Height, maxW, maxH);
+
+            // It clearly didn't honor 5000, and it landed at (about) the maximum we set.
+            VERIFY_IS_LESS_THAN(sz.Width, 5000);
+            VERIFY_IS_LESS_THAN(sz.Height, 5000);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(sz.Width, maxW + 4);
+            VERIFY_IS_LESS_THAN_OR_EQUAL(sz.Height, maxH + 4);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void WindowIntegrationTests::MinMaxSizeLeavesUnsetConstraintsAlone()
+    {
+        using namespace Microsoft::UI::Windowing;
+
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- Setting one Window constraint must not disturb the presenter constraints the app manages directly -----");
+            AppWindow^ appWindow = window1->AppWindow;
+            VERIFY_IS_NOT_NULL(appWindow);
+
+            OverlappedPresenter^ op = dynamic_cast<OverlappedPresenter^>(appWindow->Presenter);
+            VERIFY_IS_NOT_NULL(op);
+
+            // The app configures a couple of presenter constraints directly, bypassing the Window API entirely.
+            op->PreferredMinimumHeight = ref new Platform::Box<int>(700);
+            op->PreferredMaximumHeight = ref new Platform::Box<int>(1500);
+
+            // The app opts into exactly one Window constraint.
+            window1->MinWidth = 400.0;
+
+            // We applied the property the app set through us...
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumWidth);
+
+            // ...and left the ones it manages directly completely untouched (not overwritten with null).
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumHeight);
+            VERIFY_ARE_EQUAL(700, op->PreferredMinimumHeight->Value);
+            VERIFY_IS_NOT_NULL(op->PreferredMaximumHeight);
+            VERIFY_ARE_EQUAL(1500, op->PreferredMaximumHeight->Value);
+
+            // MaxWidth was never set through the Window API, so we never wrote it.
+            VERIFY_IS_NULL(op->PreferredMaximumWidth);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
+    void WindowIntegrationTests::MinMaxSizeTracksTitleBarToggle()
+    {
+        using namespace Microsoft::UI::Windowing;
+
+        TestCleanupWrapper cleanup;
+
+        WindowAutoCloser window1;
+
+        RunOnUIThread([&]()
+        {
+            window1.Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(
+                L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <StackPanel x:Name='rootPanel'/>"
+                L"</Window>")));
+
+            window1->Activate();
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            LOG_OUTPUT(L"----- Constraints re-apply when ExtendsContentIntoTitleBar toggles -----");
+            AppWindow^ appWindow = window1->AppWindow;
+            VERIFY_IS_NOT_NULL(appWindow);
+            OverlappedPresenter^ op = dynamic_cast<OverlappedPresenter^>(appWindow->Presenter);
+            VERIFY_IS_NOT_NULL(op);
+
+            // Start with the standard title bar and a minimum height constraint. The constraint is a
+            // *client-area* size in DIPs; we push it to the presenter as an *outer-window* pixel value,
+            // which folds in the non-client chrome (caption + borders).
+            window1->ExtendsContentIntoTitleBar = false;
+            window1->MinHeight = 500.0;
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumHeight);
+            const int minHeightStandardChrome = op->PreferredMinimumHeight->Value;
+
+            // Enabling ExtendsContentIntoTitleBar folds the caption into the client area, so the
+            // non-client chrome shrinks. The same 500-DIP client minimum must now map to a smaller
+            // outer-window pixel minimum. If we didn't re-apply on the toggle this value would be stale
+            // (unchanged), leaving the enforced minimum off by about the caption height.
+            window1->ExtendsContentIntoTitleBar = true;
+            VERIFY_IS_NOT_NULL(op->PreferredMinimumHeight);
+            const int minHeightExtendedChrome = op->PreferredMinimumHeight->Value;
+
+            LOG_OUTPUT(L"    presenter min height: standard chrome=%d, extended chrome=%d", minHeightStandardChrome, minHeightExtendedChrome);
+
+            // The constraint tracked the chrome change instead of drifting.
+            VERIFY_IS_LESS_THAN(minHeightExtendedChrome, minHeightStandardChrome);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+    }
+
 #endif // MUX_PRERELEASE
 
 

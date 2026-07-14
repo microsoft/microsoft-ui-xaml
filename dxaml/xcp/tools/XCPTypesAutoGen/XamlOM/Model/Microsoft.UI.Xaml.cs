@@ -3522,6 +3522,47 @@ namespace Microsoft.UI.Xaml
             set;
         }
 
+        // Experimental restored client-size constraints (in DIPs). Implemented on top of
+        // AppWindow OverlappedPresenter's PreferredMinimum/MaximumWidth/Height.
+        // The public API is experimental (Feature_ExperimentalApi), but each property has a
+        // private backing DependencyProperty (like Title/SystemBackdrop) so it can be set in
+        // XAML markup. CWindow::SetValue routes the parser's set to the custom setter.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double MinWidth
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double MinHeight
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double MaxWidth
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double MaxHeight
+        {
+            get;
+            set;
+        }
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
 
         public void SetTitleBar([Optional] Microsoft.UI.Xaml.UIElement titleBar)

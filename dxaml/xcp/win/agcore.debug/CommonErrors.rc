@@ -371,7 +371,6 @@ ERROR_POPUP_SHOULDCONSTRAINTOROOTBOUNDS_CANNOT_BE_CHANGED_AFTER_OPEN "The value 
 ERROR_XAMLROOT_AMBIGUOUS "This element is already associated with a XamlRoot, it cannot be associated with a different one until it is removed from the previous XamlRoot." // {Locked}
 ERROR_CANNOT_SET_XAMLROOT_WHEN_NOT_NULL "Cannot change XamlRoot when it is already set" // {Locked}
 ERROR_XAMLROOT_REQUIRED "This element does not have a XamlRoot. Either set the XamlRoot property or add the element to a tree." // {Locked}
-
 ERROR_RASTERIZATIONSCALE_MUST_BE_POSITIVE "RasterizationScale must be a positive number." // {Locked}
 ERROR_CONNECTED_ANIMATIONS_BETWEEN_ELEMENTS_IN_DIFFERENT_XAMLROOTS_ARE_NOT_SUPPORTED "Connected animations between elements in different XamlRoots are not supported." // {Locked}
 ERROR_WINDOW_DESKTOP_BOUNDS_FAILED "WinUI Desktop Window could not retrieve Bounds information." // {Locked}
@@ -379,6 +378,8 @@ ERROR_WINDOW_DESKTOP_TITLE_FAILED "WinUI Desktop failed to get/set WinUI Desktop
 ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED "WinUI Desktop Window could not get/set win32 window dimensions or position." // {Locked}
 ERROR_WINDOW_DESKTOP_ALREADY_CLOSED "The WinUI Desktop Window object has already been closed." // {Locked}
 ERROR_WINDOW_DESKTOP_NOT_IMPLEMENTED "WinUI Desktop: API is not implemented on WinUI's Desktop Window." // {Locked}
+ERROR_WINDOW_MIN_SIZE_INVALID "Window MinWidth and MinHeight must be a finite value greater than or equal to 0." // {Locked}
+ERROR_WINDOW_MAX_SIZE_INVALID "Window MaxWidth and MaxHeight must be a finite value greater than or equal to 0, or PositiveInfinity." // {Locked}
 ERROR_API_NOT_IMPLEMENTED_UWP "This API is not yet implemented for UWP in WinUI 3." // {Locked}
 ERROR_XAMLRENDERINGBACKGROUNDTASK_NOT_AVAILABLE_IN_WINUI3 "XamlRenderingBackgroundTask is not available yet in WinUI 3." // {Locked}
 ERROR_INVALID_SEARCHROOT_WIN32 "FindNextElementOptions.SearchRoot must be valid and set to a loaded DependencyObject." // {Locked}

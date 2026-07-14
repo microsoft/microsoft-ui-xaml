@@ -860,6 +860,10 @@ namespace Microsoft.UI.Xaml
         {
             Double Width;
             Double Height;
+            Double MinWidth;
+            Double MinHeight;
+            Double MaxWidth;
+            Double MaxHeight;
         }
     };
 

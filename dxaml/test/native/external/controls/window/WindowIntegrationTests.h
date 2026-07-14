@@ -152,6 +152,42 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"Validates that a resize bracketed by WM_ENTERSIZEMOVE/WM_EXITSIZEMOVE (simulated user drag) is captured at drag end and reflected by the getter in a non-sizing presenter.")
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
         END_TEST_METHOD()
+
+        // The Window Min/Max size properties (MinWidth/MinHeight/MaxWidth/MaxHeight) only exist in prerelease.
+        BEGIN_TEST_METHOD(MinMaxSizeGetSet)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates programmatic get/set and defaults of the Window Min/Max size properties.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeInvalidValuesThrow)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that invalid Window Min/Max size values are rejected.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(SetMinMaxSizeInMarkup)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Window Min/Max size set in markup is correctly handled.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeSurvivesPresenterSwap)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Window Min/Max size constraints are re-applied as the AppWindow moves between presenters (overlapped, compact overlay, full screen) in multiple directions.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeClampsWindowSize)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that resizing the window past its Min/Max size constraints is clamped by the presenter.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeLeavesUnsetConstraintsAlone)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Window Min/Max size only writes presenter constraints the app actually set, leaving presenter properties the app manages directly untouched.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(MinMaxSizeTracksTitleBarToggle)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that Window Min/Max size constraints re-apply when ExtendsContentIntoTitleBar toggles, so they track the changed chrome instead of drifting by the caption height.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
 #endif // MUX_PRERELEASE
 
     };

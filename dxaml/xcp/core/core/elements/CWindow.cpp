@@ -99,10 +99,15 @@ _Check_return_ HRESULT CWindow::SetValue(_In_ const SetValueParams& args)
         }
         return S_OK; // EARLY EXIT! We don't want to call super::SetValue() because we don't want to set the DP
 
-    // Window_Width and Window_Height are settable from markup. The parser sets them on
-    // the core object, so forward to the DXaml peer's setter to actually size the window.
+    // Window_Width/Height and Window_MinWidth/MinHeight/MaxWidth/MaxHeight are set from markup by the
+    // parser on the core object. Forward each to the matching DXaml peer setter, which validates and
+    // applies it - bad values throw E_INVALIDARG, which surfaces as a markup error.
     case KnownPropertyIndex::Window_Width:
     case KnownPropertyIndex::Window_Height:
+    case KnownPropertyIndex::Window_MinWidth:
+    case KnownPropertyIndex::Window_MinHeight:
+    case KnownPropertyIndex::Window_MaxWidth:
+    case KnownPropertyIndex::Window_MaxHeight:
         {
             // Get or create the DirectUI::Window DXaml peer.  'GetPeer' will create
             // the DXaml peer if one does not already exist.
@@ -110,14 +115,29 @@ _Check_return_ HRESULT CWindow::SetValue(_In_ const SetValueParams& args)
             IFC_RETURN(DirectUI::DXamlCore::GetCurrent()->GetPeer<DirectUI::Window>(this, &window));
             IFCPTR_RETURN(window);
 
-            const DOUBLE value = args.m_value.AsDouble();
-            if (args.m_pDP->GetIndex() == KnownPropertyIndex::Window_Width)
+            // These properties are all typed Double, so the parser always delivers a Double value.
+            const double value = args.m_value.AsDouble();
+
+            switch (args.m_pDP->GetIndex())
             {
+            case KnownPropertyIndex::Window_Width:
                 IFC_RETURN(window->put_Width(value));
-            }
-            else
-            {
+                break;
+            case KnownPropertyIndex::Window_Height:
                 IFC_RETURN(window->put_Height(value));
+                break;
+            case KnownPropertyIndex::Window_MinWidth:
+                IFC_RETURN(window->put_MinWidth(value));
+                break;
+            case KnownPropertyIndex::Window_MinHeight:
+                IFC_RETURN(window->put_MinHeight(value));
+                break;
+            case KnownPropertyIndex::Window_MaxWidth:
+                IFC_RETURN(window->put_MaxWidth(value));
+                break;
+            case KnownPropertyIndex::Window_MaxHeight:
+                IFC_RETURN(window->put_MaxHeight(value));
+                break;
             }
         }
         return S_OK; // EARLY EXIT! We don't want to call super::SetValue() because we don't want to set the DP
