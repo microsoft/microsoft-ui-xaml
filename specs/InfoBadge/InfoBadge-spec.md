@@ -190,7 +190,7 @@ The markup below would create an InfoBadge that takes on the color and icon of t
 ```
 
 ## Increment a numeric InfoBadge in a NavigationView
-Here’s a NavigationView that uses an InfoBadge to display the number of new emails in the inbox, and increments the number shown in the InfoBadge when a new message is recieved. 
+Here’s a NavigationView that uses an InfoBadge to display the number of new emails in the inbox, and increments the number shown in the InfoBadge when a new message is received.
 
 **XAML Markup:**
 ```xml
