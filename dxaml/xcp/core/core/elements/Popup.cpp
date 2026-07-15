@@ -1288,34 +1288,45 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
+
         {
-            // The Create call is causing re-entrancy, hence using PauseNewDispatch here.
+            // Creating the content island and connecting it to the bridge (and initializing the input
+            // site adapter) can pump messages. When this resource creation happens while Xaml is in a
+            // sensitive state - e.g. opening a TextBox context menu flyout - the nested message pump
+            // trips the reentrancy checks. Pause new dispatch around the resource creation path to
+            // prevent reentrant execution. This covers the Create, Connect and input site Initialize
+            // calls. The pause is explicitly scoped to end after Initialize and must NOT extend over
+            // UpdateTranslationFromContentRoot below: that path runs its own PauseNewDispatch (in
+            // PositionAndSizeWindowForWindowedPopup), and because PauseNewDispatch has no nesting
+            // count, its destructor would otherwise resume dispatch prematurely and un-pause the
+            // remainder of this scope.
             PauseNewDispatch deferReentrancy(core);
+
             IFC_RETURN(contentStatics->Create(visual.Get(), &m_contentIsland));
-        }
 
-        IFC_RETURN(m_contentIsland->add_AutomationProviderRequested(WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<
-            ixp::ContentIsland*,
-            ixp::ContentIslandAutomationProviderRequestedEventArgs*>>([&](
-                ixp::IContentIsland* content,
-                ixp::IContentIslandAutomationProviderRequestedEventArgs* args) -> HRESULT
-                {
-                    return OnContentAutomationProviderRequested(content, args);
-                }).Get(),
-                &m_automationProviderRequestedToken));
-                
-        if (m_desktopBridge)
-        {
-            IFC_RETURN(m_desktopBridge->Connect(m_contentIsland.Get()));
-        }
-        else
-        {
-            IFC_RETURN(m_desktopPopupSiteBridge->Connect(m_contentIsland.Get()));
-        }
+            IFC_RETURN(m_contentIsland->add_AutomationProviderRequested(WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<
+                ixp::ContentIsland*,
+                ixp::ContentIslandAutomationProviderRequestedEventArgs*>>([&](
+                    ixp::IContentIsland* content,
+                    ixp::IContentIslandAutomationProviderRequestedEventArgs* args) -> HRESULT
+                    {
+                        return OnContentAutomationProviderRequested(content, args);
+                    }).Get(),
+                    &m_automationProviderRequestedToken));
 
-        m_inputSiteAdapter = std::make_unique<WindowedPopupInputSiteAdapter>();
-        CContentRoot* contentRoot = VisualTree::GetContentRootForElement(this);
-        m_inputSiteAdapter->Initialize(this, m_contentIsland.Get(), contentRoot, DirectUI::DXamlServices::GetCurrentJupiterWindow());
+            if (m_desktopBridge)
+            {
+                IFC_RETURN(m_desktopBridge->Connect(m_contentIsland.Get()));
+            }
+            else
+            {
+                IFC_RETURN(m_desktopPopupSiteBridge->Connect(m_contentIsland.Get()));
+            }
+
+            m_inputSiteAdapter = std::make_unique<WindowedPopupInputSiteAdapter>();
+            CContentRoot* contentRoot = VisualTree::GetContentRootForElement(this);
+            m_inputSiteAdapter->Initialize(this, m_contentIsland.Get(), contentRoot, DirectUI::DXamlServices::GetCurrentJupiterWindow());
+        }
 
         // Force an update of the input offset to make sure it is initialized to something and
         // propogated to the inputsite adapter.
