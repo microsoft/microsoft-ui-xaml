@@ -12,25 +12,35 @@ Window showing and activation
 reports that `Window.Activate()` does not bring a background WinUI window to
 the foreground unless the window is minimized.
 
-The current WinUI implementation uses this sequence:
+Today, an app creates a WinUI `Window` and calls `Window.Activate()` to show
+it. In response, WinUI calls `ShowWindow` to show or restore the backing HWND,
+`UpdateWindow` to paint it, and `SetActiveWindow` to make it the active window
+for the calling thread.
 
-1. `ShowWindow` to make the HWND visible or restore it.
-2. `UpdateWindow` to paint it.
-3. `SetActiveWindow` to activate it within the calling thread.
+The important distinction is between an *active window* and the *foreground
+window*.
 
-This works when the app is already the foreground app, but
 [`SetActiveWindow`](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setactivewindow)
-does not bring a background app to the foreground.
+only activates a window attached to the calling thread's message queue. If the
+app is already the foreground app, Windows also brings that window to the top
+of the foreground app's Z-order. If another app is foreground,
+`SetActiveWindow` does not move the calling app to the foreground. This is why
+the current WinUI `Window.Activate()` can select a window within the WinUI app,
+but cannot take foreground from another process.
 
-The first implementation considered changing `Window.Activate()` to call
-`SetForegroundWindow`, then pivoted to a separate `Window.SetForeground()`
-method. Neither choice fully accounts for the fact that WinUI currently uses
-`Activate()` for two different jobs:
+[`SetForegroundWindow`](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setforegroundwindow)
+is the Win32 request that can cross that process boundary. If Windows allows
+the request, it makes the target window foreground, activates it, and directs
+keyboard input to it. The request is not guaranteed to succeed.
+
+WinUI currently uses `Activate()` for two different jobs:
 
 - Showing a window for the first time.
 - Asking an existing window to become active.
 
-Those jobs are separate in WPF and in Win32.
+This proposal separates those jobs. It adds WPF-style APIs for showing a
+window, adds an explicit fallible foreground request, and keeps the existing
+`Activate()` behavior for compatibility.
 
 ## WPF behavior
 
@@ -42,13 +52,6 @@ WPF has three relevant members:
 | [`Window.ShowActivated`](https://learn.microsoft.com/dotnet/api/system.windows.window.showactivated) | Controls whether the window is activated when it is first shown. The default is `true`. Apps set it to `false` before `Show()` to show without activation. |
 | [`Window.Activate()`](https://learn.microsoft.com/dotnet/api/system.windows.window.activate) | Attempts to bring an existing window to the foreground and activate it. It returns whether activation succeeded and follows the Win32 `SetForegroundWindow` rules. |
 
-This split lets a WPF app show a window without activation while keeping
-`Activate()` focused on foreground activation.
-
-WinUI has no public `Window.Show()` API or `ShowActivated` property. Apps call
-`Window.Activate()` to show a newly created window. Changing that method to
-always request foreground activation could cause existing secondary windows,
-tool windows, and palettes to take focus when an app only meant to show them.
 
 ## Win32 behavior
 
@@ -57,13 +60,32 @@ Win32 also separates showing, thread activation, and foreground activation:
 | API | Behavior |
 | --- | --- |
 | [`ShowWindow`](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-showwindow) | Changes the window's show state. Flags such as `SW_SHOW` activate the window, while `SW_SHOWNOACTIVATE` and `SW_SHOWNA` show it without activation. |
-| [`SetActiveWindow`](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setactivewindow) | Activates a window attached to the calling thread's message queue. It does not bring a background application to the foreground. |
-| [`SetForegroundWindow`](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setforegroundwindow) | Requests foreground activation. Windows can deny the request under its foreground-lock rules. |
+| [`SetActiveWindow`](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setactivewindow) | Selects the active window for the calling thread's message queue. It brings the window to the top only when the calling app is already foreground. |
+| [`SetForegroundWindow`](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setforegroundwindow) | Asks Windows to make the window foreground and active, even if another app is currently foreground. Windows can deny the request. |
 
-An app cannot force foreground activation while the user is working in
-another app. If Windows denies `SetForegroundWindow`, it can flash the taskbar
+Windows limits foreground changes so a background app cannot freely interrupt
+the user. According to the `SetForegroundWindow` documentation, all of these
+conditions must be true:
+
+- The caller is a desktop app.
+- The foreground process has not called `LockSetForegroundWindow` to block the
+  request.
+- No menus are active.
+
+At least one of these conditions must also be true:
+
+- The foreground-lock timeout has expired.
+- The calling process is already foreground.
+- The foreground process started the calling process.
+- There is no foreground process.
+- The calling process received the last input event.
+- Either the calling process or foreground process is being debugged.
+
+Windows may still deny the request even when these conditions appear to be
+met. When foreground activation is denied, Windows can flash the app's taskbar
 button instead. A WinUI API that requests foreground activation must preserve
-these rules and must not promise success.
+these rules, must not promise success, and should expose denial as a normal
+outcome rather than an exceptional failure.
 
 # Goals
 
@@ -71,20 +93,17 @@ these rules and must not promise success.
 - Give WinUI apps a clear way to request foreground activation.
 - Align with WPF where that produces a usable and compatible WinUI API.
 - Preserve Windows foreground-lock behavior.
-- Avoid changing existing app behavior without an explicit compatibility plan.
+- Preserve the existing `Window.Activate()` behavior for compatibility.
 
 # Non-goals
 
 - Do not bypass Windows foreground-lock rules.
 - Do not guarantee that a background window becomes foreground.
-- Do not silently change `Window.Activate()` until the compatibility impact is
-  understood.
-- Do not approve a final API shape in this initial draft.
+- Do not change the behavior of `Window.Activate()`.
 
-# Proposed direction
+# Proposed API
 
-The current direction is to add the missing WPF-style show surface before
-changing foreground activation behavior:
+Add the missing WPF-style show surface and a separate foreground request:
 
 ```csharp
 namespace Microsoft.UI.Xaml
@@ -93,58 +112,22 @@ namespace Microsoft.UI.Xaml
     {
         Boolean ShowActivated { get; set; };
         void Show();
+        Boolean TryActivate();
+
+        // Existing, will be deprecated.  Behavior does not change.
+        void Activate();
     }
 }
 ```
 
-`ShowActivated` would default to `true`. Apps could set it to `false` before
-the first call to `Show()` to display a window without activating it.
+These APIs handle two different points in the window lifecycle:
 
-This gives WinUI a dedicated show operation and removes the main reason that
-apps must use `Activate()` for first-time display.
+- `ShowActivated` controls whether showing a hidden window also activates it.
+- `TryActivate()` asks Windows to activate a window after it has been shown.
 
-The exact future of `Window.Activate()` remains an API review question. Options
-include:
-
-1. Keep its current behavior for compatibility and add a separate fallible
-   foreground API.
-2. Change it in a future compatibility boundary to follow WPF and
-   `SetForegroundWindow`.
-3. Deprecate it after adding clearer show and foreground APIs.
-
-# Alternatives considered
-
-## Change Window.Activate
-
-Change the existing method to call `SetForegroundWindow`.
-
-This matches the name and WPF behavior, but it can break apps that currently
-call `Activate()` only because WinUI lacks `Show()`. Those apps could start
-taking focus unexpectedly.
-
-## Add Window.SetForeground
-
-Add a method that directly represents `SetForegroundWindow` and returns
-whether Windows accepted the request.
-
-```csharp
-Boolean SetForeground();
-```
-
-This is explicit and preserves the current `Activate()` behavior. However,
-WPF does not expose this API shape, and adding it without first addressing
-WinUI's missing show API moves the frameworks further apart.
-
-If this option is selected, `TrySetForeground` may be a clearer name because
-failure is a normal result under Windows foreground-lock rules.
-
-## Add only Window.Show
-
-Add `Show()` but no `ShowActivated` property.
-
-This is simpler, but it does not give apps a framework-level way to show tool
-windows, palettes, or notifications without activation. WPF and Win32 both
-support that scenario.
+The show-time option is needed for non-interrupting windows such as overlays,
+toasts, splash screens, search palettes, and tool windows. Public WPF apps use
+`ShowActivated = false` for these scenarios.
 
 # API behavior
 
@@ -152,8 +135,12 @@ support that scenario.
 
 Shows the window and returns immediately.
 
-On the first show, WinUI uses `ShowActivated` to decide whether to request
-activation. Later calls show or restore the window using the same setting.
+When `Show()` changes a hidden window to visible, WinUI uses the current
+`ShowActivated` value to decide whether the operation should activate it.
+
+If the window is already visible, `Show()` does nothing. This includes a
+minimized window, which is still visible and must be restored through the
+window-state APIs.
 
 Calling `Show()` after the window has closed produces the same error behavior
 as calling `Activate()` after close.
@@ -162,8 +149,11 @@ as calling `Activate()` after close.
 
 Gets or sets whether `Show()` activates the window.
 
-The default value is `true`. The property must be set before the first call to
-`Show()`. Changing it after the window is first shown has no effect.
+The default value is `true`. Set it to `false` before calling `Show()` to show
+the window without activation. Changing the property does not retroactively
+activate or deactivate a window that is already visible, but the new value is
+used after a later `Hide()` and `Show()` sequence. As in WPF, the value is also
+used when a minimized window is restored through the window-state APIs.
 
 ```csharp
 Window toolWindow = new();
@@ -171,21 +161,51 @@ toolWindow.ShowActivated = false;
 toolWindow.Show();
 ```
 
-# Open questions
+## Window.TryActivate
 
-- Should WinUI match WPF exactly by adding both `Show()` and `ShowActivated`?
-- Should `ShowActivated` apply only to the first show, like WPF, or to every
-  call to `Show()`?
-- Should `Window.Activate()` eventually use `SetForegroundWindow`, remain
-  unchanged, or be deprecated?
-- If compatibility prevents changing `Activate()`, should the foreground API
-  be named `SetForeground`, `TrySetForeground`, or `TryActivate`?
-- How should the API report foreground denial without treating normal Windows
-  behavior as an exception?
-- Should a foreground API restore or show a hidden or minimized window, or
-  only operate on an already visible window?
-- Are `Show()` and `ShowActivated` desktop-only, or can they have meaningful
-  behavior for UWP?
+Asks Windows to make the window foreground and active.
+
+WinUI calls `SetForegroundWindow` and returns `true` when Windows accepts the
+request. It returns `false` when Windows denies the request under its normal
+foreground-lock rules.
+
+`TryActivate()` does not bypass Windows restrictions and does not treat a
+denied request as an exception. It does not show or restore the window. Apps
+should show a hidden window or restore a minimized window through the
+appropriate window API before calling it.
+
+```csharp
+window.Show();
+
+if (!window.TryActivate())
+{
+    // Windows kept the current foreground window.
+}
+```
+
+## Window.Activate
+
+`Window.Activate()` keeps its existing `ShowWindow`, `UpdateWindow`, and
+`SetActiveWindow` behavior.
+
+The API is deprecated. New code can safely switch to use `Show()`.
+
+
+# Appendix: Alternatives considered
+
+- **Change `Window.Activate()` to call `SetForegroundWindow`.** This matches
+  the name and WPF behavior, but then WinUI apps do not have the ability to
+  show a window normally or quietly without jumping to the foreground.
+
+- **Add `Window.SetForeground()`.** This directly represents
+  `SetForegroundWindow`, but the operation can be denied during normal use and
+  "foreground" exposes Win32 terminology that WPF presents as activation. This
+  proposal uses `TryActivate()` to make the fallibility clear while staying
+  closer to WPF naming.
+
+- **Add only `Window.Show()`.** This is simpler, but it does not give apps a
+  framework-level way to show tool windows, palettes, or notifications without
+  activation. WPF and Win32 both support that scenario.
 
 # API review status
 
