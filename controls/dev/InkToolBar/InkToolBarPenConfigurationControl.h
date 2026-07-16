@@ -16,6 +16,17 @@ class InkToolBarPenConfigurationControl :
 {
 public:
 
-    winrt::InkToolBarPenButton PenButton() { winrt::throw_hresult(E_NOTIMPL); }
+    winrt::InkToolBarPenButton PenButton()
+    {
+        return m_penButton;
+    }
+
+    void SetPenButton(winrt::InkToolBarPenButton const& value)
+    {
+        m_penButton = value;
+    }
+
+private:
+    winrt::InkToolBarPenButton m_penButton{ nullptr };
 };
 

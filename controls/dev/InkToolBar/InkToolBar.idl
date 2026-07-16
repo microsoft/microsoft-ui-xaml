@@ -214,6 +214,14 @@ namespace MU_XC_NAMESPACE
     };
 
     [MUX_PREVIEW]
+    [default_interface]
+    unsealed runtimeclass InkToolBarRulerButton
+        : Microsoft.UI.Xaml.Controls.InkToolBarToggleButton
+    {
+        [method_name("CreateInstance")] InkToolBarRulerButton();
+    };
+
+    [MUX_PREVIEW]
     unsealed runtimeclass InkToolBarCustomToolButton
         : Microsoft.UI.Xaml.Controls.InkToolBarToolButton
     {

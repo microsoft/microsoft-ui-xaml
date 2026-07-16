@@ -1,14 +1,21 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
 #include <common.h>
 #include "InkCanvas.h"
 #include "InkCanvasAutomationPeer.h"
+#include "InkPresenter.h"
 #include "RuntimeProfiler.h"
 #include "Microsoft.UI.Xaml.xamlroot.h"
 #include "Microsoft.UI.Composition.h"
 #include <pplawait.h>
+#include <winrt/Windows.UI.Core.h>
+#include <winrt/Windows.UI.Input.h>
+#include <winrt/Windows.UI.Composition.h>
+#include <winrt/Microsoft.UI.Dispatching.h>
+#include <future>
+#include <vector>
 
 // There is a sal bug in this header file that causes a compile warning (which we fail on) due to a
 // value type being identified with _In_opt_ (value types cannot be optional because there is no
@@ -25,45 +32,45 @@ thread_local std::weak_ptr<ThreadData> s_tlsThreadData;
 //
 // Thread Data
 //
-// 
-// The only reason this data is scoped to the thread is because it saves us synchronization work, which,
-// since the vast majority of application will only have one UI thread, would just be wasted and the
-// cost here isn't that great.
+//
+// This data is shared by every InkCanvas created on the same UI thread. The host and DComp
+// device are per-thread singletons: the first InkCanvas allocates them, subsequent canvases
+// reuse them, and they are released once the last InkCanvas on the thread is destroyed (the
+// map holds a weak_ptr so lifetime tracks the controls, not the thread). Each InkCanvas still
+// owns its own InkPresenter and its own ink root visual; only the underlying host/device (and,
+// separately, the per-HWND composition target - see TargetData) are shared. Scoping to the
+// thread avoids synchronization work that, for the common single-UI-thread app, would just be
+// wasted, and the cost of the shared objects here isn't that great.
 struct ThreadData
 {
     winrt::com_ptr<IInkDesktopHost> m_inkHost;
+    // System DirectComposition device (dcomp.dll) used by the CreateTargetForHwnd rendering path.
     winrt::com_ptr<IDCompositionDevice> m_compositionDevice;
     wil::unique_hmodule m_hmodDComp;
 };
 
 //
-// Generic Ink Work Item Callback.  This allows us to easily submit work to the Ink thread using a lambda.
+// IInkCommitRequestHandler implementation.
+// InkPresenter calls OnCommitRequested() when ink transitions from wet to dry
+// and needs the app to commit the DComposition device.
 //
-struct GenericInkCallback : winrt::implements<GenericInkCallback, IInkHostWorkItem>
+struct InkCommitRequestHandler : winrt::implements<InkCommitRequestHandler, IInkCommitRequestHandler>
 {
-    GenericInkCallback(const std::function<void()>& func)
-        : m_func(func)
-    {
-    }
+    InkCommitRequestHandler(winrt::com_ptr<IDCompositionDevice> device)
+        : m_device(device) {}
 
-    IFACEMETHODIMP Invoke() try
+    IFACEMETHODIMP OnCommitRequested() override
     {
-        m_func();
+        if (m_device)
+        {
+            return m_device->Commit();
+        }
         return S_OK;
-    }
-    catch (...)
-    {
-        // REVIEW: Is this the way that we want to handle this?  IInkHostWorkItem::Invoke needs to return
-        //         a HRESULT, but I can't find any information on what happens if it does.  There is no way
-        //         to pass it back and raise it on the UI thread.
-        return winrt::to_hresult();
     }
 
 private:
-    std::function<void()> m_func;
+    winrt::com_ptr<IDCompositionDevice> m_device;
 };
-
-
 
 //
 //  InkCanvas
@@ -80,21 +87,15 @@ InkCanvas::InkCanvas()
     m_threadData = s_tlsThreadData.lock();
     if (!m_threadData)
     {
-
         // This is our first Ink Canvas on this thread so do a little bit of thread initialization.
-
         m_threadData = std::make_unique<ThreadData>();
         s_tlsThreadData = m_threadData;
-
-        // Create a desktop host which will create a ink thread.  Normally, I wouldn't want to do this until we actually needed
-        // it, but unfortunately, we need the host to create the presenter and we need to create a presenter so that it can be 
-        // accessed prior to entering the tree.
-        winrt::check_hresult(CoCreateInstance(__uuidof(InkDesktopHost), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(m_threadData->m_inkHost.put())));
     }
 
-    // Applications may want to access the ink presenter before they add the InkCanvas to the tree, so
-    // make sure create one right away.
-    CreateInkPresenter();
+    // The presenter (proxy + OS presenter) is created lazily by EnsureInkPresenter() on first use
+    // - either when the app touches InkPresenter() or when the control loads. We deliberately do
+    // NOT create it in the constructor: EnsureInkPresenter() needs *this to build the proxy, and
+    // taking a strong/weak self ref before construction finishes is unsafe.
 }
 
 InkCanvas::~InkCanvas()
@@ -113,14 +114,16 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
         return;
     }
 
+    // Make sure the presenter (proxy + OS presenter) exists before we queue any ink-thread work
+    // (SetRootVisual below runs against it). Safe here: we are past construction and on the UI thread.
+    EnsureInkPresenter();
+
     // Hook up this ink canvas with the DComp tree.
     AttachToVisualLink();
 
- 
-    // Although the visual link will maintain position and clipping for for our visual, it won't update the
-    // size of the system visual, which is ok, because its size does not clip its children (its clipping could,
-    // but not its size).  However, the presenter won't see this size change either, so we need to explicitly
-    // set the size of the presenter when the system rasterization scale, actual size or scale transform has changed.
+    // The composition target maintains position/clipping for our visual, but the presenter
+    // does not see size changes, so explicitly update the presenter size when the rasterization
+    // scale, actual size or scale transform changes.
 
     m_xamlRootChangedRevoker = XamlRoot().Changed(winrt::auto_revoke,
         [weakThis{ get_weak() }](auto const& /*sender*/, auto const& /*args*/)
@@ -132,7 +135,7 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
             }
         });
 
-    m_sizeChanged_revoker = SizeChanged(winrt::auto_revoke,
+    m_sizeChangedRevoker = SizeChanged(winrt::auto_revoke,
         [weakThis{ get_weak() }](auto const& sender, auto const& /*args*/)
         {
             if (auto strongThis = weakThis.get())
@@ -150,14 +153,17 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     //
     // When we know what event to be listening for, add it here.
 
+    // Position the ink visual at the control's on-screen location (also updates the presenter
+    // size). Required for both correct rendering placement AND input hit-testing.
     if (UseSystemVisualLink())
     {
-        // This is the first time we know the size of the ink canvas so update the presenter
+        // ContentExternalOutputLink places/clips/scrolls the ink visual natively through the
+        // lifted XAML tree, so there is no manual positioning to do here; the presenter still
+        // needs its size in physical pixels though.
         UpdateInkPresenterSize();
     }
     else
     {
-        // This is the first time we have a position for the ink canvas in the scene so position the dcomp pieces.
         PositionInkVisual();
     }
 }
@@ -173,19 +179,9 @@ void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEvent
     }
 
     m_xamlRootChangedRevoker.revoke();
-    m_sizeChanged_revoker.revoke();
+    m_sizeChangedRevoker.revoke();
 
     DetachFromVisualLink();
-}
-
-void InkCanvas::OnIsEnabledPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto isEnabled = unbox_value<bool>(args.NewValue());
-
-    QueueInkPresenterWorkItem([isEnabled](auto presenter)
-        {
-            presenter.IsInputEnabled(isEnabled);
-        });
 }
 
 winrt::AutomationPeer InkCanvas::OnCreateAutomationPeer()
@@ -193,101 +189,67 @@ winrt::AutomationPeer InkCanvas::OnCreateAutomationPeer()
     return winrt::make<InkCanvasAutomationPeer>(*this);
 }
 
-winrt::IAsyncAction InkCanvas::QueueInkPresenterWorkItem(winrt::DoInkPresenterWork workItem)
+muxc::InkPresenter InkCanvas::InkPresenter()
 {
-    // Since the ink presenter is created on the ink thread, applications may want to request
-    // presenter work before the presenter is created (e.g. setting rendering attributes).
-    // This is Ok, because by the time the ink thread runs this work, the presenter will be there.
-    //
-    // Applications may also request presenter work as the InkCanvas is being shut down (e.g.
-    // they want to save the ink strokes.  This is also OK, but we need to make sure that we
-    // keep the presenter alive long enough for that work to occur.
-    //
-    // So we need to take a strong reference to the InkCanvas and pass that as part of the
-    // work item so that we can retrieve the presenter if it isn't there yet and ensure that we
-    // extend the life of the presenter until after the work is complete.
-    
-    concurrency::task_completion_event<void> taskComplete;
-
-    auto workItemWrapper = [workItem, taskComplete, strongThis = get_strong()]()
-        {
-            try
-            {
-                // This shouldn't ever happen, since the first call to the ink thread should always be
-                // to create the presenter.
-                MUX_ASSERT(strongThis->m_inkPresenter);
-                if (strongThis->m_inkPresenter)
-                {
-                    // Invoke the work item passing the presenter.
-                    workItem(strongThis->m_inkPresenter);
-                }
-                taskComplete.set();
-            }
-            catch (...)
-            {
-                taskComplete.set_exception(std::current_exception);
-            }
-        };
-
-    // Submit the work item to the ink thread
-    winrt::check_hresult(m_threadData->m_inkHost->QueueWorkItem(winrt::make<GenericInkCallback>(workItemWrapper).get()));
-
-    // create a task to wait for the work item to complete and await it.
-    auto inktask = concurrency::create_task(taskComplete, concurrency::task_continuation_context::get_current_winrt_context());
-    co_await inktask;
-
+    EnsureInkPresenter();
+    return m_inkPresenterProxy;
 }
 
-void InkCanvas::CreateInkPresenter()
+// Creates the marshaling proxy and kicks off creation of the OS presenter on the ink thread. The
+// proxy owns the OS presenter and the ink-thread work queue; InkCanvas just hands it the shared ink
+// host + this control's UI dispatcher. Idempotent and lazy: called from InkPresenter() (first app
+// access) and from OnLoaded (before any ink-thread work is queued). Not called from the constructor
+// because building the proxy needs *this, which is unsafe before construction completes.
+void InkCanvas::EnsureInkPresenter()
 {
-    auto threadData = s_tlsThreadData.lock();
-    auto inkHost = threadData->m_inkHost;
-    auto weakThis = get_weak();
+    if (m_inkPresenterProxy)
+    {
+        return;
+    }
 
-    auto callback = winrt::make<GenericInkCallback>([weakThis, inkHost]()
-        {
-            auto strongThis = weakThis.get();
-            if (!strongThis)
-            {
-                return;
-            }
+    // Ensure the shared per-thread ink host (and its dedicated ink thread) exists; the proxy needs
+    // it at construction to create and service the OS presenter.
+    if (!m_threadData->m_inkHost)
+    {
+        winrt::check_hresult(CoCreateInstance(__uuidof(InkDesktopHost), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(m_threadData->m_inkHost.put())));
+    }
 
-            // Create ink presenter
-            winrt::com_ptr inkPresenterDesktop = winrt::capture<IInkPresenterDesktop>(
-                inkHost,
-                &IInkDesktopHost::CreateInkPresenter);
-            auto inkPresenter = inkPresenterDesktop.as<winrt::InkPresenter>();
-
-            // Set up input devices
-            winrt::CoreInputDeviceTypes types = winrt::CoreInputDeviceTypes::Mouse | winrt::CoreInputDeviceTypes::Pen | winrt::CoreInputDeviceTypes::Touch;
-            inkPresenter.InputDeviceTypes(types);
-
-            // Set the initial size.  This doesn't really mean anything and we can probably get away with out it,
-            // but it helps in debugging, so for now we will leave it.
-            winrt::check_hresult(inkPresenterDesktop->SetSize(400,400));
-
-            // This m_inkPresetenr is only accessed on the ink thread, so we don't need to worry about contention.
-            strongThis->m_inkPresenter = inkPresenter;
-        });
-    winrt::check_hresult(inkHost->QueueWorkItem(callback.get()));
+    // Construct the proxy with the ink host and this control's UI-thread dispatcher (captured here,
+    // on the UI thread), then start OS-presenter creation on the ink thread. Start() takes a self
+    // weak-ref, which is only safe post-construction - hence it is not done in the proxy's ctor.
+    m_inkPresenterProxy = winrt::make<::InkPresenter>(m_threadData->m_inkHost, DispatcherQueue());
+    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->Start();
 }
 
 void InkCanvas::UpdateInkPresenterSize()
 {
+    // XamlRoot() can be null while unloading / reparenting. This runs from the SizeChanged
+    // and XamlRoot().Changed handlers, so guard it the same way as PositionInkVisual /
+    // AttachToVisualLink to avoid dereferencing a null XamlRoot for RasterizationScale().
+    auto xamlRoot = XamlRoot();
+    if (!xamlRoot)
+    {
+        return;
+    }
+
     // Transform the width/height based on Xaml scaling
     auto transformer = TransformToVisual(nullptr);
     winrt::Rect rect{ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight())};
     rect = transformer.TransformBounds(rect);
 
     // Get the system scale
-    auto rootScale = XamlRoot().RasterizationScale();
+    auto rootScale = xamlRoot.RasterizationScale();
 
-    // Update the presenter
-    QueueInkPresenterWorkItem([width = ActualWidth() * rootScale, height = ActualHeight() * rootScale](auto presenter)
-        {
-            auto inkPresenterDesktop = presenter.as<IInkPresenterDesktop>();
-            inkPresenterDesktop->SetSize(static_cast<float>(width), static_cast<float>(height));
-        });
+    // Push the new physical-pixel size onto the OS presenter (on the ink thread) through the proxy.
+    // The proxy's queue no-ops if the OS presenter has not been created yet.
+    if (m_inkPresenterProxy)
+    {
+        winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem(
+            [width = ActualWidth() * rootScale, height = ActualHeight() * rootScale](inking::InkPresenter const& presenter)
+            {
+                presenter.as<IInkPresenterDesktop>()->SetSize(static_cast<float>(width), static_cast<float>(height));
+            });
+    }
 }
 
 void InkCanvas::AttachToVisualLink()
@@ -318,66 +280,148 @@ void InkCanvas::AttachToVisualLink()
 
     m_hostHwnd = hostHwnd;
 
-    // Ensure we have composition device for this thread.
-    if (!m_threadData->m_compositionDevice)
+    // Disabled switcher fast path short-circuits when the system compositor is available.
+    if (TryAttachSwitcherVisual())
     {
-        if (!m_threadData->m_hmodDComp)
-        {
-            m_threadData->m_hmodDComp.reset(::LoadLibraryExW(L"dcomp.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32));
-            if (!m_threadData->m_hmodDComp)
-            {
-                throw winrt::hresult(HRESULT_FROM_WIN32(GetLastError()));
-            }
-        }
-        typedef HRESULT(__stdcall* DCompositionCreateDevice3fn)(IUnknown*, REFIID, void** dcompositionDevice);
-        auto CompositionCreateDevice = reinterpret_cast<DCompositionCreateDevice3fn>(::GetProcAddress(m_threadData->m_hmodDComp.get(), "DCompositionCreateDevice3"));
-        if (!CompositionCreateDevice)
-        {
-            throw winrt::hresult(HRESULT_FROM_WIN32(GetLastError()));
-        }
-        winrt::check_hresult(CompositionCreateDevice(nullptr, IID_PPV_ARGS(&m_threadData->m_compositionDevice)));
+        return;
     }
 
-    // Create our inking system visual
+    // Default rendering uses a topmost per-HWND DComp target. Ensure the shared device, then
+    // create this canvas's ink visual.
+    EnsureCompositionDevice();
     winrt::check_hresult(m_threadData->m_compositionDevice->CreateVisual(m_inkRootVisual.put()));
 
-    // Attach the visual to the presenter
-    QueueInkPresenterWorkItem([rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice, useSystemVisualLink = UseSystemVisualLink()](auto presenter)
+    // Clear the detach flag BEFORE queuing so the ink thread doesn't drop the SetRootVisual work.
+    m_isDetached.store(false, std::memory_order_release);
+
+    // Attach the visual to the presenter on the ink thread. SetRootVisual drives both rendering and
+    // input routing. The CEOL path has no positioning step, so commit here; the topmost path commits
+    // when it positions the visual. No commit-request handler (conflicts with InkSynchronizer).
+    winrt::get_self<::InkPresenter>(m_inkPresenterProxy)->QueueInkPresenterWorkItem([rootVisual = m_inkRootVisual, compositionDevice = m_threadData->m_compositionDevice, useSystemVisualLink = UseSystemVisualLink()](inking::InkPresenter const& presenter)
         {
             auto desktopPresenter = presenter.as<IInkPresenterDesktop>();
             winrt::check_hresult(desktopPresenter->SetRootVisual(rootVisual.get(), nullptr));
-            // only request a commit here if we are using the visual link.  If we are using the composition
-            // target method, it will be committed when we set position.
             if (useSystemVisualLink)
             {
                 winrt::check_hresult(compositionDevice->Commit());
             }
         });
 
-    // If we are using the composition target method then skip the visual link code
+    // Host the ink visual: topmost per-HWND target (default) or the system visual link (CEOL).
     if (AttachToCompositionTarget())
     {
         return;
     }
 
-    // The visual link is created on the lifted side so we use the lifted compositor.
-    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    AttachSystemVisualLink();
+}
 
-    // Create the the visual link
+// Ensures the per-thread system DirectComposition device used by the rendering paths.
+void InkCanvas::EnsureCompositionDevice()
+{
+    if (m_threadData->m_compositionDevice)
+    {
+        return;
+    }
+    if (!m_threadData->m_hmodDComp)
+    {
+        m_threadData->m_hmodDComp.reset(::LoadLibraryExW(L"dcomp.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32));
+        if (!m_threadData->m_hmodDComp)
+        {
+            winrt::throw_hresult(HRESULT_FROM_WIN32(GetLastError()));
+        }
+    }
+    typedef HRESULT(__stdcall* DCompositionCreateDevice3fn)(IUnknown*, REFIID, void** dcompositionDevice);
+    auto createDevice = reinterpret_cast<DCompositionCreateDevice3fn>(::GetProcAddress(m_threadData->m_hmodDComp.get(), "DCompositionCreateDevice3"));
+    if (!createDevice)
+    {
+        winrt::throw_hresult(HRESULT_FROM_WIN32(GetLastError()));
+    }
+    winrt::check_hresult(createDevice(nullptr, IID_PPV_ARGS(&m_threadData->m_compositionDevice)));
+}
+
+// Switcher fast path (disabled; enable with the CompositionEngine API from IXP 1893+). On the
+// system engine, hosts the ink visual in the app's own tree instead of a topmost overlay.
+// Returns true if it attached.
+bool InkCanvas::TryAttachSwitcherVisual()
+{
+#if 0
+    namespace muce = winrt::Microsoft::UI::Composition::Experimental;
+    namespace wuc = winrt::Windows::UI::Composition;
+
+    auto mucCompositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+    if (auto wucCompositor = muce::CompositionEngine::GetForSystemEngine(mucCompositor).try_as<wuc::Compositor>())
+    {
+        auto desktopInterop = wucCompositor.as<ABI::Windows::UI::Composition::Desktop::ICompositorDesktopInterop>();
+        winrt::com_ptr<ABI::Windows::UI::Composition::Desktop::IDesktopWindowTarget> desktopTarget;
+        winrt::check_hresult(desktopInterop->CreateDesktopWindowTarget(m_hostHwnd, TRUE /*topmost*/, desktopTarget.put()));
+
+        auto root = wucCompositor.CreateContainerVisual();
+        desktopTarget.as<wuc::Desktop::DesktopWindowTarget>().Root(root);
+
+        EnsureCompositionDevice();
+        winrt::check_hresult(m_threadData->m_compositionDevice->CreateVisual(m_inkRootVisual.put()));
+        m_isDetached.store(false, std::memory_order_release);
+        QueueInkPresenterWorkItem([rootVisual = m_inkRootVisual, device = m_threadData->m_compositionDevice](auto presenter)
+            {
+                auto desktop = presenter.as<IInkPresenterDesktop>();
+                winrt::check_hresult(desktop->SetRootVisual(rootVisual.get(), device.get()));
+            });
+        return true;
+    }
+#endif
+    return false;
+}
+
+// Fallback host: places the ink DComp visual in the lifted XAML tree via ContentExternalOutputLink
+// so XAML clips/scrolls/z-orders it (used when the topmost composition-target path is off).
+void InkCanvas::AttachSystemVisualLink()
+{
+#if 0
+    // Approach B (disabled): bridge under a lifted MUC visual via IExpCompositorInterop2. Needs the
+    // vendored Microsoft.UI.Composition.Experimental.Interop.h (absent from consumed transport pkgs).
+    {
+        auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
+        auto mucRootVisual = compositor.CreateContainerVisual();
+
+        winrt::com_ptr<ABI::Microsoft::UI::Composition::Experimental::IExpCompositorInterop2> interop;
+        winrt::check_hresult(winrt::get_unknown(compositor)->QueryInterface(IID_PPV_ARGS(interop.put())));
+
+        auto desktopDevice = m_threadData->m_compositionDevice.as<IDCompositionDesktopDevice>();
+
+        winrt::com_ptr<IDCompositionTarget> target;
+        winrt::check_hresult(interop->CreateDCompVisualUnderMUCVisual(
+            reinterpret_cast<ABI::Microsoft::UI::Composition::IVisual*>(winrt::get_abi(mucRootVisual)),
+            desktopDevice.get(),
+            target.put()));
+        winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
+
+        winrt::ElementCompositionPreview::SetElementChildVisual(*this, mucRootVisual);
+        return;
+    }
+#endif
+
+    // Approach A (active): ContentExternalOutputLink produces a lifted PlacementVisual (backed by a
+    // system proxy visual + shared handle). SetRoot parents the ink visual under it; the
+    // PlacementVisual goes into the XAML tree so XAML clips/scrolls/z-orders the ink.
+    auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
     m_systemVisualLink = winrt::ContentExternalOutputLink::Create(compositor);
     m_systemVisualLink.IsAboveContent(true);
 
-    // Set our ink visual into the visual link
     winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.as<IDCompositionTarget>();
     winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
 
-    // Add the visual link's lifted visual to our tree
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualLink.PlacementVisual());
 }
 
 void InkCanvas::DetachFromVisualLink()
 {
-    // This will noop if we aren't using the composition target
+    // Mark destruction-safety: flag detach BEFORE we tear down anything so concurrent
+    // ink-thread lambdas observe the detached state and short-circuit instead of touching
+    // the OS presenter / system-visual resources mid-teardown. Cheap acquire/release pair.
+    m_isDetached.store(true, std::memory_order_release);
+
+    // Remove our ink visual from the shared per-HWND composition target.
     DetachFromCompositionTarget();
 
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, nullptr);
@@ -396,27 +440,40 @@ void InkCanvas::DetachFromVisualLink()
     }
 }
 
-// This section contains the code to handle the 'raw' composition target.  This is slightly confusing because the Visual link
-// actually is a composition target as well, but this is the legacy composition target code. Everything below here can be
-// deleted when the system visual link bug is fixed.
+// ---------------------------------------------------------------------------
+// Composition-target (CreateTargetForHwnd) rendering + input path.
+//
+// A topmost DComp target is created for the top-level HWND and the ink visual is parented
+// under it. Because the target is tied to the window, the desktop ink presenter receives
+// pointer input for the region covered by its visual -> strokes are collected. Only ONE
+// topmost target is permitted per HWND, so all InkCanvas controls in a window share one
+// target (TargetData) and each parents/positions its own ink visual under the shared root.
+// ---------------------------------------------------------------------------
+
+thread_local std::map<HWND, std::weak_ptr<InkCanvas::TargetData>> InkCanvas::TargetData::m_tlsMap;
+
+// The system-visual-link (ContentExternalOutputLink) path is opt-in via a boolean app resource
+// named "UseSystemVisualLink". It is evaluated once, on first use, so every InkCanvas in the app
+// gets the same treatment for the process lifetime. When true, the ink DComp visual is spliced
+// into the lifted XAML tree (which clips/scrolls/z-orders it) instead of being parented under a
+// topmost per-HWND composition target.
 bool InkCanvas::UseSystemVisualLink()
 {
     static bool useSystemVisualLink = [] {
-        // We control whether we are using the system visual link by defining a boolean resource UseSystemVisualLink
-        // in the application resources.  We initialize it upon first use so everything in the app gets the same
-        // treatment.
-        auto useSystemVisualKey = box_value(L"UseSystemVisualLink");
+        auto useSystemVisualKey = winrt::box_value(L"UseSystemVisualLink");
         if (winrt::Application::Current().Resources().HasKey(useSystemVisualKey))
         {
-            return unbox_value<bool>(winrt::Application::Current().Resources().Lookup(useSystemVisualKey));
+            return winrt::unbox_value<bool>(winrt::Application::Current().Resources().Lookup(useSystemVisualKey));
         }
         return false;
-        }();
+    }();
     return useSystemVisualLink;
 }
 
 bool InkCanvas::AttachToCompositionTarget()
 {
+    // When the system-visual-link (CEOL) path is enabled, skip the topmost composition target
+    // entirely and report that we did nothing; AttachToVisualLink() then wires up CEOL instead.
     if (UseSystemVisualLink())
     {
         return false;
@@ -424,26 +481,25 @@ bool InkCanvas::AttachToCompositionTarget()
 
     m_targetData = TargetData::Get(m_hostHwnd);
 
-    // If we haven't created our composition target and root visual yet, do so
+    // If we haven't created the shared composition target + root visual for this HWND yet,
+    // do so now. Subsequent canvases on the same HWND reuse it.
     if (!m_targetData->m_targetRootVisual)
     {
-        auto threadData = s_tlsThreadData.lock();
-        // Create a "top-most" target for this window
-        winrt::check_hresult(threadData->m_compositionDevice->CreateTargetForHwnd(m_hostHwnd, TRUE /*topmost*/, m_targetData->m_compositionTarget.put()));
+        // Create a "top-most" target for this window.
+        winrt::check_hresult(m_threadData->m_compositionDevice->CreateTargetForHwnd(m_hostHwnd, TRUE /*topmost*/, m_targetData->m_compositionTarget.put()));
 
-        // Attach a host visual.  This is different than the ink root visual although both of them use the term root.
-        // One is the root of the composition target (we will call that hostVisual) and one is the root of the
-        // ink presenter (we will call that rootVisual)
-        winrt::check_hresult(threadData->m_compositionDevice->CreateVisual(m_targetData->m_targetRootVisual.put()));
+        // Attach a host visual. This is the root of the composition target (distinct from
+        // each canvas's own ink root visual).
+        winrt::check_hresult(m_threadData->m_compositionDevice->CreateVisual(m_targetData->m_targetRootVisual.put()));
         winrt::check_hresult(m_targetData->m_compositionTarget->SetRoot(m_targetData->m_targetRootVisual.get()));
 
         m_threadData->m_compositionDevice->Commit();
     }
 
-    // Attach the visual to the target root
-    winrt::check_hresult(m_targetData->m_targetRootVisual->AddVisual(m_inkRootVisual.get(), true, nullptr));
+    // Parent this canvas's ink visual under the shared target root.
+    winrt::check_hresult(m_targetData->m_targetRootVisual->AddVisual(m_inkRootVisual.get(), TRUE, nullptr));
 
-    // Register for the LayoutChanged event so we can move the system visual as the underlying control moves
+    // Reposition the ink visual whenever layout changes (control moves/resizes).
     m_layoutUpdatedRevoker = LayoutUpdated(winrt::auto_revoke,
         [weakThis{ get_weak() }](auto const& /*sender*/, auto const& /*args*/)
         {
@@ -458,44 +514,60 @@ bool InkCanvas::AttachToCompositionTarget()
 
 void InkCanvas::DetachFromCompositionTarget()
 {
+    // No topmost composition target exists in the system-visual-link path.
     if (UseSystemVisualLink() || !m_targetData)
     {
         return;
     }
 
-    // Quit listening for the layout changed event
     m_layoutUpdatedRevoker.revoke();
 
-    // remove our system visual from the composition target tree
-    winrt::check_hresult(m_targetData->m_targetRootVisual->RemoveVisual(m_inkRootVisual.get()));
+    // Remove our ink visual from the shared composition target tree.
+    if (m_targetData->m_targetRootVisual && m_inkRootVisual)
+    {
+        m_targetData->m_targetRootVisual->RemoveVisual(m_inkRootVisual.get());
+    }
 
     m_targetData.reset();
 }
 
 void InkCanvas::PositionInkVisual()
 {
-    // All of this is supposed be the functionality that we get from using the visual link
-    if (UseSystemVisualLink()) return;
+    // In the system-visual-link path XAML positions/clips/scrolls the ink visual for us, so there
+    // is nothing to do here.
+    if (UseSystemVisualLink())
+    {
+        return;
+    }
 
-    // Get the transform from the root visual to the element
+    if (!m_inkRootVisual || !m_threadData->m_compositionDevice)
+    {
+        return;
+    }
+
+    auto xamlRoot = XamlRoot();
+    if (!xamlRoot)
+    {
+        return;
+    }
+
+    // Get the transform from the root visual to the element.
     auto transformer = TransformToVisual(nullptr);
 
-    // Get the location of the Ink Canvas control in physical pixels.
-    winrt::Rect rect { 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight())};
+    // Location of the InkCanvas control in DIPs.
+    winrt::Rect rect{ 0, 0, static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) };
     rect = transformer.TransformBounds(rect);
 
-    // Use the same transform to get the current Xaml scale(s)
-    winrt::Rect scaleRect{ 0, 0, 1, 1};
+    // Same transform to recover the current Xaml scale(s).
+    winrt::Rect scaleRect{ 0, 0, 1, 1 };
     scaleRect = transformer.TransformBounds(scaleRect);
 
-    //  Set the offset position of the canvas.  It seems that dcomp doesn't account for
-    //  the root scale for the offset so we need to apply it.
-    const float rootScale = static_cast<float>(XamlRoot().RasterizationScale());
+    // DComp does not account for the root scale on the offset, so apply it here.
+    const float rootScale = static_cast<float>(xamlRoot.RasterizationScale());
     m_inkRootVisual->SetOffsetX(rect.X * rootScale);
     m_inkRootVisual->SetOffsetY(rect.Y * rootScale);
 
-    // Create the transform on on the system system visual.
-    D2D_MATRIX_3X2_F visualTransform {
+    D2D_MATRIX_3X2_F visualTransform{
         scaleRect.Width, 0,
         0, scaleRect.Height,
         0, 0
@@ -505,13 +577,73 @@ void InkCanvas::PositionInkVisual()
         visualTransform.m11 *= -1;
         visualTransform.dx = rect.Width * rootScale;
     }
-
     m_inkRootVisual->SetTransform(visualTransform);
+
+    // The composition target is a *topmost* overlay that is NOT clipped by ancestor
+    // ScrollViewers, so without an explicit clip the ink would paint outside the control
+    // box (over sticky headers / neighboring content) whenever the control is scrolled or a
+    // stroke runs past the control bounds. Clip the ink visual to the intersection of the
+    // control rect with the nearest scrolling viewport (falling back to the XamlRoot),
+    // expressed in the visual's local, physical-pixel content space.
+    {
+        // Visible region in root DIPs, starting from the XamlRoot bounds.
+        auto rootSize = xamlRoot.Size();
+        float viewLeft = 0.0f, viewTop = 0.0f;
+        float viewRight = rootSize.Width, viewBottom = rootSize.Height;
+
+        // Narrow to the nearest scrolling ancestor's on-screen rect, if any.
+        winrt::DependencyObject node = *this;
+        while (auto parent = winrt::VisualTreeHelper::GetParent(node))
+        {
+            if (auto fe = parent.try_as<winrt::FrameworkElement>())
+            {
+                std::wstring cn{ winrt::get_class_name(parent).c_str() };
+                if (cn.find(L"ScrollViewer") != std::wstring::npos ||
+                    cn.find(L"ScrollView") != std::wstring::npos ||
+                    cn.find(L"ScrollContentPresenter") != std::wstring::npos ||
+                    cn.find(L"ScrollPresenter") != std::wstring::npos)
+                {
+                    auto svRect = fe.TransformToVisual(nullptr).TransformBounds(
+                        winrt::Rect{ 0, 0, static_cast<float>(fe.ActualWidth()), static_cast<float>(fe.ActualHeight()) });
+                    if (svRect.X > viewLeft) viewLeft = svRect.X;
+                    if (svRect.Y > viewTop) viewTop = svRect.Y;
+                    if (svRect.X + svRect.Width < viewRight) viewRight = svRect.X + svRect.Width;
+                    if (svRect.Y + svRect.Height < viewBottom) viewBottom = svRect.Y + svRect.Height;
+                    break;
+                }
+            }
+            node = parent;
+        }
+
+        // Intersect the control rect with the viewport (root DIPs).
+        float visL = rect.X > viewLeft ? rect.X : viewLeft;
+        float visT = rect.Y > viewTop ? rect.Y : viewTop;
+        float visR = (rect.X + rect.Width) < viewRight ? (rect.X + rect.Width) : viewRight;
+        float visB = (rect.Y + rect.Height) < viewBottom ? (rect.Y + rect.Height) : viewBottom;
+
+        D2D_RECT_F clip;
+        if (visR <= visL || visB <= visT)
+        {
+            // Fully outside the viewport: clip to empty so nothing paints.
+            clip = D2D_RECT_F{ 0, 0, 0, 0 };
+        }
+        else
+        {
+            // Convert to the visual's local content space (physical pixels, relative to the
+            // control's top-left).
+            clip = D2D_RECT_F{
+                (visL - rect.X) * rootScale,
+                (visT - rect.Y) * rootScale,
+                (visR - rect.X) * rootScale,
+                (visB - rect.Y) * rootScale
+            };
+        }
+        m_inkRootVisual->SetClip(clip);
+    }
 
     m_threadData->m_compositionDevice->Commit();
 
     UpdateInkPresenterSize();
 }
 
-thread_local std::map<HWND, std::weak_ptr<InkCanvas::TargetData>> InkCanvas::TargetData::m_tlsMap;
 

@@ -7,6 +7,16 @@
    -->
   <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
     <DisableCheckingDuplicateNuGetItems>true</DisableCheckingDuplicateNuGetItems>
+    <!--
+        NU1505: Duplicate PackageDownload for Microsoft.Windows.SDK.NET.Ref.
+        The .NET SDK bundles its own SDK.NET.Ref version (e.g. 10.0.17763.55) as an
+        implicit FrameworkReference. Our explicit override below pins a different patch
+        (TargetPlatformVersion + MicrosoftWindowsSDKNetRefPackVersionSuffixOverride, e.g.
+        10.0.17763.38). Both get translated to PackageDownload entries, triggering NU1505.
+        The explicit Remove/Include further down ensures the runtime uses our pinned version;
+        the warning is informational.
+    -->
+    <NoWarn>$(NoWarn);NU1505</NoWarn>
   </PropertyGroup>
 
   <!--

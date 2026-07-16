@@ -13,6 +13,10 @@ class InkToolBarAutomationPeer :
     public ReferenceTracker<InkToolBarAutomationPeer, winrt::implementation::InkToolBarAutomationPeerT>
 {
 public:
-    InkToolBarAutomationPeer(winrt::InkToolBar owner) {};
+    InkToolBarAutomationPeer(winrt::InkToolBar const& owner);
+
+    // IAutomationPeerOverrides
+    hstring GetClassNameCore();
+    winrt::AutomationControlType GetAutomationControlTypeCore();
 };
 

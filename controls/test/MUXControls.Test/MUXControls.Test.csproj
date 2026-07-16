@@ -113,6 +113,8 @@
   <Import Project="..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
   <Import Project="..\..\dev\InfoBar\InteractionTests\InfoBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInfoBarEnabled) == 'true'" />
   <Import Project="..\..\dev\Expander\InteractionTests\Expander_InteractionTests.projitems" Label="Shared" Condition="$(FeatureExpanderEnabled) == 'true'" />
+  <Import Project="..\..\dev\InkCanvas\InteractionTests\InkCanvas_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true'" />
+  <Import Project="..\..\dev\InkToolBar\InteractionTests\InkToolBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInkToolBarEnabled) == 'true'" />
   <Import Project="..\..\dev\PagerControl\InteractionTests\PagerControl_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePagerControlEnabled) == 'true'" />
   <Import Project="..\..\dev\PipsPager\InteractionTests\PipsPager_InteractionTests.projitems" Label="Shared" Condition="$(FeaturePipsPagerEnabled) == 'true'" />
   <Import Project="..\..\dev\ImageIcon\InteractionTests\ImageIcon_InteractionTests.projitems" Label="Shared" Condition="$(FeatureImageIconEnabled) == 'true'" />

@@ -1,0 +1,32 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.InkCanvasPage"
+    x:Name="InkCanvasTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- InkToolBar drives the InkCanvas.InkPresenter (pen / eraser / colors). -->
+        <controls:InkToolBar x:Name="TestInkToolBar" AutomationProperties.Name="TestInkToolBar"
+                             Grid.Row="0" TargetInkCanvas="{x:Bind TestInkCanvas}" Margin="0,0,0,8" />
+
+        <TextBlock x:Name="StatusText" AutomationProperties.Name="StatusText" Grid.Row="1"
+                   Margin="0,0,0,4" Text="Draw with mouse, pen, or touch — the InkCanvas inks by default." />
+
+        <!-- InkCanvas self-inks out of the box: no app code needed for wet ink. -->
+        <Border Grid.Row="2" BorderBrush="{ThemeResource SystemControlForegroundBaseMediumBrush}" BorderThickness="1">
+            <controls:InkCanvas x:Name="TestInkCanvas" AutomationProperties.Name="TestInkCanvas" />
+        </Border>
+    </Grid>
+</local:TestPage>
