@@ -26,6 +26,10 @@
         <ClCompile Include="..\DesignMode.cpp"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ClInclude Condition="'$(XamlProfilerEnabled)'=='true'" Include="..\inc\XamlProfilerTracing.h"/>
+    </ItemGroup>
+
     <PropertyGroup>
         <ProjectIncludeDirectories>
             $(ProjectIncludeDirectories);

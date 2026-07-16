@@ -1,0 +1,79 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>XamlProfiler</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Images\*.png" />
+  </ItemGroup>
+
+  <!-- Build the native tap alongside the profiler (build-order dependency only;
+       it produces no managed assembly to reference). SetPlatform pins the native
+       project to x64 even when the managed project builds as AnyCPU.
+       Guarded to full MSBuild (Visual Studio / XamlProfiler.sln): the .NET SDK's
+       `dotnet build` runs on MSBuild "Core", which cannot compile C++ vcxproj.
+       Under `dotnet build` the tap is simply skipped and live-highlight degrades
+       gracefully (TapChannel reports "Tap DLL not found"). -->
+  <ItemGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
+    <ProjectReference Include="..\XamlProfilerTap\XamlProfilerTap.vcxproj">
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=x64</SetPlatform>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Force-restore the native tap's NuGet packages (CppWinRT, WinAppSDK, WIL,
+       SDK.BuildTools) before the build runs. Visual Studio's implicit
+       restore-on-build is unreliable for C++ PackageReference projects, so on a
+       fresh clone the CppWinRT targets never run and the build fails with
+       "cannot open winrt/*.h". Running the tap's Restore target here guarantees
+       the projection headers are generated even on the very first F5, so the
+       user doesn't have to run a manual solution-level restore first.
+       Guarded to full MSBuild because `dotnet build` (Core) skips the tap. -->
+  <Target Name="RestoreXamlProfilerTapBeforeBuild" BeforeTargets="PrepareForBuild"
+          Condition="'$(MSBuildRuntimeType)' == 'Full'">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\XamlProfilerTap\XamlProfilerTap.vcxproj"
+             Targets="Restore"
+             Properties="Configuration=$(Configuration);Platform=x64" />
+  </Target>
+
+  <!-- Copy the native tap DLL produced by XamlProfilerTap.vcxproj next to the
+       managed profiler. The vcxproj writes to XamlProfilerTap\bin\$(Platform)\$(Configuration)\. -->
+  <Target Name="CopyXamlProfilerTapNative" AfterTargets="Build" Condition="'$(MSBuildRuntimeType)' == 'Full'">
+    <PropertyGroup>
+      <_TapOutDir>$(MSBuildThisFileDirectory)..\XamlProfilerTap\bin\x64\$(Configuration)\</_TapOutDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TapFiles Include="$(_TapOutDir)XamlProfilerTap.dll" />
+      <_TapFiles Include="$(_TapOutDir)XamlProfilerTap.pdb" Condition="Exists('$(_TapOutDir)XamlProfilerTap.pdb')" />
+    </ItemGroup>
+    
+	  <Copy SourceFiles="@(_TapFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" Condition="Exists('$(_TapOutDir)XamlProfilerTap.dll')" />
+  </Target>
+
+  <ItemGroup>
+    <!-- WinAppSDK 2.0.1 (matches WinUISnoop). The XAML Diagnostics injection used for
+         the live-highlight tap (InitializeXamlDiagnosticsEx in Microsoft.Internal.FrameworkUdk.dll)
+         only connects when the injector's FrameworkUdk is version-compatible with the target's.
+         1.7 ships FrameworkUdk build 26107, which is too old for the repo's locally-built mux
+         (build 27300+) and fails with ERROR_NOT_FOUND (0x80070490). 2.0.1 ships build 27200,
+         which is compatible. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+    <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.17" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+</Project>

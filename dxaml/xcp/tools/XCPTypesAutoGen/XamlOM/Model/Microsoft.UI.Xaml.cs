@@ -3330,6 +3330,7 @@ namespace Microsoft.UI.Xaml
     [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 1, ForcePrimaryInterfaceGeneration = true)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 4)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
     [DXamlIdlGroup("coretypes2")]
     [Guids(ClassGuid = "b0d8d8be-9fae-4cdc-a457-523fb68b3953")]
     [ContentProperty("Content")]
@@ -3448,6 +3449,41 @@ namespace Microsoft.UI.Xaml
             get;
         }
 
+        // DO NOT promote Window.Width/Height out of experimental (do not remove Feature_ExperimentalApi) until the
+        // team has explicitly chosen one of:
+        //   1. Ship the current design as-is and move it to stable.
+        //   2. Re-architect first. The clean target is for AppWindow to own the hard parts: a
+        //      restored-size get/set that works in any presenter, and a ResizeClient that respects
+        //      ExtendsContentIntoTitleBar (issue 9529). Window.Width/Height would then be a thin
+        //      logical<->physical wrapper over AppWindow.
+        //   3. Simplify the behavior - for example, drop the restored-size semantics in the
+        //      maximized / minimized / non-default-presenter states.
+        //
+        // Known rough edges that should feed that decision:
+        //   - The restored-size tracking shadows state the OS/AppWindow won't expose, reverse-
+        //     engineering it from WM_SIZE messages; the Width/Height getters can return slightly
+        //     stale values as a result.
+        //   - Toggling ExtendsContentIntoTitleBar while the window is in a non-restored state
+        //     (maximized, minimized, or a non-default presenter like FullScreen/CompactOverlay) does
+        //     not preserve a set client size - on return to the restored state the client area is off
+        //     by about a caption height.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double Width
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double Height
+        {
+            get;
+            set;
+        }
 
 
         [CodeGen(CodeGenLevel.Idl)]
@@ -3481,6 +3517,47 @@ namespace Microsoft.UI.Xaml
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [PropertyKind(PropertyKind.PropertyOnly)]
         public bool ExtendsContentIntoTitleBar
+        {
+            get;
+            set;
+        }
+
+        // Experimental restored client-size constraints (in DIPs). Implemented on top of
+        // AppWindow OverlappedPresenter's PreferredMinimum/MaximumWidth/Height.
+        // The public API is experimental (Feature_ExperimentalApi), but each property has a
+        // private backing DependencyProperty (like Title/SystemBackdrop) so it can be set in
+        // XAML markup. CWindow::SetValue routes the parser's set to the custom setter.
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double MinWidth
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double MinHeight
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double MaxWidth
+        {
+            get;
+            set;
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [DependencyPropertyModifier(Modifier.Private)]
+        public Windows.Foundation.Double MaxHeight
         {
             get;
             set;

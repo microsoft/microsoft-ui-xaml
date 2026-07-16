@@ -1,0 +1,39 @@
+﻿<UserControl
+    x:Class="WinUICppRuntimeComponent.UserControl1"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICppRuntimeComponent"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="DictionaryWithXUid.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <local:ViewModel x:Name="m_viewModel"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4" Background="LightBlue" Padding="4">
+        <TextBlock Text="UserControl1" />
+        <TextBlock x:Uid="GreetingTextBlock" AutomationProperties.Name="component_greetingTextBlock"/>
+        <DatePicker />
+        <NavigationView>
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Item1" />
+                <NavigationViewItem Content="Item2" />
+                <NavigationViewItem Content="Item3" />
+            </NavigationView.MenuItems>
+        </NavigationView>
+
+        <!-- Repro for x:Uid in a library doesn't resolve if used in markup loaded via ResourceDictionary.Source -->
+        <Button Style="{StaticResource LocalizedButtonStyle}"/>
+        
+        <!-- Repro for:
+             Compiler error when using x:Bind with x:Load on a custom type
+             Compiler error when using x:Bind to bind to property on x:Name control
+        -->
+        <local:CustomControl1 x:Name="m_customControl" x:Load="{x:Bind m_viewModel.BoolProperty,Mode=OneWay}" />
+    </StackPanel>
+</UserControl>

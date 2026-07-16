@@ -1,22 +1,98 @@
 ﻿namespace MU_XC_NAMESPACE
 {
+    // Args for InkPresenter.StrokesCollected.
     [MUX_PREVIEW]
-    delegate void DoInkPresenterWork(Windows.UI.Input.Inking.InkPresenter presenter);
+    runtimeclass InkStrokesCollectedEventArgs
+    {
+        Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> Strokes{ get; };
+    }
 
+    // Args for InkPresenter.StrokesErased.
+    [MUX_PREVIEW]
+    runtimeclass InkStrokesErasedEventArgs
+    {
+        Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> Strokes{ get; };
+    }
+
+    // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkStrokeContainer.
+    [MUX_PREVIEW]
+    runtimeclass InkStrokeContainer
+    {
+        void Clear();
+        Windows.Foundation.Collections.IVectorView<Windows.UI.Input.Inking.InkStroke> GetStrokes();
+        void AddStroke(Windows.UI.Input.Inking.InkStroke stroke);
+        void AddStrokes(Windows.Foundation.Collections.IIterable<Windows.UI.Input.Inking.InkStroke> strokes);
+        [default_overload]
+        [overload("SaveAsync")]
+        Windows.Foundation.IAsyncAction SaveAsync(Windows.Storage.Streams.IOutputStream outputStream);
+        [overload("SaveAsync")]
+        Windows.Foundation.IAsyncAction SaveWithFormatAsync(Windows.Storage.Streams.IOutputStream outputStream, Windows.UI.Input.Inking.InkPersistenceFormat inkPersistenceFormat);
+        Windows.Foundation.IAsyncAction LoadAsync(Windows.Storage.Streams.IInputStream inputStream);
+        Windows.UI.Input.Inking.InkStroke GetStrokeById(UInt32 id);
+        Windows.Foundation.Rect DeleteSelected();
+        Windows.Foundation.Rect MoveSelected(Windows.Foundation.Point translation);
+        Windows.Foundation.Rect SelectWithLine(Windows.Foundation.Point from, Windows.Foundation.Point to);
+        Windows.Foundation.Rect SelectWithPolyLine(Windows.Foundation.Collections.IIterable<Windows.Foundation.Point> points);
+        Windows.Foundation.Rect BoundingRect{ get; };
+    }
+
+    // Mirror of Windows.UI.Input.Inking.InkInputProcessingMode.
+    [MUX_PREVIEW]
+    enum InkInputProcessingMode
+    {
+        None = 0,
+        Inking = 1,
+        Erasing = 2,
+    };
+
+    // Mirror of Windows.UI.Input.Inking.InkInputRightDragAction.
+    [MUX_PREVIEW]
+    enum InkInputRightDragAction
+    {
+        LeaveUnprocessed = 0,
+        AllowProcessing = 1,
+    };
+
+    // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkInputProcessingConfiguration.
+    [MUX_PREVIEW]
+    runtimeclass InkInputProcessingConfiguration
+    {
+        InkInputProcessingMode Mode;
+        InkInputRightDragAction RightDragAction;
+    }
+
+    // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkInputConfiguration.
+    [MUX_PREVIEW]
+    runtimeclass InkInputConfiguration
+    {
+        Boolean IsPrimaryBarrelButtonInputEnabled;
+        Boolean IsEraserInputEnabled;
+    }
+
+    // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkPresenter.
+    [MUX_PREVIEW]
+    runtimeclass InkPresenter
+    {
+        Windows.UI.Core.CoreInputDeviceTypes InputDeviceTypes;
+        Boolean IsInputEnabled;
+        void UpdateDefaultDrawingAttributes(Windows.UI.Input.Inking.InkDrawingAttributes drawingAttributes);
+        Windows.UI.Input.Inking.InkDrawingAttributes CopyDefaultDrawingAttributes();
+        void SetPredefinedConfiguration(Windows.UI.Input.Inking.InkPresenterPredefinedConfiguration configuration);
+
+        InkStrokeContainer StrokeContainer{ get; };
+        InkInputProcessingConfiguration InputProcessingConfiguration{ get; };
+        InkInputConfiguration InputConfiguration{ get; };
+
+        event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesCollectedEventArgs> StrokesCollected;
+        event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;
+    }
 
     [MUX_PREVIEW]
     unsealed runtimeclass InkCanvas : Microsoft.UI.Xaml.FrameworkElement
     {
         InkCanvas();
 
-        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-        [MUX_DEFAULT_VALUE("true")]
-        Boolean IsEnabled{ get; set; };
-
-        Windows.Foundation.IAsyncAction QueueInkPresenterWorkItem(DoInkPresenterWork workItem);
-
-        static Microsoft.UI.Xaml.DependencyProperty IsEnabledProperty{ get; };
+        // All ink configuration flows through InkPresenter, mirroring WUXC InkCanvas.
+        InkPresenter InkPresenter{ get; };
     };
 }
-
-

@@ -43,9 +43,23 @@ namespace DirectUI
         _Check_return_ HRESULT put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN value);
         _Check_return_ HRESULT SetTitleBarImpl(_In_opt_ xaml::IUIElement* pTitleBar);
 
+        // Experimental restored client-size constraints (in DIPs).
+        _Check_return_ HRESULT get_MinWidthImpl(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT put_MinWidthImpl(_In_ DOUBLE value);
+        _Check_return_ HRESULT get_MinHeightImpl(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT put_MinHeightImpl(_In_ DOUBLE value);
+        _Check_return_ HRESULT get_MaxWidthImpl(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT put_MaxWidthImpl(_In_ DOUBLE value);
+        _Check_return_ HRESULT get_MaxHeightImpl(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT put_MaxHeightImpl(_In_ DOUBLE value);
+
         _Check_return_ HRESULT get_DispatcherQueueImpl(_Outptr_result_maybenull_ msy::IDispatcherQueue** ppValue);
         _Check_return_ HRESULT get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor);
         _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue);
+        _Check_return_ HRESULT get_WidthImpl(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT put_WidthImpl(DOUBLE value);
+        _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT put_HeightImpl(DOUBLE value);
 
         _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** iSystemBackdrop);
         _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* iSystemBackdrop);

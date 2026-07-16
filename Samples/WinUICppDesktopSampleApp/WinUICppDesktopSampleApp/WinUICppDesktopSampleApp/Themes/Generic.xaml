@@ -1,0 +1,36 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICppDesktopSampleApp">
+
+    <Style TargetType="local:CustomMediaPlayerElement">
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:CustomMediaPlayerElement">
+                    <Grid x:Name="LayoutRoot">
+                        <Border Background="Transparent" />
+                        <Image  x:Name="PosterImage" Visibility="Collapsed" Source="{TemplateBinding PosterSource}" Stretch="{TemplateBinding Stretch}" />
+                        <MediaPlayerPresenter x:Name="MediaPlayerPresenter" IsFullWindow="{TemplateBinding IsFullWindow}" Stretch="{TemplateBinding Stretch}" MediaPlayer="{TemplateBinding MediaPlayer}" />
+                        <Grid Background="Cyan" IsHitTestVisible="False" Opacity="0.2">
+                            <TextBlock FontFamily="Times New Roman" FontSize="20" Foreground="DarkGray" Text="Custom MediaPlayerElement" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="45"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                            <TextBlock FontFamily="Times New Roman" FontSize="20" Foreground="DarkGray" Text="Custom MediaPlayerElement" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                <TextBlock.RenderTransform>
+                                    <RotateTransform Angle="45"/>
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Grid>
+                        <ContentPresenter x:Name="TransportControlsPresenter" Visibility="{TemplateBinding AreTransportControlsEnabled}" />
+                        <Grid x:Name="TimedTextSourcePresenter" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

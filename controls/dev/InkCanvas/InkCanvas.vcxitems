@@ -17,12 +17,14 @@
   <ItemGroup>
       <ClInclude Include="$(MSBuildThisFileDirectory)InkCanvas.h" />
       <ClInclude Include="$(MSBuildThisFileDirectory)InkCanvasAutomationPeer.h" />
+      <ClInclude Include="$(MSBuildThisFileDirectory)InkPresenter.h" />
   </ItemGroup>
 
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkCanvas.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InkCanvas.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InkCanvasAutomationPeer.cpp"/>
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkPresenter.cpp"/>
   </ItemGroup>
   
   <ItemGroup>

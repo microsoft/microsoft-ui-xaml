@@ -3,6 +3,9 @@
 
 #include "precomp.h"
 #include <ParserAPI.h>
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#endif // XAMLPROFILER_ENABLED
 
 CContentControl::~CContentControl()
 {
@@ -321,6 +324,18 @@ CContentControl::Content(
 
         // Notify the managed code layer of this change.
         IFC(FxCallbacks::ContentControl_OnContentChanged(pThis, &oldForManaged, &newForManaged, pValueOuter));
+
+#ifdef XAMLPROFILER_ENABLED
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            XamlProfilerTracing::ContentChanged(
+                reinterpret_cast<uint64_t>(pThis),
+                reinterpret_cast<uint64_t>(pOldContent),
+                reinterpret_cast<uint64_t>(pNewContent),
+                pNewContent ? pNewContent->GetDebugLabel().GetBuffer() : L"",
+                XamlProfilerGetPeerHandle(pNewContent));
+        }
+#endif // XAMLPROFILER_ENABLED
     }
 
 Cleanup:

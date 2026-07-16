@@ -20,7 +20,7 @@ OfferTracker::UnofferRevoker::~UnofferRevoker()
 {
     // TODO: Handle DeviceLost error that may occur here
     // Bug 12111763: DeviceLost cannot always be handled reliably for LoadedImageSurface
-    IFCFAILFAST(m_offerTracker.m_pDCompTreeHostNoRef->GetCompositionHelper()->OfferSurfaceResources(m_surfaceFactory));
+    IFCFAILFAST(IxpStable_OfferSurfaceResources(m_surfaceFactory));
 
     //push the current surfacefactory pointer into the
     //offered list
@@ -45,7 +45,7 @@ _Check_return_ HRESULT OfferTracker::Unoffer(_In_ IDCompositionSurfaceFactory* s
     }
 
     BOOL discarded = false;
-    IFC_RETURN(m_pDCompTreeHostNoRef->GetCompositionHelper()->ReclaimSurfaceResources(surfaceFactory, &discarded));
+    IFC_RETURN(IxpStable_ReclaimSurfaceResources(surfaceFactory, &discarded));
 
     m_discarded = m_discarded || discarded;
 
@@ -85,7 +85,7 @@ _Check_return_ HRESULT OfferTracker::OfferResources(_In_ std::vector<IDCompositi
 // Helper to perform the offer while holding the lock
 _Check_return_ HRESULT OfferTracker::OfferSurfaceFactory(_In_ IDCompositionSurfaceFactory* surfaceFactory)
 {
-    IFC_RETURN(m_pDCompTreeHostNoRef->GetCompositionHelper()->OfferSurfaceResources(surfaceFactory));
+    IFC_RETURN(IxpStable_OfferSurfaceResources(surfaceFactory));
 
     //push the current surfacefactory pointer into the
     //offered list
@@ -132,7 +132,7 @@ _Check_return_ HRESULT OfferTracker::ReclaimResources(_Out_ BOOL* discarded)
 // Helper to perform the reclaim while holding the lock
 _Check_return_ HRESULT OfferTracker::ReclaimSurfaceFactory(_In_ IDCompositionSurfaceFactory* surfaceFactory, _Out_ BOOL* discarded)
 {
-    IFC_RETURN(m_pDCompTreeHostNoRef->GetCompositionHelper()->ReclaimSurfaceResources(surfaceFactory, discarded));
+    IFC_RETURN(IxpStable_ReclaimSurfaceResources(surfaceFactory, discarded));
 
     return S_OK;
 }

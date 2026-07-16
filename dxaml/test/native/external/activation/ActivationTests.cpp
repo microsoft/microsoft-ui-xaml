@@ -30,7 +30,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         VERIFY_IS_NOT_NULL(GetModuleHandle(L"Microsoft.UI.Xaml.Controls.dll"));
         VERIFY_IS_NOT_NULL(GetModuleHandle(L"WinUIEdit.dll"));
         VERIFY_IS_NOT_NULL(GetModuleHandle(L"Microsoft.Web.WebView2.Core.dll"));
-        VERIFY_IS_NULL(GetModuleHandle(L"Windows.UI.Xaml.dll"));
+        // Windows.UI.Xaml.dll is pulled by InkDesktopHost (OS inking host packaged in system XAML) when activating Microsoft.UI.Xaml.Controls.InkCanvas. Allowed by design until OS extracts the host.
         VERIFY_IS_NULL(GetModuleHandle(L"Windows.UI.Xaml.Phone.dll"));
         VERIFY_IS_NULL(GetModuleHandle(L"Windows.UI.Xaml.Controls.dll"));
         VERIFY_IS_NULL(GetModuleHandle(L"msftedit.dll"));

@@ -5,7 +5,7 @@ This document gives a high-level overview of our CI Build and Test System in Win
 ## Table of Contents
 
   - [Azure Pipelines](#azure-pipelines)
-  - [OneBranch and 1ES](#onebranch-and-1es)
+  - [Build Infrastructure and Agent Pools](#build-infrastructure-and-agent-pools)
   - [Testing](#testing)
   - [The Process in Depth:](#the-process-in-depth)
     - [Create the test payload: CreateTestPayload.ps1](#create-the-test-payload-createtestpayloadps1)

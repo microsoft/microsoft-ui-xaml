@@ -423,20 +423,8 @@ re-run, and the re-run passed, or (b) the crash happened after a test reported a
 If you expect a dump file, and it's not there, you might need to enable dump collection for that exe specifically.
 See `$namesOfProcessesForDumpCollection` in the file `TestPass-OneTimeMachineSetup.ps1`.
 
-Note, to make the dump collection work, we needed to configure our Azure VMs to disable the existing agent that
-handles crashes.  Adding this json to the Azure image script does the trick:
-
-```
-        {
-            "name": "windows-updateregistry",
-            "parameters": {
-                "RegistryPath": "HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment",
-                "RegistryKey": "DISABLE_1ES_AGENT_CRASH_DUMP_COLLECTION",
-                "DataType": "REG_SZ",
-                "Value": "true"
-            }
-        }
-```
+Note, to make the dump collection work, we also needed to configure our Azure VMs to disable the existing CI agent
+that handles crashes, so that it doesn't intercept the dumps we want to collect.
 
 ### Can I log in to one of the ADO VMs where my test failed?
 Yes, but it's a bit involved.

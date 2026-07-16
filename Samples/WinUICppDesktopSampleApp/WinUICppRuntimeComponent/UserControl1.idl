@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace WinUICppRuntimeComponent
+{
+    [default_interface]
+    runtimeclass UserControl1 : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        UserControl1();
+    }
+}

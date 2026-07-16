@@ -37,8 +37,9 @@
 #include <microsoft.ui.composition.h>
 #include <microsoft.ui.composition.experimental.h>
 #include <microsoft.ui.composition.interop.h>
+#include <FrameworkUdk/IxpPartnerStable.h>
 #include "VisualDebugTags.h"
-#include "CompHelper/CompositionHelper.h"
+#include "CompHelper/CompositionVisualSurfaceHelper.h"
 
 #ifndef NTDDI_WIN11_GE
 #define NTDDI_WIN11_GE 0x0A000010
@@ -69,6 +70,7 @@ class CUIElement;
 class CXamlIslandRoot;
 class ProjectedShadowManager;
 class RefreshRateInfo;
+class CompositorPartnerCallback;
 
 const XFLOAT c_FrameRateWhiteSpaceWidth = 20.0f;
 const XFLOAT c_FrameRateHeight = 24.0f;
@@ -96,7 +98,7 @@ static bool s_visualDebugTagsEnabledInitialized = false;
 static bool s_WUCShapesEnabled = false;
 static bool s_WUCShapesEnabledInitialized = false;
 
-class DCompTreeHost : public CXcpObjectBase<IObject>, public INotifyCompositionDirty
+class DCompTreeHost : public CXcpObjectBase<IObject>
 {
 public:
     static bool IsFullCompNodeTree();
@@ -113,15 +115,13 @@ public:
     _Check_return_ HRESULT EnsureResources() noexcept;
 
     // The following methods are safe to call before EnsureResources.
-    _Check_return_ HRESULT ReleaseResources(bool shouldDeferClosingInteropCompostior);
+    _Check_return_ HRESULT ReleaseResources(bool shouldDeferClosingInteropCompositor);
 
     void CloseAndReleaseInteropCompositor();
 
     void ReleaseGraphicsResources();
 
     bool CheckMainDeviceState();
-
-    void RegisterDCompAnimationCompletedCallbackThread();
 
     _Check_return_ HRESULT PreCommitMainDevice();
 
@@ -180,6 +180,11 @@ public:
 
     ixp::ICompositionEasingFunctionStatics* GetEasingFunctionStatics() { return m_easingFunctionStatics.Get(); }
 
+    WUComp::ICompositorPartnerStable* GetCompositorPartner() const
+    {
+        return m_spCompositorPartner.Get();
+    }
+
     WUComp::ICompositor* GetCompositor() const
     {
         return m_spCompositor.Get();
@@ -205,29 +210,26 @@ public:
         return m_compositionGraphicsDevice.Get();
     }
 
-    bool HasInteropCompositor() const;
-
     bool HasDCompDevice() const
     {
         ASSERT(!m_isInitialized || m_spMainDevice != NULL);
         return m_spMainDevice != nullptr;
     }
 
-    IDCompositionDesktopDevice* GetMainDevice() const
+    IDCompositionDevice2* GetMainDevice() const
     {
         ASSERT(!m_isInitialized || m_spMainDevice != NULL);
         return m_spMainDevice.Get();
     }
 
-    CompositionHelper* GetCompositionHelper() const
-    {
-        ASSERT(!m_isInitialized || m_pCompositionHelper.IsInitialized());
-        return m_pCompositionHelper.Get();
-    }
-
     bool HasSurfaceFactory() const
     {
-        return m_pCompositionHelper.IsInitialized() && GetCompositionHelper()->GetSurfaceFactory() != nullptr;
+        return m_spMainSurfaceFactory != nullptr;
+    }
+
+    IDCompositionSurfaceFactory* GetSurfaceFactory() const
+    {
+        return m_spMainSurfaceFactory.Get();
     }
 
     ixp::IContentIsland* GetCoreWindowContentIsland() const
@@ -348,8 +350,8 @@ public:
 
     RefreshRateInfo* GetRefreshRateInfo() { return m_refreshRateInfo.Get(); }
 
-    // INotifyCompositionDirty
-    HRESULT NotifyCompositionDirty() override;
+    // Notification callback when the Compositor marks the composition as dirty.
+    void OnCompositionDirty();
 
 private:
     XamlIslandRenderDataMap m_islandRenderData;
@@ -428,16 +430,14 @@ private:
 
     WindowsGraphicsDeviceManager    *m_pGraphicsDeviceManagerNoRef;
 
-    // CompositionHelper provides convenient access and management of some core Composition
-    // resources, with the Holder here as a smart manager of its lifetime.
-    CompositionHelperHolder m_pCompositionHelper;
-
     // DComp resources
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> m_spMainDevice;
+    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDevice2> m_spMainDevice;
+    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionSurfaceFactory> m_spMainSurfaceFactory;
 
 #pragma region ::Windows::UI::Composition
 
     // WinRT composition objects
+    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorPartnerStable> m_spCompositorPartner;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor> m_spCompositor;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor2> m_spCompositor2;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor5> m_spCompositor5;
@@ -446,6 +446,9 @@ private:
     _Maybenull_ Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionBrush> m_systemBackdropBrush; // Note: This is a system compositor brush!
     wrl::ComPtr<ixp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
+
+    // Commit needed callback.
+    _Maybenull_ Microsoft::WRL::ComPtr<CompositorPartnerCallback> m_spCompositorPartnerCallback;
 
     // For updating the refresh rate with GetFrameStatistics
     wrl::ComPtr<IDCompositionDevice> m_dcompDevice;
@@ -498,12 +501,6 @@ private:
     DependencyObjectDCompRegistry m_dcompObjectRegistry;
     WUCBrushManager m_wucBrushManager;
 
-    // We want callbacks from DComp on the UI thread when animations complete. By default callbacks are delivered
-    // to the thread that created the DComp device, which in Xaml's case is a worker thread. So we need to call the
-    // RegisterCallbackThread method on the UI thread, which we'll do when we commit the device. This flag marks
-    // whether the call has been made.
-    bool m_isCallbackThreadRegistered;
-
     SharedTransitionAnimations m_sharedTransitionAnimations;
 
     // For testing - normally we can get the visual out of m_inprocIsland, but for tests this returns a real visual when
@@ -526,7 +523,7 @@ private:
 public:
     static _Check_return_ HRESULT Create(
         _In_ DCompTreeHost *pDCompTreeHost,
-        _In_ IDCompositionDesktopDevice *pMainDevice,
+        _In_ IDCompositionDevice2 *pMainDevice,
         _In_ IUnknown *pIUnk,
         _Outptr_ DCompSurfaceFactory **ppSurfaceFactory
         );

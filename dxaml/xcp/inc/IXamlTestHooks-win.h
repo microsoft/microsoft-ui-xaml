@@ -8,7 +8,7 @@
 #include "IXamlTestHooks-log.h"
 #include <NamespaceAliases.h>
 
-struct IDCompositionDesktopDevice;
+struct IDCompositionDevice2;
 struct IDWriteFontCollection;
 interface IXamlErrorTestHooks;
 
@@ -71,7 +71,7 @@ DECLARE_INTERFACE_IID_(IXamlTestHooks, IXamlLoggerTestHooks, "43d4bcbd-4f02-4651
     IFACEMETHOD_(bool, IsDragDropInProgress)() = 0;
 
     IFACEMETHOD_(void, GetDCompDevice)(
-        _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+        _Outptr_ IDCompositionDevice2 **ppDCompDevice
         ) const = 0;
 
     IFACEMETHOD(MarkDeviceInstanceLost)() const = 0;

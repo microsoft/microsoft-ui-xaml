@@ -14,7 +14,6 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 #include "InkToolBarMenuButton.g.cpp"
 
 GlobalDependencyProperty InkToolBarMenuButtonProperties::s_IsExtensionGlyphShownProperty{ nullptr };
-GlobalDependencyProperty InkToolBarMenuButtonProperties::s_MenuKindProperty{ nullptr };
 
 InkToolBarMenuButtonProperties::InkToolBarMenuButtonProperties()
 {
@@ -34,23 +33,11 @@ void InkToolBarMenuButtonProperties::EnsureProperties()
                 ValueHelper<bool>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_MenuKindProperty)
-    {
-        s_MenuKindProperty =
-            InitializeDependencyProperty(
-                L"MenuKind",
-                winrt::name_of<winrt::InkToolBarMenuKind>(),
-                winrt::name_of<winrt::InkToolBarMenuButton>(),
-                false /* isAttached */,
-                ValueHelper<winrt::InkToolBarMenuKind>::BoxedDefaultValue(),
-                nullptr);
-    }
 }
 
 void InkToolBarMenuButtonProperties::ClearProperties()
 {
     s_IsExtensionGlyphShownProperty = nullptr;
-    s_MenuKindProperty = nullptr;
 }
 
 void InkToolBarMenuButtonProperties::IsExtensionGlyphShown(bool value)
@@ -64,17 +51,4 @@ void InkToolBarMenuButtonProperties::IsExtensionGlyphShown(bool value)
 bool InkToolBarMenuButtonProperties::IsExtensionGlyphShown()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<InkToolBarMenuButton*>(this)->GetValue(s_IsExtensionGlyphShownProperty));
-}
-
-void InkToolBarMenuButtonProperties::MenuKind(winrt::InkToolBarMenuKind const& value)
-{
-    [[gsl::suppress(con)]]
-    {
-    static_cast<InkToolBarMenuButton*>(this)->SetValue(s_MenuKindProperty, ValueHelper<winrt::InkToolBarMenuKind>::BoxValueIfNecessary(value));
-    }
-}
-
-winrt::InkToolBarMenuKind InkToolBarMenuButtonProperties::MenuKind()
-{
-    return ValueHelper<winrt::InkToolBarMenuKind>::CastOrUnbox(static_cast<InkToolBarMenuButton*>(this)->GetValue(s_MenuKindProperty));
 }

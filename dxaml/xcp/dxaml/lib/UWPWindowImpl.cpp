@@ -3,6 +3,7 @@
 
 #include "precomp.h"
 #include "Window.g.h"
+#include <limits>
 #include <DependencyLocator.h>
 #include <RuntimeEnabledFeatures.h>
 #include "ScrollViewer.g.h"
@@ -350,6 +351,39 @@ _Check_return_ HRESULT UWPWindowImpl::get_CompositorImpl(_Outptr_result_maybenul
     *compositor = DXamlCore::GetCurrent()->GetHandle()->GetCompositor();
     AddRefInterface(*compositor);
 
+    return S_OK;
+}
+
+// Window.Width/Height are a desktop-only feature; UWP windows are sized by the shell, not the app.
+// (WinUI does not currently support the UWP window path.) Report not-implemented like the other
+// desktop-only Window members here (e.g. ExtendsContentIntoTitleBar).
+_Check_return_ HRESULT UWPWindowImpl::get_WidthImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    *pValue = 0.0;
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_WidthImpl(DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_HeightImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    *pValue = 0.0;
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_HeightImpl(DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
     return S_OK;
 }
 
@@ -1030,6 +1064,68 @@ _Check_return_ HRESULT UWPWindowImpl::get_ExtendsContentIntoTitleBarImpl(_Out_ B
 
 _Check_return_ HRESULT UWPWindowImpl::put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN value)
 {
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+// Restored client-size constraints are a desktop-only feature. On UWP both the
+// getters and the setters are not implemented and return E_NOTIMPL.
+_Check_return_ HRESULT UWPWindowImpl::get_MinWidthImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    *pValue = 0.0;
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_MinWidthImpl(_In_ DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_MinHeightImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    *pValue = 0.0;
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_MinHeightImpl(_In_ DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_MaxWidthImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    *pValue = std::numeric_limits<double>::infinity();
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_MaxWidthImpl(_In_ DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::get_MaxHeightImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    *pValue = std::numeric_limits<double>::infinity();
+    IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
+    return S_OK;
+}
+
+_Check_return_ HRESULT UWPWindowImpl::put_MaxHeightImpl(_In_ DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
     IFC_RETURN(DirectUI::ErrorHelper::OriginateErrorUsingResourceID(E_NOTIMPL, ERROR_API_NOT_IMPLEMENTED_UWP));
     return S_OK;
 }

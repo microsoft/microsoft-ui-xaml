@@ -14,7 +14,30 @@ class InkToolBarCustomPen :
 {
 public:
 
-    winrt::InkDrawingAttributes CreateInkDrawingAttributes(winrt::Brush brush, double strokeWidth) { winrt::throw_hresult(E_NOTIMPL); }
-    winrt::InkDrawingAttributes CreateInkDrawingAttributesCore(winrt::Brush brush, double strokeWidth) { winrt::throw_hresult(E_NOTIMPL); }
+    winrt::InkDrawingAttributes CreateInkDrawingAttributes(winrt::Brush brush, double strokeWidth)
+    {
+        return CreateInkDrawingAttributesCore(brush, strokeWidth);
+    }
+
+    winrt::InkDrawingAttributes CreateInkDrawingAttributesCore(winrt::Brush brush, double strokeWidth)
+    {
+        // Default implementation: create standard drawing attributes with the given width.
+        // Subclasses override this to customize pen behavior.
+        auto attrs = winrt::InkDrawingAttributes();
+        auto size = attrs.Size();
+        size.Width = static_cast<float>(strokeWidth);
+        size.Height = static_cast<float>(strokeWidth);
+        attrs.Size(size);
+
+        if (brush)
+        {
+            if (auto solidBrush = brush.try_as<winrt::Microsoft::UI::Xaml::Media::SolidColorBrush>())
+            {
+                attrs.Color(solidBrush.Color());
+            }
+        }
+
+        return attrs;
+    }
 };
 

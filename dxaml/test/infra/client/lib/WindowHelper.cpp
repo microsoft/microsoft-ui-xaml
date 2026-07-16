@@ -1457,7 +1457,7 @@ WindowHelper::get_MockDCompDevice(
 wrl::ComPtr<mdc::IMockDCompDevice>
 WindowHelper::TryGetMockDCompDevice()
 {
-    wrl::ComPtr<IDCompositionDesktopDevice> spDCompDevice;
+    wrl::ComPtr<IDCompositionDevice2> spDCompDevice;
     wrl::ComPtr<mdc::IMockDCompDevice> spMockDCompDevice;
 
     RunOnUIThread([&] () {

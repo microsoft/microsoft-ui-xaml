@@ -3,6 +3,9 @@
 
 #include "precomp.h"
 #include <CoreWindow.h>
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif // XAMLPROFILER_ENABLED
 #include "UserControl.g.h"
 #include "Control.g.h"
 #include "TextBoxView.g.h"
@@ -1715,6 +1718,22 @@ DXamlCore::GetPeerPrivate(
 
                 m_Peers.insert(pDO);
                 pCoreDO->SetDXamlPeer(pDO);
+
+                // The peer is now bound to the core object. Tell the XAML Profiler so it can
+                // back-fill the PeerHandle on any tree node that was created before the peer
+                // existed (lazy-peer elements traced a PeerHandle of 0 at enter time). The
+                // handle is computed the same way every other profiler event computes it, so
+                // the value matches and the consumer's "first non-zero wins" stamping just works.
+#ifdef XAMLPROFILER_ENABLED
+                if (XamlProfilerTracing::IsEnabled())
+                {
+                    const uint64_t peerHandle = XamlProfilerGetPeerHandle(pCoreDO);
+                    if (peerHandle != 0)
+                    {
+                        XamlProfilerTracing::PeerAssociated(reinterpret_cast<uint64_t>(pCoreDO), peerHandle);
+                    }
+                }
+#endif // XAMLPROFILER_ENABLED
 
                 IFC(CoreImports::DependencyObject_ShouldCreatePeerWithStrongRef(pCoreDO, &fForceStrong));
 
@@ -4053,7 +4072,7 @@ Cleanup:
 //------------------------------------------------------------------------------
 void
 DXamlCore::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+    _Outptr_ IDCompositionDevice2 **ppDCompDevice
     ) const
 {
     CCoreServices* pCoreServices = GetHandle();

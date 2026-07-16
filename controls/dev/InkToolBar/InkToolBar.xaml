@@ -1,0 +1,47 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+
+    <!--
+      Templated InkToolBar container (Phase 3).
+      Mirrors the WinUI 2 InkToolbar chrome from
+      onecoreuap\windows\dxaml\xcp\components\inkcontrols\lib: a rounded,
+      bordered bar hosting a horizontal strip of 40x40 tool buttons.
+
+      Hardcoded SolidColorBrush values are used instead of ThemeResource lookups:
+      the UWP-era brush keys (SystemControlBackgroundChromeMediumBrush, etc.) are
+      not shipped by the lifted XAML theme dictionary, so on x86chk Win10 22H2
+      TAEF hosts a ThemeResource lookup throws during template apply
+      (STATUS_STOWED_EXCEPTION 0xC000027B). The 40x40 RadioButton-derived tool
+      buttons and their hover/pressed/checked visual states are applied in code
+      (InkToolBar::PopulateVisualPanel) via a self-contained ControlTemplate.
+    -->
+    <Style TargetType="controls:InkToolBar">
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinHeight" Value="40" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Setter Property="Background" Value="#FFFAFAFA" />
+        <Setter Property="BorderBrush" Value="#33000000" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:InkToolBar">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="4">
+                        <StackPanel x:Name="ToolButtonPanel"
+                                    Orientation="Horizontal"
+                                    Spacing="2" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

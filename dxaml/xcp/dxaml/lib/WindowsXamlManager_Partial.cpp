@@ -528,12 +528,23 @@ _Check_return_ HRESULT WindowsXamlManager::XamlCore::Close()
         {
             // MetadataAPI::Reset() is called in FrameworkApplication::ReleaseCurrent when m_metadataRef is reset
             FrameworkApplication::ReleaseCurrent();
+
+            // ActivationFactoryCache is a process-wide singleton (DependencyLocator StoragePolicyFlags::None). It caches
+            // shared WinRT static factories (DragDropManager, ContentIsland, InputActivationListener, ...) and holds
+            // module locks for Microsoft.UI.Input/Composition/Dispatching. Its shared references must be released exactly
+            // once per process, and while holding the CApplicationLock so concurrent XamlCore::Close calls on different
+            // UI threads are serialized.
+            //
+            // Previously ResetCache() ran on every thread's XamlCore::Close, outside this lock. When an app hosted XAML
+            // on multiple UI threads that shut down concurrently, two threads could enter ResetCache() at the same time
+            // and double-release the same cached factory / module lock. That drove the Microsoft.UI.Input module-lock
+            // refcount below zero and tripped FAIL_FAST_FATAL_APP_EXIT (0xc0000409). Gating on lastInstanceInProcess and
+            // holding the lock removes both the redundant per-thread teardown and the race. See AB#57997833.
+            ActivationFactoryCache::GetActivationFactoryCache()->ResetCache();
         }
     }
 
     DependencyLocator::UninitializeThread();
-
-    ActivationFactoryCache::GetActivationFactoryCache()->ResetCache();
 
     // "this" ptr may be null after this next line
     tls_xamlCore = nullptr;

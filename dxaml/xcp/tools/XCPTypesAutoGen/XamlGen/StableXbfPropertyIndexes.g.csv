@@ -2467,3 +2467,9 @@ Window_Title,Window_Title,2465
 SplitMenuFlyoutItem_Items,SplitMenuFlyoutItem_Items,2466
 SplitMenuFlyoutItem_SubMenuItemStyle,SplitMenuFlyoutItem_SubMenuItemStyle,2467
 SplitMenuFlyoutItem_SubMenuPresenterStyle,SplitMenuFlyoutItem_SubMenuPresenterStyle,2468
+Window_Height,Window_Height,2469
+Window_Width,Window_Width,2470
+Window_MaxHeight,Window_MaxHeight,2471
+Window_MaxWidth,Window_MaxWidth,2472
+Window_MinHeight,Window_MinHeight,2473
+Window_MinWidth,Window_MinWidth,2474

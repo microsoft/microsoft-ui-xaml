@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
@@ -6,6 +6,10 @@
 #include "Triggers.h"
 #include "XamlLocalTransformBuilder.h"
 #include "XamlTraceLogging.h"
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#include "WucVisualTreeProfiler.h"
+#endif // XAMLPROFILER_ENABLED
 #include <RuntimeEnabledFeatures.h>
 #include <DependencyLocator.h>
 #include <FrameworkTheming.h>
@@ -64,6 +68,39 @@ using namespace DirectUI;
 using namespace DCompHelpers;
 using namespace Focus;
 using namespace Theming;
+
+#ifdef XAMLPROFILER_ENABLED
+// Computes the DXaml-peer InstanceHandle for a core object so the XAML Profiler can bridge a
+// tree node back to the live element (e.g. to highlight it in the target app). This is the same
+// value XAML Diagnostics / the WinUISnoop tap use as an InstanceHandle (see HandleMap::GetHandle):
+// the peer's IInspectable COM identity pointer. Returns 0 when there is no peer yet. The peer is
+// forward-declared in XamlProfilerTracing.h, so we reinterpret_cast to IUnknown* before QI-ing,
+// matching the existing pattern in CDependencyObject::GetSourceInfo.
+uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexcept
+{
+    if (obj == nullptr)
+    {
+        return 0;
+    }
+
+    DirectUI::DependencyObject* peer = obj->GetDXamlPeer();
+    if (peer == nullptr)
+    {
+        return 0;
+    }
+
+    IInspectable* identity = nullptr;
+    if (SUCCEEDED(reinterpret_cast<IUnknown*>(peer)->QueryInterface(__uuidof(IInspectable), reinterpret_cast<void**>(&identity))) && identity != nullptr)
+    {
+        // The handle is just the stable identity address; release our transient ref. The peer
+        // stays alive as long as the live element does, so the address remains valid for the consumer.
+        const uint64_t handle = reinterpret_cast<uint64_t>(identity);
+        identity->Release();
+        return handle;
+    }
+    return 0;
+}
+#endif // XAMLPROFILER_ENABLED
 
 // Uncomment to get generic UIElement debug traces
 // #define UIE_DBG
@@ -1240,6 +1277,19 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
     const bool isParentEnabled = params.fCoercedIsEnabled;
     static auto runtimeEnabledFeatureDetector = RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector();
 
+#ifdef XAMLPROFILER_ENABLED
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        XamlProfilerTracing::ElementEnteredTree(
+            reinterpret_cast<uint64_t>(this),
+            reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
+            static_cast<bool>(params.fIsLive),
+            GetDebugLabel().GetBuffer(),
+            GetTemplatedParent() != nullptr,
+            XamlProfilerGetPeerHandle(this));
+    }
+#endif // XAMLPROFILER_ENABLED
+
     // When Xaml Diagnostics is enabled we need to peg the peer to make sure that it enters the tree so that
     // Xaml Diagnostics can take a reference to it.
     bool peerWasPegged = false;
@@ -1841,6 +1891,16 @@ _Check_return_ HRESULT CUIElement::LeaveImpl(_In_ CDependencyObject *pNamescopeO
         auto pParent = this->GetUIElementParentInternal();
         TraceElementRemovedInfo(reinterpret_cast<XUINT64>(this), reinterpret_cast<XUINT64>(pParent));
     }
+
+#ifdef XAMLPROFILER_ENABLED
+    if (XamlProfilerTracing::IsEnabled())
+    {
+        XamlProfilerTracing::ElementLeftTree(
+            reinterpret_cast<uint64_t>(this),
+            reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
+            static_cast<bool>(params.fIsLive));
+    }
+#endif // XAMLPROFILER_ENABLED
 
     // Work on the children
     if (m_pChildren)
@@ -6846,6 +6906,19 @@ CUIElement::AddChild(_In_ CUIElement *pChild)
         IFC_RETURN(m_pChildren->FailIfLocked());
         IFC_RETURN(m_pChildren->Append(pChild));
         IFC_RETURN(m_pChildren->OnAddToCollection(pChild));
+
+#ifdef XAMLPROFILER_ENABLED
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            XamlProfilerTracing::ChildAdded(
+                reinterpret_cast<uint64_t>(this),
+                reinterpret_cast<uint64_t>(pChild),
+                m_pChildren->GetCount() - 1,
+                pChild->GetDebugLabel().GetBuffer(),
+                pChild->GetTemplatedParent() != nullptr,
+                XamlProfilerGetPeerHandle(pChild));
+        }
+#endif // XAMLPROFILER_ENABLED
     }
     else
     {
@@ -6893,6 +6966,19 @@ CUIElement::InsertChild(_In_ XUINT32 nIndex, _In_ CUIElement *pChild)
         IFC_RETURN(m_pChildren->FailIfLocked());
         IFC_RETURN(m_pChildren->Insert(nIndex, pChild));
         IFC_RETURN(m_pChildren->OnAddToCollection(pChild));
+
+#ifdef XAMLPROFILER_ENABLED
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            XamlProfilerTracing::ChildInserted(
+                reinterpret_cast<uint64_t>(this),
+                reinterpret_cast<uint64_t>(pChild),
+                nIndex,
+                pChild->GetDebugLabel().GetBuffer(),
+                pChild->GetTemplatedParent() != nullptr,
+                XamlProfilerGetPeerHandle(pChild));
+        }
+#endif // XAMLPROFILER_ENABLED
     }
     else
     {
@@ -6942,6 +7028,15 @@ CUIElement::RemoveChild(_In_ CUIElement *pChild)
         // use PegManagedPeer, because it will mark the peer as stateful, and prevent
         // peer resurrection.
         pChild->TryPegPeer(&peggedPeer, &peerIsPendingDelete);
+
+#ifdef XAMLPROFILER_ENABLED
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            XamlProfilerTracing::ChildRemoved(
+                reinterpret_cast<uint64_t>(this),
+                reinterpret_cast<uint64_t>(pChild));
+        }
+#endif // XAMLPROFILER_ENABLED
 
         ptrItem = (CUIElement *)pCollection->RemoveAt(iIndex);
 
@@ -10931,6 +11026,38 @@ CUIElement::EnsureCompositionPeer(
         }
     }
 
+    // XAML Profiler: detect the profiler pick-mode capture overlay (a Popup/Border the tap
+    // injects, identified by the Name it stamped) BEFORE inserting its comp peer, so none of
+    // the overlay's comp-node-tree or WUC-visual events are ever emitted. Suppression must be
+    // set before InsertChildSynchronous below (which fires those events) and propagates down:
+    // any comp node whose parent is a suppressed overlay node is itself suppressed. Without
+    // this the profiler's own pick overlay surfaces as phantom nodes in the trees it inspects.
+    // Gated on IsEnabled(): with no session attached nothing is emitted, so the suppression
+    // bookkeeping (and its GetDebugLabel() allocation) is pointless. The overlay is only ever
+    // created while a profiler session is attached, so this always runs when it matters.
+#ifdef XAMLPROFILER_ENABLED
+    if (WucVisualTreeProfiler::IsEnabled())
+    {
+        const uint64_t thisCompNodeId = reinterpret_cast<uint64_t>(pCompositionPeer);
+        bool suppress = WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pParentNode));
+        if (!suppress && pElement != nullptr)
+        {
+            const xstring_ptr label = pElement->GetDebugLabel();
+            const WCHAR* labelBuffer = label.GetBuffer();
+            if (labelBuffer != nullptr &&
+                wcsncmp(labelBuffer, WucVisualTreeProfiler::c_overlayNamePrefix,
+                        wcslen(WucVisualTreeProfiler::c_overlayNamePrefix)) == 0)
+            {
+                suppress = true;
+            }
+        }
+        if (suppress)
+        {
+            WucVisualTreeProfiler::SuppressCompNode(thisCompNodeId);
+        }
+    }
+#endif // XAMLPROFILER_ENABLED
+
     // Insert the composition peer into the tree.
     if (pTargetCompositionPeer == nullptr)
     {
@@ -10995,6 +11122,20 @@ CUIElement::EnsureCompositionPeer(
             reinterpret_cast<XUINT64>(pElement),
             reinterpret_cast<XUINT64>(pCompositionPeer)
             );
+
+        // Suppressed pick-overlay comp nodes are never advertised to the profiler.
+#ifdef XAMLPROFILER_ENABLED
+        if (XamlProfilerTracing::IsEnabled() &&
+            !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(pCompositionPeer)))
+        {
+            XamlProfilerTracing::CompPeerLinked(
+                reinterpret_cast<uint64_t>(pElement),
+                reinterpret_cast<uint64_t>(pCompositionPeer),
+                reinterpret_cast<uint64_t>(pParentNode),
+                pElement->GetDebugLabel().GetBuffer(),
+                XamlProfilerGetPeerHandle(pElement));
+        }
+#endif // XAMLPROFILER_ENABLED
 
         SetInterface(*ppTargetCompositionPeer, pCompositionPeer);
     }
@@ -11127,6 +11268,17 @@ CUIElement::RemoveCompositionPeer()
                 reinterpret_cast<XUINT64>(m_pCompositionPeer)
                 );
 
+            // Suppressed pick-overlay comp nodes were never advertised, so don't emit unlink.
+#ifdef XAMLPROFILER_ENABLED
+            if (XamlProfilerTracing::IsEnabled() &&
+                !WucVisualTreeProfiler::IsCompNodeSuppressed(reinterpret_cast<uint64_t>(m_pCompositionPeer)))
+            {
+                XamlProfilerTracing::CompPeerUnlinked(
+                    reinterpret_cast<uint64_t>(this),
+                    reinterpret_cast<uint64_t>(m_pCompositionPeer));
+            }
+#endif // XAMLPROFILER_ENABLED
+
             static_cast<HWCompTreeNodeWinRT*>(m_pCompositionPeer)->UntargetFromLights(GetDCompTreeHost());
 
             // If this compnode participated in projected shadow (as receiver or "complex caster"), mark the associated visual for removal from WUC ProjectedShadowScene
@@ -11143,6 +11295,13 @@ CUIElement::RemoveCompositionPeer()
                 // GetDCompTreeHost()->GetProjectedShadowManager()->SetReceiversDirty(true);
             }
         }
+
+        // Clear any pick-overlay suppression so the (now freed) comp-node pointer address can
+        // be reused later without wrongly suppressing an unrelated comp node. Cheap no-op when
+        // this node was never suppressed.
+#ifdef XAMLPROFILER_ENABLED
+        WucVisualTreeProfiler::UnsuppressCompNode(reinterpret_cast<uint64_t>(m_pCompositionPeer));
+#endif // XAMLPROFILER_ENABLED
 
         ReleaseInterface(m_pCompositionPeer);
     }

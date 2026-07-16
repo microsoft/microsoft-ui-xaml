@@ -49,6 +49,18 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Load a component containing custom resources, and verify the values are hooked up correctly")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(CanLoadCustomResourceOnRootElement)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Regression test for bug 50695292: a markup extension on a property of the root element "
+                L"must provide and assign its value instead of failing with E_XAMLPARSEFAILED")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(CanLoadCustomResourceOnCompiledRootElement)
+            TEST_METHOD_PROPERTY(L"Description",
+                L"Faithful repro for bug 50695292: a markup-compiled x:Class ContentDialog whose root "
+                L"sets PrimaryButtonText via {CustomResource} must resolve instead of E_XAMLPARSEFAILED")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(VerifyPreResolveOfResourcesInTemplate)
             TEST_METHOD_PROPERTY(L"Description",
                 L"Verifies that resources in a template are pre-resolved so that changes to the public dictionary"

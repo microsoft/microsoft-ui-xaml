@@ -282,7 +282,7 @@ void AlphaMask::Impl::ConnectBackingSurface(_In_ DCompTreeHost* pDCompTreeHostNo
         FAIL_FAST_ASSERT(m_spCompositionSurfaceBrush != nullptr);
 
         wrl::ComPtr<WUComp::ICompositionSurface> spCompositionSurface;
-        IFCFAILFAST(pDCompTreeHostNoRef->GetCompositionHelper()->CreateCompositionSurfaceForDCompositionSurface(
+        IFCFAILFAST(pDCompTreeHostNoRef->GetCompositorPartner()->CreateCompositionSurfaceForDCompositionSurface(
             m_spBackingSurface->GetIDCompSurface(),
             spCompositionSurface.ReleaseAndGetAddressOf()));
 
