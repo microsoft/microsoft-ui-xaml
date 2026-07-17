@@ -66,6 +66,7 @@ set fre=
 set chk=
 set _BuildArch=
 set _BuildType=
+set _HostArch=
 set _DotNetMoniker=net8.0
 set _archIsSet=
 set _noPgo=
@@ -224,6 +225,11 @@ if "%fre%"=="1" if not "%_noPgo%"=="1" if not "%ARM64EC%"=="1" (
 )
 set _noPgo=
 
+rem Detect the native host architecture (_HostArch: amd64 | arm64) so we run the
+rem native build toolchain instead of an emulated one. Falls back to amd64 for
+rem any host that is neither arm64 nor amd64.
+call "%RepoRoot%\scripts\init\SetHostArch.cmd"
+
 if "%DevEnvDir%" == "" goto :NeedDevCmd
 where msbuild >nul 2>&1
 if errorlevel 1 goto :NeedDevCmd
@@ -231,21 +237,21 @@ goto :SkipDevCmd
 :NeedDevCmd
     echo DevEnvDir environment variable not set or msbuild unavailable. Running DevCmd.cmd to get a developer command prompt...
     if "%ARM64EC%"=="1" (
-        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=amd64 -host_arch=amd64
+        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=amd64 -host_arch=%_HostArch%
     ) else if "%ARM64%"=="1" (
-        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=arm64 -host_arch=amd64
+        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=arm64 -host_arch=%_HostArch%
     ) else (
-        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=%_BuildArch% -host_arch=amd64
+        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=%_BuildArch% -host_arch=%_HostArch%
     )
     if errorlevel 1 (echo Could not set up a developer command prompt && exit /b %ERRORLEVEL%)
 :SkipDevCmd
 
 if "%VisualStudioVersion%" == "16.0" (echo Visual Studio 2019 is not supported. && exit /b /1)
 
-set PATH=%RepoRoot%\.buildtools\MSBuild\Current\Bin\amd64;%RepoRoot%\.tools;%RepoRoot%\.tools\VSS.NuGet.AuthHelper;%RepoRoot%\tools;%RepoRoot%\dxaml\scripts;%PATH%
+set PATH=%RepoRoot%\.buildtools\MSBuild\Current\Bin\%_HostArch%;%RepoRoot%\.tools;%RepoRoot%\.tools\VSS.NuGet.AuthHelper;%RepoRoot%\tools;%RepoRoot%\dxaml\scripts;%PATH%
 
 rem If we have init'd from a VS developer command prompt, we should use its tooling instead of the VS build tools installed with the repo
-call :AddPathIfExists "%VSINSTALLDIR%\MSBuild\Current\Bin\amd64"
+call :AddPathIfExists "%VSINSTALLDIR%\MSBuild\Current\Bin\%_HostArch%"
 
 call :SetEnviromentVariable BuildArtifactsDir "%RepoRoot%\BuildOutput"
 

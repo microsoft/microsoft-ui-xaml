@@ -17,8 +17,13 @@ $dotNetSdkVNextChannel  = $versionPropsFileProject.SelectSingleNode('//dotNetSdk
 
 Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile $dotnetInstallScript
 
-$x64InstallDir  = $repoInstallDir
-$x86InstallDir  = "$x64InstallDir\x86"
+# Install the primary SDK for the native host architecture so dotnet.exe runs
+# natively (not emulated). Falls back to x64 for any host that is neither arm64
+# nor amd64. The x86 SDK is always installed side-by-side (used by GenXbf etc.).
+$primaryArch = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq [System.Runtime.InteropServices.Architecture]::Arm64) { 'arm64' } else { 'x64' }
+
+$primaryInstallDir = $repoInstallDir
+$x86InstallDir     = "$primaryInstallDir\x86"
 
 
 
@@ -33,8 +38,8 @@ $x86InstallDir  = "$x64InstallDir\x86"
 if (-not [string]::IsNullOrEmpty($version)) 
 {
     # ignore quality and channel
-    . $dotnetInstallScript -Version $version -InstallDir $x64InstallDir -Architecture x64
-    Write-Host "Installed SDK (x64) with Version $version to $x64InstallDir." -ForegroundColor green
+    . $dotnetInstallScript -Version $version -InstallDir $primaryInstallDir -Architecture $primaryArch
+    Write-Host "Installed SDK ($primaryArch) with Version $version to $primaryInstallDir." -ForegroundColor green
 
     . $dotnetInstallScript -Version $version -InstallDir $x86InstallDir -Architecture x86
     Write-Host "Installed SDK (x86) with Version $version to $x86InstallDir." -ForegroundColor green    
@@ -51,8 +56,8 @@ elseif (-not [string]::IsNullOrEmpty($quality))
         # use channel and quality
         Write-Host "Using channel: $channel and quality: $quality"
 
-        . $dotnetInstallScript -channel $channel -quality $quality -InstallDir $x64InstallDir -Architecture x64
-        Write-Host "Installed SDK (x64) with channel $channel and quality $quality to $x64InstallDir." -ForegroundColor green
+        . $dotnetInstallScript -channel $channel -quality $quality -InstallDir $primaryInstallDir -Architecture $primaryArch
+        Write-Host "Installed SDK ($primaryArch) with channel $channel and quality $quality to $primaryInstallDir." -ForegroundColor green
     
         . $dotnetInstallScript -channel $channel -quality $quality -InstallDir $x86InstallDir -Architecture x86
         Write-Host "Installed SDK (x86) with channel $channel and version $quality to $x86InstallDir." -ForegroundColor green 
@@ -63,8 +68,8 @@ elseif (-not [string]::IsNullOrEmpty($channel))
     # use only channel
     Write-Host "Using channel: $channel"
 
-    . $dotnetInstallScript -channel $channel -InstallDir $x64InstallDir -Architecture x64
-    Write-Host "Installed SDK (x64) with channel $channel to $x64InstallDir." -ForegroundColor green
+    . $dotnetInstallScript -channel $channel -InstallDir $primaryInstallDir -Architecture $primaryArch
+    Write-Host "Installed SDK ($primaryArch) with channel $channel to $primaryInstallDir." -ForegroundColor green
 
     . $dotnetInstallScript -channel $channel -InstallDir $x86InstallDir -Architecture x86
     Write-Host "Installed SDK (x86) with channel $channel to $x86InstallDir." -ForegroundColor green
@@ -81,8 +86,8 @@ else
         $backupChannel = $dotNetSdkVNextChannel
     }    
 
-    . $dotnetInstallScript -channel $backupChannel -InstallDir $x64InstallDir -Architecture x64
-    Write-Host "Installed SDK (x64) from Version.props with channel $backupChannel to $x64InstallDir." -ForegroundColor green
+    . $dotnetInstallScript -channel $backupChannel -InstallDir $primaryInstallDir -Architecture $primaryArch
+    Write-Host "Installed SDK ($primaryArch) from Version.props with channel $backupChannel to $primaryInstallDir." -ForegroundColor green
 
     . $dotnetInstallScript -channel $backupChannel -InstallDir $x86InstallDir -Architecture x86
     Write-Host "Installed SDK (x86) from Version.props with channel $backupChannel to $x86InstallDir." -ForegroundColor green
