@@ -7,6 +7,10 @@
     <TargetFrameworks>net472</TargetFrameworks>
     <TargetDestination>$(MarkupCompilerDestinationPath).Executable</TargetDestination>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <!-- Embed an application manifest that declares supportedArchitectures (amd64 arm64) so this
+         AnyCPU .NET Framework executable launches ARM64-native on Windows on ARM instead of under
+         x64 emulation. See https://github.com/microsoft/microsoft-ui-xaml/issues/11237 -->
+    <ApplicationManifest>XamlCompiler.manifest</ApplicationManifest>
     <NoWarn>$(NoWarn);0419;1570;1572;1573;1574;1591;3021;0618;0672;0436;0108;SYSLIB0003;SYSLIB0005;SYSLIB0012;SYSLIB0019;SYSLIB0021;CA2002;CA1060;CA1063;CA2229;CA1001;CA1033;CA1416;CA2101;CA2213;CA2231</NoWarn>
     <!-- USE_CLR_V4 is only for the LMR code -->
     <DefineConstants>$(DefineConstants);USE_CLR_V4;NET40PLUS;Debug;SYSTEM_XAML</DefineConstants>
