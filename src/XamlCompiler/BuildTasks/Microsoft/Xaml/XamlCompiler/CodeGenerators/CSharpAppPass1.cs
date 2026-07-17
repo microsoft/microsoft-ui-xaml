@@ -55,7 +55,7 @@ namespace ");
             this.Write("        [global::System.STAThreadAttribute]\r\n");
   } 
             this.Write("#if !DISABLE_XAML_GENERATED_MAIN\r\n        static void Main(string[] args)\r\n#else\r" +
-                    "\n        static void XamlGeneratedMain(string[] args)\r\n#endif\r\n        {\r\n");
+                    "\n        public static void XamlGeneratedMain(string[] args)\r\n#endif\r\n        {\r\n");
   if (ProjectInfo.UsingCSWinRT) { 
             this.Write("            global::WinRT.ComWrappersSupport.InitializeComWrappers();\r\n");
   }
