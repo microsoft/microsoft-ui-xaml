@@ -8,7 +8,7 @@
 #include "FrameworkUdk/Containment.h"
 
 // Bug 61574373: [2.0 Servicing][WASDK] Fix ItemsRepeater RecyclePool reference cycle memory leak
-#define WINAPPSDK_CHANGEID_61574373 61574373, WinAppSDK_2_1_0
+#define WINAPPSDK_CHANGEID_61574373 61574373
 
 ItemTemplateWrapper::ItemTemplateWrapper(winrt::DataTemplate const& dataTemplate)
 {

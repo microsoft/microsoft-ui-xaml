@@ -3,6 +3,11 @@
 
 #pragma once
 #include "TypeTableStructs.h"
+#include "FrameworkUdk/Containment.h"
+
+#ifndef WINAPPSDK_CHANGEID_62724527
+#define WINAPPSDK_CHANGEID_62724527 62724527
+#endif
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespace Framework { namespace DependencyObject {
     class PropertySystemUnitTests;
@@ -37,7 +42,16 @@ public:
 
     void Invalidate()
     {
-        m_spPropertyChangedCallback = nullptr;
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62724527>())
+        {
+            m_spDefaultValue = nullptr;
+            m_spPropertyChangedCallback = nullptr;
+            m_spCreateDefaultValueCallback = nullptr;
+        }
+        else
+        {
+            m_spPropertyChangedCallback = nullptr;
+        }
         m_flags |= MetaDataPropertyInfoFlags::IsInvalid;
     }
 
@@ -101,6 +115,10 @@ class CCustomProperty : public CDependencyProperty
 
     void Invalidate()
     {
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62724527>())
+        {
+            m_spXamlProperty = nullptr;
+        }
         m_flags |= MetaDataPropertyInfoFlags::IsInvalid;
     }
 

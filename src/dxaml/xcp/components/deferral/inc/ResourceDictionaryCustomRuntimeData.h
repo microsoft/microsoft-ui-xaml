@@ -9,6 +9,8 @@
 #include <xstring_ptr.h>
 #include <cstdint>
 
+#include <resources\inc\ResourceDictionaryMapTypes.h>
+
 class ParserErrorReporter;
 class ResourceDictionaryCustomWriter;
 class CResourceDictionary2;
@@ -28,6 +30,10 @@ class ResourceDictionaryCustomRuntimeData
 public:
 
     ResourceDictionaryCustomRuntimeData() = default;
+
+    // Constructs the runtime data, specifying whether it is being created in an encoding
+    // (i.e. XAML compile-time) context.
+    explicit ResourceDictionaryCustomRuntimeData(bool isEncoding);
 
     // Explicitly delete the copy constructor and copy assignment operator
     ResourceDictionaryCustomRuntimeData(const ResourceDictionaryCustomRuntimeData& other) = delete;
@@ -62,7 +68,7 @@ protected:
 #pragma region Runtime Methods
 public:
     _Success_(return != false)
-    bool TryGetResourceOffset(_In_ const xstring_ptr& key, _In_ bool isImplicitKey,
+    bool TryGetResourceOffset(_In_ const ResourceKey& key,
         _Out_ StreamOffsetToken& token);
 
     std::size_t size();
@@ -81,6 +87,27 @@ public:
     // a CResourceDictionary2.
     _Check_return_ HRESULT ResolveConditionalResources(_In_ std::shared_ptr<ParserErrorReporter> parserErrorReporter);
 
+    auto begin() const
+    {
+        ASSERT(m_conditionalResourcesResolved);
+        return m_resourcesMap.begin();
+    }
+    auto end() const
+    {
+        ASSERT(m_conditionalResourcesResolved);
+        return m_resourcesMap.end();
+    }
+    auto begin()
+    {
+        ASSERT(m_conditionalResourcesResolved);
+        return m_resourcesMap.begin();
+    }
+    auto end()
+    {
+        ASSERT(m_conditionalResourcesResolved);
+        return m_resourcesMap.end();
+    }
+
 #pragma endregion
 
 private:
@@ -88,6 +115,7 @@ private:
         _In_ bool implicitResources,
         _In_ std::shared_ptr<ParserErrorReporter> parserErrorReporter);
 
+#pragma region Original backing container fields
     // Maps for runtime lookup of explicit and implicit keys. The key collections are kept
     // separate because explicit key strings can match implicit key strings, which are merely
     // the name of the type the key is implicitly targetting.
@@ -100,9 +128,20 @@ private:
     // vector->unordered_map trickery we do for the main dictionaries in the name of minimizing space overhead.
     containers::vector_map<xstring_ptr, std::vector<StreamOffsetToken>> m_conditionalExplicitKeyResources;
     containers::vector_map<xstring_ptr, std::vector<StreamOffsetToken>> m_conditionalImplicitKeyResources;
+#pragma endregion
+
+    // Unified map for runtime lookup of both explicit and implicit keys.
+    // The explicit/implicit distinction is encoded in the ResourceKeyStorage key's IsKeyType() bit.
+    DeferredResourceMap m_resourcesMap;
+
+    // Unified map for conditionally declared resources (i.e. resources prefixed with an xmlns prefix that
+    // maps to a conditional namespace).
+    ConditionalDeferredResourceMap m_conditionalResourcesMap;
 
     std::vector<xstring_ptr> m_resourcesForAutoUndeferral;
 
     bool m_conditionalResourcesResolved = false;
+
+    bool m_isEncoding = false;
 };
 

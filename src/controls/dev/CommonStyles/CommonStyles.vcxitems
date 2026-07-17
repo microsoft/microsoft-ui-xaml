@@ -152,4 +152,143 @@
       <Type>ThemeResources</Type>
     </Page>
   </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>1</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Common_themeresources_any.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>1</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Deprecated_themeresources_any.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>1</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Hyperlink_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)HyperlinkButton_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AppBarButton_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AppBarSeparator_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListBox_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RichEditBox_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>2</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CommandBar_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PasswordBox_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>2</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)GridViewItem_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ListViewItem_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Condition="$(MUXFinalRelease) != 'true'" Include="$(MSBuildThisFileDirectory)TextBox_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>2</Priority>
+    </Page>
+    <Page Condition="$(MUXFinalRelease) == 'true'" Include="$(MUXProjectRoot)BuildOutput\Temp\ThemeResources\TextBox_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>2</Priority>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TextBlock_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TextBlock_themeresources_v2.5.xaml">
+      <UseVisualStyle>V2dot5</UseVisualStyle>
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)FlyoutPresenter_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Button_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ToggleButton_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CornerRadius_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MediaTransportControls_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RepeatButton_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CalendarDatePicker_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CalendarView_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CheckBox_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ContentDialog_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)DatePicker_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)DateTimePickerFlyout_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)FlipView_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)FlipViewItem_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>2</Priority>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Pivot_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollBar_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewer_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Slider_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TimePicker_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ToolTip_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+  </ItemGroup>
 </Project>

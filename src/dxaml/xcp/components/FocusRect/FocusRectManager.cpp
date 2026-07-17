@@ -62,6 +62,10 @@
 #include "WindowRenderTarget.h"
 #include "DCompTreeHost.h"
 #include "ColorUtil.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62725364: [2.0 Servicing][WASDK][Watson Failure] NULL-pointer AV in CFocusRectManager::FindFocusRectHost
+#define WINAPPSDK_CHANGEID_62725364 62725364
 
 using namespace FocusRect;
 
@@ -1218,9 +1222,27 @@ CFocusRectManager::FindFocusRectHost(
         // If this element has a scroll clip (i.e. we are not supposed to nudge inside the clip in one direction and/or the other),
         // then we have to chose it as the host. It doesn't benefit us to pick a parent anyway because we are not supposed to escape
         // this element's clip.
-        if (!(NudgeFocusRectInsideHorizontalClip(candidateAsElement) && NudgeFocusRectInsideVerticalClip(candidateAsElement)))
+        //
+        // candidateAsElement is null when 'candidate' is not a CUIElement (e.g. a CInlineUIContainer hosting a focusable
+        // control inline in a RichTextBlock/TextBlock). A non-UIElement node owns no scroll clip and can never be a focus
+        // rect host, so skip the scroll-clip check and keep walking up to the real UIElement host. This matches the
+        // null-guards already applied to candidateAsElement earlier in this walk and preserves the _In_ (non-null)
+        // contract of NudgeFocusRectInsideHorizontalClip / NudgeFocusRectInsideVerticalClip.
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62725364>())
         {
-            return { candidate, FocusRectHost::Type::ElementContainsFocusRect };
+            if (candidateAsElement &&
+                !(NudgeFocusRectInsideHorizontalClip(candidateAsElement) && NudgeFocusRectInsideVerticalClip(candidateAsElement)))
+            {
+                return { candidate, FocusRectHost::Type::ElementContainsFocusRect };
+            }
+        }
+        else
+        {
+            // Pre-fix behavior: no null guard on candidateAsElement before scroll-clip check.
+            if (!(NudgeFocusRectInsideHorizontalClip(candidateAsElement) && NudgeFocusRectInsideVerticalClip(candidateAsElement)))
+            {
+                return { candidate, FocusRectHost::Type::ElementContainsFocusRect };
+            }
         }
 
         candidate = parent;

@@ -24,7 +24,7 @@ namespace Diagnostics
     class StyleContext final
     {
     public:
-        StyleContext(std::unique_ptr<CustomWriterRuntimeContext> context);
+        StyleContext(std::shared_ptr<CustomWriterRuntimeContext> context);
 
         StyleContext(
             _In_ CDependencyObject* parent,
@@ -45,7 +45,7 @@ namespace Diagnostics
     private:
 
         xref::weakref_ptr<CDependencyObject>        m_parent;
-        std::unique_ptr<CustomWriterRuntimeContext> m_cachedContext;
+        std::shared_ptr<CustomWriterRuntimeContext> m_cachedContext;
         StyleContextFlags                           m_flags;
     };
 }

@@ -104,6 +104,10 @@ namespace DirectUI
             bool m_fLoadedAppStyles;
             bool m_fLoadedThemeXaml;
             bool m_fLoadGenericXaml;
+            // Tracks whether the currently-loaded theme resources were loaded as the optimized
+            // (perf2026) variant. Used by ShouldReloadThemeResources() to detect when the optimized-
+            // styles selection has changed and the theme resources must be reloaded.
+            bool m_fLoadedOptimizedThemeResources = false;
             ResourceDictionary* m_pAppStyles;
             StyleResourceHelper m_resourceHelper;
 
@@ -147,6 +151,12 @@ namespace DirectUI
                 _Outptr_ ResourceDictionary **ppStyles);
 
             _Check_return_ HRESULT LoadThemeResources();
+
+            // Returns true if no theme resources are loaded yet, or if the optimized-styles
+            // selection (which factors in both the XamlOptionalChanges DefaultStyleOptimizations
+            // state and the containment gate) differs from the variant currently loaded. Callers
+            // can use this to avoid an unnecessary Clear()/reload when nothing relevant changed.
+            bool ShouldReloadThemeResources() const;
 
             void Clear();
 

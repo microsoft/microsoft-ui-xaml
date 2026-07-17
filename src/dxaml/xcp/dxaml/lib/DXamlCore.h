@@ -625,6 +625,12 @@ namespace DirectUI
         void SetMockUIAClientsListening(bool isEnabledMockUIAClientsListening);
 
         void SetGenericXamlFilePathForMUX(const xstring_ptr_view& filePath);
+
+        // Reloads the theme resources only if the optimized-styles selection (DefaultStyleOptimizations
+        // plus the containment gate) differs from what is currently loaded. No-op otherwise, so it is
+        // safe to call on every test-class initialization without resetting styles unnecessarily.
+        void ReloadThemeResourcesIfNeeded();
+
         void SetThreadingAssertOverride(bool enabled);
 
         _Check_return_ HRESULT OnCompositionContentStateChangedForUWP();
@@ -634,6 +640,15 @@ namespace DirectUI
             _In_ IInspectable* source,
             _In_ HSTRING pathString,
             _In_ xaml::IDependencyObject* target,
+            KnownPropertyIndex targetPropertyIndex,
+            _In_opt_ xaml_data::IValueConverter* converter = nullptr);
+
+        // Lightweight binding using DirectSourceBindingExpression
+        // This avoids the overhead of full Binding/BindingExpression infrastructure
+        static _Check_return_ HRESULT SetDirectBinding(
+            _In_ DependencyObject* source,
+            KnownPropertyIndex sourcePropertyIndex,
+            _In_ DependencyObject* target,
             KnownPropertyIndex targetPropertyIndex,
             _In_opt_ xaml_data::IValueConverter* converter = nullptr);
 

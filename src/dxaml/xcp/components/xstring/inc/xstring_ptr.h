@@ -13,6 +13,12 @@
 #include <macros.h>
 #include <cstdint>
 #include <hstring.h>
+#include <ankerl/unordered_dense.h>
+
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62646974: Faster hash table for ResourceDictionary
+#define WINAPPSDK_CHANGEID_62646974 62646974
 
 // Note: the extra L"" in XSTRING_PTR_STORAGE is to ensure only string literals
 // are used with the macro. Use XSTRING_PTR_STORAGE2 for module buffers passed
@@ -429,24 +435,35 @@ public:
 
     WCHAR* MakeBufferCopy() const;
 
-    // Hash algorithm for xstring_ptr_view. Uses the Jenkins one-at-a-time hash algorithm.
-    std::size_t GetHash() const
+    // Hash algorithm for xstring_ptr_view.
+    std::uint64_t GetHash() const
     {
-        std::size_t hash = 0;
-        unsigned int length;
-        const WCHAR* buffer = GetBufferAndCount(&length);
-
-        for (unsigned int i = 0; i < length; ++i)
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
         {
-            hash += buffer[i];
-            hash += (hash << 10);
-            hash ^= (hash >> 6);
-        }
-        hash += (hash << 3);
-        hash ^= (hash >> 11);
-        hash += (hash << 15);
+            unsigned int length;
+            const WCHAR* buffer = GetBufferAndCount(&length);
 
-        return hash;
+            return ankerl::unordered_dense::detail::wyhash::hash(buffer, length * sizeof(wchar_t));
+        }
+        else
+        {
+            // Jenkins one-at-a-time hash algorithm
+            std::size_t hash = 0;
+            unsigned int length;
+            const WCHAR* buffer = GetBufferAndCount(&length);
+
+            for (unsigned int i = 0; i < length; ++i)
+            {
+                hash += buffer[i];
+                hash += (hash << 10);
+                hash ^= (hash >> 6);
+            }
+            hash += (hash << 3);
+            hash ^= (hash >> 11);
+            hash += (hash << 15);
+
+            return hash;
+        }
     }
 
 protected:
@@ -706,7 +723,7 @@ namespace std {
     {
         std::size_t operator()(const xstring_ptr_view& inputString) const
         {
-            return inputString.GetHash();
+            return static_cast<std::size_t>(inputString.GetHash());
         }
     };
 
@@ -715,7 +732,7 @@ namespace std {
     {
         std::size_t operator()(const xstring_ptr& inputString) const
         {
-            return inputString.GetHash();
+            return static_cast<std::size_t>(inputString.GetHash());
         }
     };
 }
@@ -755,7 +772,7 @@ struct xstrCaseSensitiveHasher
 {
     std::size_t operator()(const xstring_ptr_view& input) const
     {
-        return input.GetHash();
+        return static_cast<std::size_t>(input.GetHash());
     }
 };
 

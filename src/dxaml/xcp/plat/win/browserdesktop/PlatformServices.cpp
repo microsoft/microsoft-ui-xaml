@@ -31,6 +31,10 @@
 #include <XamlBehaviorMode.h>
 
 #include "DXamlServices.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 62927180: [2.0 Servicing] Cache keyboard statics under ActivationFactoryCache lock to prevent c0000005 AV race in CWindowsServices::GetKeyboardModifiersState (RCC: WindowsServices_GetKeyboardModifiersStateRace)
+#define WINAPPSDK_CHANGEID_62927180 62927180
 
 extern XHANDLE ghHeap;
 extern HINSTANCE g_hInstance;
@@ -363,40 +367,52 @@ _Check_return_ HRESULT
         IFC_RETURN(E_INVALIDARG);
     }
 
-    if (!m_keyboardInputStatics)
+    ixp::IInputKeyboardSourceStatics* keyboardStatics = nullptr;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62927180>())
     {
-        IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
-            &m_keyboardInputStatics));
+        // Fetch the factory once and publish it under ActivationFactoryCache's lock so racing UI threads can't observe a torn/NULL pointer.
+        keyboardStatics = ActivationFactoryCache::GetActivationFactoryCache()->GetInputKeyboardSourceStatics();
+        IFCEXPECT_RETURN(keyboardStatics);
+    }
+    else
+    {
+        // Original pre-fix behavior: unsynchronized lazy init of the keyboard statics on the gps singleton.
+        if (!m_keyboardInputStatics)
+        {
+            IFC_RETURN(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
+                &m_keyboardInputStatics));
+        }
+        keyboardStatics = m_keyboardInputStatics.Get();
     }
 
     wuc::CoreVirtualKeyStates keyState;
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Menu, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Menu, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_ALT;  // Alt key.
     }
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Control, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Control, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_CTRL;  // Ctrl key.
     }
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Shift, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_Shift, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_SHIFT;  // Shift key.
     }
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_LeftWindows, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_LeftWindows, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_WINDOWS;  // Windows key.
     }
 
-    IFC_RETURN(m_keyboardInputStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_RightWindows, &keyState));
+    IFC_RETURN(keyboardStatics->GetKeyStateForCurrentThread(wsy::VirtualKey::VirtualKey_RightWindows, &keyState));
     if (keyState & wuc::CoreVirtualKeyStates_Down)
     {
         uModifiers |= KEY_MODIFIER_WINDOWS;  // Windows key.

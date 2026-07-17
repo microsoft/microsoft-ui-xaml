@@ -9,9 +9,13 @@
 #include <Windows.Media.Playback.h>
 #include "CValueBoxer.h"
 #include "HWWalk.h"
+#include <GraphicsUtility.h>
+#include "FrameworkUdk/Containment.h"
 #include "MetadataAPI.h"
 #include "AgileCallback.h"
 #include "MediaPlayerExtensions.h"
+
+#define WINAPPSDK_CHANGEID_62724906 62724906
 
 _Check_return_ HRESULT CMediaPlayerPresenter::OnPropertyChanged(_In_ const PropertyChangedParams& args)
 {
@@ -489,15 +493,14 @@ _Check_return_ HRESULT CMediaPlayerPresenter::RemoveEventRegistrations()
 __declspec(noinline) _Check_return_ HRESULT CMediaPlayerPresenter::OnMediaOpened(wmp::IMediaPlayer*, IInspectable*)
 {
     IFC_RETURN(UpdateNaturalBounds());
-    IFC_RETURN(UpdateRenderingAndPowerSettings());
+    IFC_RETURN(HandleDeviceLostIfNeeded(UpdateRenderingAndPowerSettings()));
     return S_OK;
 }
 
 _Check_return_ HRESULT CMediaPlayerPresenter::OnNaturalVideoSizeChanged(_In_ wmp::IMediaPlaybackSession*, _In_ IInspectable*)
 {
     IFC_RETURN(UpdateNaturalBounds());
-    IFC_RETURN(SetMediaPlayerSwapChain());
-
+    IFC_RETURN(HandleDeviceLostIfNeeded(SetMediaPlayerSwapChain()));
     return S_OK;
 }
 
@@ -511,8 +514,7 @@ _Check_return_ HRESULT CMediaPlayerPresenter::OnMediaCurrentItemChanged(_In_ wmp
 _Check_return_ HRESULT CMediaPlayerPresenter::OnMediaPlayerSourceChanged(_In_ wmp::IMediaPlayer*, _In_ IInspectable*)
 {
     m_hasFirstFrameBasedOnState = false;
-    IFC_RETURN(UpdateMediaPlayer());
-
+    IFC_RETURN(HandleDeviceLostIfNeeded(UpdateMediaPlayer()));
     return S_OK;
 }
 
@@ -600,6 +602,26 @@ _Check_return_ HRESULT CMediaPlayerPresenter::HandleError(HRESULT hr)
     return hr;
 }
 
+_Check_return_ HRESULT CMediaPlayerPresenter::HandleDeviceLostIfNeeded(HRESULT hr)
+{
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62724906>())
+    {
+        if (!GraphicsUtility::IsDeviceLostError(hr))
+        {
+            return hr;
+        }
+
+        IGNOREHR(HandleError(hr));
+        GetContext()->HandleDeviceLost(&hr);
+        return hr;
+    }
+    else
+    {
+        // Old behavior: pass through the HRESULT unchanged (no device-lost recovery).
+        return hr;
+    }
+}
+
 bool CMediaPlayerPresenter::HasFirstFrameBasedOnState()
 {
     // Evaluate heuristic for first-frame-ready by examining PlaybackState. 
@@ -629,13 +651,13 @@ bool CMediaPlayerPresenter::HasFirstFrameBasedOnState()
 
 __declspec(noinline) _Check_return_ HRESULT CMediaPlayerPresenter::OnMediaPlaybackSessionBufferingEnded(_In_ wmp::IMediaPlaybackSession*, _In_ IInspectable*)
 {
-    IFC_RETURN(UpdateRenderingAndPowerSettings());
+    IFC_RETURN(HandleDeviceLostIfNeeded(UpdateRenderingAndPowerSettings()));
     return S_OK;
 }
 
 __declspec(noinline) _Check_return_ HRESULT CMediaPlayerPresenter::OnMediaPlaybackSessionPlaybackStateChanged(_In_ wmp::IMediaPlaybackSession*, _In_ IInspectable*)
 {
-    IFC_RETURN(UpdateRenderingAndPowerSettings());
+    IFC_RETURN(HandleDeviceLostIfNeeded(UpdateRenderingAndPowerSettings()));
     return S_OK;
 }
 

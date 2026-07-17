@@ -5,6 +5,9 @@
 
 #include <TypeTableStructs.h>
 #include <DynamicMetadataStorage.h>
+#include "FrameworkUdk/Containment.h"
+
+#define WINAPPSDK_CHANGEID_62724527 62724527
 
 using namespace DirectUI;
 
@@ -64,6 +67,16 @@ void DynamicMetadataStorage::ResetInstance()
         else
         {
             ASSERT(false);
+        }
+    }
+
+    // Invalidate custom types to release COM references before providing DLLs unload.
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62724527>())
+    {
+        for (auto index = m_valid.m_typeFirstIndex; index < m_customTypesCache.size(); ++index)
+        {
+            m_customTypesCache[index]->Invalidate();
         }
     }
 

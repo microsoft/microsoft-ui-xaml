@@ -815,6 +815,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::Printing::IPrintDocument IPrintDocument;
     typedef ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoader ICustomXamlResourceLoader;
     typedef ABI::Microsoft::UI::Xaml::Resources::ICustomXamlResourceLoaderOverrides ICustomXamlResourceLoaderOverrides;
+    typedef ABI::Microsoft::UI::Xaml::Settings::IXamlOptionalChanges IXamlOptionalChanges;
     typedef ABI::Microsoft::UI::Xaml::Shapes::IEllipse IEllipse;
     typedef ABI::Microsoft::UI::Xaml::Shapes::ILine ILine;
     typedef ABI::Microsoft::UI::Xaml::Shapes::IPath IPath;

@@ -5,6 +5,10 @@
 #include "RefreshRateInfo.h"
 #include "DCompTreeHost.h"
 #include "XamlTelemetry.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62688041: Remove redundant PowerSettingRegisterNotification from RefreshRateInfo
+#define WINAPPSDK_CHANGEID_62688041 62688041
 
 /* static */ _Check_return_ HRESULT RefreshRateInfo::Create(_Outptr_ RefreshRateInfo** ppRefreshRateInfo)
 {
@@ -13,7 +17,12 @@
 
     wrl::ComPtr<RefreshRateInfo> refreshRateInfo;
     refreshRateInfo.Attach(new RefreshRateInfo(clock.Get()));
-    refreshRateInfo->RegisterForPowerNotification();
+
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62688041>())
+    {
+        refreshRateInfo->RegisterForPowerNotification();
+    }
+
     *ppRefreshRateInfo = refreshRateInfo.Detach();
 
     return S_OK;
@@ -198,14 +207,14 @@ RefreshRateInfo::WaitForRefreshInterval()
 
     //
     // The lifted compositor uses DCompositionWaitForCompositorClock to handle waiting, which deals with high refresh
-    // rate monitors. If DCompositionWaitForCompositorClock doesn't exist, we fall back to WaitForVBlank provided that
-    // the display isn't turned off.
+    // rate monitors. If DCompositionWaitForCompositorClock doesn't exist or the display is off (returns
+    // STATUS_GRAPHICS_PRESENT_OCCLUDED), we fall back to simulated VBlanks via Sleep.
     //
     // Note for Task 43816828: Consume lifted Compositor's WaitForCompositorClock function for throttling lifted Xaml.
     // Be careful around what the return value of the lifted function is. A failure to wait could return a failed HR, so
     // we might fall back to simulated VBlanks rather than bubble up the failure.
     //
-    if (m_isDisplayOn)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62688041>())
     {
         TraceLoggingProviderWrite(
             XamlTelemetry, "RefreshRateInfo_WaitForCompositorClock",
@@ -220,6 +229,25 @@ RefreshRateInfo::WaitForRefreshInterval()
             TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
             TraceLoggingBoolean(false, "IsStart"),
             TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+    }
+    else
+    {
+        if (m_isDisplayOn)
+        {
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "RefreshRateInfo_WaitForCompositorClock",
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+                TraceLoggingBoolean(true, "IsStart"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+
+            IFC_RETURN(TryWaitForCompositorClock(&waitForCompositorClockSucceeded));
+
+            TraceLoggingProviderWrite(
+                XamlTelemetry, "RefreshRateInfo_WaitForCompositorClock",
+                TraceLoggingUInt64(reinterpret_cast<uint64_t>(this), "ObjectPointer"),
+                TraceLoggingBoolean(false, "IsStart"),
+                TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
+        }
     }
 
     if (!waitForCompositorClockSucceeded)

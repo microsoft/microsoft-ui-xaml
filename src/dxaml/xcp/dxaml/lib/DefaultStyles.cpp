@@ -16,9 +16,14 @@
 #include <TypeNameHelper.h>
 #include "xcperrorresource.h"
 #include <wininet.h>
+#include <OptionalChangeState.h>
+#include "FrameworkUdk/Containment.h"
 
 using namespace DirectUI;
 using namespace xaml_hosting;
+
+// Bug 62644600: [2.0 servicing] Enable build of perf2026 XAML and switch styles to Setter
+#define WINAPPSDK_CHANGEID_62644600 62644600
 
 #if DBG
 static const WCHAR XAML_DEBUG_KEY_NAME[] = XAML_ROOT_KEY L"\\Debug";
@@ -356,10 +361,30 @@ _Check_return_ HRESULT StyleCache::GetFrameworkStyles(_Outptr_ ResourceDictionar
         // In case we should use XBF
         if (!IsGenericXamlFilePathAvailableFromMUX())
         {
-            IFC(LoadStylesFromResource(
-                XSTRING_PTR_EPHEMERAL(L"Styles.xbf"),
-                XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/generic.xaml"),
-                &m_pFrameworkStyles));
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62644600>())
+            {
+                if (OptionalChangeState::AreOptimizedStylesEnabled())
+                {
+                    IFC(LoadStylesFromResource(
+                        XSTRING_PTR_EPHEMERAL(L"Styles_perf2026.xbf"),
+                        XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/generic.xaml"),
+                        &m_pFrameworkStyles));
+                }
+                else
+                {
+                    IFC(LoadStylesFromResource(
+                        XSTRING_PTR_EPHEMERAL(L"Styles.xbf"),
+                        XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/generic.xaml"),
+                        &m_pFrameworkStyles));
+                }
+            }
+            else
+            {
+                IFC(LoadStylesFromResource(
+                    XSTRING_PTR_EPHEMERAL(L"Styles.xbf"),
+                    XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/generic.xaml"),
+                    &m_pFrameworkStyles));
+            }
         }
 
         if (!m_pFrameworkStyles)
@@ -441,18 +466,44 @@ _Check_return_ HRESULT StyleCache::LoadThemeResources()
     if (useXbf)
     {
         ctl::ComPtr<ResourceDictionary> themeResources;
-        IFC_RETURN(LoadStylesFromResource(
-            XSTRING_PTR_EPHEMERAL(L"themeresources.xbf"),
-            XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/themeresources.xbf"),
-            themeResources.ReleaseAndGetAddressOf()));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62644600>())
+        {
+            if (OptionalChangeState::AreOptimizedStylesEnabled())
+            {
+                IFC_RETURN(LoadStylesFromResource(
+                    XSTRING_PTR_EPHEMERAL(L"ThemeResources_perf2026.xbf"),
+                    XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/themeresources.xbf"),
+                    themeResources.ReleaseAndGetAddressOf()));
+                m_fLoadedOptimizedThemeResources = true;
+                TRACE(TraceAlways, L"Loaded theme resources from ThemeResources_perf2026.xbf");
+            }
+            else
+            {
+                IFC_RETURN(LoadStylesFromResource(
+                    XSTRING_PTR_EPHEMERAL(L"themeresources.xbf"),
+                    XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/themeresources.xbf"),
+                    themeResources.ReleaseAndGetAddressOf()));
+                m_fLoadedOptimizedThemeResources = false;
+                TRACE(TraceAlways, L"Loaded theme resources from themeresources.xbf");
+            }
+        }
+        else
+        {
+            IFC_RETURN(LoadStylesFromResource(
+                XSTRING_PTR_EPHEMERAL(L"themeresources.xbf"),
+                XSTRING_PTR_EPHEMERAL(L"Microsoft.UI.Xaml;component/themes/themeresources.xbf"),
+                themeResources.ReleaseAndGetAddressOf()));
+            m_fLoadedOptimizedThemeResources = false;
+            TRACE(TraceAlways, L"Loaded theme resources from themeresources.xbf");
+        }
         DXamlCore::GetCurrent()->GetHandle()->SetThemeResources(static_cast<CResourceDictionary*>(themeResources->GetHandle()));
-        TRACE(TraceAlways, L"Loaded theme resources from themeresources.xbf");
     }
     else
     {
         ctl::ComPtr<ResourceDictionary> styles;
         IFC_RETURN(GetFrameworkStyles(&styles));
         DXamlCore::GetCurrent()->GetHandle()->SetThemeResources(static_cast<CResourceDictionary*>(styles->GetHandle()));
+        m_fLoadedOptimizedThemeResources = false;
         TRACE(TraceAlways, L"Loaded theme resources from loose file generic.xaml because GenericXamlPath reg key was set.");
     }
 
@@ -484,6 +535,22 @@ void StyleCache::Clear()
 
     m_fLoadedThemeXaml = FALSE;
     m_fLoadGenericXaml = FALSE;
+    m_fLoadedOptimizedThemeResources = false;
+}
+
+bool StyleCache::ShouldReloadThemeResources() const
+{
+    // Whether the optimized (perf2026) theme resources would be loaded under the current state.
+    // Keep this containment check in sync with the selection logic in LoadThemeResources().
+    const bool wouldUseOptimizedThemeResources =
+        WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62644600>()
+        && OptionalChangeState::AreOptimizedStylesEnabled();
+
+    // Reload if nothing is loaded yet, or if the optimized-styles selection has changed since the
+    // current theme resources were loaded (e.g. the DefaultStyleOptimizations optional change was
+    // toggled after the styles were first loaded).
+    return !m_fLoadedThemeXaml
+        || (m_fLoadedOptimizedThemeResources != wouldUseOptimizedThemeResources);
 }
 
 _Check_return_ HRESULT StyleCache::GetStyles(

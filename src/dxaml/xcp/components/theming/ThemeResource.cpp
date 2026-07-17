@@ -9,6 +9,7 @@
 #include <ThemeResource.h>
 #include <ThemeResourceExtension.h>
 #include <ThemeWalkResourceCache.h>
+#include <ResourceDictionaryKey.h>
 #include "DependencyObjectTraits.h"
 #include "DependencyObjectTraits.g.h"
 #include "Resources.h"
@@ -18,22 +19,35 @@
 #include "Corep.h"
 #include "NullKeyedResource.h"
 #include "resources\inc\ResourceLookupLogger.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62645877: [2.0 servicing] Reduce number of xstring_ptr_view::Equals calls
+#define WINAPPSDK_CHANGEID_62645877 62645877
 
 CThemeResource::CThemeResource(_In_ CThemeResourceExtension* pThemeResourceExtension)
     : m_cRef(1)
-    , m_strResourceKey(pThemeResourceExtension->m_strResourceKey)
     , m_isValueFromInitialTheme(pThemeResourceExtension->IsValueFromInitialTheme())
+    , m_resourceKey(pThemeResourceExtension->m_strResourceKey, ResourceKeyStorage::NoHash{})
     , m_pTargetDictionaryWeakRef(pThemeResourceExtension->GetTargetDictionaryWeekRef())
     , m_themeWalkResourceCache(pThemeResourceExtension->m_themeWalkResourceCache)
 {
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62645877>())
+    {
+        m_resourceKey = ResourceKeyStorage(pThemeResourceExtension->m_strResourceKey, false);
+    }
     VERIFYHR(pThemeResourceExtension->GetLastResolvedThemeValue(&m_lastResolvedThemeValue));
 }
 
 CThemeResource::CThemeResource(_In_opt_ ThemeWalkResourceCache* resourceCache)
     : m_cRef(1)
-    , m_themeWalkResourceCache(resourceCache)
     , m_isValueFromInitialTheme(true)
+    , m_themeWalkResourceCache(resourceCache)
 {
+}
+
+const xstring_ptr& CThemeResource::GetResourceKey() const
+{
+    return m_resourceKey.GetKey();
 }
 
 _Check_return_ HRESULT
@@ -71,24 +85,55 @@ CThemeResource::RefreshValue()
     // last resolved value.
     if (pTargetDictionaryNoRef)
     {
+        const auto& resourceKeyString = m_resourceKey.GetKey();
+
         if (m_themeWalkResourceCache)
         {
-            pValueDO = m_themeWalkResourceCache->TryGetCachedResource(pTargetDictionaryNoRef, m_strResourceKey);
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62645877>())
+            {
+                const ResourceKey resourceKey = m_resourceKey.ToResourceKey();
+                pValueDO = m_themeWalkResourceCache->TryGetCachedResource(pTargetDictionaryNoRef, resourceKey);
+            }
+            else
+            {
+                pValueDO = m_themeWalkResourceCache->TryGetCachedResource(pTargetDictionaryNoRef, ResourceKey(resourceKeyString, ResourceKey::NoHash{}));
+            }
         }
 
         if (pValueDO == nullptr)
         {
-            // Get value
-            // GetKeyNoRef doesn't add-ref.
-            IFC_RETURN(pTargetDictionaryNoRef->GetKeyNoRef(
-                m_strResourceKey,
-                &pValueDO));
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62645877>())
+            {
+                const ResourceKey resourceKey = m_resourceKey.ToResourceKey();
+
+                // Get value
+                // GetKeyNoRef doesn't add-ref.
+                IFC_RETURN(pTargetDictionaryNoRef->GetKeyNoRef(
+                    resourceKey,
+                    &pValueDO));
+            }
+            else
+            {
+                // Get value
+                // GetKeyNoRef doesn't add-ref.
+                IFC_RETURN(pTargetDictionaryNoRef->GetKeyNoRef(
+                    resourceKeyString,
+                    &pValueDO));
+            }
 
             // Cache this value so that we can skip the resource dictionary lookup
             // for other theme resources with the same key.
             if (m_themeWalkResourceCache)
             {
-                m_themeWalkResourceCache->AddCachedResource(pTargetDictionaryNoRef, m_strResourceKey, pValueDO);
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62645877>())
+                {
+                    const ResourceKey resourceKey = m_resourceKey.ToResourceKey();
+                    m_themeWalkResourceCache->AddCachedResource(pTargetDictionaryNoRef, resourceKey, pValueDO);
+                }
+                else
+                {
+                    m_themeWalkResourceCache->AddCachedResource(pTargetDictionaryNoRef, ResourceKey(resourceKeyString, ResourceKey::NoHash{}), pValueDO);
+                }
             }
         }
 
@@ -100,21 +145,21 @@ CThemeResource::RefreshValue()
                 Diagnostics::ResourceLookupLogger* loggerNoRef = pTargetDictionaryNoRef->GetContext()->GetResourceLookupLogger();
                 auto cleanupGuard = wil::scope_exit([&]
                 {
-                    TRACE_HR_NORETURN(loggerNoRef->Stop(m_strResourceKey, traceMessage));
+                    TRACE_HR_NORETURN(loggerNoRef->Stop(resourceKeyString, traceMessage));
                 });
 
-                IFC_RETURN(loggerNoRef->Start(m_strResourceKey, xstring_ptr{}));
+                IFC_RETURN(loggerNoRef->Start(resourceKeyString, xstring_ptr{}));
                 IFC_RETURN(pTargetDictionaryNoRef->GetKeyNoRef(
-                    m_strResourceKey,
+                    resourceKeyString,
                     &pValueDO));
-			}
+            }
 
             // Record the message in an error context
             std::vector<std::wstring> extraInfo;
             extraInfo.push_back(std::wstring(traceMessage.GetBuffer()));
 
             xephemeral_string_ptr parameters[1];
-            m_strResourceKey.Demote(&parameters[0]);
+            resourceKeyString.Demote(&parameters[0]);
             IFC_RETURN_EXTRA_INFO(pTargetDictionaryNoRef->SetAndOriginateError(
                     E_NER_INVALID_OPERATION,
                     RuntimeError,
@@ -177,7 +222,7 @@ CThemeResource::SetThemeResourceBinding(
 {
     CValue valMarkupExtension;
     xref_ptr<CThemeResource> pThemeResource(this);
-    IFCEXPECT_RETURN(!m_strResourceKey.IsNull());
+    IFCEXPECT_RETURN(!m_resourceKey.GetKey().IsNull());
 
     // Don't store live expressions for certain properties like Setter.Value on a Style Setter
     // (live expressions OK on a VSM Setter's Setter.Value; if the VSM Setter value is a ThemeResource
@@ -241,8 +286,14 @@ CThemeResource::LookupResource(
             // Create ThemeResourceExtension
             pThemeResource = make_xref<CThemeResource>(pCore->GetThemeWalkResourceCache());
 
-            // Set key
-            pThemeResource->m_strResourceKey = strResourceKey;
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62645877>())
+            {
+                pThemeResource->m_resourceKey = ResourceKeyStorage(strResourceKey, false /* keyIsType */);
+            }
+            else
+            {
+                pThemeResource->m_resourceKey = ResourceKeyStorage(strResourceKey, ResourceKeyStorage::NoHash{});
+            }
 
             // Set inital value and target dictionary
             IFC_RETURN(pThemeResource->SetInitialValueAndTargetDictionary(

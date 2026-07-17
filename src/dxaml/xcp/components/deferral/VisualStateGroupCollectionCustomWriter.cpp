@@ -19,9 +19,13 @@
 #include <StringConversions.h>
 #include <ObjectWriterErrorService.h>
 #include <XamlPredicateHelpers.h>
+#include "FrameworkUdk/Containment.h"
 
 //#define VSMLOG(...) VSMLOG(__VA_ARGS__)
 #define VSMLOG(...)
+
+// Bug 62759377: [2.0 servicing] CommandBar[Flyout] should not hydrate all visual states
+#define WINAPPSDK_CHANGEID_62759377 62759377
 
 VisualStateGroupCollectionCustomWriter::VisualStateGroupCollectionCustomWriter(
     _In_ ICustomWriterCallbacks* callbacks,
@@ -344,13 +348,41 @@ _Check_return_ HRESULT VisualStateGroupCollectionCustomWriter::WriteMember(
             }
             else
             {
-                MarkAbortIfUnexpectedToken(
-                    std::array<KnownPropertyIndex, 3> { {
-                        KnownPropertyIndex::VisualTransition_Storyboard,
-                        KnownPropertyIndex::VisualTransition_GeneratedDuration,
-                        KnownPropertyIndex::VisualTransition_GeneratedEasingFunction } },
-                    std::array<XamlDirectives, 2> { { XamlDirectives::xdItems, XamlDirectives::xdName } },
-                    spProperty.get());
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62759377>())
+                {
+                    if (spProperty->get_PropertyToken().Equals(
+                        XamlPropertyToken(XamlTypeInfoProviderKind::tpkNative, KnownPropertyIndex::VisualTransition_GeneratedDuration)))
+                    {
+                        VSMLOG(L"[VSGCCW]: Beginning member write of VisualTransition GeneratedDuration.");
+                        m_pendingOperations.push_back(std::make_pair(m_stackDepth, Operation::WritingVisualTransitionDurationOrEasingFunction));
+                    }
+                    else if (spProperty->get_PropertyToken().Equals(
+                        XamlPropertyToken(XamlTypeInfoProviderKind::tpkNative, KnownPropertyIndex::VisualTransition_GeneratedEasingFunction)))
+                    {
+                        VSMLOG(L"[VSGCCW]: Beginning member write of VisualTransition GeneratedEasingFunction.");
+                        m_pendingOperations.push_back(std::make_pair(m_stackDepth, Operation::WritingVisualTransitionDurationOrEasingFunction));
+                    }
+                    else
+                    {
+                        MarkAbortIfUnexpectedToken(
+                            std::array<KnownPropertyIndex, 3> { {
+                                KnownPropertyIndex::VisualTransition_Storyboard,
+                                KnownPropertyIndex::VisualTransition_GeneratedDuration,
+                                KnownPropertyIndex::VisualTransition_GeneratedEasingFunction } },
+                            std::array<XamlDirectives, 2> { { XamlDirectives::xdItems, XamlDirectives::xdName } },
+                            spProperty.get());
+                    }
+                }
+                else
+                {
+                    MarkAbortIfUnexpectedToken(
+                        std::array<KnownPropertyIndex, 3> { {
+                            KnownPropertyIndex::VisualTransition_Storyboard,
+                            KnownPropertyIndex::VisualTransition_GeneratedDuration,
+                            KnownPropertyIndex::VisualTransition_GeneratedEasingFunction } },
+                        std::array<XamlDirectives, 2> { { XamlDirectives::xdItems, XamlDirectives::xdName } },
+                        spProperty.get());
+                }
             }
             break;
 
@@ -457,6 +489,16 @@ _Check_return_ HRESULT VisualStateGroupCollectionCustomWriter::WriteEndMember(_O
                 m_pendingOperations.pop_back();
             }
             break;
+        case Operation::WritingVisualTransitionDurationOrEasingFunction:
+        {
+            FAIL_FAST_ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62759377>());
+            if (m_pendingOperations.back().first == m_stackDepth)
+            {
+                VSMLOG(L"[VSGCCW]: Completed write member operation.");
+                m_pendingOperations.pop_back();
+            }
+            break;
+        }
         case Operation::WritingVisualStateStateTriggers:
             {
                 if (m_pendingOperations.back().first == m_stackDepth)

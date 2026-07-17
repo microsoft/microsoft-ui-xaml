@@ -64,6 +64,7 @@
 #include <winrt\Microsoft.UI.Xaml.Media.h>
 #include <winrt\Microsoft.UI.Xaml.Media.Animation.h>
 #include <winrt\Microsoft.UI.Xaml.Media.Imaging.h>
+#include <winrt\Microsoft.UI.Xaml.Settings.h>
 #include <winrt\Microsoft.UI.Xaml.Shapes.h>
 #include <winrt\Microsoft.UI.Xaml.XamlTypeInfo.h>
 #include <winrt\Microsoft.UI.Private.Controls.h>

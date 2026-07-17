@@ -316,7 +316,7 @@ namespace Diagnostics
         m_setterCollectionDependentMap.insert(std::make_pair(xref::get_weakref<CSetterBaseCollection>(pCollection), xref::get_weakref<CStyle>(pStyle)));
     }
 
-    void ResourceGraph::CacheRuntimeContext(_In_ CStyle* style, _In_ std::unique_ptr<CustomWriterRuntimeContext> context)
+    void ResourceGraph::CacheRuntimeContext(_In_ CStyle* style, _In_ std::shared_ptr<CustomWriterRuntimeContext> context)
     {
         m_styleContext.emplace(xref::get_weakref<CStyle>(style), StyleContext(std::move(context)));
     }

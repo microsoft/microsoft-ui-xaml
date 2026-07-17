@@ -103,6 +103,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Media { namespac
 namespace Microsoft { namespace UI { namespace Xaml { namespace Navigation { } } } }
 namespace Microsoft { namespace UI { namespace Xaml { namespace Phone_XamlTypeInfo { } } } }
 namespace Microsoft { namespace UI { namespace Xaml { namespace Shapes { } } } }
+namespace Microsoft { namespace UI { namespace Xaml { namespace Settings { } } } }
 namespace Windows { namespace UI { namespace Xaml { namespace Interop { namespace Marshal {} } } } };
 namespace Microsoft { namespace Internal { namespace FrameworkUdk {} } };
 XAML_ABI_NAMESPACE_END
@@ -164,6 +165,7 @@ namespace xaml_data             = XAML_ABI_PARAMETER(Microsoft::UI::Xaml::Data);
 namespace xaml_docs             = XAML_ABI_PARAMETER(Microsoft::UI::Xaml::Documents);
 namespace xaml_hosting          = XAML_ABI_PARAMETER(Microsoft::UI::Xaml::Hosting);
 namespace xaml_input            = XAML_ABI_PARAMETER(Microsoft::UI::Xaml::Input);
+namespace xaml_settings         = XAML_ABI_PARAMETER(Microsoft::UI::Xaml::Settings);
 namespace xaml_interop          = XAML_ABI_PARAMETER(Microsoft::UI::Xaml::Interop);
 namespace xaml_markup           = XAML_ABI_PARAMETER(Microsoft::UI::Xaml::Markup);
 namespace xaml_media            = XAML_ABI_PARAMETER(Microsoft::UI::Xaml::Media);

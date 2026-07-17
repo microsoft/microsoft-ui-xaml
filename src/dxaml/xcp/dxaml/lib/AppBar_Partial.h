@@ -152,7 +152,7 @@ namespace DirectUI
             }
         }
 
-        void SetCompactHeight(double value) 
+        void SetCompactHeight(double value)
         {
             if (m_compactHeight != value)
             {
@@ -168,7 +168,7 @@ namespace DirectUI
             }
         }
 
-        void SetContentHeight(double value) 
+        void SetContentHeight(double value)
         {
             if (m_contentHeight != value)
             {
@@ -205,7 +205,7 @@ namespace DirectUI
 
         bool m_isInOverlayState;
         bool m_isChangingOpenedState;
-        bool m_hasUpdatedTemplateSettings;
+        bool m_hasUpdatedTemplateSettings;  // only needed for WINAPPSDK_CHANGEID_62759377 fallback
         bool m_hasExpandButtonCustomAutomationName;
 
         // We refresh this value in the OnSizeChanged() & OnContentSizeChanged() handlers.

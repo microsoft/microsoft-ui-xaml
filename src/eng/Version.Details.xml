@@ -2,17 +2,17 @@
 <!-- Copyright (c) Microsoft Corporation. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.FrameworkUdk" Version="2.0.0-stable-27200.1024.260527-1035.1">
+    <Dependency Name="Microsoft.FrameworkUdk" Version="2.0.0-stable-27200.1027.260605-1010.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>bcefb53ef31cde2d4d7e97760db1970335047aed</Sha>
+      <Sha>16ffc9acf96bc285a28d6e08e7f5449b02c27908</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="2.0.0-20260529.1.release">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation.TransportPackage" Version="2.0.0-20260702.0.release">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>ec4c96bcd48743792cec8e9901392068c60b7b30</Sha>
+      <Sha>6ba811e6075625d04efc9054270861f08ebbcedd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="2.0.0-stable-27200.1024.260527-1035.1">
+    <Dependency Name="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" Version="2.0.0-stable-27200.1027.260605-1010.0">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>bcefb53ef31cde2d4d7e97760db1970335047aed</Sha>
+      <Sha>16ffc9acf96bc285a28d6e08e7f5449b02c27908</Sha>
     </Dependency>
     <!-- Closed source binary (ex PTLS and WinUIEdit) -->
     <Dependency Name="Microsoft.Internal.WinUIDetails" Version="2.10.0-stable.20260423.1">
@@ -23,13 +23,13 @@
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
       <Sha>2e5d355241392cf5331ebaa2c6e5c554c7852ceb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="2.1.0">
+    <Dependency Name="Microsoft.WindowsAppSDK.Foundation" Version="2.3.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDK</Uri>
-      <Sha>ec4c96bcd48743792cec8e9901392068c60b7b30</Sha>
+      <Sha>6ba811e6075625d04efc9054270861f08ebbcedd</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.0.15">
+    <Dependency Name="Microsoft.WindowsAppSDK.InteractiveExperiences" Version="2.0.16-stable-Rolling.20260605.2">
       <Uri>https://dev.azure.com/microsoft/LiftedIXP/_git/DCPP</Uri>
-      <Sha>bcefb53ef31cde2d4d7e97760db1970335047aed</Sha>
+      <Sha>16ffc9acf96bc285a28d6e08e7f5449b02c27908</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

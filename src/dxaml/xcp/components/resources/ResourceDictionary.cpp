@@ -9,6 +9,11 @@
 #include "uielement.h"
 #include "application.h"
 
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62646974: Faster hash table for ResourceDictionary
+#define WINAPPSDK_CHANGEID_62646974 62646974
+
 void CResourceDictionary::SetResourceOwner(_In_opt_ CDependencyObject* const pResourceOwner)
 {
     m_pResourceOwner = pResourceOwner;
@@ -133,18 +138,26 @@ CResourceDictionary::GetKeyAtIndex(_In_ XINT32 index, _Out_ CValue * pKey, _Out_
 
 CDependencyObject* CResourceDictionary::FindResourceByKey(_In_ const ResourceKey& key) const
 {
-    const auto hashValue = std::hash<ResourceKey>()(key);
-    const auto bucketIndex = hashValue % m_resourceMap.bucket_count();
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
+    {
+        auto pos = m_resourceMap.find(key);
+        return pos == m_resourceMap.end() ? nullptr : pos->second;
+    }
+    else
+    {
+        const auto hashValue = std::hash<ResourceKey>()(key);
+        const auto bucketIndex = hashValue % m_legacyResourceMap.bucket_count();
 
-    auto pos = std::find_if(
-        m_resourceMap.begin(bucketIndex),
-        m_resourceMap.end(bucketIndex),
-        [&key](const auto& entry)
-        {
-            return key == entry.first;
-        });
+        auto pos = std::find_if(
+            m_legacyResourceMap.begin(bucketIndex),
+            m_legacyResourceMap.end(bucketIndex),
+            [&key](const auto& entry)
+            {
+                return key == entry.first;
+            });
 
-    return pos == m_resourceMap.end(bucketIndex) ? nullptr : pos->second;
+        return pos == m_legacyResourceMap.end(bucketIndex) ? nullptr : pos->second;
+    }
 }
 
 //------------------------------------------------------------------------

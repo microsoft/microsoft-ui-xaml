@@ -22,6 +22,7 @@ namespace ctl
         : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IDxamlCoreTestHooks, impl_type>
     {
         impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(ResetOptionalChanges)() override { return This()->ResetOptionalChanges(); }
     };
 }
 #pragma endregion
@@ -54,6 +55,7 @@ namespace DirectUI
         // Events.
 
         // Methods.
+        _Check_return_ HRESULT STDMETHODCALLTYPE ResetOptionalChanges();
 
 
     protected:

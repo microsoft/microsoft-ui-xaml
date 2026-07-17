@@ -109,6 +109,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
         // 2. XBF format version
         public bool IgnoreSpecifiedTargetPlatformMinVersion { get; set; }
 
+        public string EnabledXamlOptionalChanges { get; set; }
+        public string DisabledXamlOptionalChanges { get; set; }
+
         public static CompilerInputs FromMSBuildTaskInputs(ICompileXamlInputs i)
         {
             CompilerInputs r = new CompilerInputs();
@@ -155,6 +158,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
             r.XamlPages = GetMSBuildItems(i.XamlPages);
             r.XamlPlatform = i.XamlPlatform;
             r.XamlResourceMapName = i.XamlResourceMapName;
+            r.EnabledXamlOptionalChanges = i.EnabledXamlOptionalChanges;
+            r.DisabledXamlOptionalChanges = i.DisabledXamlOptionalChanges;
             return r;
         }
 

@@ -14,6 +14,13 @@
 #include <ComUtils.h>
 #include <corerror.h>
 #include <mindebug.h>
+#include <MuxActivationFactory.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62676756: Add activation factory fast paths
+#ifndef WINAPPSDK_CHANGEID_62676756
+#define WINAPPSDK_CHANGEID_62676756 62676756
+#endif
 
 namespace ctl
 {
@@ -985,7 +992,18 @@ namespace ctl
         _In_  HSTRING activatableClassId,
               Internal::ComPtrRef<T> factory)
     {
-        return wf::GetActivationFactory(activatableClassId, factory.ReleaseAndGetAddressOf());
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            return MuxGetActivationFactory(
+                activatableClassId,
+                factory.ReleaseAndGetAddressOf());
+        }
+        else
+        {
+            return wf::GetActivationFactory(
+                activatableClassId,
+                factory.ReleaseAndGetAddressOf());
+        }
     }
 
     // This is to match the definition of GetActivationFactory from roapi.h. This way we can always use
@@ -995,7 +1013,14 @@ namespace ctl
         _In_  HSTRING activatableClassId,
         _Out_ T** factory)
     {
-        return wf::GetActivationFactory(activatableClassId, factory);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+          return MuxGetActivationFactory(activatableClassId, factory);
+        }
+        else
+        {
+          return wf::GetActivationFactory(activatableClassId, factory);
+        }
     }
 
     template <class T>

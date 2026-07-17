@@ -174,6 +174,8 @@ namespace DirectUI
 
         IFACEMETHOD_(void, SetGenericXamlFilePathForMUX)(_In_ HSTRING filePath) override;
 
+        IFACEMETHOD_(void, ReloadThemeResourcesIfNeeded)() override;
+
         IFACEMETHOD(SetHdrOutputOverride)(bool value) override;
 
         IFACEMETHOD_(void, GetWantsRenderingEvent)(_Out_ BOOLEAN* wantsRenderingEvent) override;
@@ -295,6 +297,10 @@ namespace DirectUI
         IFACEMETHOD(GetAllContentIslands)(_In_ xaml_hosting::IDesktopWindowXamlSource* desktopWindowXamlSource, _In_ wfc::IVector<IInspectable*>* contentIslands) override;
 
         IFACEMETHOD(GetElementsRenderedCount)(_Out_ int* elementsRendered) override;
+
+        // XamlOptionalChanges test hooks
+        IFACEMETHOD_(void, ResetOptionalChanges)() override;
+        _Check_return_ HRESULT ResetOptionalChangesImpl();
 
         IFACEMETHOD(PauseNewDispatchForTest)() override;
         IFACEMETHOD(ResumeNewDispatchForTest)() override;

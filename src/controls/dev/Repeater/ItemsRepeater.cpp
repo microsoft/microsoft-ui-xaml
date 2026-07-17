@@ -15,7 +15,7 @@
 #include "FrameworkUdk/Containment.h"
 
 // Bug 61574373: [2.0 Servicing][WASDK] Fix ItemsRepeater RecyclePool reference cycle memory leak
-#define WINAPPSDK_CHANGEID_61574373 61574373, WinAppSDK_2_1_0
+#define WINAPPSDK_CHANGEID_61574373 61574373
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ItemsRepeaterTrace::s_IsDebugOutputEnabled{ false };

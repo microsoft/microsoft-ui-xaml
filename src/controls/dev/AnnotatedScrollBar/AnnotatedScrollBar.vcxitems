@@ -40,6 +40,14 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AnnotatedScrollBar.xaml">
+      <Version>RS1</Version>
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AnnotatedScrollBar_themeresources_perf2026.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AnnotatedScrollBar.idl" />

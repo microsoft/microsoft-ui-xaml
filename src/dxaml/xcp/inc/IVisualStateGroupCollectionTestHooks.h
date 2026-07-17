@@ -18,6 +18,7 @@ DECLARE_INTERFACE_IID_(IVisualStateGroupCollectionTestHooks, IUnknown, "2911a2b6
     virtual std::shared_ptr<std::vector<std::wstring>> GetVisualStateNamesForGroup(_In_ unsigned int groupIdx) = 0;
     virtual bool DoesVisualStateGroupHaveTransitions(_In_ unsigned int groupIdx) const = 0;
     virtual Microsoft::WRL::ComPtr<IInspectable> CreateStoryboard(_In_ unsigned int groupIdx, _In_ unsigned int storyboardIdx) = 0;
+    virtual bool ShouldRuntimeDataBailOut() const = 0;
     
 };
 

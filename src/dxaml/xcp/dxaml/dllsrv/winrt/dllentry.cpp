@@ -18,7 +18,7 @@
 #include "FrameworkUdk/Containment.h"
 
 // Bug 62040515: [2.0 Servicing] Fix GetModuleHandle ambiguity in WinUI causing FailFast when same-named multiple modules are loaded
-#define WINAPPSDK_CHANGEID_62040515 62040515, WinAppSDK_2_1_0
+#define WINAPPSDK_CHANGEID_62040515 62040515
 
 #include <WinUIrc.ver>           //  To define VER_FILEVERSION_STR
 

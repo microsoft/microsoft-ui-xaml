@@ -17,6 +17,10 @@
 #include "localizedResource.h"
 #include <PhoneImports.h>
 #include <windows.globalization.datetimeformatting.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62849414: Reserve space in TrackerCollections before appending multiple items
+#define WINAPPSDK_CHANGEID_62849414 62849414
 
 // This is July 15th, 2011 as our sentinel date. There are no known
 //  daylight savings transitions that happened on that date.
@@ -1233,6 +1237,10 @@ TimePicker::GenerateHours()
     IFC(m_tpCalendar->put_Hour(firstHourInThisPeriod));
 
     IFC(m_tpHourSource->Clear());
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62849414>())
+    {
+        m_tpHourSource->Reserve(numberOfHours);
+    }
 
     for (INT32 hourOffset = 0; hourOffset < numberOfHours; hourOffset++)
     {
@@ -1309,6 +1317,10 @@ TimePicker::GeneratePeriods()
     IFC(SetSentinelDate(m_tpCalendar.Get()));
 
     IFC(m_tpPeriodSource->Clear());
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62849414>())
+    {
+        m_tpPeriodSource->Reserve(2);
+    }
 
     IFC(m_tpCalendar->get_FirstPeriodInThisDay(&firstPeriodInThisDay));
     IFC(m_tpCalendar->put_Period(firstPeriodInThisDay));

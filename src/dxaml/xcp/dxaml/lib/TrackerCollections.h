@@ -4,6 +4,12 @@
 #pragma once
 
 #include "VectorChangedEventArgs.g.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62542953: [2.0 servicing] Reduce allocations by reserving vector space
+#ifndef WINAPPSDK_CHANGEID_62542953
+#define WINAPPSDK_CHANGEID_62542953 62542953
+#endif
 
 namespace DirectUI
 {
@@ -463,6 +469,11 @@ namespace DirectUI
             RRETURN(S_OK);
         }
 
+        void Reserve(_In_ uint32_t capacity)
+        {
+            m_vector.Reserve(capacity);
+        }
+        
     protected:
 
         void OnReferenceTrackerWalk(INT walkType) override
@@ -577,6 +588,10 @@ namespace DirectUI
             default:
                 {
                     std::vector<ctl::ComPtr<THandler>> handlers;
+                    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62542953>())
+                    {
+                        handlers.reserve(m_handlers.Size());
+                    }
 
                     // Copy the handlers first to avoid re-entrancy issues
                     std::for_each(m_handlers.Begin(), m_handlers.End(),

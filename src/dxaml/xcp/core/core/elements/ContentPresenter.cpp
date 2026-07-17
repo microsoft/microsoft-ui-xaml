@@ -7,7 +7,7 @@
 #include "FrameworkUdk/Containment.h"
 
 // Bug 62422195: WinAppSDK 2.0 Servicing: Peg peer in RemoveTemplateChild to prevent GetPeerPrivate crash during OnChildrenCleared
-#define WINAPPSDK_CHANGEID_62422195 62422195, WinAppSDK_2_1_5
+#define WINAPPSDK_CHANGEID_62422195 62422195
 
 using namespace DirectUI;
 

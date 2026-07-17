@@ -43,6 +43,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string XamlNavigation = Xaml + ".Navigation";
         public const string XamlResources = Xaml + ".Resources";
         public const string XamlShapes = Xaml + ".Shapes";
+        public const string XamlSettings = Xaml + ".Settings";
         public const string XamlThreading = Xaml + ".Threading";
         public const string XamlXamlTypeInfo = Xaml + ".XamlTypeInfo";
         public const string WinRt = "WinRT";
@@ -155,6 +156,10 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public const string XamlMarkupHelper = KnownNamespaces.XamlMarkup + ".XamlMarkupHelper";
         public const string XamlReader = KnownNamespaces.XamlMarkup + ".XamlReader";
         public const string XmlnsDefinition = KnownNamespaces.XamlMarkup + ".XmlnsDefinition";
+
+        // Xaml.Settings
+        public const string XamlOptionalChanges = KnownNamespaces.XamlSettings + ".XamlOptionalChanges";
+        public const string XamlChangeId = KnownNamespaces.XamlSettings + ".XamlChangeId";
 
         // CsWinRT attributes
         public const string GeneratedBindableCustomPropertyAttribute = KnownNamespaces.WinRt + ".GeneratedBindableCustomPropertyAttribute";

@@ -30,15 +30,14 @@ _Check_return_ HRESULT CResourceDictionary2::SetCustomWriterRuntimeData(
 }
 
 _Check_return_ HRESULT CResourceDictionary2::LoadValueIfExists(
-    _In_ const xstring_ptr& key,
-    _In_ bool isImplicitKey,
+    _In_ const ResourceKey& key,
     _Out_ bool& keyFound,
     _Out_ std::shared_ptr<CDependencyObject>& value)
 {
     StreamOffsetToken token;
     keyFound = false;
     // If the key doesn't exist in the dictionary we return an empty element.
-    auto success = m_spRuntimeData->TryGetResourceOffset(key, isImplicitKey, token);
+    auto success = m_spRuntimeData->TryGetResourceOffset(key, token);
     if (!success)
     {
         value.reset();
@@ -65,6 +64,37 @@ _Check_return_ HRESULT CResourceDictionary2::LoadValueIfExists(
 
 _Check_return_
 HRESULT CResourceDictionary2::LoadAllRemainingDeferredResources(
+        _In_ ResourceMap& existingResources,
+        _Out_ std::vector<std::pair<ResourceKeyStorage, std::shared_ptr<CDependencyObject>>>& loadedResources)
+{
+    // We don't preserve the ordering of keys here. Ideally we'd keep the illusion
+    // that the keys were in the same index order as they appeared in the developer's XAML file
+    // but we don't preserve that ordering in XBFv2 and found the tradeoff to be not worth
+    // it from a performance standpoint for the value it provides. The order we load the keys
+    // here is arbitrary w.r.t the developer's intent. Not only is it ordered by the type of
+    // key, but it also is dependent on the previous access order as already-instantiated
+    // keys are already present in the dictionary.
+
+    for (const auto& resource : *m_spRuntimeData)
+    {
+        auto& key = resource.first;
+        if (existingResources.find(key) == existingResources.end())
+        {
+            std::shared_ptr<CDependencyObject> value;
+            xref_ptr<CThemeResource> unused;
+            auto token = resource.second;
+
+            CustomWriterRuntimeObjectCreator creator(NameScopeRegistrationMode::RegisterEntries, m_spRuntimeContext.get());
+            IFC_RETURN(creator.CreateInstance(token, &value, &unused));
+            loadedResources.emplace_back(key, std::move(value));
+        }
+    }
+
+    return S_OK;
+}
+
+_Check_return_
+HRESULT CResourceDictionary2::LegacyLoadAllRemainingDeferredResources(
     _In_ const ResourceMapType& loadedResources,
     _Out_ std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& implicitResources,
     _Out_ std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& explicitResources)
@@ -76,32 +106,34 @@ HRESULT CResourceDictionary2::LoadAllRemainingDeferredResources(
     // here is arbitrary w.r.t the developer's intent. Not only is it ordered by the type of
     // key, but it also is dependent on the previous access order as already-instantiated
     // keys are already present in the dictionary.
-    auto instantiateAndAddKey = [this](const xstring_ptr& key, bool isImplicit,
+    auto instantiateAndAddKey = [this](ResourceKeyStorage resourceKey,
         std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>>& dest)
     {
         bool keyFound = false;
         std::shared_ptr<CDependencyObject> resource;
-        IFC_RETURN(LoadValueIfExists(key, isImplicit, keyFound, resource));
+        IFC_RETURN(LoadValueIfExists(resourceKey.ToResourceKey(), keyFound, resource));
         ASSERT(keyFound);
-        dest.emplace_back(key, resource);
+        dest.emplace_back(resourceKey.GetKey(), resource);
         return S_OK;
     };
 
     implicitResources.clear();
     for (const auto& key : m_spRuntimeData->GetImplicitKeys())
     {
-        if (loadedResources.find(ResourceKeyStorage(key, true)) == loadedResources.end())
+        ResourceKeyStorage resourceKey(key, true);
+        if (loadedResources.find(resourceKey) == loadedResources.end())
         {
-            IFC_RETURN(instantiateAndAddKey(key, true, implicitResources));
+            IFC_RETURN(instantiateAndAddKey(resourceKey, implicitResources));
         }
     }
 
     explicitResources.clear();
     for (const auto& key : m_spRuntimeData->GetExplicitKeys())
     {
-        if (loadedResources.find(ResourceKeyStorage(key, false)) == loadedResources.end())
+        ResourceKeyStorage resourceKey(key, false);
+        if (loadedResources.find(resourceKey) == loadedResources.end())
         {
-            IFC_RETURN(instantiateAndAddKey(key, false, explicitResources));
+            IFC_RETURN(instantiateAndAddKey(resourceKey, explicitResources));
         }
     }
 
@@ -109,11 +141,10 @@ HRESULT CResourceDictionary2::LoadAllRemainingDeferredResources(
 }
 
 bool CResourceDictionary2::ContainsKey(
-    _In_ const xstring_ptr& key,
-    _In_ bool isImplicitKey) const
+    _In_ const ResourceKey& key) const
 {
     StreamOffsetToken token;
-    return m_spRuntimeData->TryGetResourceOffset(key, isImplicitKey, token);
+    return m_spRuntimeData->TryGetResourceOffset(key, token);
 }
 
 std::size_t CResourceDictionary2::GetInitialImplicitStyleKeyCount() const

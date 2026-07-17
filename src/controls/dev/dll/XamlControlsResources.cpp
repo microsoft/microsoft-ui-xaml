@@ -6,6 +6,13 @@
 #include "XamlControlsResources.h"
 #include "RevealBrush.h"
 #include "MUXControlsFactory.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62471884: Don't force AcrylicBrush objects defined in style to be realized
+#define WINAPPSDK_CHANGEID_62471884 62471884
+//
+// Bug 62644600: [2.0 servicing] Enable build of perf2026 XAML and switch styles to Setter
+#define WINAPPSDK_CHANGEID_62644600 62644600
 
 static constexpr auto c_AcrylicBackgroundFillColorDefaultBrush = L"AcrylicBackgroundFillColorDefaultBrush"sv;
 static constexpr auto c_AcrylicInAppFillColorDefaultBrush = L"AcrylicInAppFillColorDefaultBrush"sv;
@@ -17,6 +24,19 @@ static constexpr auto c_AccentAcrylicBackgroundFillColorDefaultBrush = L"AccentA
 static constexpr auto c_AccentAcrylicInAppFillColorDefaultBrush = L"AccentAcrylicInAppFillColorDefaultBrush"sv;
 static constexpr auto c_AccentAcrylicBackgroundFillColorBaseBrush = L"AccentAcrylicBackgroundFillColorBaseBrush"sv;
 static constexpr auto c_AccentAcrylicInAppFillColorBaseBrush = L"AccentAcrylicInAppFillColorBaseBrush"sv;
+
+static bool AreDefaultStyleOptimizationsEnabled()
+{
+    try
+    {
+        return winrt::Microsoft::UI::Xaml::Settings::XamlOptionalChanges::IsChangeEnabled(
+            winrt::Microsoft::UI::Xaml::Settings::XamlChangeId::DefaultStyleOptimizations);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
 
 XamlControlsResources::XamlControlsResources()
 {
@@ -50,15 +70,23 @@ void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyCha
 void XamlControlsResources::UpdateSource()
 {
     const bool useCompactResources = UseCompactResources();
+    const bool arePerf2026StylesEnabled = AreDefaultStyleOptimizationsEnabled();
 
     // We choose the URI to use at runtime based on whether we want compact resources
     winrt::Uri uri{
-        [useCompactResources]() -> hstring {
+        [useCompactResources, arePerf2026StylesEnabled]() -> hstring {
             hstring compactPrefix = useCompactResources ? L"compact_" : L"";
             hstring packagePrefix = L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/";
-            hstring postfix = L"themeresources.xaml";
 
-            return packagePrefix + compactPrefix + postfix;
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62644600>())
+            {
+                hstring postfix = arePerf2026StylesEnabled && !useCompactResources ? L"themeresources_perf2026.xaml" : L"themeresources.xaml";
+                return packagePrefix + compactPrefix + postfix;
+            }
+            else
+            {
+                return packagePrefix + compactPrefix + L"themeresources.xaml";
+            }
         }()
     };
     
@@ -66,9 +94,21 @@ void XamlControlsResources::UpdateSource()
     // Prior to RS5, when ResourceDictionary.Source property is changed, XAML forgot to clear ThemeDictionaries.
     ThemeDictionaries().Clear();
     Source(uri);
-    
-    UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
-    UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62471884>())
+    {
+        // FUTURE: This remaining AcrylicBrush lookup is a workaround to force the Nullable<Double> type to be
+        // registered as a known type, which somehow doesn't otherwise get registered for some apps which need it.
+        // At some point, the underlying issue should be investigated and fixed.
+        ThemeDictionaries().Lookup(box_value(L"Default")).as<winrt::ResourceDictionary>().Lookup(box_value(c_AcrylicBackgroundFillColorDefaultBrush));
+    }
+    else
+    {
+        // Original (pre-fix) behavior: look up all AcrylicBrush resources and set
+        // TintLuminosityOpacity programmatically, which forces all brushes to be realized.
+        UpdateAcrylicBrushesDarkTheme(ThemeDictionaries().Lookup(box_value(L"Default")));
+        UpdateAcrylicBrushesLightTheme(ThemeDictionaries().Lookup(box_value(L"Light")));
+    }
 }
 
 void XamlControlsResources::UpdateAcrylicBrushesLightTheme(const winrt::IInspectable themeDictionary)
@@ -174,8 +214,19 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
 
     if (auto control = controlProtected.try_as<winrt::IControl>())
     {
-        winrt::Uri uri{L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic.xaml"};
-        control.DefaultStyleResourceUri(uri);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62644600>())
+        {
+            const bool arePerf2026StylesEnabled = AreDefaultStyleOptimizationsEnabled();
+            winrt::Uri uri{arePerf2026StylesEnabled
+                ? L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic_perf2026.xaml"
+                : L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic.xaml"};
+            control.DefaultStyleResourceUri(uri);
+        }
+        else
+        {
+            winrt::Uri uri{L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/generic.xaml"};
+            control.DefaultStyleResourceUri(uri);
+        }
     }
 }
 

@@ -3,6 +3,8 @@
 
 #include "precomp.h"
 #include "CueStyler.h"
+#include <MuxActivationFactory.h>
+#include "FrameworkUdk/Containment.h"
 #include "TextBlock.g.h"
 #include "StackPanel.g.h"
 #include "Border.g.h"
@@ -13,6 +15,11 @@
 #include "ColorUtil.h"
 #include "Windows.Media.h"
 #include "Run.g.h"
+
+// Bug 62676756: Add activation factory fast paths
+#ifndef WINAPPSDK_CHANGEID_62676756
+#define WINAPPSDK_CHANGEID_62676756 62676756
+#endif
 #include "SoftwareBitmapSource.g.h"
 #include <MFMediaEngine.h>
 #include <Microsoft.UI.h>
@@ -1250,7 +1257,14 @@ CCueStyler::CreateRun(_In_ wmc::ITimedTextLine* pLine,
         // If the user has a non-default setting, it has the highest priority
         if (!m_spFontFamilyFactory)
         {
-            IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Media_FontFamily).Get(), m_spFontFamilyFactory.ReleaseAndGetAddressOf()));
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+            {
+                IFC_RETURN(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Media_FontFamily).Get(), m_spFontFamilyFactory.ReleaseAndGetAddressOf()));
+            }
+            else
+            {
+                IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Media_FontFamily).Get(), m_spFontFamilyFactory.ReleaseAndGetAddressOf()));
+            }
         }
         IFC_RETURN(m_spFontFamilyFactory->CreateInstanceWithName(fontFamilyName.Get(), nullptr, nullptr, &spFontFamily));
 

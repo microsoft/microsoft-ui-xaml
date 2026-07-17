@@ -38,7 +38,10 @@
 #include <DXamlServices.h>
 #include <AutoReentrantReferenceLock.h>
 #include <RuntimeEnabledFeatures.h>
+#include <MuxActivationFactory.h>
+#include <LoadLibraryAbs.h>
 #include <DeferredMapping.h>
+#include "FrameworkUdk/Containment.h"
 #include <ImageDecodeBoundsFinder.h>
 #include <algorithm>
 #include <wrlhelper.h>
@@ -86,6 +89,16 @@
 using namespace RuntimeFeatureBehavior;
 
 using namespace DirectUI;
+
+// Bug 62676756: Add activation factory fast paths
+#ifndef WINAPPSDK_CHANGEID_62676756
+#define WINAPPSDK_CHANGEID_62676756 62676756
+#endif
+
+// Bug 62726703: Register device-removed event eagerly during device creation
+#ifndef WINAPPSDK_CHANGEID_62726703
+#define WINAPPSDK_CHANGEID_62726703 62726703
+#endif
 
 // The one and only global variable.  This is shared by all instances of core
 // objects in the process.
@@ -277,6 +290,8 @@ private:
     return s_activationFactoryCache.Get(true /* createIfNecessary */);
 }
 
+ActivationFactoryCache::~ActivationFactoryCache() = default;
+
 void ActivationFactoryCache::ResetCache()
 {
     m_dispatcherQueueStatics.Reset();
@@ -286,6 +301,244 @@ void ActivationFactoryCache::ResetCache()
     m_compositionPathFactory.Reset();
     m_inputSystemCursorStatics.Reset();
     m_contentIslandStatics.Reset();
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+    {
+        m_desktopPopupSiteBridgeStatics.Reset();
+        m_inputFocusControllerStatics.Reset();
+        m_inputKeyboardSourceStatics.Reset();
+        m_inputKeyboardSourceStatics2.Reset();
+        m_inputPreTranslateKeyboardSourceStatics.Reset();
+        m_inputPointerSourceStatics.Reset();
+        m_inputActivationListenerStatics2.Reset();
+        m_inputNonClientPointerSourceStatics.Reset();
+
+        m_dcompiModule.reset();
+        m_muxcModule.reset();
+        m_inputModule.reset();
+        m_dispatchingModule.reset();
+    }
+}
+
+// Try to get an activation factory directly from a loaded module's DllGetActivationFactory
+// export, bypassing RoGetActivationFactory. Returns CLASS_E_CLASSNOTAVAILABLE if the
+// module doesn't know about the type, or any other error the module returns.
+/* static */ HRESULT ActivationFactoryCache::TryGetActivationFactoryFromModule(
+    _In_ HMODULE module,
+    _In_ HSTRING activatableClassId,
+    _In_ REFIID iid,
+    _COM_Outptr_ void** factory,
+    _In_z_ const char* exportName)
+{
+    ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>());
+
+    *factory = nullptr;
+
+    typedef HRESULT(WINAPI* PFN_DllGetActivationFactory)(HSTRING, IActivationFactory**);
+
+    auto pfn = reinterpret_cast<PFN_DllGetActivationFactory>(
+            GetProcAddress(module, exportName));
+    if (!pfn)
+    {
+        IFC_RETURN(CLASS_E_CLASSNOTAVAILABLE);
+    }
+
+    wrl::ComPtr<IActivationFactory> activationFactory;
+    IFC_RETURN(pfn(activatableClassId, &activationFactory));
+
+    return activationFactory->QueryInterface(iid, factory);
+}
+
+// Lazily load a DLL from our module directory using LoadLibraryExW. Uses
+// double-checked locking on cachedModule. Returns the cached HMODULE
+// (may be null if the load fails or the module directory is unknown).
+// Requires the DLL be in the same dir as this one.
+HMODULE ActivationFactoryCache::EnsureModuleLoaded(
+    _Inout_ ActivationFactoryCache::CachedModule& cached,
+    _In_z_ const wchar_t* dllName)
+{
+    ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>());
+
+    if (!cached.loadAttempted)
+    {
+        // Note two threads may both get here at the same time and both attempt to load the DLL,
+        // we'll rely on the loader lock to ensure that for all threads, this function doesn't
+        // exit until either:
+        //  - The DLL is actually loaded...
+        //  - OR we've failed to do the load (in which case loadAttempted is true and handle is null)
+        HMODULE loadLibraryHandle = NULL;
+        std::wstring fullPath = GetMuxAbsPath(dllName);
+        if (!fullPath.empty())
+        {
+            loadLibraryHandle = LoadLibraryExW(fullPath.c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+        }
+
+        // Enter the lock briefly to make sure only one thread stores the handle.
+        // We don't support unloading these DLLs, so it's OK if we end up with an extra ref on the DLL.
+        wil::cs_leave_scope_exit guard = m_lock.lock();
+        if (!cached.loadAttempted)
+        {
+            if (loadLibraryHandle)
+            {
+                cached.handle.reset(loadLibraryHandle);
+            }
+            cached.loadAttempted = true;
+        }
+    }
+    return cached.get();
+}
+
+// Our own DllGetActivationFactory, declared in dllentry.cpp.
+extern "C" HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING hstrAcid, _Outptr_ IActivationFactory** factory);
+
+// Fast path for activation factory lookups. For known Microsoft.UI.* namespaces,
+// calls DllGetActivationFactory directly on the target DLL instead of going
+// through RoGetActivationFactory. Falls back to RoGetActivationFactory on any
+// error from the fast path.
+HRESULT ActivationFactoryCache::MuxGetActivationFactoryImpl(
+    _In_ HSTRING activatableClassId,
+    _In_ REFIID iid,
+    _COM_Outptr_ void** factory)
+{
+    ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>());
+
+    *factory = nullptr;
+
+    const wchar_t* name = WindowsGetStringRawBuffer(activatableClassId, nullptr);
+
+    // All our fast paths target "Microsoft.UI.*" namespaces.
+    if (wcsncmp(name, L"Microsoft.UI.", 13) != 0)
+    {
+        return RoGetActivationFactory(activatableClassId, iid, factory);
+    }
+
+    // By calling DllGetActivationFactory directly on the target DLL, we bypass
+    // RoGetActivationFactory and COM's DLL lifetime tracking.  COM doesn't know that
+    // these DLLs are hosting live COM objects, so we call LoadLibrary for each
+    // host DLL and keep it loaded forever (because Microsoft.ui.xaml.dll itself doesn't
+    // get unloaded).
+
+    const wchar_t* suffix = name + 13;  // past "Microsoft.UI."
+
+    if (wcsncmp(suffix, L"Xaml.Controls.", 14) == 0)
+    {
+        // Microsoft.UI.Xaml.Controls.* -- try MUXC first, then us (MUX).
+        HMODULE muxc = EnsureModuleLoaded(m_muxcModule, L"Microsoft.UI.Xaml.Controls.dll");
+        if (muxc)
+        {
+            // For MUXC, we use a special export that doesn't call RoOrignateLanguageException
+            // on failure.  There are some cases where MUX needs to probe MUXC for types that don't
+            // have activation factories.  In this case, we just want to quietly return a failure code.
+            // See DllTryGetActivationFactory for more detail.
+            HRESULT hr = TryGetActivationFactoryFromModule(
+                muxc, activatableClassId, iid, factory, "DllTryGetActivationFactory");
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+
+        // Some Controls types live in MUX itself
+        wrl::ComPtr<IActivationFactory> activationFactory;
+        HRESULT hr = DllGetActivationFactory(activatableClassId, &activationFactory);
+        if (SUCCEEDED(hr))
+        {
+            hr = activationFactory->QueryInterface(iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+    else if (wcsncmp(suffix, L"Xaml.", 5) == 0)
+    {
+        // Fast if we can call our own DllGetActivationFactory!
+        // This could still be a Microsoft.UI.Xaml.Phone.* type, those are used more rarely.  That's
+        // OK, we just fall back.  If it becomes a perf issue we can optimize that path later.
+        wrl::ComPtr<IActivationFactory> activationFactory;
+        HRESULT hr = DllGetActivationFactory(activatableClassId, &activationFactory);
+        if (SUCCEEDED(hr))
+        {
+            hr = activationFactory->QueryInterface(iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+    else if (wcsncmp(suffix, L"Composition.", 12) == 0)
+    {
+        // dcompi.dll has static DLL dependencies on a cluster of other IXP DLLs.
+        // By loading it ourselves, we keep it and its deps pinned.
+        HMODULE dcompi = EnsureModuleLoaded(m_dcompiModule, L"dcompi.dll");
+        if (dcompi)
+        {
+            HRESULT hr = TryGetActivationFactoryFromModule(dcompi, activatableClassId, iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+    else if (wcsncmp(suffix, L"Input.", 6) == 0 ||
+             wcsncmp(suffix, L"Content.", 8) == 0)
+    {
+        // Microsoft.UI.Input.* and Microsoft.UI.Content.* -- both live in Microsoft.UI.Input.dll,
+        // which is a static dep of dcompi.dll, so it should already be loaded before we get here.
+        HMODULE input = EnsureModuleLoaded(m_inputModule, L"Microsoft.UI.Input.dll");
+        if (input)
+        {
+            HRESULT hr = TryGetActivationFactoryFromModule(input, activatableClassId, iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+    else if (wcsncmp(suffix, L"Dispatching.", 12) == 0)
+    {
+        // Microsoft.UI.Dispatching.* types live in CoreMessagingXP.dll, which for islands-based
+        // apps should already be loaded.
+        HMODULE dispatching = EnsureModuleLoaded(m_dispatchingModule, L"CoreMessagingXP.dll");
+        if (dispatching)
+        {
+            HRESULT hr = TryGetActivationFactoryFromModule(dispatching, activatableClassId, iid, factory);
+            if (SUCCEEDED(hr))
+            {
+                return hr;
+            }
+        }
+    }
+
+    // Fall back to the slow path (RoGetActivationFactory)
+    return RoGetActivationFactory(activatableClassId, iid, factory);
+}
+
+// Free-function wrapper for callers that don't have direct access to the
+// ActivationFactoryCache instance. Grabs the singleton and delegates.
+// Declared in MuxActivationFactory.h.
+HRESULT MuxGetActivationFactoryImpl(
+    _In_ HSTRING activatableClassId,
+    _In_ REFIID iid,
+    _COM_Outptr_ void** factory)
+{
+    *factory = nullptr;
+
+    if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+    {
+        return RoGetActivationFactory(activatableClassId, iid, factory);
+    }
+
+    ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>());
+
+    auto factoryCache = ActivationFactoryCache::GetActivationFactoryCache();
+    if (factoryCache)
+    {
+        return factoryCache->MuxGetActivationFactoryImpl(activatableClassId, iid, factory);
+    }
+
+    // No cache available (process shutting down?), use slow path.
+    return RoGetActivationFactory(activatableClassId, iid, factory);
 }
 
 HRESULT ActivationFactoryCache::GetDispatcherQueueStatics(_Outptr_ msy::IDispatcherQueueStatics** statics)
@@ -309,9 +562,18 @@ HRESULT ActivationFactoryCache::GetDesktopChildSiteBridgeStatics(_Outptr_ ixp::I
 
     if (!m_desktopChildSiteBridgeStatics)
     {
-        IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopChildSiteBridge).Get(),
-            &m_desktopChildSiteBridgeStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFC_RETURN(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopChildSiteBridge).Get(),
+                &m_desktopChildSiteBridgeStatics));
+        }
+        else
+        {
+            IFC_RETURN(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopChildSiteBridge).Get(),
+                &m_desktopChildSiteBridgeStatics));
+        }
     }
 
     m_desktopChildSiteBridgeStatics.CopyTo(statics);
@@ -324,9 +586,18 @@ HRESULT ActivationFactoryCache::GetDesktopPopupSiteBridgeStatics(_Outptr_ ixp::I
 
     if (!m_desktopPopupSiteBridgeStatics)
     {
-        IFC_RETURN(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopPopupSiteBridge).Get(),
-            &m_desktopPopupSiteBridgeStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFC_RETURN(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopPopupSiteBridge).Get(),
+                &m_desktopPopupSiteBridgeStatics));
+        }
+        else
+        {
+            IFC_RETURN(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_DesktopPopupSiteBridge).Get(),
+                &m_desktopPopupSiteBridgeStatics));
+        }
     }
 
     m_desktopPopupSiteBridgeStatics.CopyTo(statics);
@@ -339,9 +610,18 @@ HRESULT ActivationFactoryCache::GetDragDropManagerStatics(_Outptr_ mui::DragDrop
 
     if (!m_dragDropManagerStatics)
     {
-        IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(
-            RuntimeClass_Microsoft_UI_Input_DragDrop_DragDropManager).Get(),
-            &m_dragDropManagerStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFC_RETURN(MuxGetActivationFactory(wrl_wrappers::HStringReference(
+                RuntimeClass_Microsoft_UI_Input_DragDrop_DragDropManager).Get(),
+                &m_dragDropManagerStatics));
+        }
+        else
+        {
+            IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(
+                RuntimeClass_Microsoft_UI_Input_DragDrop_DragDropManager).Get(),
+                &m_dragDropManagerStatics));
+        }
     }
 
     m_dragDropManagerStatics.CopyTo(statics);
@@ -354,13 +634,23 @@ ixp::ICompositionEasingFunctionStatics* ActivationFactoryCache::GetCompositionEa
 
     if (!m_compositionEasingFunctionStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEasingFunction).Get(),
-            &m_compositionEasingFunctionStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEasingFunction).Get(),
+                &m_compositionEasingFunctionStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEasingFunction).Get(),
+                &m_compositionEasingFunctionStatics));
+        }
     }
 
     return m_compositionEasingFunctionStatics.Get();
 }
+
 
 ixp::ICompositionPathFactory* ActivationFactoryCache::GetPathFactory()
 {
@@ -368,9 +658,18 @@ ixp::ICompositionPathFactory* ActivationFactoryCache::GetPathFactory()
 
     if (!m_compositionPathFactory)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionPath).Get(),
-            &m_compositionPathFactory));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionPath).Get(),
+                &m_compositionPathFactory));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionPath).Get(),
+                &m_compositionPathFactory));
+        }
     }
 
     return m_compositionPathFactory.Get();
@@ -382,9 +681,18 @@ ixp::IInputSystemCursorStatics* ActivationFactoryCache::GetInputSystemCursorStat
 
     if (!m_inputSystemCursorStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputSystemCursor).Get(),
-            &m_inputSystemCursorStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputSystemCursor).Get(),
+                &m_inputSystemCursorStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputSystemCursor).Get(),
+                &m_inputSystemCursorStatics));
+        }
     }
 
     return m_inputSystemCursorStatics.Get();
@@ -396,9 +704,18 @@ ixp::IContentIslandStatics* ActivationFactoryCache::GetContentIslandStatics()
 
     if (!m_contentIslandStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_ContentIsland).Get(),
-            &m_contentIslandStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_ContentIsland).Get(),
+                &m_contentIslandStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Content_ContentIsland).Get(),
+                &m_contentIslandStatics));
+        }
     }
 
     return m_contentIslandStatics.Get();
@@ -410,12 +727,35 @@ ixp::IInputFocusControllerStatics* ActivationFactoryCache::GetInputFocusControll
 
     if (!m_inputFocusControllerStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputFocusController).Get(),
-            &m_inputFocusControllerStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputFocusController).Get(),
+                &m_inputFocusControllerStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputFocusController).Get(),
+                &m_inputFocusControllerStatics));
+        }
     }
 
     return m_inputFocusControllerStatics.Get();
+}
+
+ixp::IInputKeyboardSourceStatics* ActivationFactoryCache::GetInputKeyboardSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputKeyboardSourceStatics)
+    {
+        // InputKeyboardSource is already activated for the v2 interface.
+        wrl::ComPtr<ixp::IInputKeyboardSourceStatics2> keyboardSourceStatics2 = GetInputKeyboardSourceStatics2();
+        IFCFAILFAST(keyboardSourceStatics2.As(&m_inputKeyboardSourceStatics));
+    }
+
+    return m_inputKeyboardSourceStatics.Get();
 }
 
 ixp::IInputKeyboardSourceStatics2* ActivationFactoryCache::GetInputKeyboardSourceStatics2()
@@ -424,9 +764,18 @@ ixp::IInputKeyboardSourceStatics2* ActivationFactoryCache::GetInputKeyboardSourc
 
     if (!m_inputKeyboardSourceStatics2)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
-            &m_inputKeyboardSourceStatics2));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
+                &m_inputKeyboardSourceStatics2));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputKeyboardSource).Get(),
+                &m_inputKeyboardSourceStatics2));
+        }
     }
 
     return m_inputKeyboardSourceStatics2.Get();
@@ -438,9 +787,18 @@ ixp::IInputPreTranslateKeyboardSourceStatics* ActivationFactoryCache::GetInputPr
 
     if (!m_inputPreTranslateKeyboardSourceStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPreTranslateKeyboardSource).Get(),
-            &m_inputPreTranslateKeyboardSourceStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPreTranslateKeyboardSource).Get(),
+                &m_inputPreTranslateKeyboardSourceStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPreTranslateKeyboardSource).Get(),
+                &m_inputPreTranslateKeyboardSourceStatics));
+        }
     }
 
     return m_inputPreTranslateKeyboardSourceStatics.Get();
@@ -452,9 +810,18 @@ ixp::IInputPointerSourceStatics* ActivationFactoryCache::GetInputPointerSourceSt
 
     if (!m_inputPointerSourceStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPointerSource).Get(),
-            &m_inputPointerSourceStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPointerSource).Get(),
+                &m_inputPointerSourceStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputPointerSource).Get(),
+                &m_inputPointerSourceStatics));
+        }
     }
 
     return m_inputPointerSourceStatics.Get();
@@ -467,9 +834,18 @@ ixp::IInputActivationListenerStatics2* ActivationFactoryCache::GetInputActivatio
     if (!m_inputActivationListenerStatics2)
     {
         wrl::ComPtr<ixp::IInputActivationListenerStatics> inputActivationListenerStatics;
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputActivationListener).Get(),
-            &inputActivationListenerStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputActivationListener).Get(),
+                &inputActivationListenerStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputActivationListener).Get(),
+                &inputActivationListenerStatics));
+        }
         IFCFAILFAST(inputActivationListenerStatics.As(&m_inputActivationListenerStatics2));
     }
 
@@ -482,9 +858,18 @@ ixp::IInputNonClientPointerSourceStatics* ActivationFactoryCache::GetInputNonCli
 
     if (!m_inputNonClientPointerSourceStatics)
     {
-        IFCFAILFAST(wf::GetActivationFactory(
-            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputNonClientPointerSource).Get(),
-            &m_inputNonClientPointerSourceStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputNonClientPointerSource).Get(),
+                &m_inputNonClientPointerSourceStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(
+                wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_InputNonClientPointerSource).Get(),
+                &m_inputNonClientPointerSourceStatics));
+        }
     }
 
     return m_inputNonClientPointerSourceStatics.Get();
@@ -8363,17 +8748,53 @@ _Check_return_ HRESULT CCoreServices::EnsureDeviceLostListener()
     // on OS SKUs where no WM_PAINT message is sent to the framework from DWM (WCOS).
     if (m_deviceLostWaiter == nullptr)
     {
-        m_deviceLostEvent.reset(::CreateEvent(
-            nullptr, // no security descriptor
-            FALSE,   // not a manual reset event
-            FALSE,   // initially unsignaled
-            nullptr  // no name
-            ));
-        IFCW32FAILFAST(m_deviceLostEvent != nullptr);
-
         // Note:  It's assumed that WaitForD3DDependentResourceCreation() was called prior to getting here.
-        CD3D11Device *device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
-        IFC_RETURN(device->RegisterDeviceRemovedEvent(m_deviceLostEvent.get(), &m_deviceLostEventCookie));
+
+        // When the optimization is enabled, try to grab the device-removed event that was registered eagerly
+        // during device creation (on a background thread). This way, if RegisterDeviceRemovedEvent blocks
+        // on the D3D lock, that wait happens on the background thread instead of the UI thread. During app
+        // startup the UI thread usually has other work it can do, so keeping it unblocked lets it make
+        // progress toward first frame.
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62726703>())
+        {
+            CD3D11Device *device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+            HANDLE takenEvent = nullptr;
+            DWORD takenCookie = 0;
+            if (SUCCEEDED(device->TakeDeviceRemovedEvent(&takenEvent, &takenCookie)) &&
+                takenEvent != nullptr)
+            {
+                m_deviceLostEvent.reset(takenEvent);
+                m_deviceLostEventCookie = takenCookie;
+            }
+
+            if (!m_deviceLostEvent)
+            {
+                // If we failed to create and/or take the eager event, fall back to the original behavior.
+                m_deviceLostEvent.reset(::CreateEvent(
+                    nullptr, // no security descriptor
+                    FALSE,   // not a manual reset event
+                    FALSE,   // initially unsignaled
+                    nullptr  // no name
+                    ));
+                IFCW32FAILFAST(m_deviceLostEvent != nullptr);
+
+                IFC_RETURN(device->RegisterDeviceRemovedEvent(m_deviceLostEvent.get(), &m_deviceLostEventCookie));
+            }
+        }
+        else
+        {
+            // Original path: if we don't already have an eager event, create and register one ourselves.
+            m_deviceLostEvent.reset(::CreateEvent(
+                nullptr, // no security descriptor
+                FALSE,   // not a manual reset event
+                FALSE,   // initially unsignaled
+                nullptr  // no name
+                ));
+            IFCW32FAILFAST(m_deviceLostEvent != nullptr);
+
+            CD3D11Device *device = m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+            IFC_RETURN(device->RegisterDeviceRemovedEvent(m_deviceLostEvent.get(), &m_deviceLostEventCookie));
+        }
 
         m_deviceLostWaiter.reset(CreateThreadpoolWait([](PTP_CALLBACK_INSTANCE, void *context, TP_WAIT *, TP_WAIT_RESULT)
         {

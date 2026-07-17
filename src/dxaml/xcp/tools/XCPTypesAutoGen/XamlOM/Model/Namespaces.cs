@@ -65,3 +65,4 @@ using XamlOM;
 [assembly: Namespace(Order = 65, Name = "Windows.UI.Xaml.Interop", IndexName = "NAMESPACE_INDEX_WINDOWS_INTEROP")]
 [assembly: Namespace(Order = 66, Name = "Microsoft.UI.Input.Experimental")]
 [assembly: Namespace(Order = 67, Name = "Microsoft.UI.Windowing")]
+[assembly: Namespace(Order = 68, Name = "Microsoft.UI.Xaml.Settings", IndexName = "NAMESPACE_INDEX_SETTINGS", IsExcludedFromTypeTable = true)]

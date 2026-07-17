@@ -34,6 +34,12 @@
     <Page Include="$(MSBuildThisFileDirectory)PagerControl_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PagerControl.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)PagerControl_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)PagerControl.idl" />

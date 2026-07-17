@@ -16,6 +16,12 @@
 #include "WrlHelper.h"
 #include "SystemBackdrop.g.h"
 
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62406051: [2.0 Servicing][WASDK] Disconnect UIA at top of XamlIsland::Close to avoid re-entrant
+// UIA queries during island teardown (Watson failure 214d70ab-e364-5bdc-3116-2b589f68d0cc).
+#define WINAPPSDK_CHANGEID_62406051 62406051
+
 using namespace DirectUI;
 
 namespace DirectUI
@@ -378,6 +384,19 @@ IFACEMETHODIMP XamlIsland::Close()
     IFC_RETURN(CheckThread());
 
     m_bClosed = true;
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62406051>())
+    {
+        // Tell UIA Core we're going away BEFORE any island teardown
+        // that may pump messages and cause reentrancy. This will allow
+        // UIA Core to disconnect from us and avoid trying to talk to us during teardown.
+        if (m_pXamlIslandCore != nullptr)
+        {
+            m_pXamlIslandCore->DisconnectUIA();
+        }
+    }
+    // else: original (pre-fix) behavior -- UIA disconnect happens late, inside
+    // CXamlIslandRoot::Dispose, which is the timing that produces the AV bucket.
 
     if (m_systemBackdrop.Get() != nullptr)
     {

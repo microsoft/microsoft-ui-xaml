@@ -3,6 +3,8 @@
 
 #include "precomp.h"
 #include "FrameworkApplication.g.h"
+#include <MuxActivationFactory.h>
+#include "FrameworkUdk/Containment.h"
 #include "DebugSettings.g.h"
 #include "WindowCreatedEventArgs.g.h"
 #include "ApplicationInitializationCallbackParams.g.h"
@@ -12,6 +14,14 @@
 #include <FrameworkTheming.h>
 #include <DependencyLocator.h>
 #include <MetadataResetter.h>
+
+// Bug 62676756: Add activation factory fast paths
+#ifndef WINAPPSDK_CHANGEID_62676756
+#define WINAPPSDK_CHANGEID_62676756 62676756
+#endif
+// Bug 62849414: Reserve space in TrackerCollections before appending multiple items
+#define WINAPPSDK_CHANGEID_62849414 62849414
+
 #include <process.h>
 #include <RuntimeEnabledFeatures.h>
 #include "NormalLaunchActivatedEventArgs.h"
@@ -199,9 +209,18 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     wrl::ComPtr<msy::IDispatcherQueueController> dispatcherQueueController;
     wrl::ComPtr<msy::IDispatcherQueueController2> dispatcherQueueController2;
 
-    IFCFAILFAST(wf::GetActivationFactory(
-        wrl::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueueController).Get(),
-        &dispatcherQueueControllerStatics));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+    {
+        IFCFAILFAST(MuxGetActivationFactory(
+            wrl::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueueController).Get(),
+            &dispatcherQueueControllerStatics));
+    }
+    else
+    {
+        IFCFAILFAST(wf::GetActivationFactory(
+            wrl::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueueController).Get(),
+            &dispatcherQueueControllerStatics));
+    }
     IFCFAILFAST(dispatcherQueueControllerStatics->CreateOnCurrentThread(&dispatcherQueueController));
     IFCFAILFAST(dispatcherQueueController.As(&dispatcherQueueController2));
 
@@ -222,7 +241,14 @@ _Check_return_ HRESULT FrameworkApplicationFactory::StartImpl(_In_opt_ xaml::IAp
     }
 
     // Create WindowsXamlManager (WindowsXamlManager::Initialize will call FrameworkApplication::StartOnCurrentThread())
-    IFCFAILFAST(ctl::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Hosting_WindowsXamlManager).Get(), &windowsXamlManagerFactory));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+    {
+        IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Hosting_WindowsXamlManager).Get(), windowsXamlManagerFactory.ReleaseAndGetAddressOf()));
+    }
+    else
+    {
+        IFCFAILFAST(ctl::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Xaml_Hosting_WindowsXamlManager).Get(), &windowsXamlManagerFactory));
+    }
     IFCFAILFAST(windowsXamlManagerFactory->InitializeForCurrentThread(&windowsXamlManager));
 
     // We must have an XAML application instance at this point
@@ -1213,6 +1239,10 @@ _Check_return_ HRESULT FrameworkApplication::get_WindowsImpl(_Outptr_result_mayb
 
     ctl::ComPtr<TrackerCollection<xaml::Window*>> windowCollection;
     IFC_RETURN(ctl::make(&windowCollection));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62849414>())
+    {
+        windowCollection->Reserve(static_cast<UINT32>(windowVector.size()));
+    }
     for (auto window : windowVector)
     {
         // DirectUI::Window is implicitly cast to xaml::Window*

@@ -508,6 +508,20 @@ namespace Microsoft.UI.Xaml.Hosting
         Down,
     };
 }
+namespace Microsoft.UI.Xaml.Settings
+{
+
+    [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
+    [webhosthidden]
+    enum XamlChangeId
+    {
+        _Reserved,
+        IconNoGridOptimization = 61276805,
+        OptimizeApplyStyles = 61697456,
+        DefaultStyleOptimizations = 60995620,
+        DeferContextFlyoutInit = 61098986,
+    };
+}
 
 namespace Microsoft.UI.Xaml
 {
@@ -596,6 +610,7 @@ namespace Microsoft.UI.Xaml
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Media.LoadedImageSourceLoadStatus>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Media.Animation.ConnectedAnimationComponent>;
         interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Media.Imaging.SvgImageSourceLoadStatus>;
+        interface Windows.Foundation.IReference<Microsoft.UI.Xaml.Settings.XamlChangeId>;
         interface Windows.Foundation.IReference<Windows.UI.Text.TextDecorations>;
     }
 }
@@ -2102,7 +2117,7 @@ namespace Microsoft.UI.Xaml.Markup
         void Disable(Int32 lineNumber, Int32 columnNumber);
     };
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
     [webhosthidden]
     interface IXamlCondition 
     {
@@ -2319,6 +2334,21 @@ namespace Microsoft.UI.Xaml.Hosting
     {
         [method_name("CreateInstance")] XamlSourceFocusNavigationResult(Boolean focusMoved);
         Boolean WasFocusMoved{ get; };
+    };
+
+}
+namespace Microsoft.UI.Xaml.Settings
+{
+    [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
+    [webhosthidden]
+    [default_interface]
+    runtimeclass XamlOptionalChanges
+    {
+        static Boolean EnableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean DisableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean IsChangeEnabled(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean Lock();
+        static Boolean IsLocked();
     };
 
 }

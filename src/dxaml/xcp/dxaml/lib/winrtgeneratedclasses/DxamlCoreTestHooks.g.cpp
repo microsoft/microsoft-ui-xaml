@@ -45,6 +45,23 @@ HRESULT DirectUI::DxamlCoreTestHooksGenerated::QueryInterfaceImpl(_In_ REFIID ii
 // Events.
 
 // Methods.
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::DxamlCoreTestHooksGenerated::ResetOptionalChanges()
+{
+    HRESULT hr = S_OK;
+    if (EventEnabledApiFunctionCallStart())
+    {
+        XamlTelemetry::PublicApiCall(true, reinterpret_cast<uint64_t>(this), "DxamlCoreTestHooks_ResetOptionalChanges", 0);
+    }
+    
+    IFC(CheckThread());
+    IFC(static_cast<DxamlCoreTestHooks*>(this)->ResetOptionalChangesImpl());
+Cleanup:
+    if (EventEnabledApiFunctionCallStop())
+    {
+        XamlTelemetry::PublicApiCall(false, reinterpret_cast<uint64_t>(this), "DxamlCoreTestHooks_ResetOptionalChanges", hr);
+    }
+    RRETURN(hr);
+}
 
 HRESULT DirectUI::DxamlCoreTestHooksFactory::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ void** ppObject)
 {

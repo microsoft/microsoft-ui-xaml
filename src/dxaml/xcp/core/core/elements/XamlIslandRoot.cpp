@@ -38,6 +38,12 @@
 #include <Theme.h>
 #include "Value.h"
 
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62406051: [2.0 Servicing][WASDK] Null-guard CXamlIslandRoot::GetScreenOffset and re-order UIA disconnect in Dispose()
+// to fix re-entrant UIA AV during XAML island teardown (Watson failure 214d70ab-e364-5bdc-3116-2b589f68d0cc).
+#define WINAPPSDK_CHANGEID_62406051 62406051
+
 #include "PointerPointTransform.h"
 
 #include "LoadLibraryAbs.h"
@@ -55,6 +61,16 @@ CXamlIslandRoot::CXamlIslandRoot(_In_ CCoreServices *pCore)
 CXamlIslandRoot::~CXamlIslandRoot()
 {
     Dispose();
+}
+
+void CXamlIslandRoot::DisconnectUIA()
+{
+    if (m_uiaWindow)
+    {
+        m_uiaWindow->UIADisconnectAllProviders();
+        m_uiaWindow->Deinit();
+        m_uiaWindow = nullptr;
+    }
 }
 
 // Order of cleanup should be :
@@ -85,11 +101,21 @@ void CXamlIslandRoot::Dispose()
         m_contentRoot = nullptr;
     }
 
-    if (m_uiaWindow)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62406051>())
     {
-        m_uiaWindow->UIADisconnectAllProviders();
-        m_uiaWindow->Deinit();
-        m_uiaWindow = nullptr;
+        // New behavior: route through the shared DisconnectUIA() helper so that
+        // XamlIsland::Close can also call it earlier (before any island teardown).
+        DisconnectUIA();
+    }
+    else
+    {
+        // Original behavior: disconnect UIA inline as part of late Dispose.
+        if (m_uiaWindow)
+        {
+            m_uiaWindow->UIADisconnectAllProviders();
+            m_uiaWindow->Deinit();
+            m_uiaWindow = nullptr;
+        }
     }
 
     // Let CCoreServices evaluate visibility again, in case this was the last visible content and it was just closed.
@@ -1243,6 +1269,19 @@ POINT CXamlIslandRoot::GetScreenOffset()
     // Due to an IXP bug, we cannot cache the coordinate converter and need to retrieve it from the ContentIsland.
     // https://task.ms/48700073 ContentIsland final state does not propagate to its satellite objects in time.
     auto contentIsland = GetContentIsland();
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62406051>())
+    {
+        // A re-entrant UIA call (hit-test, bounding-rect, property fetch) can
+        // land here after the ContentIsland has been torn down. Return {0,0},
+        // same shape as the isClosed=true path below.
+        if (!contentIsland)
+        {
+            return { 0, 0 };
+        }
+    }
+    // else: original (pre-fix) behavior -- fall through and deref contentIsland,
+    // which is the AV path this servicing change is fixing.
 
     ctl::ComPtr<mu::IClosableNotifier> closableNotifier;
     IFCFAILFAST(ctl::do_query_interface(closableNotifier, contentIsland));

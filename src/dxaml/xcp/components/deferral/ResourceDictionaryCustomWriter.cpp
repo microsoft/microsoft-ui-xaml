@@ -32,7 +32,7 @@ ResourceDictionaryCustomWriter::ResourceDictionaryCustomWriter(
 _Check_return_ HRESULT ResourceDictionaryCustomWriter::Initialize()
 {
     m_runtimeData = std::unique_ptr<ResourceDictionaryCustomRuntimeData>(
-        new ResourceDictionaryCustomRuntimeData());
+        new ResourceDictionaryCustomRuntimeData(true));
 
     IFC_RETURN(m_context->get_X_KeyProperty(m_spXKeyProperty));
     IFC_RETURN(m_context->get_X_NameProperty(m_spXNameProperty));

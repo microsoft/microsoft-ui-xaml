@@ -73,6 +73,7 @@
     <CompileFiles Include="Builders\CoreBaseType.cs" />
     <CompileFiles Include="Builders\NameAttributes.cs" />
     <CompileFiles Include="Builders\DependencyPropertyModifier.cs" />
+    <CompileFiles Include="Builders\DependencyPropertyVersion.cs" />
     <CompileFiles Include="Builders\PropertyKind.cs" />
     <CompileFiles Include="Builders\NativeStorageType.cs" />
     <CompileFiles Include="Builders\EventFlags.cs" />
@@ -142,6 +143,7 @@
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Navigation.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Printing.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Resources.cs" />
+    <CompileFiles Include="Model\Microsoft.UI.Xaml.Settings.cs" />
     <CompileFiles Include="Model\Microsoft.UI.Xaml.Shapes.cs" />
     <CompileFiles Include="Model\Microsoft.Windows.ApplicationModel.Resources.cs" />
     <CompileFiles Include="Model\Windows.UI.Xaml.Interop.cs" />

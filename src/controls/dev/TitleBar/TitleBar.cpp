@@ -12,7 +12,7 @@
 #include "FrameworkUdk/Containment.h"
 
 // Bug 61831627: [2.0 Servicing] Titlebar Content Custom Drag Regions
-#define WINAPPSDK_CHANGEID_61831627 61831627, WinAppSDK_2_1_0
+#define WINAPPSDK_CHANGEID_61831627 61831627
 
 bool TitleBarTrace::s_IsDebugOutputEnabled{ false };
 bool TitleBarTrace::s_IsVerboseDebugOutputEnabled{ false };

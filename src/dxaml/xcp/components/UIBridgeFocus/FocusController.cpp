@@ -8,6 +8,13 @@
 #include "NavigationFocusEventArgs.h"
 #include "NavigateFocusResult.h"
 #include <WRLHelper.h>
+#include <MuxActivationFactory.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62676756: Add activation factory fast paths
+#ifndef WINAPPSDK_CHANGEID_62676756
+#define WINAPPSDK_CHANGEID_62676756 62676756
+#endif
 
 using namespace xaml_hosting;
 using FocusChangedEventHandler = wf::ITypedEventHandler<
@@ -184,7 +191,14 @@ HRESULT FocusController::DepartFocus(
     wrl::ComPtr<ixp::IFocusNavigationRequest> ixpRequest;
 
     wrl::ComPtr<ixp::IFocusNavigationRequestStatics> focusNavigationRequestStatics;
-    wf::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_FocusNavigationRequest).Get(), &focusNavigationRequestStatics);
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+    {
+        MuxGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_FocusNavigationRequest).Get(), &focusNavigationRequestStatics);
+    }
+    else
+    {
+        wf::GetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Microsoft_UI_Input_FocusNavigationRequest).Get(), &focusNavigationRequestStatics);
+    }
     IFCFAILFAST(focusNavigationRequestStatics->CreateWithHintRectAndId(ixpReason, hintRect, correlationId, &ixpRequest));
 
     wrl::ComPtr<ixp::IInputFocusController2> inputFocusController2;
@@ -217,9 +231,18 @@ _Check_return_
 HRESULT FocusController::OnGotFocusCommon()
 {
     wrl::ComPtr<msy::IDispatcherQueueStatics> spDispatcherQueueStatics;
-    IFC_RETURN(wf::GetActivationFactory(
-        wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
-        &spDispatcherQueueStatics));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+    {
+        IFC_RETURN(MuxGetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            &spDispatcherQueueStatics));
+    }
+    else
+    {
+        IFC_RETURN(wf::GetActivationFactory(
+            wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+            &spDispatcherQueueStatics));
+    }
 
     wrl::ComPtr<msy::IDispatcherQueue> spDispatcherQueue;
     IFC_RETURN(spDispatcherQueueStatics->GetForCurrentThread(&spDispatcherQueue));
@@ -268,4 +291,3 @@ HRESULT FocusController::FireGotFocus(_In_opt_ xaml_hosting::IXamlSourceFocusNav
 
     return S_OK;
 }
-

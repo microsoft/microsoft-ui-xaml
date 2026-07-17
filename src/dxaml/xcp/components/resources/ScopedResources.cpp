@@ -17,6 +17,12 @@
 #include <corep.h>
 #include <DOPointerCast.h>
 #include <OverrideInfo.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62676773: Reduce hashing and iteration overhead in theme walk
+#ifndef WINAPPSDK_CHANGEID_62676773
+#define WINAPPSDK_CHANGEID_62676773 62676773
+#endif
 
 namespace Resources { namespace ScopedResources
 {
@@ -505,25 +511,54 @@ namespace Resources { namespace ScopedResources
 
         const CFrameworkElement* whereFound = nullptr;
 
-        IFC_RETURN(TraverseVisualTreeResources(
-            object,
-            [&keyName, resultObj, resultDict, &whereFound](const CFrameworkElement* fe, CResourceDictionary* dict, bool& done) -> HRESULT
-            {
-                IFCFAILFAST(dict->GetKeyForResourceResolutionNoRef(
-                            keyName,
-                            Resources::LookupScope::LocalOnly,
-                            resultObj,
-                            resultDict));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676773>())
+        {
+            // Pre-compute the ResourceKey once so we don't re-hash keyName
+            // for every dictionary we visit walking up the tree.
+            const ResourceKey resourceKey(keyName, false /* keyIsType */);
 
-                if (*resultObj)
+            IFC_RETURN(TraverseVisualTreeResources(
+                object,
+                [&resourceKey, resultObj, resultDict, &whereFound](const CFrameworkElement* fe, CResourceDictionary* dict, bool& done) -> HRESULT
                 {
-                    whereFound = fe;
-                    done = true;
-                }
+                    IFCFAILFAST(dict->GetKeyForResourceResolutionNoRef(
+                                resourceKey,
+                                Resources::LookupScope::LocalOnly,
+                                resultObj,
+                                resultDict));
 
-                return S_OK;
-            }
-        ));
+                    if (*resultObj)
+                    {
+                        whereFound = fe;
+                        done = true;
+                    }
+
+                    return S_OK;
+                }
+            ));
+        }
+        else
+        {
+            IFC_RETURN(TraverseVisualTreeResources(
+                object,
+                [&keyName, resultObj, resultDict, &whereFound](const CFrameworkElement* fe, CResourceDictionary* dict, bool& done) -> HRESULT
+                {
+                    IFCFAILFAST(dict->GetKeyForResourceResolutionNoRef(
+                                keyName,
+                                Resources::LookupScope::LocalOnly,
+                                resultObj,
+                                resultDict));
+
+                    if (*resultObj)
+                    {
+                        whereFound = fe;
+                        done = true;
+                    }
+
+                    return S_OK;
+                }
+            ));
+        }
 
         // If there are no override dictionaries, save some work and bail early.
 

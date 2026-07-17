@@ -88,6 +88,7 @@
 #include "Binding.g.h"
 #include "BindingExpression.g.h"
 #include "PropertyPath.g.h"
+#include "DirectSourceBindingExpression.h"
 #include "Callback.h"
 #include "DxamlCoreTestHooks.g.h"
 #include "NullKeyedResource.g.h"
@@ -109,10 +110,16 @@
 #include "AutomaticDragHelper.h"
 #include "TextControlFlyoutHelper.h"
 #include "XamlTelemetry.h"
+#include "XamlOptionalChanges.g.h"
 
 #include "DXamlCoreTipTests.h"
 
 #include "xcpwindow.h"
+
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62542953: [2.0 servicing] Reduce allocations by reserving vector space
+#define WINAPPSDK_CHANGEID_62542953 62542953
 
 using namespace WRLHelper;
 using namespace DirectUI;
@@ -328,7 +335,7 @@ DXamlCore::GetAssociatedWindowNoRef(
     }
 
     // This is a change we made late in the 1.8 release, so it's scoped tightly to reduce risk.
-    // The main point of this function is to return the Window object for an element that's in the 
+    // The main point of this function is to return the Window object for an element that's in the
     // content of the Window.  But we have a problem where the call to get_HostWindow can fail
     // if the XamlIsland that contains the element is not backed by an HWND.
     // We know that Xaml Window uses a DesktopWindowXamlSource to host its content.  So if we can
@@ -2246,6 +2253,10 @@ DXamlCore::OnLayoutUpdated(_In_ IInspectable* pArgs)
     HRESULT hr = S_OK;
 
     std::vector<std::pair<HANDLE, ctl::WeakRefPtr>> handlers;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62542953>())
+    {
+        handlers.reserve(m_LayoutUpdatedEventSources.size());
+    }
 
     // Copy the list first to prevent re-entrancy problems
     std::for_each(m_LayoutUpdatedEventSources.cbegin(), m_LayoutUpdatedEventSources.cend(),
@@ -2752,6 +2763,13 @@ _Check_return_ HRESULT DXamlCore::SetCoreWindow(_In_ wuc::ICoreWindow* pCoreWind
 
 _Check_return_ HRESULT DXamlCore::InitializeImpl(_In_ InitializationType initializationType)
 {
+    // Lock optional changes now, before any XAML initialization proceeds.
+    // This is the single choke point for both Application.Start() and
+    // WindowsXamlManager.InitializeForCurrentThread().
+    // Return value intentionally ignored: we don't care whether this call
+    // actually performed the lock or it was already locked by a prior init.
+    std::ignore = XamlOptionalChanges::LockInternal();
+
     DXamlInstanceStorage::Handle hInstance = NULL;
     IFC_RETURN(DXamlInstanceStorage::GetValue(&hInstance));
 
@@ -4559,6 +4577,16 @@ void DXamlCore::SetGenericXamlFilePathForMUX(const xstring_ptr_view& filePath)
     }
 }
 
+void DXamlCore::ReloadThemeResourcesIfNeeded()
+{
+    if (m_pDefaultStyles != nullptr && m_pDefaultStyles->GetStyleCache()->ShouldReloadThemeResources())
+    {
+        StyleCache* styleCache = m_pDefaultStyles->GetStyleCache();
+        styleCache->Clear();
+        IFCFAILFAST(styleCache->LoadThemeResources());
+    }
+}
+
 void DXamlCore::SetThreadingAssertOverride(bool enabled)
 {
 #if DBG
@@ -4704,6 +4732,30 @@ bool DXamlCore::TryGetXamlIslandBoundsForElement(_In_opt_ CDependencyObject* dep
     IFC_RETURN(DXamlCore::GetCurrent()->GetPeer(target, &targetDO));
 
     IFC_RETURN(SetBinding(ctl::as_iinspectable(sourceDO.Get()), path, targetDO.Get(), targetPropertyIndex));
+    return S_OK;
+}
+
+/* static */ _Check_return_ HRESULT DXamlCore::SetDirectBinding(
+    _In_ DependencyObject* source,
+    KnownPropertyIndex sourcePropertyIndex,
+    _In_ DependencyObject* target,
+    KnownPropertyIndex targetPropertyIndex,
+    _In_opt_ xaml_data::IValueConverter* converter)
+{
+    // Create the lightweight DirectSourceBindingExpression (modeled after TemplateBindingExpression)
+    const auto* pSourceProperty = MetadataAPI::GetDependencyPropertyByIndex(sourcePropertyIndex);
+    const auto* pTargetProperty = MetadataAPI::GetDependencyPropertyByIndex(targetPropertyIndex);
+
+    ctl::ComPtr<DirectSourceBindingExpression> spExpression;
+    IFC_RETURN(DirectSourceBindingExpression::Create(
+        source,
+        pSourceProperty,
+        converter,
+        spExpression.ReleaseAndGetAddressOf()));
+
+    // Attach the expression to the target using the public SetExpressionCore method
+    IFC_RETURN(target->SetExpressionCore(pTargetProperty, spExpression.Get(), ::BaseValueSourceUnknown));
+
     return S_OK;
 }
 

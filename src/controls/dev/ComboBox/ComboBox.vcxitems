@@ -17,10 +17,16 @@
     <Page Include="$(MSBuildThisFileDirectory)ComboBox_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ComboBox_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup Condition="$(MUXFinalRelease) == 'true'">
     <Page Include="$(MUXProjectRoot)BuildOutput\Temp\ThemeResources\ComboBox_themeresources.xaml">
       <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MUXProjectRoot)BuildOutput\Temp\ThemeResources\ComboBox_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
     </Page>
   </ItemGroup>
   <ItemGroup>

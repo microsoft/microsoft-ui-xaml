@@ -191,6 +191,19 @@
       <Link>Themes\%(Filename)%(Extension)</Link>
       <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
     </PageRequiringCustomCompilation>
+    <!-- Perf2026: Optimized templates for performance improvements -->
+    <PageRequiringCustomCompilation Include="$(OutDir)generic_perf2026.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
+    <PageRequiringCustomCompilation Include="$(OutDir)themeresources_perf2026.xaml">
+      <SubType>Designer</SubType>
+      <ThemeResource>true</ThemeResource>
+      <Link>Themes\%(Filename)%(Extension)</Link>
+      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+    </PageRequiringCustomCompilation>
     <Page Include="@(PageRequiringCustomCompilation)" />
   </ItemGroup>
   <ItemGroup>
@@ -306,6 +319,8 @@
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == 'Undefined'" />
       <StylePage Include="@(OrderedSharedPage)" Condition="'%(Type)' == 'DefaultStyle'" />
       <ThemeResourcePage Include="@(OrderedSharedPage)" Condition="'%(Type)' == 'ThemeResources'" />
+      <StylePagePerf2026 Include="@(OrderedSharedPage)" Condition="'%(Type)' == 'StylePerf2026'" />
+      <ThemeResourcePagePerf2026 Include="@(OrderedSharedPage)" Condition="'%(Type)' == 'ThemeResourcesPerf2026'" />
     </ItemGroup>
   </Target>
   <PropertyGroup>
@@ -333,6 +348,22 @@
       to only set a property if the target actually runs. -->
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
+    </CreateProperty>
+  </Target>
+  <!-- Perf2026: Generate optimized generic resources XAML file -->
+  <Target Name="GenerateGenericResourceFilePerf2026" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(StylePagePerf2026)" Outputs="$(OutDir)generic_perf2026.xaml">
+    <Message Text="Generating Perf2026 generic resources XAML file" />
+    <BatchMergeXaml Pages="@(StylePagePerf2026)" PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)" MergedXamlFile="$(OutDir)generic_perf2026%(MergeXamlConfig.Postfix).xaml" TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFilePerf2026%(MergeXamlConfig.Postfix).read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFilePerf2026%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <CreateProperty Value="True">
+      <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFilePerf2026NeedsCompilation" />
+    </CreateProperty>
+  </Target>
+  <!-- Perf2026: Generate optimized theme resources XAML file -->
+  <Target Name="GenerateThemeResourceFilePerf2026" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(ThemeResourcePagePerf2026)" Outputs="$(OutDir)themeresources_perf2026.xaml">
+    <Message Text="Generating Perf2026 theme resources XAML file" />
+    <BatchMergeXaml Pages="@(ThemeResourcePagePerf2026)" PagesFilteredBy="%(MergeXamlConfig.FilterAttribute)" MergedXamlFile="$(OutDir)themeresources_perf2026%(MergeXamlConfig.Postfix).xaml" TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFilePerf2026%(MergeXamlConfig.Postfix).read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFilePerf2026%(MergeXamlConfig.Postfix).write.1u.tlog" />
+    <CreateProperty Value="True">
+      <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFilePerf2026NeedsCompilation" />
     </CreateProperty>
   </Target>
   <!-- Controls styles were missing in packaged generic.xaml file. Merge MUX Generic.xaml with MUXC Generic.xaml and ThemeResource.xaml -->
@@ -392,6 +423,9 @@
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'generic' And ('$(GenericXamlFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\generic.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'themeresources' And ('$(ThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\themeresources.xbf'))" />
       <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'compact_themeresources' And ('$(CompactThemeResourceFileNeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\compact_themeresources.xbf'))" />
+      <!-- Perf2026 optimized templates -->
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'generic_perf2026' And ('$(GenericXamlFilePerf2026NeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\generic_perf2026.xbf'))" />
+      <PageToBeCompiled Include="@(PageRequiringCustomCompilation)" Condition="'%(Filename)' == 'themeresources_perf2026' And ('$(ThemeResourceFilePerf2026NeedsCompilation)' == 'True' Or !Exists('$(GeneratedFilesDir)Themes\themeresources_perf2026.xbf'))" />
     </ItemGroup>
     <Message Condition="'@(PageToBeCompiled)' != ''" Text="CustomCompile with min version %(PageToBeCompiled.MinSDKVersionRequired) for Pages: @(PageToBeCompiled)" />
     <!-- We need to do both Pass1 and Pass2 to properly plug into incremental building, even though we only need the output of Pass2. -->

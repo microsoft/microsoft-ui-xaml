@@ -15,13 +15,14 @@
 #include <FlyweightCoreAdapter.h>
 #include <CDOSharedState.h>
 #include <VisualTree.h>
+#include <FrameworkUdk/Containment.h>
 
 class CD3D11Device;
 
 // GenXbf references base projects of MUX, those codes may use containment.
 // Since GenXbf is not calling into many of those codes today, we can stub out the containment APIs
 // instead of linking against FrameworkUdk. This defaults to FALSE to avoid accidental containment leak.
-STDAPI_(BOOL) Containment_GetChangeEnabled(UINT32 changeId, UINT32 patchVersion)
+STDAPI_(BOOL) Containment_GetChangeEnabled(UINT32 changeId, WinAppSDKPatchVersionDeprecated patchVersion)
 {
     return FALSE;
 }

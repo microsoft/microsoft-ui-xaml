@@ -18,6 +18,18 @@
 #define STR2(a,b)     STR1(a) VERSION_DELIMIMITER STR1(b)
 #endif
 
+// If the specific version information has not been defined, then define it now.
+// The default for WINUI is the WINUI major version, WINAPPSDK major version,
+// WINAPPSDK minor version.  This means that we ignore the WINUI_RELEASE_MINOR and 
+// WINUI_RELEASE_PATCH variables.
+
+#ifndef WINUI_RELEASE_MAJOR
+#define WINUI_RELEASE_MAJOR                                 3
+#endif
+#ifndef WINUI_BUILD_VERSION
+#define WINUI_BUILD_VERSION                                 0
+#endif
+
 #define WINDOWSAPPSDK_RELEASE_MAJOR                         0
 #define WINDOWSAPPSDK_RELEASE_MINOR                         0
 

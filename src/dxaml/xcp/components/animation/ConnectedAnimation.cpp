@@ -11,6 +11,8 @@
 #include <DependencyObjectTraits.g.h>
 #include "UIElement.h"
 #include "Corep.h"
+#include <MuxActivationFactory.h>
+#include "FrameworkUdk/Containment.h"
 #include "UIElementCollection.h"
 #include "DOPointerCast.h"
 #include "Transforms.h"
@@ -22,6 +24,11 @@
 #include "Host.h"
 #include "EasingFunctions.h"
 #include "HWCompNode.h"
+
+// Bug 62676756: Add activation factory fast paths
+#ifndef WINAPPSDK_CHANGEID_62676756
+#define WINAPPSDK_CHANGEID_62676756 62676756
+#endif
 #include "D2d1.h"
 #include <MUX-ETWEvents.h>
 #include <D3D11Device.h>
@@ -1001,7 +1008,14 @@ _Check_return_ HRESULT CConnectedAnimation::CreateSnapshotBrush(_In_ ConnectedAn
     effect->put_Name(wrl_wrappers::HStringReference(L"Crossfade").Get());
 
     Microsoft::WRL::ComPtr<WUComp::ICompositionEffectSourceParameterFactory> effectSourceFactory;
-    IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEffectSourceParameter).Get(), &effectSourceFactory));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+    {
+        IFC_RETURN(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEffectSourceParameter).Get(), &effectSourceFactory));
+    }
+    else
+    {
+        IFC_RETURN(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Composition_CompositionEffectSourceParameter).Get(), &effectSourceFactory));
+    }
 
     // Create two graphics source parameters that we will use to set our brushes into the effect.
     {

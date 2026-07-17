@@ -25,7 +25,7 @@
 #include "RenderTargetBitmapImplUsingSpriteVisuals.h"
 #include "FrameworkUdk/Containment.h"
 
-#define WINAPPSDK_CHANGEID_62216616 62216616, WinAppSDK_2_1_5
+#define WINAPPSDK_CHANGEID_62216616 62216616
 #include "LockableGraphicsPointer.h"
 #include "D3D11.h"
 #include "D3D11Device.h"

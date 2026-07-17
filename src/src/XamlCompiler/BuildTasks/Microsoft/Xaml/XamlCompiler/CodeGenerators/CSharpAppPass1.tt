@@ -16,22 +16,35 @@
 
 namespace <#=Model.CodeInfo.ClassName.Namespace#>
 {
-#if !DISABLE_XAML_GENERATED_MAIN
     /// <summary>
     /// Program class
     /// </summary>
+#if !DISABLE_XAML_GENERATED_MAIN
     public static class Program
+#else
+    public static class XamlGeneratedProgram
+#endif
     {
         <#=GeneratedCodeAttribute#>
         <#=DebuggerNonUserCodeAttribute#>
 <#  if (ProjectInfo.IsWin32App) { #>
         [global::System.STAThreadAttribute]
 <#  } #>
+#if !DISABLE_XAML_GENERATED_MAIN
         static void Main(string[] args)
+#else
+        static void XamlGeneratedMain(string[] args)
+#endif
         {
 <#  if (ProjectInfo.UsingCSWinRT) { #>
             global::WinRT.ComWrappersSupport.InitializeComWrappers();
 <#  }#>
+<#  foreach (var change in ProjectInfo.EnabledXamlOptionalChanges) { #>
+            <#=Globalize(KnownTypes.XamlOptionalChanges)#>.EnableChange(<#= int.TryParse(change, out _) ? $"({Globalize(KnownTypes.XamlChangeId)}){change}" : $"{Globalize(KnownTypes.XamlChangeId)}.{change}" #>);
+<#  } #>
+<#  foreach (var change in ProjectInfo.DisabledXamlOptionalChanges) { #>
+            <#=Globalize(KnownTypes.XamlOptionalChanges)#>.DisableChange(<#= int.TryParse(change, out _) ? $"({Globalize(KnownTypes.XamlChangeId)}){change}" : $"{Globalize(KnownTypes.XamlChangeId)}.{change}" #>);
+<#  } #>
 <#  if (ProjectInfo.UsingCSWinRT) { #>
             <#=Globalize(KnownTypes.Application)#>.Start((p) => {
                 var context = new global::Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(global::Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
@@ -43,7 +56,6 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#  } #>
         }
     }
-#endif
 
     partial class <#=Model.CodeInfo.ClassName.ShortName#> : global::<#=Model.CodeInfo.BaseTypeName#>
     {

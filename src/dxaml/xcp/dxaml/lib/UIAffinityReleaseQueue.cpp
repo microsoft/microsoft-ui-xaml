@@ -11,7 +11,7 @@
 #include "FrameworkUdk/Containment.h"
 
 // Bug 61855278: [2.0 Servicing][WASDK] Fix re-entrancy crash: PauseDispatch during UIAffinityReleaseQueue::DoCleanup
-#define WINAPPSDK_CHANGEID_61855278 61855278, WinAppSDK_2_1_0
+#define WINAPPSDK_CHANGEID_61855278 61855278
 
 using namespace DirectUI;
 using namespace Instrumentation;

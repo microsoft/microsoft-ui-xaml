@@ -55,8 +55,15 @@
 #include <FxCallbacks.h>
 #include "FrameworkUdk/Containment.h"
 
+// Bug 62542953: [2.0 servicing] Reduce allocations by reserving vector space
+#define WINAPPSDK_CHANGEID_62542953 62542953
+
 // Bug 61760863: [2.0 Servicing] Use weak reference in implicit animation completion callback to prevent crash
-#define WINAPPSDK_CHANGEID_61760863 61760863, WinAppSDK_2_1_0
+#define WINAPPSDK_CHANGEID_61760863 61760863
+// Bug 62659855: Cache UIElement and FrameworkElement type checks
+#ifndef WINAPPSDK_CHANGEID_62659855
+#define WINAPPSDK_CHANGEID_62659855 62659855
+#endif
 
 using namespace DirectUI;
 
@@ -194,6 +201,11 @@ CUIElement::CUIElement(_In_ CCoreServices* core)
 
     ASSERT(IsEmptyRectF(m_contentInnerBounds) && IsEmptyRectF(m_childBounds)
         && IsEmptyRectF(m_combinedInnerBounds) && IsEmptyRectF(m_outerBounds));
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62659855>())
+    {
+        SetCachedUIElementBit();
+    }
 }
 
 FacadeTransformInfo CUIElement::GetFacadeTransformInfo(bool preferAnimatingValue) const
@@ -566,27 +578,71 @@ CUIElementCollectionWrapper CUIElement::GetUnsortedChildren()
     return CUIElementCollectionWrapper(GetChildren());
 }
 
-wil::details::lambda_call<std::function<void()>> CUIElement::LockParent()
+CUIElement::ParentCollectionLock::ParentCollectionLock(CCollection* collection)
+    : m_collection(collection)
 {
-    xref_ptr<CCollection> pCollection;
-    CUIElement* pParent = GetUIElementParentInternal();
-    if (pParent)
-    {
-        pCollection = pParent->GetChildren();
-        if (pCollection)
-        {
-            pCollection->Lock();
-        }
-    }
+    if (m_collection) { m_collection->Lock(); }
+}
 
-    // make sure we unlock when we are done.
-    return wil::scope_exit<std::function<void()>>([pCollection]
+CUIElement::ParentCollectionLock::ParentCollectionLock(std::function<void()> cleanup)
+    : m_collection(nullptr)
+    , m_cleanup(std::move(cleanup))
+{
+}
+
+CUIElement::ParentCollectionLock::~ParentCollectionLock()
+{
+    reset();
+}
+
+void CUIElement::ParentCollectionLock::reset()
+{
+    if (m_collection)
+    {
+        m_collection->Unlock();
+        m_collection = nullptr;
+    }
+    if (m_cleanup)
+    {
+        m_cleanup();
+        m_cleanup = nullptr;
+    }
+}
+
+CUIElement::ParentCollectionLock CUIElement::LockParent()
+{
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62542953>())
+    {
+        // Optimized: no AddRef, no std::function heap allocation.
+        CUIElement* pParent = GetUIElementParentInternal();
+        if (pParent)
         {
+            return ParentCollectionLock(pParent->GetChildren());
+        }
+        return ParentCollectionLock();
+    }
+    else
+    {
+        // Original code path: AddRef via xref_ptr, cleanup via std::function.
+        xref_ptr<CCollection> pCollection;
+        CUIElement* pParent = GetUIElementParentInternal();
+        if (pParent)
+        {
+            pCollection = pParent->GetChildren();
             if (pCollection)
             {
-                pCollection->Unlock();
+                pCollection->Lock();
             }
-        });
+        }
+
+        return ParentCollectionLock([pCollection]
+            {
+                if (pCollection)
+                {
+                    pCollection->Unlock();
+                }
+            });
+    }
 }
 
 bool CUIElement::HasDepthLegacy() const

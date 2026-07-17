@@ -51,6 +51,7 @@ enum class KnownNamespaceIndex: UINT16
     Microsoft_UI_Xaml_Controls,
     Microsoft_UI_Xaml_Internal,
     Microsoft_UI_Xaml_Printing,
+    Microsoft_UI_Xaml_Settings,
     Microsoft_UI_Xaml_Resources,
     Microsoft_UI_Xaml_Documents,
     Windows_Foundation_Numerics,
@@ -3074,6 +3075,7 @@ enum class KnownMethodIndex: UINT16
     Duration_FromTimeSpan,
     DxamlCoreTestHooks_GetForCurrentThread,
     DxamlCoreTestHooks_PerformProcessWideLeakDetection,
+    DxamlCoreTestHooks_ResetOptionalChanges,
     ElementSoundPlayer_Play,
     ElementSoundPlayer_RequestInteractionSoundForElement,
     ElementSoundPlayer_GetEffectiveSoundMode,
@@ -4075,6 +4077,11 @@ enum class KnownMethodIndex: UINT16
     XamlIslandRoot_TrySetFocus,
     XamlIslandRoot_GetIslandFromElement,
     XamlShutdownCompletedOnThreadEventArgs_GetDispatcherQueueDeferral,
+    XamlOptionalChanges_EnableChange,
+    XamlOptionalChanges_DisableChange,
+    XamlOptionalChanges_IsChangeEnabled,
+    XamlOptionalChanges_Lock,
+    XamlOptionalChanges_IsLocked,
 };
 
 enum class KnownEventIndex: UINT16
@@ -4371,6 +4378,6 @@ constexpr UINT16 KnownTypeCount                 = static_cast<UINT16>(KnownTypeI
 constexpr UINT16 KnownPropertyCount             = static_cast<UINT16>(KnownPropertyIndex::LinearGradientBrush_Translation) + 1;
 constexpr UINT16 KnownDependencyPropertyCount   = static_cast<UINT16>(KnownPropertyIndex::RadioButton_GroupName) + 1;
 constexpr UINT16 KnownSimplePropertyCount       = 29; // KnownPropertyIndex::LinearGradientBrush_Translation
-constexpr UINT16 KnownMethodCount               = static_cast<UINT16>(KnownMethodIndex::XamlShutdownCompletedOnThreadEventArgs_GetDispatcherQueueDeferral) + 1;
+constexpr UINT16 KnownMethodCount               = static_cast<UINT16>(KnownMethodIndex::XamlOptionalChanges_IsLocked) + 1;
 constexpr UINT16 KnownEventCount                = static_cast<UINT16>(KnownEventIndex::WindowsXamlManager_XamlShutdownCompletedOnThread) + 1;
 constexpr KnownEventIndex LastControlEvent = KnownEventIndex::Control_InheritedPropertyChanged;

@@ -14,7 +14,7 @@
 #include "FrameworkUdk/Containment.h"
 
 // Bug 62255131: [2.1 Servicing] Fix use-after-free in ScrollView hide-indicators tick
-#define WINAPPSDK_CHANGEID_62255131 62255131, WinAppSDK_2_1_5
+#define WINAPPSDK_CHANGEID_62255131 62255131
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollViewTrace::s_IsDebugOutputEnabled{ false };
