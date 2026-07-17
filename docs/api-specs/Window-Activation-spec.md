@@ -3,22 +3,13 @@ Window showing and activation
 
 - [Window showing and activation](#window-showing-and-activation)
 - [1. Background](#1-background)
-    - [1.1. WPF behavior](#11-wpf-behavior)
-    - [1.2. Win32 behavior](#12-win32-behavior)
-    - [1.3. API summary](#13-api-summary)
-    - [1.4. Goals](#14-goals)
-    - [1.5. Non-goals](#15-non-goals)
+  - [1.1. WPF behavior](#11-wpf-behavior)
+  - [1.2. Win32 behavior](#12-win32-behavior)
+  - [1.3. API summary](#13-api-summary)
+  - [1.4. Goals](#14-goals)
+  - [1.5. Non-goals](#15-non-goals)
 - [2. Conceptual pages (How To)](#2-conceptual-pages-how-to)
 - [3. Examples](#3-examples)
-- [4. API Pages](#4-api-pages)
-    - [4.1. Window.Show](#41-windowshow)
-    - [4.2. Window.ShowActivated](#42-windowshowactivated)
-    - [4.3. Window.TrySetForeground](#43-windowtrysetforeground)
-    - [4.4. Window.Activate](#44-windowactivate)
-- [5. API Details](#5-api-details)
-- [6. Appendix](#6-appendix)
-    - [6.1. Alternatives considered](#61-alternatives-considered)
-    - [6.2. API review status](#62-api-review-status)
 
 
 # 1. Background
@@ -140,20 +131,22 @@ The new surface keeps activation and foreground as separate, clearly named opera
 # 2. Conceptual pages (How To)
 
 _Note: This is conceptual documentation that WILL go to the online "how to"
-page on learn.microsoft.com._
-A WinUI `Window` does two separate jobs: showing a window, and taking the
-foreground. These new APIs keep those jobs apart, so you can pick the behavior
-you want.
+page on learn.microsoft.com. It may extend, for example, the 
+[Manage app windows](https://learn.microsoft.com/windows/apps/develop/ui/manage-app-windows)
+conceptual page rather than starting a new one._
 
-- Call `Show()` to display a window. By default it also activates the window,
-  just like WPF.
+A WinUI `Window` represents a top-level window on the desktop. Showing that
+window and bringing it to the foreground are two separate operations, and these
+new APIs keep them apart so you can pick the behavior you want.
+
+- Call `Show()` to display a window. By default it also activates the window.
 - Set `ShowActivated = false` before `Show()` when you do not want the window
   to steal focus. This is the right choice for non-interrupting windows such as
   overlays, toasts, splash screens, search palettes, and tool windows.
 - Call `TrySetForeground()` to ask Windows to bring an already-shown window to the
   foreground. Windows can say no, so treat the return value as "maybe".
-- `Activate()` is the old call that did both jobs at once. It still works, but
-  it is deprecated. New code should use `Show()`.
+- `Activate()` is the old call that showed the window and activated it together.
+  It still works, but it is deprecated. New code should use `Show()`.
 
 # 3. Examples
 
