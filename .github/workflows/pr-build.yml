@@ -32,12 +32,16 @@ permissions:
 
 jobs:
   build:
-    name: Build (${{ matrix.flavor }})
-    runs-on: windows-2022
+    name: Build (${{ matrix.os }} / ${{ matrix.flavor }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
+        # Build every flavor on both an x64 host (windows-2022) and a native
+        # arm64 host (windows-11-arm) to keep host-toolchain parity across both.
+        os: [windows-2022, windows-11-arm]
+        flavor: [x86chk, x86fre, x64chk, x64fre, arm64chk, arm64fre]
         include:
           - flavor: x86chk
             platform: x86
@@ -87,7 +91,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v6
         with:
-          name: binlogs-${{ matrix.flavor }}
+          name: binlogs-${{ matrix.os }}-${{ matrix.flavor }}
           path: BuildOutput/**/*.binlog
           if-no-files-found: ignore
           retention-days: 7
@@ -95,7 +99,7 @@ jobs:
       - name: Upload product runtime payload
         uses: actions/upload-artifact@v6
         with:
-          name: winui-product-${{ matrix.flavor }}
+          name: winui-product-${{ matrix.os }}-${{ matrix.flavor }}
           path: |
             BuildOutput/packaging/${{ matrix.configuration }}/runtimes-framework/win-${{ matrix.platform }}/**
           if-no-files-found: warn
