@@ -79,6 +79,34 @@ jobs:
           fetch-depth: 1
           show-progress: false
 
+      # The windows-11-arm runner image ships most VS components but is missing
+      # some the repo requires (notably VC.Runtimes.x86.x64.Spectre, needed even
+      # for arm64-target builds because the codegen tools compile as x86/x64).
+      # Apply the repo's .vsconfig so the installed toolchain matches what the
+      # build expects. windows-2022 already includes these, so gate to arm64.
+      - name: Ensure required VS components (arm64 runner parity)
+        if: matrix.os == 'windows-11-arm'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installerDir = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer"
+          $vsPath = & "$installerDir\vswhere.exe" -latest -property installationPath
+          Write-Host "Applying .vsconfig to $vsPath"
+          # Quote the space-containing paths: Start-Process joins -ArgumentList
+          # with spaces and does not quote elements itself.
+          $installArgs = @(
+            'modify', '--installPath', "`"$vsPath`"",
+            '--config', "`"${{ github.workspace }}\.vsconfig`"",
+            '--quiet', '--norestart', '--nocache', '--force'
+          )
+          $p = Start-Process -FilePath "$installerDir\vs_installer.exe" `
+            -ArgumentList $installArgs -Wait -PassThru -NoNewWindow
+          # vs_installer can return before its child finishes; wait those out too.
+          Get-Process -Name 'vs_installer', 'setup', 'vs_installerservice' -ErrorAction SilentlyContinue |
+            Wait-Process -Timeout 1800 -ErrorAction SilentlyContinue
+          Write-Host "vs_installer exit code: $($p.ExitCode)"
+          if ($p.ExitCode -notin @(0, 3010)) { throw "vs_installer failed with exit code $($p.ExitCode)" }
+
       - name: Initialize build environment and build
         shell: pwsh
         run: |
