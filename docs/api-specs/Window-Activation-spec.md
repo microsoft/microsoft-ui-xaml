@@ -71,6 +71,8 @@ WPF has three relevant members:
 | [`Window.ShowActivated`](https://learn.microsoft.com/dotnet/api/system.windows.window.showactivated) | Controls whether the window is activated when it is first shown. The default is `true`. Apps set it to `false` before `Show()` to show without activation. |
 | [`Window.Activate()`](https://learn.microsoft.com/dotnet/api/system.windows.window.activate) | Attempts to bring an existing window to the foreground and activate it. It returns whether activation succeeded and follows the Win32 `SetForegroundWindow` rules. |
 
+Only `Window.Activate()` is in scope for this proposal. `Show()` and
+`ShowActivated` are listed under future directions in the appendix.
 
 ## 1.2. Win32 behavior
 
@@ -83,28 +85,16 @@ Win32 also separates showing, thread activation, and foreground activation:
 | [`SetForegroundWindow`](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-setforegroundwindow) | Asks Windows to make the window foreground and active, even if another app is currently foreground. Windows can deny the request. |
 
 Windows limits foreground changes so a background app cannot freely interrupt
-the user. According to the `SetForegroundWindow` documentation, all of these
-conditions must be true:
+the user. Roughly, the request is allowed when the calling app already has some
+claim to the foreground (for example it is already foreground, it launched the
+current foreground app, or it received the last input event) and no app has
+locked the foreground. The `SetForegroundWindow` documentation has the full list
+of conditions.
 
-- The caller is a desktop app.
-- The foreground process has not called `LockSetForegroundWindow` to block the
-  request.
-- No menus are active.
-
-At least one of these conditions must also be true:
-
-- The foreground-lock timeout has expired.
-- The calling process is already foreground.
-- The foreground process started the calling process.
-- There is no foreground process.
-- The calling process received the last input event.
-- Either the calling process or foreground process is being debugged.
-
-Windows may still deny the request even when these conditions appear to be
-met. When foreground activation is denied, Windows can flash the app's taskbar
-button instead. A WinUI API that requests foreground activation must preserve
-these rules, must not promise success, and should expose denial as a normal
-outcome rather than an exceptional failure.
+Even when the conditions look right, Windows can still deny the request, and it
+may flash the app's taskbar button instead. So a WinUI API that requests
+foreground activation must follow these rules, must not promise success, and
+should treat denial as a normal outcome rather than an error.
 
 ## 1.3. API summary
 
@@ -248,18 +238,31 @@ online docs._
   bool-returning `Activate()`, when it actually adds the fallible cross-process
   `SetForegroundWindow`. Same word, stronger behavior, right next to each other.
 
-- **Also add `Show()` and a `ShowActivated` property (match WPF).** An earlier
-  draft did this to give apps a WPF-style way to show a window without taking
-  focus. We deferred it because `Microsoft.UI.Windowing.AppWindow` already has
-  `Show()` and `Show(Boolean)`, so the show-without-activate story is largely
-  covered. It can be a separate proposal if there is demand for it on `Window`
-  directly.
-
 We chose `TrySetForeground()` because it names the exact Win32 operation
 (`SetForegroundWindow`), the `Try`/`bool` shape makes denial a normal outcome,
 and it keeps 'foreground' distinct from the thread-level 'activate' vocabulary.
 
-## 6.2. API review status
+## 6.2. Future directions
+
+Out of scope here, but natural follow-ups:
+
+- **A `Show()` method and a `ShowActivated` property on `Window` (match WPF).**
+  This would give a WPF-style way to show a window and choose whether it
+  activates. Setting `ShowActivated = false` before `Show()` would show a window
+  without stealing focus, which suits overlays, toasts, splash screens, and tool
+  windows:
+
+  ```csharp
+  Window toolWindow = new();
+  toolWindow.ShowActivated = false;
+  toolWindow.Show();
+  ```
+
+  We left it out for now because `AppWindow.Show(Boolean)` already covers most of
+  this. If there is demand for it directly on `Window`, it can be its own
+  proposal.
+
+## 6.3. API review status
 
 This API is not approved. This draft is meant to gather public feedback before
 the implementation or API shape is finalized.
