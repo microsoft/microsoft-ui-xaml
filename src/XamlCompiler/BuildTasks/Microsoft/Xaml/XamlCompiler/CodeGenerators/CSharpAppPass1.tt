@@ -33,7 +33,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 #if !DISABLE_XAML_GENERATED_MAIN
         static void Main(string[] args)
 #else
-        internal static void XamlGeneratedMain(string[] args)
+        internal static void XamlGeneratedMain()
 #endif
         {
 <#  if (ProjectInfo.UsingCSWinRT) { #>
