@@ -22,7 +22,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 #if !DISABLE_XAML_GENERATED_MAIN
     public static class Program
 #else
-    public static class XamlGeneratedProgram
+    internal static class XamlGeneratedProgram
 #endif
     {
         <#=GeneratedCodeAttribute#>
@@ -33,7 +33,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 #if !DISABLE_XAML_GENERATED_MAIN
         static void Main(string[] args)
 #else
-        public static void XamlGeneratedMain(string[] args)
+        internal static void XamlGeneratedMain(string[] args)
 #endif
         {
 <#  if (ProjectInfo.UsingCSWinRT) { #>

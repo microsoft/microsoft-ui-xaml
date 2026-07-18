@@ -45,7 +45,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
 namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.Namespace));
             this.Write("\r\n{\r\n    /// <summary>\r\n    /// Program class\r\n    /// </summary>\r\n#if !DISABLE_X" +
-                    "AML_GENERATED_MAIN\r\n    public static class Program\r\n#else\r\n    public static cl" +
+                    "AML_GENERATED_MAIN\r\n    public static class Program\r\n#else\r\n    internal static cl" +
                     "ass XamlGeneratedProgram\r\n#endif\r\n    {\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));
             this.Write("\r\n        ");
@@ -55,7 +55,7 @@ namespace ");
             this.Write("        [global::System.STAThreadAttribute]\r\n");
   } 
             this.Write("#if !DISABLE_XAML_GENERATED_MAIN\r\n        static void Main(string[] args)\r\n#else\r" +
-                    "\n        public static void XamlGeneratedMain(string[] args)\r\n#endif\r\n        {\r\n");
+                    "\n        internal static void XamlGeneratedMain(string[] args)\r\n#endif\r\n        {\r\n");
   if (ProjectInfo.UsingCSWinRT) { 
             this.Write("            global::WinRT.ComWrappersSupport.InitializeComWrappers();\r\n");
   }
