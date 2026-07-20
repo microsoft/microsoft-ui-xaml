@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="App.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="App.cpp" />
+    <ClCompile Include="DesktopWindow.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="ThreadManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="DesktopWindow.h" />
+    <ClInclude Include="MainWindow.h" />
+    <ClInclude Include="ThreadManager.h" />
+    <ClInclude Include="Helper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{e48dc53e-40b1-40cb-970a-f89935452892}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Strings">
+      <UniqueIdentifier>{8db865c9-68fd-4cc6-98fa-3360d535bced}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Strings\en-us">
+      <UniqueIdentifier>{07f28954-236a-4a06-9e26-69abd4c2744e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Strings\es-es">
+      <UniqueIdentifier>{4e765d88-eb1c-4d5b-a8a2-a2e7f27ee795}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\en-US\Resources.resw">
+      <Filter>Strings\en-us</Filter>
+    </PRIResource>
+    <PRIResource Include="Strings\es-ES\Resources.resw">
+      <Filter>Strings\es-es</Filter>
+    </PRIResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WinUITextInputXamlIslandApp.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="small.ico" />
+    <Image Include="WinUITextInputXamlIslandApp.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

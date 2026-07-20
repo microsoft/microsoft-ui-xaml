@@ -1,0 +1,138 @@
+{
+  "_comment": "Framework fingerprints. Order matters only for tie-breaking display; matching is score-based. classRegex entries are .NET regex evaluated against the HWND class name (and the UIA element ClassName) with IgnoreCase. modules entries are matched by case-insensitive equality against module file names (e.g. 'PresentationCore.dll' must match exactly, not as a substring).",
+  "frameworks": [
+    {
+      "_comment": "RNW shares HWND classes with vanilla WinUI 3 (WinUIDesktopWin32WindowClass, DesktopChildSiteBridge). We deliberately set NO class regex here so class-only classification correctly returns 'WinUI 3' for those HWNDs; RNW is differentiated by its loaded modules only and wins the full classifier when 5+ of its modules are loaded (since each module = +1, beating WinUI 3's +4 class match).",
+      "id": "react_native_windows",
+      "displayName": "React Native for Windows",
+      "color": "#61DAFB",
+      "uiaFrameworkIds": ["XAML"],
+      "classRegex": [],
+      "modules": ["Microsoft.ReactNative.dll", "Microsoft.ReactNative.Managed.dll", "ReactCommon.dll", "ReactNativeWindows.dll", "hermes.dll", "jsi.dll", "v8jsi.dll", "ChakraBridge.dll"]
+    },
+    {
+      "_comment": "Same reason as RNW: MAUI uses the WinUI 3 host classes, distinguished only by Microsoft.Maui.* modules. Empty class regex.",
+      "id": "maui",
+      "displayName": ".NET MAUI (WinUI 3)",
+      "color": "#512BD4",
+      "uiaFrameworkIds": ["XAML"],
+      "classRegex": [],
+      "modules": ["Microsoft.Maui.dll", "Microsoft.Maui.Controls.dll", "Microsoft.Maui.Graphics.dll", "Microsoft.Maui.Essentials.dll"]
+    },
+    {
+      "_comment": "Avalonia registers per-instance window classes like Window_<random>, so we can't safely regex-match the HWND class. Rely on the loaded Avalonia assemblies and the UIA FrameworkId that newer versions emit.",
+      "id": "avalonia",
+      "displayName": "Avalonia",
+      "color": "#A050E0",
+      "uiaFrameworkIds": ["Avalonia"],
+      "classRegex": [],
+      "modules": ["Avalonia.dll", "Avalonia.Base.dll", "Avalonia.Controls.dll", "Avalonia.Win32.dll", "Avalonia.Skia.dll", "Avalonia.Desktop.dll"]
+    },
+    {
+      "_comment": "Flutter's Windows runner registers FLUTTER_RUNNER_WIN32_WINDOW as a hard-coded class constant in flutter_windows.cc, which makes it a strong signal. flutter_windows.dll is the runtime.",
+      "id": "flutter",
+      "displayName": "Flutter (Windows)",
+      "color": "#02569B",
+      "uiaFrameworkIds": [],
+      "classRegex": ["^FLUTTER_RUNNER_WIN32_WINDOW$", "^FlutterWindow$"],
+      "modules": ["flutter_windows.dll"]
+    },
+    {
+      "id": "winui3",
+      "displayName": "WinUI 3 (WindowsAppSDK)",
+      "color": "#0078D4",
+      "uiaFrameworkIds": ["XAML"],
+      "classRegex": ["^WinUIDesktopWin32WindowClass$", "^Microsoft\\.UI\\.Content\\.DesktopChildSiteBridge$", "^Microsoft\\.UI\\.Content\\."],
+      "modules": ["Microsoft.UI.Xaml.dll", "Microsoft.WindowsAppRuntime.dll"]
+    },
+    {
+      "id": "winui2",
+      "displayName": "WinUI 2 / UWP XAML",
+      "color": "#00B7C3",
+      "uiaFrameworkIds": ["XAML"],
+      "classRegex": ["^Windows\\.UI\\.Core\\.CoreWindow$", "^ApplicationFrameWindow$", "^Windows\\.UI\\.Composition"],
+      "modules": ["Windows.UI.Xaml.dll", "Windows.UI.Xaml.Controls.dll"]
+    },
+    {
+      "id": "dui",
+      "displayName": "DirectUI (DUI)",
+      "color": "#8764B8",
+      "uiaFrameworkIds": ["DirectUI"],
+      "classRegex": ["^DirectUIHWND$", "^CtrlNotifySink$", "^DUIViewWndClassName$", "^DetailsPaneHwndHostClass$", "^SHELLDLL_DefView$"],
+      "modules": ["dui70.dll", "duser.dll"]
+    },
+    {
+      "id": "wpf",
+      "displayName": "WPF",
+      "color": "#107C10",
+      "uiaFrameworkIds": ["WPF"],
+      "classRegex": ["^HwndWrapper\\["],
+      "modules": ["PresentationCore.dll", "PresentationFramework.dll", "wpfgfx_v0400.dll", "wpfgfx_cor3.dll"]
+    },
+    {
+      "id": "winforms",
+      "displayName": "WinForms",
+      "color": "#498205",
+      "uiaFrameworkIds": ["WinForm"],
+      "classRegex": ["^WindowsForms10\\."],
+      "modules": ["System.Windows.Forms.dll"]
+    },
+    {
+      "id": "mfc",
+      "displayName": "MFC",
+      "color": "#C239B3",
+      "uiaFrameworkIds": ["Win32"],
+      "classRegex": ["^Afx:"],
+      "modules": ["mfc140.dll", "mfc140u.dll", "mfc120.dll", "mfc120u.dll", "mfc110.dll", "mfc100.dll", "mfc42.dll"]
+    },
+    {
+      "id": "comctl32",
+      "displayName": "Common Controls (ComCtl32)",
+      "color": "#5C2D91",
+      "family": "win32",
+      "uiaFrameworkIds": ["Win32"],
+      "classRegex": ["^SysListView32$", "^SysTreeView32$", "^SysTabControl32$", "^SysHeader32$", "^SysLink$", "^SysAnimate32$", "^SysMonthCal32$", "^SysDateTimePick32$", "^SysIPAddress32$", "^SysPager$", "^ComboBoxEx32$", "^NativeFontCtl$", "^msctls_", "^ToolbarWindow32$", "^ReBarWindow32$", "^tooltips_class32$"],
+      "modules": ["comctl32.dll"]
+    },
+    {
+      "id": "chromium",
+      "displayName": "Chromium / WebView2 / Electron",
+      "color": "#D83B01",
+      "uiaFrameworkIds": ["Chrome"],
+      "classRegex": ["^Chrome_WidgetWin_", "^Intermediate D3D Window$", "^Chrome_RenderWidgetHostHWND$"],
+      "modules": ["msedgewebview2.exe", "WebView2Loader.dll", "libcef.dll", "chrome_elf.dll"]
+    },
+    {
+      "id": "qt",
+      "displayName": "Qt",
+      "color": "#41CD52",
+      "uiaFrameworkIds": ["Qt"],
+      "classRegex": ["^Qt[56][0-9A-Za-z]*"],
+      "modules": ["Qt5Core.dll", "Qt5Gui.dll", "Qt5Widgets.dll", "Qt6Core.dll", "Qt6Gui.dll", "Qt6Widgets.dll"]
+    },
+    {
+      "id": "java",
+      "displayName": "Java AWT / Swing",
+      "color": "#F89820",
+      "uiaFrameworkIds": ["Win32"],
+      "classRegex": ["^SunAwt"],
+      "modules": ["awt.dll", "jvm.dll", "javaw.exe"]
+    },
+    {
+      "id": "office_netui",
+      "displayName": "Office NetUI",
+      "color": "#D24726",
+      "uiaFrameworkIds": ["Win32"],
+      "classRegex": ["^NetUI", "^NUIDialog$", "^NUIHWND$"],
+      "modules": ["mso.dll", "mso20win32client.dll", "mso30win32client.dll", "msointl.dll"]
+    },
+    {
+      "id": "win32",
+      "displayName": "Win32 / USER32 (classic)",
+      "color": "#737373",
+      "uiaFrameworkIds": ["Win32"],
+      "classRegex": ["^Button$", "^Edit$", "^Static$", "^ListBox$", "^ComboBox$", "^ComboLBox$", "^ScrollBar$", "^#32770$", "^#32768$", "^#32769$", "^#32771$", "^CabinetWClass$", "^ExploreWClass$", "^Shell_TrayWnd$", "^Shell_SecondaryTrayWnd$", "^Notepad$", "^ConsoleWindowClass$", "^Progman$", "^WorkerW$", "^TaskListThumbnailWnd$", "^MsoCommandBar", "^NamespaceTreeControl$", "^ShellTabWindowClass$", "^TITLE_BAR_SCAFFOLDING_WINDOW_CLASS$", "^TopLevelWindowForOverflowXamlIsland$"],
+      "modules": ["user32.dll", "gdi32.dll"]
+    }
+  ]
+}

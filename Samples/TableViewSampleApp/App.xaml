@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    x:Class="TableViewSampleApp.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TableViewSampleApp">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- The dll's themeresources are not deployed to consuming apps, so ship + merge
+                     them directly. Required for the app-compiled split-binary generic.xaml to
+                     resolve its ThemeResource keys. -->
+                <ResourceDictionary Source="ms-appx:///TabularSurfaces_themeresources.xaml" />
+                <ResourceDictionary Source="ms-appx:///TableView_themeresources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- TemplateColumn cell: a progress-bar visual bound to Score. -->
+            <DataTemplate x:Key="ScoreCell">
+                <Grid Padding="8,2">
+                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding Score}" Height="6" VerticalAlignment="Center"/>
+                </Grid>
+            </DataTemplate>
+
+            <!-- Column.HeaderTemplate: custom icon + text header. -->
+            <DataTemplate x:Key="StarHeader">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <FontIcon FontSize="12" Glyph="&#xE734;"/>
+                    <TextBlock Text="Score" FontWeight="SemiBold"/>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- TableView.EmptyTemplate. -->
+            <DataTemplate x:Key="EmptyState">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                    <FontIcon FontSize="28" Glyph="&#xE7BA;" Opacity="0.6"/>
+                    <TextBlock Text="No data — EmptyTemplate is showing" Opacity="0.7"/>
+                </StackPanel>
+            </DataTemplate>
+
+            <!-- Bio: word-wrapped, making rows variable-height. Safe after the RebuildCells
+                 re-entrancy fix; exercises variable row height + wrapping in the control. -->
+            <DataTemplate x:Key="BioCell">
+                <TextBlock Text="{Binding Bio}" TextWrapping="Wrap" Padding="8,4" VerticalAlignment="Center"/>
+            </DataTemplate>
+
+            <!-- Joined: editable date via DatePicker (TwoWay). Safe again after the RebuildCells
+                 re-entrancy fix (recycled rows rebuild cells off-tree instead of restamping live). -->
+            <DataTemplate x:Key="JoinedCell">
+                <DatePicker Date="{Binding Joined, Mode=TwoWay}" Margin="8,4" VerticalAlignment="Center"/>
+            </DataTemplate>
+
+            <!-- Notes: editable text via TextBox (TwoWay). -->
+            <DataTemplate x:Key="NotesCell">
+                <TextBox Text="{Binding Notes, Mode=TwoWay}" Margin="8,4" VerticalAlignment="Center"/>
+            </DataTemplate>
+
+            <!-- Image: dummy avatar. -->
+            <DataTemplate x:Key="ImageCell">
+                <Image Source="{Binding Avatar}" Width="32" Height="32" Margin="8,4" VerticalAlignment="Center"/>
+            </DataTemplate>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

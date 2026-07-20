@@ -1,0 +1,207 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  <!-- Map sample Configuration to the native Tabular flavor + MUXC packaging config so the
+       sample stages the MATCHING split-binary bits (Debug->amd64chk, Release->amd64fre). -->
+  <PropertyGroup>
+    <_TabularNativeFlavor Condition="'$(Configuration)' == 'Release'">amd64fre</_TabularNativeFlavor>
+    <_TabularNativeFlavor Condition="'$(_TabularNativeFlavor)' == ''">amd64chk</_TabularNativeFlavor>
+    <_MuxcPackagingConfig Condition="'$(Configuration)' == 'Release'">Release</_MuxcPackagingConfig>
+    <_MuxcPackagingConfig Condition="'$(_MuxcPackagingConfig)' == ''">Debug</_MuxcPackagingConfig>
+    <!-- Canonical locations of the control's theme resources. The sample references these
+         directly instead of checking in copies, so the sample can never drift from the control. -->
+    <_TabularControlsDir>$(MSBuildProjectDirectory)\..\..\controls\dev</_TabularControlsDir>
+    <_TabularBuiltDir>$(MSBuildProjectDirectory)\..\..\BuildOutput\obj\$(_TabularNativeFlavor)\controls\dev\dll-tabular</_TabularBuiltDir>
+  </PropertyGroup>
+  <!-- Mock WindowsAppSDK package version so this OSS sample can resolve the local mock NuGet
+       layout produced by the repo build. Scoped to the sample so no repo-wide change is needed. -->
+  <PropertyGroup>
+    <WindowsAppSdkPackageConfig Condition="'$(WindowsAppSdkPackageConfig)' == ''">$(Configuration)</WindowsAppSdkPackageConfig>
+    <WindowsAppSdkPackageVersion Condition="'$(WindowsAppSdkPackageVersion)' == ''">999.0.0-mock-$(WinUIVersion)-$(BuildPlatform)-$(WindowsAppSdkPackageConfig)</WindowsAppSdkPackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>TableViewSampleApp</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x86'">win-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <!-- Self-contained unpackaged: bundles the WindowsAppRuntime framework natives + emits the
+         windows.activatableClass.inProcessServer entries the WAP bootstrap would inject. Without
+         this the app crashes with 0xc000027b on any box lacking the matching framework. -->
+    <WindowsAppSdkSelfContained Condition="'$(WindowsAppSdkSelfContained)' == '' and '$(Platform)' != 'ARM64'">true</WindowsAppSdkSelfContained>
+    <WindowsAppSdkSelfContained Condition="'$(Platform)' == 'ARM64'">false</WindowsAppSdkSelfContained>
+    <WindowsAppSDKSelfContained Condition="'$(Platform)' != 'ARM64'">true</WindowsAppSDKSelfContained>
+    <WindowsAppSDKSelfContained Condition="'$(Platform)' == 'ARM64'">false</WindowsAppSDKSelfContained>
+    <SelfContained Condition="'$(Platform)' != 'ARM64'">true</SelfContained>
+    <SelfContained Condition="'$(Platform)' == 'ARM64'">false</SelfContained>
+    <WindowsPackageType>None</WindowsPackageType>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <WindowsAppSdkUndockedRegFreeWinRTInitialize>true</WindowsAppSdkUndockedRegFreeWinRTInitialize>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- TableView is [MUX_PREVIEW] and surfaces as CS8305 ("for evaluation purposes only"). -->
+    <NoWarn>$(NoWarn);CS8305</NoWarn>
+    <WindowsAppSdkMockCheck>false</WindowsAppSdkMockCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\avatar1.png" />
+    <Content Include="Assets\avatar2.png" />
+    <Content Include="Assets\avatar3.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Theme resources are sourced DIRECTLY from the control (never checked into the sample),
+         so they can't drift from the built control. The split binary doesn't deploy its theme
+         resources to consuming apps, so the sample app-compiles and merges them itself:
+           * TabularSurfaces / TableView metric+brush dictionaries come from the control source.
+           * generic.xaml (the default Style + ControlTemplate slice) comes from the freshly
+             built Tabular output, so it always matches the DLL the sample links.
+         App.xaml / App.xaml.cs merge them via ms-appx at startup. -->
+    <Page Include="$(_TabularControlsDir)\CommonStyles\TabularSurfaces_themeresources.xaml">
+      <Link>TabularSurfaces_themeresources.xaml</Link>
+    </Page>
+    <Content Include="$(_TabularControlsDir)\CommonStyles\TabularSurfaces_themeresources.xaml">
+      <Link>TabularSurfaces_themeresources.xaml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Page Include="$(_TabularControlsDir)\TableView\TableView_themeresources.xaml">
+      <Link>TableView_themeresources.xaml</Link>
+    </Page>
+    <Content Include="$(_TabularControlsDir)\TableView\TableView_themeresources.xaml">
+      <Link>TableView_themeresources.xaml</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Page Include="$(_TabularBuiltDir)\generic.xaml">
+      <Link>Microsoft.UI.Xaml\Microsoft.UI.Xaml.Controls.Tabular\Themes\generic.xaml</Link>
+    </Page>
+    <!-- SPLIT-BINARY: stage the Tabular control DLL next to the app so its lifted-WinRT
+         runtimeclasses (registered via the augmented app manifest, Build\MergeIxpAppManifest.ps1)
+         can be activated. Without the DLL present, TableView activation fail-fasts with
+         0x80040111 CLASS_E_CLASSNOTAVAILABLE. -->
+    <Content Include="$(MSBuildProjectDirectory)\..\..\BuildOutput\obj\$(_TabularNativeFlavor)\controls\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.dll">
+      <Link>Microsoft.UI.Xaml.Controls.Tabular.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!--
+    ABI-correct Tabular projection. The mock WindowsAppSDK projection can carry a stale
+    ITableView; when the built control's ITableView IID diverges, TableView.get_Columns QI
+    throws E_NOINTERFACE. Regenerate the Tabular projection from the freshly-built winmd with
+    CsWinRT so the projected IIDs match the control.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWinRT" PrivateAssets="all" />
+  </ItemGroup>
+  <PropertyGroup>
+    <CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS>false</CSWINRT_USE_WINDOWS_UI_XAML_PROJECTIONS>
+    <CsWinRTGenerateProjection>true</CsWinRTGenerateProjection>
+    <CsWinRTWindowsMetadata>10.0.22621.0</CsWinRTWindowsMetadata>
+    <CsWinRTPublicExclusiveToInterfaces>true</CsWinRTPublicExclusiveToInterfaces>
+    <CsWinRTFilters>
+-exclude Windows
+-include Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider
+-include Microsoft.UI.Xaml.XamlTypeInfo.IXamlControlsTabularXamlMetaDataProvider
+-include Microsoft.UI.Xaml.XamlTypeInfo.IXamlControlsTabularXamlMetaDataProviderStatics
+-include Microsoft.UI.Xaml.Controls.Tabular
+    </CsWinRTFilters>
+  </PropertyGroup>
+  <Target Name="UseTabularWinmdForCsWinRT" BeforeTargets="CsWinRTPrepareProjection;CsWinRTGenerateProjection">
+    <ItemGroup>
+      <CsWinRTInputs Remove="@(CsWinRTInputs)" Condition="'%(Filename)%(Extension)' == 'Microsoft.UI.Xaml.winmd'" />
+      <CsWinRTInputs Include="$(MSBuildProjectDirectory)\..\..\BuildOutput\packaging\Debug\lib\uap10.0\Microsoft.UI.Xaml.winmd" />
+      <CsWinRTInputs Include="$(MSBuildProjectDirectory)\..\..\BuildOutput\obj\$(_TabularNativeFlavor)\controls\dev\dll-tabular\Merged\*.winmd" />
+    </ItemGroup>
+    <Message Importance="High" Text="CsWinRTInputs after Tabular swap: @(CsWinRTInputs)" />
+  </Target>
+  <Target Name="ForceTabularCsWinRTProjection" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)Generated Files\CsWinRT\**\*.cs" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    InteractiveExperiences (IXP) component augmentation for self-contained unpackaged builds.
+    The mock WinAppSDK aggregator's WindowsAppRuntime MSIX is missing activatable-class
+    registrations for the lifted-WinRT IXP component DLLs; without them DispatcherQueueController
+    activation fails at startup with REGDB_E_CLASSNOTREG. This block copies the per-RID native
+    DLLs next to the EXE and merges package.appxfragment activatableClass entries into the
+    augmented app.manifest so mt.exe registers them.
+  -->
+  <PropertyGroup Condition="'$(Platform)' != 'ARM64' and '$(SelfContained)' == 'true'">
+    <_IxpPackagesDir>$(MSBuildProjectDirectory)\..\..\packages</_IxpPackagesDir>
+    <_IxpRid>$(RuntimeIdentifier)</_IxpRid>
+    <_IxpRid Condition="'$(_IxpRid)' == ''">win-x64</_IxpRid>
+    <_IxpRid Condition="$(_IxpRid.StartsWith('win10-'))">$(_IxpRid.Replace('win10-', 'win-'))</_IxpRid>
+    <_IxpLegacyRid>$(_IxpRid.Replace('win-', 'win10-'))</_IxpLegacyRid>
+    <_IxpBaseAppManifest>$(MSBuildProjectDirectory)\app.manifest</_IxpBaseAppManifest>
+    <_IxpMergeScript>$(MSBuildProjectDirectory)\Build\MergeIxpAppManifest.ps1</_IxpMergeScript>
+    <_IxpAugmentedManifest>$(IntermediateOutputPath)IxpAugmentedAppManifest.manifest</_IxpAugmentedManifest>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Platform)' != 'ARM64' and '$(SelfContained)' == 'true'">
+    <_IxpFragmentInput Include="$(_IxpPackagesDir)\Microsoft.WindowsAppSDK.InteractiveExperiences.*\runtimes-framework\package.appxfragment" />
+    <_IxpRuntimeDll Include="$(_IxpPackagesDir)\Microsoft.WindowsAppSDK.InteractiveExperiences.*\runtimes-framework\$(_IxpRid)\native\*.dll" />
+    <Content Include="@(_IxpRuntimeDll)" KeepDuplicates="false">
+      <Link>%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="_ValidateIxpPackagePresence"
+          BeforeTargets="_GenerateIxpAugmentedAppManifest"
+          Condition="'$(Platform)' != 'ARM64' and '$(SelfContained)' == 'true'">
+    <Error Condition="'@(_IxpFragmentInput)' == ''"
+           Text="No Microsoft.WindowsAppSDK.InteractiveExperiences.*\runtimes-framework\package.appxfragment found under '$(_IxpPackagesDir)'. Run `.\initrun.ps1 .\restore.cmd` first." />
+    <Error Condition="@(_IxpFragmentInput->Count()) != '1'"
+           Text="Expected exactly one Microsoft.WindowsAppSDK.InteractiveExperiences.* package; found @(_IxpFragmentInput->Count()): @(_IxpFragmentInput, '; ')." />
+    <Error Condition="'@(_IxpRuntimeDll)' == ''"
+           Text="IE package found but no DLLs under runtimes-framework\$(_IxpRid)\native\. RID '$(_IxpRid)' may not be supported." />
+  </Target>
+
+  <Target Name="_GenerateIxpAugmentedAppManifest"
+          BeforeTargets="GetNewAppManifestValues"
+          DependsOnTargets="_ValidateIxpPackagePresence"
+          Condition="'$(Platform)' != 'ARM64' and '$(SelfContained)' == 'true'"
+          Inputs="$(_IxpBaseAppManifest);@(_IxpFragmentInput);$(_IxpMergeScript)"
+          Outputs="$(_IxpAugmentedManifest)">
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <Exec Command="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;$(_IxpMergeScript)&quot; -Base &quot;$(_IxpBaseAppManifest)&quot; -Fragment &quot;@(_IxpFragmentInput)&quot; -Out &quot;$(_IxpAugmentedManifest)&quot;" />
+  </Target>
+
+  <Target Name="_RedirectApplicationManifestToAugmented"
+          BeforeTargets="GetNewAppManifestValues"
+          DependsOnTargets="_GenerateIxpAugmentedAppManifest"
+          Condition="'$(Platform)' != 'ARM64' and '$(SelfContained)' == 'true'">
+    <PropertyGroup>
+      <ApplicationManifest>$(_IxpAugmentedManifest)</ApplicationManifest>
+    </PropertyGroup>
+  </Target>
+
+</Project>

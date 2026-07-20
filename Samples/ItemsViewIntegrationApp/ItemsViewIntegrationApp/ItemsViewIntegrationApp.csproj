@@ -1,0 +1,304 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(WindowsAppSdkTargetFrameworkMoniker)</TargetFramework>
+    <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+    <RootNamespace>ItemsViewIntegrationApp</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+    <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Images\vette1.jpg" />
+    <None Remove="Images\vette10.jpg" />
+    <None Remove="Images\vette100.jpg" />
+    <None Remove="Images\vette101.jpg" />
+    <None Remove="Images\vette102.jpg" />
+    <None Remove="Images\vette103.jpg" />
+    <None Remove="Images\vette104.jpg" />
+    <None Remove="Images\vette105.jpg" />
+    <None Remove="Images\vette106.jpg" />
+    <None Remove="Images\vette107.jpg" />
+    <None Remove="Images\vette108.jpg" />
+    <None Remove="Images\vette109.jpg" />
+    <None Remove="Images\vette11.jpg" />
+    <None Remove="Images\vette110.jpg" />
+    <None Remove="Images\vette111.jpg" />
+    <None Remove="Images\vette112.jpg" />
+    <None Remove="Images\vette113.jpg" />
+    <None Remove="Images\vette114.jpg" />
+    <None Remove="Images\vette115.jpg" />
+    <None Remove="Images\vette116.jpg" />
+    <None Remove="Images\vette117.jpg" />
+    <None Remove="Images\vette118.jpg" />
+    <None Remove="Images\vette119.jpg" />
+    <None Remove="Images\vette12.jpg" />
+    <None Remove="Images\vette120.jpg" />
+    <None Remove="Images\vette121.jpg" />
+    <None Remove="Images\vette122.jpg" />
+    <None Remove="Images\vette123.jpg" />
+    <None Remove="Images\vette124.jpg" />
+    <None Remove="Images\vette125.jpg" />
+    <None Remove="Images\vette126.jpg" />
+    <None Remove="Images\vette13.jpg" />
+    <None Remove="Images\vette14.jpg" />
+    <None Remove="Images\vette15.jpg" />
+    <None Remove="Images\vette16.jpg" />
+    <None Remove="Images\vette17.jpg" />
+    <None Remove="Images\vette18.jpg" />
+    <None Remove="Images\vette19.jpg" />
+    <None Remove="Images\vette2.jpg" />
+    <None Remove="Images\vette20.jpg" />
+    <None Remove="Images\vette21.jpg" />
+    <None Remove="Images\vette22.jpg" />
+    <None Remove="Images\vette23.jpg" />
+    <None Remove="Images\vette24.jpg" />
+    <None Remove="Images\vette25.jpg" />
+    <None Remove="Images\vette26.jpg" />
+    <None Remove="Images\vette27.jpg" />
+    <None Remove="Images\vette28.jpg" />
+    <None Remove="Images\vette29.jpg" />
+    <None Remove="Images\vette3.jpg" />
+    <None Remove="Images\vette30.jpg" />
+    <None Remove="Images\vette31.jpg" />
+    <None Remove="Images\vette32.jpg" />
+    <None Remove="Images\vette33.jpg" />
+    <None Remove="Images\vette34.jpg" />
+    <None Remove="Images\vette35.jpg" />
+    <None Remove="Images\vette36.jpg" />
+    <None Remove="Images\vette37.jpg" />
+    <None Remove="Images\vette38.jpg" />
+    <None Remove="Images\vette39.jpg" />
+    <None Remove="Images\vette4.jpg" />
+    <None Remove="Images\vette40.jpg" />
+    <None Remove="Images\vette41.jpg" />
+    <None Remove="Images\vette42.jpg" />
+    <None Remove="Images\vette43.jpg" />
+    <None Remove="Images\vette44.jpg" />
+    <None Remove="Images\vette45.jpg" />
+    <None Remove="Images\vette46.jpg" />
+    <None Remove="Images\vette47.jpg" />
+    <None Remove="Images\vette48.jpg" />
+    <None Remove="Images\vette49.jpg" />
+    <None Remove="Images\vette5.jpg" />
+    <None Remove="Images\vette50.jpg" />
+    <None Remove="Images\vette51.jpg" />
+    <None Remove="Images\vette52.jpg" />
+    <None Remove="Images\vette53.jpg" />
+    <None Remove="Images\vette54.jpg" />
+    <None Remove="Images\vette55.jpg" />
+    <None Remove="Images\vette56.jpg" />
+    <None Remove="Images\vette57.jpg" />
+    <None Remove="Images\vette58.jpg" />
+    <None Remove="Images\vette59.jpg" />
+    <None Remove="Images\vette6.jpg" />
+    <None Remove="Images\vette60.jpg" />
+    <None Remove="Images\vette61.jpg" />
+    <None Remove="Images\vette62.jpg" />
+    <None Remove="Images\vette63.jpg" />
+    <None Remove="Images\vette64.jpg" />
+    <None Remove="Images\vette65.jpg" />
+    <None Remove="Images\vette66.jpg" />
+    <None Remove="Images\vette67.jpg" />
+    <None Remove="Images\vette68.jpg" />
+    <None Remove="Images\vette69.jpg" />
+    <None Remove="Images\vette7.jpg" />
+    <None Remove="Images\vette70.jpg" />
+    <None Remove="Images\vette71.jpg" />
+    <None Remove="Images\vette72.jpg" />
+    <None Remove="Images\vette73.jpg" />
+    <None Remove="Images\vette74.jpg" />
+    <None Remove="Images\vette75.jpg" />
+    <None Remove="Images\vette76.jpg" />
+    <None Remove="Images\vette77.jpg" />
+    <None Remove="Images\vette78.jpg" />
+    <None Remove="Images\vette79.jpg" />
+    <None Remove="Images\vette8.jpg" />
+    <None Remove="Images\vette80.jpg" />
+    <None Remove="Images\vette81.jpg" />
+    <None Remove="Images\vette82.jpg" />
+    <None Remove="Images\vette83.jpg" />
+    <None Remove="Images\vette84.jpg" />
+    <None Remove="Images\vette85.jpg" />
+    <None Remove="Images\vette86.jpg" />
+    <None Remove="Images\vette87.jpg" />
+    <None Remove="Images\vette88.jpg" />
+    <None Remove="Images\vette89.jpg" />
+    <None Remove="Images\vette9.jpg" />
+    <None Remove="Images\vette90.jpg" />
+    <None Remove="Images\vette91.jpg" />
+    <None Remove="Images\vette92.jpg" />
+    <None Remove="Images\vette93.jpg" />
+    <None Remove="Images\vette94.jpg" />
+    <None Remove="Images\vette95.jpg" />
+    <None Remove="Images\vette96.jpg" />
+    <None Remove="Images\vette97.jpg" />
+    <None Remove="Images\vette98.jpg" />
+    <None Remove="Images\vette99.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Images\vette1.jpg" />
+    <Content Include="Images\vette10.jpg" />
+    <Content Include="Images\vette100.jpg" />
+    <Content Include="Images\vette101.jpg" />
+    <Content Include="Images\vette102.jpg" />
+    <Content Include="Images\vette103.jpg" />
+    <Content Include="Images\vette104.jpg" />
+    <Content Include="Images\vette105.jpg" />
+    <Content Include="Images\vette106.jpg" />
+    <Content Include="Images\vette107.jpg" />
+    <Content Include="Images\vette108.jpg" />
+    <Content Include="Images\vette109.jpg" />
+    <Content Include="Images\vette11.jpg" />
+    <Content Include="Images\vette110.jpg" />
+    <Content Include="Images\vette111.jpg" />
+    <Content Include="Images\vette112.jpg" />
+    <Content Include="Images\vette113.jpg" />
+    <Content Include="Images\vette114.jpg" />
+    <Content Include="Images\vette115.jpg" />
+    <Content Include="Images\vette116.jpg" />
+    <Content Include="Images\vette117.jpg" />
+    <Content Include="Images\vette118.jpg" />
+    <Content Include="Images\vette119.jpg" />
+    <Content Include="Images\vette12.jpg" />
+    <Content Include="Images\vette120.jpg" />
+    <Content Include="Images\vette121.jpg" />
+    <Content Include="Images\vette122.jpg" />
+    <Content Include="Images\vette123.jpg" />
+    <Content Include="Images\vette124.jpg" />
+    <Content Include="Images\vette125.jpg" />
+    <Content Include="Images\vette126.jpg" />
+    <Content Include="Images\vette13.jpg" />
+    <Content Include="Images\vette14.jpg" />
+    <Content Include="Images\vette15.jpg" />
+    <Content Include="Images\vette16.jpg" />
+    <Content Include="Images\vette17.jpg" />
+    <Content Include="Images\vette18.jpg" />
+    <Content Include="Images\vette19.jpg" />
+    <Content Include="Images\vette2.jpg" />
+    <Content Include="Images\vette20.jpg" />
+    <Content Include="Images\vette21.jpg" />
+    <Content Include="Images\vette22.jpg" />
+    <Content Include="Images\vette23.jpg" />
+    <Content Include="Images\vette24.jpg" />
+    <Content Include="Images\vette25.jpg" />
+    <Content Include="Images\vette26.jpg" />
+    <Content Include="Images\vette27.jpg" />
+    <Content Include="Images\vette28.jpg" />
+    <Content Include="Images\vette29.jpg" />
+    <Content Include="Images\vette3.jpg" />
+    <Content Include="Images\vette30.jpg" />
+    <Content Include="Images\vette31.jpg" />
+    <Content Include="Images\vette32.jpg" />
+    <Content Include="Images\vette33.jpg" />
+    <Content Include="Images\vette34.jpg" />
+    <Content Include="Images\vette35.jpg" />
+    <Content Include="Images\vette36.jpg" />
+    <Content Include="Images\vette37.jpg" />
+    <Content Include="Images\vette38.jpg" />
+    <Content Include="Images\vette39.jpg" />
+    <Content Include="Images\vette4.jpg" />
+    <Content Include="Images\vette40.jpg" />
+    <Content Include="Images\vette41.jpg" />
+    <Content Include="Images\vette42.jpg" />
+    <Content Include="Images\vette43.jpg" />
+    <Content Include="Images\vette44.jpg" />
+    <Content Include="Images\vette45.jpg" />
+    <Content Include="Images\vette46.jpg" />
+    <Content Include="Images\vette47.jpg" />
+    <Content Include="Images\vette48.jpg" />
+    <Content Include="Images\vette49.jpg" />
+    <Content Include="Images\vette5.jpg" />
+    <Content Include="Images\vette50.jpg" />
+    <Content Include="Images\vette51.jpg" />
+    <Content Include="Images\vette52.jpg" />
+    <Content Include="Images\vette53.jpg" />
+    <Content Include="Images\vette54.jpg" />
+    <Content Include="Images\vette55.jpg" />
+    <Content Include="Images\vette56.jpg" />
+    <Content Include="Images\vette57.jpg" />
+    <Content Include="Images\vette58.jpg" />
+    <Content Include="Images\vette59.jpg" />
+    <Content Include="Images\vette6.jpg" />
+    <Content Include="Images\vette60.jpg" />
+    <Content Include="Images\vette61.jpg" />
+    <Content Include="Images\vette62.jpg" />
+    <Content Include="Images\vette63.jpg" />
+    <Content Include="Images\vette64.jpg" />
+    <Content Include="Images\vette65.jpg" />
+    <Content Include="Images\vette66.jpg" />
+    <Content Include="Images\vette67.jpg" />
+    <Content Include="Images\vette68.jpg" />
+    <Content Include="Images\vette69.jpg" />
+    <Content Include="Images\vette7.jpg" />
+    <Content Include="Images\vette70.jpg" />
+    <Content Include="Images\vette71.jpg" />
+    <Content Include="Images\vette72.jpg" />
+    <Content Include="Images\vette73.jpg" />
+    <Content Include="Images\vette74.jpg" />
+    <Content Include="Images\vette75.jpg" />
+    <Content Include="Images\vette76.jpg" />
+    <Content Include="Images\vette77.jpg" />
+    <Content Include="Images\vette78.jpg" />
+    <Content Include="Images\vette79.jpg" />
+    <Content Include="Images\vette8.jpg" />
+    <Content Include="Images\vette80.jpg" />
+    <Content Include="Images\vette81.jpg" />
+    <Content Include="Images\vette82.jpg" />
+    <Content Include="Images\vette83.jpg" />
+    <Content Include="Images\vette84.jpg" />
+    <Content Include="Images\vette85.jpg" />
+    <Content Include="Images\vette86.jpg" />
+    <Content Include="Images\vette87.jpg" />
+    <Content Include="Images\vette88.jpg" />
+    <Content Include="Images\vette89.jpg" />
+    <Content Include="Images\vette9.jpg" />
+    <Content Include="Images\vette90.jpg" />
+    <Content Include="Images\vette91.jpg" />
+    <Content Include="Images\vette92.jpg" />
+    <Content Include="Images\vette93.jpg" />
+    <Content Include="Images\vette94.jpg" />
+    <Content Include="Images\vette95.jpg" />
+    <Content Include="Images\vette96.jpg" />
+    <Content Include="Images\vette97.jpg" />
+    <Content Include="Images\vette98.jpg" />
+    <Content Include="Images\vette99.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!-- 
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <!-- 
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+</Project>

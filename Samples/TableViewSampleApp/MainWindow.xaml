@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="TableViewSampleApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:tv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <Grid Padding="12" ColumnSpacing="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Feature panel: one control per TableView API, to play with live. -->
+        <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="6">
+                <TextBlock Text="TableView Sample" FontSize="18" FontWeight="SemiBold"/>
+                <TextBlock Opacity="0.7" FontSize="12" TextWrapping="Wrap"
+                           Text="Real Microsoft.UI.Xaml.Controls.Tabular.dll. Columns: Name (Text/Auto), Role &amp; City (Text/*), Score (Template/120px). Tweak any control below to exercise the API live."/>
+
+                <TextBlock Text="Name column width" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <ComboBox x:Name="WidthCombo" HorizontalAlignment="Stretch" SelectionChanged="Width_Changed">
+                    <ComboBoxItem Content="Auto" IsSelected="True"/>
+                    <ComboBoxItem Content="Pixel 200"/>
+                    <ComboBoxItem Content="Star *1"/>
+                    <ComboBoxItem Content="Star *2"/>
+                </ComboBox>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ToggleButton x:Name="MinW" Content="MinWidth 120" Click="MinW_Toggle"/>
+                    <ToggleButton x:Name="MaxW" Content="MaxWidth 160" Click="MaxW_Toggle"/>
+                </StackPanel>
+
+                <TextBlock Text="Columns" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ToggleButton x:Name="CityVis" Content="City visible" IsChecked="True" Click="CityVis_Toggle"/>
+                    <Button Content="Add" Click="AddCol_Click"/>
+                    <Button Content="Remove last" Click="RemoveCol_Click"/>
+                </StackPanel>
+
+                <TextBlock Text="HeadersVisibility" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <ComboBox x:Name="HeadersCombo" HorizontalAlignment="Stretch" SelectionChanged="Headers_Changed">
+                    <ComboBoxItem Content="Column" IsSelected="True"/>
+                    <ComboBoxItem Content="None"/>
+                </ComboBox>
+
+                <TextBlock Text="GridLinesVisibility" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <ComboBox x:Name="GridLinesCombo" HorizontalAlignment="Stretch" SelectionChanged="GridLines_Changed">
+                    <ComboBoxItem Content="All" IsSelected="True"/>
+                    <ComboBoxItem Content="Horizontal"/>
+                    <ComboBoxItem Content="Vertical"/>
+                    <ComboBoxItem Content="None"/>
+                </ComboBox>
+
+                <TextBlock Text="Density" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <ComboBox x:Name="DensityCombo" HorizontalAlignment="Stretch" SelectionChanged="Density_Changed">
+                    <ComboBoxItem Content="Compact"/>
+                    <ComboBoxItem Content="Standard" IsSelected="True"/>
+                    <ComboBoxItem Content="Comfortable"/>
+                </ComboBox>
+
+                <TextBlock Text="Row banding" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="RowBackground" Click="RowBg_Click"/>
+                    <Button Content="Alternating" Click="AltBg_Click"/>
+                    <Button Content="Clear" Click="ClearBg_Click"/>
+                </StackPanel>
+
+                <TextBlock Text="More" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ToggleButton x:Name="FreezeToggle" Content="Freeze 1st col" Click="Freeze_Toggle"/>
+                    <ToggleButton x:Name="ReadOnlyToggle" Content="IsReadOnly" Click="ReadOnly_Toggle"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ToggleButton x:Name="HeaderTmplToggle" Content="Score HeaderTemplate" Click="HeaderTmpl_Toggle"/>
+                    <ToggleButton x:Name="EmptyToggle" Content="Clear data" Click="Empty_Toggle"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- The control under test. -->
+        <Border Grid.Column="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+            <tv:TableView x:Name="Table"/>
+        </Border>
+    </Grid>
+</Window>

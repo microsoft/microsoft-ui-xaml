@@ -1,0 +1,11 @@
+namespace WinUISnoopTap
+{
+    // TODO: Determine if the Tap is going to expose any classes. For now, I'm leaving this
+    //       stub in, but this should be either used or removed.
+    [default_interface]
+    runtimeclass Class
+    {
+        Class();
+        Int32 MyProperty;
+    }
+}

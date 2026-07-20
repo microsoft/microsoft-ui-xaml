@@ -3,7 +3,7 @@
 #pragma once
 #include <winrt/Windows.Storage.h>
 
-// This header contains DX12 helper functions and is available at: https://github.com/Microsoft/DirectX-Graphics-Samples/tree/master/Libraries/D3DX12
+// This header contains DX12 helper functions and is available in the public DirectX-Graphics-Samples repository under Libraries/D3DX12.
 //
 // It uses WRL which appears to be incompatible with a WINUI3 application.  So it is included in this cpp file rather than any header.
 // This also means that we can't use it anywhere exposed to XAML headers, but since the helper structs inherit from and use

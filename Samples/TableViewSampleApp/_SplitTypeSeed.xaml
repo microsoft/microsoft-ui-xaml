@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SPLIT-BINARY metadata seed. TableView's control template instantiates <adv:TableViewRow/>
+    straight from XAML (the ItemsRepeater.ItemTemplate in generic.xaml). TableViewRow is an
+    internal template part never written in any sample page, so without a reference here the
+    XAML compiler never emits an app-level XamlTypeInfo entry for it and runtime template
+    inflation faults with XamlParseException "The type 'TableViewRow' was not found" -> 0xC000027B.
+
+    Referencing TableViewRow as the root of an unused DataTemplate forces the compiler to
+    register it in the app's generated XamlTypeInfoProvider. This dictionary is compiled (WinUI
+    auto-includes *.xaml as Page) but is intentionally NEVER merged or loaded, so its body is
+    never parsed at runtime.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:adv="using:Microsoft.UI.Xaml.Controls.Tabular">
+
+    <DataTemplate x:Key="SplitMetadataSeedTableViewRowTemplate">
+        <adv:TableViewRow/>
+    </DataTemplate>
+
+</ResourceDictionary>
