@@ -154,6 +154,14 @@ extends:
           buildProductOnly: true
           dependsOn: ValidateGitHubPrContext
 
+      - template: build\AzurePipelinesTemplates\WinUI-TestWinUIComponentPackageUpdate-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: GitHubPR
+          buildScenarioApps: false
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+          dependsOn: ValidateGitHubPrContext
+
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
         parameters:
