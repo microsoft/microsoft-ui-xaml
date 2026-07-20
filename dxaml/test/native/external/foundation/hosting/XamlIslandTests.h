@@ -215,11 +215,12 @@ public:
 
     TEST_METHOD(ValidateNavigationView);
 
-    TEST_METHOD(BasicHwndlessIslandTest);
-
-    BEGIN_TEST_METHOD(WinUI3CohabitationWithWinUI2)
-        TEST_METHOD_PROPERTY(L"Description", L"Verify WinUI3 rendering works fine despite the WinUI2 module loaded in same process.")
+    BEGIN_TEST_METHOD(WinUI3CohabitationWithFakeMuxModule)
+        TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
+        TEST_METHOD_PROPERTY(L"Description", L"WinUI3 island renders when a second module named Microsoft.UI.Xaml.dll is loaded first (File Explorer cohabitation); exercises GetMuxPath address-based resolution.")
     END_TEST_METHOD()
+
+    TEST_METHOD(BasicHwndlessIslandTest);
 
     TEST_METHOD(ContentRendersInHwndlessIslands);
 

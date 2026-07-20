@@ -4083,35 +4083,26 @@ void XamlIslandTests::ValidateNavigationView()
     ::Sleep(500);
 }
 
-void XamlIslandTests::WinUI3CohabitationWithWinUI2()
+void XamlIslandTests::WinUI3CohabitationWithFakeMuxModule()
 {
-    // This test verifies that WinUI3 works correctly when WinUI2's Microsoft.UI.Xaml.dll
-    // is also loaded in the same process, partially simulating the explorer.exe cohabitation scenario.
+    VERIFY_IS_NULL(::GetModuleHandleW(L"Microsoft.UI.Xaml.dll"));
 
-    // Find and load WinUI2 CBS Microsoft.UI.Xaml.dll
-    WCHAR systemRoot[MAX_PATH];
-    GetEnvironmentVariable(L"SYSTEMROOT", systemRoot, MAX_PATH);
-    std::wstring winui2DllPath = std::wstring(systemRoot) +
-        L"\\SystemApps\\Microsoft.UI.Xaml.CBS_8wekyb3d8bbwe\\Microsoft.UI.Xaml.dll";
+    WEX::Common::String deploymentDir;
+    VERIFY_SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(WEX::TestExecution::RuntimeParameterConstants::c_szTestDeploymentDir, deploymentDir));
+    std::wstring baseDir = static_cast<const wchar_t*>(deploymentDir);
+    if (!baseDir.empty() && baseDir.back() != L'\\') { baseDir += L'\\'; }
 
-    if (!PathFileExists(winui2DllPath.c_str()))
-    {
-        LOG_OUTPUT(L"WinUI2 CBS not found at: %s, skipping test.", winui2DllPath.c_str());
-        return;
-    }
+    const std::wstring emptyDllPath = baseDir + L"EmptyDll.dll";
+    const std::wstring fakeDir = baseDir + L"fakemux\\";
+    const std::wstring fakeMuxPath = fakeDir + L"Microsoft.UI.Xaml.dll";
 
-    LOG_OUTPUT(L"Loading WinUI2 DLL from: %s", winui2DllPath.c_str());
-    HMODULE winui2Module = LoadLibraryEx(winui2DllPath.c_str(), nullptr, 0);
-    if (!winui2Module)
-    {
-        LOG_OUTPUT(L"Failed to load WinUI2 DLL (error %d), skipping test.", GetLastError());
-        return;
-    }
-    auto freeWinUI2 = wil::scope_exit([&] { FreeLibrary(winui2Module); });
+    ::CreateDirectoryW(fakeDir.c_str(), nullptr);
+    VERIFY_IS_TRUE(::CopyFileW(emptyDllPath.c_str(), fakeMuxPath.c_str(), FALSE));
 
-    LOG_OUTPUT(L"WinUI2 DLL loaded. Two Microsoft.UI.Xaml.dll modules now in process.");
+    HMODULE fakeModule = ::LoadLibraryExW(fakeMuxPath.c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+    VERIFY_IS_NOT_NULL(fakeModule);
+    auto freeFake = wil::scope_exit([&] { ::FreeLibrary(fakeModule); });
 
-    // Start WinUI3 XAML island and render content
     XamlIslandTestHelper testHelper(this);
     testHelper.StartAppOnCurrentThread();
     testHelper.StartAndPrepNewUIThreadWithWindow();
@@ -4126,13 +4117,11 @@ void XamlIslandTests::WinUI3CohabitationWithWinUI2()
 
     testHelper.RunOnIslandUIThread([&]()
         {
-            LOG_OUTPUT(L"Creating WinUI3 content with WinUI2 also loaded...");
-
             rootPanel = safe_cast<Panel^>(XamlReader::Load(
                 LR"(<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                           Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-                        <TextBlock x:Name="TestText" Text="WinUI3 rendering with WinUI2 loaded"
+                        <TextBlock x:Name="TestText" Text="WinUI3 rendering with fake module loaded"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Grid>)"));
 
@@ -4146,8 +4135,7 @@ void XamlIslandTests::WinUI3CohabitationWithWinUI2()
         {
             auto textBlock = safe_cast<TextBlock^>(rootPanel->FindName("TestText"));
             VERIFY_IS_NOT_NULL(textBlock);
-            VERIFY_ARE_EQUAL(ref new Platform::String(L"WinUI3 rendering with WinUI2 loaded"), textBlock->Text);
-            LOG_OUTPUT(L"WinUI3 content rendered successfully with WinUI2 also loaded.");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"WinUI3 rendering with fake module loaded"), textBlock->Text);
         });
 }
 

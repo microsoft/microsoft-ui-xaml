@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <PropertyGroup Label="Globals">
+        <ConfigurationType>DynamicLibrary</ConfigurationType>
+        <ProjectGuid>{0f1f9bdc-7f03-4748-8f14-8e15d2c50411}</ProjectGuid>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Xaml.Cpp.props))"/>
+    <Import Project="$(XamlSourcePath)\test\common.props"/>
+
+    <!-- A no-op DLL. A native cohabitation test copies this over a fake "Microsoft.UI.Xaml.dll" and loads it
+         to reproduce two identically-named modules in one process without the real WinUI2 (CBS) binary. -->
+    <PropertyGroup>
+        <TestCode>true</TestCode>
+        <TargetDestination>$(TestBinplaceDestinationPath)</TargetDestination>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) UNICODE;</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <ItemDefinitionGroup>
+        <ClCompile>
+            <ExceptionHandling>Sync</ExceptionHandling>
+        </ClCompile>
+    </ItemDefinitionGroup>
+
+    <ItemGroup>
+        <ClCompile Include="dllmain.cpp"/>
+        <ResourceCompile Include="DefaultResource.rc"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <ProjectPreprocessorDefinitions>$(ProjectPreprocessorDefinitions) ___TARGETNAME="""$(TargetName).$(Targettype)""";</ProjectPreprocessorDefinitions>
+    </PropertyGroup>
+
+    <Import Project="$([MSBuild]::GetPathOfFileAbove(Microsoft.UI.Xaml.Build.targets))" />
+</Project>
