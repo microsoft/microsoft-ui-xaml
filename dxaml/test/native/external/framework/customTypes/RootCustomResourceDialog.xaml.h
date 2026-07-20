@@ -8,7 +8,7 @@
 namespace Tests { namespace Native { namespace External { namespace Framework {
     namespace ResourceLoading
     {
-        // Faithful repro for bug 50695292. This is a markup-compiled (genxbf) ContentDialog
+        // Faithful repro. This is a markup-compiled (genxbf) ContentDialog
         // subclass whose ROOT element sets PrimaryButtonText via a {CustomResource} markup
         // extension, mirroring the exact reported scenario. The ctor loads the compiled XAML
         // with itself as the provided root, just like the framework-generated InitializeComponent.

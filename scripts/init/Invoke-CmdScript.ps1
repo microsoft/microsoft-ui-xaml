@@ -37,7 +37,7 @@ if (!(Test-Path -Path $env:TEMP))
 $environmentVariablesFile = [IO.Path]::GetTempFileName()
 $workingDirectoryFile = [IO.Path]::GetTempFileName()
 
-## Store the output of cmd.exe.  We also ask cmd.exe to output   
+## Store the output of cmd.exe.  We also request cmd.exe to output
 ## the environment table after the batch file completes.  The same
 ## for the current directory.
 
