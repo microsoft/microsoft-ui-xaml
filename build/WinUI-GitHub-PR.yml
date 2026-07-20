@@ -52,7 +52,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/main
+      ref: refs/heads/user/hmishra/gh-ado-sample-builds-package-requirements-validation
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -147,7 +147,7 @@ extends:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
         parameters:
           pipelineKind: GitHubPR
-          buildScenarioApps: false
+          buildScenarioApps: true
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
