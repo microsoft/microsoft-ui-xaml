@@ -11,8 +11,13 @@ Window showing and activation
 - [2. Conceptual pages (How To)](#2-conceptual-pages-how-to)
 - [3. Examples](#3-examples)
 - [4. API Pages](#4-api-pages)
+  - [4.1. Window.TrySetForeground](#41-windowtrysetforeground)
+  - [4.2. Window.Activate](#42-windowactivate)
 - [5. API Details](#5-api-details)
 - [6. Appendix](#6-appendix)
+  - [6.1. Alternatives considered](#61-alternatives-considered)
+  - [6.2. Future directions](#62-future-directions)
+  - [6.3. API review status](#63-api-review-status)
 
 
 # 1. Background
@@ -26,7 +31,6 @@ the online docs._
 
 (An earlier draft also added `Show()` and a `ShowActivated` property to match
 WPF. We cut those to keep this change small and low-risk. See the appendix.)
-
 
 [Issue #7595](https://github.com/microsoft/microsoft-ui-xaml/issues/7595)
 reports that `Window.Activate()` does not bring a background WinUI window to
@@ -71,8 +75,15 @@ WPF has three relevant members:
 | [`Window.ShowActivated`](https://learn.microsoft.com/dotnet/api/system.windows.window.showactivated) | Controls whether the window is activated when it is first shown. The default is `true`. Apps set it to `false` before `Show()` to show without activation. |
 | [`Window.Activate()`](https://learn.microsoft.com/dotnet/api/system.windows.window.activate) | Attempts to bring an existing window to the foreground and activate it. It returns whether activation succeeded and follows the Win32 `SetForegroundWindow` rules. |
 
-Only `Window.Activate()` is in scope for this proposal. `Show()` and
-`ShowActivated` are listed under future directions in the appendix.
+WPF's names are a little inside-out. `ShowActivated` is the property that is
+really about activation, while `Activate()` is really about taking the
+foreground: under the hood it calls `SetForegroundWindow`. So the method named
+"activate" is the one that pulls the window to the front.
+
+WinUI's `Activate()` looks the same but only does thread-level activation
+(`SetActiveWindow`), so it cannot pull a window forward across processes. Same
+name, less power. That gap is what `TrySetForeground()` fills. See section 1.2
+for the two levels of "activate" in Win32.
 
 ## 1.2. Win32 behavior
 
