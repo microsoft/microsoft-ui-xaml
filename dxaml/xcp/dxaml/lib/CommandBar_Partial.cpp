@@ -20,6 +20,7 @@
 #include "InputServices.h"
 #include "ResourceDictionary.g.h"
 #include "DoubleUtil.h"
+#include "RootScale.h"
 #include "DynamicOverflowItemsChangingEventArgs.g.h"
 #include "XamlRoot.g.h"
 #include <DeferredElementStateChange.h>
@@ -2343,7 +2344,19 @@ CommandBar::UpdateTemplateSettings()
                 DOUBLE compactVerticalDelta;
                 IFC_RETURN(appBarTemplateSettings->get_CompactVerticalDelta(&compactVerticalDelta));
 
-                if (!DoubleUtil::IsZero(compactVerticalDelta))
+                // CompactVerticalDelta is the difference between the compact (closed) height and the
+                // measured content height. It is non-zero when the CommandBar's content is taller than
+                // its compact height, meaning content would be clipped when closed and the overflow
+                // button should be offered to reveal it.
+                //
+                // Only treat the delta as significant when the two heights round to different physical
+                // pixels - i.e. they differ by at least half a physical pixel. See bug 62789040.
+                const float rasterizationScale = RootScale::GetRasterizationScaleForElement(GetHandle());
+                const bool contentDiffersFromCompactHeight = (rasterizationScale > 0.0f)
+                    ? (DoubleUtil::Abs(compactVerticalDelta) >= 0.5 / rasterizationScale)
+                    : !DoubleUtil::IsZero(compactVerticalDelta);
+
+                if (contentDiffersFromCompactHeight)
                 {
                     shouldShowOverflowButton = true;
                 }
