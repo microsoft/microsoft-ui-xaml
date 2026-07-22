@@ -374,7 +374,7 @@ To see the test output directly in the pipeline run:
 To download the test output for a particular test:
 * On the Pipeline page, click on the "## published" link in the Summary tab, under the "Related" section.
 
-* On the Artifact page, go to TestOutput > Win10-22H2 > x86chk.
+* On the Artifact page, go to TestOutput > Win11-25H2 > x86chk.
 
 * Scroll down to the test that you're interested in, and download the entire folder.
 
@@ -448,9 +448,9 @@ jobs:
       name: WinDevPool-Test
       ${{ if eq( parameters.testOS, 'Win10-RS5' ) }}:
         demands: ImageOverride -equals Win10-RS5
-      ${{ if eq( parameters.testOS, 'Win10-22H2' ) }}:
+      ${{ if eq( parameters.testOS, 'Win11-25H2' ) }}:
         demands: 
-          - ImageOverride -equals Win10-22H2
+          - ImageOverride -equals Win11-25H2
           - HoldMachine -equals true  # <<< Hold this VM
       ${{ if eq( parameters.testOS, 'Win11-23H2') }}:
         demands: ImageOverride -equals Win11-23H2
@@ -462,7 +462,7 @@ jobs:
       parallel: 1 # <<< Changed to 1 so that we don't hold lots of VMs
 ```
 
-Then I ran the PR pipeline on that topic branch.  Now, the 22H2 VM gets held after running some tests.  (note it will timeout because it's trying to
+Then I ran the PR pipeline on that topic branch.  Now, the 25H2 VM gets held after running some tests.  (note it will timeout because it's trying to
 run the whole suite with the above changes.  I'm sure you could make other modifications so that it just times out right away and you don't
 need to wait for it.)
 

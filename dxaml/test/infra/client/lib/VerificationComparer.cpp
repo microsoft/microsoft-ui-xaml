@@ -20,6 +20,78 @@ namespace Private {
 
         VerificationComparer::~VerificationComparer() { }
 
+        // Replace $$name$$ placeholders with values. Names and values are ASCII.
+        //
+        // A placeholder alone on its own line acts as a "line slot": the whole line,
+        // including its indentation and trailing newline, is replaced. So an empty value
+        // drops the line, and a non-empty value should be one or more complete lines that
+        // end in a newline. A placeholder used inline is just replaced where it sits.
+        static std::string SubstituteVariables(const std::string& xml, const std::map<std::wstring, std::wstring>& vars)
+        {
+            auto narrow = [](const std::wstring& w)
+            {
+                std::string s;
+                for (wchar_t c : w) s += static_cast<char>(c);
+                return s;
+            };
+
+            std::string result = xml;
+            for (const auto& [name, value] : vars)
+            {
+                const std::string placeholder = "$$" + narrow(name) + "$$";
+                const std::string replacement = narrow(value);
+
+                size_t pos = 0;
+                while ((pos = result.find(placeholder, pos)) != std::string::npos)
+                {
+                    size_t start = pos;
+                    size_t end = pos + placeholder.size();
+
+                    // The placeholder owns its line if only spaces sit before it and only
+                    // spaces (or a CRLF's \r) follow it up to the newline.
+                    size_t lineStart = result.rfind('\n', pos);
+                    lineStart = (lineStart == std::string::npos) ? 0 : lineStart + 1;
+
+                    bool ownsLine = true;
+                    for (size_t i = lineStart; i < pos; i++)
+                        if (result[i] != ' ') { ownsLine = false; break; }
+                    for (size_t i = end; ownsLine && i < result.size() && result[i] != '\n'; i++)
+                        if (result[i] != ' ' && result[i] != '\r') { ownsLine = false; break; }
+
+                    if (ownsLine)
+                    {
+                        // Eat the line's indentation through its trailing newline.
+                        start = lineStart;
+                        const size_t nl = result.find('\n', pos);
+                        end = (nl == std::string::npos) ? result.size() : nl + 1;
+                    }
+
+                    result.replace(start, end - start, replacement);
+                    pos = start + replacement.size();
+                }
+            }
+            return result;
+        }
+
+        // Returns the name of the first surviving $$name$$ placeholder in the text, or "".
+        // This only runs for masters that opted into variables, so any leftover $$...$$ means
+        // a test set up a variable master but didn't provide the value via SetDCompXmlVariable.
+        static std::string FindUnsubstitutedPlaceholder(const std::string& text)
+        {
+            const size_t start = text.find("$$");
+            if (start == std::string::npos)
+            {
+                return std::string();
+            }
+            const size_t nameStart = start + 2;
+            const size_t nameEnd = text.find("$$", nameStart);
+            if (nameEnd == std::string::npos)
+            {
+                return std::string();
+            }
+            return text.substr(nameStart, nameEnd - nameStart);
+        }
+
         bool ByteByByteComparer::CompareFiles(
             _In_ const wrl::Wrappers::HStringReference& s1,
             _In_ const wrl::Wrappers::HStringReference& s2)
@@ -53,6 +125,40 @@ namespace Private {
 
             LogThrow_IfFailed(spMasterBufferByteAccess->Buffer(&pMasterBuffer));
             LogThrow_IfFailed(spOutputBufferByteAccess->Buffer(&pOutputBuffer));
+
+            // The $$name$$ variable mechanism (and the unsubstituted-placeholder guard
+            // below) only apply to the XML tree dumps, not the binary surface PNGs.
+            const std::wstring masterPath(s1.GetRawBuffer(nullptr));
+            const bool isXml = masterPath.size() >= 4 &&
+                _wcsicmp(masterPath.c_str() + masterPath.size() - 4, L".xml") == 0;
+
+            if (isXml)
+            {
+                std::string master(reinterpret_cast<const char*>(pMasterBuffer), masterLength);
+                std::string output(reinterpret_cast<const char*>(pOutputBuffer), outputLength);
+
+                if (!m_variables.empty())
+                {
+                    master = SubstituteVariables(master, m_variables);
+
+                    // Fail loudly on a surviving $$placeholder$$ instead of letting it show up as a
+                    // confusing byte mismatch -- the real cause (a test that didn't call
+                    // SetDCompXmlVariable, or set it outside the scope this comparison runs in) is
+                    // otherwise easy to miss. Only meaningful when this test opted into variables;
+                    // otherwise a master that legitimately contains a literal $$token$$ must still
+                    // compare as a plain byte match.
+                    const std::string leftover = FindUnsubstitutedPlaceholder(master);
+                    if (!leftover.empty())
+                    {
+                        LOG_OUTPUT(L"ERROR: master file still contains unsubstituted placeholder $$%S$$."
+                                   L" A test likely didn't SetDCompXmlVariable for it (or set it outside the compared scope).",
+                                   leftover.c_str());
+                        return false;
+                    }
+                }
+
+                return master == output;
+            }
 
             bool doesOutputMatchMaster = (masterLength == outputLength);
 
@@ -120,6 +226,7 @@ namespace Private {
             auto pixel1 = reinterpret_cast<uint32_t*>(buffer1.get());
             auto pixel2 = reinterpret_cast<uint32_t*>(buffer2.get());
             uint32_t pixelDifferenceCount = 0;
+            uint32_t pixelFuzzyMatchCount = 0;
             double squareDifferenceAccumulator = 0.0;
 
             m_diffBuffer.SetSize(width1, height1);
@@ -131,23 +238,35 @@ namespace Private {
                 {
                     if (*pixel1 != *pixel2)
                     {
-                        if (pixelDifferenceCount == 0)
-                        {
-                            LOG_OUTPUT(L"First pixel mismatch at (%lu, %lu): Expected = %08lx, Actual = 0x%08lx", x, y, *pixel1, *pixel2);
-                        }
-                        pixelDifferenceCount++;
-
                         uint8_t* pixel1Components = reinterpret_cast<uint8_t*>(pixel1);
                         uint8_t* pixel2Components = reinterpret_cast<uint8_t*>(pixel2);
-                        double bDiff = abs(static_cast<double>(pixel1Components[0]) - static_cast<double>(pixel2Components[0]));
-                        double gDiff = abs(static_cast<double>(pixel1Components[1]) - static_cast<double>(pixel2Components[1]));
-                        double rDiff = abs(static_cast<double>(pixel1Components[2]) - static_cast<double>(pixel2Components[2]));
-                        double aDiff = abs(static_cast<double>(pixel1Components[3]) - static_cast<double>(pixel2Components[3]));
-                        double diff = bDiff + gDiff + rDiff + aDiff;
-                        squareDifferenceAccumulator += diff * diff;
+                        int bDiff = abs(static_cast<int>(pixel1Components[0]) - static_cast<int>(pixel2Components[0]));
+                        int gDiff = abs(static_cast<int>(pixel1Components[1]) - static_cast<int>(pixel2Components[1]));
+                        int rDiff = abs(static_cast<int>(pixel1Components[2]) - static_cast<int>(pixel2Components[2]));
+                        int aDiff = abs(static_cast<int>(pixel1Components[3]) - static_cast<int>(pixel2Components[3]));
 
-                        m_diffBuffer.SetPixel(x, y, static_cast<uint8_t>(aDiff), static_cast<uint8_t>(rDiff), static_cast<uint8_t>(gDiff), static_cast<uint8_t>(bDiff));
-                        m_errorBuffer.SetPixel(x, y, 0xFFFF0000);
+                        bool withinTolerance = (m_tolerance > 0 &&
+                            bDiff <= m_tolerance && gDiff <= m_tolerance &&
+                            rDiff <= m_tolerance && aDiff <= m_tolerance);
+
+                        if (withinTolerance)
+                        {
+                            pixelFuzzyMatchCount++;
+                        }
+                        else
+                        {
+                            if (pixelDifferenceCount == 0)
+                            {
+                                LOG_OUTPUT(L"First pixel mismatch at (%lu, %lu): Expected = %08lx, Actual = 0x%08lx", x, y, *pixel1, *pixel2);
+                            }
+                            pixelDifferenceCount++;
+
+                            double diff = static_cast<double>(bDiff + gDiff + rDiff + aDiff);
+                            squareDifferenceAccumulator += diff * diff;
+
+                            m_diffBuffer.SetPixel(x, y, static_cast<uint8_t>(aDiff), static_cast<uint8_t>(rDiff), static_cast<uint8_t>(gDiff), static_cast<uint8_t>(bDiff));
+                            m_errorBuffer.SetPixel(x, y, 0xFFFF0000);
+                        }
                     }
 
                     pixel1++;
@@ -155,9 +274,14 @@ namespace Private {
                 }
             }
 
-            if (pixelDifferenceCount == 0)
+            if (pixelDifferenceCount == 0 && pixelFuzzyMatchCount == 0)
             {
                 LOG_OUTPUT(L"Images are an exact match.");
+            }
+            else if (pixelDifferenceCount == 0 && pixelFuzzyMatchCount > 0)
+            {
+                LOG_OUTPUT(L"Images match within tolerance=%d (%lu pixels differ by at most %d per channel).",
+                    m_tolerance, pixelFuzzyMatchCount, m_tolerance);
             }
             else
             {
@@ -166,7 +290,11 @@ namespace Private {
                 LOG_WARNING(L"Images do not match:");
                 LOG_OUTPUT(L"    Width = %lu", width1);
                 LOG_OUTPUT(L"    Height = %lu", height1);
-                LOG_OUTPUT(L"    # Diff Pixels = %lu", pixelDifferenceCount);
+                LOG_OUTPUT(L"    # Diff Pixels = %lu (beyond tolerance=%d)", pixelDifferenceCount, m_tolerance);
+                if (pixelFuzzyMatchCount > 0)
+                {
+                    LOG_OUTPUT(L"    # Fuzzy Match Pixels = %lu (within tolerance)", pixelFuzzyMatchCount);
+                }
                 LOG_OUTPUT(L"    RMS Error = %lf", rmsError);
                 LOG_OUTPUT(L"    Image1 = %s", s1.GetRawBuffer(nullptr));
                 LOG_OUTPUT(L"    Image2 = %s", s2.GetRawBuffer(nullptr));

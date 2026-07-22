@@ -847,6 +847,36 @@ HRESULT WindowHelper::VerifyTestCleanup()
         ETWWaiterHelperStatics::GetActiveWaiterCountStatic(&countofWaiters);
         Throw::IfFalse(countofWaiters == 0, E_NOTIMPL, L"Active ETWWaiterProxy objects were not cleared!");
 
+        // Make sure image compare tolerance was reset to 0. Tests should use
+        // ImageCompareToleranceGuard or wil::scope_exit to reset after setting.
+        // Make sure DComp XML variables were cleared. A rendering scope clears them
+        // automatically on close (see RenderingScopeGuard::Close); this catches the
+        // rare case of setting a variable without a rendering scope.
+        {
+            wrl::ComPtr<test_infra::IUtilities> spUtilities;
+            if (SUCCEEDED(m_pTestServices->get_Utilities(&spUtilities)))
+            {
+                INT32 tolerance = 0;
+                if (SUCCEEDED(spUtilities->GetImageCompareTolerance(&tolerance)) && tolerance != 0)
+                {
+                    // Reset so the leak doesn't mask diffs or fail cleanup in later tests.
+                    spUtilities->SetImageCompareTolerance(0);
+                    VERIFY_FAIL(L"Image compare tolerance was not reset to 0."
+                                L" Use ImageCompareToleranceGuard or scope_exit to reset.");
+                }
+
+                BOOLEAN hasVars = FALSE;
+                if (SUCCEEDED(spUtilities->HasDCompXmlVariables(&hasVars)) && hasVars)
+                {
+                    // Reset so the leak doesn't feed spurious substitutions into later tests.
+                    spUtilities->ClearDCompXmlVariables();
+                    VERIFY_FAIL(L"DComp XML variables were not cleared."
+                                L" Set them inside a rendering scope (which clears them on close),"
+                                L" or clear them via ClearDCompXmlVariables / scope_exit.");
+                }
+            }
+        }
+
         // In the case of open popups or the input pane still being open there isn't much we can
         // do to recover Jupiter. In these cases to preserve the of the rest of the test
         // run we'll intentionally crater Jupiter. TAEF will, upon encountering a structured

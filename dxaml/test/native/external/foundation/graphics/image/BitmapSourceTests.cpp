@@ -58,7 +58,7 @@ void BitmapSourceTests::SetSource()
     VERIFY_IS_NOT_NULL(rootGrid);
 
     LOG_OUTPUT(L"Getting stream of image");
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.png");
 
     LOG_OUTPUT(L"Creating custom BitmapSource with SetSource");
     RunOnUIThread([&]()
@@ -95,7 +95,7 @@ void BitmapSourceTests::SetSourceAsync()
     VERIFY_IS_NOT_NULL(rootGrid);
 
     LOG_OUTPUT(L"Getting stream of image");
-    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.jpg");
+    wsts::IRandomAccessStream^ bitmapStream = LoadBinaryFile(GetResourcesPath() + L"barcelona.png");
 
     auto sourceAsyncCompletionEvent = std::make_shared<Event>();
 

@@ -141,6 +141,12 @@ public:
         TEST_METHOD_PROPERTY(L"IsolationLevel", L"Method")
         TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
         TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
+        // Disabled on 25H2+: Window::Activated event doesn't fire when returning from Start menu
+        // on ADO pipeline VMs. Screenshots confirm Start menu IS dismissed and app IS foreground,
+        // but the Activated event never arrives, causing windowActivatedEvent->WaitForDefault() to
+        // time out. Passes on local dev builds as of June 2026 -- may be specific to headless
+        // pipeline sessions. Bug 62791270.
+        TEST_METHOD_PROPERTY(L"TestPass:MaxOSVer", WINDOWS_OS_VERSION_24H2)
     END_TEST_METHOD()
 
     BEGIN_TEST_METHOD(ValidateCollapsedHyperlinkFocus)

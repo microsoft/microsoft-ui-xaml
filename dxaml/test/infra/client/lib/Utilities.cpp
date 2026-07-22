@@ -292,6 +292,40 @@ namespace Private { namespace Infrastructure {
         return Utilities::RunCommandLineWithExitCode(commandLine, &exitCode);
     }
 
+    HRESULT Utilities::SetImageCompareTolerance(INT32 tolerance)
+    {
+        m_imageCompareTolerance = tolerance;
+        return S_OK;
+    }
+
+    HRESULT Utilities::GetImageCompareTolerance(INT32* tolerance)
+    {
+        *tolerance = m_imageCompareTolerance;
+        return S_OK;
+    }
+
+    HRESULT Utilities::SetDCompXmlVariable(HSTRING name, HSTRING value)
+    {
+        COM_START
+        {
+            m_dcompXmlVariables[std::wstring(WindowsGetStringRawBuffer(name, nullptr))] =
+                std::wstring(WindowsGetStringRawBuffer(value, nullptr));
+        }
+        COM_END
+    }
+
+    HRESULT Utilities::ClearDCompXmlVariables()
+    {
+        m_dcompXmlVariables.clear();
+        return S_OK;
+    }
+
+    HRESULT Utilities::HasDCompXmlVariables(BOOLEAN* hasVariables)
+    {
+        *hasVariables = !m_dcompXmlVariables.empty();
+        return S_OK;
+    }
+
     HRESULT Utilities::VerifyMockDCompOutput(
         mdc::SurfaceComparison surfaceComparison
         )
@@ -407,6 +441,11 @@ namespace Private { namespace Infrastructure {
                 std::vector<WEX::Common::String> surfaceVariations;
                 ByteByByteComparer comparer;
 
+                if (!m_dcompXmlVariables.empty())
+                {
+                    comparer.SetVariables(m_dcompXmlVariables);
+                }
+
                 bool success = false;
 
                 // First verification pass checks the mdc output XML files.
@@ -498,6 +537,15 @@ namespace Private { namespace Infrastructure {
                     wrl::Wrappers::HStringReference strVariation(static_cast<const wchar_t*>(surfaceVariation));
                     ImageComparer imageComparer;
 
+                    // Apply per-channel pixel tolerance if set by the test
+                    // via SetImageCompareTolerance(). This tolerates minor
+                    // rounding differences across OS/driver versions (e.g.
+                    // the WIC JPEG decoder IDCT rounding change in 25H2).
+                    if (m_imageCompareTolerance > 0)
+                    {
+                        imageComparer.SetTolerance(m_imageCompareTolerance);
+                    }
+
                     wrl::Wrappers::HString diffFileNameSuffix;
                     LogThrow_IfFailed(diffFileNameSuffix.Set(L".diff.png"));
                     const auto diffFileNameHelper = GenerateFileNameHelper(strVariation.Get(), diffFileNameSuffix.Get());
@@ -576,6 +624,7 @@ namespace Private { namespace Infrastructure {
                 }
             }
         }
+
         COM_END
     }
 

@@ -114,6 +114,23 @@ namespace Private.Infrastructure
 
         HRESULT TerminateProcess([in] HSTRING processName);
 
+        // Set per-channel pixel tolerance for the next VerifyMockDCompOutput
+        // surface (PNG) comparison. Pixels that differ by at most this amount
+        // in every channel are treated as matching. Tests should reset to 0
+        // via RAII guard or scope_exit; VerifyTestCleanup asserts it was reset.
+        HRESULT SetImageCompareTolerance([in] INT32 tolerance);
+        HRESULT GetImageCompareTolerance([out, retval] INT32* tolerance);
+
+        // Set a variable for DComp XML master file substitution. Variables in
+        // the master file written as $$name$$ are replaced with the value before
+        // comparison. This lets tests parameterize OS-version-dependent expected
+        // output (colors, optional elements) without duplicating master files.
+        // These only take effect under a rendering scope's MockDComp, and the
+        // rendering scope clears them on close; VerifyTestCleanup asserts they were cleared.
+        HRESULT SetDCompXmlVariable([in] HSTRING name, [in] HSTRING value);
+        HRESULT ClearDCompXmlVariables();
+        HRESULT HasDCompXmlVariables([out, retval] BOOLEAN* hasVariables);
+
         [overload("VerifyMockDCompOutput"), default_overload]
         HRESULT VerifyMockDCompOutput(
             [in] MockDComp.SurfaceComparison surfaceComparison

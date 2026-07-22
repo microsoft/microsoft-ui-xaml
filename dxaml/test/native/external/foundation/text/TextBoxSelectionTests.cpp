@@ -15,6 +15,7 @@
 #include "RuntimeEnabledFeatureOverride.h"
 #include <ClipboardHelper.h>
 #include <TreeHelper.h>
+#include <TestComparisonGuards.h>
 
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
@@ -1009,6 +1010,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             void TextBoxSelectionTests::VerifyTextBoxSelectionGrippers()
             {
+                // Win11 25H2 changed the default accent color from #0078D7 to #0078D4.
+                if (IsOSBuildAtLeast(26200))
+                {
+                    TestServices::Utilities->SetDCompXmlVariable(L"AccentBlue", L"rgb {0, 0.4706, 0.8314}");
+                }
+                else
+                {
+                    TestServices::Utilities->SetDCompXmlVariable(L"AccentBlue", L"rgb {0, 0.4706, 0.8431}");
+                }
+
                 TestCleanupWrapper cleanup;
                 WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree);
 

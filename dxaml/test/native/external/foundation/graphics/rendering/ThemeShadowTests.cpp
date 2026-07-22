@@ -7,7 +7,7 @@
 #include <TestEvent.h>
 #include "SafeEventRegistration.h"
 #include "TestCleanupWrapper.h"
-#include "WUCRenderingScopeGuard.h"
+#include <TestComparisonGuards.h>
 
 
 using namespace Platform;
@@ -2215,6 +2215,9 @@ void ThemeShadowTests::ThemeShadowDropShadowUseCachedBrush()
 
 void ThemeShadowTests::ThemeShadowDropShadowSystemThemeRedrawRTB()
 {
+    // The RenderTargetBitmap shadow output differs slightly between OS builds (no JPEG here),
+    // so allow the small per-channel tolerance.
+    ImageCompareToleranceGuard tolerance(RENDER_COMPARE_TOLERANCE_SMALL);
     WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree);
 
     auto wh = TestServices::WindowHelper;

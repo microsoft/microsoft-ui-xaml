@@ -89,7 +89,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 auto bitmapImage = ref new BitmapImage();
                 VERIFY_IS_NOT_NULL(bitmapImage);
 
-                auto testUri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+                auto testUri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
                 VERIFY_IS_NOT_NULL(testUri);
 
                 openedRegistration.Attach(
@@ -176,7 +176,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 bitmapImage = ref new BitmapImage();
                 VERIFY_IS_NOT_NULL(bitmapImage);
 
-                auto testUri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+                auto testUri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
                 VERIFY_IS_NOT_NULL(testUri);
 
                 openedRegistration.Attach(

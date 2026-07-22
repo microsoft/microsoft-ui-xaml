@@ -18,6 +18,7 @@
 #include <SafeEventRegistration.h>
 #include <robuffer.h>
 #include <MUX-ETWEvents.h>
+#include <TestComparisonGuards.h>
 
 #undef GetClassName // Conflicts with automation peer method of the same name
 
@@ -89,7 +90,7 @@ void ImageTests::SimpleImageElement()
 
         testImage->Source = bitmapImage;
 
-        auto testUri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto testUri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         VERIFY_IS_NOT_NULL(testUri);
 
         openedRegistration.Attach(
@@ -114,7 +115,7 @@ void ImageTests::MultiImagesSameUriFirstFrame()
 {
     MultipleImagesTestHelper(
         GetResourcesPath() + L"TwoImages.xaml",
-        GetResourcesPath() + L"Rainier_444_2048x1536.jpg",
+        GetResourcesPath() + L"rainier_2048x1536.png",
         MockDComp::SurfaceIdMode::XmlOrder
         );
 }
@@ -123,7 +124,7 @@ void ImageTests::MultiImageSameUriDiffSizeFirstFrame()
 {
     MultipleImagesTestHelper(
         GetResourcesPath() + L"TwoImagesDifferentSizes.xaml",
-        GetResourcesPath() + L"Rainier_444_2048x1536.jpg",
+        GetResourcesPath() + L"rainier_2048x1536.png",
         MockDComp::SurfaceIdMode::XmlOrder
         );
 }
@@ -230,7 +231,7 @@ void ImageTests::PlateauScaleChange()
 
         testImage->Source = bitmapImage;
 
-        auto testUri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto testUri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         VERIFY_IS_NOT_NULL(testUri);
 
         openedRegistration.Attach(
@@ -321,7 +322,7 @@ void ImageTests::BaseImageTestEngineInternal(DCompRendering rendering)
     auto pTestImage = ref new TestImage();
     VERIFY_IS_NOT_NULL(pTestImage);
 
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
     pEngine->DCompRenderingMode = rendering;
     pEngine->Execute();
@@ -342,7 +343,7 @@ void ImageTests::SimpleCRCCheck()
     auto pTestImage = ref new TestImage();
     VERIFY_IS_NOT_NULL(pTestImage);
 
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
     pEngine->Execute();
 }
@@ -457,7 +458,7 @@ void ImageTests::StretchMode()
         auto pTestImage = ref new TestImage();
         VERIFY_IS_NOT_NULL(pTestImage);
 
-        pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+        pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
         pTestImage->Stretch = mode;
 
         pEngine->AddTestImage(pTestImage);
@@ -474,7 +475,7 @@ void ImageTests::StretchModeNoneLarger()
     auto pTestImage = ref new TestImage();
     VERIFY_IS_NOT_NULL(pTestImage);
 
-    pTestImage->ImagePath = GetResourcesPath() + L"barcelona.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"barcelona.png";
     pTestImage->Stretch = xaml_media::Stretch::None;
     pTestImage->ElementSize = pEngine->WindowSize;
 
@@ -491,7 +492,7 @@ void ImageTests::DecodeToRenderSizeOff()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->DecodeToRenderSize = false;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
 
     pEngine->Execute();
@@ -503,7 +504,7 @@ void ImageTests::MultipleImages()
     VERIFY_IS_NOT_NULL(pEngine);
 
     Platform::String^ imagePaths[] = {
-        GetResourcesPath() + L"Rainier_444_2048x1536.jpg",
+        GetResourcesPath() + L"rainier_2048x1536.png",
         GetResourcesPath() + L"Smiley.bmp",
         GetResourcesPath() + L"Windows.png",
     };
@@ -530,8 +531,8 @@ void ImageTests::MultipleImagesSameUri()
     VERIFY_IS_NOT_NULL(pEngine);
 
     Platform::String^ imagePaths[] = {
-        GetResourcesPath() + L"Rainier_444_2048x1536.jpg",
-        GetResourcesPath() + L"Rainier_444_2048x1536.jpg",
+        GetResourcesPath() + L"rainier_2048x1536.png",
+        GetResourcesPath() + L"rainier_2048x1536.png",
     };
 
     for (Platform::String^& pImagePath : imagePaths)
@@ -556,8 +557,8 @@ void ImageTests::MultipleImagesSameUriIgnoreCache()
     pEngine->MockDCompSurfaceIdMode = MockDComp::SurfaceIdMode::AllocationOrder;
 
     Platform::String^ imagePaths[] = {
-        GetResourcesPath() + L"Rainier_444_2048x1536.jpg",
-        GetResourcesPath() + L"Rainier_444_2048x1536.jpg",
+        GetResourcesPath() + L"rainier_2048x1536.png",
+        GetResourcesPath() + L"rainier_2048x1536.png",
     };
 
     for (Platform::String^& pImagePath : imagePaths)
@@ -588,7 +589,7 @@ void ImageTests::BitmapCache(DCompRendering dcompRendering)
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->BitmapCache = true;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
     pEngine->DCompRenderingMode = dcompRendering;
 
@@ -604,7 +605,7 @@ void ImageTests::LoadStreamSync()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->LoadApi = TestImageEnums::LoadApi::SetSource;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
 
     pEngine->AddTestImage(pTestImage);
 
@@ -620,7 +621,7 @@ void ImageTests::LoadStreamAsync()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->LoadApi = TestImageEnums::LoadApi::SetSourceAsync;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
 
     pEngine->Execute();
@@ -687,7 +688,7 @@ void ImageTests::Opacity50()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->Opacity = 0.5;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
 
     pEngine->Execute();
@@ -702,7 +703,7 @@ void ImageTests::Opacity0()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->Opacity = 0.0;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
 
     pEngine->Execute();
@@ -718,7 +719,7 @@ void ImageTests::DecodePixelWidth()
 
     // Image should appear blurry
     pTestImage->DecodePixelWidth = 25;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
 
     pEngine->Execute();
@@ -734,7 +735,7 @@ void ImageTests::DecodePixelHeight()
 
     // Image should appear blurry
     pTestImage->DecodePixelHeight = 25;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
 
     pEngine->Execute();
@@ -751,7 +752,7 @@ void ImageTests::DecodePixelWidthAndHeightInternal(DCompRendering rendering)
     // Image should appear blurry
     pTestImage->DecodePixelWidth = 25;
     pTestImage->DecodePixelHeight = 25;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
     pEngine->DCompRenderingMode = rendering;
 
@@ -785,7 +786,7 @@ void ImageTests::DecodePixelTypeLogical()
     // Image should appear blurry
     pTestImage->DecodePixelWidth = 25;
     pTestImage->DecodePixelType = xaml_imaging::DecodePixelType::Logical;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
 
     pEngine->Execute();
@@ -800,7 +801,7 @@ void ImageTests::BorderElement()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->ParentElement = TestImageEnums::ParentElement::Border;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
     pEngine->AddTestImage(pTestImage);
 
     pEngine->Execute();
@@ -815,7 +816,7 @@ void ImageTests::EllipseShapeInternal(DCompRendering rendering)
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->ParentElement = TestImageEnums::ParentElement::Ellipse;
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
 
     pEngine->AddTestImage(pTestImage);
     pEngine->DCompRenderingMode = rendering;
@@ -837,7 +838,7 @@ void ImageTests::NineGrid()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     pTestImage->NineGrid = xaml::Thickness({ 10.0, 30.0, 20.0, 40.0 });
-    pTestImage->ImagePath = GetResourcesPath() + L"Rainier_444_2048x1536.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"rainier_2048x1536.png";
 
     pEngine->AddTestImage(pTestImage);
 
@@ -871,6 +872,9 @@ void ImageTests::NineGridNoSource()
 
 void ImageTests::VeryLargeImageSize()
 {
+    // Still on JPEG (not converted to PNG like most render tests here). JPEG decode
+    // can round a bit differently across OS builds, so allow a small per-channel tolerance.
+    ImageCompareToleranceGuard tolerance(RENDER_COMPARE_TOLERANCE_SMALL);
     auto pEngine = ref new ImageTestEngine();
     VERIFY_IS_NOT_NULL(pEngine);
 
@@ -915,7 +919,7 @@ void ImageTests::VeryLarge_4640x168_NineGrid()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     // This image is intended to invoke tiling (width > 2048) but have height smaller than a tile (height < 504)
-    pTestImage->ImagePath = GetResourcesPath() + L"LargeHorizontalStrip_4640x168.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"LargeHorizontalStrip_4640x168.png";
     pTestImage->Stretch = xaml_media::Stretch::Fill;
     pTestImage->NineGrid = xaml::Thickness({ 1.0, 1.0, 1.0, 1.0 });
     pEngine->AddTestImage(pTestImage);
@@ -931,7 +935,7 @@ void ImageTests::VeryLarge_4640x504_NineGridInternal(DCompRendering rendering)
     VERIFY_IS_NOT_NULL(pTestImage);
 
     // This image is intended to invoke tiling (width > 2048) but have height smaller exactly the tile size (height == 504)
-    pTestImage->ImagePath = GetResourcesPath() + L"LargeHorizontalStrip_4640x504.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"LargeHorizontalStrip_4640x504.png";
     pTestImage->Stretch = xaml_media::Stretch::Fill;
     pTestImage->NineGrid = xaml::Thickness({ 1.0, 1.0, 1.0, 1.0 });
     pEngine->AddTestImage(pTestImage);
@@ -953,7 +957,7 @@ void ImageTests::VeryLarge_168x3744_NineGrid()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     // This image is intended to invoke tiling (height > 2048) but have width smaller than a tile (width < 504)
-    pTestImage->ImagePath = GetResourcesPath() + L"LargeVerticalStrip_168x3744.jpg";
+    pTestImage->ImagePath = GetResourcesPath() + L"LargeVerticalStrip_168x3744.png";
     pTestImage->Stretch = xaml_media::Stretch::Fill;
     pTestImage->NineGrid = xaml::Thickness({ 1.0, 1.0, 1.0, 1.0 });
     pEngine->AddTestImage(pTestImage);
@@ -969,7 +973,7 @@ void ImageTests::VeryLarge_504x3725_NineGrid()
     VERIFY_IS_NOT_NULL(pTestImage);
 
     // This image is intended to invoke tiling (height > 2048) but have width exactly the tile size (width == 504)
-    pTestImage->ImagePath = GetResourcesPath() + L"LargeVerticalStrip_504x3725.JPG";
+    pTestImage->ImagePath = GetResourcesPath() + L"LargeVerticalStrip_504x3725.png";
     pTestImage->Stretch = xaml_media::Stretch::Fill;
     pTestImage->NineGrid = xaml::Thickness({ 1.0, 1.0, 1.0, 1.0 });
     pEngine->AddTestImage(pTestImage);
@@ -997,7 +1001,7 @@ void ImageTests::VeryLarge_4640x168_Hardware_And_BitmapCache(Microsoft::UI::Xaml
         wh->WindowContent = rootCanvas;
 
         auto bitmapImage = ref new BitmapImage();
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"LargeHorizontalStrip_4640x168.jpg");
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"LargeHorizontalStrip_4640x168.png");
 
         openedRegistration.Attach(
             bitmapImage,
@@ -1123,7 +1127,7 @@ void ImageTests::InvalidImageClearsPreviousOne()
     {
         bitmapImage = ref new BitmapImage();
         eventWaitingContext.Attach(bitmapImage);
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.png");
 
         auto image = ref new xaml_controls::Image();
         TestServices::WindowHelper->WindowContent = image;
@@ -1155,7 +1159,7 @@ void ImageTests::NotExistingImageClearsPreviousOne()
     {
         bitmapImage = ref new BitmapImage();
         eventWaitingContext.Attach(bitmapImage);
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.png");
 
         auto image = ref new xaml_controls::Image();
         TestServices::WindowHelper->WindowContent = image;
@@ -1188,7 +1192,7 @@ void ImageTests::NullUriClearsPreviousImage()
     {
         bitmapImage = ref new BitmapImage();
         eventWaitingContext.Attach(bitmapImage);
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.png");
 
         auto image = ref new xaml_controls::Image();
         TestServices::WindowHelper->WindowContent = image;
@@ -1224,7 +1228,7 @@ void ImageTests::AutomationPeerDefault()
 
         auto bitmapImage = ref new BitmapImage();
         eventWaitingContext.Attach(bitmapImage);
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         testImage->Source = bitmapImage;
     });
     engine.SetPostInitWaitCallback([&] (Microsoft::UI::Xaml::FrameworkElement^ rootElement)
@@ -1257,7 +1261,7 @@ void ImageTests::AutomationPeerProperties()
 
         auto bitmapImage = ref new BitmapImage();
         eventWaitingContext.Attach(bitmapImage);
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         testImage->Source = bitmapImage;
     });
     engine.SetPostInitWaitCallback([&] (Microsoft::UI::Xaml::FrameworkElement^ rootElement)
@@ -1339,7 +1343,7 @@ void ImageTests::ImageElementCastingSource()
 
         testImage->Source = bitmapImage;
 
-        auto testUri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto testUri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
         VERIFY_IS_NOT_NULL(testUri);
 
         openedRegistration.Attach(
@@ -1515,7 +1519,7 @@ void ImageTests::LoadHelper(xaml_imaging::BitmapImage ^bitmapImage, TestImageEnu
     if (loadApi == TestImageEnums::LoadApi::SetSourceAsync ||
         loadApi == TestImageEnums::LoadApi::SetSource)
     {
-        stream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        stream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
     }
 
     RunOnUIThread([&]()
@@ -1529,7 +1533,7 @@ void ImageTests::LoadHelper(xaml_imaging::BitmapImage ^bitmapImage, TestImageEnu
             bitmapImage->SetSource(stream);
             break;
         case TestImageEnums::LoadApi::Uri:
-            bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+            bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
             break;
         }
     });
@@ -1546,7 +1550,7 @@ void ImageTests::ToggleUriSource()
     {
         bitmapImage = ref new BitmapImage();
         eventWaitingContext.Attach(bitmapImage);
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg"); // A
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png"); // A
 
         auto image = ref new xaml_controls::Image();
         TestServices::WindowHelper->WindowContent = image;
@@ -1560,7 +1564,7 @@ void ImageTests::ToggleUriSource()
 
     RunOnUIThread([&]
     {
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.jpg"); // B
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"barcelona.png"); // B
     });
 
     eventWaitingContext.WaitOpened();
@@ -1570,7 +1574,7 @@ void ImageTests::ToggleUriSource()
 
     RunOnUIThread([&]
     {
-        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg"); // A again
+        bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png"); // A again
     });
 
     eventWaitingContext.WaitOpened();
@@ -1595,7 +1599,7 @@ void ImageTests::RasterizationScale()
     {
         LOG_OUTPUT(L"> Creating visual tree in two parts so image decode doesn't race over surface IDs.");
 
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
 
         BitmapImage^ bitmapImage = ref new BitmapImage();
         bitmapImage->CreateOptions = BitmapCreateOptions::IgnoreImageCache;
@@ -1624,7 +1628,7 @@ void ImageTests::RasterizationScale()
     {
         LOG_OUTPUT(L"> Adding second image.");
 
-        auto uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        auto uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
 
         BitmapImage^ bitmapImage2 = ref new BitmapImage();
         bitmapImage2->CreateOptions = BitmapCreateOptions::IgnoreImageCache;
@@ -1677,7 +1681,7 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
     {
         LOG_OUTPUT(L"> Creating collapsed subtree.");
 
-        Uri^ uri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+        Uri^ uri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
 
         BitmapImage^ bitmapImage = ref new BitmapImage();
         bitmapImage->UriSource = uri;
@@ -1702,7 +1706,7 @@ void ImageTests::DecodeToRenderSizeUnderCollapsedSubtree()
 
         // workaround for Gallery
         {
-            Uri^ uri2 = ref new Uri(GetResourcesPath() + L"barcelona.jpg");
+            Uri^ uri2 = ref new Uri(GetResourcesPath() + L"barcelona.png");
 
             BitmapImage^ bitmapImage2 = ref new BitmapImage();
             bitmapImage2->UriSource = uri2;

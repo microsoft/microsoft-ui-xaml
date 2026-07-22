@@ -19,5 +19,7 @@ namespace Microsoft.UI.Xaml.Tests.Common
         public const string _19H1 = "18362";
         public const string _20H2 = "19042";
         public const string _22H2 = "22621";
+        public const string _24H2 = "26100";
+        public const string _25H2 = "26200";
     }
 }

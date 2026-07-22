@@ -13,6 +13,7 @@
 #include "AppRegressionTests.h"
 #include "ETWWaiterProxy.h"
 #include <WUCRenderingScopeGuard.h>
+#include <TestComparisonGuards.h>
 
 using namespace concurrency;
 using namespace ::Windows::Storage;
@@ -270,7 +271,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 auto bitmapImage1 = safe_cast<BitmapImage^>(testImage1->Source);
                 auto bitmapImage2 = safe_cast<BitmapImage^>(testImage2->Source);
 
-                auto testUri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+                auto testUri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
                 VERIFY_IS_NOT_NULL(testUri);
 
                 bitmapImage1->UriSource = testUri;
@@ -449,6 +450,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         // a landscape size for a portrait rotated image making people appear wider than normal.
         void AppRegressionTests::TFS_6697031()
         {
+            // This test uses a JPEG source because it exercises EXIF rotation. JPEG/EXIF
+            // decode rounds slightly differently across OS builds, so allow a small per-channel tolerance.
+            ImageCompareToleranceGuard tolerance(RENDER_COMPARE_TOLERANCE_SMALL);
             WUCRenderingScopeGuard guard(DCompRendering::WUCCompleteSynchronousCompTree, false /*resizeWindow*/);
 
             ::Windows::Foundation::Size size(100, 75);
@@ -597,7 +601,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             auto openedRegistration2 = CreateSafeEventRegistration(BitmapImage, ImageOpened);
             auto bitmapImageOpenedEvent2 = std::make_shared<Event>();
 
-            Uri^ testUri = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+            Uri^ testUri = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
 
             // Load the first image first to ensure it is the "baseline" holding the surface cache entry.
             xaml_controls::Image^ testImage1 = nullptr;
@@ -678,7 +682,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             ::Windows::Foundation::Size size(400, 300);
             TestServices::WindowHelper->SetWindowSizeOverride(size);
 
-            auto stream = LoadBinaryFile(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+            auto stream = LoadBinaryFile(GetResourcesPath() + L"rainier_2048x1536.png");
             ImageEventWaitingContext waiter;
 
             BitmapImage ^bitmapImage;
@@ -694,7 +698,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 waiter.Attach(bitmapImage);
 
                 bitmapImage->SetSourceAsync(stream);
-                bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"Rainier_444_2048x1536.jpg");
+                bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"rainier_2048x1536.png");
             });
 
             waiter.WaitOpened();
@@ -769,7 +773,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 waiter.Attach(bitmapImage);
 
                 bitmapImage->DecodePixelHeight = 10000;
-                bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"LargeHorizontalStrip_4640x168.JPG");
+                bitmapImage->UriSource = ref new Uri(GetResourcesPath() + L"LargeHorizontalStrip_4640x168.png");
             });
 
             waiter.WaitOpened();
@@ -816,7 +820,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
             RunOnUIThread([&]()
             {
-                TestServices::WindowHelper->WindowContent = ref new MeasureOverrideSetsImageUri(GetResourcesPath() + L"barcelona.jpg");
+                TestServices::WindowHelper->WindowContent = ref new MeasureOverrideSetsImageUri(GetResourcesPath() + L"barcelona.png");
             });
 
             decodeEtwWaiter.WaitForDefault();

@@ -36,6 +36,7 @@ using Color = ::Windows::UI::Color;
 using Colors = Microsoft::UI::Colors;
 
 #include <PopupHelper.h>
+#include <TestComparisonGuards.h>
 
 namespace
 {
@@ -218,6 +219,26 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     void AlphaMaskTests::TextBlockSelection()
     {
+        // This test renders 7 TextBlocks (Latin "abc", several Arabic runs, and one
+        // Thai run) in two states (before and after SelectAll) and CRC-compares each
+        // text alpha-mask surface. Most masks are byte-identical across OS builds.
+        // The one surface we parameterize here via $$TextMaskCRC$$ is the Thai run
+        // (tb6 in the test XAML). Thai stacks combining vowel marks above the base
+        // glyph, and that glyph shaping/positioning got touched in newer OS builds,
+        // so its rasterized mask (and thus its CRC) moved. Verified on real VMs: the
+        // older baseline (rs5_release) renders CRC 980343538, and newer builds
+        // (ge_current) render 1545754801. There's no JPEG here -- this is a real
+        // text-rendering difference, not decode rounding. (A couple of other surfaces in
+        // this test also shift between OS builds; those already ship both CRC variants as
+        // additive .master.png files, so only this one needs the per-OS swap.)
+        if (IsOSBuildAtLeast(26200))
+        {
+            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"1545754801");
+        }
+        else
+        {
+            TestServices::Utilities->SetDCompXmlVariable(L"TextMaskCRC", L"980343538");
+        }
         WUCRenderingScopeGuard wuc(DCompRendering::WUCCompleteSynchronousCompTree, false);
         TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 800));
         TestServices::Utilities->SetMockDCompSurfaceIdMode(MockDComp::SurfaceIdMode::CRC);

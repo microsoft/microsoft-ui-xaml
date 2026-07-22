@@ -10,7 +10,7 @@
         <RectangleGeometry Rect="0,0,0,0"/>
       </Canvas.Clip>
       <StackPanel>
-        <Image x:Name="myImage1" Width="25" Height="25" Source="ms-appx:///resources/native/external/foundation/graphics/image/Rainier_444_2048x1536.jpg"/>
+        <Image x:Name="myImage1" Width="25" Height="25" Source="ms-appx:///resources/native/external/foundation/graphics/image/rainier_2048x1536.png"/>
         <Image x:Name="myImage2" Width="50" Height="50"/>
       </StackPanel>
     </Canvas>

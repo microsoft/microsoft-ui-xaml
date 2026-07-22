@@ -42,7 +42,7 @@
                 </wucSpriteVisual>
                 <wucSpriteVisual SizeX="133.3" SizeY="100" BorderMode="Soft">
                   <Clip ClipLeft="0" ClipTop="0" ClipRight="33.33" ClipBottom="0" TransformMatrix="Identity" />
-                  <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="1800610501" />
+                  <SurfaceBrush Stretch="Fill" Transform="Identity" Surface="116596187" />
                 </wucSpriteVisual>
               </Visual>
             </Visual>
