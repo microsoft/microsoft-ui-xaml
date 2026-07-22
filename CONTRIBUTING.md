@@ -14,14 +14,14 @@ Contributions from the community in the form of feature requests and bugs are ha
 
 ## New contributors
 
-We mark the most straightforward issues with labels. These issues are the place to start if you are interested in contributing but new to the codebase.
+We mark the most straightforward issues with labels. These issues are the place to start if you are interested in contributing, but new to the codebase.
 
-* [good first issues](https://github.com/Microsoft/microsoft-ui-xaml/labels/good%20first%20issue)
-* [help wanted](https://github.com/Microsoft/microsoft-ui-xaml/labels/help%20wanted)
+- [good first issues](https://github.com/Microsoft/microsoft-ui-xaml/labels/good%20first%20issue)
+- [help wanted](https://github.com/Microsoft/microsoft-ui-xaml/labels/help%20wanted)
 
 Another great way to help is by voting and commenting on feature proposals:
 
-* [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature%20request)
+- [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature%20request)
 
 ## Getting started
 
@@ -37,6 +37,7 @@ Another great way to help is by voting and commenting on feature proposals:
 ### PR requirements
 
 All PRs targeting `main` or release branches require:
+
 - At least **2 approvals** from the WinUI team
 - All **review conversations resolved**
 - **CLA signed** (a bot will prompt you on your first PR)
@@ -48,8 +49,8 @@ PRs are merged using **squash merge** by default.
 
 ### Proposing new public APIs or UI
 
-Please follow the [New Feature or API Process](docs/external/feature_proposal_process.md) before adding, removing, or changing public APIs or UI.  
-All new public APIs, new UI, or breaking changes to existing features **must** go through that process before submitting code changes.  
+Please follow the [New Feature or API Process](docs/feature_proposal_process.md) before adding, removing, or changing public APIs or UI.
+All new public APIs, new UI, or breaking changes to existing features **must** go through that process before submitting code changes.
 You don't need to follow that process for bug fixes or other small changes.
 
 ### Contribution bar
@@ -62,12 +63,14 @@ While we strive to accept all community contributions that meet the guidelines o
 
 For details see:
 
-* [Getting Started — build prerequisites and instructions](GettingStarted.md)
-* [Contribution workflow](docs/external/contribution_workflow.md)
+- [Setup and build environment](docs/developer_guide.md#Prerequisites)
+- [Source code structure](docs/source_code_structure.md)
+- [Contribution workflow](docs/contribution_workflow.md)
+- [Coding style and conventions](docs/code_style_and_conventions.md)
 
 ### Contributor License Agreement
 
-Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit https://cla.microsoft.com.
+Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution. For details, visit <https://cla.microsoft.com>.
 
 When you submit a pull request, a CLA-bot will automatically determine whether you need to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions provided by the bot. You will only need to do this once across all repos using our CLA.
 
@@ -75,21 +78,18 @@ When you submit a pull request, a CLA-bot will automatically determine whether y
 
 The following rules must be followed for PRs that include files from another project:
 
-* The license of the file is [permissive](https://en.wikipedia.org/wiki/Permissive_free_software_licence).
-* The license of the file is left intact.
-* The contribution is correctly attributed in the [3rd party notices](https://github.com/dotnet/coreclr/blob/master/THIRD-PARTY-NOTICES.TXT)
+- The license of the file is [permissive](https://en.wikipedia.org/wiki/Permissive_free_software_licence).
+- The license of the file is left intact.
+- The contribution is correctly attributed in the [3rd party notices](https://github.com/dotnet/coreclr/blob/master/THIRD-PARTY-NOTICES.TXT)
 file in the repository, as needed.
 
 ## Documentation and usage samples
 
-You can also read and contribute to the WinUI documentation here:
-https://learn.microsoft.com/windows/apps/winui/
+You can read and contribute to the WinUI documentation here: [WinUI documentation](https://learn.microsoft.com/uwp/toolkits/winui)
 
-You can find usage examples of the controls available in WinUI in the WinUI 3 Gallery app:
-https://github.com/Microsoft/WinUI-Gallery/
+You can find usage examples of the controls available in WinUI in the WinUI 3 Gallery app: [WinUI 3 Gallery app](https://github.com/Microsoft/WinUI-Gallery/)  
 
-Which can also be installed from the Microsoft Store:
-https://apps.microsoft.com/detail/9p3jfpwwdzrc
+Which can be installed from the Microsoft Store: [Microsoft Store](https://apps.microsoft.com/detail/9p3jfpwwdzrc)
 
 ## API spec discussions
 
