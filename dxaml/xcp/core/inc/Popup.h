@@ -511,6 +511,7 @@ public:
     // IsLightDismissEnabled.
     bool                            m_disableOverlayIsLightDismissCheck;
     bool                            m_fIsOpen;
+    bool                            m_fIsOpenPending;
     bool                            m_fIsContentDialog;
     bool                            m_fIsSubMenu;
 

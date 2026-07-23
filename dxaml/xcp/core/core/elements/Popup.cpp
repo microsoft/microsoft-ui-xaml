@@ -60,6 +60,7 @@ CPopup::CPopup(_In_ CCoreServices *pCore)
     : CFrameworkElement(pCore)
     , m_pChild(nullptr)
     , m_fIsOpen(false)
+    , m_fIsOpenPending(false)
     , m_fIsLightDismissEnabled(false)
     , m_fIsLightDismiss(FALSE)
     , m_fIsContentDialog(false)
@@ -224,7 +225,27 @@ _Check_return_ HRESULT CPopup::SetValue(_In_ const SetValueParams& args)
                 }
 
                 // Open or Close the popup
-                hr = m_fIsOpen ? Open() : Close();
+                if (m_fIsOpen && IsParsing())
+                {
+                    // GitHub #3879: When popup is initialized with IsOpen property, there is no 
+                    // popup root available yet and this causes Open to throw.
+                    // Defer this open until one is available post EnterImpl
+                    CPopupRoot* pPopupRootNoRef = nullptr;
+                    IFC(GetContext()->GetAdjustedPopupRootForElement(this, &pPopupRootNoRef));
+                    if (!pPopupRootNoRef)
+                    {
+                        m_fIsOpenPending = true;
+                        hr = S_OK;
+                    }
+                    else
+                    {
+                        hr = Open();
+                    }
+                }
+                else
+                {
+                    hr = m_fIsOpen ? Open() : Close();
+                }
                 IFC(hr);
             }
 
@@ -692,6 +713,14 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
     }
 
     ReentrancyGuard guard(this);
+
+    // GitHub #3879: When popup is initialized with IsOpen property, there is no 
+    // popup root available yet and this causes Open to throw. We defer it until the tree is live in EnterImpl.
+    // Cancelling any deferred open that was queued during parsing here.
+    // Close() is reached from, SetValue(IsOpen=false), RemoveChild's implicit close (which leaves m_fIsOpen
+    // true and bypasses SetValue), and tree reset.
+    // So Clearing it here helps avoid a stale pending open in EnterImpl-Open() on a null child.
+    m_fIsOpenPending = false;
 
     if (!m_isImplicitClose)
     {
@@ -2675,6 +2704,13 @@ _Check_return_ HRESULT CPopup::SetChild(
             {
                 IFC(pPopupRoot->AddToDeferredOpenPopupList(this));
             }
+            else if (IsParsing() && !pPopupRoot)
+            {
+                // GitHub #3879: When popup is initialized with IsOpen property, there is no 
+                // popup root available yet and this causes Open to throw.
+                // Defer this open until one is available post EnterImpl
+                m_fIsOpenPending = true;
+            }
             else
             {
                 IFC(Open());
@@ -2925,6 +2961,17 @@ CPopup::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams para
     bool bOldFlowDirection = IsRightToLeft();
 
     IFC_RETURN(CFrameworkElement::EnterImpl(pNamescopeOwner, params));
+
+    if(params.fIsLive && m_fIsOpen && m_fIsOpenPending)
+    {
+        // GitHub #3879: When popup is initialized with IsOpen property, there is no 
+        // popup root available yet and this causes Open to throw.
+        // We deferred this open in SetChild.
+        // Post the above CFrameworkElement::EnterImpl the popup root is available
+        // So we reset the flag here and call Open()
+        m_fIsOpenPending = false;
+        IFC_RETURN(Open());
+    }
 
     // If the Popup is entering the live tree, ensure that it is marked for composition.
     // If the Popup was already opened (i.e. a 'parentless Popup') then there's no need to mark it again.

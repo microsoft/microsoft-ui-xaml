@@ -2777,5 +2777,101 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
 
     }
 
+    // Regression coverage for GitHub #3879: a Popup initialized with IsOpen='True' during
+    // XAML parsing has no popup root available yet, so the open must be deferred until the
+    // element enters the live tree (EnterImpl) instead of calling Open() during parsing.
+    //
+    // Scenario 1: IsOpen is set before the child (attribute ordering). The deferral happens
+    // in CPopup::SetChild.
+    void PopupIntegrationTests::InitializeWithIsOpenTrueDoesNotCrash()
+    {
+        TestCleanupWrapper cleanup;
+        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
+
+        xaml_primitives::Popup^ popup = nullptr;
+        xaml_controls::Border^ child = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            // IsOpen='True' is applied before the child during parsing. Historically this threw
+            // because no popup root was reachable yet. It must instead defer and not crash.
+            auto rootPanel = dynamic_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='LayoutRoot' Width='400' Height='400'> \r\n"
+                L"  <Popup x:Name='popup1' IsOpen='True'> \r\n"
+                L"    <Border x:Name='child1' Width='100' Height='100' Background='Red'/> \r\n"
+                L"  </Popup> \r\n"
+                L"</StackPanel>"));
+            VERIFY_IS_NOT_NULL(rootPanel);
+
+            popup = dynamic_cast<xaml_primitives::Popup^>(rootPanel->FindName(L"popup1"));
+            VERIFY_IS_NOT_NULL(popup);
+            child = dynamic_cast<xaml_controls::Border^>(rootPanel->FindName(L"child1"));
+            VERIFY_IS_NOT_NULL(child);
+
+            // The IsOpen value is honored even though the actual open was deferred.
+            VERIFY_IS_TRUE(popup->IsOpen);
+
+            // Connecting to the live tree triggers EnterImpl, which performs the deferred open.
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            // Popup is still open and its child laid out, proving the deferred open completed.
+            VERIFY_IS_TRUE(popup->IsOpen);
+            VERIFY_ARE_EQUAL(100.0, child->ActualHeight);
+            VERIFY_ARE_EQUAL(100.0, child->ActualWidth);
+        });
+    }
+
+    // Scenario 2: The child is parsed before IsOpen (property-element
+    // ordering), so CPopup::SetChild runs while IsOpen is still false and does not defer. The
+    // subsequent IsOpen='True' is applied via CPopup::SetValue while the child already exists,
+    // which must also defer the open when parsing with no popup root available.
+    void PopupIntegrationTests::InitializeWithChildBeforeIsOpenDoesNotCrash()
+    {
+        TestCleanupWrapper cleanup;
+        TestServices::WindowHelper->SetWindowSizeOverride(wf::Size(400, 400));
+
+        xaml_primitives::Popup^ popup = nullptr;
+        xaml_controls::Border^ child = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            // Popup.Child is set first, then Popup.IsOpen. IsOpen goes through SetValue with the
+            // child already present, reaching the Open() path during parsing. It must defer and
+            // not crash.
+            auto rootPanel = dynamic_cast<xaml_controls::StackPanel^>(xaml_markup::XamlReader::Load(
+                L"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' x:Name='LayoutRoot' Width='400' Height='400'> \r\n"
+                L"  <Popup x:Name='popup1'> \r\n"
+                L"    <Popup.Child> \r\n"
+                L"      <Border x:Name='child1' Width='100' Height='100' Background='Red'/> \r\n"
+                L"    </Popup.Child> \r\n"
+                L"    <Popup.IsOpen>True</Popup.IsOpen> \r\n"
+                L"  </Popup> \r\n"
+                L"</StackPanel>"));
+            VERIFY_IS_NOT_NULL(rootPanel);
+
+            popup = dynamic_cast<xaml_primitives::Popup^>(rootPanel->FindName(L"popup1"));
+            VERIFY_IS_NOT_NULL(popup);
+            child = dynamic_cast<xaml_controls::Border^>(rootPanel->FindName(L"child1"));
+            VERIFY_IS_NOT_NULL(child);
+
+            VERIFY_IS_TRUE(popup->IsOpen);
+
+            // Connecting to the live tree triggers EnterImpl, which performs the deferred open.
+            TestServices::WindowHelper->WindowContent = rootPanel;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_TRUE(popup->IsOpen);
+            VERIFY_ARE_EQUAL(100.0, child->ActualHeight);
+            VERIFY_ARE_EQUAL(100.0, child->ActualWidth);
+        });
+    }
+
 
 } } } } } } } // Microsoft::UI::Xaml::Tests::Controls::Primitives::Popup

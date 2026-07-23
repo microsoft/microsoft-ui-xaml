@@ -180,8 +180,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         // conditional XAML, etc.) should be validated against TargetPlatformMinVersion
         public bool IgnoreSpecifiedTargetPlatformMinVersion { get; set; }
 
-        public string EnabledXamlOptionalChanges { get; set; }
-        public string DisabledXamlOptionalChanges { get; set; }
+        public string EnabledXamlOptionalChanges { get; set; } = string.Empty;
+        public string DisabledXamlOptionalChanges { get; set; } = string.Empty;
 
         #endregion
 
@@ -533,13 +533,13 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         {
             bool changed = false;
 
-            if (string.Compare(SaveState.EnabledXamlOptionalChanges, EnabledXamlOptionalChanges, StringComparison.Ordinal) != 0)
+            if (string.Compare(SaveState.EnabledXamlOptionalChanges ?? string.Empty, EnabledXamlOptionalChanges ?? string.Empty, StringComparison.Ordinal) != 0)
             {
                 SaveState.EnabledXamlOptionalChanges = EnabledXamlOptionalChanges;
                 changed = true;
             }
 
-            if (string.Compare(SaveState.DisabledXamlOptionalChanges, DisabledXamlOptionalChanges, StringComparison.Ordinal) != 0)
+            if (string.Compare(SaveState.DisabledXamlOptionalChanges ?? string.Empty, DisabledXamlOptionalChanges ?? string.Empty, StringComparison.Ordinal) != 0)
             {
                 SaveState.DisabledXamlOptionalChanges = DisabledXamlOptionalChanges;
                 changed = true;
