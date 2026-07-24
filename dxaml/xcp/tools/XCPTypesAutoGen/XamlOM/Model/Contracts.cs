@@ -36,7 +36,15 @@ namespace Microsoft.UI.Xaml
     [ContractVersion(12)] // WinAppSDK 3.0
     public class WinUIContract : Contract
     {
-        public const int LatestVersion = 12;
+        // Put new APIs in the Experimental contract version. Move into the specific
+        // WinAppSDK version after completing API review and determining the stable
+        // release version.
+        public const int Experimental  = 12;
+
+        public const int WinAppSDK_2_0 = 10;
+        public const int WinAppSDK_2_2 = 11;
+
+        public const int WinAppSDK_3_0 = 12;
     };
 
     [ContractVersion(1)]

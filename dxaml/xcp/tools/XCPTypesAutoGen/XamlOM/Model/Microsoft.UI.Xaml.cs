@@ -3330,7 +3330,7 @@ namespace Microsoft.UI.Xaml
     [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 1, ForcePrimaryInterfaceGeneration = true)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 4)]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("coretypes2")]
     [Guids(ClassGuid = "b0d8d8be-9fae-4cdc-a457-523fb68b3953")]
     [ContentProperty("Content")]
@@ -3902,7 +3902,7 @@ namespace Microsoft.UI.Xaml
 
     [NativeName("CSetter")]
     [Guids(ClassGuid = "7c425f15-7da5-4f20-b7cc-39527248803b")]
-    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_2_2)]
     public sealed class Setter
      : Microsoft.UI.Xaml.SetterBase
     {
@@ -6010,7 +6010,7 @@ namespace Microsoft.UI.Xaml
     }
 
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 8)]
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]

@@ -16,6 +16,7 @@ function Get-LatestVersion([string]$NugetPackageName, [bool]$PublicOnly = $false
     # in that case we know we'll have already installed the latest version of the nuget packages.
     if ($env:BUILD_BUILDID)
     {
+        Write-Host "Pipeline run: Checking just for latest installed package..."
         return ([regex]"$NugetPackageName\s+(\S+)").Matches((& nuget list -Source $PackagesDirectory $NugetPackageName)).Groups[1].Value
     }
     else
@@ -59,10 +60,13 @@ if (-not (Test-Path $WinMDPath))
 if ($WinAppSDKWinUIVersion)
 {
     $winAppSDKWinUIVersionToUse = $WinAppSDKWinUIVersion
+    Write-Host "Specific WinUI version specified for comparison: $winAppSDKWinUIVersionToUse"
 }
 else
 {
+    Write-Host "Searching for latest public WinUI version"
     $winAppSDKWinUIVersionToUse = Get-LatestVersion "Microsoft.WindowsAppSDK.WinUI" -PublicOnly $true
+    Write-Host "Latest WinUI version found for comparison: $winAppSDKWinUIVersionToUse"
 }
 
 # During a lab build the package should have already been installed as a pre-step
@@ -212,6 +216,9 @@ $outputFile = Join-Path $env:TEMP "winmdverify.out.txt"
 if ($LastExitCode -gt 0)
 {
     $errors = Get-Content $outputFile -Raw
+    Write-Host "----- Output file content: -----"
+    Write-Host "$errors"
+    Write-Host "--------------------------------"
     Write-LabError "$LastExitCode WinMD compat error$(if ($LastExitCode -eq 1) { " was" } else { "s were" }) detected:$([Environment]::NewLine)$([Environment]::NewLine)$errors"
 
     exit 1
@@ -220,6 +227,9 @@ if ($LastExitCode -gt 0)
 elseif ($LastExitCode -lt 0)
 {
     $errors = Get-Content $outputFile -Raw
+    Write-Host "----- Output file content: -----"
+    Write-Host "$errors"
+    Write-Host "--------------------------------"
     Write-LabError "Error retrieving WinMD compat errors. Exit code was $LastExitCode. Error output:$([Environment]::NewLine)$([Environment]::NewLine)$errors"
 
     exit 1

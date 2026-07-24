@@ -2129,7 +2129,7 @@ namespace Microsoft.UI.Xaml.Markup
         void Disable(Int32 lineNumber, Int32 columnNumber);
     };
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
     [webhosthidden]
     interface IXamlCondition 
     {
@@ -2248,7 +2248,7 @@ namespace Microsoft.UI.Xaml.Markup
         static void SetPropertyFromUri(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Windows.Foundation.Uri value);
         static void SetPropertyFromObject(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Object value);
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
         {
             static void SetPropertyFromThickness(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Microsoft.UI.Xaml.Thickness value);
             static void SetPropertyFromCornerRadius(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Microsoft.UI.Xaml.CornerRadius value);

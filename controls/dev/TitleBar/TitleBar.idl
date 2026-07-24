@@ -45,7 +45,7 @@ unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
 
     static Microsoft.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
 
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V11]
     {
         [MUX_DEFAULT_VALUE("false")]
         Boolean AutoRefreshDragRegions{ get; set; };
@@ -55,7 +55,7 @@ unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
         void RecomputeDragRegions();
     }
 
-    [MUX_PREVIEW]
+    [MUX_PUBLIC_V11]
     {
         [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnIsDragRegionPropertyChanged")]
         static Microsoft.UI.Xaml.DependencyProperty IsDragRegionProperty{ get; };
