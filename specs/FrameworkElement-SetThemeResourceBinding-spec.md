@@ -146,7 +146,7 @@ namespace Microsoft.UI.Xaml
         /// resolved immediately against the element's current position in the tree.
         /// @param property The DependencyProperty on which to establish the binding. Cannot be a read-only property.
         /// @param resourceKey The key of the theme resource to resolve.
-        /// @throws If 'resourceKey' cannot be resolved, or the resolved value is not assignable to 'property'.
+        /// @throw If 'resourceKey' cannot be resolved, or the resolved value is not assignable to 'property'.
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         [feature(Feature_ExperimentalApi)]
         void SetThemeResourceBinding(Microsoft.UI.Xaml.DependencyProperty property, String resourceKey);
