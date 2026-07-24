@@ -21,12 +21,12 @@ ThemeResource binding from code. Developers who build UI in code, or who need to
   re-querying `ResourceDictionary` on every change.
 * implement a workaround with constructing equivalent markup and using `XamlReader.Load`
 
-This spec adds an API in code that establishes the same live ThemeResource binding that
-`{ThemeResource}` creates in markup, using the existing internal resolution and theme-tracking
-engine. It follows the precedent of [`FrameworkElement.SetBinding`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.frameworkelement.setbinding),
+This spec adds an API that establishes the same live ThemeResource binding that `{ThemeResource}`
+creates in markup, using the existing internal resolution and theme-tracking engine. It follows
+the precedent of [`FrameworkElement.SetBinding`](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.frameworkelement.setbinding),
 which installs a live expression on the target property.
 
-This API was added to `FrameworkElement` because resolving a resource key requires an element to
+This API is being added to `FrameworkElement` because resolving a resource key requires an element to
 define the ambient resource scope (the chain of `FrameworkElement.Resources` up to `Application.Resources`).
 `FrameworkElement` is the lowest type in the hierarchy that carries a `Resources` dictionary, so it
 is the natural anchor.
@@ -36,24 +36,48 @@ Note that this means the API does not apply to `Setter` objects, because they do
 
 # API Pages
 
-## FrameworkElement.SetThemeResourceBinding method
+_(Each of the following L2 sections correspond to a page that will be on learn.microsoft.com)_
+
+## FrameworkElement.SetThemeResourceBinding(DependencyProperty, String) method
 
 Establishes a live theme resource binding on the given dependency property, equivalent to setting
-`{ThemeResource key}` on that property in markup. The resource key is resolved immediately against
-the element's current position in the tree. The bound value is automatically updated to match the
-effective theme or high-contrast setting when it changes, and re-resolved if the element is later
-moved to a new location in the live tree.
+`{ThemeResource key}` on that property in markup.
 
 ```cs
 public void SetThemeResourceBinding(DependencyProperty property, string resourceKey)
 ```
+
+### Parameters
+
+`property` [DependencyProperty](https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.dependencyproperty)
+
+The dependency property identifier of the property on which to establish the theme resource
+binding. Attached dependency properties are supported; read-only dependency properties are not.
+
+`resourceKey` [String](https://learn.microsoft.com/dotnet/api/system.string)
+
+The key of the theme resource to resolve. The key is looked up in the ambient
+`ResourceDictionary` scope, walking up from this element through each ancestor's `Resources`,
+then the theme dictionaries, then `Application.Resources`.
+
+### Exceptions
+
+| Exception | Condition |
+|---|---|
+| [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception) | `resourceKey` cannot be resolved in the element's current resource scope (matches markup, which fails the parse with `AG_E_PARSER_FAILED_RESOURCE_FIND`), or the resolved value is not assignable to `property`. |
+
+### Remarks
+
+The resource key is resolved immediately against the element's current position in the tree. The
+bound value is automatically updated to match the effective theme or high-contrast setting when
+it changes, and re-resolved if the element is later moved to a new location in the live tree.
 
 Call this method after the element has been placed into the tree where the resource is available.
 The key is resolved at call time by walking up from this element through the ambient `ResourceDictionary`
 scope (each ancestor's `Resources`, then the theme dictionaries, then `Application.Resources`).
 
 If the key cannot be resolved, or the resolved value is not assignable to `property`, this method
-throws to matching markup behavior, where an unresolvable `{ThemeResource}` fails the parse
+throws to match markup behavior, where an unresolvable `{ThemeResource}` fails the parse
 (`AG_E_PARSER_FAILED_RESOURCE_FIND`).
 
 The binding is installed at local value precedence, identical to setting the property directly
@@ -72,7 +96,11 @@ binding.
 > if the key cannot be resolved in the new location. Merely adding a matching resource to an already-in-scope
 > dictionary does not, trigger re-resolution. This matches the behavior of `{ThemeResource}` in markup.
 
-### Examples
+# Examples
+
+_(This is conceptual documentation that will go to learn.microsoft.com "how to" page)_
+
+## Example: Setting a property to a ThemeResource in code
 
 Set a theme-tracking background from code, equivalent to the markup at the top of this spec:
 
@@ -82,23 +110,26 @@ myGrid.SetThemeResourceBinding(
     "ApplicationPageBackgroundThemeBrush");
 ```
 
-Bind a `TextBlock.Foreground` to a theme brush, then later clear it:
+## Example: Clearing a ThemeResource binding from a property
+
+After calling `SetThemeResourceBinding`, a call to `ClearValue` will clear the binding:
 
 ```cs
-textBlock.SetThemeResourceBinding(
-    TextBlock.ForegroundProperty,
-    "SystemControlForegroundBaseHighBrush");
+textBlock.SetThemeResourceBinding(TextBlock.ForegroundProperty, "SystemControlForegroundBaseHighBrush");
 
 // ...later, remove the ThemeResource and revert to the default:
 textBlock.ClearValue(TextBlock.ForegroundProperty);
 ```
 
-Because a subsequent local set replaces the binding, this leaves an explicit brush (no theme
-tracking):
+## Example: Overwriting a ThemeResource binding
+
+A subsequent local set will replace the binding:
 
 ```cs
 textBlock.SetThemeResourceBinding(TextBlock.ForegroundProperty, "SystemControlForegroundBaseHighBrush");
-textBlock.Foreground = new SolidColorBrush(Colors.Red); // ThemeResource removed
+
+// ...later, replace the ThemeResource with another value:
+textBlock.Foreground = new SolidColorBrush(Colors.Red);
 ```
 
 # API Details
@@ -111,9 +142,11 @@ namespace Microsoft.UI.Xaml
     {
         // ...existing members...
 
-        // Establishes a live {ThemeResource}-equivalent binding on 'property'.
-        // Throws if 'resourceKey' cannot be resolved or the resolved value is
-        // not assignable to 'property'.
+        /// Establish a live {ThemeResource}-equivalent binding on 'property'. The resource key is
+        /// resolved immediately against the element's current position in the tree.
+        /// @param property The DependencyProperty on which to establish the binding. Cannot be a read-only property.
+        /// @param resourceKey The key of the theme resource to resolve.
+        /// @throws If 'resourceKey' cannot be resolved, or the resolved value is not assignable to 'property'.
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         [feature(Feature_ExperimentalApi)]
         void SetThemeResourceBinding(Microsoft.UI.Xaml.DependencyProperty property, String resourceKey);
