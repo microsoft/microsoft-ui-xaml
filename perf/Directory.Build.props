@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectRoot>$(MSBuildThisFileDirectory)..\</ProjectRoot>
+    <NugetPackageDirectory>$(ProjectRoot)packages</NugetPackageDirectory>
+  </PropertyGroup>
+
+  <Import Project="$(ProjectRoot)eng\versions.props" />
+  <Import Project="$(ProjectRoot)eng\configuration.props" />
+  <Import Project="$(ProjectRoot)eng\folderpaths.props" />
+  <Import Project="$(ProjectRoot)eng\muxfinalrelease.props" />
+
+  <PropertyGroup>
+    <TargetDestination>$(TestBinplaceDestinationPath)\perf</TargetDestination>
+  </PropertyGroup>
+</Project>

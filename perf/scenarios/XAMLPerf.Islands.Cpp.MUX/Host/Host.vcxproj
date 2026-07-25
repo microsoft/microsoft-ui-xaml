@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{7f34a78f-bb66-4207-b4b1-3bfc8cf8d4ac}</ProjectGuid>
+    <ProjectName>XAMLPerf.Islands.Cpp.MUX</ProjectName>
+    <RootNamespace>IslandSimple</RootNamespace>
+    <TargetName>XAMLPerf.Islands.Cpp.MUX</TargetName>
+    <AppContainerApplication>false</AppContainerApplication>
+    <UseCppWinRT>true</UseCppWinRT>
+    <UseWinUI>true</UseWinUI>
+    <AddSystemLibs>true</AddSystemLibs>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\Cpp-ScenarioApp.props" />
+
+   <ItemGroup>
+    <Manifest Include="app.manifest" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="targetver.h" />
+    <ClCompile Include="Host.cpp" />
+    <ResourceCompile Include="Host.rc" />
+    <Image Include="small.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="ButtonUserControl.xaml.h">
+      <DependentUpon>ButtonUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <Page Include="ButtonUserControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <ClCompile Include="ButtonUserControl.xaml.cpp">
+      <DependentUpon>ButtonUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <Midl Include="ButtonUserControl.idl">
+      <DependentUpon>ButtonUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="CommandBarUserControl.xaml.h">
+      <DependentUpon>CommandBarUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <Page Include="CommandBarUserControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <ClCompile Include="CommandBarUserControl.xaml.cpp">
+      <DependentUpon>CommandBarUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <Midl Include="CommandBarUserControl.idl">
+      <DependentUpon>CommandBarUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="ExampleUserControl.xaml.h">
+      <DependentUpon>ExampleUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <Page Include="ExampleUserControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <ClCompile Include="ExampleUserControl.xaml.cpp">
+      <DependentUpon>ExampleUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <Midl Include="ExampleUserControl.idl">
+      <DependentUpon>ExampleUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="ListViewUserControl.xaml.h">
+      <DependentUpon>ListViewUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <Page Include="ListViewUserControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <ClCompile Include="ListViewUserControl.xaml.cpp">
+      <DependentUpon>ListViewUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <Midl Include="ListViewUserControl.idl">
+      <DependentUpon>ListViewUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="TreeViewUserControl.xaml.h">
+      <DependentUpon>TreeViewUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <Page Include="TreeViewUserControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <ClCompile Include="TreeViewUserControl.xaml.cpp">
+      <DependentUpon>TreeViewUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <Midl Include="TreeViewUserControl.idl">
+      <DependentUpon>TreeViewUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="TextBoxUserControl.xaml.h">
+      <DependentUpon>TextBoxUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClInclude>
+    <Page Include="TextBoxUserControl.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <ClCompile Include="TextBoxUserControl.xaml.cpp">
+      <DependentUpon>TextBoxUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </ClCompile>
+    <Midl Include="TextBoxUserControl.idl">
+      <DependentUpon>TextBoxUserControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Midl>
+  </ItemGroup>
+
+  <Import Project="..\..\build\Cpp-ScenarioApp.targets" />
+</Project>

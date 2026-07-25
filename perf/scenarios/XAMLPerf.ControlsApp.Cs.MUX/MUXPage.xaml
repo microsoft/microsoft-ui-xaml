@@ -1,0 +1,320 @@
+﻿<Page
+    x:Class="XAMLPerf.ControlsApp.Cs.MUX.MUXPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XAMLPerf.ControlsApp.Cs.MUX"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <SolidColorBrush x:Key="Checker0" Color="#eeeeee" />
+        <SolidColorBrush x:Key="Checker1" Color="#eedde0" />
+        <DataTemplate x:Key="CPTemplate">
+            <TextBlock Text="{Binding}"/>
+        </DataTemplate>
+        <Flyout x:Key="flyout">
+            <TextBlock>FLYOUT</TextBlock>
+        </Flyout>
+    </Page.Resources>
+
+    <Grid >
+        <Grid BorderBrush="#ff0000"
+              BorderThickness="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"
+                                  MinWidth="10" />
+                <ColumnDefinition Width="*"
+                                  MinWidth="300"
+                                  MaxWidth="400" />
+                <ColumnDefinition Width="*"
+                                  MinWidth="10" />
+                <ColumnDefinition Width="*"
+                                  MinWidth="10" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"
+                               MinHeight="10"
+                               MaxHeight="200" />
+                <RowDefinition Height="100" />
+                <RowDefinition Height="*"
+                               MinHeight="10" />
+                <RowDefinition Height="*"
+                               MinHeight="10" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Grid.Column="0"
+                    BorderBrush="Black"
+                    BorderThickness="2"
+                    Background="{StaticResource Checker0}">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="8"
+                               FontSize="8"
+                               TextWrapping="NoWrap"
+                               FontWeight="Light"
+                               TextAlignment="Left"
+                               FontFamily="Arial" />
+                    <TextBlock Text="12"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               FontWeight="Medium"
+                               TextAlignment="Center"
+                               FontFamily="Segoe UI" />
+                    <TextBlock Text="16"
+                               FontSize="16"
+                               TextWrapping="WrapWholeWords"
+                               FontWeight="Bold"
+                               TextAlignment="Right"
+                               FontFamily="Times New Roman" />
+                    <TextBlock Text="24"
+                               FontSize="24"
+                               FontWeight="ExtraBold"
+                               TextAlignment="Justify" />
+                    <TextBlock Text="😄🙆🙇🚹"
+                               FontSize="32"
+                               FontFamily="Gecko Emoji"
+                               IsColorFontEnabled="True" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="0"
+                    Grid.Column="1"
+                    Background="{StaticResource Checker1}">
+                    <StackPanel Orientation="Vertical"
+                                Padding="2">
+                        <ContentPresenter Content="Plain ContentPresenter"
+                                          Padding="2"
+                                          Foreground="#003300"
+                                          BorderThickness="1"
+                                          BorderBrush="Green"
+                                          VerticalAlignment="Top"
+                                          HorizontalAlignment="Left"/>
+                        <ContentPresenter Content="ContentPresenter with ContentTemplate"
+                                          Padding="2"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Center"
+                                          ContentTemplate="{StaticResource CPTemplate}" />
+                        <ContentPresenter Content="Plain ContentPresenter"
+                                          Padding="2"
+                                          Foreground="#003300"
+                                          BorderThickness="1"
+                                          BorderBrush="Green"
+                                          VerticalAlignment="Bottom"
+                                          HorizontalAlignment="Right"/>
+                        <ContentPresenter Content="Plain ContentPresenter"
+                                          Padding="2"
+                                          VerticalAlignment="Stretch"
+                                          HorizontalAlignment="Stretch"/>
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Row="0"
+                        Grid.Column="2"
+                        Grid.ColumnSpan="2"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                        Background="{StaticResource Checker0}"
+                        Orientation="Horizontal">
+                <Button/>
+                <Button Content="Button" />
+                <Button Content="Button with flyout" Flyout="{StaticResource flyout}" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="1"
+                        Grid.Column="0"
+                        Width="450"
+                        Background="{StaticResource Checker1}"
+                        Orientation="Horizontal">
+                <Image Width="20"
+                       Height="20"
+                       Source="Assets\winui-logo-16x16.png"/>
+                <Image Stretch="Fill"
+                       Source="Assets\winui-logo-32x32.png"/>
+                <Image Stretch="Uniform"
+                       Source="Assets\winui-logo-64x64.png"/>
+                <Image Stretch="UniformToFill"
+                       Source="Assets\winui-logo-128x128.png"/>
+                <Image Source="Assets\StoreLogo.png"/>
+            </StackPanel>
+            <StackPanel Grid.Row="1"
+                        Grid.Column="1"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                        Background="{StaticResource Checker0}"
+                        Orientation="Vertical">
+                <RepeatButton Content="RepeatButton" />
+                <RepeatButton Content="RepeatButton with interval" Interval="1000"  />
+            </StackPanel>
+            <StackPanel Grid.Row="1"
+                        Grid.Column="2"
+                        Grid.ColumnSpan="2"
+                        Background="{StaticResource Checker1}"
+                        Orientation="Horizontal">
+                <FontIcon Glyph="&#xE001;"/>
+                <FontIcon FontFamily="Segoe MDL2 Assets"
+                          Glyph="&#xE001;"/>
+                <FontIcon FontFamily="Segoe MDL2 Assets"
+                          FontSize="24"
+                          Glyph="&#xE001;"/>
+                <FontIcon FontFamily="Segoe MDL2 Assets"
+                          FontSize="32"
+                          Glyph="&#xE001;"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="2"
+                        Grid.RowSpan="2"
+                        Grid.Column="0"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                        Background="{StaticResource Checker0}"
+                        Padding="4,4,4,4"
+                        Orientation="Vertical">
+                <AppBarButton Icon="Account" />
+                <AppBarButton Icon="Accept" Label="Accept" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="2"
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        Background="{StaticResource Checker1}"
+                        Orientation="Horizontal">
+            </StackPanel>
+
+            <StackPanel Grid.Row="2"
+                        Grid.RowSpan="2"
+                        Grid.Column="2"
+                        Grid.ColumnSpan="2"
+                        BorderBrush="Black"
+                        BorderThickness="2"
+                        Background="{StaticResource Checker0}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <ScrollViewer Grid.Row="0"
+                                  Grid.Column="0"
+                                  ZoomMode="Enabled"
+                                  IsDeferredScrollingEnabled="False">
+                        <ScrollViewer.Resources>
+                            <SolidColorBrush x:Key="Color1" Color="Red" />
+                            <SolidColorBrush x:Key="Color2" Color="White" />
+                        </ScrollViewer.Resources>
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer Grid.Row="0"
+                                  Grid.Column="1"
+                                  VerticalScrollMode="Enabled"
+                                  VerticalScrollBarVisibility="Visible"
+                                  IsVerticalRailEnabled="True">
+                        <ScrollViewer.Resources>
+                            <SolidColorBrush x:Key="Color1" Color="Orange" />
+                            <SolidColorBrush x:Key="Color2" Color="Yellow" />
+                        </ScrollViewer.Resources>
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer Grid.Row="1"
+                                  Grid.Column="0"
+                                  HorizontalScrollMode="Enabled"
+                                  HorizontalScrollBarVisibility="Visible"
+                                  IsHorizontalRailEnabled="True">
+                        <ScrollViewer.Resources>
+                            <SolidColorBrush x:Key="Color1" Color="Purple" />
+                            <SolidColorBrush x:Key="Color2" Color="Yellow" />
+                        </ScrollViewer.Resources>
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <ScrollViewer Grid.Row="1"
+                                  Grid.Column="1"
+                                  VerticalScrollMode="Enabled"
+                                  VerticalScrollBarVisibility="Visible"
+                                  IsVerticalRailEnabled="False"
+                                  HorizontalScrollMode="Enabled"
+                                  HorizontalScrollBarVisibility="Visible"
+                                  IsHorizontalRailEnabled="False"
+                                  IsDeferredScrollingEnabled="True">
+                        <ScrollViewer.Resources>
+                            <SolidColorBrush x:Key="Color1" Color="Green" />
+                            <SolidColorBrush x:Key="Color2" Color="Blue" />
+                        </ScrollViewer.Resources>
+                        <StackPanel Orientation="Vertical">
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color2}" />
+                                <Rectangle Width="100" Height="100" Fill="{StaticResource Color1}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

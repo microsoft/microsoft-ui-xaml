@@ -1,0 +1,172 @@
+[
+  {
+    "AppId": "MinApp.Cpp.MUX",
+    "ProcessName": "XAMLPerf.MinApp.Cpp.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.MinApp.Cpp.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.MinApp.Cpp.MUX_1.0.0.0_x64_Test\\XAMLPerf.MinApp.Cpp.MUX_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.MinApp.Cpp.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  },
+
+  {
+    "AppId": "MinApp.Cs.MUX",
+    "ProcessName": "XAMLPerf.MinApp.Cs.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.MinApp.Cs.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.MinApp.Cs.MUX_1.0.0.0_x64_Test\\XAMLPerf.MinApp.Cs.MUX_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.MinApp.Cs.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  },
+
+  {
+    "AppId": "ButtonApp.Cpp.MUX",
+    "ProcessName": "XAMLPerf.ButtonApp.Cpp.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.ButtonApp.Cpp.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.ButtonApp.Cpp.MUX_1.0.0.0_x64_Test\\XAMLPerf.ButtonApp.Cpp.MUX_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.ButtonApp.Cpp.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  },
+
+  {
+    "AppId": "NavApp.Cs.MUX",
+    "ProcessName": "XAMLPerf.NavApp.Cs.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.NavApp.Cs.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.NavApp.Cs.MUX_1.0.0.0_x64_Test\\XAMLPerf.NavApp.Cs.MUX_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.NavApp.Cs.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  },
+
+  {
+    "AppId": "TextBlockApp.Cpp.MUX",
+    "ProcessName": "XAMLPerf.TextBlockApp.Cpp.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.TextBlockApp.Cpp.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.TextBlockApp.Cpp.MUX_1.0.0.0_x64_Test\\XAMLPerf.TextBlockApp.Cpp.MUX_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.TextBlockApp.Cpp.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  },
+
+  {
+    "AppId": "HelloWorldApp.Cpp.MUX",
+    "ProcessName": "XAMLPerf.HelloWorldApp.Cpp.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.HelloWorldApp.Cpp.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.HelloWorldApp.Cpp.MUX-Package_1.0.0.0_x64_Test\\XAMLPerf.HelloWorldApp.Cpp.MUX-Package_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.HelloWorldApp.Cpp.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  },
+
+  {
+    "AppId": "HelloWorldApp.Cs.MUX",
+    "ProcessName": "XAMLPerf.HelloWorldApp.Cs.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.HelloWorldApp.Cs.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.HelloWorldApp.Cs.MUX-Package_1.0.0.0_x64_Test\\XAMLPerf.HelloWorldApp.Cs.MUX-Package_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.HelloWorldApp.Cs.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  },
+
+  {
+    "AppId": "Islands-BlankUserControl.Cpp.MUX",
+    "ProcessName": "XAMLPerf.Islands-BlankUserControl.Cpp.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.Islands-BlankUserControl.Cpp.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.Islands-BlankUserControl.Cpp.MUX-Package_1.0.0.0_x64_Test\\XAMLPerf.Islands-BlankUserControl.Cpp.MUX-Package_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.Islands-BlankUserControl.Cpp.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  },
+
+  {
+    "AppId": "Islands.Cpp.MUX",
+    "ProcessName": "XAMLPerf.Islands.Cpp.MUX.exe",
+    "VersionSource": {
+      "ModuleName": "XAMLPerf.Islands.Cpp.MUX.exe",
+      "PropertyName": "ProductVersion",
+      "$type": "ModulePropertyVersionSource"
+    },
+    "Deployment": {
+      "InstallerPath": "%WinUIPrefix%XAMLPerf.Islands.Cpp.MUX-Package_1.0.0.0_x64_Test\\XAMLPerf.Islands.Cpp.MUX-Package_1.0.0.0_x64.appx",
+      "PackageFamilyName": "XAMLPerf.Islands.Cpp.MUX_6f07fta6qpts2",
+      "DependencyPaths": [ "Dependencies\\x64\\*.appx" ],
+      "$type": "PackagedDeployment"
+    },
+    "Launcher": {
+      "$type": "PackagedAppLauncher"
+    }
+  }
+]

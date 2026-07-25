@@ -1,0 +1,136 @@
+[
+  {
+    "Name": "Lifecycle-MinApp.Cpp.MUX",
+    "AppId": "MinApp.Cpp.MUX",
+    "Tags": [ "xamlperf", "mux", "test" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-MinApp.Cs.MUX",
+    "AppId": "MinApp.Cs.MUX",
+    "Tags": [ "xamlperf", "mux" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-ButtonApp.Cpp.MUX",
+    "AppId": "ButtonApp.Cpp.MUX",
+    "Tags": [ "xamlperf", "mux" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-NavApp.Cs.MUX",
+    "AppId": "NavApp.Cs.MUX",
+    "Tags": [ "xamlperf", "mux" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-TextBlockApp.Cpp.MUX",
+    "AppId": "TextBlockApp.Cpp.MUX",
+    "Tags": [ "xamlperf", "mux" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-HelloWorldApp.Cpp.MUX",
+    "AppId": "HelloWorldApp.Cpp.MUX",
+    "Tags": [ "xamlperf", "mux" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-HelloWorldApp.Cs.MUX",
+    "AppId": "HelloWorldApp.Cs.MUX",
+    "Tags": [ "xamlperf", "mux" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-Islands-BlankUserControl.Cpp.MUX",
+    "AppId": "Islands-BlankUserControl.Cpp.MUX",
+    "Tags": [ "xamlperf", "mux", "islands" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-Islands-ButtonUserControl.Cpp.MUX",
+    "AppId": "Islands.Cpp.MUX",
+    "Tags": [ "xamlperf", "mux", "islands" ],
+    "Args": [ "ButtonUserControl" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-Islands-CommandBarUserControl.Cpp.MUX",
+    "AppId": "Islands.Cpp.MUX",
+    "Tags": [ "mux", "islands" ],
+    "Args": [ "CommandBarUserControl" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-Islands-ExampleUserControl.Cpp.MUX",
+    "AppId": "Islands.Cpp.MUX",
+    "Tags": [ "mux", "islands" ],
+    "Args": [ "ExampleUserControl" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-Islands-ListViewUserControl.Cpp.MUX",
+    "AppId": "Islands.Cpp.MUX",
+    "Tags": [ "mux", "islands" ],
+    "Args": [ "ListViewUserControl" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  },
+
+  {
+    "Name": "Lifecycle-Islands-TextBoxUserControl.Cpp.MUX",
+    "AppId": "Islands.Cpp.MUX",
+    "Tags": [ "mux", "islands" ],
+    "Args": [ "TextBoxUserControl" ],
+    "EndCondition": {
+      "Timeout": "00:00:03.",
+      "$type": "ScenarioEndOnProcessExit"
+    }
+  }
+]
