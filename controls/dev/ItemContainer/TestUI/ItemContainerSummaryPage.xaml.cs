@@ -37,6 +37,40 @@ namespace MUXControlsTestApp
 #if MUX_PRERELEASE
             ItemContainerWithButtons.MultiSelectMode = ItemContainerMultiSelectMode.Multiple;
 #endif
+
+            HookupVisualStateTracking();
+        }
+
+        // Surfaces the RoutedEventsItemContainer's current 'CombinedStates' visual state name through a
+        // UIA-readable TextBlock so interaction tests can verify visual state transitions (visual states
+        // are not otherwise exposed to UI Automation). Regression coverage for Bug 53343473.
+        private void HookupVisualStateTracking()
+        {
+            if (VisualTreeHelper.GetChildrenCount(RoutedEventsItemContainer) == 0)
+            {
+                return;
+            }
+
+            if (VisualTreeHelper.GetChild(RoutedEventsItemContainer, 0) is FrameworkElement templateRoot)
+            {
+                foreach (VisualStateGroup group in VisualStateManager.GetVisualStateGroups(templateRoot))
+                {
+                    if (group.Name == "CombinedStates")
+                    {
+                        group.CurrentStateChanged += (s, args) =>
+                        {
+                            CurrentVisualStateTextBlock.Text = args.NewState?.Name ?? string.Empty;
+                        };
+
+                        if (group.CurrentState != null)
+                        {
+                            CurrentVisualStateTextBlock.Text = group.CurrentState.Name;
+                        }
+
+                        break;
+                    }
+                }
+            }
         }
 
 #if MUX_PRERELEASE

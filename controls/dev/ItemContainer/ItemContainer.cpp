@@ -255,6 +255,7 @@ void ItemContainer::ProcessPointerOver(winrt::PointerRoutedEventArgs const& args
     if (m_pointerInfo)
     {
         const bool oldIsPointerOver = m_pointerInfo->IsPointerOver();
+        const bool oldIsPressed = m_pointerInfo->IsPressed();
         auto const& pointerDeviceType = args.Pointer().PointerDeviceType();
 
         if (pointerDeviceType == winrt::PointerDeviceType::Touch)
@@ -294,11 +295,25 @@ void ItemContainer::ProcessPointerOver(winrt::PointerRoutedEventArgs const& args
             else
             {
                 m_pointerInfo->ResetIsMousePointerOver();
+                // A mouse button may be held down while the pointer exits the ItemContainer. Because the
+                // pointer is not captured, this ItemContainer will not receive the PointerReleased event
+                // when the button is released outside its bounds, which would leave it stuck in the
+                // 'pressed' visual state. Reset the pressed state on exit, similarly to touch and pen above.
+                m_pointerInfo->ResetIsMouseButtonPressed(true /*isForLeftMouseButton*/);
+                m_pointerInfo->ResetIsMouseButtonPressed(false /*isForLeftMouseButton*/);
+                // Only clear the tracked pointer id when the mouse itself was the tracked pointer, so an
+                // unrelated mouse exit does not discard a touch or pen pointer that is still being tracked
+                // (which would drop its later PointerReleased and ItemInvoked). Mirrors ProcessPointerCanceled.
+                if (m_pointerInfo->IsPointerIdTracked(args.Pointer().PointerId()))
+                {
+                    m_pointerInfo->ResetTrackedPointerId();
+                }
             }
             UpdateMousePointerOverInstance(isPointerOver);
         }
 
-        if (m_pointerInfo->IsPointerOver() != oldIsPointerOver)
+        if (m_pointerInfo->IsPointerOver() != oldIsPointerOver ||
+            m_pointerInfo->IsPressed() != oldIsPressed)
         {
             UpdateVisualState(true);
         }
