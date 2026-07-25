@@ -52,6 +52,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElement IFrameworkElement;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides IFrameworkElementOverrides;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementProtected IFrameworkElementProtected;
+    typedef ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi IFrameworkElementFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementEx IFrameworkElementEx;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementExProtected IFrameworkElementExProtected;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkTemplate IFrameworkTemplate;

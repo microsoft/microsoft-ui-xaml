@@ -113,7 +113,7 @@
 #define   AG_E_PARSER2_CANNOT_ADD_ANY_CHILDREN          2539
 #define   AG_E_PARSER2_OW_NOT_ASSIGNABLE_FROM           2540
 #define   AG_E_PARSER2_OW_NO_CTOR                       2541
-#define   AG_E_PARSER2_OW_READ_ONLY                     2542
+#define   AG_E_READ_ONLY_PROPERTY                       2542  // shared by the markup parser and code APIs (e.g. SetThemeResourceBinding)
 #define   AG_E_PARSER2_OW_COLLECTION_NULL               2543
 #define   AG_E_PARSER2_OW_INVALID_DICTIONARY_KEY_TYPE   2544
 #define   AG_E_PARSER2_CANNOT_RESOLVE_PROP_FROM_UID     2545

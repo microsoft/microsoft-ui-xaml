@@ -1496,6 +1496,7 @@ namespace Microsoft.UI.Xaml
     [CodeGen(partial: true)]
     [NativeName("CFrameworkElement")]
     [Guids(ClassGuid = "ca0bea2c-b556-4b05-8650-b9d1af48b953")]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public abstract partial class FrameworkElement
      : Microsoft.UI.Xaml.UIElement
     {
@@ -1902,6 +1903,13 @@ namespace Microsoft.UI.Xaml
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         [NativeClassName("CFrameworkElement")]
         public void SetBinding(Microsoft.UI.Xaml.DependencyProperty dp, Microsoft.UI.Xaml.Data.BindingBase binding)
+        {
+        }
+
+        [VelocityFeature("Feature_ExperimentalApi")]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        [NativeClassName("CFrameworkElement")]
+        public void SetThemeResourceBinding(Microsoft.UI.Xaml.DependencyProperty property, Windows.Foundation.String resourceKey)
         {
         }
 

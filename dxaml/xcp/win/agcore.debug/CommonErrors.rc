@@ -57,7 +57,7 @@ AG_E_PARSER2_NO_DEFAULT_NAMESPACE      "No default namespace has been declared."
 AG_E_PARSER2_CANNOT_ADD_ANY_CHILDREN   "Cannot add content to an object of type '%0'."  // %0 is a type name
 AG_E_PARSER2_OW_NOT_ASSIGNABLE_FROM    "Failed to assign to property '%0' because the type '%2' cannot be assigned to the type '%1'."   // %0 is a property name, %1 is a type name, %2 is a type name
 AG_E_PARSER2_OW_NO_CTOR                "No matching constructor found on type '%0'."    // %0 is a type name
-AG_E_PARSER2_OW_READ_ONLY              "Cannot set read-only property '%0'."    // %0 is a property name
+AG_E_READ_ONLY_PROPERTY                "Cannot set read-only property '%0'."    // %0 is a property name
 AG_E_PARSER2_OW_COLLECTION_NULL        "Collection property '%0' is null."  // %0 is a property name
 AG_E_PARSER2_OW_INVALID_DICTIONARY_KEY_TYPE  "ResourceDictionary keys cannot be of type '%0'. Only string or type keys are allowed."  // {Locked="ResourceDictionary", "string", "type"}, %0 is a key/type name
 AG_E_PARSER2_CANNOT_RESOLVE_PROP_FROM_UID "Unable to resolve property '%1' while processing properties for Uid '%0'."   // {Locked="Uid"}, %0 is a user-specified string value, %1 is a property name

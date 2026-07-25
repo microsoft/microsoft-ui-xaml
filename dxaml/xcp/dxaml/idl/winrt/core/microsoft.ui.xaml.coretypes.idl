@@ -2550,6 +2550,13 @@ namespace Microsoft.UI.Xaml
         overridable Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize);
         overridable void OnApplyTemplate();
         overridable Boolean GoToElementStateCore(String stateName, Boolean useTransitions);
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.IFrameworkElementFeature_ExperimentalApi")]
+        {
+            void SetThemeResourceBinding(Microsoft.UI.Xaml.DependencyProperty property, String resourceKey);
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]

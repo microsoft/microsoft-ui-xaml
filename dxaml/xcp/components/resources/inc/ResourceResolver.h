@@ -93,6 +93,29 @@ namespace Resources {
             ResourceType resourceType,
             _Out_ ResolvedResource& resolvedResource);
 
+        // Resolves a theme resource for a live-tree element WITHOUT any XamlDiagnostics coupling. Walks the
+        // element and its ancestors via GetParentInternal (not Diagnostics::GetParentForElementStateChanged,
+        // which manufactures and leaks RuntimeObjects for parentless elements), collecting each element's
+        // resource dictionaries, then shares the actual key lookup and global/application fallback with
+        // ResolveResourceRuntime via ResolveFromAmbientDictionaries. Used by the code-behind
+        // FrameworkElement.SetThemeResourceBinding API; safe to call whether or not the element is attached.
+        static _Check_return_ HRESULT ResolveThemeResourceForElement(
+            _In_ CDependencyObject* element,
+            const xstring_ptr& resourceKey,
+            _Out_ ResolvedResource& resolvedResource);
+
+        // Registers a code-set theme resource binding with the XamlDiagnostics resource graph so Hot Reload
+        // edits to the source resource value flow to the bound property, matching markup {ThemeResource}.
+        // No-op unless source information is being stored (i.e. XamlDiagnostics is attached) or the resource
+        // wasn't resolved from a dictionary. Any prior graph entry for (element, propertyIndex) is removed
+        // first so re-binding the same property doesn't leave a stale dependency. Kept in this component
+        // (rather than the caller) so the XamlDiagnostics resource-graph includes stay out of dxaml/lib.
+        static void RegisterThemeResourceDependencyForElement(
+            _In_ CDependencyObject* element,
+            KnownPropertyIndex propertyIndex,
+            const xstring_ptr& resourceKey,
+            const ResolvedResource& resolvedResource);
+
         // Finds the dictionary where this would resolve to. Used when adding items to a dictionary, but should
         // be called before adding the item, otherwise it will just return the passed in dictionary. Will
         // check if any of the merged or theme dictionaries in the passed in dictionary contain the matching key.
@@ -171,6 +194,18 @@ namespace Resources {
         static void GetAmbientValuesRuntime(
             _In_ CDependencyObject* resolutionContext,
             _Out_ AmbientValuesVector& ambientValues);
+
+        // Shared resolution core used by both ResolveResourceRuntime (diagnostics ambient walk) and
+        // ResolveThemeResourceForElement (plain tree walk). Given an already-gathered list of ambient
+        // resource dictionaries, resolves the key (local scope of each ambient dictionary first), then
+        // falls back to the global theme and application resources, and computes the dictionary to use
+        // for theme re-resolution. Assumes resolvedResource.Value has not already been set by the caller.
+        static _Check_return_ HRESULT ResolveFromAmbientDictionaries(
+            _In_ CCoreServices* core,
+            const xstring_ptr& resourceKey,
+            ResourceType resourceType,
+            const AmbientValuesVector& vecAmbientValues,
+            _Out_ ResolvedResource& resolvedResource);
 
         static void RegisterResourceDependency(
             const xstring_ptr& strResourceKey,
