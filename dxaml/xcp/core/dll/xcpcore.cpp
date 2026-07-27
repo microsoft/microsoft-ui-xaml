@@ -11494,7 +11494,7 @@ HRESULT CCoreServices::GetLastConfirmedBatchId(_Out_ ULONG* lastConfirmedBatchId
     // beyond ensuring DCompTreeHost is created and initialized.
     IFCFAILFAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
 
-    IFC_RETURN(GetDCompTreeHost()->GetCompositorPartner()->GetLastConfirmedBatchId(lastConfirmedBatchId));
+    IFC_RETURN(GetDCompTreeHost()->GetCompositionHelper()->GetLastConfirmedBatchId(lastConfirmedBatchId));
     return S_OK;
 }
 
@@ -11506,7 +11506,7 @@ HRESULT CCoreServices::GetCurrentBatchID(_Out_ ULONG* currentBatchId)
     // beyond ensuring DCompTreeHost is created and initialized.
     IFCFAILFAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
 
-    IFC_RETURN(GetDCompTreeHost()->GetCompositorPartner()->GetCurrentBatchID(currentBatchId));
+    IFC_RETURN(GetDCompTreeHost()->GetCompositionHelper()->GetCurrentBatchID(currentBatchId));
     return S_OK;
 }
 

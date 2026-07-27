@@ -37,8 +37,8 @@
 #include <microsoft.ui.composition.h>
 #include <microsoft.ui.composition.experimental.h>
 #include <microsoft.ui.composition.interop.h>
-#include <FrameworkUdk/IxpPartnerStable.h>
 #include "VisualDebugTags.h"
+#include "CompHelper/CompositionHelper.h"
 #include "CompHelper/CompositionVisualSurfaceHelper.h"
 
 #ifndef NTDDI_WIN11_GE
@@ -70,7 +70,6 @@ class CUIElement;
 class CXamlIslandRoot;
 class ProjectedShadowManager;
 class RefreshRateInfo;
-class CompositorPartnerCallback;
 
 const XFLOAT c_FrameRateWhiteSpaceWidth = 20.0f;
 const XFLOAT c_FrameRateHeight = 24.0f;
@@ -98,7 +97,7 @@ static bool s_visualDebugTagsEnabledInitialized = false;
 static bool s_WUCShapesEnabled = false;
 static bool s_WUCShapesEnabledInitialized = false;
 
-class DCompTreeHost : public CXcpObjectBase<IObject>
+class DCompTreeHost : public CXcpObjectBase<IObject>, public INotifyCompositionDirty
 {
 public:
     static bool IsFullCompNodeTree();
@@ -180,11 +179,6 @@ public:
 
     ixp::ICompositionEasingFunctionStatics* GetEasingFunctionStatics() { return m_easingFunctionStatics.Get(); }
 
-    WUComp::ICompositorPartnerStable* GetCompositorPartner() const
-    {
-        return m_spCompositorPartner.Get();
-    }
-
     WUComp::ICompositor* GetCompositor() const
     {
         return m_spCompositor.Get();
@@ -222,14 +216,20 @@ public:
         return m_spMainDevice.Get();
     }
 
+    CompositionHelper* GetCompositionHelper() const
+    {
+        ASSERT(!m_isInitialized || m_pCompositionHelper.IsInitialized());
+        return m_pCompositionHelper.Get();
+    }
+
     bool HasSurfaceFactory() const
     {
-        return m_spMainSurfaceFactory != nullptr;
+        return GetSurfaceFactory() != nullptr;
     }
 
     IDCompositionSurfaceFactory* GetSurfaceFactory() const
     {
-        return m_spMainSurfaceFactory.Get();
+        return m_pCompositionHelper.IsInitialized() ? GetCompositionHelper()->GetSurfaceFactory() : nullptr;
     }
 
     ixp::IContentIsland* GetCoreWindowContentIsland() const
@@ -350,8 +350,8 @@ public:
 
     RefreshRateInfo* GetRefreshRateInfo() { return m_refreshRateInfo.Get(); }
 
-    // Notification callback when the Compositor marks the composition as dirty.
-    void OnCompositionDirty();
+    // INotifyCompositionDirty
+    HRESULT NotifyCompositionDirty() override;
 
 private:
     XamlIslandRenderDataMap m_islandRenderData;
@@ -430,14 +430,16 @@ private:
 
     WindowsGraphicsDeviceManager    *m_pGraphicsDeviceManagerNoRef;
 
+    // CompositionHelper provides convenient access and management of some core Composition
+    // resources, with the Holder here as a smart manager of its lifetime.
+    CompositionHelperHolder m_pCompositionHelper;
+
     // DComp resources
     _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionDevice2> m_spMainDevice;
-    _Maybenull_ Microsoft::WRL::ComPtr<IDCompositionSurfaceFactory> m_spMainSurfaceFactory;
 
 #pragma region ::Windows::UI::Composition
 
     // WinRT composition objects
-    _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositorPartnerStable> m_spCompositorPartner;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor> m_spCompositor;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor2> m_spCompositor2;
     _Maybenull_ Microsoft::WRL::ComPtr<ixp::ICompositor5> m_spCompositor5;
@@ -446,9 +448,6 @@ private:
     _Maybenull_ Microsoft::WRL::ComPtr<ABI::Windows::UI::Composition::ICompositionBrush> m_systemBackdropBrush; // Note: This is a system compositor brush!
     wrl::ComPtr<ixp::ICompositionGraphicsDevice> m_compositionGraphicsDevice;
     wrl::ComPtr<ixp::ICompositionEasingFunctionStatics> m_easingFunctionStatics;
-
-    // Commit needed callback.
-    _Maybenull_ Microsoft::WRL::ComPtr<CompositorPartnerCallback> m_spCompositorPartnerCallback;
 
     // For updating the refresh rate with GetFrameStatistics
     wrl::ComPtr<IDCompositionDevice> m_dcompDevice;
