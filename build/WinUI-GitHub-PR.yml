@@ -52,7 +52,9 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/main
+      # TEMPORARY (PGO diagnostic): repoint to the lift branch carrying the enablePgo
+      # template param. Revert to refs/heads/main before merge.
+      ref: refs/heads/user/gpaskaleva/gh-ado-public-validation-pgo
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -150,7 +152,7 @@ extends:
           buildScenarioApps: false
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-          pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
+          enablePgo: true
           buildProductOnly: false
           dependsOn: ValidateGitHubPrContext
 
