@@ -79,15 +79,14 @@ $projectPackages = @(
     'src\XamlCompiler\XamlCompiler.sln'
 )
 
-# Check if this is an OSS build, where not all files are available
-if (-not (Test-Path $repoRoot\src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlTypeUniverse.cs))
+# Check if this is an OSS build. init.cmd sets the IsInternalWinUIBuild environment
+# variable (true for internal ADO builds, false for OSS/public GitHub builds), mirroring
+# the IsInternalWinUIBuild MSBuild property in eng\Versions.props. Internal-only perf
+# packages aren't available on public feeds, so OSS builds use the smaller perf config.
+if ($env:IsInternalWinUIBuild -ne 'true')
 {
     # Use smaller perf config when building OSS
     $projectPackages = $projectPackages | ForEach-Object { $_ -replace 'perf\\packages.config', 'perf\packages.OSS.config' }
-
-    # We don't have all necessary files to build the compiler, so also restore
-    # the project which uses the public compiler
-    $projectPackages += 'XamlCompilerPublic.csproj'
 }
 
 $installed = 0
