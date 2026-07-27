@@ -38,8 +38,6 @@ templates do.
 
 # Conceptual pages (How To)
 
-_(This is conceptual documentation that will go to learn.microsoft.com "how to" page)_
-
 ## Creating a DataTemplate in code
 
 Pass a callback to the `DataTemplate` constructor. The callback is an element factory: it takes no
@@ -72,7 +70,12 @@ Key points:
 
 # Examples
 
-## Use a code-authored template with ItemsRepeater
+## Example: Use a code-authored template with ItemsRepeater
+
+Use a callback to create items for an `ItemsRepeater`. Each realized `TextBlock` is bound to its
+corresponding string. As the user scrolls, `ItemsRepeater` recycles `TextBlock` instances and
+updates their `DataContext`. The callback runs only when the repeater needs to grow its element pool.
+
 
 ```csharp
 var items = new ObservableCollection<string>(new[] { "red", "green", "blue" });
@@ -92,11 +95,9 @@ var repeater = new ItemsRepeater
 };
 ```
 
-Each realized `TextBlock` is bound to its corresponding string. As the user scrolls, `ItemsRepeater`
-recycles `TextBlock` instances and updates their `DataContext`. The callback runs only when the
-repeater needs to grow its element pool.
+## Example: React to the bound item with DataContextChanged
 
-## React to the bound item with DataContextChanged
+Update the element subtree when a data object is bound.
 
 ```csharp
 var template = new DataTemplate(() =>
@@ -105,13 +106,14 @@ var template = new DataTemplate(() =>
     textBlock.DataContextChanged += (sender, args) =>
     {
         // args.NewValue is the item this element is now displaying.
+        textBlock.Text = (args.NewValue as ItemViewModel)?.DisplayName;
     };
     textBlock.SetBinding(TextBlock.TextProperty, new Binding());
     return textBlock;
 });
 ```
 
-## Load content directly
+## Example: Load content directly
 
 Any `DataTemplate`, including a code-authored one, can be inflated directly with `LoadContent()`.
 Each call invokes the callback and returns a new tree:
@@ -125,8 +127,6 @@ var second = (Button)template.LoadContent();
 ```
 
 # API Pages
-
-_(Each of the following L2 sections correspond to a page that will be on learn.microsoft.com)_
 
 ## DataTemplate(DataTemplateElementFactory) constructor
 
@@ -174,6 +174,9 @@ namespace Microsoft.UI.Xaml
     [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
     [feature(Feature_ExperimentalApi)]
     [webhosthidden]
+    /// Represents the method that builds the element subtree for a code-authored DataTemplate.
+    /// Build and return a fresh subtree on every call. Do not cache and return a shared instance.
+    /// @return The root UIElement of a newly constructed subtree, or null to produce no content.
     delegate Microsoft.UI.Xaml.UIElement DataTemplateElementFactory();
 
     [webhosthidden]
@@ -182,8 +185,13 @@ namespace Microsoft.UI.Xaml
     {
         DataTemplate();
 
-        /// Initializes a new instance of the DataTemplate class whose content is produced by the
-        /// specified callback instead of by parsing XAML markup.
+        /// Initialize a new instance of the DataTemplate class whose content is produced by
+        /// the specified callback instead of by parsing XAML markup. The callback is invoked
+        /// each time the template realizes a new element, not once per data item.
+        ///
+        /// @param elementFactory A callback that builds and returns the root UIElement of a fresh
+        ///                       subtree, or null to produce no content. Must not be null.
+        /// @throw If @p elementFactory is null.
         [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         [feature(Feature_ExperimentalApi)]
         DataTemplate(Microsoft.UI.Xaml.DataTemplateElementFactory elementFactory);
