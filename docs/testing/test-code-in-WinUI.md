@@ -358,6 +358,7 @@ Test automation for:
 * WinUIGallery
 * WinUICppDesktopSampleApp
 * WinUICsDesktopSampleApp
+* DisableXamlGeneratedMain
 
 There are some other apps in this directory that do not have test automation associated with them.
 
@@ -365,6 +366,17 @@ Test automation code for these apps lives under
 [controls\test\MUXControls.Test\ScenarioAppTests](../../controls/test/MuxControls.Test/ScenarioAppTests)
 and compiles into `MUXControls.Test.dll`.
 (Not really the most appropriate location for these tests. But it is where they live for now).
+
+### DisableXamlGeneratedMain tests
+
+`Samples\DisableXamlGeneratedMain` contains four minimal apps that define
+`DISABLE_XAML_GENERATED_MAIN` and supply their own entry point. They exist to prove such apps
+still compile; `DisableXamlGeneratedMainSampleAppTests.cs` additionally proves that they
+*launch*. Each app records a marker in its entry point (`CustomMain`, or `CustomMain:42` for
+the `NoCtor` variants that construct `App` with a parameterized constructor) and displays it in
+a `TextBlock` named `EntryPointTextBlock`, which the tests read back over UI Automation. Each
+app also hosts `AppTestAutomationHelpers.TestAutomationHelpersPanel`, which the shared test
+infrastructure requires in order to launch an app and to detect unhandled exceptions in it.
 
 ### Goals
 
