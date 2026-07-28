@@ -167,6 +167,47 @@ extends:
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
+      # Defined inline rather than via WinUI-RunTests-Stage.yml, because that stage template is
+      # hard-disabled on GitHub-backed runs (ne(Build.Repository.Provider, 'GitHub')). The job
+      # templates it wraps carry no such guard, so they are reused here as-is.
+      - stage: RunTests
+        displayName: Run Tests Stage
+        dependsOn: Build
+        condition: not(failed())
+        jobs:
+        - template: build\AzurePipelinesTemplates\WinUI-CreateTestPayload-Job.yml@WinUIInternal
+          parameters:
+            runTestJobName: CreateTestPayload
+            pipelineKind: PR
+            testSuite: 'DevTestSuite'
+            testPayloadArtifactName: 'TestPayload'
+
+        - template: build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml@WinUIInternal
+          parameters:
+            runTestJobName: RunTests25H2
+            dependsOn: CreateTestPayload
+            testOS: 'Win11-25H2'
+            testPayloadArtifactName: 'TestPayload'
+            # Test results are published but do not gate the pipeline yet.
+            failOnTestFailure: false
+
+        - template: build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml@WinUIInternal
+          parameters:
+            runTestJobName: RunTests23H2
+            dependsOn: CreateTestPayload
+            testOS: 'Win11-23H2'
+            testPayloadArtifactName: 'TestPayload'
+            failOnTestFailure: false
+
+        - template: build\AzurePipelinesTemplates\WinUI-RunTestPassOnPipeline-Job.yml@WinUIInternal
+          parameters:
+            runTestJobName: RunTestsRS5
+            dependsOn: CreateTestPayload
+            testOS: 'Win10-RS5'
+            testPayloadArtifactName: 'TestPayload'
+            failOnTestFailure: false
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
