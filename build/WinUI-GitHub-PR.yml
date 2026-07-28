@@ -167,6 +167,13 @@ extends:
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: PR
+          # Test results are published but do not gate the pipeline yet.
+          failOnTestFailure: false
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
