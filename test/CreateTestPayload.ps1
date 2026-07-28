@@ -241,10 +241,14 @@ if ($Mode -eq "ScenarioTestSuite")
 
         Publish-Item "$($csSampleTestDir.FullName)\*.msix*" "$outpath\Test\"
         Publish-Item "$($cppSampleTestDir.FullName)\*.msix*" "$outpath\Test\"
-        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCs_Test\*.msix" "$outpath\Test\"
-        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCs_Test\*.msix" "$outpath\Test\"
-        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCpp_Test\*.msix" "$outpath\Test\"
-        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCpp_Test\*.msix" "$outpath\Test\"
+
+        if ($env:BUILD_REPOSITORY_PROVIDER -notin @('GitHub', 'GitHubEnterprise'))
+        {
+            Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCs_Test\*.msix" "$outpath\Test\"
+            Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCs_Test\*.msix" "$outpath\Test\"
+            Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCpp_Test\*.msix" "$outpath\Test\"
+            Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCpp_Test\*.msix" "$outpath\Test\"
+        }
     }
     if (-not $SkipWinUIGallery)
     {
