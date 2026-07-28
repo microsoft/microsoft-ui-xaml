@@ -1,4 +1,7 @@
-﻿param (
+﻿# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+param (
     [string]$version,
     [ValidateSet('daily','signed','validated','preview','GA',"")]
     [string]$quality,
