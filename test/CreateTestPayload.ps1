@@ -227,8 +227,20 @@ if ($Mode -eq "ScenarioTestSuite")
     # TODO: once pipeline is ready to run all sample apps, remove this check
     if (-not ($env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK"))))
     {
-        Publish-Item "$binpath\Samples\WinUICsDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
-        Publish-Item "$binpath\Samples\WinUICppDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
+        $csSampleTestDir = Get-ChildItem -Path "$binpath\Samples" -Directory -Filter "WinUICsDesktopSampleApp*Test" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $csSampleTestDir)
+        {
+            throw "WinUICsDesktopSampleApp test package directory not found under '$binpath\Samples'."
+        }
+
+        $cppSampleTestDir = Get-ChildItem -Path "$binpath\Samples" -Directory -Filter "WinUICppDesktopSampleApp*Test" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $cppSampleTestDir)
+        {
+            throw "WinUICppDesktopSampleApp test package directory not found under '$binpath\Samples'."
+        }
+
+        Publish-Item "$($csSampleTestDir.FullName)\*.msix*" "$outpath\Test\"
+        Publish-Item "$($cppSampleTestDir.FullName)\*.msix*" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCs_Test\*.msix" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCs_Test\*.msix" "$outpath\Test\"
         Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCpp_Test\*.msix" "$outpath\Test\"
@@ -262,7 +274,7 @@ if ($Mode -eq "ScenarioTestSuite")
     # TODO: Remove below check
     if (-not ($env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK"))))
     {
-        Publish-Item "$binpath\Samples\WinUICppDesktopSampleApp_Test\Dependencies\$redistPlatform\*.appx" "$outpath\Test\"
+        Publish-Item "$($cppSampleTestDir.FullName)\Dependencies\$redistPlatform\*.appx" "$outpath\Test\"
     }
 
     # TODO: Remove below check
