@@ -73,7 +73,7 @@ extends:
     platform:
       name: 'windows_undocked'
     git:
-      submodules: false
+      submodules: true
     globalsdl:
       tsa:
         enabled: false
