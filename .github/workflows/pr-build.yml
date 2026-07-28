@@ -3,24 +3,6 @@
 name: PR Build
 
 on:
-  pull_request:
-    branches:
-      - main
-      - winui3/main
-    paths-ignore:
-      - '**/*.md'
-      - 'docs/**'
-      - '.github/ISSUE_TEMPLATE/**'
-      - '.github/PULL_REQUEST_TEMPLATE.md'
-      - '.github/policies/**'
-      - 'LICENSE'
-      - 'NOTICE.md'
-      - 'PRIVACY.md'
-      - 'privacy.md'
-      - 'SECURITY.md'
-      - 'CODE_OF_CONDUCT.md'
-      - 'CONTRIBUTING.md'
-      - 'CONTRIBUTING_feedback_and_requests.md'
   workflow_dispatch: {}
 
 concurrency:
