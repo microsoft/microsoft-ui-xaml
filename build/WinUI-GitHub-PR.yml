@@ -52,7 +52,7 @@ resources:
     - repository: WinUIInternal
       type: git
       name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/main
+      ref: refs/heads/user/gpaskaleva/restore-gallery-validation
     - repository: WindowsAppSDKConfig
       type: git
       name: ProjectReunion/WindowsAppSDKConfig
@@ -73,7 +73,9 @@ extends:
     platform:
       name: 'windows_undocked'
     git:
-      submodules: false
+      # Recursively check out submodules so the public github.com/microsoft/WinUI-Gallery
+      # submodule (Samples/WinUIGallery) is available for GitHub PR sample-build validation.
+      submodules: recursive
     globalsdl:
       tsa:
         enabled: false
