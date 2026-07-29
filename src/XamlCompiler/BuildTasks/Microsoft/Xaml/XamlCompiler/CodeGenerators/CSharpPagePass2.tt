@@ -148,7 +148,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 Output_PushDeprecated(element.Type.IsDeprecated()); #>
                 {
 <#+                 Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); #>
-                    <#=objectInitName#> = <#=ObjectCast(element.Type.ToString(), "target")#>;
+                    <#=objectInitName#> = <#=ObjectCast(element.Type, "target")#>;
 <#+                 foreach (EventAssignment ev in element.EventAssignments) #>
 <#+                 { #>
 <#+                     Output_ApiInformationCall_Push(ev.ApiInformation, Indent.TwoTabs); #>
@@ -567,7 +567,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 Output_ApiInformationCall_Push(element.ApiInformation, Indent.ThreeTabs); #>
 <#+                 if (element.IsWeakRef)#>
 <#+                 {#>
-                        this.<#=element.ObjectCodeName#> = new <#=Globalize(WeakReferenceTypeName)#>(<#=ObjectCast(element.Type.ToString(), "target")#>);
+                        this.<#=element.ObjectCodeName#> = new <#=Globalize(WeakReferenceTypeName)#>(<#=ObjectCast(element.Type, "target")#>);
 <#+                 }#>
 <#+                 else if (element.Type.IsDerivedFromControlTemplate())#>
 <#+                 {#>
@@ -575,7 +575,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 }#>
 <#+                 else#>
 <#+                 {#>
-                        this.<#=element.ObjectCodeName#> = <#=ObjectCast(element.Type.ToString(), "target")#>;
+                        this.<#=element.ObjectCodeName#> = <#=ObjectCast(element.Type, "target")#>;
 <#+                 }#>
 <#+                 if (element.IsUsedByOtherScopes) #>
 <#+                 { #>
@@ -586,7 +586,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 {#>
 <#+                     Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+                     Output_NullCheckedEventAssignment(evt); #>
-                        (<#=ObjectCast(element.Type.ToString(), "target")#>).<#=evt.MemberName#> += <#=evt.EventHandlerCodeName#>;
+                        (<#=ObjectCast(element.Type, "target")#>).<#=evt.MemberName#> += <#=evt.EventHandlerCodeName#>;
 <#+                     Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+                 }#>
 <#+                 if (element.CanBeInstantiatedLater && (element.HasBindAssignments || element.HasBoundEventAssignments))#>
@@ -846,7 +846,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
                         break;
 <#+                     } #>
                 }
-                this.Update_(<#=ObjectCast(bindUniverse.RootStep.ValueType.ToString(), "item")#>, 1 << phase);
+                this.Update_(<#=ObjectCast(bindUniverse.RootStep.ValueType, "item")#>, 1 << phase);
             }
 
             public void Recycle()
@@ -998,7 +998,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+             }#>
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = <#=ObjectCast(bindUniverse.DataRootType.ToString(), "newDataRoot")#>;
+                    this.dataRoot = <#=ObjectCast(bindUniverse.DataRootType, "newDataRoot")#>;
                     return true;
                 }
                 return false;
