@@ -46,24 +46,18 @@ private:
     void AttachToVisualLink();
     void DetachFromVisualLink();
 
-    // Ensures the per-thread system DComp device. TryAttachSwitcherVisual is the disabled
-    // switcher fast path; AttachSystemVisualLink is the ContentExternalOutputLink fallback host.
+    // Compositor fork: IsSystemCompositor() detects (via CompositionEngine::GetForSystemEngine)
+    // whether the process runs on the system composition engine. A system-backed process splices the
+    // ink visual under a lifted MUC visual (AttachToSystemCompositor); a lifted process bridges it
+    // into the XAML tree via ContentExternalOutputLink (AttachToLiftedCompositor).
     void EnsureCompositionDevice();
-    bool TryAttachSwitcherVisual();
-    void AttachSystemVisualLink();
-
-    // Composition-target (CreateTargetForHwnd) rendering + input path: a topmost per-HWND
-    // target that routes pointer input to the desktop ink presenter. Multiple InkCanvas
-    // controls on one HWND share a single target (TargetData::Get) and each adds/positions
-    // its own ink visual.
-    bool AttachToCompositionTarget();
-    void DetachFromCompositionTarget();
-    void PositionInkVisual();
-
-    // Returns true when the ink visual should be hosted in the lifted XAML tree via
-    // ContentExternalOutputLink (opt-in "UseSystemVisualLink" boolean app resource) instead of
-    // the topmost per-HWND composition target. Evaluated once per process on first use.
-    bool UseSystemVisualLink();
+    bool IsSystemCompositor();
+    void AttachToSystemCompositor();
+    void AttachToLiftedCompositor();
+    // Shared by both compositor paths: creates the ink visual on the shared DComp device and binds
+    // it to the presenter. Called first by AttachToSystemCompositor/AttachToLiftedCompositor, before
+    // their compositor-specific rooting.
+    void AttachInkVisualToPresenter();
 
     std::shared_ptr<ThreadData> m_threadData;
  
@@ -75,53 +69,21 @@ private:
     // InkCanvas never holds the OS presenter directly and reaches it only through this proxy.
     muxc::InkPresenter m_inkPresenterProxy{ nullptr };
 
-    // ContentExternalOutputLink host for the system-visual-link (CEOL) path; null on the topmost path.
+    // ContentExternalOutputLink host for the lifted compositor path; null on the system path.
     winrt::IContentExternalOutputLink m_systemVisualLink{ nullptr };
+
+    // Writer-side DComp target from the system splice; roots the ink visual under the MUC visual and
+    // is released in DetachFromVisualLink. Null on the lifted path.
+    winrt::com_ptr<IDCompositionTarget> m_systemDCompTarget;
 
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_sizeChangedRevoker;
-    winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker;
 
     // Set during DetachFromVisualLink so queued ink-thread lambdas short-circuit instead of
     // touching torn-down visual resources. Data ops (see QueueInkPresenterWorkItem) do NOT gate on
     // this. AttachToVisualLink clears it for the rapid Loaded/Unloaded re-attach case.
     std::atomic<bool> m_isDetached{ false };
 
-    // Per-HWND shared composition target used by the CreateTargetForHwnd input/render
-    // path. All InkCanvas controls hosted in the same top-level HWND share one topmost
-    // IDCompositionTarget (only one is allowed per HWND) and each parents its own ink
-    // visual under the shared target root. Reference-counted via a thread_local weak map
-    // so the target is torn down when the last canvas on that HWND detaches.
-    struct TargetData
-    {
-        static thread_local std::map<HWND, std::weak_ptr<TargetData>> m_tlsMap;
-        winrt::com_ptr<IDCompositionTarget> m_compositionTarget;
-        winrt::com_ptr<IDCompositionVisual> m_targetRootVisual;
-        HWND m_hwnd;
-
-        static std::shared_ptr<TargetData> Get(HWND hwnd)
-        {
-            auto iter = m_tlsMap.find(hwnd);
-            if (iter != m_tlsMap.end())
-            {
-                if (auto existing = iter->second.lock())
-                {
-                    return existing;
-                }
-            }
-            auto targetData = std::make_shared<TargetData>(hwnd);
-            m_tlsMap[hwnd] = targetData;
-            return targetData;
-        }
-
-        TargetData(HWND hwnd) : m_hwnd(hwnd) {}
-
-        ~TargetData()
-        {
-            m_tlsMap.erase(m_hwnd);
-        }
-    };
-    std::shared_ptr<TargetData> m_targetData;
 };
