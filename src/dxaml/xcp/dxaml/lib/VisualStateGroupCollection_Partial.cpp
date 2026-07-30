@@ -48,6 +48,11 @@ bool VisualStateGroupCollection::DoesVisualStateGroupHaveTransitions(_In_ unsign
     return GetHandle()->GetCustomRuntimeData()->HasVisualTransitions(groupIdx);
 }
 
+bool VisualStateGroupCollection::ShouldRuntimeDataBailOut() const
+{    
+    return GetHandle()->GetCustomRuntimeData() ? GetHandle()->GetCustomRuntimeData()->ShouldBailOut() : false;
+}
+
 Microsoft::WRL::ComPtr<IInspectable> VisualStateGroupCollection::CreateStoryboard(
     _In_ unsigned int, _In_ unsigned int storyboardIdx)
 {

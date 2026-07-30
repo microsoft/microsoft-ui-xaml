@@ -5,6 +5,14 @@
 #include "CommandingHelpers.h"
 #include "AutomationProperties.h"
 #include "BindingExpression.g.h"
+#include "BindingExpressionBase_Partial.h"
+#include "DirectSourceBindingExpression.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62639407: Use lightweight DirectSourceBindingExpression for XamlUICommand bindings
+#define WINAPPSDK_CHANGEID_62639407 62639407
+// Bug 62676766: Skip binding keyboard accelerators when command has none
+#define WINAPPSDK_CHANGEID_62676766 62676766
 #include "IconElement.g.h"
 #include "IconSource.g.h"
 #include "IconSourceElement.g.h"
@@ -111,6 +119,19 @@ public:
                 ctl::ComPtr<KeyboardAccelerator> keyboardAcceleratorCopy;
                 IFC_RETURN(ctl::make(&keyboardAcceleratorCopy));
 
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62639407>())
+                {
+                    if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(keyboardAccelerator.Get()))
+                    {
+                        IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::KeyboardAccelerator_IsEnabled, keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_IsEnabled));
+                        IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::KeyboardAccelerator_Key, keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_Key));
+                        IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::KeyboardAccelerator_Modifiers, keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_Modifiers));
+                        IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::KeyboardAccelerator_ScopeOwner, keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_ScopeOwner));
+                        IFC_RETURN(returnValueAsKeyboardAcceleratorCollection->Append(keyboardAcceleratorCopy.Get()));
+                        continue;
+                    }
+                }
+
                 IFC_RETURN(DXamlCore::SetBinding(keyboardAccelerator.Get(), wrl_wrappers::HStringReference(L"IsEnabled").Get(), keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_IsEnabled));
                 IFC_RETURN(DXamlCore::SetBinding(keyboardAccelerator.Get(), wrl_wrappers::HStringReference(L"Key").Get(), keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_Key));
                 IFC_RETURN(DXamlCore::SetBinding(keyboardAccelerator.Get(), wrl_wrappers::HStringReference(L"Modifiers").Get(), keyboardAcceleratorCopy.Get(), KnownPropertyIndex::KeyboardAccelerator_Modifiers));
@@ -171,6 +192,15 @@ _Check_return_ HRESULT CommandingHelpers::BindToLabelPropertyIfUnset(
 
     if (!localLabel || localLabel.IsEmpty())
     {
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62639407>())
+        {
+            if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+            {
+                IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_Label, target, labelPropertyIndex));
+                return S_OK;
+            }
+        }
+
         IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"Label").Get(), target, labelPropertyIndex));
     }
 
@@ -192,6 +222,16 @@ _Check_return_ HRESULT CommandingHelpers::BindToIconPropertyIfUnset(
     {
         ctl::ComPtr<IconSourceToIconSourceElementConverter> converter;
         IFC_RETURN(ctl::make(&converter));
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62639407>())
+        {
+            if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+            {
+                IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_IconSource, target, iconPropertyIndex, converter.Get()));
+                return S_OK;
+            }
+        }
+
         IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"IconSource").Get(), target, iconPropertyIndex, converter.Get()));
     }
 
@@ -211,6 +251,15 @@ _Check_return_ HRESULT CommandingHelpers::BindToIconSourcePropertyIfUnset(
 
     if (!localIconSource)
     {
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62639407>())
+        {
+            if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+            {
+                IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_IconSource, target, iconSourcePropertyIndex));
+                return S_OK;
+            }
+        }
+
         IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"IconSource").Get(), target, iconSourcePropertyIndex));
     }
 
@@ -221,6 +270,41 @@ _Check_return_ HRESULT CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
     _In_ IXamlUICommand* uiCommand,
     _In_ UIElement* target)
 {
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676766>())
+    {
+        if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+        {
+            // Early out if the command has no keyboard accelerators materialized.
+            // This avoids expensive binding setup work (converter creation, target collection
+            // access, etc.) when the command never had accelerators set. Since we don't
+            // subscribe to collection change events, accelerators added to the command
+            // later won't be picked up anyway, so this is safe.
+            if (!sourceDO->GetHandle()->IsEffectiveValueInSparseStorage(
+                    KnownPropertyIndex::XamlUICommand_KeyboardAccelerators))
+            {
+                return S_OK;
+            }
+
+            // The collection was materialized but might be empty (e.g. if the getter was
+            // called without adding any items). Check the count before proceeding.
+            {
+                ctl::ComPtr<wfc::IVector<xaml_input::KeyboardAccelerator*>> commandKeyboardAccelerators;
+                UINT commandKeyboardAcceleratorCount = 0;
+                IFC_RETURN(uiCommand->get_KeyboardAccelerators(&commandKeyboardAccelerators));
+                if (!commandKeyboardAccelerators)
+                {
+                    return S_OK;
+                }
+
+                IFC_RETURN(commandKeyboardAccelerators->get_Size(&commandKeyboardAcceleratorCount));
+                if (commandKeyboardAcceleratorCount == 0)
+                {
+                    return S_OK;
+                }
+            }
+        }
+    }
+
     ctl::ComPtr<wfc::IVector<xaml_input::KeyboardAccelerator*>> targetKeyboardAccelerators;
     UINT targetKeyboardAcceleratorCount;
 
@@ -231,6 +315,16 @@ _Check_return_ HRESULT CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
     {
         ctl::ComPtr<KeyboardAcceleratorCopyConverter> converter;
         IFC_RETURN(ctl::make(&converter));
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62639407>())
+        {
+            if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+            {
+                IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_KeyboardAccelerators, target, KnownPropertyIndex::UIElement_KeyboardAccelerators, converter.Get()));
+                return S_OK;
+            }
+        }
+
         IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"KeyboardAccelerators").Get(), target, KnownPropertyIndex::UIElement_KeyboardAccelerators, converter.Get()));
     }
 
@@ -246,6 +340,15 @@ _Check_return_ HRESULT CommandingHelpers::BindToAccessKeyIfUnset(
 
     if (!localAccessKey || localAccessKey.IsEmpty())
     {
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62639407>())
+        {
+            if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+            {
+                IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_AccessKey, target, KnownPropertyIndex::UIElement_AccessKey));
+                return S_OK;
+            }
+        }
+
         IFC_RETURN(DXamlCore::SetBinding(ctl::as_iinspectable(uiCommand), wrl_wrappers::HStringReference(L"AccessKey").Get(), target, KnownPropertyIndex::UIElement_AccessKey));
     }
 
@@ -261,6 +364,36 @@ _Check_return_ HRESULT CommandingHelpers::BindToDescriptionPropertiesIfUnset(
 
     wrl_wrappers::HString localHelpText;
     IFC_RETURN(AutomationProperties::GetHelpTextStatic(target, localHelpText.ReleaseAndGetAddressOf()));
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62639407>())
+    {
+        if (auto sourceDO = ctl::query_interface_cast<DependencyObject>(uiCommand))
+        {
+            if (!localHelpText || localHelpText.IsEmpty())
+            {
+                IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_Description, target, KnownPropertyIndex::AutomationProperties_HelpText));
+            }
+
+            ctl::ComPtr<IInspectable> localToolTipAsI;
+            IFC_RETURN(ToolTipServiceFactory::GetToolTipStatic(target, &localToolTipAsI));
+
+            wrl_wrappers::HString localToolTipAsString;
+            ctl::ComPtr<IToolTip> localToolTip;
+
+            if (localToolTipAsI)
+            {
+                IFC_RETURN(FrameworkElement::GetStringFromObject(localToolTipAsI.Get(), localToolTipAsString.ReleaseAndGetAddressOf()));
+                localToolTip = localToolTipAsI.AsOrNull<IToolTip>();
+            }
+
+            if ((!localToolTipAsString || localToolTipAsString.IsEmpty()) && !localToolTip)
+            {
+                IFC_RETURN(DXamlCore::SetDirectBinding(sourceDO.Get(), KnownPropertyIndex::XamlUICommand_Description, target, KnownPropertyIndex::ToolTipService_ToolTip));
+            }
+
+            return S_OK;
+        }
+    }
 
     if (!localHelpText || localHelpText.IsEmpty())
     {
@@ -303,6 +436,28 @@ _Check_return_ HRESULT CommandingHelpers::ClearBindingIfSet(
         if (bindingSource && ctl::are_equal(bindingSource.Get(), uiCommand))
         {
             IFC_RETURN(target->ClearValue(MetadataAPI::GetDependencyPropertyByIndex(targetPropertyIndex)));
+        }
+    }
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62639407>())
+    {
+        if (!bindingExpression)
+        {
+            const auto* pProperty = MetadataAPI::GetDependencyPropertyByIndex(targetPropertyIndex);
+
+            // GetBindingExpression only finds BindingExpression (IBindingExpression).
+            // Also check for DirectSourceBindingExpression which extends BindingExpressionBase
+            // but does not implement IBindingExpression.
+            ctl::ComPtr<IInspectable> localValue;
+            IFC_RETURN(target->ReadLocalValue(pProperty, &localValue));
+
+            ctl::ComPtr<IExpressionBase> expressionBase;
+            if (localValue && SUCCEEDED(localValue.As(&expressionBase)) && expressionBase)
+            {
+                // This is an internally-set binding expression (DirectSourceBindingExpression).
+                // Since only our commanding code creates these, it's safe to clear it.
+                IFC_RETURN(target->ClearValue(pProperty));
+            }
         }
     }
 

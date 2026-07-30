@@ -14,6 +14,12 @@
 #include "XamlIslandRoot.h"
 #include <XamlIslandRootScale.h>
 #include <XamlOneCoreTransforms.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62659855: Cache UIElement and FrameworkElement type checks
+#ifndef WINAPPSDK_CHANGEID_62659855
+#define WINAPPSDK_CHANGEID_62659855 62659855
+#endif
 
 // Marked noinline so we can easily breakpoint
 // When we hit this warning, it represents code that will not work correctly in DesktopWindowXamlSource or AppWindows
@@ -1420,7 +1426,13 @@ void DebugValidateVisualTree(_In_ CDependencyObject* element, _In_ VisualTree* e
         }
 
         CDependencyObject* nextAncestor = nullptr;
-        if (currentAncestor->DoesAllowMultipleAssociation() && currentAncestor->GetParentCount() > 1)
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62659855>() && currentAncestor->IsUIElement())
+        {
+            // Fast path: UIElements never allow multiple association. Use the cached type bit
+            // to skip the virtual GetTypeIndex() + c_aTypeCheckData lookup.
+            nextAncestor = currentAncestor->GetParentInternal(false /* public parent only */);
+        }
+        else if (currentAncestor->DoesAllowMultipleAssociation() && currentAncestor->GetParentCount() > 1)
         {
             // We cannot travese up a tree through a multiply associated element.  Our goal is to support DOs being
             // shared between XAML trees.  We've seen cases where we traverse up the tree through CSetter objects,

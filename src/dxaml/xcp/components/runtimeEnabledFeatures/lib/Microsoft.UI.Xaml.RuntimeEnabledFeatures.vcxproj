@@ -15,6 +15,7 @@
     <ItemGroup>
         <ClCompile Include="..\RuntimeEnabledFeatures.cpp"/>
         <ClCompile Include="..\RuntimeFeatureData.cpp"/>
+        <ClCompile Include="..\OptionalChangeState.cpp"/>
     </ItemGroup>
 
     <PropertyGroup>

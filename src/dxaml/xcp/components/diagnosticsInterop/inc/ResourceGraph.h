@@ -123,7 +123,7 @@ namespace Diagnostics
         // Clears the cached contexts for this ResourceGraph. Called from XamlDiagnostics when a core is shutdown.
         void ClearCachedContext();
 
-        void CacheRuntimeContext(_In_ CStyle* style, _In_ std::unique_ptr<CustomWriterRuntimeContext> context);
+        void CacheRuntimeContext(_In_ CStyle* style, _In_ std::shared_ptr<CustomWriterRuntimeContext> context);
         _Ret_maybenull_ CustomWriterRuntimeContext* GetCachedRuntimeContext(_In_ CStyle* style);
 
         void CacheMarkupExtensionToTarget(_In_ CMarkupExtensionBase* ext, _In_ KnownPropertyIndex targetProp, _In_ CDependencyObject* targetObj);

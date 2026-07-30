@@ -23,6 +23,10 @@
             <TitleBar.IconSource>
                 <SymbolIconSource Symbol="Home" />
             </TitleBar.IconSource>
+            <StackPanel x:Name="TitleBarContentPanel" Orientation="Horizontal" Spacing="4">
+                <Button x:Name="ContentButton" AutomationProperties.Name="ContentButton" Content="Action" />
+                <TextBlock x:Name="ContentLabel" AutomationProperties.Name="ContentLabel" Text="Label" VerticalAlignment="Center" />
+            </StackPanel>
         </TitleBar>
 
 
@@ -135,6 +139,62 @@
                     Content="RightHeader"
                     Checked="RightHeaderCheckBox_CheckedChanged"
                     Unchecked="RightHeaderCheckBox_CheckedChanged" />
+
+            <!-- Drag Region API Test Controls -->
+            <TextBlock Text="--- Drag Region API Tests ---" FontWeight="Bold" Margin="0,16,0,8" />
+
+            <CheckBox x:Name="AutoRefreshDragRegionsCheckBox"
+                    AutomationProperties.Name="AutoRefreshDragRegionsCheckBox"
+                    Content="AutoRefreshDragRegions"
+                    Checked="AutoRefreshDragRegionsCheckBox_CheckedChanged"
+                    Unchecked="AutoRefreshDragRegionsCheckBox_CheckedChanged" />
+
+            <Button x:Name="RecomputeDragRegionsButton"
+                    AutomationProperties.Name="RecomputeDragRegionsButton"
+                    Content="RecomputeDragRegions"
+                    Click="RecomputeDragRegionsButton_Click" />
+
+            <Button x:Name="SetIsDragRegionTrueOnLabelButton"
+                    AutomationProperties.Name="SetIsDragRegionTrueOnLabelButton"
+                    Content="Set IsDragRegion=True on Label"
+                    Click="SetIsDragRegionTrueOnLabelButton_Click" />
+
+            <Button x:Name="SetIsDragRegionFalseOnButtonButton"
+                    AutomationProperties.Name="SetIsDragRegionFalseOnButtonButton"
+                    Content="Set IsDragRegion=False on Button"
+                    Click="SetIsDragRegionFalseOnButtonButton_Click" />
+
+            <Button x:Name="ClearIsDragRegionButton"
+                    AutomationProperties.Name="ClearIsDragRegionButton"
+                    Content="Clear IsDragRegion"
+                    Click="ClearIsDragRegionButton_Click" />
+
+            <Button x:Name="AddChildButton"
+                    AutomationProperties.Name="AddChildButton"
+                    Content="Add Child to Content"
+                    Click="AddChildButton_Click" />
+
+            <Button x:Name="RemoveChildButton"
+                    AutomationProperties.Name="RemoveChildButton"
+                    Content="Remove Child from Content"
+                    Click="RemoveChildButton_Click" />
+
+            <Button x:Name="GetAutoRefreshValueButton"
+                    AutomationProperties.Name="GetAutoRefreshValueButton"
+                    Content="Get AutoRefreshDragRegions Value"
+                    Click="GetAutoRefreshValueButton_Click" />
+
+            <Button x:Name="GetIsDragRegionValuesButton"
+                    AutomationProperties.Name="GetIsDragRegionValuesButton"
+                    Content="Get IsDragRegion Values"
+                    Click="GetIsDragRegionValuesButton_Click" />
+
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="Status:" VerticalAlignment="Center" />
+                <TextBlock x:Name="DragRegionStatusTextBlock"
+                           AutomationProperties.Name="DragRegionStatusTextBlock"
+                           Foreground="Blue" VerticalAlignment="Center" />
+            </StackPanel>
 
         </StackPanel>
     </Grid>

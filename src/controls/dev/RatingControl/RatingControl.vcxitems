@@ -40,6 +40,14 @@
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RatingControl.xaml">
+      <Type>StylePerf2026</Type>
+      <FileType>Document</FileType>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RatingControl_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <FileType>Document</FileType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RatingControl.idl" />

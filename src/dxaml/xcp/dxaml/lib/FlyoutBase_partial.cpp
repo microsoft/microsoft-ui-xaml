@@ -43,6 +43,12 @@
 #include "ElementSoundPlayerService_Partial.h"
 #include "MenuFlyoutPresenter_Partial.h"
 #include "XamlTelemetry.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62771256: [2.0 Servicing] Fix MenuFlyout side-placement flip-up alignment near monitor bottom.
+// For side placements (Left/Right) with an exclusion rect, align the upward-flipped flyout to the
+// anchor's bottom edge instead of verticalOffset (the anchor's top edge).
+#define WINAPPSDK_CHANGEID_62771256 62771256
 
 using namespace std::placeholders;
 
@@ -3519,9 +3525,32 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
             // the menu target top position is set to the begin of the screen position.
             if (verticalOffset > availableRect.Y)
             {
-                verticalOffset = verticalOffset - DoubleUtil::Min(
-                    presenterSize.Height,
-                    DoubleUtil::Max(0, targetPoint.Y - availableRect.Y));
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62771256>())
+                {
+                    // For side placements (Left/Right) with an exclusion rect,
+                    // verticalOffset is the anchor's top edge, not its bottom.
+                    // Use exclusionRect.Bottom so the flipped flyout aligns to
+                    // the anchor's bottom edge.
+                    double bottomAlignmentY = verticalOffset;
+                    const bool sidePlacement =
+                        (majorPlacementMode == FlyoutBase::MajorPlacementMode::Left ||
+                         majorPlacementMode == FlyoutBase::MajorPlacementMode::Right);
+                    if (sidePlacement && !RectUtil::GetIsEmpty(m_exclusionRect) &&
+                        std::abs(verticalOffset - m_exclusionRect.Y) <= 1.0)
+                    {
+                        bottomAlignmentY = m_exclusionRect.Y + m_exclusionRect.Height;
+                    }
+
+                    verticalOffset = bottomAlignmentY - DoubleUtil::Min(
+                        presenterSize.Height,
+                        DoubleUtil::Max(0, bottomAlignmentY - availableRect.Y));
+                }
+                else
+                {
+                    verticalOffset = verticalOffset - DoubleUtil::Min(
+                        presenterSize.Height,
+                        DoubleUtil::Max(0, targetPoint.Y - availableRect.Y));
+                }
             }
             else // if it spans two monitors, make it start at the second.
             {
@@ -3533,7 +3562,27 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
             // Update the target vertical position if the target is out of the available rect
             if (m_isPositionedAtPoint)
             {
-                verticalOffset -= DoubleUtil::Min(presenterSize.Height, verticalOffset);
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62771256>())
+                {
+                    // Same bottom-alignment correction as the windowed branch above.
+                    // The non-windowed branch implicitly treats availableRect.Y as 0,
+                    // so the clamp's second argument simplifies to bottomAlignmentY.
+                    double bottomAlignmentY = verticalOffset;
+                    const bool sidePlacement =
+                        (majorPlacementMode == FlyoutBase::MajorPlacementMode::Left ||
+                         majorPlacementMode == FlyoutBase::MajorPlacementMode::Right);
+                    if (sidePlacement && !RectUtil::GetIsEmpty(m_exclusionRect) &&
+                        std::abs(verticalOffset - m_exclusionRect.Y) <= 1.0)
+                    {
+                        bottomAlignmentY = m_exclusionRect.Y + m_exclusionRect.Height;
+                    }
+
+                    verticalOffset = bottomAlignmentY - DoubleUtil::Min(presenterSize.Height, bottomAlignmentY);
+                }
+                else
+                {
+                    verticalOffset -= DoubleUtil::Min(presenterSize.Height, verticalOffset);
+                }
             }
             else
             {

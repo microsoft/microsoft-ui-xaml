@@ -792,7 +792,8 @@ namespace XamlGen.Templates.ModernIDL
                 // Include DependencyProperties and AttachedDependencyProperties for static interfaces
                foreach (var member in model.IdlClassInfo.DependencyProperties.Where(m => m.OrderHint == null))
                 {
-                    if (Math.Min(member.GetterVersion, member.SetterVersion) == model.Version)
+                    int dpVersion = member.DependencyPropertyVersion ?? Math.Min(member.GetterVersion, member.SetterVersion);
+                    if (dpVersion == model.Version)
                     {
                         WriteDependencyProperty(member);
                     }

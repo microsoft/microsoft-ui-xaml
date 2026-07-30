@@ -18,18 +18,6 @@
 #define STRINGIZE2(s) #s
 #define STRINGIZE(s) STRINGIZE2(s)
 
-// If the specific version information has not been defined, then define it now.
-// The default for WINUI is the WINUI major version, WINAPPSDK major version,
-// WINAPPSDK minor version.  This means that we ignore the WINUI_RELEASE_MINOR and 
-// WINUI_RELEASE_PATCH variables.
-
-#ifndef WINUI_RELEASE_MAJOR
-#define WINUI_RELEASE_MAJOR      3
-#endif
-#ifndef WINUI_BUILD_VERSION
-#define WINUI_BUILDVERSION    0
-#endif
-
 #ifndef VER_FILEVERSION
 #define VER_FILEVERSION           WINUI_RELEASE_MAJOR,WINDOWSAPPSDK_RELEASE_MAJOR,WINDOWSAPPSDK_RELEASE_MINOR
 #endif

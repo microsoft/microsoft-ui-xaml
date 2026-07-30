@@ -8,6 +8,11 @@
 #include "ObjectWriterNode.h"
 #include "ObjectWriterNodeType.h"
 
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62673714: Improve XBF deserialization performance
+#define WINAPPSDK_CHANGEID_62673714 62673714
+
 class XamlBinaryFormatReader2;
 class XamlSchemaContext;
 class XamlTypeNamspace;
@@ -70,6 +75,9 @@ public:
 
 private:
 #pragma region Raw Stream Accessors
+    // Generic buffer read for variable-size data (arrays, strings).
+    // For fixed-size type reads, prefer TryReadFromNodeStreamBuffer<T> which
+    // avoids the overhead of function call indirection and void* type erasure.
     bool TryReadFromBuffer(
         _In_ XUINT8 *pBuffer,
         _In_ XUINT32 cbBufferTotalSize,
@@ -77,10 +85,35 @@ private:
         _Out_writes_bytes_(cbBufferReadSize) void* pbTarget,
         _Inout_ XUINT32 *pcbBufferOffset);
 
+    // Optimized fixed-size read from the node stream. Uses memcpy for
+    // type-punning safety; the compiler optimizes this to a single load
+    // instruction for types that fit in a register (1, 2, 4, or 8 bytes).
+    // This eliminates the overhead of the generic TryReadFromBuffer path
+    // (function call, void* indirection, std::copy_n) for the most common
+    // read sizes in the hot deserialization loop.
     template <typename T>
     bool TryReadFromNodeStreamBuffer(_Out_ T* pTarget)
     {
-        return TryReadFromBuffer(m_nodeStream, m_nodeStreamLength, sizeof(T), pTarget, &m_currentNodeStreamOffset);
+        static_assert(std::is_trivially_copyable_v<T>,
+            "TryReadFromNodeStreamBuffer only supports trivially copyable types");
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62673714>())
+        {
+            // Overflow-safe bounds check: verify offset is within buffer, then check
+            // remaining bytes >= sizeof(T). The subtraction form avoids unsigned wrap.
+            if (m_currentNodeStreamOffset > m_nodeStreamLength ||
+                sizeof(T) > m_nodeStreamLength - m_currentNodeStreamOffset)
+            {
+                return false;
+            }
+            memcpy(pTarget, m_nodeStream + m_currentNodeStreamOffset, sizeof(T));
+            m_currentNodeStreamOffset += sizeof(T);
+            return true;
+        }
+        else
+        {
+            return TryReadFromBuffer(m_nodeStream, m_nodeStreamLength, sizeof(T), pTarget, &m_currentNodeStreamOffset);
+        }
     }
 
     template <typename T>
@@ -100,8 +133,12 @@ private:
     xstring_ptr ReadPersistedString();
     PersistedXamlNode2 ReadPersistedXamlNode();
 
+    // Branchless fast path for decoding 7-bit encoded uint32 values.
+    // Uses architecture-specific bit scanning intrinsics to decode without
+    // data-dependent branches, improving instruction-level parallelism.
+    // Falls back to a simple direct-buffer loop when near end of buffer.
     _Success_(return != false)
-     bool TryRead7BitEncodedInt(
+    bool TryRead7BitEncodedInt(
         _In_ XUINT8 *pBuffer,
         _In_ XUINT32 cbBufferTotalSize,
         _Inout_ XUINT32 *pcbBufferOffset,

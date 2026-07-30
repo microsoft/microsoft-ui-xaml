@@ -75,6 +75,11 @@ Licensed under the MIT License. See LICENSE in the project root for license info
         <!-- If EnableDefaultValidationContextGeneration is set, respect that value. Otherwise, we always generate it-->
         <EnableDefaultValidationContextGeneration Condition="'$(EnableDefaultValidationContextGeneration)' == ''">true</EnableDefaultValidationContextGeneration>
 
+        <!-- Comma-delimited lists of XamlOptionalChanges to enable or disable in the generated Main/wWinMain.
+             Each element is passed verbatim to XamlOptionalChanges.EnableChange() or DisableChange(). -->
+        <EnabledXamlOptionalChanges Condition="'$(EnabledXamlOptionalChanges)' == ''"></EnabledXamlOptionalChanges>
+        <DisabledXamlOptionalChanges Condition="'$(DisabledXamlOptionalChanges)' == ''"></DisabledXamlOptionalChanges>
+
         <!-- Determine whether we are building for Win32 or UWP, while respecting any overrides..-->
 
         <!-- For native apps, AppContainerApplication is set to false for Win32 -->
@@ -412,7 +417,9 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 VCInstallPath32="$(VCInstallPath32)"
                 VCInstallPath64="$(VCInstallPath64)"
                 GenXbfPath="$(GenXbfPath)"
-                PrecompiledHeaderFile="$(PrecompiledHeaderFile)" >
+                PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
+                EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
+                DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" >
 
                 <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
 
@@ -463,9 +470,11 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             VCInstallPath32="$(VCInstallPath32)"
             VCInstallPath64="$(VCInstallPath64)"
             GenXbfPath="$(GenXbfPath)"
-            PrecompiledHeaderFile="$(PrecompiledHeaderFile)" />
+            PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
+            EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
+            DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -538,7 +547,9 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 VCInstallPath32="$(VCInstallPath32)"
                 VCInstallPath64="$(VCInstallPath64)"
                 GenXbfPath="$(GenXbfPath)"
-                PrecompiledHeaderFile="$(PrecompiledHeaderFile)" >
+                PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
+                EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
+                DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" >
 
                 <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
 
@@ -589,9 +600,11 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 VCInstallPath32="$(VCInstallPath32)"
                 VCInstallPath64="$(VCInstallPath64)"
                 GenXbfPath="$(GenXbfPath)"
-                PrecompiledHeaderFile="$(PrecompiledHeaderFile)" />
+                PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
+                EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
+                DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -699,7 +712,9 @@ Licensed under the MIT License. See LICENSE in the project root for license info
                 VCInstallPath32="$(VCInstallPath32)"
                 VCInstallPath64="$(VCInstallPath64)"
                 GenXbfPath="$(GenXbfPath)"
-                PrecompiledHeaderFile="$(PrecompiledHeaderFile)" >
+                PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
+                EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
+                DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" >
 
                 <Output Condition=" '$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
                 <Output Condition=" '$(ManagedAssembly)'=='false' " ItemName="XamlGFiles" TaskParameter="GeneratedCodeFiles" />
@@ -759,9 +774,11 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             VCInstallPath32="$(VCInstallPath32)"
             VCInstallPath64="$(VCInstallPath64)"
             GenXbfPath="$(GenXbfPath)"
-            PrecompiledHeaderFile="$(PrecompiledHeaderFile)" />
+            PrecompiledHeaderFile="$(PrecompiledHeaderFile)"
+            EnabledXamlOptionalChanges="$(EnabledXamlOptionalChanges)"
+            DisabledXamlOptionalChanges="$(DisabledXamlOptionalChanges)" />
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'" JsonFilePath="$(XamlCompilerExeOutputJson)">
             <Output Condition="'$(ManagedAssembly)'!='false' " ItemName="Compile"   TaskParameter="GeneratedCodeFiles" />
@@ -842,7 +859,7 @@ Licensed under the MIT License. See LICENSE in the project root for license info
             XamlComponentResourceLocation="$(XamlComponentResourceLocation)"
             GenXbfPath="$(GenXbfPath)"/>
 
-        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
+        <Exec Condition="'$(UseXamlCompilerExecutable)' == 'true'" IgnoreExitCode="true" Command='"$(XamlCompilerExePath)" "$(XamlCompilerExeInputJson)" "$(XamlCompilerExeOutputJson)"' />
 
         <OutputDeserializer Condition="'$(UseXamlCompilerExecutable)' == 'true'"
                      JsonFilePath="$(XamlCompilerExeOutputJson)">

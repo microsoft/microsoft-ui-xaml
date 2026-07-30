@@ -5,6 +5,7 @@
 
 #include <ICustomWriterRuntimeDataReceiver.h>
 #include <resources\inc\ResourceDictionary2.h>
+#include <resources\inc\ResourceDictionaryMapTypes.h>
 #include <stack_vector.h>
 #include "collection\inc\DOCollection.h"
 #include "MarkupExtension.h"
@@ -218,6 +219,11 @@ public:
     // entire chain of dictionaries (Theme, Merged, Global Theme) for the key.
     _Check_return_ HRESULT GetKeyNoRef(
         const xstring_ptr_view& strKey,
+        _Outptr_ CDependencyObject **ppDO);
+
+    // Overload that accepts a pre-built ResourceKey, avoiding re-hashing the key string.
+    _Check_return_ HRESULT GetKeyNoRef(
+        const ResourceKey& key,
         _Outptr_ CDependencyObject **ppDO);
 
     // Overload to GetKeyNoRef, takes a resourceLookupScope parameter which allows
@@ -490,11 +496,21 @@ private:
     // Store of each resource's key by index.
     std::vector<std::pair<xstring_ptr, KeyInfo>> m_keyByIndex;
 
+#pragma region Original backing container field
     // Map of keys to resources.
-    ResourceMapType m_resourceMap;
+    ResourceMapType m_legacyResourceMap;
+#pragma endregion
+
+    ResourceMap m_resourceMap;
 
     // Temporary storage for keys that are being undeferred. This allows us to
-    // avoid an infinite loop when TryLoadDeferredResource is reentered.
+    // avoid an infinite loop when TryLoadDeferredResource is reentered. These
+    // keys do not copy the underlying key string but are removed on stack unwind.
+    // Bug 62818033: used by the change-enabled fast path.
+    std::vector<ResourceKey> m_undeferringResourcesFast;
+
+    // Bug 62818033: original (pre-fix) storage for undeferring keys, used when the
+    // change is disabled. Holds owning ResourceKeyStorage rather than ResourceKey.
     std::vector<ResourceKeyStorage> m_undeferringResources;
 
     std::unique_ptr<Resources::details::ResourceKeyCache> m_keysNotFoundCache;

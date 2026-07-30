@@ -35,12 +35,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.PrecompiledHeaderFile));
             this.Write("\"\r\n");
   }
-            this.Write("#include <windows.h>\r\n");
+            this.Write("#include <windows.h>\r\n#include <type_traits>\r\n");
   foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
             this.Write("\"\r\n");
   }
+  if (ProjectInfo.EnabledXamlOptionalChanges.Count > 0 || ProjectInfo.DisabledXamlOptionalChanges.Count > 0) { 
+            this.Write("#include \"winrt/");
+            this.Write(this.ToStringHelper.ToStringWithCulture(KnownNamespaces.XamlSettings));
+            this.Write(".h\"\r\n");
+  } 
             this.Write("\r\n#if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPT" +
                     "ION\r\nextern \"C\" __declspec(dllimport) int __stdcall IsDebuggerPresent();\r\n#endif" +
                     "\r\n\r\n");
@@ -66,17 +71,42 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     ";\r\n    }\r\n}\r\n\r\n#endif // (defined(_M_IX86) || defined(_M_AMD64) || defined(_M_AR" +
                     "M) || defined(_M_ARM64))) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)\r\n\r\n#ifndef D" +
                     "ISABLE_XAML_GENERATED_MAIN\r\nint __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, " +
-                    "int)\r\n{\r\n");
+                    "int)\r\n#else\r\nint __stdcall wXamlGeneratedMain()\r\n#endif\r\n{\r\n");
   if (ProjectInfo.IsWin32App) { 
             this.Write("    winrt::init_apartment(winrt::apartment_type::single_threaded);\r\n");
   } else { 
             this.Write("    winrt::init_apartment();\r\n");
   }
+  foreach (var change in ProjectInfo.EnabledXamlOptionalChanges) { 
+            this.Write("    ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlSettings)));
+            this.Write("::XamlOptionalChanges::EnableChange(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(int.TryParse(change, out _) ? $"static_cast<{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId>({change})" : $"{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId::{change}"));
+            this.Write(");\r\n");
+  } 
+  foreach (var change in ProjectInfo.DisabledXamlOptionalChanges) { 
+            this.Write("    ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.XamlSettings)));
+            this.Write("::XamlOptionalChanges::DisableChange(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(int.TryParse(change, out _) ? $"static_cast<{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId>({change})" : $"{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId::{change}"));
+            this.Write(");\r\n");
+  } 
             this.Write("    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
-            this.Write("::Application::Start(\r\n        [](auto&&)\r\n        {\r\n            ::winrt::make<");
+            this.Write(@"::Application::Start(
+        [](auto&&)
+        {
+#ifdef DISABLE_XAML_GENERATED_MAIN
+            // The App is constructed here only when it is default-constructible. This lets an
+            // application that defines DISABLE_XAML_GENERATED_MAIN supply its own entry point and
+            // omit a parameterless App constructor without breaking this generated helper.
+            if constexpr (std::is_default_constructible_v<");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")));
-            this.Write(">();\r\n        });\r\n\r\n    return 0;\r\n}\r\n#endif\r\n");
+            this.Write(">)\r\n            {\r\n                ::winrt::make<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")));
+            this.Write(">();\r\n            }\r\n#else\r\n            ::winrt::make<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")));
+            this.Write(">();\r\n#endif\r\n        });\r\n\r\n    return 0;\r\n}\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }

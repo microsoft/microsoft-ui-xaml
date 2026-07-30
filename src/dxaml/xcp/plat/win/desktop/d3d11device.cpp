@@ -273,6 +273,11 @@ Cleanup:
     return hr;
 }
 
+_Check_return_ HRESULT CD3D11Device::TakeDeviceRemovedEvent(_Out_ HANDLE* event, _Out_ DWORD* cookie)
+{
+    return m_deviceInstance->TakeDeviceRemovedEvent(event, cookie);
+}
+
 _Check_return_ HRESULT CD3D11Device::RegisterDeviceRemovedEvent(_In_ HANDLE event, _Out_ DWORD* cookie)
 {
     CD3D11SharedDeviceGuard guard;

@@ -52,6 +52,56 @@
             </TitleBar>
 
             <Button Content="New Window with Custom TitleBar" Click="TitleBarWindowingButton_Click"/>
+
+            <!-- Drag Region API Test Controls -->
+            <TextBlock Text="--- Drag Region API Tests ---" FontWeight="Bold" Margin="0,16,0,8" />
+
+            <Button x:Name="GetAutoRefreshValueButton"
+                    AutomationProperties.Name="GetAutoRefreshValueButton"
+                    Content="Get AutoRefreshDragRegions Value"
+                    Click="GetAutoRefreshValueButton_Click" />
+
+            <Button x:Name="SetAutoRefreshTrueButton"
+                    AutomationProperties.Name="SetAutoRefreshTrueButton"
+                    Content="Set AutoRefreshDragRegions=True"
+                    Click="SetAutoRefreshTrueButton_Click" />
+
+            <Button x:Name="SetAutoRefreshFalseButton"
+                    AutomationProperties.Name="SetAutoRefreshFalseButton"
+                    Content="Set AutoRefreshDragRegions=False"
+                    Click="SetAutoRefreshFalseButton_Click" />
+
+            <Button x:Name="RecomputeDragRegionsButton"
+                    AutomationProperties.Name="RecomputeDragRegionsButton"
+                    Content="RecomputeDragRegions"
+                    Click="RecomputeDragRegionsButton_Click" />
+
+            <Button x:Name="SetIsDragRegionTrueButton"
+                    AutomationProperties.Name="SetIsDragRegionTrueButton"
+                    Content="Set IsDragRegion=True on AutoSuggestBox"
+                    Click="SetIsDragRegionTrueButton_Click" />
+
+            <Button x:Name="SetIsDragRegionFalseButton"
+                    AutomationProperties.Name="SetIsDragRegionFalseButton"
+                    Content="Set IsDragRegion=False on AutoSuggestBox"
+                    Click="SetIsDragRegionFalseButton_Click" />
+
+            <Button x:Name="GetIsDragRegionValueButton"
+                    AutomationProperties.Name="GetIsDragRegionValueButton"
+                    Content="Get IsDragRegion Value"
+                    Click="GetIsDragRegionValueButton_Click" />
+
+            <Button x:Name="ClearIsDragRegionButton"
+                    AutomationProperties.Name="ClearIsDragRegionButton"
+                    Content="Clear IsDragRegion"
+                    Click="ClearIsDragRegionButton_Click" />
+
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="Status:" VerticalAlignment="Center" />
+                <TextBlock x:Name="DragRegionStatusTextBlock"
+                           AutomationProperties.Name="DragRegionStatusTextBlock"
+                           Foreground="Blue" VerticalAlignment="Center" />
+            </StackPanel>
         </StackPanel>
     </Grid>
 </local:TestPage>

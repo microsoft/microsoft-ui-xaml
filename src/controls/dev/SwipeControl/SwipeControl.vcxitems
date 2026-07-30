@@ -44,6 +44,13 @@
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SwipeControl.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)SwipeControl_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <FileType>Document</FileType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)SwipeControl.idl" />

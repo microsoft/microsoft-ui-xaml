@@ -84,13 +84,30 @@
 
     <Exec Command="$(SplitGenericXamlExe) $(GenericXamlPath)generic.xaml $(XamlBuildPath)\split" />
   </Target>
-  <Target Name="GatherXamlPages" AfterTargets="SplitGenericXaml" BeforeTargets="MarkupCompilePass2">
+
+  <!-- Also split the perf2026 generic.xaml into Styles_perf2026.xaml + ThemeResources_perf2026.xaml -->
+  <Target Name="SplitGenericXamlPerf2026" AfterTargets="SplitGenericXaml" BeforeTargets="GatherXamlPages"
+    Inputs="$(GenericXamlPath)generic_perf2026.xaml"
+    Outputs="$(XamlBuildPath)\split\ThemeResources_perf2026.xaml;$(XamlBuildPath)\split\Styles_perf2026.xaml"
+    Condition="Exists('$(GenericXamlPath)generic_perf2026.xaml')">
+    <MakeDir Directories="$(XamlBuildPath)\split_perf2026"/>
+    <Exec Command="$(SplitGenericXamlExe) $(GenericXamlPath)generic_perf2026.xaml $(XamlBuildPath)\split_perf2026" />
+    <Copy SourceFiles="$(XamlBuildPath)\split_perf2026\ThemeResources_perf2026.xaml" DestinationFiles="$(XamlBuildPath)\split\ThemeResources_perf2026.xaml" />
+    <Copy SourceFiles="$(XamlBuildPath)\split_perf2026\Styles_perf2026.xaml" DestinationFiles="$(XamlBuildPath)\split\Styles_perf2026.xaml" />
+  </Target>
+  <Target Name="GatherXamlPages" AfterTargets="SplitGenericXaml;SplitGenericXamlPerf2026" BeforeTargets="MarkupCompilePass2">
     <ItemGroup>
       <Page Include="$(XamlBuildPath)\split\Styles.xaml">
         <Link>Styles.xaml</Link>
       </Page>
       <Page Include="$(XamlBuildPath)\split\ThemeResources.xaml">
         <Link>ThemeResources.xaml</Link>
+      </Page>
+      <Page Include="$(XamlBuildPath)\split\Styles_perf2026.xaml">
+        <Link>Styles_perf2026.xaml</Link>
+      </Page>
+      <Page Include="$(XamlBuildPath)\split\ThemeResources_perf2026.xaml">
+        <Link>ThemeResources_perf2026.xaml</Link>
       </Page>
     </ItemGroup>
   </Target>

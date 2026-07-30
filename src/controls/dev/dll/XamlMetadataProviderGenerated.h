@@ -6076,6 +6076,12 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"Title", L"String", statics.TitleProperty(), false /* isContent */);
                     }
 
+                    winrt::ITitleBarStatics2 statics2 = GetFactory<winrt::ITitleBarStatics2>(L"Microsoft.UI.Xaml.Controls.TitleBar");
+                    {
+                        xamlType.AddDPMember(L"AutoRefreshDragRegions", L"Boolean", statics2.AutoRefreshDragRegionsProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsDragRegion", L"Windows.Foundation.IReference`1<Boolean>", statics2.IsDragRegionProperty(), false /* isContent */);
+                    }
+
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -7872,6 +7878,12 @@ Entry c_typeEntries[] =
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Windows.Foundation.IReference`1<Boolean>",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []() { return winrt::make<NullableXamlType>((PCWSTR)L"Windows.Foundation.IReference`1<Boolean>", (PCWSTR)L"Boolean"); }
     },
     {
         /* Arg1 TypeName */ 

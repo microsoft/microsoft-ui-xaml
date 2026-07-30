@@ -44,6 +44,24 @@ unsealed runtimeclass TitleBar : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty IsPaneToggleButtonVisibleProperty{ get; };
 
     static Microsoft.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+
+    [MUX_PUBLIC_V11]
+    {
+        [MUX_DEFAULT_VALUE("false")]
+        Boolean AutoRefreshDragRegions{ get; set; };
+
+        static Microsoft.UI.Xaml.DependencyProperty AutoRefreshDragRegionsProperty{ get; };
+
+        void RecomputeDragRegions();
+    }
+
+    [MUX_PUBLIC_V11]
+    {
+        [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnIsDragRegionPropertyChanged")]
+        static Microsoft.UI.Xaml.DependencyProperty IsDragRegionProperty{ get; };
+        static Windows.Foundation.IReference<Boolean> GetIsDragRegion(Microsoft.UI.Xaml.UIElement element);
+        static void SetIsDragRegion(Microsoft.UI.Xaml.UIElement element, Windows.Foundation.IReference<Boolean> value);
+    }
 }
 
 [MUX_PUBLIC_V8]

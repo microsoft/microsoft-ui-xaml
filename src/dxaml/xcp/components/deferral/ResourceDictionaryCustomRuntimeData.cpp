@@ -18,6 +18,16 @@
 #include "ResourceDictionaryCustomRuntimeData.h"
 #include "ResourceDictionaryCustomRuntimeDataSerializer.h"
 
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62646974: Faster hash table for ResourceDictionary
+#define WINAPPSDK_CHANGEID_62646974 62646974
+
+ResourceDictionaryCustomRuntimeData::ResourceDictionaryCustomRuntimeData(bool isEncoding)
+    : m_isEncoding(isEncoding)
+{
+}
+
 #pragma region Compiletime Methods
 
 // Add a resource with its StreamOffsetToken to the custom runtime data. This method is ONLY to be
@@ -29,6 +39,8 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::AddResourceOffset(
     _In_ bool isImplicitKey,
     _In_ bool shouldAutoUndefer)
 {
+    ASSERT(m_isEncoding);
+
     // Check first if the key already exists in the conditional store
     auto& conditionalStore = (isImplicitKey) ? m_conditionalImplicitKeyResources : m_conditionalExplicitKeyResources;
     bool conditionalKeyExists = (conditionalStore.find(key) != conditionalStore.end());
@@ -194,19 +206,32 @@ HRESULT ResourceDictionaryCustomRuntimeData::PrepareStream(_In_ std::shared_ptr<
 // Tries to get the StreamOffsetToken corresponding to the given key. Returns a boolean indicating success.
 _Success_(return != false)
 bool ResourceDictionaryCustomRuntimeData::TryGetResourceOffset(
-    _In_ const xstring_ptr& key,
-    _In_ bool isImplicitKey,
+    _In_ const ResourceKey& resourceKey,
     _Out_ StreamOffsetToken& token)
 {
     bool foundValue = false;
 
-    auto& primaryStore = (isImplicitKey) ? m_implicitKeyResourcesMap : m_explicitKeyResourcesMap;
-    auto search = primaryStore.find(key);
-
-    if (search != primaryStore.end())
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>() && !m_isEncoding)
     {
-        token = search->second;
-        foundValue = true;
+        auto search = m_resourcesMap.find(resourceKey);
+        if (search != m_resourcesMap.end())
+        {
+            token = search->second;
+            foundValue = true;
+        }
+    }
+    else
+    {
+        const xstring_ptr_view& key = resourceKey.GetKey();
+        bool isImplicitKey = resourceKey.IsKeyType();
+        auto& primaryStore = (isImplicitKey) ? m_implicitKeyResourcesMap : m_explicitKeyResourcesMap;
+        auto search = primaryStore.find(key);
+
+        if (search != primaryStore.end())
+        {
+            token = search->second;
+            foundValue = true;
+        }
     }
 
     return foundValue;
@@ -214,10 +239,55 @@ bool ResourceDictionaryCustomRuntimeData::TryGetResourceOffset(
 
 _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::ResolveConditionalResources(_In_ std::shared_ptr<ParserErrorReporter> parserErrorReporter)
 {
-    IFC_RETURN(ResolveConditionalResourcesHelper(false, parserErrorReporter));
-    IFC_RETURN(ResolveConditionalResourcesHelper(true, parserErrorReporter));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
+    {
+        if (!m_conditionalResourcesResolved)
+        {
+            StreamOffsetToken token;
+            for (auto& conditionalResource : m_conditionalResourcesMap)
+            {
+                bool foundValue = false;
 
-    m_conditionalResourcesResolved = true;
+                // Each candidate StreamOffsetToken has zero or more XamlPredicateAndArgs associated with it.
+                // Evaluate each set of XamlPredicateAndArgs to determine if the resource exists at runtime.
+                // Only one candidate should meet this requirement, which is what we'll return. If more than
+                // one candidate matches, then AG_E_PARSER2_OW_DUPLICATE_KEY is thrown. We loop through all candidates,
+                // even if a match is found, in order to check for this condition.
+                for (const auto& candidate : conditionalResource.second)
+                {
+                    if (!IsTokenForIgnoredConditionalObject(candidate))
+                    {
+                        if (foundValue)
+                        {
+                            // We already found a matching candidate, so this means the same key
+                            // has been used multiple times which is an error.
+                            // Report the error (via an originate exception), then throw E_FAIL.
+                            IFC_RETURN(parserErrorReporter->SetError(AG_E_PARSER2_OW_DUPLICATE_KEY, 0, 0, conditionalResource.first.GetKey()));
+                            IFC_RETURN(E_FAIL);
+                        }
+
+                        token = candidate;
+                        foundValue = true;
+                    }
+                }
+
+                if (foundValue)
+                {
+                    m_resourcesMap.emplace(conditionalResource.first, token);
+                }
+            }
+
+            m_conditionalResourcesMap.clear();
+            m_conditionalResourcesResolved = true;
+        }
+    }
+    else
+    {
+        IFC_RETURN(ResolveConditionalResourcesHelper(false, parserErrorReporter));
+        IFC_RETURN(ResolveConditionalResourcesHelper(true, parserErrorReporter));
+
+        m_conditionalResourcesResolved = true;
+    }
 
     return S_OK;
 }
@@ -278,16 +348,46 @@ _Check_return_ HRESULT ResourceDictionaryCustomRuntimeData::ResolveConditionalRe
 std::size_t ResourceDictionaryCustomRuntimeData::size()
 {
     ASSERT(m_conditionalResourcesResolved);
-    auto explicitKeyResourcesSize = m_explicitKeyResourcesMap.size() + m_conditionalExplicitKeyResources.size();
 
-    return explicitKeyResourcesSize + GetImplicitResourceCount();
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
+    {
+        return m_resourcesMap.size() + m_conditionalResourcesMap.size();
+    }
+    else
+    {
+        auto explicitKeyResourcesSize = m_explicitKeyResourcesMap.size() + m_conditionalExplicitKeyResources.size();
+
+        return explicitKeyResourcesSize + GetImplicitResourceCount();
+    }
 }
 
 std::size_t ResourceDictionaryCustomRuntimeData::GetImplicitResourceCount()
 {
     ASSERT(m_conditionalResourcesResolved);
 
-    return m_implicitKeyResourcesMap.size() + m_conditionalImplicitKeyResources.size();
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
+    {
+        std::size_t count = 0;
+        for (const auto& kvp : m_resourcesMap)
+        {
+            if (kvp.first.IsKeyType())
+            {
+                ++count;
+            }
+        }
+        for (const auto& kvp : m_conditionalResourcesMap)
+        {
+            if (kvp.first.IsKeyType())
+            {
+                ++count;
+            }
+        }
+        return count;
+        }
+    else
+    {
+        return m_implicitKeyResourcesMap.size() + m_conditionalImplicitKeyResources.size();
+    }
 }
 
 const std::vector<xstring_ptr> ResourceDictionaryCustomRuntimeData::GetExplicitKeys()

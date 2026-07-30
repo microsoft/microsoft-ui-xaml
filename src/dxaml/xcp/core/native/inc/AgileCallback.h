@@ -4,6 +4,13 @@
 #pragma once
 
 #include <WRLHelper.h>
+#include <MuxActivationFactory.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62676756: Add activation factory fast paths
+#ifndef WINAPPSDK_CHANGEID_62676756
+#define WINAPPSDK_CHANGEID_62676756 62676756
+#endif
 
 template<typename TDelegateInterface, typename TCallbackObject, typename TArg1, typename TArg2>
 Microsoft::WRL::ComPtr<typename Microsoft::WRL::Details::ArgTraitsHelper<TDelegateInterface>::Interface>
@@ -24,8 +31,16 @@ DispatcherCallback(
             : m_wpDO(xref::get_weakref(pDO)), m_pMethod(pMethod)
         {
             ctl::ComPtr<msy::IDispatcherQueueStatics> spDispatcherQueueStatics;
-            IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
-                spDispatcherQueueStatics.ReleaseAndGetAddressOf()));
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+            {
+                IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+                    spDispatcherQueueStatics.ReleaseAndGetAddressOf()));
+            }
+            else
+            {
+                IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(RuntimeClass_Microsoft_UI_Dispatching_DispatcherQueue).Get(),
+                    spDispatcherQueueStatics.ReleaseAndGetAddressOf()));
+            }
             IFCFAILFAST(spDispatcherQueueStatics->GetForCurrentThread(&m_spDispatcherQueue));
             if (!m_spDispatcherQueue)
             {
@@ -68,5 +83,4 @@ DispatcherCallback(
 
     return Microsoft::WRL::Make<ComObject>(pObject, pMethod);
 }
-
 

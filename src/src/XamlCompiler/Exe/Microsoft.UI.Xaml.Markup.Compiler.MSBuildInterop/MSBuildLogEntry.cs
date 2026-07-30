@@ -16,7 +16,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
             Error
         };
 
-        public EntryType Type;
+        public EntryType Type { get; set; }
 
         public string SubCategory { get; set; }
         public string ErrorCode { get; set; }

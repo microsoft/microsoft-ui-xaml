@@ -40,6 +40,15 @@
     <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml">
       <Type>DefaultStyle</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />

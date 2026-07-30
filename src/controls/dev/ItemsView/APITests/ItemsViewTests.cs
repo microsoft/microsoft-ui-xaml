@@ -21,6 +21,7 @@ using WEX.Logging.Interop;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Automation.Peers;
+using Windows.Foundation;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -764,6 +765,14 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                     itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 3));
                     itemsView.ItemsSource = itemsSource;
                     Verify.AreEqual(3, itemsSource.Count);
+                });
+
+                // Let the layout system fully process the ItemsSource replacement
+                // before modifying the collection.
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
                     Log.Comment("Removing first item");
                     itemsSource.RemoveAt(0);
                     Verify.AreEqual(2, itemsSource.Count);
@@ -773,6 +782,11 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
+                    Log.Comment("Re-extracting ItemsRepeater after ItemsSource change");
+                    itemsRepeater = itemsView.ScrollView.Content as ItemsRepeater;
+                    Verify.IsNotNull(itemsRepeater);
+
+                    itemsRepeater.UpdateLayout();
                     int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
                     Log.Comment($"Extracting last ItemContainer, children count: {childrenCount}");
                     ItemContainer itemContainer = itemsRepeater.TryGetElement(1) as ItemContainer;
@@ -796,6 +810,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
+                    itemsRepeater.UpdateLayout();
                     int childrenCount = VisualTreeHelper.GetChildrenCount(itemsRepeater);
                     Log.Comment($"Extracting remaining ItemContainer, children count: {childrenCount}");
                     ItemContainer itemContainer = itemsRepeater.TryGetElement(0) as ItemContainer;
@@ -1343,15 +1358,71 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         [TestProperty("Description", "Handles the LinedFlowLayout.ItemsInfoRequested event and triggers various exceptions exercising LinedFlowLayoutItemsInfoRequestedEventArgs APIs.")]
         [TestProperty("TestPass:MinOSVer", WindowsOSVersion._19H1)] // Unstable on RS5. See bug 49647616.
-        [TestProperty("TestPass:MaxOSVer", WindowsOSVersion._22H2)] // This test is currently failing on 23h2.
         public void TriggerLinedFlowLayoutItemsInfoRequestedEventArgsExceptions()
         {
-            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexNegative);
-            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexIncreased);
-            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexTooSmall);
-            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthSmallerThanItemsRangeRequestedLength);
-            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthTooSmallForDecreasedItemsRangeStartIndex);
-            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthInconsistent);
+            // Use a single visual tree for all triggers to avoid the DComp E_POINTER crash
+            // that occurs when rapidly creating and tearing down composition trees. The crash
+            // is caused by DComp callbacks arriving for released visuals during teardown.
+            ItemsView itemsView = null;
+            LinedFlowLayout linedFlowLayout = null;
+            List<string> itemsSource = new List<string>(Enumerable.Range(0, 300).Select(k => k + " - " + (new Random()).Next(100)));
+            AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent itemsViewUnloadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollViewBringingIntoViewEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollViewScrollCompletedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                linedFlowLayout = new LinedFlowLayout()
+                {
+                    LineHeight = 50.0
+                };
+
+                itemsView = new ItemsView()
+                {
+                    Layout = linedFlowLayout,
+                    ItemsSource = itemsSource
+                };
+
+                SetupDefaultUI(itemsView, itemsViewLoadedEvent, itemsViewUnloadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                itemsView.ScrollView.BringingIntoView += (sender, args) =>
+                {
+                    scrollViewBringingIntoViewEvent.Set();
+                };
+
+                itemsView.ScrollView.ScrollCompleted += (sender, args) =>
+                {
+                    scrollViewScrollCompletedEvent.Set();
+                };
+            });
+
+            BringItemIntoView(150, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
+
+            // Run all trigger variants against the same visual tree instance.
+            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(linedFlowLayout, itemsView, LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexNegative);
+            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(linedFlowLayout, itemsView, LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexIncreased);
+            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(linedFlowLayout, itemsView, LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexTooSmall);
+            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(linedFlowLayout, itemsView, LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthSmallerThanItemsRangeRequestedLength);
+            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(linedFlowLayout, itemsView, LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthTooSmallForDecreasedItemsRangeStartIndex);
+            TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(linedFlowLayout, itemsView, LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthInconsistent);
+
+            // Single teardown after all triggers have run.
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Resetting window content and ItemsView");
+                Content = null;
+                itemsView = null;
+            });
+
+            WaitForEvent("Waiting for Unloaded event", itemsViewUnloadedEvent);
+            IdleSynchronizer.Wait();
         }
 
         [TestMethod]
@@ -1932,133 +2003,101 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         private void TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException(
+            LinedFlowLayout linedFlowLayout,
+            ItemsView itemsView,
             LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger trigger)
         {
             Log.Comment($"TriggerLinedFlowLayoutItemsInfoRequestedEventArgsException - trigger={trigger}");
 
-            ItemsView itemsView = null;
-            LinedFlowLayout linedFlowLayout = null;
-            List<string> itemsSource = new List<string>(Enumerable.Range(0, 300).Select(k => k + " - " + (new Random()).Next(100)));
-            AutoResetEvent itemsViewLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent itemsViewUnloadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollViewBringingIntoViewEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollViewScrollCompletedEvent = new AutoResetEvent(false);
             AutoResetEvent linedFlowLayoutItemsInfoRequestedEvent = new AutoResetEvent(false);
             bool linedFlowLayoutItemsInfoRequestedEventArgsExceptionThrown = false;
 
-            RunOnUIThread.Execute(() =>
+            TypedEventHandler<LinedFlowLayout, LinedFlowLayoutItemsInfoRequestedEventArgs> itemsInfoRequestedHandler = (sender, args) =>
             {
-                linedFlowLayout = new LinedFlowLayout()
+                Log.Comment($"LinedFlowLayout.ItemsInfoRequested raised - ItemsRangeStartIndex={args.ItemsRangeStartIndex}, ItemsRangeRequestedLength={args.ItemsRangeRequestedLength}");
+
+                Verify.IsGreaterThanOrEqual(args.ItemsRangeStartIndex, 0);
+                Verify.IsGreaterThan(args.ItemsRangeRequestedLength, 0);
+
+                try
                 {
-                    LineHeight = 50.0
-                };
-
-                itemsView = new ItemsView()
-                {
-                    Layout = linedFlowLayout,
-                    ItemsSource = itemsSource
-                };
-
-                SetupDefaultUI(itemsView, itemsViewLoadedEvent, itemsViewUnloadedEvent);
-            });
-
-            WaitForEvent("Waiting for Loaded event", itemsViewLoadedEvent);
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                itemsView.ScrollView.BringingIntoView += (sender, args) =>
-                {
-                    Log.Comment($"ScrollView.BringingIntoView raised - CorrelationId={args.CorrelationId}, TargetVerticalOffset={args.TargetVerticalOffset}");
-
-                    scrollViewBringingIntoViewEvent.Set();
-                };
-
-                itemsView.ScrollView.ScrollCompleted += (sender, args) =>
-                {
-                    Log.Comment($"ScrollView.ScrollCompleted raised - CorrelationId={args.CorrelationId}, VerticalOffset={itemsView.ScrollView.VerticalOffset}");
-
-                    scrollViewScrollCompletedEvent.Set();
-                };
-            });
-
-            BringItemIntoView(150, itemsView, scrollViewBringingIntoViewEvent, scrollViewScrollCompletedEvent);
-
-            RunOnUIThread.Execute(() =>
-            {
-                linedFlowLayout.ItemsInfoRequested += (sender, args) =>
-                {
-                    Log.Comment($"LinedFlowLayout.ItemsInfoRequested raised - ItemsRangeStartIndex={args.ItemsRangeStartIndex}, ItemsRangeRequestedLength={args.ItemsRangeRequestedLength}");
-
-                    Verify.IsGreaterThanOrEqual(args.ItemsRangeStartIndex, 0);
-                    Verify.IsGreaterThan(args.ItemsRangeRequestedLength, 0);
-
-                    try
+                    switch (trigger)
                     {
-                        switch (trigger)
+                        case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexNegative:
                         {
-                            case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexNegative:
-                            {
-                                args.ItemsRangeStartIndex = -1;
-                                break;
-                            }
-                            case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexIncreased:
-                            {
-                                args.ItemsRangeStartIndex++;
-                                break;
-                            }
-                            case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexTooSmall:
-                            {
-                                args.SetMinWidths(new double[args.ItemsRangeRequestedLength]);
-                                args.ItemsRangeStartIndex--;
-                                break;
-                            }
-                            case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthSmallerThanItemsRangeRequestedLength:
-                            {
-                                args.SetMinWidths(new double[args.ItemsRangeRequestedLength - 1]);
-                                break;
-                            }
-                            case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthTooSmallForDecreasedItemsRangeStartIndex:
-                            {
-                                args.ItemsRangeStartIndex--;
-                                args.SetMinWidths(new double[args.ItemsRangeRequestedLength]);
-                                break;
-                            }
-                            case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthInconsistent:
-                            {
-                                args.SetMinWidths(new double[args.ItemsRangeRequestedLength]);
-                                args.SetMaxWidths(new double[args.ItemsRangeRequestedLength + 1]);
-                                break;
-                            }
+                            args.ItemsRangeStartIndex = -1;
+                            break;
+                        }
+                        case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexIncreased:
+                        {
+                            args.ItemsRangeStartIndex++;
+                            break;
+                        }
+                        case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ItemsRangeStartIndexTooSmall:
+                        {
+                            args.SetMinWidths(new double[args.ItemsRangeRequestedLength]);
+                            args.ItemsRangeStartIndex--;
+                            break;
+                        }
+                        case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthSmallerThanItemsRangeRequestedLength:
+                        {
+                            args.SetMinWidths(new double[args.ItemsRangeRequestedLength - 1]);
+                            break;
+                        }
+                        case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthTooSmallForDecreasedItemsRangeStartIndex:
+                        {
+                            args.ItemsRangeStartIndex--;
+                            args.SetMinWidths(new double[args.ItemsRangeRequestedLength]);
+                            break;
+                        }
+                        case LinedFlowLayoutItemsInfoRequestedEventArgsExceptionTrigger.ArrayLengthInconsistent:
+                        {
+                            args.SetMinWidths(new double[args.ItemsRangeRequestedLength]);
+                            args.SetMaxWidths(new double[args.ItemsRangeRequestedLength + 1]);
+                            break;
                         }
                     }
-                    catch (Exception exception)
-                    {
-                        Log.Comment($"Exception={exception.ToString()}");
-                        linedFlowLayoutItemsInfoRequestedEventArgsExceptionThrown = true;
-                    }
+                }
+                catch (Exception exception)
+                {
+                    Log.Comment($"Exception={exception.ToString()}");
+                    linedFlowLayoutItemsInfoRequestedEventArgsExceptionThrown = true;
 
-                    linedFlowLayoutItemsInfoRequestedEvent.Set();
-                };
+                    // Discard any partial sizing data that the failed API call may have
+                    // committed to LinedFlowLayout (e.g. SetMinWidths succeeded but
+                    // SetMaxWidths threw). Without this, the corrupted sizing info gets
+                    // committed to DComp, causing an E_POINTER fail-fast in dcompi.dll.
+                    linedFlowLayout.InvalidateItemsInfo();
+                }
+
+                linedFlowLayoutItemsInfoRequestedEvent.Set();
+            };
+
+            RunOnUIThread.Execute(() =>
+            {
+                linedFlowLayout.ItemsInfoRequested += itemsInfoRequestedHandler;
 
                 Log.Comment("Triggering the ItemsInfoRequested event");
                 itemsView.ScrollView.ScrollBy(0.0, 1.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
 
             WaitForEvent("Waiting for ItemsInfoRequested event", linedFlowLayoutItemsInfoRequestedEvent);
+
+            // Unhook the exception-throwing handler immediately after the event fires to
+            // prevent further corrupted layout passes during idle processing.
+            RunOnUIThread.Execute(() =>
+            {
+                linedFlowLayout.ItemsInfoRequested -= itemsInfoRequestedHandler;
+            });
+
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment($"linedFlowLayoutItemsInfoRequestedEventArgsExceptionThrown={linedFlowLayoutItemsInfoRequestedEventArgsExceptionThrown}");
                 Verify.IsTrue(linedFlowLayoutItemsInfoRequestedEventArgsExceptionThrown);
-
-                Log.Comment("Resetting window content and ItemsView");
-                Content = null;
-                itemsView = null;
             });
 
-            WaitForEvent("Waiting for Unloaded event", itemsViewUnloadedEvent);
             Log.Comment("Done");
         }
 

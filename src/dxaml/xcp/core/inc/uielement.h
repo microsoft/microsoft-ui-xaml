@@ -813,9 +813,47 @@ public:
     virtual void EvaluateIsRightToLeft();
 
     bool IsRightToLeft() override;
-  
-    wil::details::lambda_call<std::function<void()>> LockParent();
-  
+
+    // Lightweight RAII guard for locking parent's children collection during layout.
+    // When containment is enabled, uses a raw CCollection* (no AddRef, no heap alloc).
+    // When containment is disabled, delegates to a std::function cleanup to match original behavior.
+    class ParentCollectionLock
+    {
+    public:
+        ParentCollectionLock() : m_collection(nullptr) {}
+        explicit ParentCollectionLock(CCollection* collection);
+        explicit ParentCollectionLock(std::function<void()> cleanup);
+        ~ParentCollectionLock();
+
+        ParentCollectionLock(ParentCollectionLock&& other) noexcept
+            : m_collection(other.m_collection)
+            , m_cleanup(std::move(other.m_cleanup))
+        {
+            other.m_collection = nullptr;
+        }
+        ParentCollectionLock& operator=(ParentCollectionLock&& other) noexcept
+        {
+            if (this != &other)
+            {
+                reset();
+                m_collection = other.m_collection;
+                m_cleanup = std::move(other.m_cleanup);
+                other.m_collection = nullptr;
+            }
+            return *this;
+        }
+        ParentCollectionLock(const ParentCollectionLock&) = delete;
+        ParentCollectionLock& operator=(const ParentCollectionLock&) = delete;
+
+        void reset();
+
+    private:
+        CCollection* m_collection;              // enabled path: raw pointer
+        std::function<void()> m_cleanup;        // disabled path: original cleanup
+    };
+
+    ParentCollectionLock LockParent();
+
     _Check_return_ HRESULT Focus(_In_ DirectUI::FocusState focusState,
         _In_ bool animateIfBringIntoView,
         _Out_ bool* focusChanged,

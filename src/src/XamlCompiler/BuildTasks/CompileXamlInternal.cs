@@ -180,6 +180,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         // conditional XAML, etc.) should be validated against TargetPlatformMinVersion
         public bool IgnoreSpecifiedTargetPlatformMinVersion { get; set; }
 
+        public string EnabledXamlOptionalChanges { get; set; }
+        public string DisabledXamlOptionalChanges { get; set; }
+
         #endregion
 
         #region Output Properties
@@ -331,6 +334,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             XamlApplications = GetFileItems(i.XamlApplications);
             XamlPages = GetFileItems(i.XamlPages);
             SdkXamlPages = GetFileItems(i.SdkXamlPages);
+            EnabledXamlOptionalChanges = i.EnabledXamlOptionalChanges;
+            DisabledXamlOptionalChanges = i.DisabledXamlOptionalChanges;
         }
 
         private IList<IFileItem> GetFileItems(List<MSBuildItem> list)
@@ -370,6 +375,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 strings[i] = items[i].ItemSpec;
             }
             return strings;
+        }
+
+        private static IList<string> ParseCommaSeparatedList(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return Array.Empty<string>();
+            }
+            return value.Split(',').Select(s => s.Trim()).Where(s => s.Length > 0).ToList();
         }
 
         private CodeGenCtrlFlags TryParseCodeGenFlags(string flags)
@@ -513,6 +527,25 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
 
             return false;
+        }
+
+        private bool DidXamlOptionalChangesChange()
+        {
+            bool changed = false;
+
+            if (string.Compare(SaveState.EnabledXamlOptionalChanges, EnabledXamlOptionalChanges, StringComparison.Ordinal) != 0)
+            {
+                SaveState.EnabledXamlOptionalChanges = EnabledXamlOptionalChanges;
+                changed = true;
+            }
+
+            if (string.Compare(SaveState.DisabledXamlOptionalChanges, DisabledXamlOptionalChanges, StringComparison.Ordinal) != 0)
+            {
+                SaveState.DisabledXamlOptionalChanges = DisabledXamlOptionalChanges;
+                changed = true;
+            }
+
+            return changed;
         }
 
         //
@@ -825,11 +858,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             // If the feature ctrl flags change, then skip checking every xaml file - we'll assume that since the user
             // edited the project file that something needs to be done.
             bool didFeatureCtrlFlagsChange = DidFeatureControlFlagsChange();
+            bool didXamlOptionalChangesChange = DidXamlOptionalChangesChange();
+            if (didXamlOptionalChangesChange)
+            {
+                SourceFileManager.MarkApplicationFilesDirty();
+            }
 
             // During Pass 2, we can skip most type info collection if type info reflection is enabled since we don't need our type tables.
             bool skipPass2TypeInfo = EnableTypeInfoReflection;
 
-            if ((xamlTypeInfoNeeded == false) && (didAssembliesChange == false) && (didFeatureCtrlFlagsChange == false))
+            if ((xamlTypeInfoNeeded == false) && (didAssembliesChange == false) && (didFeatureCtrlFlagsChange == false) && (didXamlOptionalChangesChange == false))
             {
                 bool haveGeneratedPass2CodeFiles = ShortcutBackupRestoreGeneratedPass2Files_WhenNothingExternalHasChanged();
                 bool xamlFilesChanged = DidXAMLFilesChange();
@@ -1865,6 +1903,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             projectInfo.IsWin32App = EnableWin32Codegen;
             projectInfo.UsingCSWinRT = UsingCSWinRT;
             projectInfo.PrecompiledHeaderFile = PrecompiledHeaderFile;
+            projectInfo.EnabledXamlOptionalChanges = ParseCommaSeparatedList(EnabledXamlOptionalChanges);
+            projectInfo.DisabledXamlOptionalChanges = ParseCommaSeparatedList(DisabledXamlOptionalChanges);
             return projectInfo;
         }
 

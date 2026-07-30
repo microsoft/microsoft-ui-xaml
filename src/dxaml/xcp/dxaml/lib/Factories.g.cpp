@@ -333,6 +333,7 @@ namespace DirectUI
     _Check_return_ IActivationFactory* CreateActivationFactory_SvgImageSource();
     _Check_return_ IActivationFactory* CreateActivationFactory_Selector();
     _Check_return_ IActivationFactory* CreateActivationFactory_Matrix3D();
+    _Check_return_ IActivationFactory* CreateActivationFactory_XamlOptionalChanges();
     _Check_return_ IActivationFactory* CreateActivationFactory_ColorKeyFrame();
     _Check_return_ IActivationFactory* CreateActivationFactory_KeyTime();
     _Check_return_ IActivationFactory* CreateActivationFactory_PointKeyFrame();
@@ -989,6 +990,7 @@ ACTIVATION_FACTORY_MAP_BEGIN()
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Imaging.SvgImageSource"), &DirectUI::CreateActivationFactory_SvgImageSource)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Controls.Primitives.Selector"), &DirectUI::CreateActivationFactory_Selector)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Media3D.Matrix3DHelper"), &DirectUI::CreateActivationFactory_Matrix3D)
+    ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Settings.XamlOptionalChanges"), &DirectUI::CreateActivationFactory_XamlOptionalChanges)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.ColorKeyFrame"), &DirectUI::CreateActivationFactory_ColorKeyFrame)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.KeyTimeHelper"), &DirectUI::CreateActivationFactory_KeyTime)
     ACTIVATION_FACTORY_ENTRY(XSTRING_PTR_STORAGE(L"Microsoft.UI.Xaml.Media.Animation.PointKeyFrame"), &DirectUI::CreateActivationFactory_PointKeyFrame)

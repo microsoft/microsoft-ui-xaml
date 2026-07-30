@@ -465,6 +465,16 @@ namespace DirectUI
             }
         }
 
+        void Reserve(_In_ UINT capacity)
+        {
+            // To modify the collection we need to take the lock
+            {
+                AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
+
+                m_items.reserve(capacity);
+            }
+        }
+        
         typename std::vector<TrackerPtr<T>>::const_iterator Begin() const
         {
             return m_items.cbegin();

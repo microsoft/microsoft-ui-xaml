@@ -9,6 +9,10 @@
 #include "FlowLayoutState.h"
 #include "FlowLayout.h"
 #include "VirtualizingLayoutContext.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62786355: [2.0 Servicing] Guard null LayoutState in FlowLayout::OnItemsChangedCore to prevent c0000005 AV fail-fast (Watson 56176172)
+#define WINAPPSDK_CHANGEID_62786355 62786355
 
 FlowLayout::FlowLayout()
 {
@@ -86,7 +90,25 @@ void FlowLayout::OnItemsChangedCore(
     winrt::IInspectable const& source,
     winrt::NotifyCollectionChangedEventArgs const& args)
 {
-    GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62786355>())
+    {
+        // The LayoutState can be null when a collection change is raised against a
+        // layout that has not been (or is no longer) initialized for this context -
+        // for example a stray CollectionChanged delivered to an unloaded ItemsRepeater
+        // whose RepeaterLayoutContext can no longer resolve its owner. Guard against it
+        // (mirrors StackLayout::OnItemsChangedCore) instead of dereferencing a null state.
+        if (auto layoutState = context.LayoutState())
+        {
+            if (auto flowState = GetAsFlowState(layoutState))
+            {
+                flowState->FlowAlgorithm().OnItemsSourceChanged(source, args, context);
+            }
+        }
+    }
+    else
+    {
+        GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
+    }
     // Always invalidate layout to keep the view accurate.
     InvalidateLayout();
 }

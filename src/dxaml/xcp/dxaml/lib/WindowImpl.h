@@ -5,6 +5,12 @@
 
 #include "Window.g.h"
 #include "JupiterWindow.h" // Required for WindowType
+#include "FrameworkUdk/Containment.h"
+
+// Containment for the experimental Window.Width/Height/MinWidth/MinHeight/MaxWidth/MaxHeight
+// APIs (servicing bug 63077767). Every new code path is guarded directly with this change ID.
+// When contained off, the APIs return E_NOTIMPL and none of their side effects run.
+#define WINAPPSDK_CHANGEID_63077767 63077767
 
 namespace DirectUI
 {
@@ -37,8 +43,22 @@ namespace DirectUI
             virtual _Check_return_ HRESULT put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN value) = 0;
             virtual _Check_return_ HRESULT SetTitleBarImpl(_In_ xaml::IUIElement* pTitleBar) = 0;
 
+            // Experimental restored client-size constraints (in DIPs).
+            virtual _Check_return_ HRESULT get_MinWidthImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_MinWidthImpl(_In_ DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_MinHeightImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_MinHeightImpl(_In_ DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_MaxWidthImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_MaxWidthImpl(_In_ DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_MaxHeightImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_MaxHeightImpl(_In_ DOUBLE value) = 0;
+
             virtual _Check_return_ HRESULT get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor) = 0;
             virtual _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue) = 0;
+            virtual _Check_return_ HRESULT get_WidthImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_WidthImpl(DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_HeightImpl(DOUBLE value) = 0;
 
             virtual _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** systemBackdrop) = 0;
             virtual _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* systemBackdrop) = 0;

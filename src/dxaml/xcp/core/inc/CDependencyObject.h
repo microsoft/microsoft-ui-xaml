@@ -45,6 +45,12 @@
 #include <FeatureFlags.h>
 #include <fwd/windows.ui.composition.h>
 #include "InputSiteHelpers.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62659855: Cache UIElement and FrameworkElement type checks
+#ifndef WINAPPSDK_CHANGEID_62659855
+#define WINAPPSDK_CHANGEID_62659855 62659855
+#endif
 
 // Handy macro to compute the offset from the beginning of a structure to the
 // the specified member.  Similar to the macro 'offsetof' in stddef.h but its
@@ -533,11 +539,38 @@ public:
 
     bool OfTypeByIndex(_In_ KnownTypeIndex nIndex) const;
 
+    // Cached type checks -- fast O(1) path that avoids virtual call + array lookup.
+    // Bits are set in CUIElement / CFrameworkElement constructors and cleared in
+    // their destructors so they track the live C++ type identity exactly.
+    bool IsUIElement() const { return m_isUIElement; }
+    bool IsFrameworkElement() const { return m_isFrameworkElement; }
+
     template <KnownTypeIndex targetTypeIndex>
     constexpr bool OfTypeByIndex() const
     {
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62659855>())
+        {
+            if constexpr (targetTypeIndex == KnownTypeIndex::UIElement)
+            {
+                return m_isUIElement;
+            }
+            else if constexpr (targetTypeIndex == KnownTypeIndex::FrameworkElement)
+            {
+                return m_isFrameworkElement;
+            }
+        }
+
         return DirectUI::MetadataAPI::IsAssignableFrom<targetTypeIndex>(GetTypeIndex());
     }
+
+protected:
+    // Called from CUIElement / CFrameworkElement ctors and dtors to maintain cached type bits.
+    void SetCachedUIElementBit() { m_isUIElement = true; }
+    void SetCachedFrameworkElementBit() { m_isFrameworkElement = true; }
+    void ClearCachedUIElementBit() { m_isUIElement = false; }
+    void ClearCachedFrameworkElementBit() { m_isFrameworkElement = false; }
+
+public:
 
     const CClassInfo* GetClassInformation() const;
 
@@ -1773,8 +1806,8 @@ protected:
 private:
     bool m_checkForResourceOverrides                        : 1;    // 11
     bool m_canParserOverwriteBaseUri                                 : 1;    // 12
-    bool                                                    : 1;    // 13- Unused
-    bool                                                    : 1;    // 14- Unused
+    bool m_isUIElement                                      : 1;    // 13- Cached: is this a UIElement?
+    bool m_isFrameworkElement                               : 1;    // 14- Cached: is this a FrameworkElement?
     bool                                                    : 1;    // 15- Unused
     bool                                                    : 1;    // 16- Unused
 

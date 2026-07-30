@@ -185,6 +185,13 @@
   <Import Project="..\RetargetCopyLocalFiles.targets" />
   <Import Project="..\TestApp.targets" />
 
+  <!-- Filter old style pages before duplicate check -->
+  <Target Name="FilterLegacyStylePages" BeforeTargets="CheckForDuplicateItems">
+    <ItemGroup>
+      <Page Remove="@(Page)" Condition="'%(Page.Type)' == 'DefaultStyle' or '%(Page.Type)' == 'ThemeResources'" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="RemovePagesToTest" BeforeTargets="MarkupCompilePass1">
     <ItemGroup>
       <Page Remove="@(PageToTest)" />

@@ -15,6 +15,7 @@
 #include <XcpAllocation.h>
 
 #include <d3d11_1.h>
+#include <d3d11_4.h>
 #include <dxgi1_6.h>
 
 #include "D2DAccelerated.h"
@@ -24,9 +25,15 @@
 
 #include <DependencyLocator.h>
 #include <RuntimeEnabledFeatures.h>
+#include "FrameworkUdk/Containment.h"
 
 using namespace RuntimeFeatureBehavior;
 using namespace Microsoft::WRL;
+
+// Bug 62726703: Register device-removed event eagerly during device creation
+#ifndef WINAPPSDK_CHANGEID_62726703
+#define WINAPPSDK_CHANGEID_62726703 62726703
+#endif
 
 typedef HRESULT (WINAPI *D3D11CREATEDEVICEFUNCTION)(
     _In_ IDXGIAdapter *pAdapter,
@@ -124,6 +131,11 @@ CD3D11DeviceInstance::CD3D11DeviceInstance(bool isSharedDevice)
 //-------------------------------------------------------------------------
 CD3D11DeviceInstance::~CD3D11DeviceInstance()
 {
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62726703>())
+    {
+        UnregisterDeviceRemovedEvent();
+    }
+
     // Remove all system memory surfaces from the pool
     while (!m_sysMemBitsPool.IsEmpty())
     {
@@ -269,6 +281,32 @@ CD3D11DeviceInstance::EnsureResources()
         // Get the multithread interface for lock in order to synchronize with DComp
         IFC(m_pDevice->QueryInterface(__uuidof(ID3D10Multithread), reinterpret_cast<void**>(&m_pD3DMultithread)));
 
+        // Register for device-removed notifications now, while we're on a background thread and already
+        // have the device pointer. RegisterDeviceRemovedEvent takes the D3D lock, and if someone else holds
+        // that lock the calling thread blocks. By doing this here instead of on the UI thread, any such
+        // wait happens on a background thread rather than blocking the UI thread directly. During app
+        // startup the UI thread usually has plenty of other work to do, so keeping it unblocked lets it
+        // make progress toward first frame instead of stalling on D3D lock contention.
+        //
+        // Tradeoff: this adds a small amount of work to the background thread (a QI + event registration),
+        // which could slightly extend how long the UI thread waits at WaitForD3DDependentResourceCreation.
+        // In practice the registration is sub-millisecond (just a kernel event + driver callback hookup),
+        // which is noise compared to D3D device creation on this same thread.
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62726703>())
+        {
+            m_deviceRemovedEvent.reset(::CreateEvent(
+                nullptr, // no security descriptor
+                FALSE,   // auto-reset (matches the fallback path in EnsureDeviceLostListener)
+                FALSE,   // initially unsignaled
+                nullptr  // no name
+                ));
+            IFCW32(m_deviceRemovedEvent != nullptr);
+
+            ComPtr<ID3D11Device4> device4;
+            IFC(m_pDevice->QueryInterface(IID_PPV_ARGS(&device4)));
+            IFC(device4->RegisterDeviceRemovedEvent(m_deviceRemovedEvent.get(), &m_deviceRemovedCookie));
+        }
+
         TraceCreateGraphicsDeviceEnd();
     }
 
@@ -282,6 +320,12 @@ void CD3D11DeviceInstance::ReleaseResourcesOnDeviceLost()
     // We should have already entered the critical section in RecordDeviceAsLost. Guard against this function
     // being used elsewhere by entering the CS again.
     wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62726703>())
+    {
+        UnregisterDeviceRemovedEvent();
+    }
+
     ReleaseInterface(m_pDeviceContext);
     ReleaseInterface(m_pDevice);
     ReleaseInterface(m_pD2DDevice);
@@ -292,6 +336,50 @@ void CD3D11DeviceInstance::ReleaseResourcesOnDeviceLost()
     ReleaseInterface(m_pDXGIDevice2);
     // m_pD2DFactory doesn't hold any device-dependent resources. It can be left alone.
     m_wasLostDeviceReleased = true;
+}
+
+void CD3D11DeviceInstance::UnregisterDeviceRemovedEvent()
+{
+    ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62726703>());
+
+    if (m_deviceRemovedCookie != 0 && m_pDevice != nullptr)
+    {
+        ComPtr<ID3D11Device4> device4;
+        if (SUCCEEDED(m_pDevice->QueryInterface(IID_PPV_ARGS(&device4))))
+        {
+            device4->UnregisterDeviceRemoved(m_deviceRemovedCookie);
+        }
+        m_deviceRemovedCookie = 0;
+    }
+    m_deviceRemovedEvent.reset();
+}
+
+_Check_return_ HRESULT CD3D11DeviceInstance::TakeDeviceRemovedEvent(_Out_ HANDLE* event, _Out_ DWORD* cookie)
+{
+    ASSERT(WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62726703>());
+
+    *event = nullptr;
+    *cookie = 0;
+
+    if (m_wasLostDeviceReleased || IsDeviceLost())
+    {
+        return DXGI_ERROR_DEVICE_REMOVED;
+    }
+
+    // The caller takes ownership of both the event handle and the registration cookie.
+    // After this call the device instance no longer needs to unregister anything.
+    //
+    // Thread safety: we don't take m_lock here. That's okay because the caller has already called
+    // WaitForD3DDependentResourceCreation(), which ensures the background thread that registered the
+    // event is done. The only concurrent risk is ReleaseResourcesOnDeviceLost on another thread, but
+    // that requires the device to be lost at this exact moment -- the IsDeviceLost() check above
+    // handles that race in practice.
+    IFCEXPECT_RETURN(m_deviceRemovedEvent.get() != nullptr);
+    *event = m_deviceRemovedEvent.release();
+    *cookie = m_deviceRemovedCookie;
+    m_deviceRemovedCookie = 0;
+
+    return S_OK;
 }
 
 _Check_return_ HRESULT CD3D11DeviceInstance::TakeLockAndCheckDeviceLost(_In_ CD3D11SharedDeviceGuard* guard)

@@ -15,6 +15,13 @@
 
 #define __Setter_GUID "7c425f15-7da5-4f20-b7cc-39527248803b"
 
+#pragma region forwarders
+namespace ctl
+{
+    
+}
+#pragma endregion
+
 namespace DirectUI
 {
     class Setter;
@@ -86,9 +93,11 @@ namespace DirectUI
     class __declspec(novtable) SetterFactory:
        public ctl::BetterCoreObjectActivationFactory
         , public ABI::Microsoft::UI::Xaml::ISetterFactory
+        , public ABI::Microsoft::UI::Xaml::ISetterStatics2
     {
         BEGIN_INTERFACE_MAP(SetterFactory, ctl::BetterCoreObjectActivationFactory)
             INTERFACE_ENTRY(SetterFactory, ABI::Microsoft::UI::Xaml::ISetterFactory)
+            INTERFACE_ENTRY(SetterFactory, ABI::Microsoft::UI::Xaml::ISetterStatics2)
         END_INTERFACE_MAP(SetterFactory, ctl::BetterCoreObjectActivationFactory)
 
     public:
@@ -99,7 +108,7 @@ namespace DirectUI
 
         // Dependency properties.
         
-        
+        IFACEMETHOD(get_ValueProperty)(_Out_ ABI::Microsoft::UI::Xaml::IDependencyProperty** ppValue) override;
         
 
         // Attached properties.

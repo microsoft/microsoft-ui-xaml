@@ -23,6 +23,10 @@
 #include <FrameworkUdk/BackButtonIntegration.h>
 #include "VisualTreeHelper.h"
 #include "microsoft.ui.input.dragdrop.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62849414: Reserve space in TrackerCollections before appending multiple items
+#define WINAPPSDK_CHANGEID_62849414 62849414
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -701,6 +705,10 @@ _Check_return_ HRESULT ListViewBase::GetDraggedItems(
 
         // create the list
         IFC(ctl::make<TrackerCollection<IInspectable*>>(&spGeneratedItemsListImpl));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62849414>())
+        {
+            spGeneratedItemsListImpl->Reserve(static_cast<UINT32>(selectedItemIndices.size()));
+        }
         spGeneratedItemsList = spGeneratedItemsListImpl;
 
         IFC(get_Items(&spItems));

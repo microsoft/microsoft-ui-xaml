@@ -11,7 +11,12 @@
 
 #pragma once
 
-
+#include <FeatureFlags.h>
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __Window_GUID "b0d8d8be-9fae-4cdc-a457-523fb68b3953"
 
 #pragma region forwarders
@@ -25,6 +30,24 @@ namespace ctl
         IFACEMETHOD(get_AppWindow)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Windowing::IAppWindow** ppValue) override { return This()->get_AppWindow(ppValue); }
         IFACEMETHOD(get_SystemBackdrop)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue) override { return This()->get_SystemBackdrop(ppValue); }
         IFACEMETHOD(put_SystemBackdrop)(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue) override { return This()->put_SystemBackdrop(pValue); }
+    };
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_Height)(_Out_ DOUBLE* pValue) override { return This()->get_Height(pValue); }
+        IFACEMETHOD(put_Height)(DOUBLE value) override { return This()->put_Height(value); }
+        IFACEMETHOD(get_MaxHeight)(_Out_ DOUBLE* pValue) override { return This()->get_MaxHeight(pValue); }
+        IFACEMETHOD(put_MaxHeight)(DOUBLE value) override { return This()->put_MaxHeight(value); }
+        IFACEMETHOD(get_MaxWidth)(_Out_ DOUBLE* pValue) override { return This()->get_MaxWidth(pValue); }
+        IFACEMETHOD(put_MaxWidth)(DOUBLE value) override { return This()->put_MaxWidth(value); }
+        IFACEMETHOD(get_MinHeight)(_Out_ DOUBLE* pValue) override { return This()->get_MinHeight(pValue); }
+        IFACEMETHOD(put_MinHeight)(DOUBLE value) override { return This()->put_MinHeight(value); }
+        IFACEMETHOD(get_MinWidth)(_Out_ DOUBLE* pValue) override { return This()->get_MinWidth(pValue); }
+        IFACEMETHOD(put_MinWidth)(DOUBLE value) override { return This()->put_MinWidth(value); }
+        IFACEMETHOD(get_Width)(_Out_ DOUBLE* pValue) override { return This()->get_Width(pValue); }
+        IFACEMETHOD(put_Width)(DOUBLE value) override { return This()->put_Width(value); }
     };
 }
 #pragma endregion
@@ -41,6 +64,9 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Microsoft::UI::Xaml::IWindowPrivate
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindow2, WindowGenerated >
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi, WindowGenerated >
+#endif
     {
         friend class DirectUI::Window;
 
@@ -51,6 +77,9 @@ namespace DirectUI
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindowPrivate)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindow2)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(WindowGenerated, DirectUI::DependencyObject)
 
     public:
@@ -80,6 +109,16 @@ namespace DirectUI
         IFACEMETHOD(get_DispatcherQueue)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Dispatching::IDispatcherQueue** ppValue) override;
         IFACEMETHOD(get_ExtendsContentIntoTitleBar)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(put_ExtendsContentIntoTitleBar)(BOOLEAN value) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Height(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Height(DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_MaxHeight(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_MaxHeight(DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_MaxWidth(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_MaxWidth(DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_MinHeight(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_MinHeight(DOUBLE value);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_MinWidth(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_MinWidth(DOUBLE value);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_SystemBackdrop(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE put_SystemBackdrop(_In_opt_ ABI::Microsoft::UI::Xaml::Media::ISystemBackdrop* pValue);
         IFACEMETHOD(get_Title)(_Out_ HSTRING* pValue) override;
@@ -87,6 +126,8 @@ namespace DirectUI
         IFACEMETHOD(get_TransparentBackground)(_Out_ BOOLEAN* pValue) override;
         IFACEMETHOD(put_TransparentBackground)(BOOLEAN value) override;
         IFACEMETHOD(get_Visible)(_Out_ BOOLEAN* pValue) override;
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Width(_Out_ DOUBLE* pValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE put_Width(DOUBLE value);
 
         // Events.
         IFACEMETHOD(add_Activated)(_In_ ABI::Windows::Foundation::ITypedEventHandler<IInspectable*, ABI::Microsoft::UI::Xaml::WindowActivatedEventArgs*>* pValue, _Out_ EventRegistrationToken* pToken) = 0;
@@ -148,6 +189,12 @@ namespace DirectUI
         IFACEMETHOD(get_Current)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IWindow** ppValue) override;
 
         // Dependency properties.
+        
+        
+        
+        
+        
+        
         
         
         

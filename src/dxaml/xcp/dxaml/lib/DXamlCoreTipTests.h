@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+#include "WindowsAppSdk-ProductInfo.h"
+#include "FrameworkUdk/Containment.h"
 
 #define wil_details_GetKernelBaseModuleHandle() GetModuleHandleW(L"kernelbase.dll")
 #include <tip/tip.h>
@@ -9,55 +11,75 @@
 #include <tip/tson_string.h>
 #include <memory>
 
+// Stringify helpers for compile-time version string
+#define MUX_VER_WSTR2(x) L#x
+#define MUX_VER_WSTR(x) MUX_VER_WSTR2(x)
+
+// Bug 62779870: [2.0 Servicing] Use compile-time version info in GetMuxVersion to
+// remove the version.dll dependency from the startup hot path.
+#define WINAPPSDK_CHANGEID_62779870 62779870
+
 class TipTestHelper
 {
 public:
 
-    static std::wstring GetMuxVersion() 
+    static std::wstring GetMuxVersion()
     {
-        // Empty wstring for failures
-        std::wstring emptyVersion = L"";
-
-        // Get Microsoft.UI.Xaml.dll version    
-        WCHAR fullModulePath[MAX_PATH];
-
-        // Get the handle to the current Microsoft.UI.Xaml.dll module
-        HMODULE thisModule;
-        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, L"", &thisModule))
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62779870>())
         {
-            return emptyVersion;
+            // Compile-time version for TIP test logging.
+            return MUX_VER_WSTR(WINUI_RELEASE_MAJOR) L"."
+                   MUX_VER_WSTR(WINDOWSAPPSDK_RELEASE_MAJOR) L"."
+                   MUX_VER_WSTR(WINDOWSAPPSDK_RELEASE_MINOR) L"."
+                   MUX_VER_WSTR(WINUI_BUILD_VERSION);
         }
-
-        // Get the full path of the current Microsoft.UI.Xaml.dll module
-        if (!GetModuleFileName(thisModule, fullModulePath, sizeof(fullModulePath)))
+        else
         {
-            return emptyVersion;
-        }
+            // Original runtime version.dll query (pre-fix behavior).
+            // Empty wstring for failures
+            std::wstring emptyVersion = L"";
 
-        WCHAR muxVersion[200];
-        const DWORD fileVersionSize = GetFileVersionInfoSizeW(fullModulePath, nullptr);
+            // Get Microsoft.UI.Xaml.dll version
+            WCHAR fullModulePath[MAX_PATH];
 
-        if (fileVersionSize > 0)
-        {
-            auto dataBlock = std::make_unique<WCHAR[]>(fileVersionSize);
-
-            // Store file-version info in dataBlock
-            if (GetFileVersionInfoW(fullModulePath, 0, fileVersionSize, dataBlock.get()))
+            // Get the handle to the current Microsoft.UI.Xaml.dll module
+            HMODULE thisModule;
+            if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, L"", &thisModule))
             {
-                VS_FIXEDFILEINFO* pFileInfo = nullptr;
-                UINT fileInfoLen = 0;
-                // Store specific version info into pFileInfo.
-                BOOL retVal = VerQueryValueA(dataBlock.get(), "\\", reinterpret_cast<LPVOID*>(&pFileInfo), &fileInfoLen);
+                return emptyVersion;
+            }
 
-                if (retVal != FALSE && pFileInfo != nullptr)
+            // Get the full path of the current Microsoft.UI.Xaml.dll module
+            if (!GetModuleFileName(thisModule, fullModulePath, sizeof(fullModulePath)))
+            {
+                return emptyVersion;
+            }
+
+            WCHAR muxVersion[200];
+            const DWORD fileVersionSize = GetFileVersionInfoSizeW(fullModulePath, nullptr);
+
+            if (fileVersionSize > 0)
+            {
+                auto dataBlock = std::make_unique<WCHAR[]>(fileVersionSize);
+
+                // Store file-version info in dataBlock
+                if (GetFileVersionInfoW(fullModulePath, 0, fileVersionSize, dataBlock.get()))
                 {
-                    swprintf_s(muxVersion, ARRAYSIZE(muxVersion), L"%u.%u.%u.%u", HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS), HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
-                    return muxVersion;
+                    VS_FIXEDFILEINFO* pFileInfo = nullptr;
+                    UINT fileInfoLen = 0;
+                    // Store specific version info into pFileInfo.
+                    BOOL retVal = VerQueryValueA(dataBlock.get(), "\\", reinterpret_cast<LPVOID*>(&pFileInfo), &fileInfoLen);
+
+                    if (retVal != FALSE && pFileInfo != nullptr)
+                    {
+                        swprintf_s(muxVersion, ARRAYSIZE(muxVersion), L"%u.%u.%u.%u", HIWORD(pFileInfo->dwFileVersionMS), LOWORD(pFileInfo->dwFileVersionMS), HIWORD(pFileInfo->dwFileVersionLS), LOWORD(pFileInfo->dwFileVersionLS));
+                        return muxVersion;
+                    }
                 }
             }
+            // Empty wstring on failure
+            return emptyVersion;
         }
-        // Empty wstring on failure
-        return emptyVersion;
     }
 };
 

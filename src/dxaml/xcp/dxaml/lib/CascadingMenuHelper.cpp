@@ -12,6 +12,10 @@
 #include "VisualTreeHelper.h"
 #include "ElementSoundPlayerService_Partial.h"
 #include "MenuFlyoutSubItem.g.h"
+#include <FrameworkUdk/Containment.h>
+
+// Bug 62434373: [2.0 Servicing] Tolerate stale tree during CascadingMenuHelper delay-open/close timer ticks to prevent FAIL_FAST in DXamlCore::CalculateAvailableMonitorRect (RCC: CascadingMenuHelper_DelayOpenTimerTickAfterUnload)
+#define WINAPPSDK_CHANGEID_62434373 62434373
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -454,18 +458,51 @@ _Check_return_ HRESULT CascadingMenuHelper::DelayOpenMenuTimerTickHandler(
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"CMH[0x%p]: DelayOpenMenuTimerTickHandler.", this));
 #endif // CMH_DEBUG
 
-    IFC_RETURN(EnsureCloseExistingSubItems());
-
-    // Open the current sub menu
-    IFC_RETURN(OpenSubMenu());
-
-    if (m_delayOpenMenuTimer)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62434373>())
     {
+        // stop up front so every exit path is uniform.
+        if (m_delayOpenMenuTimer)
+        {
 #ifdef CMH_DEBUG
-        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"CMH[0x%p]: DelayOpenMenuTimerTickHandler - Stopping m_delayOpenMenuTimer.", this));
+            IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"CMH[0x%p]: DelayOpenMenuTimerTickHandler - Stopping m_delayOpenMenuTimer.", this));
+#endif // CMH_DEBUG
+            IFC_RETURN(m_delayOpenMenuTimer->Stop());
+        }
+
+        ctl::ComPtr<Control> ownerAsControl;
+        IFC_RETURN(m_wpOwner.As(&ownerAsControl));
+        if (!ownerAsControl)
+        {
+            return S_OK;
+        }
+        BOOLEAN isLoaded = FALSE;
+        IFC_RETURN(ownerAsControl->get_IsLoaded(&isLoaded));
+        if (!isLoaded)
+        {
+            return S_OK;
+        }
+
+        IFC_RETURN(EnsureCloseExistingSubItems());
+
+        // Open the current sub menu
+        IFC_RETURN(OpenSubMenu());
+    }
+    else
+    {
+        // Original pre-fix behavior: do the work first, then stop the timer.
+        IFC_RETURN(EnsureCloseExistingSubItems());
+
+        // Open the current sub menu
+        IFC_RETURN(OpenSubMenu());
+
+        if (m_delayOpenMenuTimer)
+        {
+#ifdef CMH_DEBUG
+            IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"CMH[0x%p]: DelayOpenMenuTimerTickHandler - Stopping m_delayOpenMenuTimer.", this));
 #endif // CMH_DEBUG
 
-        IFC_RETURN(m_delayOpenMenuTimer->Stop());
+            IFC_RETURN(m_delayOpenMenuTimer->Stop());
+        }
     }
 
     return S_OK;
@@ -510,15 +547,51 @@ _Check_return_ HRESULT CascadingMenuHelper::DelayCloseMenuTimerTickHandler(
     IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"CMH[0x%p]: DelayCloseMenuTimerTickHandler.", this));
 #endif // CMH_DEBUG
 
-    IFC_RETURN(CloseSubMenu());
-
-    if (m_delayCloseMenuTimer)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62434373>())
     {
+        // stop up front so every exit path is uniform.
+        const bool hadTimer = (m_delayCloseMenuTimer != nullptr);
+        if (hadTimer)
+        {
 #ifdef CMH_DEBUG
-        IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"CMH[0x%p]: DelayCloseMenuTimerTickHandler - Stopping m_delayCloseMenuTimer.", this));
+            IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"CMH[0x%p]: DelayCloseMenuTimerTickHandler - Stopping m_delayCloseMenuTimer.", this));
 #endif // CMH_DEBUG
-        IFC_RETURN(m_delayCloseMenuTimer->Stop());
-        IFC_RETURN(UpdateOwnerVisualState());
+            IFC_RETURN(m_delayCloseMenuTimer->Stop());
+        }
+
+        ctl::ComPtr<Control> ownerAsControl;
+        IFC_RETURN(m_wpOwner.As(&ownerAsControl));
+        if (!ownerAsControl)
+        {
+            return S_OK;
+        }
+        BOOLEAN isLoaded = FALSE;
+        IFC_RETURN(ownerAsControl->get_IsLoaded(&isLoaded));
+        if (!isLoaded)
+        {
+            return S_OK;
+        }
+
+        IFC_RETURN(CloseSubMenu());
+
+        if (hadTimer)
+        {
+            IFC_RETURN(UpdateOwnerVisualState());
+        }
+    }
+    else
+    {
+        // Original pre-fix behavior.
+        IFC_RETURN(CloseSubMenu());
+
+        if (m_delayCloseMenuTimer)
+        {
+#ifdef CMH_DEBUG
+            IGNOREHR(gps->DebugTrace(XCP_TRACE_OUTPUT_MSG /*traceType*/, L"CMH[0x%p]: DelayCloseMenuTimerTickHandler - Stopping m_delayCloseMenuTimer.", this));
+#endif // CMH_DEBUG
+            IFC_RETURN(m_delayCloseMenuTimer->Stop());
+            IFC_RETURN(UpdateOwnerVisualState());
+        }
     }
 
     return S_OK;

@@ -7,6 +7,10 @@
 #include "TextCommon.h"
 #include "XamlRoot_Partial.h"
 #include "UIElement.g.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62849414: Reserve space in TrackerCollections before appending multiple items
+#define WINAPPSDK_CHANGEID_62849414 62849414
 
 using namespace DirectUI;
 using namespace DirectUISynonyms;
@@ -622,6 +626,10 @@ VisualTreeHelper::MakeUIElementList(
     ctl::ComPtr<TrackerCollection<xaml::UIElement*>> spUIEC;
 
     IFC(ctl::make(&spUIEC));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62849414>())
+    {
+        spUIEC->Reserve(nCount);
+    }
     for (XUINT32 i = 0; i < nCount; i++)
     {
         ctl::ComPtr<DependencyObject> spDO;
@@ -679,6 +687,10 @@ VisualTreeHelper::GetOpenPopupsStatic(
         if (pPopupRoot)
         {
             IFC(pPopupRoot->GetOpenPopups(&nCountOpenedPopups, &ppOpenedPopups));
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62849414>())
+            {
+                spPopupCollection->Reserve(nCountOpenedPopups);
+            }
 
             for (XINT32 i = 0; i < nCountOpenedPopups; i++)
             {

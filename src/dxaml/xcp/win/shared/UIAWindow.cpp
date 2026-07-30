@@ -16,6 +16,17 @@
 #include <DependencyObject.h>
 #include <RootScale.h>
 #include <xcpwindow.h>
+#include <FrameworkUdk/Containment.h>
+
+// Bug 62434372: [2.0 Servicing] Guard cross-apartment UIA disconnect against nested dispatcher-timer reentrancy to prevent FAIL_FAST in CXcpDispatcher::OnReentrancyProtectedWindowMessage (RCC: UIAWindow_PauseNewDispatchOnDisconnectProviders)
+#define WINAPPSDK_CHANGEID_62434372 62434372
+
+#include <FrameworkUdk/Containment.h>
+
+// Bug 62406051: [2.0 Servicing][WASDK] Reject CUIAWindow::get_BoundingRectangle when the owning island's
+// validator is invalid, to short-circuit re-entrant UIA queries during XAML island teardown
+// (Watson failure 214d70ab-e364-5bdc-3116-2b589f68d0cc).
+#define WINAPPSDK_CHANGEID_62406051 62406051
 
 HRESULT GetCurrentDisplayName(_Out_ BSTR *outString);
 
@@ -342,9 +353,24 @@ void CUIAWindow::Deinit()
 
 void CUIAWindow::UIADisconnectAllProviders()
 {
-    // Disconnecting this window provider from UIAutomationCore to help prevent leaking.
-    // We switched to UiaDisconnectProvider late in Win8 GA and could not take the risk of an unimportant HR crashing the app, hence the IGNOREHR.
-    IGNOREHR(UiaDisconnectProvider(this));
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62434372>())
+    {
+        // UiaDisconnectProvider can trigger COM cross-apartment calls that pump messages.
+        IXcpBrowserHost* pBH = m_pHost ? m_pHost->GetBrowserHost() : nullptr;
+        CCoreServices* pCore = pBH ? pBH->GetContextInterface() : nullptr;
+        PauseNewDispatch deferReentrancy(pCore);
+
+        // Disconnecting this window provider from UIAutomationCore to help prevent leaking.
+        // We switched to UiaDisconnectProvider late in Win8 GA and could not take the risk of an unimportant HR crashing the app, hence the IGNOREHR.
+        IGNOREHR(UiaDisconnectProvider(this));
+    }
+    else
+    {
+        // Original pre-fix behavior: no PauseNewDispatch guard around the cross-apartment UIA disconnect.
+        // Disconnecting this window provider from UIAutomationCore to help prevent leaking.
+        // We switched to UiaDisconnectProvider late in Win8 GA and could not take the risk of an unimportant HR crashing the app, hence the IGNOREHR.
+        IGNOREHR(UiaDisconnectProvider(this));
+    }
 }
 
 // IUnknown implementation.
@@ -518,6 +544,18 @@ HRESULT STDMETHODCALLTYPE CUIAWindow::get_BoundingRectangle(_Out_ UiaRect * pRet
 {
     UIA_TRACE(L"CUIAWindow::get_BoundingRectangle");
     if (pRetVal == nullptr) return E_INVALIDARG;
+
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62406051>())
+    {
+        // Reject the call if the island this provider belongs to has been torn down.
+        if (!m_pUIAWindowValidator || !m_pUIAWindowValidator->IsValid())
+        {
+            return E_FAIL;
+        }
+    }
+    // else: original (pre-fix) behavior -- no validator guard; relies on the
+    // GetScreenOffset null-guard further downstream.
+
     HRESULT hr = E_NOTIMPL;
     XRECTF rect = { 0, 0, 0, 0 };
     if (ShouldFrameworkProvideWindowProperties())

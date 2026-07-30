@@ -48,11 +48,35 @@ namespace ");
             this.Write("\r\n{\r\n");
  if (Model.CodeInfo.IsApplication) 
  {
+     // When DISABLE_XAML_GENERATED_MAIN is defined, the generated entry point helper defers 
+     // construction of the application to the partial method implemented below. We only emit 
+     // that implementation (and therefore the "new App()" call) when the application class 
+     // actually declares a parameterless constructor, so the helper still compiles when a 
+     // developer that defines DISABLE_XAML_GENERATED_MAIN omits it. 
+     bool hasParameterlessCtor = true; 
+     var appClassType = Model.CodeInfo.ClassType; 
+     if (appClassType != null && appClassType.UnderlyingType != null) 
+     { 
+         var ctor = appClassType.UnderlyingType.GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, System.Type.EmptyTypes, null); 
+         hasParameterlessCtor = ctor != null; 
+     } 
             this.Write("    partial class ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
             this.Write(" : ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(Model.CodeInfo.BaseTypeName)));
-            this.Write("\r\n    {\r\n    }\r\n");
+            this.Write("\r\n    {\r\n");
+     if (hasParameterlessCtor) 
+     { 
+            this.Write("#if DISABLE_XAML_GENERATED_MAIN\r\n        ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(GeneratedCodeAttribute));
+            this.Write("\r\n        ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(DebuggerNonUserCodeAttribute));
+            this.Write("\r\n        static partial void _XamlGeneratedCreateApplicationInstance()\r\n        " +
+                    "{\r\n            new ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Model.CodeInfo.ClassName.ShortName));
+            this.Write("();\r\n        }\r\n#endif\r\n");
+     } 
+            this.Write("    }\r\n");
  }
  else 
  {

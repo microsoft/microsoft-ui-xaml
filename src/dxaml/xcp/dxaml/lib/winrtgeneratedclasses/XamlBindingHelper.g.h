@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include "CornerRadius.g.h"
+#include "Thickness.g.h"
 
 
 
@@ -25,9 +27,11 @@ namespace DirectUI
     class __declspec(novtable) XamlBindingHelperFactoryGenerated:
        public ctl::AbstractActivationFactory
         , public ABI::Microsoft::UI::Xaml::Markup::IXamlBindingHelperStatics
+        , public ABI::Microsoft::UI::Xaml::Markup::IXamlBindingHelperStatics2
     {
         BEGIN_INTERFACE_MAP(XamlBindingHelperFactoryGenerated, ctl::AbstractActivationFactory)
             INTERFACE_ENTRY(XamlBindingHelperFactoryGenerated, ABI::Microsoft::UI::Xaml::Markup::IXamlBindingHelperStatics)
+            INTERFACE_ENTRY(XamlBindingHelperFactoryGenerated, ABI::Microsoft::UI::Xaml::Markup::IXamlBindingHelperStatics2)
         END_INTERFACE_MAP(XamlBindingHelperFactoryGenerated, ctl::AbstractActivationFactory)
 
     public:
@@ -65,6 +69,9 @@ namespace DirectUI
         IFACEMETHOD(SetPropertyFromByte)(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, BYTE value) override;
         IFACEMETHOD(SetPropertyFromUri)(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pValue) override;
         IFACEMETHOD(SetPropertyFromObject)(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ IInspectable* pValue) override;
+        IFACEMETHOD(SetPropertyFromThickness)(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Microsoft::UI::Xaml::Thickness value) override;
+        IFACEMETHOD(SetPropertyFromCornerRadius)(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Microsoft::UI::Xaml::CornerRadius value) override;
+        IFACEMETHOD(SetPropertyFromColor)(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Windows::UI::Color value) override;
 
         // Static events.
 
@@ -102,6 +109,9 @@ namespace DirectUI
          _Check_return_ HRESULT SetPropertyFromByteImpl(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, BYTE value); 
          _Check_return_ HRESULT SetPropertyFromUriImpl(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ ABI::Windows::Foundation::IUriRuntimeClass* pValue); 
          _Check_return_ HRESULT SetPropertyFromObjectImpl(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, _In_ IInspectable* pValue); 
+         _Check_return_ HRESULT SetPropertyFromThicknessImpl(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Microsoft::UI::Xaml::Thickness value); 
+         _Check_return_ HRESULT SetPropertyFromCornerRadiusImpl(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Microsoft::UI::Xaml::CornerRadius value); 
+         _Check_return_ HRESULT SetPropertyFromColorImpl(_In_ IInspectable* pDependencyObject, _In_ ABI::Microsoft::UI::Xaml::IDependencyProperty* pPropertyToSet, ABI::Windows::UI::Color value); 
     };
 }
 

@@ -9,6 +9,9 @@ class TitleBarProperties
 public:
     TitleBarProperties();
 
+    void AutoRefreshDragRegions(bool value);
+    bool AutoRefreshDragRegions();
+
     void Content(winrt::UIElement const& value);
     winrt::UIElement Content();
 
@@ -20,6 +23,9 @@ public:
 
     void IsBackButtonVisible(bool value);
     bool IsBackButtonVisible();
+
+    static void SetIsDragRegion(winrt::UIElement const& target, winrt::IReference<bool> const& value);
+    static winrt::IReference<bool> GetIsDragRegion(winrt::UIElement const& target);
 
     void IsPaneToggleButtonVisible(bool value);
     bool IsPaneToggleButtonVisible();
@@ -39,10 +45,12 @@ public:
     void Title(winrt::hstring const& value);
     winrt::hstring Title();
 
+    static winrt::DependencyProperty AutoRefreshDragRegionsProperty() { return s_AutoRefreshDragRegionsProperty; }
     static winrt::DependencyProperty ContentProperty() { return s_ContentProperty; }
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
     static winrt::DependencyProperty IsBackButtonEnabledProperty() { return s_IsBackButtonEnabledProperty; }
     static winrt::DependencyProperty IsBackButtonVisibleProperty() { return s_IsBackButtonVisibleProperty; }
+    static winrt::DependencyProperty IsDragRegionProperty() { return s_IsDragRegionProperty; }
     static winrt::DependencyProperty IsPaneToggleButtonVisibleProperty() { return s_IsPaneToggleButtonVisibleProperty; }
     static winrt::DependencyProperty LeftHeaderProperty() { return s_LeftHeaderProperty; }
     static winrt::DependencyProperty RightHeaderProperty() { return s_RightHeaderProperty; }
@@ -50,10 +58,12 @@ public:
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
     static winrt::DependencyProperty TitleProperty() { return s_TitleProperty; }
 
+    static GlobalDependencyProperty s_AutoRefreshDragRegionsProperty;
     static GlobalDependencyProperty s_ContentProperty;
     static GlobalDependencyProperty s_IconSourceProperty;
     static GlobalDependencyProperty s_IsBackButtonEnabledProperty;
     static GlobalDependencyProperty s_IsBackButtonVisibleProperty;
+    static GlobalDependencyProperty s_IsDragRegionProperty;
     static GlobalDependencyProperty s_IsPaneToggleButtonVisibleProperty;
     static GlobalDependencyProperty s_LeftHeaderProperty;
     static GlobalDependencyProperty s_RightHeaderProperty;
@@ -71,6 +81,10 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnAutoRefreshDragRegionsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnContentPropertyChanged(
         winrt::DependencyObject const& sender,

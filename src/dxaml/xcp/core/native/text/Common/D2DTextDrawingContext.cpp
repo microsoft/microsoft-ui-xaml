@@ -28,6 +28,10 @@
 #include <WindowRenderTarget.h>
 #include <PixelFormat.h>
 #include <platformsdk-uplevel/dwrite_colr_paint_tree.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62725196: [2.0 Servicing] Hold device guard across glyph-run loop in HWBuildGlyphRunTextures
+#define WINAPPSDK_CHANGEID_62725196 62725196
 
 #define DBG_TEXT_REALIZATIONS 0
 
@@ -1816,12 +1820,34 @@ D2DTextDrawingContext::HWBuildGlyphRunTextures(
 
     ID2D1DeviceContext *pSharedD2DDeviceContextNoRef = nullptr;
 
+    // Containment: Bug 62725196 — Widen the CD3D11SharedDeviceGuard scope so the lock is
+    // held across the batching loop that uses the D2D context (Watson #59013517).
+    CD3D11SharedDeviceGuard guard;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62725196>())
     {
+        // FIX: Hold the device guard across the entire glyph-run batching loop.
+        // The shared D2D device context returned by GetD2DDeviceContext is only valid while the
+        // CD3D11SharedDeviceGuard is held. CD3D11DeviceInstance owns the ComPtr in m_d2dDeviceContexts
+        // and clears it under the same lock during device-lost recovery, so releasing the guard before
+        // we are done with the pointer creates a use-after-free window. Hold the guard for the entire
+        // duration of pSharedD2DDeviceContextNoRef use, including the batching loop below that calls
+        // GetGlyphRunTransformAndBounds (which calls SetTransform on the context).
         CD3D11Device *pDeviceNoRef = pHWRenderParams->pRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
         IFC_RETURN(pDeviceNoRef->EnsureD2DResources());
-        CD3D11SharedDeviceGuard guard;
         IFC_RETURN(pDeviceNoRef->TakeLockAndCheckDeviceLost(&guard));
         pSharedD2DDeviceContextNoRef = pDeviceNoRef->GetD2DDeviceContext(&guard);
+
+        // Apply DPI settings to ID2D1DeviceContext in order to benefit from D2D rendering optimizations.
+        m_pTextCore->GetWinTextCore()->ApplyLogicalDpiSettings(pSharedD2DDeviceContextNoRef);
+    }
+    else
+    {
+        // OLD behavior: guard scoped to inner block, released before the batching loop.
+        CD3D11Device *pDeviceNoRef = pHWRenderParams->pRenderTarget->GetGraphicsDeviceManager()->GetGraphicsDevice();
+        IFC_RETURN(pDeviceNoRef->EnsureD2DResources());
+        CD3D11SharedDeviceGuard innerGuard;
+        IFC_RETURN(pDeviceNoRef->TakeLockAndCheckDeviceLost(&innerGuard));
+        pSharedD2DDeviceContextNoRef = pDeviceNoRef->GetD2DDeviceContext(&innerGuard);
 
         // Apply DPI settings to ID2D1DeviceContext in order to benefit from D2D rendering optimizations.
         m_pTextCore->GetWinTextCore()->ApplyLogicalDpiSettings(pSharedD2DDeviceContextNoRef);

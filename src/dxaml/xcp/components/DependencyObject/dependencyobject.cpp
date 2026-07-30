@@ -30,7 +30,12 @@
 #include "CDOAssociativeImpl.h"
 #include "Framework.h"
 #include <FxCallbacks.h>
+#include "FrameworkUdk/Containment.h"
 
+// Bug 62676773: Reduce hashing and iteration overhead in theme walk
+#ifndef WINAPPSDK_CHANGEID_62676773
+#define WINAPPSDK_CHANGEID_62676773 62676773
+#endif
 using namespace DirectUI;
 
 CDependencyObject::CDependencyObject(_In_opt_ CCoreServices* pCore)
@@ -49,6 +54,8 @@ CDependencyObject::CDependencyObject(_In_opt_ CCoreServices* pCore)
     , m_objectStrictness(ObjectStrictness::Agnostic)
     , m_checkForResourceOverrides(false)
     , m_canParserOverwriteBaseUri(true)
+    , m_isUIElement(false)
+    , m_isFrameworkElement(false)
 {}
 
 KnownTypeIndex CDependencyObject::GetTypeIndex() const
@@ -487,11 +494,23 @@ CDependencyObject* CDependencyObject::GetParentFollowPopups()
 {
     CDependencyObject* parent = GetParentInternal();
 
-    if (parent == nullptr || !parent->OfTypeByIndex<KnownTypeIndex::PopupRoot>())
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676773>())
     {
-        return parent;
+        // CPopupRoot is final, so a direct type index check is equivalent to
+        // OfTypeByIndex but avoids the type hierarchy walk.
+        if (parent == nullptr || parent->GetTypeIndex() != KnownTypeIndex::PopupRoot)
+        {
+            return parent;
+        }
     }
     else
+    {
+        if (parent == nullptr || !parent->OfTypeByIndex<KnownTypeIndex::PopupRoot>())
+        {
+            return parent;
+        }
+    }
+
     {
         CXamlIslandRoot* xamlIslandRoot = do_pointer_cast<CXamlIslandRoot>(GetContext()->GetRootForElement(this));
         CPopupRoot* popupRoot = xamlIslandRoot ? xamlIslandRoot->GetPopupRootNoRef() : GetContext()->GetMainPopupRoot();

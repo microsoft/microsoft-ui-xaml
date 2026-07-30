@@ -9,6 +9,13 @@
 #include "UniformGridLayout.h"
 #include "RuntimeProfiler.h"
 #include "VirtualizingLayoutContext.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62147120: [2.0 Servicing] Floor UniformGridLayout::GetItemsPerLine at 1u to prevent integer divide-by-zero (Watson 61810783)
+#define WINAPPSDK_CHANGEID_62147120 62147120
+
+// Bug 62786355: [2.0 Servicing] Guard null LayoutState in UniformGridLayout::OnItemsChangedCore to prevent c0000005 AV fail-fast (Watson 56176172)
+#define WINAPPSDK_CHANGEID_62786355 62786355
 
 #pragma region IUniformGridLayout
 
@@ -101,7 +108,25 @@ void UniformGridLayout::OnItemsChangedCore(
     winrt::IInspectable const& source,
     winrt::NotifyCollectionChangedEventArgs const& args)
 {
-    GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62786355>())
+    {
+        // The LayoutState can be null when a collection change is raised against a
+        // layout that has not been (or is no longer) initialized for this context -
+        // for example a stray CollectionChanged delivered to an unloaded ItemsRepeater
+        // whose RepeaterLayoutContext can no longer resolve its owner. Guard against it
+        // (mirrors StackLayout::OnItemsChangedCore) instead of dereferencing a null state.
+        if (auto layoutState = context.LayoutState())
+        {
+            if (auto gridState = GetAsGridState(layoutState))
+            {
+                gridState->FlowAlgorithm().OnItemsSourceChanged(source, args, context);
+            }
+        }
+    }
+    else
+    {
+        GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
+    }
     // Always invalidate layout to keep the view accurate.
     InvalidateLayout();
 }
@@ -328,9 +353,26 @@ unsigned int UniformGridLayout::GetItemsPerLine(
 
     if (std::isfinite(availableSizeMinor))
     {
-        return std::min(
-            static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorItemSizeWithSpacing(context)),
-            maximumRowsOrColumns);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62147120>())
+        {
+            // Floor the cast result at 1u: when the available minor size is finite but narrower
+            // than one item's minor stride, (availableSizeMinor + MinItemSpacing) /
+            // GetMinorItemSizeWithSpacing evaluates to < 1 and would cast to 0u, producing an
+            // integer divide-by-zero in callers (e.g. GetMajorSize, GetLayoutRectForDataIndex).
+            return std::min(
+                std::max(1u, static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorItemSizeWithSpacing(context))),
+                maximumRowsOrColumns);
+        }
+        else
+        {
+            // Original (pre-fix) behavior: can return 0 when availableSizeMinor is narrower
+            // than one item's minor stride, leading to a divide-by-zero in GetMajorSize /
+            // GetLayoutRectForDataIndex. Preserved here for CBS consumers that have not yet
+            // opted in via KIR (Feature_Velocity_WinAppSdk_62147120).
+            return std::min(
+                static_cast<unsigned int>((availableSizeMinor + MinItemSpacing()) / GetMinorItemSizeWithSpacing(context)),
+                maximumRowsOrColumns);
+        }
     }
 
     return maximumRowsOrColumns;

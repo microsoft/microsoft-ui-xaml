@@ -28,7 +28,7 @@ namespace Microsoft.UI.Xaml
     {
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         Windows.Foundation.Boolean FocusNoActivate(Microsoft.UI.Xaml.FocusState value);
-        
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public void PauseNewDispatchIfAvailable();
 
@@ -49,6 +49,8 @@ namespace Microsoft.UI.Xaml
 
         [AllowCrossThreadAccess]
         public static void PerformProcessWideLeakDetection(int threshold) { }
+
+        public void ResetOptionalChanges() { }
     }
 
     [Platform("Feature_XamlMotionSystemHoldbacks", typeof(Microsoft.UI.Xaml.WinUIContract), 1)]
@@ -289,7 +291,7 @@ namespace Microsoft.UI.Xaml
         protected virtual void OnBringIntoViewRequested(Microsoft.UI.Xaml.BringIntoViewRequestedEventArgs e)
         {
         }
-        
+
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public Windows.Foundation.Boolean Focus(Microsoft.UI.Xaml.FocusState value)
         {

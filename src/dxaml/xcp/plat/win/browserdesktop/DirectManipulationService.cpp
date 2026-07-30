@@ -14,11 +14,18 @@
 #include "DirectManipulationHelper.h"
 #include <d2d1.h>
 #include <RuntimeEnabledFeatures.h>
+#include <MuxActivationFactory.h>
+#include "FrameworkUdk/Containment.h"
 #include <DependencyLocator.h>
 #include <DMDeferredRelease.h>
 #include "RemapVirtualKey.h"
 #include <ComPtr.h>
 #include <ErrorContext.h>
+
+// Bug 62676756: Add activation factory fast paths
+#ifndef WINAPPSDK_CHANGEID_62676756
+#define WINAPPSDK_CHANGEID_62676756 62676756
+#endif
 #include <DXamlServices.h>
 #include "corep.h"
 #include "LoadLibraryAbs.h"
@@ -5248,7 +5255,14 @@ wrl::ComPtr<ixp::IPointerPoint> CDirectManipulationService::GetPointerPointFromP
 {
     if (m_pointerPointStatics == nullptr)
     {
-        IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(STR_LEN_PAIR(RuntimeClass_Microsoft_UI_Input_PointerPoint)).Get(), &m_pointerPointStatics));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62676756>())
+        {
+            IFCFAILFAST(MuxGetActivationFactory(wrl_wrappers::HStringReference(STR_LEN_PAIR(RuntimeClass_Microsoft_UI_Input_PointerPoint)).Get(), &m_pointerPointStatics));
+        }
+        else
+        {
+            IFCFAILFAST(wf::GetActivationFactory(wrl_wrappers::HStringReference(STR_LEN_PAIR(RuntimeClass_Microsoft_UI_Input_PointerPoint)).Get(), &m_pointerPointStatics));
+        }
     }
 
     wrl::ComPtr<ixp::IPointerPoint> pointerPoint;

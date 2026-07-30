@@ -8,6 +8,10 @@
 #include "Window.g.h"
 #include "UIElement.g.h"
 #include "SystemBackdrop.g.h"
+#include "FrameworkUdk/Containment.h"
+
+// Containment for the experimental Window.Width/Height feature (servicing bug 63077767).
+#define WINAPPSDK_CHANGEID_63077767 63077767
 
 // Respond to content changes during markup parsing
 _Check_return_ HRESULT CWindow::OnPropertyChanged(_In_ const PropertyChangedParams& args)
@@ -96,6 +100,57 @@ _Check_return_ HRESULT CWindow::SetValue(_In_ const SetValueParams& args)
             ctl::ComPtr<xaml_media::ISystemBackdrop> isystemBackdrop;
             IFC_RETURN(systemBackdrop.As(&isystemBackdrop));
             IFC_RETURN(window->put_SystemBackdropImpl(isystemBackdrop.Get()));
+        }
+        return S_OK; // EARLY EXIT! We don't want to call super::SetValue() because we don't want to set the DP
+
+    // Window_Width/Height and Window_MinWidth/MinHeight/MaxWidth/MaxHeight are set from markup by the
+    // parser on the core object. Forward each to the matching DXaml peer setter, which validates and
+    // applies it - bad values throw E_INVALIDARG, which surfaces as a markup error.
+    case KnownPropertyIndex::Window_Width:
+    case KnownPropertyIndex::Window_Height:
+    case KnownPropertyIndex::Window_MinWidth:
+    case KnownPropertyIndex::Window_MinHeight:
+    case KnownPropertyIndex::Window_MaxWidth:
+    case KnownPropertyIndex::Window_MaxHeight:
+        {
+            // When the new windowing APIs are contained off, skip the entire new markup path (no
+            // peer creation, no new setters) and let the base implementation set the DP generically,
+            // so a window behaves exactly as it did before the feature.
+            if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63077767>())
+            {
+                break;
+            }
+
+            // Get or create the DirectUI::Window DXaml peer.  'GetPeer' will create
+            // the DXaml peer if one does not already exist.
+            ctl::ComPtr<DirectUI::Window> window;
+            IFC_RETURN(DirectUI::DXamlCore::GetCurrent()->GetPeer<DirectUI::Window>(this, &window));
+            IFCPTR_RETURN(window);
+
+            // These properties are all typed Double, so the parser always delivers a Double value.
+            const double value = args.m_value.AsDouble();
+
+            switch (args.m_pDP->GetIndex())
+            {
+            case KnownPropertyIndex::Window_Width:
+                IFC_RETURN(window->put_Width(value));
+                break;
+            case KnownPropertyIndex::Window_Height:
+                IFC_RETURN(window->put_Height(value));
+                break;
+            case KnownPropertyIndex::Window_MinWidth:
+                IFC_RETURN(window->put_MinWidth(value));
+                break;
+            case KnownPropertyIndex::Window_MinHeight:
+                IFC_RETURN(window->put_MinHeight(value));
+                break;
+            case KnownPropertyIndex::Window_MaxWidth:
+                IFC_RETURN(window->put_MaxWidth(value));
+                break;
+            case KnownPropertyIndex::Window_MaxHeight:
+                IFC_RETURN(window->put_MaxHeight(value));
+                break;
+            }
         }
         return S_OK; // EARLY EXIT! We don't want to call super::SetValue() because we don't want to set the DP
     }

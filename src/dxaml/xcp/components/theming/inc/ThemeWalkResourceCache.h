@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Theme.h"
+#include "ResourceDictionaryKey.h"
 #include <functional>
 
 class CResourceDictionary;
@@ -34,12 +35,12 @@ public:
     // This does not add-ref the return value.
     _Check_return_ CDependencyObject* TryGetCachedResource(
         _In_ CResourceDictionary* targetDictionary,
-        _In_ const xstring_ptr& resourceKey
+        _In_ const ResourceKey& resourceKey
         );
 
     void AddCachedResource(
         _In_ CResourceDictionary* targetDictionary,
-        _In_ const xstring_ptr& resourceKey,
+        _In_ const ResourceKey& resourceKey,
         _In_ CDependencyObject* resource
         );
 
@@ -52,7 +53,7 @@ private:
     // We cache our resource lookups for the duration of a theme walk and clear them
     // when the walk completes.  This is done to alleviate the perf cost of querying
     // the resource dictionary multiple times for the same resource.
-    typedef std::tuple<CResourceDictionary*, Theming::Theme, xstring_ptr, xref::weakref_ptr<CDependencyObject>> CacheItemType;
+    typedef std::tuple<CResourceDictionary*, Theming::Theme, ResourceKeyStorage, xref::weakref_ptr<CDependencyObject>> CacheItemType;
 
     std::vector<CacheItemType> m_resourceCache;
 

@@ -28,6 +28,11 @@
 
 #include "Control_Partial.h"
 
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62542953: [2.0 servicing] Reduce allocations by reserving vector space
+#define WINAPPSDK_CHANGEID_62542953 62542953
+
 using namespace DirectUI;
 using namespace DirectUISynonyms;
 using namespace xaml_hosting;
@@ -1346,6 +1351,15 @@ Cleanup:
     }
     ctl::release_interface(pExpression);
     RRETURN(hr);
+}
+
+_Check_return_ HRESULT
+DependencyObject::SetExpressionCore(_In_ const CDependencyProperty* pProperty, _In_ BindingExpressionBase* pExpression, _In_::BaseValueSource baseValueSource)
+{
+    // Directly set the expression to the target property
+    // This is used by DirectSourceBindingExpression and other lightweight binding expressions
+    IFC_RETURN(SetValueExpression(pProperty, pExpression, baseValueSource));
+    return S_OK;
 }
 
 // This method will wrap the incoming IInspectable into a MOR if needed
@@ -3603,6 +3617,10 @@ _Check_return_ HRESULT DependencyObject::MoveEventSourcesImpl(_In_ DependencyObj
     }
 
     std::vector<KnownEventIndex> events;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62542953>())
+    {
+        events.reserve(m_pEventMap->size());
+    }
 
     for (EventMapping::iterator iterEvent = m_pEventMap->begin();
         iterEvent != m_pEventMap->end();

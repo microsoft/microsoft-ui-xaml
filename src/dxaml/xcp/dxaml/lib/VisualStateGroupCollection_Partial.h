@@ -17,6 +17,7 @@ namespace DirectUI
         std::shared_ptr<std::vector<std::wstring>> GetVisualStateNamesForGroup(_In_ unsigned int groupIdx) override;
         bool DoesVisualStateGroupHaveTransitions(_In_ unsigned int groupIdx) const override;
         Microsoft::WRL::ComPtr<IInspectable> CreateStoryboard(_In_ unsigned int groupIdx, _In_ unsigned int storyboardIdx) override;
+        virtual bool ShouldRuntimeDataBailOut() const override;
 #pragma endregion
 
         CVisualStateGroupCollection* GetHandle() const;

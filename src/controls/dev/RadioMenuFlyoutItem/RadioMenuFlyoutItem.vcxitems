@@ -25,6 +25,10 @@
       <Type>ThemeResources</Type>
       <IsPublic>false</IsPublic>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_themeresources_perf2026.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <IsPublic>false</IsPublic>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem.idl" />

@@ -15,6 +15,11 @@
 #include "CVisualStateManager2.h"
 #include <Theme.h>
 #include "XamlTelemetry.h"
+#include <OptionalChangeState.h>
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62847209: [2.0 servicing] Avoid style creation in CreationComplete unless the element is live
+#define WINAPPSDK_CHANGEID_62847209 62847209
 
 //  Class:  CControl
 //
@@ -1013,11 +1018,29 @@ CControl::CreationComplete()
     // Call base implementation. This will apply any explicit styles.
     IFC_RETURN(CFrameworkElement::CreationComplete());
 
-    // Only do this if it is a Control that has been subclassed in user code.
-    // ASSERT(!m_fIsBuiltInStyleApplied);
-    if (!m_fIsBuiltInStyleApplied && SupportsBuiltInStyles())
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62847209>())
     {
-        IFC_RETURN(ApplyBuiltInStyle());
+        // Apply style if we're active. If we're not active, we'll apply the style when we become active in EnterImpl.
+        // Compat mode: If perf opt-in is not enabled, apply the style even if we're not active.
+        const bool alwaysApplyStyle = !OptionalChangeState::IsOptimizeApplyStylesEnabled();
+        if (IsActive() || alwaysApplyStyle)
+        {
+            // Only do this if it is a Control that has been subclassed in user code.
+            // ASSERT(!m_fIsBuiltInStyleApplied);
+            if (!m_fIsBuiltInStyleApplied && SupportsBuiltInStyles())
+            {
+                IFC_RETURN(ApplyBuiltInStyle());
+            }
+        }
+    }
+    else
+    {
+        // Only do this if it is a Control that has been subclassed in user code.
+        // ASSERT(!m_fIsBuiltInStyleApplied);
+        if (!m_fIsBuiltInStyleApplied && SupportsBuiltInStyles())
+        {
+            IFC_RETURN(ApplyBuiltInStyle());
+        }
     }
 
     return S_OK;

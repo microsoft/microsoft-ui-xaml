@@ -13,10 +13,12 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "TitleBar.g.cpp"
 
+GlobalDependencyProperty TitleBarProperties::s_AutoRefreshDragRegionsProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_IconSourceProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_IsBackButtonEnabledProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_IsBackButtonVisibleProperty{ nullptr };
+GlobalDependencyProperty TitleBarProperties::s_IsDragRegionProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_IsPaneToggleButtonVisibleProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_LeftHeaderProperty{ nullptr };
 GlobalDependencyProperty TitleBarProperties::s_RightHeaderProperty{ nullptr };
@@ -33,6 +35,17 @@ TitleBarProperties::TitleBarProperties()
 
 void TitleBarProperties::EnsureProperties()
 {
+    if (!s_AutoRefreshDragRegionsProperty)
+    {
+        s_AutoRefreshDragRegionsProperty =
+            InitializeDependencyProperty(
+                L"AutoRefreshDragRegions",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TitleBar>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                winrt::PropertyChangedCallback(&OnAutoRefreshDragRegionsPropertyChanged));
+    }
     if (!s_ContentProperty)
     {
         s_ContentProperty =
@@ -76,6 +89,17 @@ void TitleBarProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnIsBackButtonVisiblePropertyChanged));
+    }
+    if (!s_IsDragRegionProperty)
+    {
+        s_IsDragRegionProperty =
+            InitializeDependencyProperty(
+                L"IsDragRegion",
+                winrt::name_of<winrt::IReference<bool>>(),
+                winrt::name_of<winrt::TitleBar>(),
+                true /* isAttached */,
+                ValueHelper<winrt::IReference<bool>>::BoxedDefaultValue(),
+                &TitleBar::OnIsDragRegionPropertyChanged);
     }
     if (!s_IsPaneToggleButtonVisibleProperty)
     {
@@ -147,16 +171,26 @@ void TitleBarProperties::EnsureProperties()
 
 void TitleBarProperties::ClearProperties()
 {
+    s_AutoRefreshDragRegionsProperty = nullptr;
     s_ContentProperty = nullptr;
     s_IconSourceProperty = nullptr;
     s_IsBackButtonEnabledProperty = nullptr;
     s_IsBackButtonVisibleProperty = nullptr;
+    s_IsDragRegionProperty = nullptr;
     s_IsPaneToggleButtonVisibleProperty = nullptr;
     s_LeftHeaderProperty = nullptr;
     s_RightHeaderProperty = nullptr;
     s_SubtitleProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
     s_TitleProperty = nullptr;
+}
+
+void TitleBarProperties::OnAutoRefreshDragRegionsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TitleBar>();
+    winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
 }
 
 void TitleBarProperties::OnContentPropertyChanged(
@@ -239,6 +273,19 @@ void TitleBarProperties::OnTitlePropertyChanged(
     winrt::get_self<TitleBar>(owner)->OnPropertyChanged(args);
 }
 
+void TitleBarProperties::AutoRefreshDragRegions(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TitleBar*>(this)->SetValue(s_AutoRefreshDragRegionsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TitleBarProperties::AutoRefreshDragRegions()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_AutoRefreshDragRegionsProperty));
+}
+
 void TitleBarProperties::Content(winrt::UIElement const& value)
 {
     [[gsl::suppress(con)]]
@@ -289,6 +336,17 @@ void TitleBarProperties::IsBackButtonVisible(bool value)
 bool TitleBarProperties::IsBackButtonVisible()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TitleBar*>(this)->GetValue(s_IsBackButtonVisibleProperty));
+}
+
+
+void TitleBarProperties::SetIsDragRegion(winrt::UIElement const& target, winrt::IReference<bool> const& value)
+{
+    target.SetValue(s_IsDragRegionProperty, ValueHelper<winrt::IReference<bool>>::BoxValueIfNecessary(value));
+}
+
+winrt::IReference<bool> TitleBarProperties::GetIsDragRegion(winrt::UIElement const& target)
+{
+    return ValueHelper<winrt::IReference<bool>>::CastOrUnbox(target.GetValue(s_IsDragRegionProperty));
 }
 
 void TitleBarProperties::IsPaneToggleButtonVisible(bool value)

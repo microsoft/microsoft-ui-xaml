@@ -14,6 +14,11 @@
 #include <DXamlServices.h>
 #include "diagnosticsInterop\inc\ResourceGraph.h"
 #include "unsealer.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62789076: [2.0 servicing] Remove wasted work while applying styles multiple times to the same element
+#define WINAPPSDK_CHANGEID_62789076 62789076
+
 using namespace RuntimeFeatureBehavior;
 
 //------------------------------------------------------------------------
@@ -560,17 +565,39 @@ CStyle::SetCustomWriterRuntimeData(_In_ std::shared_ptr<CustomWriterRuntimeData>
 
     ASSERT(m_targetTypeIndex != KnownTypeIndex::UnknownType);
 
-    // Create optimized style from runtime data.
-    std::shared_ptr<StyleCustomRuntimeData> styleData = std::static_pointer_cast<StyleCustomRuntimeData>(data);
-    IFC_RETURN(OptimizedStyle::Create(this, std::move(styleData), context, &m_optimizedStyle));
-
-    // For styles, cache the runtime context. This is needed for IVisualTreeService3.ResolveResource which is used during
-    // Edit & Continue for resolving resources at runtime. Currently, Style's (nor the OptimizedStyle) cache the runtime data
-    // so we have to explicitly do this.
-    if (DirectUI::DXamlServices::ShouldStoreSourceInformation())
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62789076>())
     {
-        const auto resourceGraph = Diagnostics::GetResourceGraph();
-        resourceGraph->CacheRuntimeContext(this, std::move(context));
+        // Convert to shared_ptr so the context can be shared between OptimizedStyle
+        // (for deferred value materialization) and diagnostics (for Edit & Continue).
+        auto sharedContext = std::shared_ptr<CustomWriterRuntimeContext>(std::move(context));
+
+        // Create optimized style from runtime data.
+        std::shared_ptr<StyleCustomRuntimeData> styleData = std::static_pointer_cast<StyleCustomRuntimeData>(data);
+        IFC_RETURN(OptimizedStyle::CreateWithDeferredSetters(this, std::move(styleData), sharedContext, &m_optimizedStyle));
+
+        // For styles, cache the runtime context. This is needed for IVisualTreeService3.ResolveResource which is used during
+        // Edit & Continue for resolving resources at runtime. Currently, Style's (nor the OptimizedStyle) cache the runtime data
+        // so we have to explicitly do this.
+        if (DirectUI::DXamlServices::ShouldStoreSourceInformation())
+        {
+            const auto resourceGraph = Diagnostics::GetResourceGraph();
+            resourceGraph->CacheRuntimeContext(this, std::move(sharedContext));
+        }
+    }
+    else
+    {
+        // Create optimized style from runtime data.
+        std::shared_ptr<StyleCustomRuntimeData> styleData = std::static_pointer_cast<StyleCustomRuntimeData>(data);
+        IFC_RETURN(OptimizedStyle::Create(this, std::move(styleData), context, &m_optimizedStyle));
+
+        // For styles, cache the runtime context. This is needed for IVisualTreeService3.ResolveResource which is used during
+        // Edit & Continue for resolving resources at runtime. Currently, Style's (nor the OptimizedStyle) cache the runtime data
+        // so we have to explicitly do this.
+        if (DirectUI::DXamlServices::ShouldStoreSourceInformation())
+        {
+            const auto resourceGraph = Diagnostics::GetResourceGraph();
+            resourceGraph->CacheRuntimeContext(this, std::move(context));
+        }
     }
 
     return S_OK;

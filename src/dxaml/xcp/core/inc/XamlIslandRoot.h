@@ -30,6 +30,10 @@ public:
     ~CXamlIslandRoot() override;
     void Dispose();
 
+    // Disconnects all UIA providers owned by this island and deinitializes the
+    // UIA window, then clears the UIA window pointer. Safe to call multiple times.
+    void DisconnectUIA();
+
     DECLARE_CREATE(CXamlIslandRoot);
 
     //

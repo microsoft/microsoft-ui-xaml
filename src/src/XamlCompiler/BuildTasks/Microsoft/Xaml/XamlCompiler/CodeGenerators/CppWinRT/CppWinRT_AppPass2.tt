@@ -11,9 +11,13 @@
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
 #include <windows.h>
+#include <type_traits>
 <#  foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { #>
 #include "<#=includeFile#>"
 <#  }#>
+<#  if (ProjectInfo.EnabledXamlOptionalChanges.Count > 0 || ProjectInfo.DisabledXamlOptionalChanges.Count > 0) { #>
+#include "winrt/<#=KnownNamespaces.XamlSettings#>.h"
+<#  } #>
 
 #if defined _DEBUG && !defined DISABLE_XAML_GENERATED_BREAK_ON_UNHANDLED_EXCEPTION
 extern "C" __declspec(dllimport) int __stdcall IsDebuggerPresent();
@@ -58,18 +62,36 @@ extern "C"
 
 #ifndef DISABLE_XAML_GENERATED_MAIN
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
+#else
+int __stdcall wXamlGeneratedMain()
+#endif
 {
 <#  if (ProjectInfo.IsWin32App) { #>
     winrt::init_apartment(winrt::apartment_type::single_threaded);
 <#  } else { #>
     winrt::init_apartment();
 <#  }#>
+<#  foreach (var change in ProjectInfo.EnabledXamlOptionalChanges) { #>
+    <#=Projection(KnownNamespaces.XamlSettings)#>::XamlOptionalChanges::EnableChange(<#= int.TryParse(change, out _) ? $"static_cast<{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId>({change})" : $"{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId::{change}" #>);
+<#  } #>
+<#  foreach (var change in ProjectInfo.DisabledXamlOptionalChanges) { #>
+    <#=Projection(KnownNamespaces.XamlSettings)#>::XamlOptionalChanges::DisableChange(<#= int.TryParse(change, out _) ? $"static_cast<{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId>({change})" : $"{Projection(KnownNamespaces.XamlSettings)}::XamlChangeId::{change}" #>);
+<#  } #>
     <#=Projection(KnownNamespaces.Xaml)#>::Application::Start(
         [](auto&&)
         {
+#ifdef DISABLE_XAML_GENERATED_MAIN
+            // The App is constructed here only when it is default-constructible. This lets an
+            // application that defines DISABLE_XAML_GENERATED_MAIN supply its own entry point and
+            // omit a parameterless App constructor without breaking this generated helper.
+            if constexpr (std::is_default_constructible_v<<#=Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")#>>)
+            {
+                ::winrt::make<<#=Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")#>>();
+            }
+#else
             ::winrt::make<<#=Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")#>>();
+#endif
         });
 
     return 0;
 }
-#endif

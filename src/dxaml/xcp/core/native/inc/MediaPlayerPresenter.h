@@ -173,6 +173,9 @@ private:
 
     _Check_return_ HRESULT HandleError(HRESULT hr);
 
+    // Routes device-lost HRESULTs through core recovery; passes others through unchanged.
+    _Check_return_ HRESULT HandleDeviceLostIfNeeded(HRESULT hr);
+
     _Check_return_ HRESULT RegisterForUpdate();
     _Check_return_ HRESULT UnregisterForUpdate();
 

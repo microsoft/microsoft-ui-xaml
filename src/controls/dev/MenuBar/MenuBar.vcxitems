@@ -40,6 +40,15 @@
     <Page Include="$(MSBuildThisFileDirectory)MenuBar_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuBar.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuBarItem.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MenuBar_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)MenuBar.idl" />

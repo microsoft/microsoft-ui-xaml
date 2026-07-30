@@ -26,9 +26,13 @@
 #include "ApplicationBarService.g.h"
 #include "XamlRoot.g.h"
 #include "ElementSoundPlayerService_Partial.h"
+#include "FrameworkUdk/Containment.h"
 
 using namespace DirectUI;
 using namespace std::placeholders;
+
+// Bug 62759377: [2.0 servicing] CommandBar[Flyout] should not hydrate all visual states
+#define WINAPPSDK_CHANGEID_62759377 62759377
 
 // Index table as follows: [ClosedDisplayMode][DoesOpenUp][IsOpen]
 static const wchar_t* g_displayModeVisualStateTable[3][2][2] =
@@ -1345,30 +1349,36 @@ AppBar::UpdateTemplateSettings()
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_HiddenVerticalDelta(-contentHeight));
     IFC_RETURN(templateSettings.Cast<AppBarTemplateSettings>()->put_NegativeHiddenVerticalDelta(contentHeight));
 
-    if (m_hasUpdatedTemplateSettings)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62759377>())
     {
-        // We wait until after the first call to update template settings to query DisplayModesStates VSG
-        // to to prevent a performance hit on app startup (see VSO 2362425)
-        IFC_RETURN(TryQueryDisplayModesStatesGroup());
-
-        // Force animations that reference our template settings in the current visual state
-        // to update their bindings.
-        if (m_tpDisplayModesStateGroup)
+    }
+    else
+    {
+        if (m_hasUpdatedTemplateSettings)
         {
-            ctl::ComPtr<xaml::IVisualState> currentState;
-            IFC_RETURN(m_tpDisplayModesStateGroup->get_CurrentState(&currentState));
-            if (currentState)
+            // We wait until after the first call to update template settings to query DisplayModesStates VSG
+            // to to prevent a performance hit on app startup (see VSO 2362425)
+            IFC_RETURN(TryQueryDisplayModesStatesGroup());
+
+            // Force animations that reference our template settings in the current visual state
+            // to update their bindings.
+            if (m_tpDisplayModesStateGroup)
             {
-                ctl::ComPtr<xaml_animation::IStoryboard> storyboard;
-                IFC_RETURN(currentState->get_Storyboard(&storyboard));
-                if (storyboard)
+                ctl::ComPtr<xaml::IVisualState> currentState;
+                IFC_RETURN(m_tpDisplayModesStateGroup->get_CurrentState(&currentState));
+                if (currentState)
                 {
-                    IFC_RETURN(storyboard->SkipToFill());
+                    ctl::ComPtr<xaml_animation::IStoryboard> storyboard;
+                    IFC_RETURN(currentState->get_Storyboard(&storyboard));
+                    if (storyboard)
+                    {
+                        IFC_RETURN(storyboard->SkipToFill());
+                    }
                 }
             }
         }
+        m_hasUpdatedTemplateSettings = true;
     }
-    m_hasUpdatedTemplateSettings = true;
 
     return S_OK;
 }
@@ -1394,7 +1404,7 @@ AppBar::GetShouldOpenUp(_Out_ bool* shouldOpenUp)
 }
 
 // Virtual method is overwritten by CommandBar sub-class.
-_Check_return_ HRESULT 
+_Check_return_ HRESULT
 AppBar::HasRightLabelDynamicPrimaryCommand(_Out_ bool* hasRightLabelDynamicPrimaryCommand)
 {
     *hasRightLabelDynamicPrimaryCommand = false;

@@ -3,6 +3,7 @@ LIBRARY
 EXPORTS
 DllMain PRIVATE
 DllGetActivationFactory PRIVATE
+DllTryGetActivationFactory PRIVATE
 DllCanUnloadNow PRIVATE
 SendTelemetryOnSuspend PRIVATE
 DeinitializeMUXC PRIVATE

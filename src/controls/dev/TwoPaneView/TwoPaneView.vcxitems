@@ -35,6 +35,9 @@
     <Page Include="$(MSBuildThisFileDirectory)TwoPaneView.xaml">
       <Type>DefaultStyle</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)TwoPaneView.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)DisplayRegionHelperTestApi.idl" />

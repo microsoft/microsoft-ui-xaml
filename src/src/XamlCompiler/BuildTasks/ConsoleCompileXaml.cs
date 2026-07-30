@@ -74,7 +74,6 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
                 if (result)
                 {
                     core.SaveStateBeforeFinishing();
-                    SaveResults(core, parsedOptions.JsonOutputFile);
                 }
             }
             catch (Exception e)
@@ -82,6 +81,29 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Executable
                 result = false;
                 core.LogError_XamlInternalError(e, null);
             }
+            finally
+            {
+                // Always write results (including error log entries) so that
+                // OutputDeserializer can report proper diagnostics to MSBuild.
+                try
+                {
+                    SaveResults(core, parsedOptions.JsonOutputFile);
+                }
+                catch (Exception saveEx)
+                {
+                    // If we can't write output.json, fall back to writing errors
+                    // to stderr so they're still visible in the build output.
+                    Console.Error.WriteLine($"XamlCompiler: Failed to write output file: {saveEx.Message}");
+                    foreach (var entry in Log.Entries)
+                    {
+                        if (entry.Type == MSBuildLogEntry.EntryType.Error)
+                        {
+                            Console.Error.WriteLine($"{entry.File}({entry.LineNumber},{entry.ColumnNumber}): error {entry.ErrorCode}: {entry.Message}");
+                        }
+                    }
+                }
+            }
+
             return result ? 0 : 1;
         }
 

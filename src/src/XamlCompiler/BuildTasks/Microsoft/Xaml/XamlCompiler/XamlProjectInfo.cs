@@ -120,5 +120,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public bool UsingCSWinRT { get; set; }
         
         public string PrecompiledHeaderFile { get; set; }
+
+        public IList<string> EnabledXamlOptionalChanges { get; set; }
+        public IList<string> DisabledXamlOptionalChanges { get; set; }
     }
 }

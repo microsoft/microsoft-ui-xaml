@@ -1,0 +1,124 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<ResourceDictionary xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:Microsoft.UI.Xaml.Controls" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <Style TargetType="controls:ItemContainer">
+    <Setter Property="Background" Value="{ThemeResource ItemContainerBackground}" />
+    <Setter Property="UseSystemFocusVisuals" Value="True" />
+    <Setter Property="FocusVisualPrimaryThickness" Value="2" />
+    <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:ItemContainer">
+          <Grid x:Name="PART_ContainerRoot" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+            <VisualStateManager.VisualStateGroups>
+              <VisualStateGroup x:Name="CombinedStates">
+                <VisualState x:Name="UnselectedNormal" />
+                <VisualState x:Name="UnselectedPointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="PART_CommonVisual.Fill" Value="{ThemeResource ItemContainerPointerOverBackground}" />
+                    <Setter Target="PART_CommonVisual.Stroke" Value="{ThemeResource ItemContainerPointerOverBorderBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="UnselectedPressed">
+                  <VisualState.Setters>
+                    <Setter Target="PART_CommonVisual.Fill" Value="{ThemeResource ItemContainerPressedBackground}" />
+                    <Setter Target="PART_CommonVisual.Stroke" Value="{ThemeResource ItemContainerPressedBorderBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SelectedNormal">
+                  <VisualState.Setters>
+                    <Setter Target="PART_SelectionVisual.BorderBrush" Value="{ThemeResource ItemContainerSelectionVisualBackground}" />
+                    <Setter Target="PART_CommonVisual.Fill" Value="{ThemeResource ItemContainerSelectedBackground}" />
+                    <Setter Target="PART_CommonVisual.Stroke" Value="{ThemeResource ItemContainerSelectedInnerBorderBrush}" />
+                    <Setter Target="PART_CommonVisual.Margin" Value="{ThemeResource ItemContainerSelectedInnerMargin}" />
+                  </VisualState.Setters>
+                  <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="PART_SelectionVisual" Storyboard.TargetProperty="Opacity" Duration="0" To="1" />
+                  </Storyboard>
+                </VisualState>
+                <VisualState x:Name="SelectedPointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="PART_CommonVisual.Fill" Value="{ThemeResource ItemContainerSelectedPointerOverBackground}" />
+                    <Setter Target="PART_SelectionVisual.BorderBrush" Value="{ThemeResource ItemContainerSelectionVisualPointerOverBackground}" />
+                    <Setter Target="PART_CommonVisual.Stroke" Value="{ThemeResource ItemContainerSelectedInnerBorderBrush}" />
+                    <Setter Target="PART_CommonVisual.Margin" Value="{ThemeResource ItemContainerSelectedInnerMargin}" />
+                  </VisualState.Setters>
+                  <Storyboard>
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionVisual" Storyboard.TargetProperty="Opacity">
+                      <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="1" KeySpline="0,0,0,1" />
+                    </DoubleAnimationUsingKeyFrames>
+                  </Storyboard>
+                </VisualState>
+                <VisualState x:Name="SelectedPressed">
+                  <VisualState.Setters>
+                    <Setter Target="PART_CommonVisual.Fill" Value="{ThemeResource ItemContainerSelectedPressedBackground}" />
+                    <Setter Target="PART_SelectionVisual.BorderBrush" Value="{ThemeResource ItemContainerSelectionVisualPressedBackground}" />
+                    <Setter Target="PART_CommonVisual.Stroke" Value="{ThemeResource ItemContainerSelectedInnerBorderBrush}" />
+                    <Setter Target="PART_CommonVisual.Margin" Value="{ThemeResource ItemContainerSelectedInnerMargin}" />
+                  </VisualState.Setters>
+                  <Storyboard>
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionVisual" Storyboard.TargetProperty="Opacity">
+                      <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="1" KeySpline="0,0,0,1" />
+                    </DoubleAnimationUsingKeyFrames>
+                  </Storyboard>
+                </VisualState>
+              </VisualStateGroup>
+              <VisualStateGroup x:Name="MultiSelectStates">
+                <VisualState x:Name="Single" />
+                <VisualState x:Name="Multiple">
+                  <Storyboard>
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_SelectionCheckbox" Storyboard.TargetProperty="Opacity">
+                      <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="1" KeySpline="0,0,0,1" />
+                    </DoubleAnimationUsingKeyFrames>
+                  </Storyboard>
+                </VisualState>
+              </VisualStateGroup>
+              <VisualStateGroup x:Name="DisabledStates">
+                <VisualState x:Name="Enabled" />
+                <VisualState x:Name="Disabled">
+                  <VisualState.Setters>
+                    <Setter Target="PART_SelectionVisual.Visibility" Value="Collapsed" />
+                  </VisualState.Setters>
+                  <Storyboard>
+                    <DoubleAnimationUsingKeyFrames Storyboard.TargetName="PART_ContainerRoot" Storyboard.TargetProperty="Opacity">
+                      <SplineDoubleKeyFrame KeyTime="{StaticResource ControlFastAnimationDuration}" Value="{StaticResource ItemContainerDisabledOpacity}" KeySpline="0,0,0,1" />
+                    </DoubleAnimationUsingKeyFrames>
+                  </Storyboard>
+                </VisualState>
+              </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            <!--Placeholder for child -->
+            <Grid
+                x:Name="PART_SelectionVisual"
+                x:DeferLoadStrategy="Lazy"
+                BorderBrush="Transparent"
+                BorderThickness="3"
+                Background="Transparent"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="False"
+                Opacity="0" />
+            <Rectangle
+                x:Name="PART_CommonVisual"
+                Stroke="{ThemeResource ItemContainerBorderBrush}"
+                StrokeThickness="{ThemeResource ItemContainerSelectedInnerThickness}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsHitTestVisible="False"
+                RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+            <CheckBox
+                x:Name="PART_SelectionCheckbox"
+                Style="{StaticResource ItemContainerSelectionCheckboxStyle}"
+                x:DeferLoadStrategy="Lazy"
+                Opacity="0">
+                 <CheckBox.Resources>
+                     <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="ControlOnImageFillColorDefaultBrush" />
+                 </CheckBox.Resources>
+             </CheckBox>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

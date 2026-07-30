@@ -16,6 +16,7 @@
 #include <SystemThemingInterop.h>
 #include <JupiterTextHelper.h>
 #include <XcpAllocation.h>
+#include "XamlOptionalChanges.g.h"
 #include <Storyboard.h>
 #include "DefaultStyles.h"
 #include <FocusMgr.h>
@@ -67,6 +68,7 @@
 #include "HWWalk.h"
 #include "LoadLibraryAbs.h"
 #include "xcpwindow.h"
+#include "OptionalChangeState.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -1187,6 +1189,11 @@ IFACEMETHODIMP_(void) DxamlCoreTestHooks::SetGenericXamlFilePathForMUX(_In_ HSTR
     DXamlCore::GetCurrent()->SetGenericXamlFilePathForMUX(XSTRING_PTR_EPHEMERAL_FROM_HSTRING(filePath));
 }
 
+IFACEMETHODIMP_(void) DxamlCoreTestHooks::ReloadThemeResourcesIfNeeded()
+{
+    DXamlCore::GetCurrent()->ReloadThemeResourcesIfNeeded();
+}
+
 IFACEMETHODIMP DxamlCoreTestHooks::SetHdrOutputOverride(bool value)
 {
     m_pDXamlCoreNoRef->SetHdrOutputOverride(value);
@@ -2035,6 +2042,17 @@ IFACEMETHODIMP DxamlCoreTestHooks::GetElementsRenderedCount(_Out_ int* elementsR
     CCoreServices* coreServices = static_cast<CCoreServices*>(dxamlCore->GetHandle());
     HWWalk* hwWalk = coreServices->GetHWWalk();
     *elementsRendered = hwWalk->GetElementsRenderedCount();
+    return S_OK;
+}
+
+IFACEMETHODIMP_(void) DxamlCoreTestHooks::ResetOptionalChanges()
+{
+    IFCFAILFAST(ResetOptionalChangesImpl());
+}
+
+_Check_return_ HRESULT DxamlCoreTestHooks::ResetOptionalChangesImpl()
+{
+    DirectUI::XamlOptionalChanges::ResetInternal();
     return S_OK;
 }
 

@@ -31,11 +31,13 @@ class CStyle;
 
 CustomWriterRuntimeObjectCreator::CustomWriterRuntimeObjectCreator(
     NameScopeRegistrationMode mode,
-    _In_ const CustomWriterRuntimeContext* context)
+    _In_ const CustomWriterRuntimeContext* context,
+    ContextReference contextReference)
     : m_context(context)
     , m_pendingFirstNode(false)
     , m_mode(mode)
     , m_restoreIndex(0)
+    , m_contextReference(contextReference)
 {}
 
 _Check_return_ HRESULT
@@ -331,11 +333,23 @@ CustomWriterRuntimeObjectCreator::XamlQOFromCDOHelper(
     _Out_ std::shared_ptr<XamlQualifiedObject>* pQO)
 {
     auto qoValue = std::make_shared<XamlQualifiedObject>();
-    CValue cValue;
 
-    cValue.SetObjectAddRef(cdo);
-
-    IFC_RETURN(qoValue->SetValue(cValue));
+    if (m_contextReference == ContextReference::Strong)
+    {
+        CValue cValue;
+        cValue.SetObjectAddRef(cdo);
+        IFC_RETURN(qoValue->SetValue(cValue));
+    }
+    else
+    {
+        // Wrap the object without taking a strong reference. This is used for the EventRoot: the
+        // ObjectWriter (and the CustomWriterRuntimeObjectCreator that owns it) can be cached for the
+        // lifetime of a deferred OptimizedStyle. Taking a strong reference to the root instance here
+        // would form a reference cycle (root instance -> CStyle -> OptimizedStyle -> object creator ->
+        // ObjectWriter -> EventRoot -> root instance), leaking the entire markup root. This matches the
+        // weak EventRoot behavior used elsewhere (e.g. Template, VisualState, TemplateContent).
+        qoValue->GetValue().WrapObjectNoRef(cdo);
+    }
 
     // Because this QO is only a temporary object for the purposes of taking a weak-ref and
     // handing it to the various parser APIs (which expect a XamlQualifiedObject), we don't

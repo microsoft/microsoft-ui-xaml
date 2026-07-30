@@ -36,6 +36,13 @@
       <UseVisualStyle>Latest</UseVisualStyle>
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressBar.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressBar_themeresources.xaml">
+      <UseVisualStyle>Latest</UseVisualStyle>
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressBar.idl" />

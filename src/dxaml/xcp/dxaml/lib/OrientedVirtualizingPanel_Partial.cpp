@@ -24,6 +24,10 @@
 #include "ItemContainerGenerator.g.h"
 #include <math.h>
 #include "VisualTreeHelper.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62849414: Reserve space in TrackerCollections before appending multiple items
+#define WINAPPSDK_CHANGEID_62849414 62849414
 
 //#define OVP_DEBUG
 
@@ -2186,6 +2190,10 @@ _Check_return_
         IFC(ctl::make<TrackerCollection<xaml::UIElement*>>(&spRealizedChildren));
 
         IFC(spChildren->get_Size(&nCount));
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62849414>())
+        {
+            spRealizedChildren->Reserve(nCount);
+        }
         for (UINT i = 0; i < nCount; i++)
         {
             ctl::ComPtr<xaml::IUIElement> spChild;

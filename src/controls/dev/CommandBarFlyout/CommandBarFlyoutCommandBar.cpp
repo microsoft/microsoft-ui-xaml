@@ -10,6 +10,10 @@
 #include "TypeLogging.h"
 #include "Vector.h"
 #include "SharedHelpers.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62776273: [2.0 servicing] CommandBarFlyout adding items is slow
+#define WINAPPSDK_CHANGEID_62776273 62776273
 
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 {
@@ -125,11 +129,28 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     // in fact, if we tried to remove these handlers in our destructor,
     // these properties will have already been cleared, and we'll nullref.
     PrimaryCommands().VectorChanged({
-        [this](auto const&, auto const&)
+        [this](winrt::IObservableVector<winrt::ICommandBarElement> const& sender, winrt::IVectorChangedEventArgs const& args)
         {
             COMMANDBARFLYOUT_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"PrimaryCommands VectorChanged");
 
-            EnsureLocalizedControlTypes();
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62776273>())
+            {
+                if (args.CollectionChange() == winrt::CollectionChange::ItemInserted ||
+                    args.CollectionChange() == winrt::CollectionChange::ItemChanged)
+                {
+                    SetKnownCommandLocalizedControlTypes(sender.GetAt(args.Index()));
+                }
+                else if (args.CollectionChange() == winrt::CollectionChange::Reset)
+                {
+                    EnsureLocalizedControlTypes();
+                }
+                // CollectionChange::ItemRemoved doesn't need any localization updates
+            }
+            else
+            {
+                EnsureLocalizedControlTypes();
+            }
+
             PopulateAccessibleControls();
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
@@ -138,12 +159,30 @@ CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
     });
 
     SecondaryCommands().VectorChanged({
-        [this](auto const&, auto const&)
+        [this](winrt::IObservableVector<winrt::ICommandBarElement> const& sender, winrt::IVectorChangedEventArgs const& args)
         {
             COMMANDBARFLYOUT_TRACE_VERBOSE_DBG(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"SecondaryCommands VectorChanged");
 
             m_secondaryItemsRootSized = false;
-            EnsureLocalizedControlTypes();
+
+            if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62776273>())
+            {
+                if (args.CollectionChange() == winrt::CollectionChange::ItemInserted ||
+                    args.CollectionChange() == winrt::CollectionChange::ItemChanged)
+                {
+                    SetKnownCommandLocalizedControlTypes(sender.GetAt(args.Index()));
+                }
+                else if (args.CollectionChange() == winrt::CollectionChange::Reset)
+                {
+                    EnsureLocalizedControlTypes();
+                }
+                // CollectionChange::ItemRemoved doesn't need any localization updates
+            }
+            else
+            {
+                EnsureLocalizedControlTypes();
+            }
+
             PopulateAccessibleControls();
             UpdateFlowsFromAndFlowsTo();
             UpdateUI(!m_commandBarFlyoutIsOpening);
@@ -690,25 +729,25 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
             const float height = static_cast<float>(overflowContentRootV2.ActualHeight());
             rectangleClip.Right(width);
             rectangleClip.Bottom(height);
-            
+
             // Clamp corner radii when they exceed the available space, following the same policy as
             // HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual.
             const float topLeft = static_cast<float>(cornerRadius.TopLeft);
             const float topRight = static_cast<float>(cornerRadius.TopRight);
             const float bottomLeft = static_cast<float>(cornerRadius.BottomLeft);
             const float bottomRight = static_cast<float>(cornerRadius.BottomRight);
-            
+
             float topLeftRadiusX, topRightRadiusX, bottomLeftRadiusX, bottomRightRadiusX;
             float topLeftRadiusY, topRightRadiusY, bottomLeftRadiusY, bottomRightRadiusY;
-            
+
             // Clamp X components against width
             SharedHelpers::ClampCornerRadii(topLeft, topRight, width, &topLeftRadiusX, &topRightRadiusX);
             SharedHelpers::ClampCornerRadii(bottomLeft, bottomRight, width, &bottomLeftRadiusX, &bottomRightRadiusX);
-            
+
             // Clamp Y components against height
             SharedHelpers::ClampCornerRadii(topLeft, bottomLeft, height, &topLeftRadiusY, &bottomLeftRadiusY);
             SharedHelpers::ClampCornerRadii(topRight, bottomRight, height, &topRightRadiusY, &bottomRightRadiusY);
-            
+
             rectangleClip.TopLeftRadius({topLeftRadiusX, topLeftRadiusY});
             rectangleClip.TopRightRadius({topRightRadiusX, topRightRadiusY});
             rectangleClip.BottomLeftRadius({bottomLeftRadiusX, bottomLeftRadiusY});
@@ -755,25 +794,25 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
         const float height = static_cast<float>(primaryItemsRoot.ActualHeight());
         rectangleClip.Right(width);
         rectangleClip.Bottom(height);
-        
+
         // Clamp corner radii when they exceed the available space, following the same policy as
         // HWCompTreeNodeWinRT::UpdateRoundedCornerClipVisual.
         const float topLeft = static_cast<float>(cornerRadius.TopLeft);
         const float topRight = static_cast<float>(cornerRadius.TopRight);
         const float bottomLeft = static_cast<float>(cornerRadius.BottomLeft);
         const float bottomRight = static_cast<float>(cornerRadius.BottomRight);
-        
+
         float topLeftRadiusX, topRightRadiusX, bottomLeftRadiusX, bottomRightRadiusX;
         float topLeftRadiusY, topRightRadiusY, bottomLeftRadiusY, bottomRightRadiusY;
-        
+
         // Clamp X components against width
         SharedHelpers::ClampCornerRadii(topLeft, topRight, width, &topLeftRadiusX, &topRightRadiusX);
         SharedHelpers::ClampCornerRadii(bottomLeft, bottomRight, width, &bottomLeftRadiusX, &bottomRightRadiusX);
-        
+
         // Clamp Y components against height
         SharedHelpers::ClampCornerRadii(topLeft, bottomLeft, height, &topLeftRadiusY, &bottomLeftRadiusY);
         SharedHelpers::ClampCornerRadii(topRight, bottomRight, height, &topRightRadiusY, &bottomRightRadiusY);
-        
+
         rectangleClip.TopLeftRadius({topLeftRadiusX, topLeftRadiusY});
         rectangleClip.TopRightRadius({topRightRadiusX, topRightRadiusY});
         rectangleClip.BottomLeftRadius({bottomLeftRadiusX, bottomLeftRadiusY});

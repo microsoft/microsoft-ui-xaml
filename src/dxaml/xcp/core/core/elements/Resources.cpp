@@ -35,6 +35,15 @@
 #include <NullKeyedResource.g.h>
 #include <DXamlCore.h>
 
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62646974: Faster hash table for ResourceDictionary
+#define WINAPPSDK_CHANGEID_62646974 62646974
+
+// Bug 62818033: Optimize ResourceKey handling in CResourceDictionary::TryLoadDeferredResource
+// (store non-owning ResourceKey in m_undeferringResourcesFast and pop_back on stack unwind)
+#define WINAPPSDK_CHANGEID_62818033 62818033
+
 #pragma warning(disable:4267) // 'var' : conversion from 'size_t' to 'type', possible loss of data
 #pragma warning(disable:4244) // 'argument' : conversion from 'type1' to 'type2', possible loss of data
 
@@ -271,23 +280,37 @@ CResourceDictionary::AddKey(
     ASSERT(undeferringKey ||
         m_processingBulkUndeferral ||
         !m_pDeferredResources ||
-        !m_pDeferredResources->ContainsKey(keyStorage.GetKey(), keyStorage.IsKeyType()));
+        !m_pDeferredResources->ContainsKey(key));
 #endif
 
     // Insert the map entry if the caller didn't do it already.
-    auto pair = m_resourceMap.emplace(keyStorage, nullptr);
-
-    if (!pair.second) // second component is false if the key was already mapped
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
     {
-        IFC_RETURN(static_cast<HRESULT>(E_DO_RESOURCE_KEYCONFLICT));
+        auto [entry, emplaced] = m_resourceMap.try_emplace(keyStorage, pValue);
+        if (!emplaced)
+        {
+            IFC_RETURN(static_cast<HRESULT>(E_DO_RESOURCE_KEYCONFLICT));
+        }
+
+        ASSERT(entry != m_resourceMap.end());
+        m_keyByIndex.emplace_back(std::make_pair(keyStorage.GetKey(), KeyInfo { keyStorage.IsKeyType(), keyIsOverride }));
     }
+    else
+    {
+        auto pair = m_legacyResourceMap.emplace(keyStorage, nullptr);
 
-    auto mapEntry = pair.first;
+        if (!pair.second) // second component is false if the key was already mapped
+        {
+            IFC_RETURN(static_cast<HRESULT>(E_DO_RESOURCE_KEYCONFLICT));
+        }
 
-    // Store the key, and update the map entry's value to the resource value.
-    ASSERT(mapEntry != m_resourceMap.end());
-    m_keyByIndex.emplace_back(std::make_pair(keyStorage.GetKey(), KeyInfo { keyStorage.IsKeyType(), keyIsOverride }));
-    mapEntry->second = pValue;
+        auto mapEntry = pair.first;
+
+        // Store the key, and update the map entry's value to the resource value.
+        ASSERT(mapEntry != m_legacyResourceMap.end());
+        m_keyByIndex.emplace_back(std::make_pair(keyStorage.GetKey(), KeyInfo { keyStorage.IsKeyType(), keyIsOverride }));
+        mapEntry->second = pValue;
+    }
 
     if (undeferringKey)
     {
@@ -336,20 +359,39 @@ CResourceDictionary::RemoveKey(
 
     TraceResourceDictionaryRemoveInfo(reinterpret_cast<UINT64>(this), key.GetKey().GetBuffer(), key.IsKeyType());
 
-    auto iter = m_resourceMap.find(key);
-    ASSERT(iter != m_resourceMap.end());
-
-    pValue = iter->second;
-
-    if (index < m_keyByIndex.size())
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
     {
-        m_resourceMap.erase(iter);
-        m_keyByIndex.erase(m_keyByIndex.begin() + index); // remove the stored key
+        auto extracted = m_resourceMap.extract(key);
+        ASSERT(extracted.has_value());
+        pValue = extracted.has_value() ? extracted->second : nullptr;
+
+        if (index < m_keyByIndex.size())
+        {
+            m_keyByIndex.erase(m_keyByIndex.begin() + index); // remove the stored key
+        }
+        else
+        {
+            // The index is invalid.
+            IFC_RETURN(E_FAIL);
+        }
     }
     else
     {
-        // The index is invalid.
-        IFC_RETURN(E_FAIL);
+        auto iter = m_legacyResourceMap.find(key);
+        ASSERT(iter != m_legacyResourceMap.end());
+
+        pValue = iter->second;
+
+        if (index < m_keyByIndex.size())
+        {
+            m_legacyResourceMap.erase(iter);
+            m_keyByIndex.erase(m_keyByIndex.begin() + index); // remove the stored key
+        }
+        else
+        {
+            // The index is invalid.
+            IFC_RETURN(E_FAIL);
+        }
     }
 
     // The value is still in the collection because we're called to remove
@@ -576,6 +618,15 @@ CResourceDictionary::GetKeyNoRef(
 {
     *keyNoRef = nullptr;
     return GetKeyNoRefImpl(ResourceKey(strKey, false), Resources::LookupScope::All, keyNoRef);
+}
+
+_Check_return_ HRESULT
+CResourceDictionary::GetKeyNoRef(
+    const ResourceKey& key,
+    _Outptr_ CDependencyObject** keyNoRef)
+{
+    *keyNoRef = nullptr;
+    return GetKeyNoRefImpl(key, Resources::LookupScope::All, keyNoRef);
 }
 
 _Check_return_ HRESULT
@@ -1118,7 +1169,14 @@ CResourceDictionary::Clear()
     TraceResourceDictionaryClearInfo((XUINT64)this);
 
     xhr = CCollection::Clear();
-    m_resourceMap.clear();
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
+    {
+        m_resourceMap.clear();
+    }
+    else
+    {
+        m_legacyResourceMap.clear();
+    }
     m_keyByIndex.clear();
     IFC(InvalidateImplicitStyles(NULL));
     m_pDeferredResources.reset();
@@ -1147,12 +1205,14 @@ CResourceDictionary::Remove(
     HRESULT hr = S_OK;
     CDependencyObject *pDO = NULL;
 
-    if (m_pDeferredResources && m_pDeferredResources->ContainsKey(strKey, !!fKeyIsType))
+    ResourceKey resourceKey(strKey, !!fKeyIsType);
+
+    if (m_pDeferredResources && m_pDeferredResources->ContainsKey(resourceKey))
     {
         IFC(LoadAllDeferredResources());
     }
 
-    IGNOREHR(GetKeyNoRefImpl(ResourceKey(strKey, !!fKeyIsType), Resources::LookupScope::SelfOnly, &pDO));
+    IGNOREHR(GetKeyNoRefImpl(resourceKey, Resources::LookupScope::SelfOnly, &pDO));
     if (pDO)
     {
         CDependencyObject* pReturnedObject = CDOCollection::Remove(pDO);
@@ -1209,21 +1269,43 @@ CResourceDictionary::GetUndeferredImplicitStyles(Jupiter::stack_vector<CStyle*, 
 {
     IFCEXPECT_RETURN(styles);
 
-    for (auto& entry : m_resourceMap)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
     {
-        const auto& resourceKey = entry.first;
+        for (auto& entry : m_resourceMap)
+        {
+            const auto& resourceKey = entry.first;
 
-        if (!resourceKey.IsKeyType()) // if not implicit
-            continue;
+            if (!resourceKey.IsKeyType()) // if not implicit
+                continue;
 
-        CDependencyObject* pValue = entry.second;
+            CDependencyObject* pValue = entry.second;
 
-        if (!pValue || !pValue->OfTypeByIndex<KnownTypeIndex::Style>())
-            continue;
+            if (!pValue || !pValue->OfTypeByIndex<KnownTypeIndex::Style>())
+                continue;
 
-        CStyle* pStyle = nullptr;
-        IFC_RETURN(DoPointerCast(pStyle, pValue));
-        styles->m_vector.push_back(pStyle);
+            CStyle* pStyle = nullptr;
+            IFC_RETURN(DoPointerCast(pStyle, pValue));
+            styles->m_vector.push_back(pStyle);
+        }
+    }
+    else
+    {
+        for (auto& entry : m_legacyResourceMap)
+        {
+            const auto& resourceKey = entry.first;
+
+            if (!resourceKey.IsKeyType()) // if not implicit
+                continue;
+
+            CDependencyObject* pValue = entry.second;
+
+            if (!pValue || !pValue->OfTypeByIndex<KnownTypeIndex::Style>())
+                continue;
+
+            CStyle* pStyle = nullptr;
+            IFC_RETURN(DoPointerCast(pStyle, pValue));
+            styles->m_vector.push_back(pStyle);
+        }
     }
 
     return S_OK;
@@ -1374,10 +1456,21 @@ void CResourceDictionary::CleanupDeviceRelatedResourcesRecursive(_In_ bool clean
 {
     CDOCollection::CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
 
-    // Cleanup the dictionary entries
-    for (auto& value : m_resourceMap)
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
     {
-        value.second->CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
+        // Cleanup the dictionary entries
+        for (auto& value : m_resourceMap)
+        {
+            value.second->CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
+        }
+    }
+    else
+    {
+        // Cleanup the dictionary entries
+        for (auto& value : m_legacyResourceMap)
+        {
+            value.second->CleanupDeviceRelatedResourcesRecursive(cleanupDComp);
+        }
     }
 }
 
@@ -1875,37 +1968,84 @@ CResourceDictionary::TryLoadDeferredResource(
     // where a style is based on another style with the same key in inherited resources.
     // There will be a "cannot find resource" error if the lookup ultimately fails.
 
-    auto found = std::find_if(
-        m_undeferringResources.begin(),
-        m_undeferringResources.end(),
-        [&](const auto& entry)
-        {
-            return key == entry;
-        });
+    ResourceKeyStorage keyStorage;
 
-    if (found != m_undeferringResources.end())
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62818033>())
     {
-        undeferring = true;
-        return S_OK;
+        auto found = std::find_if(
+            m_undeferringResourcesFast.begin(),
+            m_undeferringResourcesFast.end(),
+            [&](const auto& entry)
+            {
+                return key == entry;
+            });
+
+        if (found != m_undeferringResourcesFast.end())
+        {
+            undeferring = true;
+            return S_OK;
+        }
+
+        // Load the resource. Temporarily add the key with a dummy value in our store,
+        // so we can check above for reentrancy that attempts to lookup the same key,
+        // e.g. a style with BasedOn set to its own key.
+        //
+        // m_undeferringResourcesFast does not own the string since it uses ResourceKey rather
+        // than ResourceKeyStorage, but the key is removed on stack unwind so this temporary
+        // no-ref use is safe.
+        m_undeferringResourcesFast.push_back(key);
+    }
+    else
+    {
+        auto found = std::find_if(
+            m_undeferringResources.begin(),
+            m_undeferringResources.end(),
+            [&](const auto& entry)
+            {
+                return key == entry;
+            });
+
+        if (found != m_undeferringResources.end())
+        {
+            undeferring = true;
+            return S_OK;
+        }
+
+        keyStorage = key.ToStorage();
+
+        // Load the resource. Temporarily add the key with a dummy value in our store,
+        // so we can check above for reentrancy that attempts to lookup the same key,
+        // e.g. a style with BasedOn set to its own key.
+        m_undeferringResources.push_back(keyStorage);
     }
 
-    ResourceKeyStorage keyStorage = key.ToStorage();
-
-    // Load the resource. Temporarily add the key with a dummy value in our store,
-    // so we can check above for reentrancy that attempts to lookup the same key,
-    // e.g. a style with BasedOn set to its own key.
-    m_undeferringResources.push_back(keyStorage);
-
+#if DBG || defined(_PREFAST_)
+    auto guard = wil::scope_exit([this, &key, &keyStorage, undeferringSize = (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62818033>() ? m_undeferringResourcesFast.size() : m_undeferringResources.size())]
+#else
     auto guard = wil::scope_exit([this, &keyStorage]
+#endif
     {
-        auto newEnd = std::remove(m_undeferringResources.begin(), m_undeferringResources.end(), keyStorage);
-        m_undeferringResources.erase(newEnd, m_undeferringResources.end());
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62818033>())
+        {
+            // m_undeferringResourcesFast is only used in this function and any reentrant calls should
+            // leave it the same as when they started. This means the size should always be the same
+            // as when we pushed, and that the back is the same key we pushed, so we can simply pop
+            // the value we added off.
+            ASSERT(undeferringSize == m_undeferringResourcesFast.size());
+            ASSERT(m_undeferringResourcesFast.back() == key);
+            m_undeferringResourcesFast.pop_back();
+        }
+        else
+        {
+            auto newEnd = std::remove(m_undeferringResources.begin(), m_undeferringResources.end(), keyStorage);
+            m_undeferringResources.erase(newEnd, m_undeferringResources.end());
+        }
     });
 
     bool keyFound = false;
     std::shared_ptr<CDependencyObject> resource;
 
-    IFC_RETURN(m_pDeferredResources->LoadValueIfExists(keyStorage.GetKey(), keyStorage.IsKeyType(), keyFound, resource));
+    IFC_RETURN(m_pDeferredResources->LoadValueIfExists(key, keyFound, resource));
 
     // Notice how this method behaves- if the key fails to parse it throws a bad HRESULT, if
     // the key simply doesn't exist it returns S_OK with the 'keyFound' parameter set to false.
@@ -1949,69 +2089,123 @@ CResourceDictionary::LoadAllDeferredResources()
         });
 #endif
 
-        std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>> implicitResources;
-        std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>> explicitResources;
-
-        m_keyByIndex.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
-        m_resourceMap.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
-
-        // DeferredResource loading is a retryable process in Jupiter. If either:
-        // - One of the keys fail to load due to runtime object instantiation failure
-        // - One of the key adds fails due to a duplicate runtime key or other CCollection::Add
-        //   failure.
-        // we allow the process to be retried.
-        //
-        // In practice because we do appropriate checks for collision at key-add there
-        // should NEVER be a bad HRESULT thrown from an Add operation, I'd go as
-        // far as making it FAIL_FAST here, but I don't claim to know all the ways DO Enter
-        // can fail and we could end up doing some nontrivial amount of work there.
-        IFC_RETURN(m_pDeferredResources->LoadAllRemainingDeferredResources(
-            m_resourceMap,
-            implicitResources, explicitResources));
-
-        // Imagine the following XAML. If both these resources have not been undeferred at this point. Then the undeferal of 'Icon' will
-        // actually result in the current dictionary undefering IconConverter and adding it to the current dictionary. We don't necessarily
-        // want to prevent the undefering that happens here because the TemplateContent needs the value and dictionary found in for pre-resolving
-        // resources.
-        /*
-            <local:IconConverter x:Key="IconConverter"></local:IconConverter>
-            <Style x:Key="Icon" TargetType="ContentControl">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="ContentControl">
-                            <Viewbox Stretch="Uniform">
-                                <Grid>
-                                    <TextBlock FontFamily="Segoe MDL2 Assets" Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IconConverter}}" />
-                                </Grid>
-                            </Viewbox>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-        */
-        for (const auto& kvp : implicitResources)
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
         {
-            ResourceKey key(kvp.first, true);
+            std::vector<std::pair<ResourceKeyStorage, std::shared_ptr<CDependencyObject>>> loadedResources;
 
-            // Make sure key is not in map
-            if (FindResourceByKey(key) == nullptr)
+            m_keyByIndex.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
+            m_resourceMap.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
+
+            // DeferredResource loading is a retryable process in Jupiter. If either:
+            // - One of the keys fail to load due to runtime object instantiation failure
+            // - One of the key adds fails due to a duplicate runtime key or other CCollection::Add
+            //   failure.
+            // we allow the process to be retried.
+            //
+            // In practice because we do appropriate checks for collision at key-add there
+            // should NEVER be a bad HRESULT thrown from an Add operation, I'd go as
+            // far as making it FAIL_FAST here, but I don't claim to know all the ways DO Enter
+            // can fail and we could end up doing some nontrivial amount of work there.
+            IFC_RETURN(m_pDeferredResources->LoadAllRemainingDeferredResources(m_resourceMap, loadedResources));
+
+            // Imagine the following XAML. If both these resources have not been undeferred at this point. Then the undeferal of 'Icon' will
+            // actually result in the current dictionary undefering IconConverter and adding it to the current dictionary. We don't necessarily
+            // want to prevent the undefering that happens here because the TemplateContent needs the value and dictionary found in for pre-resolving
+            // resources.
+            /*
+                <local:IconConverter x:Key="IconConverter"></local:IconConverter>
+                <Style x:Key="Icon" TargetType="ContentControl">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ContentControl">
+                                <Viewbox Stretch="Uniform">
+                                    <Grid>
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IconConverter}}" />
+                                    </Grid>
+                                </Viewbox>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            */
+            for (const auto& kvp : loadedResources)
             {
-                CValue value;
-                value.SetObjectAddRef(kvp.second.get());
-                IFC_RETURN(Add(key, &value, nullptr, false, true, false));
+                auto key = kvp.first.ToResourceKey();
+                // Make sure key is not in map
+                if (FindResourceByKey(key) == nullptr)
+                {
+                    CValue value;
+                    value.SetObjectAddRef(kvp.second.get());
+                    IFC_RETURN(Add(key, &value, nullptr, false, true, false));
+                }
             }
         }
-
-        for (const auto& kvp : explicitResources)
+        else
         {
-            ResourceKey key(kvp.first, false);
+            std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>> implicitResources;
+            std::vector<std::pair<xstring_ptr, std::shared_ptr<CDependencyObject>>> explicitResources;
 
-            // Make sure key is not in map
-            if (FindResourceByKey(key) == nullptr)
+            m_keyByIndex.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
+            m_legacyResourceMap.reserve(m_pDeferredResources->size() - m_undeferredKeyCount);
+
+            // DeferredResource loading is a retryable process in Jupiter. If either:
+            // - One of the keys fail to load due to runtime object instantiation failure
+            // - One of the key adds fails due to a duplicate runtime key or other CCollection::Add
+            //   failure.
+            // we allow the process to be retried.
+            //
+            // In practice because we do appropriate checks for collision at key-add there
+            // should NEVER be a bad HRESULT thrown from an Add operation, I'd go as
+            // far as making it FAIL_FAST here, but I don't claim to know all the ways DO Enter
+            // can fail and we could end up doing some nontrivial amount of work there.
+            IFC_RETURN(m_pDeferredResources->LegacyLoadAllRemainingDeferredResources(
+                m_legacyResourceMap,
+                implicitResources, explicitResources));
+
+            // Imagine the following XAML. If both these resources have not been undeferred at this point. Then the undeferal of 'Icon' will
+            // actually result in the current dictionary undefering IconConverter and adding it to the current dictionary. We don't necessarily
+            // want to prevent the undefering that happens here because the TemplateContent needs the value and dictionary found in for pre-resolving
+            // resources.
+            /*
+                <local:IconConverter x:Key="IconConverter"></local:IconConverter>
+                <Style x:Key="Icon" TargetType="ContentControl">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ContentControl">
+                                <Viewbox Stretch="Uniform">
+                                    <Grid>
+                                        <TextBlock FontFamily="Segoe MDL2 Assets" Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource IconConverter}}" />
+                                    </Grid>
+                                </Viewbox>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            */
+            for (const auto& kvp : implicitResources)
             {
-                CValue value;
-                value.SetObjectAddRef(kvp.second.get());
-                IFC_RETURN(Add(key, &value, nullptr, false, true, false));
+                ResourceKey key(kvp.first, true);
+
+                // Make sure key is not in map
+                if (FindResourceByKey(key) == nullptr)
+                {
+                    CValue value;
+                    value.SetObjectAddRef(kvp.second.get());
+                    IFC_RETURN(Add(key, &value, nullptr, false, true, false));
+                }
+            }
+
+            for (const auto& kvp : explicitResources)
+            {
+                ResourceKey key(kvp.first, false);
+
+                // Make sure key is not in map
+                if (FindResourceByKey(key) == nullptr)
+                {
+                    CValue value;
+                    value.SetObjectAddRef(kvp.second.get());
+                    IFC_RETURN(Add(key, &value, nullptr, false, true, false));
+                }
             }
         }
 
@@ -2364,7 +2558,7 @@ CColorPaletteResources::SetCustomWriterRuntimeData(
         ASSERT(!overrideKey.IsNullOrEmpty());
 
         StreamOffsetToken unused;
-        if (std::static_pointer_cast<ResourceDictionaryCustomRuntimeData>(data)->TryGetResourceOffset(overrideKey, false, unused))
+        if (std::static_pointer_cast<ResourceDictionaryCustomRuntimeData>(data)->TryGetResourceOffset(ResourceKey(overrideKey, false), unused))
         {
             IFC_RETURN(static_cast<HRESULT>(E_DO_RESOURCE_KEYCONFLICT));
         }
@@ -2375,22 +2569,30 @@ CColorPaletteResources::SetCustomWriterRuntimeData(
 
 bool CResourceDictionary::HasKey(const xstring_ptr& key, bool isImplicitKey) const
 {
+    ResourceKey resourceKey(key, isImplicitKey);
     bool hasKey = false;
     if (m_pDeferredResources)
     {
-        hasKey = m_pDeferredResources->ContainsKey(key, isImplicitKey);
+        hasKey = m_pDeferredResources->ContainsKey(resourceKey);
     }
 
     if (!hasKey)
     {
-        size_t index = 0;
-        while (!hasKey && index < m_keyByIndex.size())
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62646974>())
         {
-            if (m_keyByIndex[index].second.m_isType == isImplicitKey)
+            hasKey = m_resourceMap.find(resourceKey) != m_resourceMap.end();
+        }
+        else
+        {
+            size_t index = 0;
+            while (!hasKey && index < m_keyByIndex.size())
             {
-                hasKey = key.Equals(m_keyByIndex[index].first);
+                if (m_keyByIndex[index].second.m_isType == isImplicitKey)
+                {
+                    hasKey = key.Equals(m_keyByIndex[index].first);
+                }
+                ++index;
             }
-            ++index;
         }
     }
 

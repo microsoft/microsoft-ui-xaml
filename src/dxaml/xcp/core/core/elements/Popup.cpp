@@ -33,6 +33,9 @@
 #include <WRLHelper.h>
 #include "InputSiteAdapter.h"
 #include "WindowedPopupInputSiteAdapter.h"
+
+// Bug 62434371: [2.0 Servicing] Make CPopup::RemoveChild idempotent on reentrant close paths and guard HideWindowForWindowedPopup against message-pump reentrancy (RCC: Popup_RemoveChildIdempotentWhenClosing)
+#define WINAPPSDK_CHANGEID_62434371 62434371
 #include <DropShadowRecipe.h>
 #include "SystemBackdrop.h"
 #include "SystemBackdrop_Partial.h"
@@ -40,10 +43,16 @@
 #include "XamlRoot_Partial.h"
 #include <Microsoft.UI.Composition.h>
 #include <FrameworkUdk/Theming.h>
+#include <FrameworkUdk/Containment.h>
+
+#define WINAPPSDK_CHANGEID_61847252 61847252
+#define WINAPPSDK_CHANGEID_62393567 62393567
+#define WINAPPSDK_CHANGEID_62724733 62724733
 #include "WinRTExpressionConversionContext.h"
 #include "VisualDebugTags.h"
 #include "xcpwindow.h"
 #include "Geometry.h"
+#include <stack_vector.h>
 
 using namespace DirectUI;
 using namespace Focus;
@@ -566,7 +575,20 @@ _Check_return_ HRESULT CPopup::Open()
             if (m_shouldTakeFocus && Focus::FocusSelection::ShouldUpdateFocus(m_pChild, m_savedFocusState))
             {
                 InitialFocusSIPSuspender setInitalFocusTrue(pFocusManager);
-                IFC_RETURN(SetFocus(DirectUI::FocusState::Programmatic));
+                if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62724733>())
+                {
+                    // SetFocus reaches CXamlIslandRoot::TrySetFocus, which calls InputFocusController::TrySetFocus.
+                    // That makes a ZwUserSetFocus syscall, and the kernel pumps the message queue via KiUserCallbackDispatcherReturn
+                    // while we are still on the reentrancy-protected Tick path (e.g. TeachingTip opening via CompositionTarget.Rendering).
+                    // The pump fires the Xaml dispatcher timer, dispatches a queued message into ProcessMessage,
+                    // and trips OnReentrancyProtectedWindowMessage -> XCP_FAULT_ON_FAILURE.
+                    PauseNewDispatch deferReentrancy(GetContext());
+                    IFC_RETURN(SetFocus(DirectUI::FocusState::Programmatic));
+                }
+                else
+                {
+                    IFC_RETURN(SetFocus(DirectUI::FocusState::Programmatic));
+                }
             }
 
             m_pPreviousFocusWeakRef = std::move(pFocusedElementWeakRef);
@@ -794,7 +816,17 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
         // Hide the popup, but only after LeavePCScene is called. This is because HideWindowForWindowedPopup
         // calls ReleaseDCompResourcesForWindowedPopup which would remove visuals from the tree that LeavePCScene
         // needs to access.
-        IFC_RETURN(HideWindowForWindowedPopup());
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62434371>())
+        {
+            // Bug 45623892: HideWindowForWindowedPopup can pump messages via ShowWindow, causing reentrancy.
+            PauseNewDispatch deferReentrancy(GetContext());
+            IFC_RETURN(HideWindowForWindowedPopup());
+        }
+        else
+        {
+            // Original pre-fix behavior: no PauseNewDispatch guard around the windowed popup hide.
+            IFC_RETURN(HideWindowForWindowedPopup());
+        }
     }
 
     pFocusManager = VisualTree::GetFocusManagerForElement(this);
@@ -1352,6 +1384,27 @@ float CPopup::GetWindowedPopupRasterizationScale() const
     return rasterizationScale;
 }
 
+float CPopup::GetWindowedPopupRootVisualScaleCompensation() const
+{
+    // Windowed popups render in a separate ContentIsland whose RasterizationScale is driven by the system (popup HWND DPI).
+    // For XAML Islands, the effective XamlRoot scale may be overridden (e.g. DesktopWindowXamlSource.OverrideScale).
+    // The main island cancels/adjusts system scale via RootScale. Windowed popups need the same compensation.
+    if (!m_contentIsland)
+    {
+        return 1.0f;
+    }
+
+    const float systemScaleForPopupIsland = GetWindowedPopupRasterizationScale();
+    const float effectiveScaleForPopup = GetEffectiveRootScale();
+
+    if (systemScaleForPopupIsland <= 0.0f || effectiveScaleForPopup <= 0.0f)
+    {
+        return 1.0f;
+    }
+
+    return effectiveScaleForPopup / systemScaleForPopupIsland;
+}
+
 wrl::ComPtr<ixp::IPointerPoint> CPopup::GetPreviousPointerPoint()
 {
     return m_inputSiteAdapter->GetPreviousPointerPoint();
@@ -1651,12 +1704,26 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
         undoY += insets.top;
     }
 
+    float rootScaleCompensation = 1.0f;
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+    {
+        rootScaleCompensation = GetWindowedPopupRootVisualScaleCompensation();
+    }
+
     if (m_contentIslandRootVisual)
     {
         // Set any scale inherited from the ancestor chain
         CMILMatrix rootTransform(true);
-        rootTransform.SetM11(scaleX);
-        rootTransform.SetM22(scaleY);
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+        {
+            rootTransform.SetM11(scaleX * rootScaleCompensation);
+            rootTransform.SetM22(scaleY * rootScaleCompensation);
+        }
+        else
+        {
+            rootTransform.SetM11(scaleX);
+            rootTransform.SetM22(scaleY);
+        }
 
         // Set premultiplied "undo" transform on the window's root visual
         CMILMatrix undo(true);
@@ -1706,11 +1773,26 @@ _Check_return_ HRESULT CPopup::PositionAndSizeWindowForWindowedPopup()
     // Tell the windowed popup inputsite adapter the offset of the popup window from the content
     // root. We do this by using the position passed to MoveAndSize (either earlier in this function
     // or updated by AdjustWindowedPopupBoundsForDropShadow), converted to island coords in dips.
-    wf::Point transformedOffset{
-        PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.X - rootOffsetPhysical.x)),
-        PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.Y - rootOffsetPhysical.y))};
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+    {
+        const float popupIslandRasterizationScale = m_contentIsland ? GetWindowedPopupRasterizationScale() : 0.0f;
+        const float offsetXPhysical = static_cast<float>(m_windowedPopupMoveAndResizeRect.X - rootOffsetPhysical.x);
+        const float offsetYPhysical = static_cast<float>(m_windowedPopupMoveAndResizeRect.Y - rootOffsetPhysical.y);
 
-    IFC_RETURN(UpdateTranslationFromContentRoot(transformedOffset, /*forceUpdate*/ false));
+        wf::Point transformedOffset{
+            popupIslandRasterizationScale > 0.0f ? (offsetXPhysical / popupIslandRasterizationScale) : PhysicalPixelsToDips(offsetXPhysical),
+            popupIslandRasterizationScale > 0.0f ? (offsetYPhysical / popupIslandRasterizationScale) : PhysicalPixelsToDips(offsetYPhysical)};
+
+        IFC_RETURN(UpdateTranslationFromContentRoot(transformedOffset, /*forceUpdate*/ false, rootScaleCompensation));
+    }
+    else
+    {
+        wf::Point transformedOffset{
+            PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.X - rootOffsetPhysical.x)),
+            PhysicalPixelsToDips(static_cast<float>(m_windowedPopupMoveAndResizeRect.Y - rootOffsetPhysical.y))};
+
+        IFC_RETURN(UpdateTranslationFromContentRoot(transformedOffset, /*forceUpdate*/ false));
+    }
 
     // Play the MenuPopupThemeTransition, if we have one
     if (m_animationRootVisual && m_secretTransitionTarget && m_secretTransitionTarget->IsDirty())
@@ -2340,9 +2422,9 @@ HWND CPopup::GetPopupPositioningWindow() const
 }
 
 // Converts between logical and physical pixels
-float CPopup::GetEffectiveRootScale()
+float CPopup::GetEffectiveRootScale() const
 {
-    const auto scale = RootScale::GetRasterizationScaleForElement(this);
+    const auto scale = RootScale::GetRasterizationScaleForElement(const_cast<CPopup*>(this));
     return scale;
 }
 
@@ -2685,14 +2767,20 @@ CPopup::RemoveChild()
             // m_pChild is walked for GC, so take GC lock before it is changed
             AutoReentrantReferenceLock lock(DXamlServices::GetPeerTableHost());
 
-            // Bug 43647291: [Watson Failure] caused by NULL_CLASS_PTR_READ_c0000005_Microsoft.UI.Xaml.dll!CPopup::Close
-            // We have crashes where m_pChild is null when CPopup::Close goes to get the child's automation peer. Except
-            // CPopup::Close uses m_pChild earlier to call SetAssociated on it, and we didn't crash then, which suggests
-            // that something in the Close call is nulling out m_pChild between the two times it's referenced. This
-            // failfast will help us catch the place that's doing that.
-            if (m_isClosing)
+            if (!WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62434371>())
             {
-                IFCFAILFAST(E_UNEXPECTED);
+                // Original pre-fix diagnostic from Bug 43647291. The fix narrows this guard so that legitimate
+                // reentrant close paths (e.g. ToolTip::ForceFinishClosing) no longer trip the fail-fast.
+                //
+                // Bug 43647291: [Watson Failure] caused by NULL_CLASS_PTR_READ_c0000005_Microsoft.UI.Xaml.dll!CPopup::Close
+                // We have crashes where m_pChild is null when CPopup::Close goes to get the child's automation peer. Except
+                // CPopup::Close uses m_pChild earlier to call SetAssociated on it, and we didn't crash then, which suggests
+                // that something in the Close call is nulling out m_pChild between the two times it's referenced. This
+                // failfast will help us catch the place that's doing that.
+                if (m_isClosing)
+                {
+                    IFCFAILFAST(E_UNEXPECTED);
+                }
             }
 
             m_pChild = nullptr;
@@ -2758,7 +2846,7 @@ CPopup::ClearUCRemoveLogicalParentFlag(
 //
 //------------------------------------------------------------------------
 _Check_return_ HRESULT
-CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpdate)
+CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpdate, float rootScaleCompensation)
 {
     IFCEXPECT_RETURN(m_inputSiteAdapter);
 
@@ -2769,6 +2857,16 @@ CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpda
         m_offsetFromMainWindow.X = offset.X;
         m_offsetFromMainWindow.Y = offset.Y;
 
+        // Pointer points for windowed popups are delivered in the coordinate space of the popup's content island.
+        // When DesktopWindowXamlSource.OverrideScale is used, the popup island's rasterization scale (system DPI)
+        // can differ from the XamlRoot effective scale. We compensate the visuals by scaling the island root visual;
+        // mirror that compensation for input by scaling pointer coordinates by the inverse ratio.
+        float inputScaleCompensation = 1.0f;
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+        {
+            inputScaleCompensation = (rootScaleCompensation != 0.0f) ? (1.0f / rootScaleCompensation) : 1.0f;
+        }
+
         auto dxamlCore = DXamlCore::GetCurrent();
         auto coreServices = dxamlCore->GetHandle();
         CREATEPARAMETERS cp(coreServices);
@@ -2777,6 +2875,12 @@ CPopup::UpdateTranslationFromContentRoot(const wf::Point& offset, bool forceUpda
         CMILMatrix matTransform(/*fInitialize*/ true);
         xref_ptr<CMatrix> matrix;
         xref_ptr<CMatrixTransform> matrixTransform;
+
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_61847252>())
+        {
+            matTransform.SetM11(inputScaleCompensation);
+            matTransform.SetM22(inputScaleCompensation);
+        }
 
         IFC_RETURN(CMatrixTransform::Create(reinterpret_cast<CDependencyObject**>(matrixTransform.ReleaseAndGetAddressOf()), &cp));
         IFC_RETURN(CMatrix::Create(reinterpret_cast<CDependencyObject**>(matrix.ReleaseAndGetAddressOf()), &cp));
@@ -4398,15 +4502,71 @@ bool CPopupRoot::ReplayPointerUpdate()
     UINT popupsThatReplayedPointerUpdate = 0;
     if (m_pOpenPopups != nullptr)
     {
-        for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62393567>())
         {
-            CPopup* pPopup = pNode->m_pData;
-            if (pPopup && !pPopup->IsUnloading())
+            // Snapshot the open popups before iterating.  Inside CPopup::ReplayPointerUpdate
+            // (-> WindowedPopupInputSiteAdapter::ReplayPointerUpdate) we synthesize a real
+            // pointer event and run it through the input pipeline, which executes app-side
+            // handlers that can synchronously close *other* popups (light-dismiss, cascading
+            // menus, focus-loss handlers, etc.).  Closing a popup runs RemoveFromOpenPopupList
+            // -> CXcpList::Remove, which `delete pTemp;` the XCPListNode regardless of the
+            // bDoDelete parameter (that flag only spares the data, not the node itself).
+            // Iterating m_pOpenPopups across that inner call therefore dereferences a freed
+            // XCPListNode leading to Access Violation.
+            //
+            // Holding strong refs (xref_ptr) is required, not just raw pointers, because
+            // CPopup::AsyncRelease only defers `delete this` -- the final-release path still
+            // runs CDependencyObject::start_destroying / ResetReferencesFromChildren
+            // synchronously, leaving a partially-destroyed CPopup that ReplayPointerUpdate
+            // would otherwise still walk.
+            //
+            // We re-check IsOpen() per-popup before replaying so a popup that prior
+            // iterations' reentrancy has already closed is skipped (m_fIsOpen is cleared in
+            // the IsOpen=false setter before Close() runs, so IsOpen() is a reliable
+            // post-reentrancy "still in m_pOpenPopups" proxy).
+            //
+            // 4 covers the typical 0..3 simultaneously-open popups (main popup +
+            // cascading sub-menu(s) / tooltip / focus visual) without heap allocation;
+            // stack_vector spills to the heap transparently if exceeded.
+
+            constexpr size_t typicalOpenPopupCount = 4;
+            Jupiter::stack_vector<xref_ptr<CPopup>, typicalOpenPopupCount> openPopupsSnapshot;
+
+            for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
             {
-                bool popupPointerUpdateReplayed = pPopup->ReplayPointerUpdate();
-                if (popupPointerUpdateReplayed)
+                if (CPopup* pPopup = pNode->m_pData)
                 {
-                    popupsThatReplayedPointerUpdate++;
+                    openPopupsSnapshot.m_vector.emplace_back(pPopup);
+                }
+            }
+
+            for (const auto& popup : openPopupsSnapshot.m_vector)
+            {
+                if (popup->IsOpen() && !popup->IsUnloading())
+                {
+                    bool popupPointerUpdateReplayed = popup->ReplayPointerUpdate();
+                    if (popupPointerUpdateReplayed)
+                    {
+                        popupsThatReplayedPointerUpdate++;
+                    }
+                }
+            }
+        }
+        else
+        {
+            // Original (pre-servicing) implementation, retained behind the containment
+            // gate so apps that opt out via RuntimeCompatibilityChange continue to see
+            // the pre-fix behavior. See WINAPPSDK_CHANGEID_62393567.
+            for (CXcpList<CPopup>::XCPListNode *pNode = m_pOpenPopups->GetHead(); pNode != nullptr; pNode = pNode->m_pNext)
+            {
+                CPopup* pPopup = pNode->m_pData;
+                if (pPopup && !pPopup->IsUnloading())
+                {
+                    bool popupPointerUpdateReplayed = pPopup->ReplayPointerUpdate();
+                    if (popupPointerUpdateReplayed)
+                    {
+                        popupsThatReplayedPointerUpdate++;
+                    }
                 }
             }
         }

@@ -8,6 +8,11 @@
 using namespace DirectUI;
 using namespace DirectUISynonyms;
 
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62542953: [2.0 servicing] Reduce allocations by reserving vector space
+#define WINAPPSDK_CHANGEID_62542953 62542953
+
 #undef min
 #undef max
 
@@ -1201,6 +1206,10 @@ _Check_return_ HRESULT ModernCollectionBasePanel::ContainerManager::GetPinnedEle
     HRESULT hr = S_OK;
 
     pReturnValue->clear();
+    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62542953>())
+    {
+        pReturnValue->reserve(m_pinnedElements[type].size());
+    }
 
     for (auto element : m_pinnedElements[type])
     {

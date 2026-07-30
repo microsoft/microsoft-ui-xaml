@@ -19,8 +19,31 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 {
 <# if (Model.CodeInfo.IsApplication) #>
 <# {#>
+<#     // When DISABLE_XAML_GENERATED_MAIN is defined, the generated entry point helper defers #>
+<#     // construction of the application to the partial method implemented below. We only emit #>
+<#     // that implementation (and therefore the "new App()" call) when the application class #>
+<#     // actually declares a parameterless constructor, so the helper still compiles when a #>
+<#     // developer that defines DISABLE_XAML_GENERATED_MAIN omits it. #>
+<#     bool hasParameterlessCtor = true; #>
+<#     var appClassType = Model.CodeInfo.ClassType; #>
+<#     if (appClassType != null && appClassType.UnderlyingType != null) #>
+<#     { #>
+<#         var ctor = appClassType.UnderlyingType.GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, System.Type.EmptyTypes, null); #>
+<#         hasParameterlessCtor = ctor != null; #>
+<#     } #>
     partial class <#=Model.CodeInfo.ClassName.ShortName#> : <#=Globalize(Model.CodeInfo.BaseTypeName)#>
     {
+<#     if (hasParameterlessCtor) #>
+<#     { #>
+#if DISABLE_XAML_GENERATED_MAIN
+        <#=GeneratedCodeAttribute#>
+        <#=DebuggerNonUserCodeAttribute#>
+        static partial void _XamlGeneratedCreateApplicationInstance()
+        {
+            new <#=Model.CodeInfo.ClassName.ShortName#>();
+        }
+#endif
+<#     } #>
     }
 <# }#>
 <# else #>

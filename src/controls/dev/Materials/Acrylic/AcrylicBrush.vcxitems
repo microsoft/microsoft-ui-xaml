@@ -39,6 +39,10 @@
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)AcrylicBrush_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+      <Priority>2</Priority>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <PackageContent Include="$(MSBuildThisFileDirectory)Assets\NoiseAsset_256x256_PNG.png" PackageLocation="$(NativeAssemblyPackageLocationOld)\Microsoft.UI.Xaml\Assets" />

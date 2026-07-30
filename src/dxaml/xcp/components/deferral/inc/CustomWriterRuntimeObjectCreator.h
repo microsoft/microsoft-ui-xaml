@@ -38,9 +38,20 @@ enum class NameScopeRegistrationMode
 class CustomWriterRuntimeObjectCreator
 {
 public:
+    // Controls whether the EventRoot (and template namescope entries) hold a strong reference to
+    // their target. Use Weak when this object creator is cached for a deferred object's lifetime
+    // (e.g. OptimizedStyle) to avoid a reference cycle through the root instance that leaks the
+    // entire markup root. Use Strong for transient creators.
+    enum class ContextReference
+    {
+        Weak,
+        Strong
+    };
+
     CustomWriterRuntimeObjectCreator(
         NameScopeRegistrationMode mode,
-        _In_ const CustomWriterRuntimeContext* context);
+        _In_ const CustomWriterRuntimeContext* context,
+        ContextReference contextReference = ContextReference::Strong);
 
     _Check_return_ HRESULT LookupStaticResourceValue(
         _In_ StreamOffsetToken token,
@@ -104,7 +115,7 @@ private:
     std::shared_ptr<XamlBinaryFormatSubReader2> GetReaderAndSetIndex(unsigned int nodeIndex);
     void RestoreReaderIndex();
 
-    static _Check_return_ HRESULT XamlQOFromCDOHelper(
+    _Check_return_ HRESULT XamlQOFromCDOHelper(
         _In_ CDependencyObject* cdo,
         _Out_ std::shared_ptr<XamlQualifiedObject>* pQO);
 
@@ -113,6 +124,7 @@ private:
     bool m_pendingFirstNode;
     NameScopeRegistrationMode m_mode;
     unsigned int m_restoreIndex;
+    ContextReference m_contextReference = ContextReference::Strong;
 };
 
 

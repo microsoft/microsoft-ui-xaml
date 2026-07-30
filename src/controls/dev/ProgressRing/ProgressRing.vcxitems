@@ -39,6 +39,12 @@
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing.xaml">
+      <Type>StylePerf2026</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml">
+      <Type>ThemeResourcesPerf2026</Type>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />

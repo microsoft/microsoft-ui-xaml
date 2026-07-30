@@ -15,6 +15,12 @@
 #include <bit_vector.h>
 #include "LifetimeUtils.h"
 #include "CoreImports.h"
+#include "FrameworkUdk/Containment.h"
+
+// Bug 62542953: [2.0 servicing] Reduce allocations by reserving vector space
+#ifndef WINAPPSDK_CHANGEID_62542953
+#define WINAPPSDK_CHANGEID_62542953 62542953
+#endif
 
 namespace DirectUI
 {
@@ -287,6 +293,10 @@ namespace DirectUI
                 {
                     // Multiple handlers... Copy to temporary list to avoid re-entrancy issues.
                     std::vector<ctl::ComPtr<THANDLER>> handlers;
+                    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62542953>())
+                    {
+                        handlers.reserve(m_delegates.Size());
+                    }
 
                     // Copy the list first to prevent re-entrancy problems
                     std::for_each(m_delegates.Begin(), m_delegates.End(),
@@ -955,6 +965,10 @@ namespace DirectUI
                 {
                     // Multiple handlers... Copy to temporary list to avoid re-entrancy issues.
                     std::vector<HandlerInfo> handlers;
+                    if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62542953>())
+                    {
+                        handlers.reserve(m_delegates.Size());
+                    }
 
                     size_t itrHandledValue = 0;
 

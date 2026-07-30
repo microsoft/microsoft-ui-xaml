@@ -4,6 +4,11 @@
 #pragma once
 #include "TypeTableStructs.h"
 #include "TypeNamePtr.h"
+#include "FrameworkUdk/Containment.h"
+
+#ifndef WINAPPSDK_CHANGEID_62724527
+#define WINAPPSDK_CHANGEID_62724527 62724527
+#endif
 
 class CCustomClassInfo : public CClassInfo
 {
@@ -40,6 +45,14 @@ public:
     bool RepresentsBoxedType() const;
 
     const CClassInfo* GetBoxedType() const;
+
+    void Invalidate()
+    {
+        if (WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_62724527>())
+        {
+            m_spXamlType = nullptr;
+        }
+    }
 
 private:
     CCustomClassInfo() = default;
