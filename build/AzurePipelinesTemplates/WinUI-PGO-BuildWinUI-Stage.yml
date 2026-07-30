@@ -1,0 +1,180 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+stages:
+- stage: Build
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    eq(variables['useBuildOutputFromBuildId'],'')
+  displayName: Build Stage
+  dependsOn: ''
+  variables:
+  - group: WinUI-InternalFeed
+  jobs:
+  - job: Build
+    pool:
+      type: windows
+    timeoutInMinutes: 300
+    strategy:
+      maxParallel: 10
+      matrix: $[ variables.targets ]
+
+    variables:
+      buildFolderName: $(buildOutput)$(normalizedConfiguration)
+      scenariosPath: $(perfPath)\scenarios
+      buildToolsDirectory:  $(_buildToolsDirectory)
+      buildToolsInstallLogsDirectory: $(_buildToolsInstallLogsDirectory)
+
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+      ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
+      ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+
+    steps:
+    - script: git clean -xdf $(Build.SourcesDirectory)
+      displayName: 'Clean the repo fully'
+
+    - task: CmdLine@2
+      displayName: Set up environment
+      inputs:
+        script: |
+          $(Build.SourcesDirectory)\init.cmd /pipeline $(buildFolderName) $(_dotNetFrameworkVersionInitParam)
+
+    - template: WinUI-InstallDependencies-Steps.yml
+      parameters:
+        clearGlobalCache: true
+
+    - template: WinUI-Install-MSBuildTools.yml
+      parameters:
+        msbuildInstallDir: '$(buildToolsDirectory)'
+        msbuildInstallLogsDir: '$(buildToolsInstallLogsDirectory)'
+
+    - powershell: |
+        if ($env:LkgVcToolsName -eq $null)
+        {
+            $env:LkgVcToolsName  = '$(compilerOverridePackageName)'
+        }
+        if($env:LkgVcToolsVersion -eq $null)
+        {
+            $env:LkgVcToolsVersion = '$(compilerOverrideNupkgVersion)'
+        }
+        nuget install $env:LkgVcToolsName -version $env:LkgVcToolsVersion -source $(WinUILKGCompilerFeedUri) -ConfigFile $(Build.SourcesDirectory)\nuget.config
+      displayName: Install native compiler override
+
+    # When we build the XAML compiler as part of the same build that consumes the XAML compiler,
+    # we can hit build breaks caused by MSBuild instances trying to produce DLLs that it's
+    # already loaded.  To avoid that, we'll build the parts of the XAML compiler we need to build
+    # before we build the solutions that consume them.
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: XamlCompilerPrerequisites.sln
+        solutionPath: $(Build.SourcesDirectory)
+        msBuildArgs: '/p:PGOBuildMode=Instrument /m'
+        msbuildInstallDir: '$(buildToolsDirectory)'
+        runStaticAnalysis: false
+
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: Microsoft.UI.Xaml-Product.sln
+        solutionPath: $(Build.SourcesDirectory)
+        msBuildArgs: '/p:PGOBuildMode=Instrument /m'
+        msbuildInstallDir: '$(buildToolsDirectory)'
+        runStaticAnalysis: false
+
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: Microsoft.UI.Xaml.Tests.AppPerf.vcxproj
+        solutionPath: $(perfPath)\driver
+        msBuildArgs: '/p:PGOCopyRuntime=true /m'
+        msbuildInstallDir: '$(buildToolsDirectory)'
+        runStaticAnalysis: false
+
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: Microsoft.UI.Xaml.Controls.vcxproj
+        solutionPath: $(Build.SourcesDirectory)\controls\dev\dll
+        msBuildArgs: '/p:PGOBuildMode=Instrument /m'
+        msbuildInstallDir: '$(buildToolsDirectory)'
+        runStaticAnalysis: false
+
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: pgo/EnsureTestDependencies.proj
+        solutionPath: $(perfPath)
+        msBuildArgs: '/p:PGOCopyRuntime=true /restore'
+        msbuildInstallDir: '$(buildToolsDirectory)'
+        runStaticAnalysis: false
+
+    # Copy instrumented external binaries (e.g. WinUIEdit) from transport packages
+    # into the Product output, overwriting shipping versions for PGO training.
+    - task: PowerShell@2
+      displayName: Copy instrumented external binaries to Product
+      inputs:
+        targetType: filePath
+        filePath: $(perfPath)\pgo\copy-instrumented-externals.ps1
+        arguments: >
+          -repoRoot '$(Build.SourcesDirectory)'
+          -buildOutput '$(buildOutput)'
+          -normalizedConfiguration '$(normalizedConfiguration)'
+          -buildPlatform '$(buildPlatform)'
+
+    - powershell: |
+        & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+          -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
+          -VersionOverride $(versionFinal) `
+          -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
+          -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
+          -InstallPackage
+      displayName: Build WinUI component package
+
+    - task: CopyFiles@2
+      displayName: Copy WinUI transport package to local packages
+      inputs:
+        sourceFolder: $(Build.SourcesDirectory)\PackageStore
+        targetFolder: $(ob_outputDirectory)\$(buildFolderName)
+
+    - task: CopyFiles@2
+      displayName: Copy WinUI component package to perf/scenarios/packages
+      inputs:
+        sourceFolder: $(Build.SourcesDirectory)\packages
+        targetFolder: $(Build.SourcesDirectory)\perf\scenarios\packages
+        Contents: |
+          **/Microsoft.WindowsAppSDK*/**
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore packages.config'
+      inputs:
+        command: 'custom'
+        arguments: 'restore $(scenariosPath)\packages.config -ConfigFile $(scenariosPath)\nuget.config'
+        includeNuGetOrg: false
+      env:
+        # Provide the internal dependencies feed so NuGet can expand the
+        # %WinUILKGDependenciesFeedUri% token in perf\scenarios\nuget.config.
+        # Secret variables from the WinUI-InternalFeed group are not exposed as
+        # environment variables automatically, so map it explicitly here.
+        WinUILKGDependenciesFeedUri: $(WinUILKGDependenciesFeedUri)
+
+    # PGO scenario apps are only used for x86 app training - skip for x64/ARM64
+    - task: MSBuild@1
+      displayName: 'Build solution PGO-set.sln'
+      condition: eq(variables['buildPlatform'], 'x86')
+      inputs:
+        msbuildLocationMethod: 'location'
+        msbuildLocation: $(buildToolsDirectory)\MSBuild\Current\Bin\amd64\MSBuild.exe
+        solution: $(scenariosPath)/PGO-set.sln
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+        enableDefaultLogger: false
+        msbuildArguments: '/p:WinUIVersion=$(versionFinal) /p:PGOCopyRuntime=true /p:PublishReadyToRun=true /m /restore /binaryLogger:$(ob_outputDirectory)/binlogs/PGO-set.sln.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+      env:
+        LkgVcToolsName: $(compilerOverridePackageName)
+        LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
+        # Provide the internal dependencies feed so NuGet's /restore can expand the
+        # %WinUILKGDependenciesFeedUri% token in perf\scenarios\nuget.config.
+        WinUILKGDependenciesFeedUri: $(WinUILKGDependenciesFeedUri)
+
+    - task: CopyFiles@2
+      displayName: Copy build output to staging directory
+      condition: succeededOrFailed()
+      inputs:
+        sourceFolder: $(Build.SourcesDirectory)\BuildOutput\Bin
+        targetFolder: $(ob_outputDirectory)

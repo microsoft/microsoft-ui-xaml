@@ -1,0 +1,43 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  pipelineKind: ''
+  failOnTestFailure: true
+
+stages:
+- stage: RunTests
+  displayName: Run Tests Stage
+  dependsOn: Build
+  condition: not(failed())
+  jobs:
+  - template: WinUI-CreateTestPayload-Job.yml
+    parameters:
+      runTestJobName: CreateTestPayload
+      pipelineKind: ${{ parameters.pipelineKind }}
+      testSuite: 'DevTestSuite'
+      testPayloadArtifactName: 'TestPayload'
+
+  - template: WinUI-RunTestPassOnPipeline-Job.yml
+    parameters:
+      runTestJobName: RunTests25H2
+      dependsOn: CreateTestPayload
+      testOS: 'Win11-25H2'
+      testPayloadArtifactName: 'TestPayload'
+      failOnTestFailure: ${{ parameters.failOnTestFailure }}
+
+  - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
+    - template: WinUI-RunTestPassOnPipeline-Job.yml
+      parameters:
+        runTestJobName: RunTests23H2
+        dependsOn: CreateTestPayload
+        testOS: 'Win11-23H2'
+        testPayloadArtifactName: 'TestPayload'
+        failOnTestFailure: ${{ parameters.failOnTestFailure }}
+
+    - template: WinUI-RunTestPassOnPipeline-Job.yml
+      parameters:
+        runTestJobName: RunTestsRS5
+        dependsOn: CreateTestPayload
+        testOS: 'Win10-RS5'
+        testPayloadArtifactName: 'TestPayload'
+        failOnTestFailure: ${{ parameters.failOnTestFailure }}

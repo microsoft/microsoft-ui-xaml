@@ -1,0 +1,1 @@
+The contents of this directory and its subdirectories are used to build this repository in the lab. It includes both Azure Devops YAML pipeline definitions, scripts needed by the pipelines, and the specifications for the release Nuget packages.
