@@ -63,7 +63,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
     /// <summary>
     /// Verifies that Samples\DisableXamlGeneratedMain\Cs launches. It defines
-    /// DISABLE_XAML_GENERATED_MAIN and declares its own Main.
+    /// DISABLE_XAML_GENERATED_MAIN, declares its own Main and delegates to the
+    /// XamlCompiler-generated XamlGeneratedMain helper.
     /// </summary>
     [TestClass]
     public class DisableXamlGeneratedMainCsAppTests
@@ -142,7 +143,8 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
     /// <summary>
     /// Verifies that Samples\DisableXamlGeneratedMain\Cpp launches. It defines
-    /// DISABLE_XAML_GENERATED_MAIN and declares its own wWinMain.
+    /// DISABLE_XAML_GENERATED_MAIN, declares its own wWinMain and delegates to the
+    /// XamlCompiler-generated wXamlGeneratedMain helper.
     /// </summary>
     [TestClass]
     public class DisableXamlGeneratedMainCppAppTests
