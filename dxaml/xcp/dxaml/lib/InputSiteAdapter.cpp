@@ -570,11 +570,13 @@ void InputSiteAdapter::UnsubscribeToInputEvents()
         m_pointerWheelChangedToken.value = 0;
     }
 
+    /*
     if (m_touchHitTestRequestedToken.value != 0)
     {
         IGNOREHR(m_inputPointerSource2->remove_TouchHitTesting(m_touchHitTestRequestedToken));
         m_touchHitTestRequestedToken.value = 0;
     }
+    */
 
     if (m_directManipulationHitTestToken.value != 0)
     {
@@ -789,11 +791,13 @@ void InputSiteAdapter::UpdateLastPointerPointForReplay(const UINT uMsg, _In_ ixp
     }
 }
 
+/*
 _Check_return_ HRESULT InputSiteAdapter::OnTouchHitTesting(_In_ ixp::ITouchHitTestingEventArgs* args)
 {
     IFC_RETURN(DirectUI::TouchHitTestingHandler::TouchHitTesting(GetPublicRootVisual(), args));
     return S_OK;
 }
+*/
 
 CUIElement* InputSiteAdapter::GetPublicRootVisual()
 {

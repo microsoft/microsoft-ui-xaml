@@ -35,11 +35,13 @@ _Check_return_ HRESULT TouchHitTestingHandler::Register(_In_ wuc::ICoreWindow* p
         goto Cleanup;
     }
 
+    /*
     IFC(pCoreWindow->add_TouchHitTesting(
         Microsoft::WRL::Callback<wuc::ITouchHitTestingEventHandler>(
                 this,
                 &TouchHitTestingHandler::OnCoreWindowTouchHitTesting).Get(),
         &m_tokTouchHitTesting));
+    */
 
 Cleanup:
     RRETURN(hr);
@@ -187,6 +189,7 @@ _Check_return_ HRESULT TouchHitTestingHandler::UpdateBestEval(
     return S_OK;
 }
 
+/*
 _Check_return_ HRESULT TouchHitTestingHandler::OnCoreWindowTouchHitTesting(
     _In_ wuc::ICoreWindow *pSender,
     _In_ wuc::ITouchHitTestingEventArgs *pArgs)
@@ -242,6 +245,7 @@ _Check_return_ HRESULT TouchHitTestingHandler::OnCoreWindowTouchHitTesting(
 
     return S_OK;
 }
+*/
 
 //------------------------------------------------------------------------
 //
@@ -257,6 +261,7 @@ _Check_return_ HRESULT TouchHitTestingHandler::OnCoreWindowTouchHitTesting(
 //        ProximityEvaluation.AdjustedPoint are in screen coordinates.
 //
 //------------------------------------------------------------------------
+/*
 _Check_return_ HRESULT
 TouchHitTestingHandler::TouchHitTesting(
     _In_opt_ CUIElement* subtreeRootElement,
@@ -287,6 +292,7 @@ TouchHitTestingHandler::TouchHitTesting(
 
     return S_OK;
 }
+*/
 
 _Check_return_ HRESULT
 TouchHitTestingHandler::TouchHitTestingInternal(
