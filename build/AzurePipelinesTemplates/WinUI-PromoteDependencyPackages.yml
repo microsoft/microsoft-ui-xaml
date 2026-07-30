@@ -1,0 +1,87 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+- name: shineOssAzureDevOpsServiceConnection
+  type: string
+  default: ShineOSS-AzureDevOps-Push
+
+stages:
+- stage: EnsurePinnedOssPackages
+  displayName: Check and fetch pinned OSS packages
+  dependsOn: []
+  jobs:
+  - job: Fetch
+    pool:
+      type: windows
+    variables:
+      - group: WinUI-InternalFeed
+      - name: ob_outputDirectory
+        value: '$(Build.SourcesDirectory)\out'
+      - name: ob_artifactBaseName
+        value: 'OssPackagePromotionDrop'
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      path: s\microsoft-ui-xaml-lift
+
+    - task: NuGetToolInstaller@1
+      displayName: Ensure NuGet is available
+
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate to WinUI package feeds
+
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate to shine-oss feed
+      inputs:
+        azureDevOpsServiceConnection: ${{ parameters.shineOssAzureDevOpsServiceConnection }}
+        feedUrl: https://pkgs.dev.azure.com/shine-oss/microsoft-ui-xaml/_packaging/WinUI-Dependencies/nuget/v3/index.json
+
+    - template: WinUI-RunPinnedPackageScript-Steps.yml
+      parameters:
+        displayName: Check pinned packages and fetch missing packages
+        mode: CheckFetch
+        packagesDirectory: '$(Build.SourcesDirectory)\out\packages-to-push'
+        summaryPath: '$(Build.SourcesDirectory)\out\oss-pinned-package-summary.json'
+        internalFeedSource: '$(WinUILKGDependenciesFeedUri)'
+
+- stage: ReleaseToOSSFeed
+  displayName: Release pinned packages to OSS feed
+  dependsOn: EnsurePinnedOssPackages
+  jobs:
+  - job: PushToShineOSS
+    displayName: Push packages to shine-oss
+    pool:
+      type: windows
+    variables:
+      - group: WinUI-InternalFeed
+      - name: ob_outputDirectory
+        value: '$(Build.SourcesDirectory)\out'
+      - name: ob_artifactBaseName
+        value: 'OssPackagePromotionPush'
+    steps:
+    - checkout: self
+      fetchDepth: 1
+      path: s\microsoft-ui-xaml-lift
+
+    - task: DownloadPipelineArtifact@2
+      displayName: Download package artifact
+      inputs:
+        artifactName: OssPackagePromotionDrop
+        targetPath: '$(Pipeline.Workspace)\OssPackagePromotionDrop'
+
+    - task: NuGetToolInstaller@1
+      displayName: Ensure NuGet is available
+
+    - task: NuGetAuthenticate@1
+      displayName: Authenticate to shine-oss feed
+      inputs:
+        azureDevOpsServiceConnection: ${{ parameters.shineOssAzureDevOpsServiceConnection }}
+        feedUrl: https://pkgs.dev.azure.com/shine-oss/microsoft-ui-xaml/_packaging/WinUI-Dependencies/nuget/v3/index.json
+
+    - template: WinUI-RunPinnedPackageScript-Steps.yml
+      parameters:
+        displayName: Push missing pinned packages to shine-oss
+        mode: Push
+        packagesDirectory: '$(Pipeline.Workspace)\OssPackagePromotionDrop\packages-to-push'
+        summaryPath: '$(Pipeline.Workspace)\OssPackagePromotionDrop\oss-pinned-package-summary.json'
+        internalFeedSource: '$(WinUILKGDependenciesFeedUri)'

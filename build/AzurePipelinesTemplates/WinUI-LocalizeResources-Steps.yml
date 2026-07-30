@@ -1,0 +1,105 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  nupkgDir: '$(Build.ArtifactStagingDirectory)\packages'
+  packageVersion: '$(versionFinal)'
+  publishToMaestro: false
+
+steps:
+  - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+    parameters:
+      enableUseOutputFromPreviousBuild: true
+      itemPattern: '**/packaging/**'
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PowerShell@2
+    displayName: CopyFilesToParent
+    inputs:
+      targetType: 'inline'
+      script: |
+        Copy-Item -Path "$(Build.ArtifactStagingDirectory)\drop_*\*" -Destination "$(Build.ArtifactStagingDirectory)" -Recurse -Force
+
+    # The localization steps here upload our resource files to the localization service,
+    # retrieve the available localized resources, package those into a nuget package
+    # and upload to the package feed used by this pipeline.
+    # For now, we are only packaging and uploding the .mui resource files since we currently
+    # manually check in the localized .resw files.
+  - task: CopyFiles@2
+    displayName: 'Copy built mui resource files to a temp location'
+    condition: always()
+    inputs:
+      sourceFolder: '$(Build.ArtifactStagingDirectory)\packaging\$(buildConfiguration)\runtimes\win10-$(buildPlatform)\native\en-us\'
+      targetFolder: $(Build.SourcesDirectory)\BuildOutput\Temp\localizationResources
+
+  - task: TouchdownBuildTask@5
+    displayName: 'Call localization build service'
+    inputs:
+      environment: 'PRODEXT'
+      teamId: '19357'
+      authType: 'FederatedIdentityTDBuild'
+      FederatedIdentityTDBuildServiceConnection: "WinUI-TDBuild-ServiceConnection"
+      relativePathRoot: $(Build.SourcesDirectory)
+      resourceFilePath: |
+        controls\dev\Breadcrumb\Strings\en-us\Resources.resw
+        controls\dev\ColorPicker\Strings\en-us\Resources.resw
+        controls\dev\CommandBarFlyout\Strings\en-us\Resources.resw
+        controls\dev\InfoBar\Strings\en-us\Resources.resw
+        controls\dev\ItemContainer\Strings\en-us\Resources.resw
+        controls\dev\NavigationView\Strings\en-us\Resources.resw
+        controls\dev\NumberBox\Strings\en-us\Resources.resw
+        controls\dev\PagerControl\Strings\en-us\Resources.resw
+        controls\dev\PersonPicture\Strings\en-us\Resources.resw
+        controls\dev\PipsPager\Strings\en-us\Resources.resw
+        controls\dev\ProgressBar\Strings\en-us\Resources.resw
+        controls\dev\ProgressRing\Strings\en-us\Resources.resw
+        controls\dev\RatingControl\Strings\en-us\Resources.resw
+        controls\dev\SelectorBar\Strings\en-us\Resources.resw
+        controls\dev\SplitButton\Strings\en-us\Resources.resw
+        controls\dev\TabView\Strings\en-us\Resources.resw
+        controls\dev\TeachingTip\Strings\en-us\Resources.resw
+        controls\dev\TitleBar\Strings\en-us\Resources.resw
+        controls\dev\TreeView\Strings\en-us\Resources.resw
+        controls\dev\WebView2\Strings\en-us\Resources.resw
+        BuildOutput\Temp\localizationResources\Microsoft.ui.xaml.dll.mui
+        BuildOutput\Temp\localizationResources\Microsoft.UI.Xaml.Phone.dll.mui
+      outputDirectoryRoot: $(Build.SourcesDirectory)\BuildOutput\Temp\LocOutput
+      appendRelativeDir: true
+      cultureMappingType: 'None'
+
+  - task: CmdLine@2
+    displayName: Set NuGet environment variables
+    inputs:
+      script: |
+        $(Build.SourcesDirectory)\scripts\setnugetenvvars.cmd
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet locals -clear http-cache'
+    inputs:
+      command: 'custom'
+      arguments: 'locals -clear http-cache'
+  - powershell: |
+      & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
+        -PackageRoot '$(Build.ArtifactStagingDirectory)\packaging' `
+        -OutputDir '${{ parameters.nupkgDir }}' `
+        -VersionOverride '${{ parameters.packageVersion }}' `
+        -Nuspec 'WinUILocalizationResources.nuspec'
+    displayName: 'build-nupkg.ps1'
+
+  # Push to the WinUI.Dependencies feed, since this is where we consume our dependencies
+  # In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
+  # See known NuGet task issue notes.
+  - task: NuGetCommand@2
+    displayName: 'NuGet-Localization-Resources push to WinUI.Dependencies feed'
+    inputs:
+      command: push
+      publishVstsFeed: 1103ce32-f206-4cab-b967-dcc556dacd13
+      packagesToPush: '${{ parameters.nupkgDir }}\Microsoft.Internal.WinUILocalizationResources.${{ parameters.packageVersion }}.nupkg'
+
+  # Check for changes and create a new branch if required
+  - powershell: |
+      & "$env:Build_SourcesDirectory\build\PipelineScripts\ApplyLocalizationUpdates.ps1" `
+        -PackageVersion '${{parameters.packageVersion}}'
+    displayName: 'ApplyLocalizationUpdates.ps1'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      WinUIPullRequestsApiUri: $(WinUIPullRequestsApiUri)
