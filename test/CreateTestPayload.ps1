@@ -151,6 +151,36 @@ function Publish-Item {
     }
 }
 
+function Resolve-PackageTestDirectory {
+    Param(
+        [Parameter(Mandatory = $true)]
+        [string]$SamplesPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$PackageName
+    )
+
+    $expectedPath = Join-Path $SamplesPath "${PackageName}_Test"
+    if ((Test-Path $expectedPath) -and (Get-ChildItem -Path $expectedPath -File -Filter "*.msix*" -ErrorAction SilentlyContinue))
+    {
+        return Get-Item $expectedPath
+    }
+
+    $candidates = @(
+        Get-ChildItem -Path $SamplesPath -Directory -Filter "${PackageName}*Test" -ErrorAction SilentlyContinue |
+            Where-Object { Get-ChildItem -Path $_.FullName -File -Filter "*.msix*" -ErrorAction SilentlyContinue }
+    )
+
+    if ($candidates.Count -eq 1)
+    {
+        Write-Host "Expected package directory '$expectedPath' was not present. Using '$($candidates[0].FullName)'."
+        return $candidates[0]
+    }
+
+    $candidateNames = if ($candidates.Count -eq 0) { "<none>" } else { $candidates.FullName -join "; " }
+    throw "Expected package directory '$expectedPath' was not found and fallback discovery did not produce exactly one valid directory. Candidates: $candidateNames"
+}
+
 $redistPlatform = $Platform
 if($Platform -eq "arm64ec")
 {
@@ -227,17 +257,8 @@ if ($Mode -eq "ScenarioTestSuite")
     # TODO: once pipeline is ready to run all sample apps, remove this check
     if (-not ($env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK"))))
     {
-        $csSampleTestDir = Get-ChildItem -Path "$binpath\Samples" -Directory -Filter "WinUICsDesktopSampleApp*Test" -ErrorAction SilentlyContinue | Select-Object -First 1
-        if (-not $csSampleTestDir)
-        {
-            throw "WinUICsDesktopSampleApp test package directory not found under '$binpath\Samples'."
-        }
-
-        $cppSampleTestDir = Get-ChildItem -Path "$binpath\Samples" -Directory -Filter "WinUICppDesktopSampleApp*Test" -ErrorAction SilentlyContinue | Select-Object -First 1
-        if (-not $cppSampleTestDir)
-        {
-            throw "WinUICppDesktopSampleApp test package directory not found under '$binpath\Samples'."
-        }
+        $csSampleTestDir = Resolve-PackageTestDirectory -SamplesPath "$binpath\Samples" -PackageName "WinUICsDesktopSampleApp"
+        $cppSampleTestDir = Resolve-PackageTestDirectory -SamplesPath "$binpath\Samples" -PackageName "WinUICppDesktopSampleApp"
 
         Publish-Item "$($csSampleTestDir.FullName)\*.msix*" "$outpath\Test\"
         Publish-Item "$($cppSampleTestDir.FullName)\*.msix*" "$outpath\Test\"
