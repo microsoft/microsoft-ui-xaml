@@ -1,0 +1,39 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+- name: CompareAgainstStable
+  type: boolean
+  default: true
+- name: CompareAgainstExperimental
+  type: boolean
+  default: false
+
+stages:
+- stage: CheckApiChanges
+  dependsOn:
+    - Packaging
+  condition: succeeded()
+  jobs:
+  - job: CheckApiChanges
+    pool:
+      # Read more about custom job pool types in the pipeline documentation.
+      type: windows
+      isCustom: true
+      name: Azure Pipelines
+      vmImage: 'windows-2022'
+    timeoutInMinutes: 120
+    steps:
+    - checkout: self
+
+    - template: AzurePipelinesTemplates\WindowsAppSDK-CheckApiChanges-Steps.yml@WindowsAppSDKConfig
+      parameters:
+        ComponentPackagePatterns: ['Microsoft.WindowsAppSDK.WinUI.*.nupkg']
+        CompareAgainstStable: ${{ parameters.CompareAgainstStable }}
+        CompareAgainstExperimental: ${{ parameters.CompareAgainstExperimental }}
+        DownloadPipelineArtifactInputs:
+          source: specific
+          runVersion: specific
+          project: $(System.TeamProjectId)
+          pipeline: $(_useBuildOutputFromPipeline)
+          pipelineId: $(_useBuildOutputFromBuildId)
+          artifactName: 'NugetPackages'
