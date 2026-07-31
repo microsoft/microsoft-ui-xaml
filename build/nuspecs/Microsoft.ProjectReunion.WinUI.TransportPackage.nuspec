@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <!-- Note: If this file is deleted, also delete the NativeAssemblyPackageLocationOld, WinUIRuntimeIdentifierOld,
+             and NoiseAssetOutputLocationOld properties and clean up all users of those properties. -->
+  <metadata>
+    <id>Microsoft.ProjectReunion.WinUI.TransportPackage</id>
+    <version>$VERSION$</version>
+    <title>Microsoft Project Reunion Windows UI Transport Package Library</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <description>This package provides backward-compatible versions of Windows UI features including UWP XAML controls, dense control styles, and Fluent styles and materials. It is part of the Windows UI Library.
+
+Please note that the APIs contained in this package are subject to change before the official WinUI 3.0 release. This version is intended for preview and not for use in shipping applications.</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>Windows ProjectReunion WinUI UWP XAML Fluent Controls Downlevel Compatibility TreeView ColorPicker NavigationView MenuBar</tags>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="file">license.txt</license>
+    <projectUrl>https://aka.ms/winui</projectUrl>
+    <iconUrl>https://aka.ms/winui_icon</iconUrl>
+
+    <dependencies>
+      <!-- Note: groups can be used to narrow the set of applicable TPMs for a nuget package, as well as to define dependencies for those TPMs.  
+      In this case, the set of dependencies is identical across TPMs.  Note also that the dependencies expressed here are solely for the
+      purpose of Reunion validation across transport packages.-->
+      <group>
+        <dependency id="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" version="[$IXP_VERSION$]"/>
+      </group>
+      <group targetFramework="uap10.0">
+        <dependency id="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" version="[$IXP_VERSION$]"/>
+      </group>
+      <group targetFramework="net6.0-windows10.0.17763.0">
+        <dependency id="Microsoft.ProjectReunion.InteractiveExperiences.TransportPackage" version="[$IXP_VERSION$]"/>
+        <dependency id="Microsoft.Windows.CsWinRT" version="[$CSWINRT_VERSION$]"/>
+      </group>
+      <group>
+        <!-- This reference captures the 'default version' of WinUI's CWV2 SDK dependency specified in the root packages.config.
+             It will get propagated to Microsoft.WindowsAppSDK.nuspec as part of WindowsAppSDKAggregator build -->
+        <dependency id="Microsoft.Web.WebView2" version="[$WEBVIEW2_VERSION$,)" />
+      </group>
+    </dependencies>
+
+  </metadata>
+  <files>
+    <!-- tailor the nuget package to only include MUX content -->
+    <file target="" src="$PACKAGEROOT$\**\*" exclude="**\*" />
+    <file src="$PACKAGEROOT$\license.txt" target="" />
+    <file src="$PACKAGEROOT$\AppxManifest.xml" target="" />
+    <file src="$PACKAGEROOT$\build\**\*WindowsAppSDK.WinUI.*" target="build" />
+    <file src="$PACKAGEROOT$\build\**\Microsoft.UI*" target="build" />
+    <file src="$PACKAGEROOT$\build\**\Microsoft.WinUI*" target="build" />
+    <file src="$PACKAGEROOT$\build\LiftedWinRTClassRegistrations.xml" target="build" />
+    <file src="$PACKAGEROOT$\include\**\microsoft.ui*" target="include" />
+    <file src="$PACKAGEROOT$\include\xamlom.winui*" target="include" />
+    <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*\**" target="lib" />
+    <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*" target="lib" />
+    <file src="$PACKAGEROOT$\lib\uap10.0\**\*.xaml" target="lib\uap10.0" />
+    <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Text.*" target="lib\uap10.0" />
+    <!-- Tabular metadata is gated out of public winmd. -->
+    <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Xaml.*" target="lib\uap10.0" />
+    <file src="$PACKAGEROOT$\manifests*\**" target="manifests" />
+    <file src="$PACKAGEROOT$\runtimes\**\Microsoft.UI.Xaml\**" target="runtimes" />
+    <!-- Transport packs after Tabular binplace, so this wildcard carries Tabular.dll/.pri. -->
+    <file src="$PACKAGEROOT$\runtimes\**\Microsoft.UI.Xaml.*" target="runtimes" />
+    <file src="$PACKAGEROOT$\runtimes\**\WinUIEdit.dll" target="runtimes" />
+    <file src="$PACKAGEROOT$\tools\**" target="tools" />
+    <file src="$PACKAGEROOT$\build\cmake\**" target="build\cmake" />
+  </files>
+
+</package>

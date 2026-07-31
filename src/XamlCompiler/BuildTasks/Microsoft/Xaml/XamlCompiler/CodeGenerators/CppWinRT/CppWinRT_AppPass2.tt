@@ -11,6 +11,7 @@
 #include "<#=ProjectInfo.PrecompiledHeaderFile#>"
 <#  }#>
 #include <windows.h>
+#include <type_traits>
 <#  foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { #>
 #include "<#=includeFile#>"
 <#  }#>
@@ -59,10 +60,30 @@ extern "C"
 
 #endif // (defined(_M_IX86) || defined(_M_AMD64) || defined(_M_ARM) || defined(_M_ARM64))) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)
 
+#ifdef DISABLE_XAML_GENERATED_MAIN
+namespace
+{
+    // True iff the unevaluated expression T() is well-formed - i.e. T has an accessible,
+    // non-deleted parameterless constructor. Unlike std::is_default_constructible, this does
+    // not also require an accessible destructor. C++/WinRT implementation types (such as XAML
+    // App classes deriving from winrt::implements<>) intentionally have a non-public
+    // destructor to force heap allocation via winrt::make<>, which makes
+    // std::is_default_constructible evaluate to false even when a public parameterless
+    // constructor exists. Using an unevaluated functional-cast expression performs overload
+    // resolution for the constructor without materializing (and therefore destroying) a
+    // temporary, so it detects the constructor without requiring destructibility.
+    template <typename T, typename = void>
+    inline constexpr bool has_parameterless_ctor_v = false;
+
+    template <typename T>
+    inline constexpr bool has_parameterless_ctor_v<T, std::void_t<decltype(T())>> = true;
+}
+#endif
+
 #ifndef DISABLE_XAML_GENERATED_MAIN
 int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)
 #else
-int __stdcall wXamlGeneratedMain(HINSTANCE, HINSTANCE, PWSTR, int)
+int __stdcall wXamlGeneratedMain()
 #endif
 {
 <#  if (ProjectInfo.IsWin32App) { #>
@@ -79,7 +100,18 @@ int __stdcall wXamlGeneratedMain(HINSTANCE, HINSTANCE, PWSTR, int)
     <#=Projection(KnownNamespaces.Xaml)#>::Application::Start(
         [](auto&&)
         {
+#ifdef DISABLE_XAML_GENERATED_MAIN
+            // The App is constructed here only when it has an accessible parameterless
+            // constructor. This lets an application that defines DISABLE_XAML_GENERATED_MAIN
+            // supply its own entry point and omit a parameterless App constructor without
+            // breaking this generated helper.
+            if constexpr (has_parameterless_ctor_v<<#=Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")#>>)
+            {
+                ::winrt::make<<#=Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")#>>();
+            }
+#else
             ::winrt::make<<#=Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")#>>();
+#endif
         });
 
     return 0;

@@ -1,0 +1,19 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+steps:
+  # Display useful information about the state of the build machine.
+  # This can be helpful when trying to understand build failures that do not repro locally.
+  - powershell: |
+      gci env:* | sort-object name
+    displayName: Display build machine environment variable
+    condition: always()
+
+  - script: |
+      where msbuild
+      msbuild -version
+      dotnet --list-sdks
+      dir c:
+      dir d:
+      exit /b 0
+    displayName: 'display machine state info'
+    condition: always()

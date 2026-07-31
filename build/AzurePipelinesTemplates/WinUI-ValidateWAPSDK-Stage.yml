@@ -1,0 +1,72 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+stages:
+- stage: SetupEnvironment
+  displayName: Check available environment vars
+  jobs:
+  - job: Run
+    timeoutInMinutes: 60
+
+    steps:
+    - task: powershell@2
+      displayName: Setup environment based on context
+      inputs: 
+        targetType: inline
+        script: |
+          switch ( $env:BUILD_REASON )  
+          {
+            "Manual" {
+              Write-Host " Build_Reason is $env:BUILD_REASON"
+              Write-Host " Param set from env _WindowsAppSdkPackageVersion to $env:_WINDOWSAPPSDKPACKAGEVERSION"
+              Write-Host " Param set _WindowsAppSdkPackageVersion to $(_WindowsAppSdkPackageVersion)"
+
+              if ( ! $windowsAppSDK  )
+              {
+                $userName = ( $env:BUILD_REQUESTEDFOREMAIL -split "@" )[0]
+                $windowsAppSDK = "$userName-$env:BUILD_SOURCEBRANCHNAME" -replace "(<|>|\||\?|!|:|\\|\/|`"|\s)"; "_"
+                Write-Host "##[warning] userExperimentName was not set; setting to $windowsAppSDK."
+              }
+
+              $variables = @{ windowsAppSDK       = $windowsAppSDK;
+                              buildIdConsumed      = $env:USERBUILDIDCONSUMED;
+                              buildPipelineId      = $env:USERBUILDPIPELINEID }
+            }
+
+            "ResourceTrigger" {
+              switch ( $env:RESOURCES_TRIGGERINGALIAS )
+              {
+                "WinUI-CI" {
+                   $variables = @{ windowsAppSDK       = "1.2.220907.1-experimental.nightly";
+                                buildIdConsumed      = ( [Environment]::GetEnvironmentVariable("RESOURCES_PIPELINE_WINUI-CI_RUNID") );
+                                buildPipelineId      = ( [Environment]::GetEnvironmentVariable("RESOURCES_PIPELINE_WINUI-CI_PIPELINEID") ) }
+                }
+
+                "WinUI-Nightly" {
+                   $variables = @{ windowsAppSDK       = "1.2.220813.1-experimental.nightly";
+                                buildIdConsumed      = ( [Environment]::GetEnvironmentVariable("RESOURCES_PIPELINE_WINUI-NIGHTLY_RUNID") );
+                                buildPipelineId      = ( [Environment]::GetEnvironmentVariable("RESOURCES_PIPELINE_WINUI-NIGHTLY_PIPELINEID") ) }
+                }
+              }
+            }
+          }
+  
+          if ( ! $variables )
+          {
+            throw "Pipeline started for unsupported reason."
+          }
+
+          foreach ( $variableKey in $variables.Keys )
+          {
+            $value = $variables[$variableKey]
+            Write-Host "variablekey = $variableKey    value = $value"
+            Write-Host "##vso[task.setvariable variable=$variableKey;]$value"
+            [Environment]::SetEnvironmentVariable( $variableKey, $value )
+          }
+
+    - script: set
+      displayName: Display machine environment variables
+
+- template: AzurePipelinesTemplates\WinUI-BuildAndTestScenarioApps-Stage.yml
+  parameters:
+    pipelineKind: ValidateWindowsAppSDK
+    dependsOn: ''

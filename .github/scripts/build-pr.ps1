@@ -22,19 +22,11 @@ if (-not (Test-Path $binlogDir)) { New-Item -ItemType Directory -Force -Path $bi
 
 $commonArgs = "/restore /m /ds:false"
 
-$lmrSentinel = "src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlTypeUniverse.cs"
-if (Test-Path $lmrSentinel) {
-    Write-Host "LMR present - building XamlCompilerPrerequisites.sln"
-    $prereqSteps = @(
-        "msbuild XamlCompilerPrerequisites.sln /p:Platform=$Platform /p:Configuration=$Configuration $commonArgs /binaryLogger:$binlogDir\XamlCompilerPrerequisites.$Platform.$Configuration.binlog"
-    )
-} else {
-    Write-Host "OSS path - using XamlCompilerPublic.csproj + BuildGenXbfForMSBuild.csproj"
-    $prereqSteps = @(
-        "msbuild XamlCompilerPublic.csproj                              /p:Platform=$Platform /p:Configuration=$Configuration $commonArgs /binaryLogger:$binlogDir\XamlCompilerPublic.$Platform.$Configuration.binlog",
-        "msbuild eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj /p:Platform=$Platform /p:Configuration=$Configuration $commonArgs /binaryLogger:$binlogDir\BuildGenXbfForMSBuild.$Platform.$Configuration.binlog"
-    )
-}
+# Build the XAML compiler from source. XamlCompilerPrerequisites.sln also builds
+# GenXbf (via the BuildGenXbfForMSBuild project it contains), so no separate step is needed.
+$prereqSteps = @(
+    "msbuild XamlCompilerPrerequisites.sln /p:Platform=$Platform /p:Configuration=$Configuration $commonArgs /binaryLogger:$binlogDir\XamlCompilerPrerequisites.$Platform.$Configuration.binlog"
+)
 
 $sequence = $prereqSteps + @(
     "msbuild Microsoft.UI.Xaml-Product.sln                       /p:Platform=$Platform /p:Configuration=$Configuration $commonArgs /binaryLogger:$binlogDir\Microsoft.UI.Xaml-Product.$Platform.$Configuration.binlog",

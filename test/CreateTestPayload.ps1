@@ -226,6 +226,10 @@ if ($Mode -eq "ScenarioTestSuite")
     {
         Publish-Item "$binpath\Samples\WinUICsDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
         Publish-Item "$binpath\Samples\WinUICppDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCs_Test\*.msix" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCs_Test\*.msix" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCpp_Test\*.msix" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCpp_Test\*.msix" "$outpath\Test\"
     }
     # The Windows App SDK MSIX tooling stamps platform/version/config into the test-package directory name,
     # e.g. WinUIGallery_x86_1.0.0.0_Debug_Test. Discover it dynamically rather than hard-coding the suffix.

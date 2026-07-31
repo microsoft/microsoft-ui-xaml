@@ -35,7 +35,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
             this.Write(this.ToStringHelper.ToStringWithCulture(ProjectInfo.PrecompiledHeaderFile));
             this.Write("\"\r\n");
   }
-            this.Write("#include <windows.h>\r\n");
+            this.Write("#include <windows.h>\r\n#include <type_traits>\r\n");
   foreach (var includeFile in Model.NeededLocalXamlHeaderFiles) { 
             this.Write("#include \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(includeFile));
@@ -69,10 +69,23 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
                     "dcall VSDesignerDllMain(void* hinstDLL, unsigned long fdwReason, void** lpvReser" +
                     "ved)\r\n    {\r\n        return _DllMainCRTStartup(hinstDLL, fdwReason, lpvReserved)" +
                     ";\r\n    }\r\n}\r\n\r\n#endif // (defined(_M_IX86) || defined(_M_AMD64) || defined(_M_AR" +
-                    "M) || defined(_M_ARM64))) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)\r\n\r\n#ifndef D" +
-                    "ISABLE_XAML_GENERATED_MAIN\r\nint __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, " +
-                    "int)\r\n#else\r\nint __stdcall wXamlGeneratedMain(HINSTANCE, HINSTANCE, PWSTR, int)\r" +
-                    "\n#endif\r\n{\r\n");
+                    "M) || defined(_M_ARM64))) && !defined(_VSDESIGNER_DONT_LOAD_AS_DLL)\r\n\r\n#ifdef DI" +
+                    "SABLE_XAML_GENERATED_MAIN\r\nnamespace\r\n{\r\n    // True iff the unevaluated express" +
+                    "ion T() is well-formed - i.e. T has an accessible,\r\n    // non-deleted parameter" +
+                    "less constructor. Unlike std::is_default_constructible, this does\r\n    // not al" +
+                    "so require an accessible destructor. C++/WinRT implementation types (such as XAM" +
+                    "L\r\n    // App classes deriving from winrt::implements<>) intentionally have a no" +
+                    "n-public\r\n    // destructor to force heap allocation via winrt::make<>, which ma" +
+                    "kes\r\n    // std::is_default_constructible evaluate to false even when a public p" +
+                    "arameterless\r\n    // constructor exists. Using an unevaluated functional-cast ex" +
+                    "pression performs overload\r\n    // resolution for the constructor without materi" +
+                    "alizing (and therefore destroying) a\r\n    // temporary, so it detects the constr" +
+                    "uctor without requiring destructibility.\r\n    template <typename T, typename = v" +
+                    "oid>\r\n    inline constexpr bool has_parameterless_ctor_v = false;\r\n\r\n    templat" +
+                    "e <typename T>\r\n    inline constexpr bool has_parameterless_ctor_v<T, std::void_" +
+                    "t<decltype(T())>> = true;\r\n}\r\n#endif\r\n\r\n#ifndef DISABLE_XAML_GENERATED_MAIN\r\nint" +
+                    " __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR, int)\r\n#else\r\nint __stdcall wXam" +
+                    "lGeneratedMain()\r\n#endif\r\n{\r\n");
   if (ProjectInfo.IsWin32App) { 
             this.Write("    winrt::init_apartment(winrt::apartment_type::single_threaded);\r\n");
   } else { 
@@ -94,9 +107,21 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.CodeGen
   } 
             this.Write("    ");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection(KnownNamespaces.Xaml)));
-            this.Write("::Application::Start(\r\n        [](auto&&)\r\n        {\r\n            ::winrt::make<");
+            this.Write(@"::Application::Start(
+        [](auto&&)
+        {
+#ifdef DISABLE_XAML_GENERATED_MAIN
+            // The App is constructed here only when it has an accessible parameterless
+            // constructor. This lets an application that defines DISABLE_XAML_GENERATED_MAIN
+            // supply its own entry point and omit a parameterless App constructor without
+            // breaking this generated helper.
+            if constexpr (has_parameterless_ctor_v<");
             this.Write(this.ToStringHelper.ToStringWithCulture(Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")));
-            this.Write(">();\r\n        });\r\n\r\n    return 0;\r\n}\r\n");
+            this.Write(">)\r\n            {\r\n                ::winrt::make<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")));
+            this.Write(">();\r\n            }\r\n#else\r\n            ::winrt::make<");
+            this.Write(this.ToStringHelper.ToStringWithCulture(Projection($"{Model.CodeInfo.ClassName.Namespace}.implementation.{Model.CodeInfo.ClassName.ShortName}")));
+            this.Write(">();\r\n#endif\r\n        });\r\n\r\n    return 0;\r\n}\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }

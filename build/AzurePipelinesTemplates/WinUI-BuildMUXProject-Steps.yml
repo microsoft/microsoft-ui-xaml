@@ -1,0 +1,406 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  buildArtifactsDirectory: $(Build.SourcesDirectory)\BuildOutput
+  additionalMSBuildOptions: ''
+  pipelineKind: ''
+  buildScenarioApps: false
+  signOutput: false
+  MUXFinalRelease: false
+  runStaticAnalysis: true
+  projectCaching: false
+  buildProductOnly: false
+  pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
+
+steps:
+  - task: NuGetAuthenticate@1
+  
+  # Set values of common build variables
+  - powershell: |
+      $buildConfigTable = @{ "chk" = "Debug"; "fre" = "Release"}
+      $buildConfiguration = $buildConfigTable[$env:normalizedConfiguration]
+
+      Write-Host "buildConfiguration = $buildConfiguration"
+      Write-Host "versionFinal = $env:versionFinal"
+      Write-Host "##vso[task.setvariable variable=buildConfiguration;]$buildConfiguration"
+
+      # PublishAot must be specified at restore, as it conditionally generates nuget.g.* imports
+      $publishAot = $env:buildConfiguration -eq "Release" -and $env:buildPlatform -ne "x86"
+      Write-Host "##vso[task.setvariable variable=publishAotValue;]$publishAot"
+
+      if ($env:BUILD_REPOSITORY_PROVIDER -in @("GitHub", "GitHubEnterprise"))
+      {
+        Write-Host "Disabling PGO for GitHub-backed validation."
+        Write-Host "##vso[task.setvariable variable=PGODisable;]true"
+        Write-Host "##vso[task.setvariable variable=pgoBuildMode;]Off"
+      }
+    displayName: Set computed variables
+
+  # Cleans anything left over from previous builds (including VS build tools) and installs NuGet
+  - template: WinUI-InitializeMachineState-Steps.yml
+
+  - checkout: WindowsAppSDKConfig
+
+  # Ensure the VS preinstalled on the image is up-to-date, or install the VS build tools if enableVsBuildTools=true. Also installs latest build tools preview if pipelineKind = Preview
+  - template: WinUI-Install-MSBuildTools.yml
+    parameters:
+      msbuildInstallDir: '$(_buildToolsDirectory)'
+      msbuildInstallLogsDir: '$(_buildToolsInstallLogsDirectory)'
+      pipelineKind: ${{ parameters.pipelineKind }}
+
+  - task: CmdLine@2
+    displayName: Set up environment
+    inputs:
+      script: |
+        $(Build.SourcesDirectory)\init.cmd /pipeline $(buildPlatform)$(normalizedConfiguration) $(_dotNetFrameworkVersionInitParam)
+
+  - task: PowerShell@2
+    displayName: GenerateVersionInfo
+    condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    inputs:
+      filePath: '$(REPOROOT)\build\PipelineScripts\GenerateVersionInfo.ps1'
+      arguments: >
+        -ProductMajor "$(MajorVersion)"
+        -ProductMinor "$(MinorVersion)"
+        -VersionInfoPath "$(REPOROOT)\dxaml\xcp\inc\WindowsAppSDK-ProductInfo.h"
+
+  - script: |
+      echo ##vso[task.setvariable variable=pgoBuildMode]Optimize
+    condition: and(eq(variables['shouldPgo'], 'true'), ne(variables['PGODisable'], 'true'), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    displayName: Enable PGO
+
+  - template: WinUI-InstallDependencies-Steps.yml
+
+  # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
+  - task: DownloadPackage@1
+    displayName: 'Download Microsoft.Telemetry.Inbox.Native'
+    condition: and(succeeded(), ${{ eq(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    inputs:
+      feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
+      view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
+      definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
+      version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
+      downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
+
+  # Replace the stubbed MicrosoftTelemetry.h with the real one
+  # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+  - script: |
+     del $(System.DefaultWorkingDirectory)\controls\dev\Telemetry\MicrosoftTelemetry.h
+     del $(System.DefaultWorkingDirectory)\dxaml\xcp\inc\telemetry\MicrosoftTelemetry.h
+     copy /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\controls\dev\Telemetry\
+     copy /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dxaml\xcp\inc\telemetry\
+    condition: and(succeeded(), ${{ eq(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    failOnStderr: true
+    displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+
+  - powershell: |
+      if ($env:LkgVcToolsName -eq $null)
+      {
+          $env:LkgVcToolsName  = '$(compilerOverridePackageName)'
+      }
+      if($env:LkgVcToolsVersion -eq $null)
+      {
+          $env:LkgVcToolsVersion = '$(compilerOverrideNupkgVersion)'
+      }
+      nuget install $env:LkgVcToolsName -version $env:LkgVcToolsVersion -source $(WinUILKGCompilerFeedUri) -ConfigFile $(Build.SourcesDirectory)\nuget.config
+    displayName: Install native compiler override
+
+  # Inject the Azure Maps token into the MapControl test page
+  - task: PowerShell@2
+    displayName: 'Inject AzureMaps Token'
+    condition: and(succeeded(), or(and(ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise')), and(or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')), ne(variables['System.PullRequest.IsFork'], 'True'))))
+    inputs:
+      filePath: 'scripts\InjectAzureMapsToken.ps1'
+      arguments: "-MapsToken '$(WinUIAzureMapsKey)'"
+
+  # When we build the XAML compiler as part of the same build that consumes the XAML compiler,
+  # we can hit build breaks caused by MSBuild instances trying to produce DLLs that it's
+  # already loaded.  To avoid that, we'll build the parts of the XAML compiler we need to build
+  # before we build the solutions that consume them.
+  - template: WinUI-BuildProject-Steps.yml
+    parameters:
+      solutionName: XamlCompilerPrerequisites.sln
+      solutionPath: $(Build.SourcesDirectory)
+      nugetConfigPath: nuget.config
+      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
+      msbuildInstallDir: $(_buildToolsDirectory)
+      projectCaching: ${{ parameters.projectCaching }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+
+  - template: WinUI-BuildProject-Steps.yml
+    parameters:
+      solutionName: XamlCompilerPublic.csproj
+      solutionPath: $(Build.SourcesDirectory)
+      nugetConfigPath: nuget.config
+      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
+      msbuildInstallDir: $(_buildToolsDirectory)
+      projectCaching: ${{ parameters.projectCaching }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+      condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+
+  - template: WinUI-BuildProject-Steps.yml
+    parameters:
+      solutionName: BuildGenXbfForMSBuild.csproj
+      solutionPath: $(Build.SourcesDirectory)\eng\BuildGenXbfForMSBuild
+      nugetConfigPath: nuget.config
+      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
+      msbuildInstallDir: $(_buildToolsDirectory)
+      projectCaching: ${{ parameters.projectCaching }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+      condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+
+  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: Microsoft.UI.Xaml.sln
+        solutionPath: $(Build.SourcesDirectory)\dxaml
+        nugetConfigPath: nuget.config
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        projectCaching: ${{ parameters.projectCaching }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+      # Build log is published by the WinUI-BuildProject-Steps.yml pipeline
+
+  - ${{ if eq(parameters.buildProductOnly, 'true') }}:
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: Microsoft.UI.Xaml-Product.sln
+        solutionPath: $(Build.SourcesDirectory)
+        nugetConfigPath: nuget.config
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        projectCaching: ${{ parameters.projectCaching }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+      # Build log is published by the WinUI-BuildProject-Steps.yml pipeline
+
+  # Build WinUI component package before copying to output directory. The BuildScenarioApps
+  # stage downloads this package and sample apps reference Microsoft.WindowsAppSDK.WinUI.
+  - powershell: |
+      if ($env:BUILD_REPOSITORY_PROVIDER -notin @('GitHub', 'GitHubEnterprise'))
+      {
+        & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+          -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
+          -VersionOverride $(versionFinal) `
+          -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
+          -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
+          -InstallPackage
+      }
+      else
+      {
+        & "$(Build.SourcesDirectory)\build\NuSpecs\build-nupkg.ps1" `
+          -Nuspec Microsoft.WindowsAppSDK.WinUI.nuspec `
+          -VersionOverride $(versionFinal) `
+          -PackageRoot '$(Build.SourcesDirectory)\BuildOutput\packaging\$(buildConfiguration)' `
+          -OutputDir '$(Build.SourcesDirectory)\PackageStore' `
+          -UseDependencyOverrides `
+          -InstallPackage
+      }
+    displayName: Build WinUI component package
+
+  # Copy the Microsoft.WindowsAppSDK.WinUI component package to the output directory so the
+  # BuildScenarioApps stage can download and install it for the sample/test apps.
+  - task: CopyFiles@2
+    displayName: Move WinUI Component Package To Output Directory
+    condition: succeeded()
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\PackageStore'
+      TargetFolder: '$(ob_outputDirectory)\WinUIComponentPackage'
+      Contents: |
+        Microsoft.WindowsAppSDK.WinUI.*.nupkg
+
+  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: MUXControls.sln
+        solutionPath: $(Build.SourcesDirectory)\controls
+        nugetConfigPath: nuget.config
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        projectCaching: ${{ parameters.projectCaching }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  # Tabular lives in the internal-only MUXControlsTabular.sln (kept out of the mirrored MUXControls.sln
+  # so the public source drop has no dangling project reference). Built after MUXControls.sln so MUXC's
+  # component winmd exists first (see EnsureMuxcComponentWinMDBuilt in the Tabular vcxproj). This step
+  # MUST stay after the MUXControls.sln step. The solution is excluded from the public mirror, so it is
+  # guarded off GitHub-backed legs (where the source tree does not contain it), matching the
+  # XamlCompilerPrerequisites idiom above.
+  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
+    - template: WinUI-BuildProject-Steps.yml
+      parameters:
+        solutionName: MUXControlsTabular.sln
+        solutionPath: $(Build.SourcesDirectory)\controls
+        nugetConfigPath: nuget.config
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
+        msbuildInstallDir: $(_buildToolsDirectory)
+        projectCaching: ${{ parameters.projectCaching }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+
+  - script: |
+     dir /b /s $(Build.SourcesDirectory)\packages\*.nupkg
+    displayName: 'List contents of packages dir'
+
+  - ${{ if eq(parameters.buildScenarioApps, 'true') }}:
+    - template: WinUI-BuildSampleApps-Steps.yml
+      parameters:
+        artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+        pipelineKind: ${{ parameters.pipelineKind }}
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - script: |
+      if exist ${{ parameters.msbuildInstallDir }} rmdir /s /q ${{ parameters.msbuildInstallDir }}
+      if exist ${{ parameters.msbuildInstallLogsDir }} rmdir /s /q ${{ parameters.msbuildInstallLogsDir }}
+      if exist .dotnet rmdir /s /q .dotnet
+    displayName: Remove VS build tools and .NET SDK installs to free up disk space
+
+  - task: CopyFiles@2
+    displayName: 'Copy built binaries to artifact staging directory'
+    condition: always()
+    inputs:
+      sourceFolder: ${{ parameters.buildArtifactsDirectory }}\bin
+      # Stage everything that was produced except symbols, which we publish to a different artifact
+      contents: |
+        **\*
+        !**\*.pdb
+      targetFolder: $(ob_outputDirectory)\drop
+
+  # An app that includes the transport package won't run properly if these files aren't present,
+  # since then they're part of the NuGet package that are detected to be missing.
+  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
+    - task: CopyFiles@2
+      displayName: 'Copy Microsoft.WindowsAppSDK.Foundation.TransportPackage symbols to artifact staging directory'
+      condition: and(always(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      inputs:
+        sourceFolder: ${{ parameters.buildArtifactsDirectory }}\bin\$(buildOutput)$(normalizedConfiguration)\Test\UnpackagedApps\MUXControlsTestApp
+        contents: |
+          *.pdb
+          !AppTestAutomationHelpers.pdb
+          !Microsoft.WinUI.pdb
+          !MUXControlsTestApp.pdb
+        targetFolder: $(ob_outputDirectory)\drop\$(buildOutput)$(normalizedConfiguration)\Test\UnpackagedApps\MUXControlsTestApp
+
+  - task: PowerShell@2
+    displayName: 'Generate fusion manifest'
+    condition: succeeded()
+    inputs:
+      targetType: 'inline'
+      script: |
+        $targetsFilePath = "${{ parameters.buildArtifactsDirectory }}\packaging\$(buildConfiguration)"
+        $manifestPath = $targetsFilePath+'\manifests';
+        New-Item -ItemType Directory -Force -Path $manifestPath;
+        $xslt = New-Object System.Xml.Xsl.XslCompiledTransform;
+        $xslt.Load('build\TransformAppxManifest.xslt');
+        $xslt.Transform($targetsFilePath+'\AppxManifest.xml', $manifestPath+'\Microsoft.WindowsAppSdk.WinUI.manifest');
+
+  - task: CopyFiles@2
+    displayName: 'Copy packaging output to artifact staging directory'
+    condition: and(succeeded(), eq(variables['buildConfiguration'], 'Release'))
+    inputs:
+      sourceFolder: ${{ parameters.buildArtifactsDirectory }}\packaging\
+      # We only want to copy GenXbf from the packaging output if its target architecture
+      # actually matches the target architecture of the current build (that is, it exists
+      # because it is an intended product binary, not a side effect of needing to satisfy
+      # a build-time dependency)
+      contents: |
+        **\*
+        !**\*.pdb
+        !**\tools\!($(buildPlatform))\GenXbf.dll
+      targetFolder: $(ob_outputDirectory)\packaging
+
+  - task: PublishSymbols@2
+    displayName: 'Publish full symbols to internal symbol server'
+    condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    inputs:
+      SearchPattern: '${{ parameters.buildArtifactsDirectory }}\bin\$(buildOutput)$(normalizedConfiguration)\Symbols\Product\**\*.pdb'
+      SymbolServerType: 'TeamServices'
+    # There is a bug which causes this task to fail if LIB includes an inaccessible path (even though it does not depend on it).
+    # To work around this issue, we just force LIB to be any dir that we know exists.
+    env:
+      LIB: $(Build.SourcesDirectory)
+
+  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
+    - task: PublishSymbols@2
+      displayName: 'Publish test infra symbols to internal symbol server'
+      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      inputs:
+        SearchPattern: '${{ parameters.buildArtifactsDirectory }}\bin\$(buildOutput)$(normalizedConfiguration)\Symbols\Test\TestInfra\**\*.pdb'
+        SymbolServerType: 'TeamServices'
+      env:
+        LIB: $(Build.SourcesDirectory)
+
+  # Copying symbols to build artifacts must happen *after* they have been indexed
+  - task: CopyFiles@2
+    displayName: 'Copy symbols to output directory'
+    condition: succeeded()
+    inputs:
+      SourceFolder: '${{ parameters.buildArtifactsDirectory }}\bin\$(buildOutput)$(normalizedConfiguration)\Symbols'
+      TargetFolder: '$(ob_outputDirectory)\Symbols'
+
+  # Copy Product binaries for APIScan. To save time/resources, not running APIScan on Samples apps for now.
+  # We are using this copy as a way to focus on scanning product code only and also a workaround for an APIScan limitation:
+  # Currently, if the softwareFolder parameter we pass to APIScan is a folder that does not exist, APIScan throws an error.
+  # This pipeline currently builds the ...\x86chk\Product\..., ...\x64fre\Product\..., etc. permutations on differrent job agents,
+  # therefore, if the softwareFolder parameter simply contains a full list of all such folders, most of them will be "not found" on
+  # a specific build agent. OTOH, if we set softwareFolder to "${{ parameters.buildArtifactsDirectory }}\bin" then we can't focus
+  # on the product code, because Guardian's APIScan currently does not support parameters like "excludes", "excludePath",
+  # and "analyzeTargetGlob".
+  - ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+    # This is a temp step for improving performance.
+    # For platform + config combos that we currently choose to skip APIScan, we still put a single dll at the target folder
+    # for APIScan to find, because when the target folder does not exist or no binary is found there, APIScan throws an error.
+    # Guardian APIScan does not seem to support disabling APIScan on a per-job basis when a matrix is involved (but it works fine
+    # when a matrix isn't involved) which is the case here, hence resorting to this workaround until a better solution emerges.
+    # One simple way to eliminate this workaround is to relex the "condition:" in the following CopyFiles task to unblock
+    # scanning binaries for all permutations.
+    - task: CopyFiles@2
+      displayName: 'Copy GenXbf.dll to APIScanTarget directory'
+      inputs:
+        sourceFolder: ${{ parameters.buildArtifactsDirectory }}\bin\GenXBF\$(buildPlatform)
+        contents: |
+          GenXbf.dll
+        targetFolder: ${{ parameters.buildArtifactsDirectory }}\APIScanTarget
+      continueOnError: true
+
+    # Feed the actual binaries to APIScan via this copy, whose scope is easy to adjust.
+    - task: CopyFiles@2
+      displayName: 'Copy Product binaries to APIScanTarget directory'
+      condition: and(succeeded(), eq(variables['buildOutput'], 'amd64'), eq(variables['normalizedConfiguration'], 'fre'))
+      inputs:
+        sourceFolder: ${{ parameters.buildArtifactsDirectory }}\bin\$(buildOutput)$(normalizedConfiguration)\Product
+        contents: |
+          **\*
+          !**\*.pdb
+        targetFolder: ${{ parameters.buildArtifactsDirectory }}\APIScanTarget
+      continueOnError: true
+
+  - ${{ if eq(parameters.signOutput, true) }}:
+    - template: AzurePipelinesTemplates/WindowsAppSDK-EsrpCodeSigning-Steps.yml@WindowsAppSDKConfig
+      parameters:
+        FolderPath: '$(ob_outputDirectory)'
+        Pattern: |
+          **/Microsoft.WinUI.dll
+          **/Microsoft.UI.Text.winmd
+          **/Microsoft.UI.Xaml.winmd
+          **/Microsoft.UI.Xaml.Controls.dll
+          **/Microsoft.UI.Xaml.Controls.Tabular.dll
+          **/Microsoft.ui.xaml.dll
+          **/Microsoft.ui.xaml.dll.mui
+          **/Microsoft.UI.Xaml.Internal.dll
+          **/Microsoft.UI.Xaml.Phone.dll
+          **/Microsoft.UI.Xaml.Phone.dll.mui
+          **/Microsoft.ui.xaml.resources.19h1.dll
+          **/Microsoft.ui.xaml.resources.common.dll
+          **/WinUIEdit.dll
+          **/Microsoft.UI.Xaml.Markup.Compiler.dll
+          **/Microsoft.UI.Xaml.Markup.Compiler.IO.dll
+          **/Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop.dll
+          **/Microsoft.UI.Xaml.Design.dll
+          **/XamlCompiler.exe
+          **/GenXbf.dll
+          **/Add-AppDevPackage.psd1
+        KeyCode: 'CP-230012'
+        UseMinimatch: true
+        DisplayName: 'CodeSign'

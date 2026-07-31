@@ -1,0 +1,15 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  MUXFinalRelease: false
+
+stages:
+- stage: RunStaticTests
+  displayName: Run Static Tests Stage
+  dependsOn: Build
+  condition: not(failed())
+  jobs:
+  - template: WinUI-RunStaticTests-Job.yml
+    parameters:
+      runTestJobName: RunStaticTests
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}

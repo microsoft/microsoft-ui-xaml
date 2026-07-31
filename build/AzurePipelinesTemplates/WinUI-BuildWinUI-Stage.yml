@@ -1,0 +1,166 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  stageName: 'Build'
+  pipelineKind: '' # can be: Nightly, PR, GitHubPR, BuildAndTest, Preview, Official
+  signOutput: false # this is true for Release builds
+  buildScenarioApps: false
+  MUXFinalRelease: false
+  runStaticAnalysis: true
+  projectCaching: false
+  pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
+  buildProductOnly: false
+  dependsOn: ''
+
+stages:
+- stage: ${{ parameters.stageName }}
+  # Skip the build job if we are reusing the output of a previous build.
+  # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
+  condition:
+    and(succeeded(), eq(variables['useBuildOutputFromBuildId'],''))
+  dependsOn: ${{ parameters.dependsOn }}
+  variables:
+  - group: WinUI-InternalFeed
+  jobs:
+  - job: BuildMUX
+    pool:
+      type: windows
+    timeoutInMinutes: 500
+    strategy:
+      maxParallel: 10
+      # The matrix of this job must stay the same as the BuildScenarioApps job in build\AzurePipelinesTemplates\WinUI-BuildScenarioApps-Stage.yml
+      matrix:
+        ${{ if in( parameters.pipelineKind, 'BuildAndTest') }}:
+          build:
+            shouldPgo: false
+            # buildPlatform and normalizedConfiguration are set at queue time for this pipeline
+        ${{ if in( parameters.pipelineKind, 'Localization') }}:
+          Release_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'fre'
+            shouldPgo: false
+        ${{ if in( parameters.pipelineKind, 'PR-2') }}:
+          Debug_x64:
+            buildPlatform: 'x64'
+            buildOutput: 'amd64'
+            normalizedConfiguration: 'chk'
+            shouldPgo: false
+        ${{ if in( parameters.pipelineKind, 'GitHubPR') }}:
+          Debug_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'chk'
+            shouldPgo: false
+          Release_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'fre'
+            shouldPgo: false
+          Release_x64:
+            buildPlatform: 'x64'
+            buildOutput: 'amd64'
+            normalizedConfiguration: 'fre'
+            shouldPgo: false
+          Release_arm64:
+            buildPlatform: 'arm64'
+            buildOutput: 'arm64'
+            normalizedConfiguration: 'fre'
+            shouldPgo: false
+          Release_arm64ec:
+            buildPlatform: 'arm64ec'
+            buildOutput: 'arm64ec'
+            normalizedConfiguration: 'fre'
+            shouldPgo: false
+        ${{ if in( parameters.pipelineKind, 'Official', 'Nightly', 'PR', 'Preview') }}:
+          Debug_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'chk'
+            shouldPgo: false
+          Release_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'fre'
+            shouldPgo: true
+          Release_x64:
+            buildPlatform: 'x64'
+            buildOutput: 'amd64'
+            normalizedConfiguration: 'fre'
+            shouldPgo: true
+          Release_arm64:
+            buildPlatform: 'arm64'
+            buildOutput: 'arm64'
+            normalizedConfiguration: 'fre'
+            shouldPgo: true
+          Release_arm64ec:
+            buildPlatform: 'arm64ec'
+            buildOutput: 'arm64ec'
+            normalizedConfiguration: 'fre'
+            shouldPgo: false
+        ${{ if eq( parameters.pipelineKind, 'QuickPR') }}:
+          Debug_x86:
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'chk'
+            shouldPgo: false
+        ${{ if in( parameters.pipelineKind, 'Nightly', 'Preview') }}:
+          Debug_x64:
+            buildPlatform: 'x64'
+            buildOutput: 'amd64'
+            normalizedConfiguration: 'chk'
+            shouldPgo: false
+          Debug_arm64:
+            buildPlatform: 'arm64'
+            buildOutput: 'arm64'
+            normalizedConfiguration: 'chk'
+            shouldPgo: false
+    variables:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+      ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
+      ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+      # The default ob checkout only does a shallow fetch. For PGO to work, it needs to fetch deeper.
+      ob_git_fetchDepth: -1
+      # Currently, the version of PREfast in Guardian does not correctly detect VSBuild tasks, which is a known pipeline-template issue.
+      # Because of that, we've been explicitly invoking the PREfast task instead of relying on Guardian's PREfast. Recently, the
+      # non-functional PREfast task injected via Guardian is starting to emit non-fatal errors (previously, it quietly skipped 
+      # itself), to the effect of "no build operation detected to triggger PREfast for", creating noise in the build output page. 
+      # Therefore, turning off Guardian's PREfast altogether to eliminate the noise. Our pipeline still does our own PREfast scan 
+      # and the "Guardian: Post Analysis" task still analyzes the logs produced by our explicit PREfast scan as usual.
+      ob_sdl_prefast_enabled: false
+      ob_sdl_binskim_enabled: false
+      ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+        ob_sdl_apiscan_enabled: true
+        ob_sdl_apiscan_softwareFolder: '$(Build.SourcesDirectory)\BuildOutput\APIScanTarget'
+        ob_sdl_apiscan_symbolsFolder: '$(Build.SourcesDirectory)\out\Symbols;SRV*$(WinUISymbolServerUri)'
+
+    steps:
+    # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
+    # errors from the Guardian PREfast task, which shouldn't even be run in the first place, because its pre-
+    # requisite of isNative=true isn't met currently.
+    - script: |
+        md "C:\__t\NativeCompilerPrefast"
+      displayName: 'Creating C:\__t\NativeCompilerPrefast to prevent errors from Guardian PREfast'
+
+    # The non-official pipeline template does not auto-inject CodeQL into managed pool jobs.
+    # Explicitly add CodeQL Init/Finalize for Nightly builds so that the core product code
+    # (Microsoft.UI.Xaml.dll, Microsoft.UI.Xaml.Controls.dll) gets scanned.
+    - ${{ if eq(parameters.pipelineKind, 'Nightly') }}:
+      - task: CodeQL3000Init@0
+        displayName: Initialize CodeQL
+
+    - template: WinUI-BuildMUXProject-Steps.yml
+      parameters:
+        additionalMSBuildOptions: '/p:ProductMajorVersion="$(transportPackageMajorVersion)" /p:ProductMinorVersion="$(transportPackageMinorVersion)" /p:ProductBuildVersion="$(versionDate_YYMM)" /p:ProductPatchVersion="$(transportPackagePatchVersion)" /p:ProductPrereleaseTag="$(VersionTag)"'
+        pipelineKind: ${{ parameters.pipelineKind }}
+        buildScenarioApps: ${{ parameters.buildScenarioApps }}
+        signOutput: ${{ parameters.signOutput }}
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        projectCaching: ${{ parameters.projectCaching }}
+        pgoBuildModeMSBuildArg: ${{ parameters.pgoBuildModeMSBuildArg }}
+        buildProductOnly: ${{ parameters.buildProductOnly }}
+
+    - ${{ if eq(parameters.pipelineKind, 'Nightly') }}:
+      - task: CodeQL3000Finalize@0
+        displayName: Finalize CodeQL
