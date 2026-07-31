@@ -157,6 +157,11 @@ DesktopWindowXamlSource^ CreateDesktopWindowXamlSource(
     DesktopWindowXamlSource^ dwxs = ref new DesktopWindowXamlSource();
     LOG_OUTPUT(L"  ui> DesktopWindowXamlSource created.");
 
+    // Breadcrumb for OS bug #63350935: connecting/re-creating an island can AV in IXP's
+    // DragDropManager::Initialize (dangling factory-cache pointer into unloaded DataExchange.dll).
+    // If the test host crashes shortly after this line, that is the known bug, not a WinUI regression.
+    LOG_OUTPUT(L"  ui> NOTE: connecting island. A crash here (AV in Microsoft.UI.Input DragDropManager::Initialize) is KNOWN OS bug #63350935.");
+
     mu::WindowId windowId;
     VERIFY_SUCCEEDED(GetWindowIdFromWindow(hwnd, (::ABI::Microsoft::UI::WindowId*) &windowId));
 
@@ -177,6 +182,11 @@ XamlIsland^ CreateXamlIsland(
 
     XamlIsland^ xi = ref new XamlIsland();
     LOG_OUTPUT(L"  ui> XamlIsland created.");
+
+    // Breadcrumb for OS bug #63350935: connecting/re-creating an island can AV in IXP's
+    // DragDropManager::Initialize (dangling factory-cache pointer into unloaded DataExchange.dll).
+    // If the test host crashes shortly after this line, that is the known bug, not a WinUI regression.
+    LOG_OUTPUT(L"  ui> NOTE: connecting island. A crash here (AV in Microsoft.UI.Input DragDropManager::Initialize) is KNOWN OS bug #63350935.");
 
     xi->Content = CreateControlSubtree(buttonContent, kind);
     LOG_OUTPUT(L"  ui> XamlIsland.Content assigned.");

@@ -579,6 +579,11 @@ namespace Private.Infrastructure
         // Note: This doesn't actually take the island object, because we don't want to take a ref on it. This kind of
         // IslandHelper exists only to call into test hooks.
         HRESULT CreateWithExistingIsland([in] Microsoft.UI.Dispatching.DispatcherQueue* dq, [out, retval] IslandHelper** value);
+
+        // Bring a top-level window to the foreground via the test infra server. Unlike a local
+        // ::SetForegroundWindow (blocked by the foreground lock), the server can take foreground rights
+        // and retries. Island tests use this for reliable UIA hit-testing / input against their windows.
+        HRESULT SetForegroundWindow([in] UINT64 hwnd);
     }
 
     [version(NTDDI_WINTHRESHOLD)]
