@@ -24,9 +24,9 @@ else
     $buildPlatform = $env:BUILDPLATFORM
 }
 
-if (Test-Path "$repoRoot\build\PipelineScripts\GetLKGCompilerPackageInfoIfNeeded.ps1")
+if ($env:WINUILKGCOMPILERFEEDURI -and (Test-Path "$repoRoot\build\PipelineScripts\GetLKGCompilerPackageInfoIfNeeded.ps1"))
 {
-    # Trigger install of the LKG toolset by default, allowing customization.
+    # Install the LKG toolset when its internal feed is configured.
     # Retrieve default package info if needed.
     . $repoRoot\build\PipelineScripts\GetLKGCompilerPackageInfoIfNeeded.ps1 -SourceDirectory $repoRoot
     

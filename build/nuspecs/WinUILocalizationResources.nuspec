@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Internal.WinUILocalizationResources</id>
+    <version>$VERSION$</version>
+    <title>Microsoft.Internal.WinUILocalizationResources</title>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <description>Contains localized files for use with WinUI3.</description>
+  </metadata>
+  <files>
+    <file target="LocalizedResources" src="..\..\BuildOutput\Temp\LocOutput\**"/>
+  </files>
+</package>

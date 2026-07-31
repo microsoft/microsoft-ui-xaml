@@ -234,7 +234,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(objectInitName));
 
 this.Write(" = ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type.ToString(), "target")));
+this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type, "target")));
 
 this.Write(";\r\n");
 
@@ -1086,7 +1086,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(WeakReferenceTypeNa
 
 this.Write("(");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type.ToString(), "target")));
+this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type, "target")));
 
 this.Write(");\r\n");
 
@@ -1105,7 +1105,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(element.ObjectCodeName));
 
 this.Write(" = ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type.ToString(), "target")));
+this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type, "target")));
 
 this.Write(";\r\n");
 
@@ -1125,7 +1125,7 @@ this.Write("(target);\r\n                        NotifyDependentScopes(connectio
                      Output_NullCheckedEventAssignment(evt); 
 this.Write("                        (");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type.ToString(), "target")));
+this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type, "target")));
 
 this.Write(").");
 
@@ -1554,7 +1554,7 @@ this.Write(";\r\n                        break;\r\n");
                      } 
 this.Write("                }\r\n                this.Update_(");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(bindUniverse.RootStep.ValueType.ToString(), "item")));
+this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(bindUniverse.RootStep.ValueType, "item")));
 
 this.Write(", 1 << phase);\r\n            }\r\n\r\n            public void Recycle()\r\n            {" +
         "\r\n");
@@ -1772,7 +1772,7 @@ this.Write("                this.bindingsTracking.ReleaseAllListeners();\r\n");
 this.Write("                if (newDataRoot != null)\r\n                {\r\n                    " +
         "this.dataRoot = ");
 
-this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(bindUniverse.DataRootType.ToString(), "newDataRoot")));
+this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(bindUniverse.DataRootType, "newDataRoot")));
 
 this.Write(";\r\n                    return true;\r\n                }\r\n                return fa" +
         "lse;\r\n            }\r\n");

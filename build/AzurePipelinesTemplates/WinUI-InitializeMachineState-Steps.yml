@@ -1,0 +1,16 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+steps:
+  - script: git clean -xdf $(Build.SourcesDirectory)
+    displayName: 'Clean the repo fully'
+
+  # Some pipeline environments check out submodules as a different user, so mark them as safe.
+  - task: PowerShell@2
+    displayName: Add submodules as safe directories
+    inputs:
+      targetType: 'inline'
+      script: |
+        $sourcesDir = "$(Build.SourcesDirectory)".Replace('\', '/')
+        
+        Write-Host "Adding $sourcesDir/Samples/WinUIGallery"
+        git config --global --add safe.directory "$sourcesDir/Samples/WinUIGallery"

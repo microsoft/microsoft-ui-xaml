@@ -1,4 +1,7 @@
-﻿[CmdletBinding()]
+﻿# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+[CmdletBinding()]
 param(
     [Parameter(Mandatory = $false)]
     [string]$WinMDPath = "${env:BuildArtifactsDir}\packaging\${env:Configuration}\lib\uap10.0",

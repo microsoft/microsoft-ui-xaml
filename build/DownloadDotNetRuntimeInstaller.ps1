@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 param(
     [string]$downloadurlx86,
     [string]$downloadurlx64,

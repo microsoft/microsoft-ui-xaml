@@ -1,0 +1,41 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  buildArtifactsDirectory: $(Build.SourcesDirectory)\BuildOutput
+  publishToMaestro: false
+
+stages:
+- stage: Localization
+  displayName: Localization
+  dependsOn: Build
+  condition: not(failed())
+  variables:
+  - group: WinUI-InternalFeed
+  - name: buildPlatform
+    value: 'x86'
+  - name: buildConfiguration
+    value: 'Release'
+  jobs:
+  - job: LocalizeResources
+    pool:
+      type: windows
+    variables:
+      ob_outputDirectory: '$(Build.ArtifactStagingDirectory)\packages'
+      ob_artifactBaseName: "LocalizationDrop"
+    steps:
+    - template: WinUI-LocalizeResources-Steps.yml
+      parameters:
+        nupkgdir: $(ob_outputDirectory)
+      
+  - ${{ if eq( parameters.publishToMaestro, true) }}:
+    - job: PublishToMaestro
+      pool:
+        type: windows
+      variables:
+        ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+      dependsOn: LocalizeResources
+      steps:
+      - template: AzurePipelinesTemplates/WindowsAppSDK-PublishToMaestro-Steps.yml@WindowsAppSDKConfig
+        parameters:
+          NuGetArtifactNames: 
+          - "LocalizationDrop"

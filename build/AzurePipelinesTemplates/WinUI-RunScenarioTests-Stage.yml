@@ -1,0 +1,76 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  pipelineKind: ''
+  dependsOn: ''
+  runArm64Tests: true
+
+stages:
+- stage: RunScenarioTests
+  displayName: Run Scenario App Tests
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: and(not(failed()), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+  jobs:
+  - template: WinUI-CreateTestPayload-Job.yml
+    parameters:
+      runTestJobName: CreateAppTestPayload
+      pipelineKind: ${{ parameters.pipelineKind }}
+      testSuite: 'ScenarioTestSuite'
+      testPayloadArtifactName: 'ScenarioTestPayload'
+
+  - template: WinUI-RunTestPassOnPipeline-Job.yml
+    parameters:
+      runTestJobName: RunAppTestsRS5
+      dependsOn: CreateAppTestPayload
+      testSuite: ScenarioTestSuite
+      buildPlatform: x86
+      buildConfiguration: chk
+      testOS: Win10-RS5
+      testPayloadArtifactName: 'ScenarioTestPayload'
+
+  - template: WinUI-RunTestPassOnPipeline-Job.yml
+    parameters:
+      runTestJobName: RunAppTests25H2
+      dependsOn: CreateAppTestPayload
+      testSuite: ScenarioTestSuite
+      buildPlatform: x64
+      buildConfiguration: fre
+      testOS: Win11-25H2
+      testPayloadArtifactName: 'ScenarioTestPayload'
+
+  - template: WinUI-RunTestPassOnPipeline-Job.yml
+    parameters:
+      runTestJobName: RunAppTests23H2
+      dependsOn: CreateAppTestPayload
+      testSuite: ScenarioTestSuite
+      buildPlatform: x64
+      buildConfiguration: fre
+      testOS: Win11-23H2
+      testPayloadArtifactName: 'ScenarioTestPayload'
+
+  - ${{ if in(parameters.pipelineKind, 'Nightly', 'Official' ) }}:
+    - ${{ if eq(parameters.runArm64Tests, true ) }}:
+      - template: WinUI-RunTestPassOnPipeline-Job.yml
+        parameters:
+          runTestJobName: RunAppTestsArm64_23h2
+          dependsOn: CreateAppTestPayload
+          testSuite: ScenarioTestSuite
+          buildPlatform: arm64
+          buildConfiguration: fre
+          testOS: Win11-23H2
+          testPayloadArtifactName: 'ScenarioTestPayload'
+
+      - template: WinUI-RunTestPassOnPipeline-Job.yml
+        parameters:
+          runTestJobName: RunAppTestsArm64ec_23h2
+          dependsOn: CreateAppTestPayload
+          testSuite: ScenarioTestSuite
+          buildPlatform: arm64ec
+          buildConfiguration: fre
+          testOS: Win11-23H2
+          testPayloadArtifactName: 'ScenarioTestPayload'
+
+  - template: WinUI-RunScenarioUnitTests-Job.yml
+    parameters:
+      ${{ if in(parameters.pipelineKind, 'PR' ) }}:
+        artifactNamePrefix: drop # In PR builds, the scenario apps build in the main build job
