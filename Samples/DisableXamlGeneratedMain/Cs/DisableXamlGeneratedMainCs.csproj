@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Page Remove="App.xaml" />
+    <ApplicationDefinition Include="App.xaml" />
   </ItemGroup>
 
   <ItemGroup>
