@@ -59,6 +59,63 @@
             <DataTemplate x:Key="ImageCell">
                 <Image Source="{Binding Avatar}" Width="32" Height="32" Margin="8,4" VerticalAlignment="Center"/>
             </DataTemplate>
+
+            <!-- Editable cell for the all-Auto page: multi-line + wrapping TextBox with NO fixed width,
+                 so typing a longer line grows the Auto COLUMN width and adding lines grows the Auto ROW
+                 height. Both directions can be tested live. -->
+            <DataTemplate x:Key="AutoEditCell">
+                <TextBox Text="{Binding Notes, Mode=TwoWay}"
+                         AcceptsReturn="True"
+                         Margin="6,4" VerticalAlignment="Top"/>
+            </DataTemplate>
+
+            <!-- Interactive + expandable cells for the Interactive cells page. Every column hosts an
+                 Expander (expand/collapse is interactive and changes the cell's desired size, so Auto
+                 columns grow to fit and Star columns wrap/clip). Several also embed an editable TextBox. -->
+
+            <!-- Header = Name; expand to edit Notes. -->
+            <DataTemplate x:Key="ExpandNameCell">
+                <Expander HorizontalAlignment="Left" Margin="4,2" Header="{Binding Name}">
+                    <TextBox Text="{Binding Notes, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" MinWidth="120"/>
+                </Expander>
+            </DataTemplate>
+
+            <!-- Header = Role; expand to see City and edit Notes. -->
+            <DataTemplate x:Key="ExpandRoleCell">
+                <Expander HorizontalAlignment="Left" Margin="4,2" Header="{Binding Role}">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding City}"/>
+                        <TextBox Text="{Binding Notes, Mode=TwoWay}" MinWidth="120"/>
+                    </StackPanel>
+                </Expander>
+            </DataTemplate>
+
+            <!-- Header = "Bio"; expand to read the wrapping Bio (variable-length content). -->
+            <DataTemplate x:Key="ExpandBioCell">
+                <Expander HorizontalAlignment="Left" Margin="4,2" Header="Bio">
+                    <TextBlock Text="{Binding Bio}" TextWrapping="Wrap" MaxWidth="360"/>
+                </Expander>
+            </DataTemplate>
+
+            <!-- Header = "Image"; expand to reveal a per-row-sized image (different sizes per row). -->
+            <DataTemplate x:Key="ExpandImageCell">
+                <Expander HorizontalAlignment="Left" Margin="4,2" Header="Image">
+                    <Image Source="{Binding Avatar}" Width="{Binding ImageSize}" Height="{Binding ImageSize}" Stretch="Uniform"/>
+                </Expander>
+            </DataTemplate>
+
+            <!-- Grows in WIDTH during interaction: dragging the Slider widens the inner bar, so the
+                 cell's desired width changes and an Auto column re-sizes its width live (Star/Pixel
+                 columns instead clip the bar to the fixed column width). -->
+            <DataTemplate x:Key="GrowWidthCell">
+                <StackPanel Margin="4,2" Spacing="4" HorizontalAlignment="Left">
+                    <Slider x:Name="WidthSlider" Minimum="40" Maximum="400" Value="80" Width="180"/>
+                    <Border Height="20" CornerRadius="4"
+                            HorizontalAlignment="Left"
+                            Background="{ThemeResource AccentFillColorDefaultBrush}"
+                            Width="{Binding Value, ElementName=WidthSlider}"/>
+                </StackPanel>
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
