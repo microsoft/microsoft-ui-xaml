@@ -1,0 +1,79 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+parameters:
+- name: expectedSourceBranch
+  type: string
+  default: ''
+
+stages:
+- stage: ValidateGitHubSource
+  displayName: Validate public GitHub source
+  jobs:
+  - job: ValidateGitHubSource
+    displayName: Validate public GitHub source
+    pool:
+      type: windows
+    variables:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+    steps:
+    - checkout: self
+      submodules: false
+      fetchDepth: 1
+      fetchTags: false
+
+    - task: PowerShell@2
+      displayName: Validate public GitHub source
+      inputs:
+        targetType: inline
+        script: |
+          $ErrorActionPreference = 'Stop'
+
+          Write-Host "Build.Repository.Provider=$env:BUILD_REPOSITORY_PROVIDER"
+          Write-Host "Build.Repository.Name=$env:BUILD_REPOSITORY_NAME"
+          Write-Host "Build.SourceBranch=$env:BUILD_SOURCEBRANCH"
+          Write-Host "Build.SourceVersion=$env:BUILD_SOURCEVERSION"
+
+          if ($env:BUILD_REPOSITORY_PROVIDER -ne 'GitHub') {
+            throw "Expected GitHub-backed source, but Build.Repository.Provider was '$env:BUILD_REPOSITORY_PROVIDER'."
+          }
+
+          if ($env:BUILD_REPOSITORY_NAME -ne 'microsoft/microsoft-ui-xaml') {
+            throw "Expected repository 'microsoft/microsoft-ui-xaml', but Build.Repository.Name was '$env:BUILD_REPOSITORY_NAME'."
+          }
+
+          $expectedSourceBranch = '${{ parameters.expectedSourceBranch }}'
+          if (-not $expectedSourceBranch) {
+            throw "expectedSourceBranch must be provided for source-only validation."
+          }
+
+          if ($expectedSourceBranch -notlike 'refs/*') {
+            $expectedSourceBranch = "refs/heads/$expectedSourceBranch"
+          }
+
+          if ($env:BUILD_SOURCEBRANCH -ne $expectedSourceBranch) {
+            throw "Expected source branch '$expectedSourceBranch', but Build.SourceBranch was '$env:BUILD_SOURCEBRANCH'."
+          }
+
+          $remoteUrl = git remote get-url origin
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to read the source repository remote URL."
+          }
+
+          if ($remoteUrl -notmatch 'github\.com[/:]microsoft/microsoft-ui-xaml(?:\.git)?$') {
+            throw "Expected the public microsoft/microsoft-ui-xaml GitHub remote, but origin was '$remoteUrl'."
+          }
+
+          $headCommit = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to read the checked-out commit."
+          }
+
+          Write-Host "Source remote=$remoteUrl"
+          Write-Host "Checked-out commit=$headCommit"
+
+          if ($headCommit -ne $env:BUILD_SOURCEVERSION) {
+            throw "Checked-out commit '$headCommit' does not match Build.SourceVersion '$env:BUILD_SOURCEVERSION'."
+          }
+
+          Write-Host "Public GitHub source validation completed."
