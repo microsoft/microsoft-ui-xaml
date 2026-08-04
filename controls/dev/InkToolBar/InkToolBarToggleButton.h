@@ -6,20 +6,36 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarToggleButton.g.h"
+#include "InkToolbarToggleButton.g.h"
 
-class InkToolBarToggleButton :
-    public ReferenceTracker<InkToolBarToggleButton, winrt::implementation::InkToolBarToggleButtonT, winrt::composable>
+class InkToolbarToggleButton :
+    public ReferenceTracker<InkToolbarToggleButton, winrt::implementation::InkToolbarToggleButtonT, winrt::composable>
 {
 public:
+    InkToolbarToggleButton() = default;
 
-    winrt::InkToolBarToggle ToggleKind() { return m_toggleKind; }
+    // IFrameworkElementOverrides
+    void OnApplyTemplate();
 
-    // Internal (not projected): lets the InkToolBar register a built-in toggle (e.g. the ruler)
+    winrt::InkToolbarToggle ToggleKind() { return m_toggleKind; }
+
+    // Internal (not projected): lets the InkToolbar register a built-in toggle (e.g. the ruler)
     // with a specific ToggleKind so GetToggleButton(kind) can resolve it.
-    void SetToggleKind(winrt::InkToolBarToggle value) { m_toggleKind = value; }
+    void SetToggleKind(winrt::InkToolbarToggle value) { m_toggleKind = value; }
+
+    // Update the button orientation based on the preferred flyout direction.
+    void SetButtonDirection(winrt::InkToolbarButtonFlyoutPlacement direction);
+
+protected:
+    // Leaf-derived override hook (UWP IToggleButtonDerived::GetLocalizedToggleName): supplies a
+    // localized name used for tooltip + automation name. Empty => none. NOTE: per-toggle localized
+    // strings are a lifted resource gap (same class of delta as ColorNames) - default empty for now.
+    virtual winrt::hstring GetLocalizedToggleName() { return {}; }
 
 private:
-    winrt::InkToolBarToggle m_toggleKind{ winrt::InkToolBarToggle::Custom };
+    void UpdateStates(bool useTransitions);
+
+    winrt::InkToolbarToggle m_toggleKind{ winrt::InkToolbarToggle::Custom };
+    winrt::InkToolbarButtonFlyoutPlacement m_direction{ winrt::InkToolbarButtonFlyoutPlacement::Auto };
 };
 

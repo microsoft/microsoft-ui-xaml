@@ -3,25 +3,25 @@
 
 #pragma once
 
-#include "InkToolBarIsStencilButtonCheckedChangedEventArgs.g.h"
+#include "InkToolbarIsStencilButtonCheckedChangedEventArgs.g.h"
 
 namespace winrt::implementation
 {
-    struct InkToolBarIsStencilButtonCheckedChangedEventArgs :
-        InkToolBarIsStencilButtonCheckedChangedEventArgsT<InkToolBarIsStencilButtonCheckedChangedEventArgs>
+    struct InkToolbarIsStencilButtonCheckedChangedEventArgs :
+        InkToolbarIsStencilButtonCheckedChangedEventArgsT<InkToolbarIsStencilButtonCheckedChangedEventArgs>
     {
-        InkToolBarIsStencilButtonCheckedChangedEventArgs() = default;
-        InkToolBarIsStencilButtonCheckedChangedEventArgs(
-            winrt::InkToolBarStencilButton const& button,
-            winrt::InkToolBarStencilKind kind)
+        InkToolbarIsStencilButtonCheckedChangedEventArgs() = default;
+        InkToolbarIsStencilButtonCheckedChangedEventArgs(
+            winrt::InkToolbarStencilButton const& button,
+            winrt::InkToolbarStencilKind kind)
             : m_stencilButton(button), m_stencilKind(kind) {}
 
-        winrt::InkToolBarStencilButton StencilButton() { return m_stencilButton; }
-        winrt::InkToolBarStencilKind StencilKind() { return m_stencilKind; }
+        winrt::InkToolbarStencilButton StencilButton() { return m_stencilButton; }
+        winrt::InkToolbarStencilKind StencilKind() { return m_stencilKind; }
 
     private:
-        winrt::InkToolBarStencilButton m_stencilButton{ nullptr };
-        winrt::InkToolBarStencilKind m_stencilKind{ winrt::InkToolBarStencilKind::Ruler };
+        winrt::InkToolbarStencilButton m_stencilButton{ nullptr };
+        winrt::InkToolbarStencilKind m_stencilKind{ winrt::InkToolbarStencilKind::Ruler };
     };
 }
 

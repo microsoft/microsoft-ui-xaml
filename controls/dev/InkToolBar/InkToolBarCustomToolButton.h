@@ -6,31 +6,26 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarCustomToolButton.g.h"
-#include "InkToolBarCustomToolButton.properties.h"
+#include "InkToolbarCustomToolButton.g.h"
+#include "InkToolbarCustomToolButton.properties.h"
 
-#include "InkToolBarToolButton.h"
+#include "InkToolbarToolButton.h"
 
-class InkToolBarCustomToolButton :
-    public winrt::implementation::InkToolBarCustomToolButtonT<InkToolBarCustomToolButton, InkToolBarToolButton>, 
-    public InkToolBarCustomToolButtonProperties
+class InkToolbarCustomToolButton :
+    public winrt::implementation::InkToolbarCustomToolButtonT<InkToolbarCustomToolButton, InkToolbarToolButton>, 
+    public InkToolbarCustomToolButtonProperties
 {
 public:
-    ForwardRefToBaseReferenceTracker(InkToolBarToolButton)
+    ForwardRefToBaseReferenceTracker(InkToolbarToolButton)
 
-    InkToolBarCustomToolButton()
+    InkToolbarCustomToolButton()
     {
-        SetToolKind(winrt::InkToolBarTool::CustomTool);
+        SetToolKind(winrt::InkToolbarTool::CustomTool);
+        SetDefaultStyleKey(this);
     }
 
-    // These functions are ambiguous with InkToolBarToolButton, disambiguate
-    using InkToolBarCustomToolButtonProperties::EnsureProperties;
-    using InkToolBarCustomToolButtonProperties::ClearProperties;
-
-    winrt::UIElement ConfigurationContent() { return m_configurationContent; }
-    void ConfigurationContent(winrt::UIElement value) { m_configurationContent = value; }
-
-private:
-    winrt::UIElement m_configurationContent{ nullptr };
+    // These functions are ambiguous with InkToolbarToolButton, disambiguate
+    using InkToolbarCustomToolButtonProperties::EnsureProperties;
+    using InkToolbarCustomToolButtonProperties::ClearProperties;
 };
 

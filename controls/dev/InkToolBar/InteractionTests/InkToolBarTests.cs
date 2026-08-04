@@ -19,14 +19,14 @@ using MUXTestInfra.Shared.Infra;
 namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    public class InkToolBarTests
+    public class InkToolbarTests
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
         [TestProperty("Platform", "Any")]
         [TestProperty("MUXControlsTestSuite", "SuiteB")]
-        [TestProperty("Ignore", "True")] // InkToolBar implementation is stubs (Phase 3) - test page can't compile yet
+        [TestProperty("Ignore", "True")] // Enable once the InkToolbar interaction test page + harness are registered in MUXControlsTestApp.
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -38,12 +38,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void InkToolBarRendersInVisualTree()
+        public void InkToolbarRendersInVisualTree()
         {
-            using (var setup = new TestSetupHelper("InkToolBar Tests"))
+            using (var setup = new TestSetupHelper("InkToolbar Tests"))
             {
-                var toolbar = FindElement.ByName("TestInkToolBar");
-                Verify.IsNotNull(toolbar, "InkToolBar should be present in the visual tree.");
+                var toolbar = FindElement.ByName("TestInkToolbar");
+                Verify.IsNotNull(toolbar, "InkToolbar should be present in the visual tree.");
 
                 var canvas = FindElement.ByName("TestInkCanvas");
                 Verify.IsNotNull(canvas, "Target InkCanvas should be present.");
@@ -51,9 +51,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void InkToolBarInitialControlsSelection()
+        public void InkToolbarInitialControlsSelection()
         {
-            using (var setup = new TestSetupHelper("InkToolBar Tests"))
+            using (var setup = new TestSetupHelper("InkToolbar Tests"))
             {
                 var selector = FindElement.ByName<ComboBox>("InitialControlsSelector");
                 Verify.IsNotNull(selector, "InitialControlsSelector should be present.");
@@ -82,9 +82,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void InkToolBarOrientationSwitching()
+        public void InkToolbarOrientationSwitching()
         {
-            using (var setup = new TestSetupHelper("InkToolBar Tests"))
+            using (var setup = new TestSetupHelper("InkToolbar Tests"))
             {
                 var selector = FindElement.ByName<ComboBox>("OrientationSelector");
                 Verify.IsNotNull(selector, "OrientationSelector should be present.");
@@ -103,9 +103,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void InkToolBarFlyoutPlacementSwitching()
+        public void InkToolbarFlyoutPlacementSwitching()
         {
-            using (var setup = new TestSetupHelper("InkToolBar Tests"))
+            using (var setup = new TestSetupHelper("InkToolbar Tests"))
             {
                 var selector = FindElement.ByName<ComboBox>("FlyoutPlacementSelector");
                 Verify.IsNotNull(selector, "FlyoutPlacementSelector should be present.");
@@ -122,9 +122,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void InkToolBarRulerToggle()
+        public void InkToolbarRulerToggle()
         {
-            using (var setup = new TestSetupHelper("InkToolBar Tests"))
+            using (var setup = new TestSetupHelper("InkToolbar Tests"))
             {
                 var rulerCheckBox = FindElement.ByName<CheckBox>("RulerCheckBox");
                 Verify.IsNotNull(rulerCheckBox, "RulerCheckBox should be present.");
@@ -144,9 +144,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void InkToolBarStencilToggle()
+        public void InkToolbarStencilToggle()
         {
-            using (var setup = new TestSetupHelper("InkToolBar Tests"))
+            using (var setup = new TestSetupHelper("InkToolbar Tests"))
             {
                 var stencilCheckBox = FindElement.ByName<CheckBox>("StencilCheckBox");
                 Verify.IsNotNull(stencilCheckBox, "StencilCheckBox should be present.");
@@ -163,9 +163,9 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void InkToolBarActiveToolDisplay()
+        public void InkToolbarActiveToolDisplay()
         {
-            using (var setup = new TestSetupHelper("InkToolBar Tests"))
+            using (var setup = new TestSetupHelper("InkToolbar Tests"))
             {
                 var activeToolText = FindElement.ByName("ActiveToolText");
                 Verify.IsNotNull(activeToolText, "ActiveToolText should be present.");

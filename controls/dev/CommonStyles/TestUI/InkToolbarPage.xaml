@@ -15,7 +15,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Horizontal toolbar with the default tool set (pens + eraser + ruler). -->
-        <InkToolBar x:Name="InkToolBar"
+        <InkToolbar x:Name="InkToolbar"
                     Grid.Row="0" Grid.Column="0"
                     HorizontalAlignment="Left"
                     TargetInkCanvas="{x:Bind inkCanvas}"/>

@@ -6,31 +6,58 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarToolButton.g.h"
-#include "InkToolBarToolButton.properties.h"
+#include "InkToolbarToolButton.g.h"
+#include "InkToolbarToolButton.properties.h"
 
-class InkToolBarToolButton :
-    public ReferenceTracker<InkToolBarToolButton, winrt::implementation::InkToolBarToolButtonT, winrt::composable>, 
-    public InkToolBarToolButtonProperties
+class InkToolbarToolButton :
+    public ReferenceTracker<InkToolbarToolButton, winrt::implementation::InkToolbarToolButtonT, winrt::composable>, 
+    public InkToolbarToolButtonProperties
 {
 public:
-    InkToolBarToolButton() = default;
+    InkToolbarToolButton();
 
-    winrt::InkToolBarTool ToolKind() { return m_toolKind; }
-    
-    bool IsExtensionGlyphShown() { return m_isExtensionGlyphShown; }
-    void IsExtensionGlyphShown(bool value) { m_isExtensionGlyphShown = value; }
+    // IUIElementOverrides / IFrameworkElementOverrides (UWP OnApplyTemplateImpl / OnCreateAutomationPeerImpl).
+    void OnApplyTemplate();
+    winrt::AutomationPeer OnCreateAutomationPeer();
+
+    // DP change routing (InkToolbarToolButtonProperties calls this).
+    void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+
+    // Update the button orientation based on the preferred flyout direction.
+    void SetButtonDirection(winrt::InkToolbarButtonFlyoutPlacement direction);
+
+    // Parent back-reference (weak; UWP m_parentInkToolbar wrl::WeakRef).
+    void SetParentInkToolbar(winrt::InkToolbar const& inkToolbar);
+    winrt::InkToolbar GetParentInkToolbar();
+
+    // For the automation peer.
+    bool HasL3();
+    bool IsL3Open();
+    void OpenL3();
+    void CloseL3();
+
+    // get_ToolKind (plain read-only property, impl-owned; not a DP).
+    winrt::InkToolbarTool ToolKind() { return m_toolKind; }
 
     // Echo the tool's toggle association. Custom is the safe default for non-toggle tools.
-    winrt::InkToolBarToggle ToggleKind() { return m_toggleKind; }
-    void ToggleKind(winrt::InkToolBarToggle value) { m_toggleKind = value; }
+    winrt::InkToolbarToggle ToggleKind() { return m_toggleKind; }
+    void ToggleKind(winrt::InkToolbarToggle value) { m_toggleKind = value; }
+
+    // UWP IToolButtonDerived::GetLocalizedToolName: leaf buttons supply their localized tool name;
+    // InkToolbarToolButton::OnApplyTemplate applies it as the tooltip + AutomationProperties.Name.
+    virtual winrt::hstring GetLocalizedToolName() { return {}; }
 
 protected:
-    void SetToolKind(winrt::InkToolBarTool kind) { m_toolKind = kind; }
+    void SetToolKind(winrt::InkToolbarTool kind) { m_toolKind = kind; }
 
 private:
-    winrt::InkToolBarTool m_toolKind{ winrt::InkToolBarTool::BallpointPen };
-    bool m_isExtensionGlyphShown{ false };
-    winrt::InkToolBarToggle m_toggleKind{ winrt::InkToolBarToggle::Custom };
+    // Pushes IsExtensionGlyphShown / RTL / flyout-direction visual states (UWP UpdateStates).
+    void UpdateStates(bool useTransitions);
+
+    winrt::weak_ref<winrt::InkToolbar> m_parentInkToolbar{ nullptr };
+    winrt::InkToolbarButtonFlyoutPlacement m_direction{ winrt::InkToolbarButtonFlyoutPlacement::Bottom };
+
+    winrt::InkToolbarTool m_toolKind{ winrt::InkToolbarTool::BallpointPen };
+    winrt::InkToolbarToggle m_toggleKind{ winrt::InkToolbarToggle::Custom };
 };
 

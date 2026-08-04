@@ -7,12 +7,66 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarFlyoutItemAutomationPeer.g.h"
+#include "InkToolbarFlyoutItem.h"
+#include "InkToolbarFlyoutItemAutomationPeer.g.h"
 
-class InkToolBarFlyoutItemAutomationPeer :
-    public ReferenceTracker<InkToolBarFlyoutItemAutomationPeer, winrt::implementation::InkToolBarFlyoutItemAutomationPeerT>
+class InkToolbarFlyoutItemAutomationPeer :
+    public ReferenceTracker<InkToolbarFlyoutItemAutomationPeer, winrt::implementation::InkToolbarFlyoutItemAutomationPeerT>
 {
 public:
-    InkToolBarFlyoutItemAutomationPeer(winrt::InkToolBarFlyoutItem owner) {};
+    InkToolbarFlyoutItemAutomationPeer(winrt::InkToolbarFlyoutItem const& owner)
+        : ReferenceTracker(owner)
+    {
+    }
+
+    // IAutomationPeerOverrides
+    winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface)
+    {
+        if (patternInterface == winrt::PatternInterface::Invoke)
+        {
+            return *this;
+        }
+        return __super::GetPatternCore(patternInterface);
+    }
+
+    winrt::AutomationControlType GetAutomationControlTypeCore()
+    {
+        return winrt::AutomationControlType::Custom;
+    }
+
+    hstring GetClassNameCore()
+    {
+        // UWP returns the literal class name (not the fully-qualified name).
+        return L"InkToolbarFlyoutItem";
+    }
+
+    hstring GetNameCore()
+    {
+        if (auto owner = GetImpl())
+        {
+            return owner->TryGetTextContent();
+        }
+        return __super::GetNameCore();
+    }
+
+    // IInvokeProvider
+    void Invoke()
+    {
+        if (auto owner = GetImpl())
+        {
+            owner->OnInvoked();
+        }
+    }
+
+private:
+    com_ptr<InkToolbarFlyoutItem> GetImpl()
+    {
+        com_ptr<InkToolbarFlyoutItem> impl;
+        if (auto item = Owner().try_as<winrt::InkToolbarFlyoutItem>())
+        {
+            impl = winrt::get_self<InkToolbarFlyoutItem>(item)->get_strong();
+        }
+        return impl;
+    }
 };
 

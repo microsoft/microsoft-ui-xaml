@@ -7,9 +7,9 @@
     <SharedGUID>a1b2c3d4-3001-4000-8001-ink0toolbarapi</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>InkToolBar_APITests</Import_RootNamespace>
+    <Import_RootNamespace>InkToolbar_APITests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)InkToolBarTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InkToolbarTests.cs" />
   </ItemGroup>
 </Project>
