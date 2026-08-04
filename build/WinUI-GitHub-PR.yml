@@ -162,7 +162,7 @@ extends:
           displayName: Probe WinUI.Dependencies WebView2 restore
           inputs:
             command: 'custom'
-            arguments: 'restore "$(Agent.TempDirectory)\packages.feedauthprobe.config" -Source $(WinUIInternalFeedUri) -PackagesDirectory "$(Agent.TempDirectory)\feedauthprobe-packages"'
+            arguments: 'restore "$(Agent.TempDirectory)\packages.feedauthprobe.config" -Source https://microsoft.pkgs.visualstudio.com/_packaging/WinUI.Dependencies/nuget/v3/index.json -PackagesDirectory "$(Agent.TempDirectory)\feedauthprobe-packages"'
             includeNuGetOrg: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
