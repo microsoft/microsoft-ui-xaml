@@ -20,6 +20,11 @@ trigger: none
 
 variables:
 - group: WinUI-PRBannedWords
+- name: GitHubMigrationNoticeComment
+  value: |
+    **Heads up: WinUI development is moving to GitHub**
+
+    The public [microsoft-ui-xaml repository](https://github.com/microsoft/microsoft-ui-xaml) will become the single source of truth for WinUI development, and this Azure DevOps repository will stop accepting new pull requests targeting the `main` branch. Pull requests targeting the `2.x` and `1.8` branches will continue to be accepted in Azure DevOps.
 
 stages:
 - stage: ValidatePR
@@ -116,6 +121,7 @@ stages:
       condition: and(always(), ne(variables['IsMaestroPR'], 'true'), ne(variables['System.PullRequest.PullRequestId'], ''), eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main'))
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        GITHUB_MIGRATION_NOTICE_COMMENT: $(GitHubMigrationNoticeComment)
       inputs:
         failOnStdErr: true
         targetType: 'inline'
@@ -146,12 +152,7 @@ stages:
             if ($alreadyPosted) {
                 Write-Host "GitHub migration notice already posted on this PR. Skipping."
             } else {
-                $noticeBody = "$marker`n" +
-                              "**Heads up: WinUI development is moving to GitHub**`n`n" +
-                              "The public [microsoft-ui-xaml repository](https://github.com/microsoft/microsoft-ui-xaml) will become the single " +
-                              "source of truth for WinUI development, and this Azure DevOps repository will stop accepting new pull requests " +
-                              "targeting the ``main`` branch. Pull requests targeting the ``2.x`` and ``1.8`` branches will continue to be " +
-                              "accepted in Azure DevOps."
+                $noticeBody = "$marker`n$($env:GITHUB_MIGRATION_NOTICE_COMMENT)"
                 $body = @{
                     comments = @(@{
                         content = $noticeBody
