@@ -153,22 +153,27 @@ void InkCanvas::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventAr
     // does not see size changes, so explicitly update the presenter size when the rasterization
     // scale, actual size or scale transform changes.
 
+    // Previously we used get_weak() here, but we found the potential to hit a
+    // C++/WinRT refcounting problem (cppwinrt #1431) where, for composed/aggregated
+    // objects, the projected get_weak() can over-release the outer object. make_weak()
+    // on the projected type routes the weak reference through the outer object and is safe.
+    auto weakThis{ winrt::make_weak(static_cast<winrt::InkCanvas>(*this)) };
     m_xamlRootChangedRevoker = XamlRoot().Changed(winrt::auto_revoke,
-        [weakThis{ get_weak() }](auto const& /*sender*/, auto const& /*args*/)
+        [weakThis](auto const& /*sender*/, auto const& /*args*/)
         {
             if (auto strongThis = weakThis.get())
             {
                 // Our Rasterization Scale may have changed.
-                strongThis->UpdateInkPresenterSize();
+                winrt::get_self<InkCanvas>(strongThis)->UpdateInkPresenterSize();
             }
         });
 
     m_sizeChangedRevoker = SizeChanged(winrt::auto_revoke,
-        [weakThis{ get_weak() }](auto const& sender, auto const& /*args*/)
+        [weakThis](auto const& sender, auto const& /*args*/)
         {
             if (auto strongThis = weakThis.get())
             {
-                strongThis->UpdateInkPresenterSize();
+                winrt::get_self<InkCanvas>(strongThis)->UpdateInkPresenterSize();
             }
         });
 
