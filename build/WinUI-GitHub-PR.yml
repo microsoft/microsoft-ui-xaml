@@ -146,11 +146,23 @@ extends:
         - task: NuGetAuthenticate@1
           displayName: Probe WinUI.Dependencies authentication
 
+        - task: PowerShell@2
+          displayName: Create WinUI.Dependencies probe packages.config
+          inputs:
+            targetType: inline
+            script: |
+              @'
+              <?xml version="1.0" encoding="utf-8"?>
+              <packages>
+                <package id="Microsoft.UI.DCPP.Dependencies.Edge" version="144.0.3719.82" targetFramework="native" />
+              </packages>
+              '@ | Out-File -FilePath "$(Build.SourcesDirectory)\build\packages.feedauthprobe.config" -Encoding utf8
+
         - task: NuGetCommand@2
           displayName: Probe WinUI.Dependencies WebView2 restore
           inputs:
             command: 'custom'
-            arguments: 'restore build\packages.webview2.config -Source $(WinUIInternalFeedUri) -PackagesDirectory $(Build.SourcesDirectory)\packages'
+            arguments: 'restore build\packages.feedauthprobe.config -Source $(WinUIInternalFeedUri) -PackagesDirectory $(Build.SourcesDirectory)\packages'
             includeNuGetOrg: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
