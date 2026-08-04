@@ -140,18 +140,14 @@ stages:
         Contents: |
           **/Microsoft.WindowsAppSDK*/**
 
+    # Perf configs are mirrored with feed placeholders. Use the repo config in CI
+    # while preserving the scenario-local package layout expected by the projects.
     - task: NuGetCommand@2
       displayName: 'NuGet restore packages.config'
       inputs:
         command: 'custom'
-        arguments: 'restore $(scenariosPath)\packages.config -ConfigFile $(scenariosPath)\nuget.config'
+        arguments: 'restore $(scenariosPath)\packages.config -ConfigFile $(Build.SourcesDirectory)\nuget.config -PackagesDirectory $(scenariosPath)\packages'
         includeNuGetOrg: false
-      env:
-        # Provide the internal dependencies feed so NuGet can expand the
-        # %WinUILKGDependenciesFeedUri% token in perf\scenarios\nuget.config.
-        # Secret variables from the WinUI-InternalFeed group are not exposed as
-        # environment variables automatically, so map it explicitly here.
-        WinUILKGDependenciesFeedUri: $(WinUILKGDependenciesFeedUri)
 
     # PGO scenario apps are only used for x86 app training - skip for x64/ARM64
     - task: MSBuild@1
@@ -164,13 +160,10 @@ stages:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
         enableDefaultLogger: false
-        msbuildArguments: '/p:WinUIVersion=$(versionFinal) /p:PGOCopyRuntime=true /p:PublishReadyToRun=true /m /restore /binaryLogger:$(ob_outputDirectory)/binlogs/PGO-set.sln.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+        msbuildArguments: '/p:WinUIVersion=$(versionFinal) /p:PGOCopyRuntime=true /p:PublishReadyToRun=true /m /restore /p:RestoreConfigFile=$(Build.SourcesDirectory)\nuget.config /binaryLogger:$(ob_outputDirectory)/binlogs/PGO-set.sln.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
       env:
         LkgVcToolsName: $(compilerOverridePackageName)
         LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
-        # Provide the internal dependencies feed so NuGet's /restore can expand the
-        # %WinUILKGDependenciesFeedUri% token in perf\scenarios\nuget.config.
-        WinUILKGDependenciesFeedUri: $(WinUILKGDependenciesFeedUri)
 
     - task: CopyFiles@2
       displayName: Copy build output to staging directory
