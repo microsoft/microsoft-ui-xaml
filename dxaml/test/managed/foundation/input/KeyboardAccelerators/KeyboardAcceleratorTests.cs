@@ -3558,6 +3558,28 @@ namespace Microsoft.UI.Xaml.Tests.Input.KeyboardAcceleratorTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("Description", "Validates that OEM/punctuation VirtualKey codes (not members of the VirtualKey enum, but valid accelerator keys) produce a keyboard accelerator string representation instead of crashing. Regression test for microsoft-ui-xaml #708.")]
+        [TestProperty("VelocityTestPass:OneCoreStrict", "Desktop")]
+        public void VerifyOemVirtualKeysHaveKeyboardAcceleratorStringRepresentations()
+        {
+            // These OEM / punctuation virtual-key codes are NOT members of Windows.System.VirtualKey,
+            // but apps can still assign them to a KeyboardAccelerator (e.g. (VirtualKey)188 == VK_OEM_COMMA).
+            // Before the #708 fix, GetResourceStringIdFromVirtualKey fail-fast crashed the process for these.
+            int[] oemVirtualKeyCodes = { 186, 187, 188, 189, 190, 191, 192, 219, 220, 221, 222, 223, 226 };
+
+            foreach (int code in oemVirtualKeyCodes)
+            {
+                UIExecutor.Execute(() =>
+                {
+                    MenuFlyoutItem item = new MenuFlyoutItem();
+                    item.KeyboardAccelerators.Add(new KeyboardAccelerator() { Key = (VirtualKey)code, Modifiers = VirtualKeyModifiers.Control });
+                    Log.Comment("Verifying that OEM VirtualKey code " + code + " has a keyboard accelerator string representation.");
+                    Verify.IsNotNull(item.KeyboardAcceleratorTextOverride);
+                });
+            }
+        }
+
         #region Helpers
         void VerifyKeyboardAcceleratorInvokedEventArgs(
             object sender,
