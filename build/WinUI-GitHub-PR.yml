@@ -143,6 +143,16 @@ extends:
 
               Write-Host "GitHub PR context validation completed."
 
+        - task: NuGetAuthenticate@1
+          displayName: Probe WinUI.Dependencies authentication
+
+        - task: NuGetCommand@2
+          displayName: Probe WinUI.Dependencies WebView2 restore
+          inputs:
+            command: 'custom'
+            arguments: 'restore build\packages.webview2.config -Source $(WinUIInternalFeedUri) -PackagesDirectory $(Build.SourcesDirectory)\packages'
+            includeNuGetOrg: false
+
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
         parameters:
