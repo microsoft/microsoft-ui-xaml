@@ -156,13 +156,13 @@ extends:
               <packages>
                 <package id="Microsoft.UI.DCPP.Dependencies.Edge" version="144.0.3719.82" targetFramework="native" />
               </packages>
-              '@ | Out-File -FilePath "$(Build.SourcesDirectory)\build\packages.feedauthprobe.config" -Encoding utf8
+              '@ | Out-File -FilePath "$(Agent.TempDirectory)\packages.feedauthprobe.config" -Encoding utf8
 
         - task: NuGetCommand@2
           displayName: Probe WinUI.Dependencies WebView2 restore
           inputs:
             command: 'custom'
-            arguments: 'restore build\packages.feedauthprobe.config -Source $(WinUIInternalFeedUri) -PackagesDirectory $(Build.SourcesDirectory)\packages'
+            arguments: 'restore "$(Agent.TempDirectory)\packages.feedauthprobe.config" -Source $(WinUIInternalFeedUri) -PackagesDirectory "$(Agent.TempDirectory)\feedauthprobe-packages"'
             includeNuGetOrg: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
