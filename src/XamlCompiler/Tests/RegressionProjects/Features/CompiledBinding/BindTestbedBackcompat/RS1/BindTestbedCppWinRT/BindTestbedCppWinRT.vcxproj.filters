@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="MainPage.xaml" />
+    <Page Include="BasicTests.xaml" />
+    <Page Include="CastingTests.xaml" />
+    <Page Include="EventTests.xaml" />
+    <Page Include="FunctionTests.xaml" />
+    <Page Include="ListAndTemplateTests.xaml" />
+    <Page Include="LonelyStaticBinding.xaml" />
+    <Page Include="MyUserControl1.xaml" />
+    <Page Include="PhasingTests.xaml" />
+    <Page Include="DetectLeaksPage.xaml" />
+    <Page Include="LoadAndCreateFromStringTests.xaml" />
+    <Page Include="subfolder\SubDictionary.xaml" />
+    <Page Include="Templates.xaml" />
+    <Page Include="TestsPage2.xaml" />
+    <Page Include="TwoWayTests.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="BindTestbed.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="App.cpp" />
+    <ClCompile Include="MainPage.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="BasicTests.cpp" />
+    <ClCompile Include="CastingTests.cpp" />
+    <ClCompile Include="EventTests.cpp" />
+    <ClCompile Include="FunctionTests.cpp" />
+    <ClCompile Include="ListAndTemplateTests.cpp" />
+    <ClCompile Include="LonelyStaticBinding.cpp" />
+    <ClCompile Include="MyUserControl1.cpp" />
+    <ClCompile Include="PhasingTests.cpp" />
+    <ClCompile Include="DetectLeaksPage.cpp" />
+    <ClCompile Include="LoadAndCreateFromStringTests.cpp" />
+    <ClCompile Include="subfolder\SubDictionary.cpp" />
+    <ClCompile Include="Templates.cpp" />
+    <ClCompile Include="TestsPage2.cpp" />
+    <ClCompile Include="TwoWayTests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="BasicTests.h" />
+    <ClInclude Include="CastingTests.h" />
+    <ClInclude Include="EventTests.h" />
+    <ClInclude Include="ExtraInfo.h" />
+    <ClInclude Include="FunctionTests.h" />
+    <ClInclude Include="ListAndTemplateTests.h" />
+    <ClInclude Include="LonelyStaticBinding.h" />
+    <ClInclude Include="MyInfo.h" />
+    <ClInclude Include="MyItem.h" />
+    <ClInclude Include="MyUserControl1.h" />
+    <ClInclude Include="App.h" />
+    <ClInclude Include="MainPage.h" />
+    <ClInclude Include="PhasingTests.h" />
+    <ClInclude Include="DetectLeaksPage.h" />
+    <ClInclude Include="LoadAndCreateFromStringTests.h" />
+    <ClInclude Include="subfolder.SubDictionary.h" />
+    <ClInclude Include="subfolder\SubDictionary.h" />
+    <ClInclude Include="Templates.h" />
+    <ClInclude Include="TestsPage2.h" />
+    <ClInclude Include="TwoWayTests.h" />
+    <ClInclude Include="CastingModel.h" />
+    <ClInclude Include="MainModel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\SplashScreen.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\LockScreenLogo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{e48dc53e-40b1-40cb-970a-f89935452892}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

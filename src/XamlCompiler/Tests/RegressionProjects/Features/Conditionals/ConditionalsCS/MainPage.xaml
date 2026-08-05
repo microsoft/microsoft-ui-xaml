@@ -1,0 +1,46 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Page
+    x:Class="Conditionals.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Conditionals?IsTypeNotPresent(Conditionals.NameEventsLoad)"
+    xmlns:v1="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsTypePresent(ConditionalControls.V1Type)"
+    xmlns:v2="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsTypePresent(ConditionalControls.V2Type)"
+    xmlns:v3="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsTypePresent(ConditionalControls.V3Type)"
+    >
+
+    <ScrollViewer VerticalScrollMode="Auto" HorizontalScrollMode="Auto" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+            <StackPanel Orientation="Horizontal" Padding="0, 0, 0, 30">
+                <TextBlock Text="Conditionals Test App" Style="{StaticResource Title}"/>
+                <TextBlock Text="Versions Present: " Style="{StaticResource Section}"/>
+                <v1:TextBlock Text=" V1 " Style="{StaticResource Section}"/>
+                <v2:TextBlock Text=" V2 " Style="{StaticResource Section}"/>
+                <v3:TextBlock Text=" V3" Style="{StaticResource Section}"/>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Stretch" Padding="10, 10, 10, 10">
+
+                <!-- Name and Events -->
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="600">
+
+                    <TextBlock Text="Name and Events" Style="{StaticResource Section}"/>
+                    <local:NameEventsLoad x:Name="nameAndEvents"/>
+
+                </StackPanel>
+
+                <!-- x:Bind Tests -->
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Width="600">
+
+                    <TextBlock Text="x:Bind Tests" Style="{StaticResource Section}"/>
+                    <local:BindTests x:Name="bindTests"/>
+
+                </StackPanel>
+
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</Page>

@@ -1,0 +1,26 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Application
+    x:Class="BindTestbedCX.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:model="using:BindTestbedModel"
+    >
+    <Application.Resources>
+        <model:DoubleToIntConverter x:Key="DoubleToInt"/>
+        <model:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+        <model:ColorToStringConverter x:Key="ColorToString"/>
+
+        <Style TargetType="TextBlock" x:Key="Section">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="DarkBlue" />
+            <Setter Property="FontSize" Value="25" />
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="Note">
+            <Setter Property="FontStyle" Value="Italic" />
+            <Setter Property="Foreground" Value="DarkGray" />
+        </Style>
+
+    </Application.Resources>
+</Application>

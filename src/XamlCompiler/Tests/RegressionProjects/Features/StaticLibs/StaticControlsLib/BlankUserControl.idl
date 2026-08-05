@@ -1,0 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace StaticControlsLib
+{
+    runtimeclass BlankUserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        BlankUserControl();
+        Int32 Dummy;
+    }
+}

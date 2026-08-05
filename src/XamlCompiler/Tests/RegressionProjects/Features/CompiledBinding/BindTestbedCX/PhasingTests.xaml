@@ -1,0 +1,66 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbedCX.PhasingTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbedCX"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" d:DesignHeight="300" d:DesignWidth="400">
+    <UserControl.Resources>
+        <DataTemplate x:DataType="local:MyItem" x:Key="NonPhasedTemplate">
+            <StackPanel Height="300" Width="150" Background="LightBlue" PointerReleased="StackPanel_PointerReleased">
+                <Rectangle Fill="Red" />
+                <TextBlock Text="Hello World" Width="{x:Bind Index}" />
+                <TextBlock Text="{x:Bind Description, Mode=OneWay}" Foreground="Gray" />
+                <TextBlock Text="{x:Bind Title}" Foreground="Yellow" />
+                <TextBlock Text="{x:Bind Title, FallbackValue=foo}" Foreground="Yellow" />
+                <TextBlock Text="{x:Bind Subtitle}" Foreground="DarkRed" />
+                <TextBlock Text="{x:Bind Subtitle, Mode=OneWay}" Foreground="DarkBlue" />
+                <TextBlock Text="{x:Bind OtherInfo.Caption}" Foreground="Green" />
+                <TextBlock Text="{x:Bind Info.ImageUrl}" Foreground="DarkRed" />
+                <TextBlock Text="{x:Bind Info.Caption}" Foreground="DarkRed" />
+                <TextBlock Text="{x:Bind Info.Prop1}" Foreground="DarkBlue" />
+                <TextBlock Text="{x:Bind Info.Prop1, Mode=OneWay}" Foreground="DarkRed" />
+                <TextBlock Text="{x:Bind DPOnMyItem, Mode=OneWay}" />
+                <TextBlock x:Name="deferedTextBlock" Text="{x:Bind Subtitle}" x:DeferLoadStrategy="Lazy" />
+                <TextBlock x:Name="deferedAndPhasedTextBlock" Text="{x:Bind Info.Prop3}" x:DeferLoadStrategy="Lazy" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:DataType="local:MyItem" x:Key="PhasedTemplate">
+            <StackPanel Height="300" Width="150" Background="LightBlue" PointerReleased="StackPanel_PointerReleased">
+                <TextBlock Text="Hello World" Width="{x:Bind Index}"/>
+                <TextBlock Text="{x:Bind Description, Mode=OneWay}" Foreground="Gray"/>
+                <TextBlock Text="{x:Bind Title}" x:Phase="0" Foreground="Yellow"/>
+                <TextBlock Text="{x:Bind Title, FallbackValue=foo}" x:Phase="1" Foreground="Yellow"/>
+                <TextBlock Text="{x:Bind Subtitle}" x:Phase="2" Foreground="DarkRed"/>
+                <TextBlock Text="{x:Bind Subtitle, Mode=OneWay}" x:Phase="2" Foreground="DarkBlue"/>
+                <TextBlock Text="{x:Bind OtherInfo.Caption}" x:Phase="2" Foreground="Green"/>
+                <TextBlock Text="{x:Bind Info.ImageUrl}" x:Phase="4" Foreground="DarkRed"/>
+                <TextBlock Text="{x:Bind Info.Caption}" x:Phase="4" Foreground="DarkRed"/>
+                <TextBlock Text="{x:Bind Info.Prop2}" x:Phase="4" Foreground="Purple"/>
+                <TextBlock Text="{x:Bind Info.Prop1}" x:Phase="5" Foreground="DarkBlue"/>
+                <TextBlock Text="{x:Bind Info.Prop1, Mode=OneWay}" x:Phase="6" Foreground="DarkRed"/>
+                <TextBlock Text="{x:Bind DPOnMyItem, Mode=OneWay}" x:Phase="7"/>
+                <TextBlock x:Name="deferedTextBlock" Text="{x:Bind Subtitle}" x:DeferLoadStrategy="Lazy" />
+                <TextBlock x:Name="deferedAndPhasedTextBlock" Text="{x:Bind Info.Prop3}" x:DeferLoadStrategy="Lazy" x:Phase="10" />
+                <!-- a phase just to support testing -->
+                <TextBlock Tag="{x:Bind Title}" Text="Test" x:Phase="24"/>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <CheckBox x:Name="SlowPhasing" Checked="SlowPhasing_Checked" Unchecked="SlowPhasing_UnChecked" IsChecked="False">Slow down phasing</CheckBox>
+            <CheckBox x:Name="PhasedTemplateCbx" Checked="PhasedTemplate_Checked" Unchecked="PhasedTemplate_UnChecked" IsChecked="True">Use Phased Teplate</CheckBox>
+            <Button Click="Reset_Click">Replace list contents</Button>
+            <Button Click="Reload_Click">Set a different itemssource</Button>
+        </StackPanel>
+        <GridView x:Name="myGridView" Background="{StaticResource ApplicationPageBackgroundThemeBrush}" ShowsScrollingPlaceholders="False" Grid.Row="1" ItemTemplate="{StaticResource PhasedTemplate}"></GridView>
+    </Grid>
+</UserControl>
