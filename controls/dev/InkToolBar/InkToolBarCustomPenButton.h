@@ -6,35 +6,39 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarCustomPenButton.g.h"
-#include "InkToolBarCustomPenButton.properties.h"
+#include "InkToolbarCustomPenButton.g.h"
+#include "InkToolbarCustomPenButton.properties.h"
 
-#include "InkToolBarPenButton.h"
+#include "InkToolbarPenButton.h"
 
-class InkToolBarCustomPenButton :
-    public winrt::implementation::InkToolBarCustomPenButtonT<InkToolBarCustomPenButton, InkToolBarPenButton>, 
-    public InkToolBarCustomPenButtonProperties
+class InkToolbarCustomPenButton :
+    public winrt::implementation::InkToolbarCustomPenButtonT<InkToolbarCustomPenButton, InkToolbarPenButton>, 
+    public InkToolbarCustomPenButtonProperties
 {
 public:
-    ForwardRefToBaseReferenceTracker(InkToolBarPenButton)
+    ForwardRefToBaseReferenceTracker(InkToolbarPenButton)
 
-    InkToolBarCustomPenButton()
+    InkToolbarCustomPenButton()
     {
-        SetToolKind(winrt::InkToolBarTool::CustomPen);
+        SetToolKind(winrt::InkToolbarTool::CustomPen);
+        SetDefaultStyleKey(this);
     }
 
-    // These functions are ambiguous with InkToolBarPenButton, disambiguate
-    using InkToolBarCustomPenButtonProperties::EnsureProperties;
-    using InkToolBarCustomPenButtonProperties::ClearProperties;
+    // These functions are ambiguous with InkToolbarPenButton, disambiguate
+    using InkToolbarCustomPenButtonProperties::EnsureProperties;
+    using InkToolbarCustomPenButtonProperties::ClearProperties;
 
-    winrt::InkToolBarCustomPen CustomPen() { return m_customPen; }
-    void CustomPen(winrt::InkToolBarCustomPen value) { m_customPen = value; }
-    
-    winrt::UIElement ConfigurationContent() { return m_configurationContent; }
-    void ConfigurationContent(winrt::UIElement value) { m_configurationContent = value; }
-
-private:
-    winrt::InkToolBarCustomPen m_customPen{ nullptr };
-    winrt::UIElement m_configurationContent{ nullptr };
+    // UWP InkToolbarCustomPenButton::CreateInkDrawingAttributes: delegate to the attached custom pen,
+    // passing the currently selected brush and the resolved stroke width.
+    winrt::InkDrawingAttributes CreateInkDrawingAttributes() override
+    {
+        if (auto customPen = CustomPen())
+        {
+            auto self = this->try_as<winrt::InkToolbarPenButton>();
+            float w = InkToolbarPenButton::DetermineStrokeWidth(self);
+            return customPen.CreateInkDrawingAttributes(SelectedBrush(), w);
+        }
+        return nullptr;
+    }
 };
 

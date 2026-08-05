@@ -203,6 +203,9 @@
                                         <Button x:Name="Ensure_Ensure_Button" AutomationProperties.AutomationId="Ensure_Ensure_Button" Content="EnsureCWV2, EnsureCWV2" Click="OnEnsure_Ensure_ButtonClicked" Margin="1"/>
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="EnsureNoAwait_Source_Button" AutomationProperties.AutomationId="EnsureNoAwait_Source_Button" Content="EnsureCWV2 (no await), Source" Click="OnEnsureNoAwait_Source_ButtonClicked" Margin="1"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
                                         <Button x:Name="Remove_ConcurrentCreationElement_Button" AutomationProperties.AutomationId="Remove_ConcurrentCreationElement_Button" Content="Remove" Click="OnRemove_ConcurrentCreationElement_ButtonClicked" Margin="1"/>
                                         <Button x:Name="Close_ConcurrentCreationElement_Button" AutomationProperties.AutomationId="Close_ConcurrentCreationElement_Button" Content="Close" Click="OnClose_ConcurrentCreationElement_ButtonClicked" Margin="1"/>
                                     </StackPanel>

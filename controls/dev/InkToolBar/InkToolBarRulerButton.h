@@ -6,21 +6,22 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarRulerButton.g.h"
+#include "InkToolbarRulerButton.g.h"
 
-#include "InkToolBarToggleButton.h"
+#include "InkToolbarToggleButton.h"
 
-// Dedicated ruler toggle button (WUXC parity: Windows.UI.Xaml.Controls.InkToolBarRulerButton).
-// Structurally an InkToolBarToggleButton whose ToggleKind is Ruler, so GetToggleButton(Ruler)
-// returns a strongly-typed InkToolBarRulerButton and apps can add one to InkToolBar.Children.
-class InkToolBarRulerButton :
-    public winrt::implementation::InkToolBarRulerButtonT<InkToolBarRulerButton, InkToolBarToggleButton>
+// Dedicated ruler toggle button (WUXC parity: Windows.UI.Xaml.Controls.InkToolbarRulerButton).
+// Structurally an InkToolbarToggleButton whose ToggleKind is Ruler, so GetToggleButton(Ruler)
+// returns a strongly-typed InkToolbarRulerButton and apps can add one to InkToolbar.Children.
+class InkToolbarRulerButton :
+    public winrt::implementation::InkToolbarRulerButtonT<InkToolbarRulerButton, InkToolbarToggleButton>
 {
 public:
-    ForwardRefToBaseReferenceTracker(InkToolBarToggleButton)
+    ForwardRefToBaseReferenceTracker(InkToolbarToggleButton)
 
-    InkToolBarRulerButton()
+    InkToolbarRulerButton()
     {
-        SetToggleKind(winrt::InkToolBarToggle::Ruler);
+        SetToggleKind(winrt::InkToolbarToggle::Ruler);
+        SetDefaultStyleKey(this);
     }
 };

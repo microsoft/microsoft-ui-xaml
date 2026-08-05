@@ -1,0 +1,22 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Page
+    x:Class="PlatformConditionalsCS.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PlatformConditionalsCS"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:localUwp="using:PlatformConditionalsCS?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5);TargetPlatform(UWP)"
+    xmlns:localAndroid="using:PlatformConditionalsCS?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5);TargetPlatform(Android)"
+    xmlns:xamliOS="using:Some.iOS.Namespace?TargetPlatform(iOS)"
+    xmlns:conditionalModel="using:PlatformConditionalsModel">
+
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <localUwp:TextBoxCustomLocal Text="local UWP specific control should display" />
+        <localAndroid:TextBoxCustomLocal Text="local Android specific control should not display" />
+        <TextBlock Text="there should be more indented text blocks below here from a different assembly" />
+        <conditionalModel:ConditionalControl Margin="50,0,0,0"/>
+    </StackPanel>
+</Page>

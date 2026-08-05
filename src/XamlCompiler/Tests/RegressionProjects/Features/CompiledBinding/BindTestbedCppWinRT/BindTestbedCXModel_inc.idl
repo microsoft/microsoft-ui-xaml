@@ -1,0 +1,43 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace BindTestbedCXModel
+{
+    struct Coordinates
+    {
+        Int32 x;
+        Int32 y;
+    };
+
+    runtimeclass Animal
+    {
+        Animal();
+        Animal(String name, String color);
+
+        String Name{ get; };
+        String Color{ get; };
+
+        void Click_RegularArgsOnAnimal(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Click_NoArgsOnAnimal();
+        void Click_BaseArgsOnAnimal(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Click_OverloadedArgsOnAnimal(Object sender, Object e);
+    }
+
+    runtimeclass ModelCX
+    {
+        ModelCX();
+        Windows.Foundation.Collections.IObservableVector<String> ObservableVectorOfStrings{ get; };
+        BindTestbedCXModel.Coordinates Location{ get; };
+        void InitializeValues();
+        void UpdateValues();
+        static BindTestbedCXModel.Coordinates MakeStarCx(String args);
+    }
+
+    runtimeclass StarCx : Microsoft.UI.Xaml.FrameworkElement
+    {
+        StarCx();
+        BindTestbedCXModel.Coordinates Coords;
+        String TestString;
+        static Microsoft.UI.Xaml.DependencyProperty CoordsProperty{ get; };
+        static Microsoft.UI.Xaml.DependencyProperty TestStringProperty{ get; };
+    }
+}

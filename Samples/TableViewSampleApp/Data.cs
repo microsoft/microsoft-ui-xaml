@@ -19,10 +19,14 @@ public sealed class Item
     public string Notes { get; set; } = "";
     public ImageSource? Avatar { get; init; }
 
-    public Item(string name, string role, string city, int score, string bio, DateTimeOffset joined, string notes, ImageSource? avatar)
+    // Rendered avatar edge length; varied per row so the Image cells are different sizes (exercises
+    // Auto column width sizing to the widest image and Auto row height sizing to the tallest).
+    public double ImageSize { get; init; }
+
+    public Item(string name, string role, string city, int score, string bio, DateTimeOffset joined, string notes, ImageSource? avatar, double imageSize = 40)
     {
         Name = name; Role = role; City = city; Score = score;
-        Bio = bio; Joined = joined; Notes = notes; Avatar = avatar;
+        Bio = bio; Joined = joined; Notes = notes; Avatar = avatar; ImageSize = imageSize;
     }
 }
 
@@ -52,6 +56,9 @@ internal static class Data
     };
     private static readonly string[] NotesSeed = { "Fix bugs", "Test pass", "Plan", "Review", "Profile" };
 
+    // Avatar edge lengths, cycled per row so the image column holds different-sized images.
+    private static readonly double[] ImageSizes = { 24, 40, 64, 96, 48 };
+
     // 3 dummy avatars (Assets\avatar1..3.png), cycled per row.
     private static ImageSource Avatar(int i)
         => new BitmapImage(new Uri($"ms-appx:///Assets/avatar{(i % 3) + 1}.png"));
@@ -78,7 +85,8 @@ internal static class Data
                 Bios[i % Bios.Length],
                 baseDate.AddDays(rnd.Next(0, 500)),
                 NotesSeed[i % NotesSeed.Length],
-                Avatar(i)));
+                Avatar(i),
+                ImageSizes[i % ImageSizes.Length]));
         }
         return list;
     }

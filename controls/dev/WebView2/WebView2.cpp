@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
+#include <wil/cppwinrt_helpers.h>  // For wil::resume_foreground (marshals coroutine continuation to the UI DispatcherQueue)
 #include <corewindow.h>
 #include "dcomp.h"
 #include "InvokableCallbackHelper.h"
@@ -515,8 +516,24 @@ winrt::IAsyncAction WebView2::OnSourceChanged(winrt::Uri providedUri)
             // Otherwise it's implicit (another Source set), we are done; first Source will use updated Source value
             if (m_isExplicitCreationInProgress)
             {
+                // Capture the DispatcherQueue now, while we are guaranteed to be on the UI thread
+                // (before any suspension). After a co_await we may resume on a background thread, where
+                // reading DispatcherQueue() could race with core/thread shutdown and return null, which
+                // would AV inside wil::resume_foreground.
+                auto dispatcherQueue = DispatcherQueue();
+
                 // If EnsureCWV2*Async() call is in flight, wait for it to complete then set Source
                 co_await *m_creationInProgressAsync;
+
+                // The await above may resume on a background thread (e.g. when the caller did not
+                // await EnsureCoreWebView2Async before setting Source). Marshal back to the UI thread
+                // before touching UI-affine WebView2/CoreWebView2 objects below, otherwise navigation
+                // fails with RO_E_WRONG_THREAD (0x8001010E). Guard against a null DispatcherQueue from a
+                // shutdown race so we never enqueue on a null queue.
+                if (dispatcherQueue)
+                {
+                    co_await wil::resume_foreground(dispatcherQueue);
+                }
             }
             else if (m_isImplicitCreationInProgress)
             {
@@ -1514,7 +1531,20 @@ winrt::IAsyncAction WebView2::EnsureCoreWebView2Async(winrt::CoreWebView2Environ
     if (m_creationInProgressAsync)
     {
         MUX_ASSERT(m_isExplicitCreationInProgress || m_isImplicitCreationInProgress);
+
+        // Capture the DispatcherQueue now, while we are guaranteed to be on the UI thread (before any
+        // suspension). After a co_await we may resume on a background thread, where reading DispatcherQueue()
+        // could race with core/thread shutdown and return null, which would AV inside wil::resume_foreground.
+        auto dispatcherQueue = DispatcherQueue();
         co_await *m_creationInProgressAsync;
+
+        // The await above may resume on a background thread. Marshal back to the UI thread for
+        // consistency and to keep any future UI-affine work after this await safe. Guard against a
+        // null DispatcherQueue from a shutdown race so we never enqueue on a null queue.
+        if (dispatcherQueue)
+        {
+            co_await wil::resume_foreground(dispatcherQueue);
+        }
     }
 
     // Otherwise, kick off a new CWV2 creation

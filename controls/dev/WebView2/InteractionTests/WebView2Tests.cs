@@ -3018,6 +3018,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     "EnsureCWV2, EnsureCWV2"
                     );
                 EndSubTest("Concurrent Creation Test #4: EnsureCWV2, EnsureCWV2");
+
+                BeginSubTest("Concurrent Creation Test #5: EnsureCWV2 (no await), Source",
+                    "Call EnsureCWV2() WITHOUT awaiting it, then immediately set Source. Navigation should still " +
+                    "succeed (regression test for resuming the in-flight-creation await on a background thread, " +
+                    "which caused RO_E_WRONG_THREAD/0x8001010E).");
+                Button ensureNoAwait_Source_Button = new Button(FindElement.ById("EnsureNoAwait_Source_Button"));
+                using (var navigationCompletedWaiter = new ValueChangedEventWaiter(navigationCompletedCount, "1"))
+                {
+                    create_ConcurrentCreationElement_Button.Invoke();
+                    ensureNoAwait_Source_Button.Invoke();
+                    navigationCompletedWaiter.Wait();
+                }
+
+                if (loadedCount.Value != "1")
+                {
+                    using (var loadedWaiter = new ValueChangedEventWaiter(loadedCount, "1"))
+                    {
+                        loadedWaiter.Wait();
+                    }
+                }
+
+                ValidateLoadedSource(source2_filename);
+
+                ValidateEventCounts(
+                    1,      // coreWebView2InitializedCountExpected
+                    0,      // ensureCoreWebView2CompletionCountExpected
+                    1,      // navigationStartingCountExpected
+                    1,      // navigationCompletedCountExpected
+                    1,      // loadedCountExpected
+                    0,      // unloadedCountExpected
+                    0,      // coreProcessFailedCountExpected
+                    "EnsureCWV2 (no await), Source"
+                    );
+                EndSubTest("Concurrent Creation Test #5: EnsureCWV2 (no await), Source");
             }
         }
 

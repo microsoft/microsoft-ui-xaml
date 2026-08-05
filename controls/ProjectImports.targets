@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup>
@@ -69,6 +69,6 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\SelectorBar\SelectorBar.vcxitems" Label="Shared" Condition="$(FeatureSelectorBarEnabled) == 'true' Or $(FeatureSelectorBarEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\TitleBar\TitleBar.vcxitems" Label="Shared" Condition="$(FeatureTitleBarEnabled) == 'true' Or $(FeatureTitleBarEnabled) == 'productOnly'" />
     <Import Project="$(MSBuildThisFileDirectory)dev\InkCanvas\InkCanvas.vcxitems" Label="Shared" Condition="$(FeatureInkCanvasEnabled) == 'true' Or $(FeatureInkCanvasEnabled) == 'productOnly'" />
-    <Import Project="$(MSBuildThisFileDirectory)dev\InkToolbar\InkToolBar.vcxitems" Label="Shared" Condition="$(FeatureInkToolBarEnabled) == 'true' Or $(FeatureInkToolBarEnabled) == 'productOnly'" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\InkToolbar\InkToolbar.vcxitems" Label="Shared" Condition="$(FeatureInkToolbarEnabled) == 'true' Or $(FeatureInkToolbarEnabled) == 'productOnly'" />
   </ImportGroup>
 </Project>

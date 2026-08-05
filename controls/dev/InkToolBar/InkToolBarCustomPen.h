@@ -7,10 +7,10 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarCustomPen.g.h"
+#include "InkToolbarCustomPen.g.h"
 
-class InkToolBarCustomPen :
-    public ReferenceTracker<InkToolBarCustomPen, winrt::implementation::InkToolBarCustomPenT>
+class InkToolbarCustomPen :
+    public ReferenceTracker<InkToolbarCustomPen, winrt::implementation::InkToolbarCustomPenT>
 {
 public:
 

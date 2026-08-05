@@ -6,49 +6,63 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarStencilButton.g.h"
-#include "InkToolBarStencilButton.properties.h"
+#include "InkToolbarStencilButton.g.h"
+#include "InkToolbarStencilButton.properties.h"
 
-#include "InkToolBarMenuButton.h"
+#include "InkToolbarMenuButton.h"
 
-class InkToolBarStencilButton :
-    public winrt::implementation::InkToolBarStencilButtonT<InkToolBarStencilButton, InkToolBarMenuButton>, 
-    public InkToolBarStencilButtonProperties
+class InkToolbarStencilButton :
+    public winrt::implementation::InkToolbarStencilButtonT<InkToolbarStencilButton, InkToolbarMenuButton>, 
+    public InkToolbarStencilButtonProperties
 {
 public:
-    ForwardRefToBaseReferenceTracker(InkToolBarMenuButton)
+    ForwardRefToBaseReferenceTracker(InkToolbarMenuButton)
 
-    // These functions are ambiguous with InkToolBarMenuButton, disambiguate
-    using InkToolBarStencilButtonProperties::EnsureProperties;
-    using InkToolBarStencilButtonProperties::ClearProperties;
-
-    winrt::InkPresenterRuler Ruler() { return m_ruler; }
-    winrt::InkPresenterProtractor Protractor() { return m_protractor; }
-    
-    winrt::InkToolBarStencilKind SelectedStencil() { return m_selectedStencil; }
-    void SelectedStencil(winrt::InkToolBarStencilKind value) { m_selectedStencil = value; }
-    
-    bool IsRulerItemVisible() { return m_isRulerItemVisible; }
-    void IsRulerItemVisible(bool value) { m_isRulerItemVisible = value; }
-    
-    bool IsProtractorItemVisible() { return m_isProtractorItemVisible; }
-    void IsProtractorItemVisible(bool value) { m_isProtractorItemVisible = value; }
-
-    // Called to initialize ruler/protractor when InkPresenter is available
-    void SetInkPresenter(winrt::Windows::UI::Input::Inking::InkPresenter const& inkPresenter)
+    InkToolbarStencilButton()
     {
-        if (inkPresenter)
-        {
-            m_ruler = winrt::InkPresenterRuler(inkPresenter);
-            m_protractor = winrt::InkPresenterProtractor(inkPresenter);
-        }
+        SetMenuKind(winrt::InkToolbarMenuKind::Stencil);
+        SetDefaultStyleKey(this);
     }
 
+    // These functions are ambiguous with InkToolbarMenuButton, disambiguate
+    using InkToolbarStencilButtonProperties::EnsureProperties;
+    using InkToolbarStencilButtonProperties::ClearProperties;
+
+    // NOTE: Ruler / Protractor / SelectedStencil / IsRulerItemVisible / IsProtractorItemVisible are generated
+    // DEPENDENCY PROPERTIES (inherited from InkToolbarStencilButtonProperties). The container sets Ruler/
+    // Protractor from the target InkPresenter. The manual shadowing members were removed. The stencil flyout
+    // content comes from the XAML template "InkToolbarStencilButtonFlyoutContentTemplate" (named items
+    // StencilRuler/StencilProtractor) - until that template is ported, FindChild returns null and the
+    // flyout logic no-ops (documented gap).
+
+    // IFrameworkElementOverrides
+    void OnApplyTemplate();
+    void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+
+    void SetL3StencilItemCheck(winrt::InkToolbarStencilKind stencilKind, bool check);
+    void SetAllStencilItemsCheck(bool check);
+    unsigned NumberOfStencils();
+    bool IsAnyStencilSelected();
+    void HookUpToStencilEvents(winrt::RoutedEventHandler const& handler, bool& eventHookedUp, winrt::event_token& token);
+    void UpdateIcon(winrt::InkToolbarStencilKind kind);
+
+protected:
+    // IMenuButtonDerived override hooks (localized names are lift resource gaps -> empty).
+    winrt::hstring GetLocalizedToolName() override;
+    winrt::hstring GetFlyoutName() override;
+
 private:
-    winrt::InkPresenterRuler m_ruler{ nullptr };
-    winrt::InkPresenterProtractor m_protractor{ nullptr };
-    winrt::InkToolBarStencilKind m_selectedStencil{ winrt::InkToolBarStencilKind::Ruler };
-    bool m_isRulerItemVisible{ true };
-    bool m_isProtractorItemVisible{ true };
+    void OnL3ItemsVisibilitiesChanged();
+    void OnSelectedStencilChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void SetupL3(wchar_t const* itemName);
+    bool GetIsItemVisible(winrt::InkToolbarStencilKind kind);
+    void ConfigureStencilFlyoutItems(
+        winrt::RoutedEventHandler const& handler,
+        bool shouldHookupEvent,
+        winrt::DependencyObject const& flyoutContent,
+        winrt::InkToolbarStencilKind kind,
+        winrt::event_token& token);
+
+    winrt::event_token m_stencilItemCheckedRegistrationToken{};
 };
 

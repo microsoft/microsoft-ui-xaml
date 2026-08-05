@@ -6,19 +6,41 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarBallpointPenButton.g.h"
+#include "InkToolbarBallpointPenButton.g.h"
 
-#include "InkToolBarPenButton.h"
+#include "InkToolbarPenButton.h"
+#include "ResourceAccessor.h"
 
-class InkToolBarBallpointPenButton :
-    public winrt::implementation::InkToolBarBallpointPenButtonT<InkToolBarBallpointPenButton, InkToolBarPenButton>
+class InkToolbarBallpointPenButton :
+    public winrt::implementation::InkToolbarBallpointPenButtonT<InkToolbarBallpointPenButton, InkToolbarPenButton>
 {
 public:
-    ForwardRefToBaseReferenceTracker(InkToolBarPenButton)
+    ForwardRefToBaseReferenceTracker(InkToolbarPenButton)
 
-    InkToolBarBallpointPenButton()
+    InkToolbarBallpointPenButton()
     {
-        SetToolKind(winrt::InkToolBarTool::BallpointPen);
+        SetToolKind(winrt::InkToolbarTool::BallpointPen);
+        SetDefaultStyleKey(this);
+    }
+
+    winrt::hstring GetLocalizedToolName() override
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarBallpointPenButtonName);
+    }
+
+    // UWP InkToolbarBallpointPenButton::CreateInkDrawingAttributes: solid color, circle tip.
+    winrt::InkDrawingAttributes CreateInkDrawingAttributes() override
+    {
+        auto attrs = winrt::InkDrawingAttributes();
+        if (auto solid = SelectedBrush().try_as<winrt::SolidColorBrush>())
+        {
+            attrs.Color(solid.Color());
+        }
+        auto self = this->try_as<winrt::InkToolbarPenButton>();
+        float w = InkToolbarPenButton::DetermineStrokeWidth(self);
+        attrs.Size({ w, w });
+        attrs.PenTip(winrt::Windows::UI::Input::Inking::PenTipShape::Circle);
+        return attrs;
     }
 };
 

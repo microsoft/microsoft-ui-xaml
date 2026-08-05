@@ -6,19 +6,40 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InktoolBarPencilButton.g.h"
+#include "InkToolbarPencilButton.g.h"
 
-#include "InkToolBarPenButton.h"
+#include "InkToolbarPenButton.h"
+#include "ResourceAccessor.h"
 
-class InkToolBarPencilButton :
-    public winrt::implementation::InkToolBarPencilButtonT<InkToolBarPencilButton, InkToolBarPenButton>
+class InkToolbarPencilButton :
+    public winrt::implementation::InkToolbarPencilButtonT<InkToolbarPencilButton, InkToolbarPenButton>
 {
 public:
-    ForwardRefToBaseReferenceTracker(InkToolBarPenButton)
+    ForwardRefToBaseReferenceTracker(InkToolbarPenButton)
 
-    InkToolBarPencilButton()
+    InkToolbarPencilButton()
     {
-        SetToolKind(winrt::InkToolBarTool::Pencil);
+        SetToolKind(winrt::InkToolbarTool::Pencil);
+        SetDefaultStyleKey(this);
+    }
+
+    winrt::hstring GetLocalizedToolName() override
+    {
+        return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarPencilButtonName);
+    }
+
+    // UWP InkToolbarPencilButton::CreateInkDrawingAttributes: pencil-specific attributes.
+    winrt::InkDrawingAttributes CreateInkDrawingAttributes() override
+    {
+        auto attrs = winrt::InkDrawingAttributes::CreateForPencil();
+        if (auto solid = SelectedBrush().try_as<winrt::SolidColorBrush>())
+        {
+            attrs.Color(solid.Color());
+        }
+        auto self = this->try_as<winrt::InkToolbarPenButton>();
+        float w = InkToolbarPenButton::DetermineStrokeWidth(self);
+        attrs.Size({ w, w });
+        return attrs;
     }
 };
 

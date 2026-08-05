@@ -2,12 +2,16 @@
 # is good to be shared with the public. At least the PR title will be shared in the description
 # of the commit when mirroring the change to GitHub.
 #
-# There are two stages currently:
+# There are three tasks currently:
 #   1. Scan for known company or product names which should not be included (since we should not
 #      be sharing who is using WinUI3 nor who asked for specific fixes). The list of banned words
 #      is stored in the ADO variable group named WinUI-PRBannedWords.
 #
 #   2. Add a comment requesting the author review the PR title with an eye towards public sharing.
+#
+#   3. For PRs targeting `main` only, post a one-time comment letting the author know that WinUI
+#      development is moving to GitHub. This is idempotent (guarded by a hidden marker so it is
+#      only posted once per PR) since this pipeline reruns on every PR iteration.
 
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
@@ -16,6 +20,11 @@ trigger: none
 
 variables:
 - group: WinUI-PRBannedWords
+- name: GitHubMigrationNoticeComment
+  value: |
+    **Heads up: WinUI development is moving to GitHub**
+
+    The public [microsoft-ui-xaml repository](https://github.com/microsoft/microsoft-ui-xaml) will become the single source of truth for WinUI development, and this Azure DevOps repository will stop accepting new pull requests targeting the `main` branch. Pull requests targeting the `2.x` and `1.8` branches will continue to be accepted in Azure DevOps.
 
 stages:
 - stage: ValidatePR
@@ -107,4 +116,50 @@ stages:
                 "status" = "Active"
             } | ConvertTo-Json -Depth 10
             Invoke-RestMethod -Uri $url -Method Post -Headers @{Authorization = "Bearer $($env:SYSTEM_ACCESSTOKEN)"} -Body $body -ContentType "application/json"
+    - task: PowerShell@2
+      displayName: 'Post GitHub migration notice comment'
+      condition: and(always(), ne(variables['IsMaestroPR'], 'true'), ne(variables['System.PullRequest.PullRequestId'], ''), eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main'))
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        GITHUB_MIGRATION_NOTICE_COMMENT: $(GitHubMigrationNoticeComment)
+      inputs:
+        failOnStdErr: true
+        targetType: 'inline'
+        script: |
+            # Stable hidden marker used to detect whether this notice was already posted on this PR, so
+            # that it is only added once even though this pipeline reruns on every new PR iteration.
+            $marker = "<!-- winui-github-transition-notice -->"
 
+            # Pull Request Threads - List does not support $top/continuationToken paging (it always
+            # returns the full set of threads for the PR), so a single request is sufficient here:
+            # https://learn.microsoft.com/en-us/rest/api/azure/devops/git/pull-request-threads/list
+            $threadsUrl = "$($env:SYSTEM_COLLECTIONURI)_apis/git/repositories/$($env:BUILD_REPOSITORY_ID)/pullRequests/$($env:SYSTEM_PULLREQUEST_PULLREQUESTID)/threads?api-version=7.1-preview.1"
+            $existingThreads = Invoke-RestMethod -Uri $threadsUrl -Headers @{Authorization = "Bearer $($env:SYSTEM_ACCESSTOKEN)"}
+
+            $alreadyPosted = $false
+            foreach ($thread in $existingThreads.value) {
+                foreach ($comment in $thread.comments) {
+                    if ($comment.content -like "*$marker*") {
+                        $alreadyPosted = $true
+                        break
+                    }
+                }
+                if ($alreadyPosted) {
+                    break
+                }
+            }
+
+            if ($alreadyPosted) {
+                Write-Host "GitHub migration notice already posted on this PR. Skipping."
+            } else {
+                $noticeBody = "$marker`n$($env:GITHUB_MIGRATION_NOTICE_COMMENT)"
+                $body = @{
+                    comments = @(@{
+                        content = $noticeBody
+                        commentType = "text"
+                    })
+                    "status" = "Active"
+                } | ConvertTo-Json -Depth 10
+                Invoke-RestMethod -Uri $threadsUrl -Method Post -Headers @{Authorization = "Bearer $($env:SYSTEM_ACCESSTOKEN)"} -Body $body -ContentType "application/json"
+                Write-Host "Posted GitHub migration notice comment."
+            }

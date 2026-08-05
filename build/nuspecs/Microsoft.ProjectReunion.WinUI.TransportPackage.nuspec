@@ -57,11 +57,11 @@ Please note that the APIs contained in this package are subject to change before
     <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*" target="lib" />
     <file src="$PACKAGEROOT$\lib\uap10.0\**\*.xaml" target="lib\uap10.0" />
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Text.*" target="lib\uap10.0" />
-    <!-- Tabular metadata is gated out of public winmd. -->
+    <!-- Chart and Tabular metadata are gated out of the public winmd. -->
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Xaml.*" target="lib\uap10.0" />
     <file src="$PACKAGEROOT$\manifests*\**" target="manifests" />
     <file src="$PACKAGEROOT$\runtimes\**\Microsoft.UI.Xaml\**" target="runtimes" />
-    <!-- Transport packs after Tabular binplace, so this wildcard carries Tabular.dll/.pri. -->
+    <!-- Transport packs after Chart and Tabular binplace, so this wildcard carries Chart.dll and Tabular.dll/.pri. -->
     <file src="$PACKAGEROOT$\runtimes\**\Microsoft.UI.Xaml.*" target="runtimes" />
     <file src="$PACKAGEROOT$\runtimes\**\WinUIEdit.dll" target="runtimes" />
     <file src="$PACKAGEROOT$\tools\**" target="tools" />

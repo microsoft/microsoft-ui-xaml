@@ -1,0 +1,26 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Page
+    x:Class="BindTestbed.INotifyDataErrorInfoTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:BindTestbedModel"
+    xmlns:RS5="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 7)"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <!-- TODO: INotifyDataErrorInfo support
+            <TextBox Header="OneWay no Errors" Width="500" Height="100" Text="{x:Bind ErrorModel.RequiredString}" Description="Please enter anything you wish"/>
+            <TextBox Header="TwoWay with Errors" Width="500" Height="100" Text="{x:Bind ErrorModel.RequiredString, Mode=TwoWay}" Description="Please enter anything you wish"/>
+            -->
+            <!--<TextBox Header="Function Bind with errors" Width="500" Height="100" RS5:Text="{x:Bind ErrorModel.FunctionOnModelToString(ErrorModel.RequiredFunctionString), Mode=TwoWay, BindBack=ErrorModel.FunctionOnModelToStringBindBack}" Description="Please enter anything you wish"/>-->
+            <!-- TODO: INotifyDataErrorInfo support
+            <TextBox Header="Attached with errors" Width="500" Height="100" Text="{x:Bind Path=DOErrorModel.(model:AttachedProperties.AttachedString), Mode=TwoWay}" Description="Please enter anything you wish"/>
+            -->
+        </StackPanel>
+    </ScrollViewer>
+</Page>

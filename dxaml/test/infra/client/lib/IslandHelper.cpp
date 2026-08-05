@@ -188,6 +188,15 @@ HRESULT IslandHelperStatics::CreateWithExistingIsland(_In_ msy::IDispatcherQueue
     return wrl::MakeAndInitialize<IslandHelper>(islandHelper, nullptr, nullptr, nullptr, nullptr, dq, nullptr);
 }
 
+HRESULT IslandHelperStatics::SetForegroundWindow(UINT64 hwnd)
+{
+    // Route through the test infra server, which has a higher-fidelity activation path than a local
+    // ::SetForegroundWindow (it can obtain foreground rights by injecting input, then retries). See
+    // WindowingHelper::GetRightsAndSetForegroundWindow on the server side.
+    RpcClientEnsureConnected();
+    return RpcSetForegroundWindow(static_cast<LONG_PTR>(hwnd));
+}
+
 IslandHelper::~IslandHelper()
 {
     switch (m_mode)

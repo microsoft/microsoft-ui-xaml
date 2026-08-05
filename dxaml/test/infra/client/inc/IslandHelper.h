@@ -21,6 +21,8 @@ namespace Private { namespace Infrastructure {
         IFACEMETHOD(CreateOnCurrentThreadAndWindow)(ABI::Microsoft::UI::WindowId windowId, _Outptr_ test_infra::IIslandHelper** islandHelper);
 
         IFACEMETHOD(CreateWithExistingIsland)(_In_ msy::IDispatcherQueue* dq, _Outptr_ test_infra::IIslandHelper** islandHelper);
+
+        IFACEMETHOD(SetForegroundWindow)(UINT64 hwnd);
     };
 
     //

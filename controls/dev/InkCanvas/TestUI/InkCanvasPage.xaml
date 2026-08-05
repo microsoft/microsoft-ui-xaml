@@ -17,8 +17,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- InkToolBar drives the InkCanvas.InkPresenter (pen / eraser / colors). -->
-        <controls:InkToolBar x:Name="TestInkToolBar" AutomationProperties.Name="TestInkToolBar"
+        <!-- InkToolbar drives the InkCanvas.InkPresenter (pen / eraser / colors). -->
+        <controls:InkToolbar x:Name="TestInkToolbar" AutomationProperties.Name="TestInkToolbar"
                              Grid.Row="0" TargetInkCanvas="{x:Bind TestInkCanvas}" Margin="0,0,0,8" />
 
         <TextBlock x:Name="StatusText" AutomationProperties.Name="StatusText" Grid.Row="1"

@@ -7,12 +7,72 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarMenuButtonAutomationPeer.g.h"
+#include "InkToolbarMenuButton.h"
+#include "InkToolbarMenuButtonAutomationPeer.g.h"
 
-class InkToolBarMenuButtonAutomationPeer :
-    public ReferenceTracker<InkToolBarMenuButtonAutomationPeer, winrt::implementation::InkToolBarMenuButtonAutomationPeerT>
+class InkToolbarMenuButtonAutomationPeer :
+    public ReferenceTracker<InkToolbarMenuButtonAutomationPeer, winrt::implementation::InkToolbarMenuButtonAutomationPeerT>
 {
 public:
-    InkToolBarMenuButtonAutomationPeer(winrt::InkToolBarMenuButton owner) {};
+    InkToolbarMenuButtonAutomationPeer(winrt::InkToolbarMenuButton const& owner)
+        : ReferenceTracker(owner)
+    {
+    }
+
+    // IAutomationPeerOverrides
+    winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface)
+    {
+        if (patternInterface == winrt::PatternInterface::ExpandCollapse)
+        {
+            return *this;
+        }
+        return __super::GetPatternCore(patternInterface);
+    }
+
+    winrt::AutomationControlType GetAutomationControlTypeCore()
+    {
+        return winrt::AutomationControlType::Custom;
+    }
+
+    // IExpandCollapseProvider
+    winrt::ExpandCollapseState ExpandCollapseState()
+    {
+        auto state = winrt::ExpandCollapseState::Collapsed;
+        if (auto owner = GetImpl())
+        {
+            if (owner->HasL3() && owner->IsL3Open())
+            {
+                state = winrt::ExpandCollapseState::Expanded;
+            }
+        }
+        return state;
+    }
+
+    void Expand()
+    {
+        if (auto owner = GetImpl())
+        {
+            owner->OpenL3();
+        }
+    }
+
+    void Collapse()
+    {
+        if (auto owner = GetImpl())
+        {
+            owner->CloseL3();
+        }
+    }
+
+private:
+    com_ptr<InkToolbarMenuButton> GetImpl()
+    {
+        com_ptr<InkToolbarMenuButton> impl;
+        if (auto button = Owner().try_as<winrt::InkToolbarMenuButton>())
+        {
+            impl = winrt::get_self<InkToolbarMenuButton>(button)->get_strong();
+        }
+        return impl;
+    }
 };
 

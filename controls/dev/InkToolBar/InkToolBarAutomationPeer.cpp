@@ -3,22 +3,22 @@
 
 #include "pch.h"
 #include "common.h"
-#include "InkToolBarAutomationPeer.h"
-#include "InkToolBar.h"
+#include "InkToolbarAutomationPeer.h"
+#include "InkToolbar.h"
 
-InkToolBarAutomationPeer::InkToolBarAutomationPeer(winrt::InkToolBar const& owner)
+InkToolbarAutomationPeer::InkToolbarAutomationPeer(winrt::InkToolbar const& owner)
     : ReferenceTracker(owner)
 {
 }
 
-hstring InkToolBarAutomationPeer::GetClassNameCore()
+hstring InkToolbarAutomationPeer::GetClassNameCore()
 {
-    return winrt::hstring_name_of<winrt::InkToolBar>();
+    return winrt::hstring_name_of<winrt::InkToolbar>();
 }
 
 // Matches the WinUI 2 InkToolbar peer, which reports the bar as a Pane. The default
 // GetChildrenCore already returns the tool/menu buttons, so no override is needed there.
-winrt::AutomationControlType InkToolBarAutomationPeer::GetAutomationControlTypeCore()
+winrt::AutomationControlType InkToolbarAutomationPeer::GetAutomationControlTypeCore()
 {
     return winrt::AutomationControlType::Pane;
 }

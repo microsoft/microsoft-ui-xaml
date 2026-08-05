@@ -6,19 +6,20 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarCustomToggleButton.g.h"
+#include "InkToolbarCustomToggleButton.g.h"
 
-#include "InkToolBarToggleButton.h"
+#include "InkToolbarToggleButton.h"
 
-class InkToolBarCustomToggleButton :
-    public winrt::implementation::InkToolBarCustomToggleButtonT<InkToolBarCustomToggleButton, InkToolBarToggleButton>
+class InkToolbarCustomToggleButton :
+    public winrt::implementation::InkToolbarCustomToggleButtonT<InkToolbarCustomToggleButton, InkToolbarToggleButton>
 {
 public:
-    ForwardRefToBaseReferenceTracker(InkToolBarToggleButton)
+    ForwardRefToBaseReferenceTracker(InkToolbarToggleButton)
 
-    InkToolBarCustomToggleButton()
+    InkToolbarCustomToggleButton()
     {
-        SetToggleKind(winrt::InkToolBarToggle::Custom);
+        SetToggleKind(winrt::InkToolbarToggle::Custom);
+        SetDefaultStyleKey(this);
     }
 };
 

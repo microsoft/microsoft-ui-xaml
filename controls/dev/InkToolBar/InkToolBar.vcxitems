@@ -15,47 +15,56 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarCustomPen.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolBarAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarCustomPen.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)InkToolbarAutomationPeer.h" />
   </ItemGroup>
 
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolBar.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBar.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarAutomationPeer.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarBallpointPenButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarCustomPen.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarCustomPenButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarCustomToggleButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarRulerButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarCustomToolButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarEraserButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarFlyoutItem.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarFlyoutItemAutomationPeer.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarHighlighterButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarMenuButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarMenuButtonAutomationPeer.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarPenButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarToolButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarToolButtonAutomationPeer.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarPencilButton.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarPenConfigurationControl.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolBarStencilButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ButtonManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarToolButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarPenButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarToggleButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarMenuButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarFlyoutItem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarEraserButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarStencilButton.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarPenConfigurationControl.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbar.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarAutomationPeer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarBallpointPenButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarCustomPen.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarCustomPenButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarCustomToggleButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarRulerButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarCustomToolButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarEraserButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarFlyoutItem.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarFlyoutItemAutomationPeer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarHighlighterButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarMenuButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarMenuButtonAutomationPeer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarPenButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarToolButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarToolButtonAutomationPeer.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarPencilButton.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarPenConfigurationControl.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\InkToolbarStencilButton.properties.cpp" />
 
-    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolBarAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InkToolbarAutomationPeer.cpp" />
   </ItemGroup>
   
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)InkToolBar.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)InkToolbar.xaml">
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)InkToolBar_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)InkToolbar_themeresources.xaml">
       <Type>ThemeResources</Type>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)InkToolBar.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)InkToolBarAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)InkToolbar.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)InkToolbarAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
