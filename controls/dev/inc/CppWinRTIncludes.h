@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -43,7 +43,7 @@
 #include <winrt\Microsoft.UI.Composition.Effects.h>
 #include <winrt\Microsoft.UI.Composition.Interactions.h>
 #include <winrt\Microsoft.UI.Composition.SystemBackdrops.h>
-#ifndef MUXCONTROLS_TABULAR // MUXC-only Materials projection; Tabular gates it (empty-ns fallback below)
+#if !defined(MUXCONTROLS_CHART) && !defined(MUXCONTROLS_TABULAR) // MUXC-only Materials projection; Chart and Tabular gate it (empty-ns fallback below)
 #include <winrt\Microsoft.UI.Private.Composition.Effects.h>
 #endif
 #include <winrt\Microsoft.UI.Content.h>
@@ -55,7 +55,7 @@
 #include <winrt\Microsoft.UI.Xaml.Automation.Peers.h>
 #include <winrt\Microsoft.UI.Xaml.Automation.Provider.h>
 #include <winrt\Microsoft.UI.Xaml.Controls.h>
-#ifndef MUXCONTROLS_TABULAR // MUXC-only AnimatedVisuals projection
+#if !defined(MUXCONTROLS_CHART) && !defined(MUXCONTROLS_TABULAR) // MUXC-only AnimatedVisuals projection
 #include <winrt\Microsoft.UI.Xaml.Controls.AnimatedVisuals.h>
 #endif
 #include <winrt\Microsoft.UI.Xaml.Controls.Primitives.h>
@@ -71,11 +71,13 @@
 #include <winrt\Microsoft.UI.Xaml.Settings.h>
 #include <winrt\Microsoft.UI.Xaml.Shapes.h>
 #include <winrt\Microsoft.UI.Xaml.XamlTypeInfo.h>
-#ifndef MUXCONTROLS_TABULAR // MUXC-only private Controls/Media projections
+#if !defined(MUXCONTROLS_CHART) && !defined(MUXCONTROLS_TABULAR) // MUXC-only private Controls/Media projections
 #include <winrt\Microsoft.UI.Private.Controls.h>
 #include <winrt\Microsoft.UI.Private.Media.h>
 #endif
+#ifndef MUXCONTROLS_CHART // Chart does not use WebView2
 #include <winrt\Microsoft.Web.WebView2.core.h>
+#endif
 
 namespace winrt
 {
@@ -113,7 +115,7 @@ namespace winrt
 
     using namespace ::winrt::Microsoft::UI::Dispatching;
     using namespace ::winrt::Microsoft::UI::Composition;
-    namespace Microsoft::UI::Private::Composition::Effects {} // Empty fallback for Tabular when the projection header is gated.
+    namespace Microsoft::UI::Private::Composition::Effects {} // Empty fallback for Chart and Tabular when the projection header is gated.
     using namespace ::winrt::Microsoft::UI::Private::Composition::Effects;
     using namespace ::winrt::Microsoft::UI::Composition::Interactions;
     using namespace ::winrt::Microsoft::UI::Composition::SystemBackdrops;
@@ -121,7 +123,9 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Input;
     using namespace ::winrt::Microsoft::UI::Input::Experimental;
 
+#ifndef MUXCONTROLS_CHART
     using namespace ::winrt::Microsoft::Web::WebView2::Core;
+#endif
 
     using namespace ::winrt::Microsoft::UI::Xaml;
     using namespace ::winrt::Microsoft::UI::Xaml::Automation;
@@ -146,7 +150,7 @@ namespace winrt
     using namespace ::winrt::Microsoft::UI::Xaml::Controls;
     namespace Microsoft::UI::Xaml::Controls::Primitives {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives;
-#ifdef MUXCONTROLS_TABULAR // Tabular-only Data flattening hook.
+#if defined(MUXCONTROLS_CHART) || defined(MUXCONTROLS_TABULAR) // Data flattening hook for the standalone binaries.
     namespace Microsoft::UI::Xaml::Data {}
     using namespace ::winrt::Microsoft::UI::Xaml::Data;
 #endif
@@ -179,7 +183,7 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::implementation {}
     namespace Microsoft::UI::Xaml::XamlTypeInfo::implementation {}
     namespace Microsoft::UI::Xaml::Controls::Primitives::implementation {}
-#ifdef MUXCONTROLS_TABULAR
+#if defined(MUXCONTROLS_CHART) || defined(MUXCONTROLS_TABULAR)
     namespace Microsoft::UI::Xaml::Data::implementation {}
 #endif
     namespace Microsoft::UI::Xaml::Media::implementation {}
@@ -200,7 +204,7 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::implementation;
-#ifdef MUXCONTROLS_TABULAR
+#if defined(MUXCONTROLS_CHART) || defined(MUXCONTROLS_TABULAR)
         using namespace ::winrt::Microsoft::UI::Xaml::Data::implementation;
 #endif
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::implementation;
@@ -220,7 +224,7 @@ namespace winrt
     namespace Microsoft::UI::Xaml::Controls::factory_implementation {}
     namespace Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation {}
     namespace Microsoft::UI::Xaml::Controls::Primitives::factory_implementation {}
-#ifdef MUXCONTROLS_TABULAR
+#if defined(MUXCONTROLS_CHART) || defined(MUXCONTROLS_TABULAR)
     namespace Microsoft::UI::Xaml::Data::factory_implementation {}
 #endif
     namespace Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation {}
@@ -241,7 +245,7 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::factory_implementation;
-#ifdef MUXCONTROLS_TABULAR
+#if defined(MUXCONTROLS_CHART) || defined(MUXCONTROLS_TABULAR)
         using namespace ::winrt::Microsoft::UI::Xaml::Data::factory_implementation;
 #endif
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::AnimatedVisuals::factory_implementation;
