@@ -170,6 +170,7 @@ extends:
       - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
         parameters:
           pipelineKind: PR
+          # Keep RunTests active in full GitHub PR validation.
           # Test results are published but do not gate the pipeline yet.
           failOnTestFailure: false
 
