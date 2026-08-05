@@ -23,7 +23,7 @@ jobs:
           buildPlatform: 'x86'
           buildOutput: 'x86'
           normalizedConfiguration: 'chk'
-        ${{ if in( parameters.pipelineKind, 'Nightly', 'PR', 'Official' ) }}:
+        ${{ if in( parameters.pipelineKind, 'GitHubPR', 'Nightly', 'PR', 'Official' ) }}:
           RS5_x86chk:
             testOS: Win10-RS5
             buildPlatform: 'x86'
