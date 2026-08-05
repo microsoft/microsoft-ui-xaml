@@ -36,9 +36,26 @@ namespace MUXControlsTestApp
             myMap.MapServiceToken = MapServiceToken.Password;
         }
 
+        private void SetBogusTokenButton_Click(object sender, RoutedEventArgs e)
+        {
+            // A syntactically valid token that Azure Maps rejects at runtime. This
+            // exercises the asynchronous error path: Azure Maps surfaces the rejected
+            // subscription key through the map's 'error' event in map.html, which is
+            // forwarded (latched per-token and token-scrubbed) to the native
+            // WebMessageReceived handler and raised as a public MapServiceErrorOccurred
+            // event. Use this for the manual repro of the "blank map for a rejected
+            // token" case described in AB#49260132.
+            myMap.MapServiceToken = "bogus-but-syntactically-valid-token_0123456789";
+        }
+
         private void Map_MapServiceErrorOccurred(MapControl sender, MapControlMapServiceErrorOccurredEventArgs args)
         {
             output.Text += args.DiagnosticMessage;
+        }
+
+        private void ClearOutputButton_Click(object sender, RoutedEventArgs e)
+        {
+            output.Text = "";
         }
 
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
