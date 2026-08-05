@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <!-- This is the version of Microsoft.WindowsAppSDK.WinUI on nuget.org which should be downloaded and files copied from -->
-    <PublicWinUIPackageVersion>2.0.12</PublicWinUIPackageVersion>
+    <PublicWinUIPackageVersion>2.3.3-experimental</PublicWinUIPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

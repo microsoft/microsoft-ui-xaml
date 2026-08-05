@@ -101,7 +101,7 @@ steps:
       msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish /p:PublishAot=$(publishAotValue)'
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-      condition: not(and(eq(variables['buildConfiguration'], 'Release'), eq(variables['buildPlatform'], 'x86')))
+      condition: and(not(and(eq(variables['buildConfiguration'], 'Release'), eq(variables['buildPlatform'], 'x86'))), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
 
   - template: WinUI-BuildSampleApp-Steps.yml
     parameters:
@@ -126,7 +126,7 @@ steps:
       artifactsRoot: ${{ parameters.artifactsRoot }}
       useDotNet: true
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-      condition: eq(variables['buildConfiguration'], 'Release')
+      condition: and(eq(variables['buildConfiguration'], 'Release'), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
   - template: WinUI-BuildSampleApp-Steps.yml

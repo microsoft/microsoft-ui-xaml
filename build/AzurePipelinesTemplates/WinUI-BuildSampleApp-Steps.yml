@@ -17,7 +17,7 @@ steps:
 - ${{ if eq(parameters.useDotNet, false) }}:
   - task: MSBuild@1
     displayName: 'Nuget Restore ${{ parameters.solution }}'
-    condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    condition: and(succeeded(), ${{ parameters.condition }})
     inputs:
       solution: ${{ parameters.solution }}
       msbuildArguments: >
@@ -35,7 +35,7 @@ steps:
 
   - task: MSBuild@1
     displayName: 'Build ${{ parameters.displayName }}'
-    condition: and(${{ parameters.condition }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    condition: ${{ parameters.condition }}
     inputs:
       msbuildLocationMethod: 'location'
       msbuildLocation: ${{ parameters.msbuildInstallDir }}\MSBuild\Current\Bin\amd64\MSBuild.exe
@@ -80,7 +80,7 @@ steps:
 - ${{ if eq(parameters.useDotNet, true) }}:
   - task: DotNetCoreCLI@2
     displayName: 'Build ${{ parameters.displayName}} using dotnet build'
-    condition: and(${{ parameters.condition }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    condition: ${{ parameters.condition }}
     inputs:
       command: build
       projects: ${{ parameters.solution }}
