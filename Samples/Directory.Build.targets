@@ -14,6 +14,34 @@
     <WindowsAppSdkSelfContained>true</WindowsAppSdkSelfContained>
   </PropertyGroup>
 
+  <!-- WinUIGallery.UnitTests references the WinUIGallery app project. When the in-repo GitHub PR
+       validation publishes the Gallery slnx with trimming (PublishAot on Release, non-x86), the
+       referenced app project contributes its own WinUIGallery.pdb (a plain build copy and, under
+       AOT/trim, a 'linked\WinUIGallery.pdb'). These map to the same 'WinUIGallery.pdb' payload
+       destination as each other and fail packaging with APPX1101. The MSIX SDK already strips a
+       referenced app's resources.pri for test-container apps (IgnoreAppResourcesFromProjectReference)
+       but has no equivalent for the .pdb.
+       Heuristics that keep exactly one copy proved fragile across the plain/linked path variants, so
+       drop EVERY WinUIGallery.pdb from the test container payload: the test host does not need the
+       referenced app's managed symbols (its own symbols are WinUIGallery.UnitTests.pdb, and the app
+       package retains its own pdb separately). Path-agnostic, so it is robust to the trimmed 'linked\'
+       output layout.
+       Hooked the same way as the SDK's own WinAppSdkRemoveLinkedFilesFromPayload target. -->
+  <Target Name="RemoveProjectReferencePdbFromGalleryTestPayload"
+          BeforeTargets="_ComputeAppxPackagePayload"
+          AfterTargets="GetPackagingOutputs;ComputeLinkedFilesToPublish"
+          Condition="'$(IsInWinUIRepo)' == 'true' and '$(MSBuildProjectName)' == 'WinUIGallery.UnitTests'">
+    <!-- Temporary diagnostic (high importance, so it surfaces in normal pipeline logs): lists every
+         WinUIGallery pdb in the payload before removal. Remove once a green run confirms the fix. -->
+    <Message Importance="high"
+             Text="GALLERYPDBFIX payload pdb: %(PackagingOutputs.Identity) [og=%(PackagingOutputs.OutputGroup) rst=%(PackagingOutputs.ReferenceSourceTarget) tp=%(PackagingOutputs.TargetPath)]"
+             Condition="'%(PackagingOutputs.Extension)' == '.pdb'" />
+    <ItemGroup>
+      <PackagingOutputs Remove="@(PackagingOutputs)"
+                        Condition="'%(PackagingOutputs.Extension)' == '.pdb' and '%(PackagingOutputs.Filename)' == 'WinUIGallery'" />
+    </ItemGroup>
+  </Target>
+
   <!-- Work around CreateWapProjPackageFiles, which copies mui files out of their locale folders into the package root.
       Note that this should only be a potential issue for InApp mode customers, 
       as otherwise the Project Reunion framework package supplies mui files. -->
