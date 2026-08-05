@@ -586,17 +586,22 @@
         var dataSource;
         var id = 1;
         var controls = [];
+        // Retained only to scrub the token out of error text (never log tokens).
+        var currentMapServiceToken = '';
+        // Latched after the first async 'error' per token to avoid flooding on repeated 401s.
+        var mapErrorReportedForToken = false;
 
         function initializeMap(longitude, latitude, mapServiceToken) {
             try {
+                currentMapServiceToken = mapServiceToken || '';
+                mapErrorReportedForToken = false;
                 //Initialize a map instance.
                 map = new atlas.Map('mapContainer', {
                     center: [longitude, latitude],
                     zoom: 3,
                     view: 'Auto',
 
-                    //Add authentication details for connecting to Azure Maps.
-                    // Note: an invalid token doesn't seem to throw any errors.
+                    // Invalid tokens surface via the async 'error' event below, not by throwing here.
                     authOptions: {
                         authType: 'subscriptionKey',
                         subscriptionKey: mapServiceToken
@@ -606,6 +611,15 @@
                 map.events.add('ready', function () {
                     dataSource = new atlas.source.DataSource();
                     map.sources.add(dataSource);
+                });
+
+                // Forward async load/auth failures to native; latch per token to avoid 401 flooding.
+                map.events.add('error', function (e) {
+                    if (mapErrorReportedForToken) {
+                        return;
+                    }
+                    mapErrorReportedForToken = true;
+                    sendErrorInfo(e && e.error ? e.error : e);
                 });
             }
             catch (error) {
@@ -829,10 +843,39 @@
                 "longitude": 0,
             }
 
+            // Scrub the subscription key from any error text; never surface it to native/telemetry.
+            function redactToken(value) {
+                var s = (value === undefined || value === null) ? "" : String(value);
+                if (currentMapServiceToken && s.length > 0) {
+                    s = s.split(currentMapServiceToken).join("[REDACTED]");
+                }
+                return s;
+            }
+
+            // Collect code/name/message/stack so native can raise a non-empty MapServiceErrorOccurred.
+            const errorObject = (e === undefined || e === null) ? {} : e;
+            const name = errorObject.name ? String(errorObject.name) : "";
+            // Always emit a non-empty code so consumers can key off a single field.
+            let code;
+            if (errorObject.code !== undefined && errorObject.code !== null && String(errorObject.code).length > 0) {
+                code = String(errorObject.code);
+            } else if (name.length > 0) {
+                code = name;
+            } else {
+                code = "MapServiceError";
+            }
+            const errorMessage = redactToken(errorObject.message);
+            const stack = redactToken(errorObject.stack);
+
             const message = {
                 "type": "javascriptError",
                 "coordinate": coordinate,
-                "text": e.stack
+                "code": code,
+                "name": name,
+                "message": errorMessage,
+                "stack": stack,
+                // Prefer the stringified error (carries the 401/URL) over the minified 'name'.
+                "text": stack || errorMessage || redactToken(errorObject) || name
             };
 
             window.chrome.webview.postMessage(message);
