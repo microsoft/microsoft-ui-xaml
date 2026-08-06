@@ -28,7 +28,7 @@
   <Target Name="RemoveProjectReferencePdbFromGalleryTestPayload"
           BeforeTargets="_ComputeAppxPackagePayload"
           AfterTargets="GetPackagingOutputs;ComputeLinkedFilesToPublish"
-          Condition="'$(IsInWinUIRepo)' == 'true' and '$(MSBuildProjectName)' == 'WinUIGallery.UnitTests'">
+          Condition="'$(IsInWinUIRepo)' == 'true' and '$(MSBuildProjectName)' == 'WinUIGallery.UnitTests' and 'RCA-TEST-DISABLED' == 'true'">
     <ItemGroup>
       <PackagingOutputs Remove="@(PackagingOutputs)"
                         Condition="'%(PackagingOutputs.Extension)' == '.pdb' and '%(PackagingOutputs.Filename)' == 'WinUIGallery'" />
