@@ -253,7 +253,7 @@ $gitHubIssues = [System.Linq.Enumerable]::ToList(
     }))
 
 # Next, we'll run an Azure DevOps query that retrieves the existing work items that have been mirrored from GitHub.
-$azureDevOpsQueryResults = Invoke-RestMethod "$azureDevOpsWitApiBaseUri/wiql/$env:OSAzureDevOpsMirrorQueryId?api-version=5.1" -Method Get -Headers $azureDevOpsRestApiHeaders
+$azureDevOpsQueryResults = Invoke-RestMethod "$azureDevOpsWitApiBaseUri/wiql/$($env:OSAzureDevOpsMirrorQueryId)?api-version=5.1" -Method Get -Headers $azureDevOpsRestApiHeaders
 
 # Next, we'll associate GitHub issues with their corresponding Azure DevOps work items.
 [System.Collections.Generic.List[System.Tuple[object,object]]]$azureDevOpsWorkItemGitHubIssuePairs = @()
