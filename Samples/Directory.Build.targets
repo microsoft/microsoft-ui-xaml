@@ -14,27 +14,6 @@
     <WindowsAppSdkSelfContained>true</WindowsAppSdkSelfContained>
   </PropertyGroup>
 
-  <!-- NOTE (public repo): The WinUIGallery.UnitTests pdb-dedup target below is owned by the internal
-       microsoft-ui-xaml-lift repo and reaches this public repo through source mirroring. Do not commit
-       changes to it here; edit it in the internal repo instead, so the mirror stays the source of truth.
-       (This note is public-only and will itself be dropped on the next mirror sync.) -->
-  <!-- WinUIGallery.UnitTests references the WinUIGallery app project. When the GitHub PR validation
-       publishes the Gallery slnx with trimming (PublishAot on Release, non-x86), the referenced app
-       contributes multiple WinUIGallery.pdb copies (a plain build copy and, under AOT/trim, a
-       'linked\WinUIGallery.pdb') that map to the same payload destination and fail packaging with
-       APPX1101. The test host does not need the referenced app's managed symbols, so drop every
-       WinUIGallery.pdb from the test container payload. Path-agnostic, so it is robust to the trimmed
-       'linked\' layout. Hooked like the SDK's own WinAppSdkRemoveLinkedFilesFromPayload target. -->
-  <Target Name="RemoveProjectReferencePdbFromGalleryTestPayload"
-          BeforeTargets="_ComputeAppxPackagePayload"
-          AfterTargets="GetPackagingOutputs;ComputeLinkedFilesToPublish"
-          Condition="'$(IsInWinUIRepo)' == 'true' and '$(MSBuildProjectName)' == 'WinUIGallery.UnitTests' and 'RCA-TEST-DISABLED' == 'true'">
-    <ItemGroup>
-      <PackagingOutputs Remove="@(PackagingOutputs)"
-                        Condition="'%(PackagingOutputs.Extension)' == '.pdb' and '%(PackagingOutputs.Filename)' == 'WinUIGallery'" />
-    </ItemGroup>
-  </Target>
-
   <!-- Work around CreateWapProjPackageFiles, which copies mui files out of their locale folders into the package root.
       Note that this should only be a potential issue for InApp mode customers, 
       as otherwise the Project Reunion framework package supplies mui files. -->
