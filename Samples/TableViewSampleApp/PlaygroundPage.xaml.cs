@@ -26,6 +26,7 @@ public sealed partial class PlaygroundPage : Page
     private TableViewTemplateColumn _score = null!;
     private int _added;
     private bool _ready;   // guards combo SelectionChanged that fires during XAML load
+    private readonly System.Collections.Generic.List<Item> _watchedItems = new();
 
     private static DataTemplate Tmpl(string key) => (DataTemplate)Application.Current.Resources[key];
 
@@ -36,6 +37,14 @@ public sealed partial class PlaygroundPage : Page
         BuildColumns();
         Table.EmptyTemplate = Tmpl("EmptyState");
         Table.ItemsSource = Data.Make();
+        AttachSourceWatch(Table.ItemsSource);
+
+        // Editing is opt-in (TableView.IsReadOnly defaults to true). Start editable so double-click
+        // and F2 can be exercised without first toggling, and seed the ToggleButton from the live
+        // value so the two do not disagree.
+        Table.IsReadOnly = false;
+        ReadOnlyToggle.IsChecked = false;
+
         _ready = true;
     }
 
@@ -82,6 +91,7 @@ public sealed partial class PlaygroundPage : Page
         {
             Header = "Notes",
             CellTemplate = Tmpl("NotesCell"),
+            CellEditingTemplate = Tmpl("NotesEditCell"),
             Width = new GridLength(160, GridUnitType.Auto),
         };
         var image = new TableViewTemplateColumn
@@ -198,6 +208,63 @@ public sealed partial class PlaygroundPage : Page
     private void HeaderTmpl_Toggle(object sender, RoutedEventArgs e)
         => _score.HeaderTemplate = (HeaderTmplToggle.IsChecked == true) ? Tmpl("StarHeader") : null;
 
+    // Reads the bound Item objects, not the cells, so a committed edit is visibly confirmed to have
+    // reached the source rather than only the element that displayed it. Subscribed per item so the
+    // readout tracks a write the moment the setter raises PropertyChanged.
+    private void AttachSourceWatch(object? source)
+    {
+        foreach (var watched in _watchedItems)
+        {
+            watched.PropertyChanged -= OnWatchedItemChanged;
+        }
+        _watchedItems.Clear();
+
+        if (source is System.Collections.IEnumerable items)
+        {
+            foreach (var entry in items)
+            {
+                if (entry is Item item)
+                {
+                    item.PropertyChanged += OnWatchedItemChanged;
+                    _watchedItems.Add(item);
+                }
+            }
+        }
+
+        RefreshSourceDump();
+    }
+
+    private void OnWatchedItemChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        => RefreshSourceDump();
+
+    private void RefreshSourceDump()
+    {
+        if (_watchedItems.Count == 0)
+        {
+            SourceDump.Text = "ItemsSource is empty.";
+            return;
+        }
+
+        var sb = new System.Text.StringBuilder();
+        var shown = System.Math.Min(_watchedItems.Count, 6);
+        for (var i = 0; i < shown; i++)
+        {
+            var item = _watchedItems[i];
+            sb.AppendLine(
+                $"[{i}] Name='{item.Name}'  Role='{item.Role}'  City='{item.City}'  " +
+                $"Score={item.Score}  " +
+                $"Joined={item.Joined.ToString("d", System.Globalization.CultureInfo.CurrentCulture)}  " +
+                $"Notes='{item.Notes}'");
+        }
+
+        if (_watchedItems.Count > shown)
+        {
+            sb.Append($"... {_watchedItems.Count - shown} more");
+        }
+
+        SourceDump.Text = sb.ToString().TrimEnd();
+    }
+
     private void Empty_Toggle(object sender, RoutedEventArgs e)
     {
         if (EmptyToggle.IsChecked == true)
@@ -210,5 +277,7 @@ public sealed partial class PlaygroundPage : Page
             Table.ItemsSource = Data.Make();
             EmptyToggle.Content = "Clear data";
         }
+
+        AttachSourceWatch(Table.ItemsSource);
     }
 }

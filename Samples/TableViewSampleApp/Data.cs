@@ -1,32 +1,65 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace TableViewSampleApp;
 
 // Row model for the sample. Name lengths vary to exercise Auto column sizing; Bio strings
-// vary in length. Notes/Joined are settable so the editable TextBox / DatePicker cells write
-// back (TwoWay).
-public sealed class Item
+// vary in length. The text-bound properties are settable and raise PropertyChanged so the
+// editable TextBox cells write back (TwoWay) and the display cell refreshes on commit.
+public sealed class Item : INotifyPropertyChanged
 {
-    public string Name { get; init; } = "";
-    public string Role { get; init; } = "";
-    public string City { get; init; } = "";
+    private string _name = "";
+    private string _role = "";
+    private string _city = "";
+    private string _notes = "";
+    private DateTimeOffset _joined;
+
+    public string Name { get => _name; set => Set(ref _name, value); }
+    public string Role { get => _role; set => Set(ref _role, value); }
+    public string City { get => _city; set => Set(ref _city, value); }
+    public string Notes { get => _notes; set => Set(ref _notes, value); }
+
     public int Score { get; init; }
     public string Bio { get; init; } = "";
-    public DateTimeOffset Joined { get; set; }
-    public string Notes { get; set; } = "";
+    public DateTimeOffset Joined
+    {
+        get => _joined;
+        set
+        {
+            if (_joined == value)
+            {
+                return;
+            }
+            _joined = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Joined)));
+        }
+    }
     public ImageSource? Avatar { get; init; }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     // Rendered avatar edge length; varied per row so the Image cells are different sizes (exercises
     // Auto column width sizing to the widest image and Auto row height sizing to the tallest).
     public double ImageSize { get; init; }
 
+    private void Set(ref string field, string value, [CallerMemberName] string? propertyName = null)
+    {
+        if (field == value)
+        {
+            return;
+        }
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     public Item(string name, string role, string city, int score, string bio, DateTimeOffset joined, string notes, ImageSource? avatar, double imageSize = 40)
     {
-        Name = name; Role = role; City = city; Score = score;
-        Bio = bio; Joined = joined; Notes = notes; Avatar = avatar; ImageSize = imageSize;
+        _name = name; _role = role; _city = city; _notes = notes;
+        Score = score; Bio = bio; Joined = joined; Avatar = avatar; ImageSize = imageSize;
     }
 }
 

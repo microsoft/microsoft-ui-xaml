@@ -50,9 +50,19 @@
                 <DatePicker Date="{Binding Joined, Mode=TwoWay}" Margin="8,4" VerticalAlignment="Center"/>
             </DataTemplate>
 
-            <!-- Notes: editable text via TextBox (TwoWay). -->
+            <!-- Notes: a real editable template column. The DISPLAY cell is a TextBlock; the editor
+                 lives in NotesEditCell and is swapped in only while the cell is being edited. A
+                 TextBox here instead would look editable while the control considered the cell
+                 read-only, and would show its own clear button on focus - two editing models at
+                 once. -->
             <DataTemplate x:Key="NotesCell">
-                <TextBox Text="{Binding Notes, Mode=TwoWay}" Margin="8,4" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Notes}" Margin="8,4" VerticalAlignment="Center"/>
+            </DataTemplate>
+
+            <!-- Editor for Notes. Classic {Binding}, not {x:Bind}: the commit finds the editor's
+                 bindings through GetBindingExpression, which only sees {Binding}. -->
+            <DataTemplate x:Key="NotesEditCell">
+                <TextBox Text="{Binding Notes, Mode=TwoWay}" VerticalAlignment="Center"/>
             </DataTemplate>
 
             <!-- Image: dummy avatar. -->

@@ -77,9 +77,33 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- The control under test. -->
-        <Border Grid.Column="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
-            <tv:TableView x:Name="Table"/>
-        </Border>
+        <!-- The control under test, with a live read of the bound Item objects beneath it so a
+             committed edit can be seen on the source and not just in the cell that displayed it. -->
+        <Grid Grid.Column="1" RowSpacing="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6">
+                <tv:TableView x:Name="Table"/>
+            </Border>
+
+            <Border Grid.Row="1"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="12,8">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Live data source" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                    <TextBlock x:Name="SourceDump"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap"
+                               IsTextSelectionEnabled="True"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Page>
