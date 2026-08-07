@@ -228,6 +228,8 @@ public:
 #define SR_WarningSuitableWebView2NotFound L"WarningSuitableWebView2NotFound"
 #define SR_DownloadWebView2Runtime L"DownloadWebView2Runtime"
 
+#define SR_TableViewGroupHeaderCountFormat L"TableViewGroupHeaderCountFormat"
+
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
 
 #define FR_Map_Html L"map.html"
