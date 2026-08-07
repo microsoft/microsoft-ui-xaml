@@ -516,6 +516,43 @@ namespace Microsoft.UI.Xaml.Tests.Controls
 
         [TestMethod]
         [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
+        public void VerifyVisiblePlaceholderIsInControlAccessibilityView()
+        {
+            const string rootPanelXaml =
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <Button x:Name='button' Content='Button' />
+                        <TextBox x:Name='textBox' PlaceholderText='Placeholder' />
+                    </StackPanel>";
+
+            StackPanel rootPanel = null;
+            Button button = null;
+            TextBox textBox = null;
+
+            UIExecutor.Execute(() =>
+            {
+                rootPanel = (StackPanel)XamlReader.Load(rootPanelXaml);
+                button = (Button)rootPanel.FindName("button");
+                textBox = (TextBox)rootPanel.FindName("textBox");
+                TestServices.WindowHelper.WindowContent = rootPanel;
+            });
+
+            TestServices.WindowHelper.WaitForIdle();
+            FocusHelper.EnsureFocus(button, FocusState.Keyboard);
+            TestServices.WindowHelper.WaitForIdle();
+
+            UIExecutor.Execute(() =>
+            {
+                var placeholder = (TextBlock)VisualTreeUtils.FindNameInSubtree(textBox, "PlaceholderTextContentPresenter");
+
+                Verify.AreEqual(Visibility.Visible, placeholder.Visibility);
+                Verify.AreEqual(
+                    Microsoft.UI.Xaml.Automation.Peers.AccessibilityView.Control,
+                    Microsoft.UI.Xaml.Automation.AutomationProperties.GetAccessibilityView(placeholder));
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("TestPass:ExcludeOn", "WindowsCore")]
         public void VerifyTextBoxPlaceholderForeground()
         {
             const string rootPanelXaml =
