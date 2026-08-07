@@ -450,18 +450,25 @@ void InkCanvas::DetachFromVisualLink()
     }
 }
 
-// Compositor-engine detection: true when the process exposes the system-compositor splice interop.
-// QueryInterface is used as the gate so public builds that do not project newer CompositionEngine
-// APIs still compile and naturally fall back to the lifted ContentExternalOutputLink path. Evaluated
-// once per process on first use, so every InkCanvas on the thread agrees for the process lifetime.
+// Compositor-engine detection: true when the process runs on the system composition engine.
+// CompositionEngine::GetForSystemEngine returns a non-null system object only on a system-backed
+// compositor, so it selects the system splice (AttachToSystemCompositor) over the lifted
+// ContentExternalOutputLink path (AttachToLiftedCompositor). Evaluated once per process on first
+// use, so every InkCanvas on the thread agrees for the process lifetime.
 bool InkCanvas::IsSystemCompositor()
 {
     static bool isSystemCompositor = [] {
         auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        winrt::com_ptr<ABI::Microsoft::UI::Composition::Experimental::IExpCompositorInterop2> interop;
-        return SUCCEEDED(winrt::get_unknown(compositor)->QueryInterface(IID_PPV_ARGS(interop.put())));
+        // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
+        // directly rather than allocating a throwaway visual just to probe the engine.
+        // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
+        // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
+        return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
     }();
     return isSystemCompositor;
 }
+
+
+
 
 
