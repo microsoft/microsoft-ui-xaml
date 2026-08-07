@@ -10,6 +10,11 @@ parameters:
   useDotNet: false
   MUXFinalRelease: false
   runStaticAnalysis: true
+  # NuGet.config used for restore. Defaults to the repo-root config (internal
+  # WinUI.Dependencies feed, rewritten to the public shine-oss WinUI-Dependencies
+  # feed for GitHub-backed runs). Sample apps that carry their own config (e.g.
+  # WinUIGallery, which restores from the public MUX-Dependencies feed) override this.
+  restoreConfigFile: $(Build.SourcesDirectory)\nuget.config
 
 steps:
 - task: NuGetAuthenticate@1
@@ -22,7 +27,7 @@ steps:
       solution: ${{ parameters.solution }}
       msbuildArguments: >
         /t:restore
-        /p:RestoreConfigFile=$(Build.SourcesDirectory)\nuget.config
+        /p:RestoreConfigFile=${{ parameters.restoreConfigFile }}
         /p:Platform=$(buildPlatform)
         /p:WinUIVersion=$(versionFinal)
       configuration: '$(buildConfiguration)'
@@ -87,5 +92,5 @@ steps:
       includeNuGetOrg: false
       feedsToUse: config
       restoreArguments: >
-        --configfile $(Build.SourcesDirectory)\nuget.config
+        --configfile ${{ parameters.restoreConfigFile }}
       arguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(versionFinal) -p:ArtifactsRoot=${{ parameters.artifactsRoot }} -binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).dotnet.binlog -p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}

@@ -15,6 +15,12 @@ steps:
       $sourceName = "MUX-Dependencies"
       $newSourceUrl = "$(WinUILKGDependenciesFeedUri)"
 
+      # GitHub-backed PRs restore the Gallery's public dependencies anonymously from the shine-oss
+      # MUX-Dependencies feed and cannot reach the internal WinUI Dependencies feed, so the
+      # internal-feed repoint and nuget.org removal below are skipped for GitHub/GitHubEnterprise.
+      # Only the repo-root PackageStore add further down applies to every provider.
+      $isGitHub = $env:BUILD_REPOSITORY_PROVIDER -in @('GitHub', 'GitHubEnterprise')
+
       if (Test-Path $nugetConfigPath) {
           [xml]$config = Get-Content $nugetConfigPath
 
@@ -24,7 +30,7 @@ steps:
 
           # Point the MUX-Dependencies source at the internal WinUI Dependencies feed.
           $existingSource = $packageSources | Where-Object { $_.key -eq $sourceName }
-          if ($existingSource) {
+          if ($existingSource -and -not $isGitHub) {
               $existingSource.value = $newSourceUrl
               Write-Host "Updated source '$sourceName' to '$newSourceUrl'"
               $changed = $true
@@ -35,7 +41,7 @@ steps:
           # ("a socket in a way forbidden by its access permissions"). All required packages
           # are served by the internal WinUI Dependencies feed above.
           $nugetOrgSource = $packageSources | Where-Object { $_.key -eq "nuget.org" }
-          if ($nugetOrgSource) {
+          if ($nugetOrgSource -and -not $isGitHub) {
               [void]$packageSourcesNode.RemoveChild($nugetOrgSource)
               Write-Host "Removed public 'nuget.org' source for the internal build."
               $changed = $true
@@ -90,7 +96,19 @@ steps:
   - powershell: |
       # PublishAot must be specified at restore, as it conditionally generates nuget.g.* imports
       $publishAot = $env:buildConfiguration -eq "Release" -and $env:buildPlatform -ne "x86"
+      $galleryTrimArg = ""
+      # The NativeAOT ILCompiler pack (Microsoft.DotNet.ILCompiler) ships only on the internal
+      # WinUI.Dependencies feed, so AOT cannot restore/complete on GitHub-backed validation
+      # (it 401s against the public shine-oss feed). Left enabled, the ILLink trim pass also
+      # emits a duplicate linked\WinUIGallery.pdb that fails the Gallery UnitTests MSIX with
+      # APPX1101. Disable AOT and trimming on GitHub so the Gallery build matches the known-green
+      # ADO layout (single, untrimmed WinUIGallery.pdb). ADO is unaffected.
+      if ($env:BUILD_REPOSITORY_PROVIDER -in @('GitHub','GitHubEnterprise')) {
+        $publishAot = $false
+        $galleryTrimArg = "/p:PublishTrimmed=false"
+      }
       Write-Host "##vso[task.setvariable variable=publishAotValue;]$publishAot"
+      Write-Host "##vso[task.setvariable variable=galleryTrimArg;]$galleryTrimArg"
     displayName: Set PublishAot variable
 
   - template: WinUI-BuildSampleApp-Steps.yml
@@ -98,10 +116,11 @@ steps:
       displayName: WinUIGallery
       solution: Samples\WinUIGallery\WinUIGallery.slnx
       artifactsRoot: ${{ parameters.artifactsRoot }}
-      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish /p:PublishAot=$(publishAotValue)'
+      restoreConfigFile: $(Build.SourcesDirectory)\Samples\WinUIGallery\nuget.config
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish /p:PublishAot=$(publishAotValue) $(galleryTrimArg)'
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-      condition: and(not(and(eq(variables['buildConfiguration'], 'Release'), eq(variables['buildPlatform'], 'x86'))), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      condition: not(and(eq(variables['buildConfiguration'], 'Release'), eq(variables['buildPlatform'], 'x86')))
 
   - template: WinUI-BuildSampleApp-Steps.yml
     parameters:
@@ -124,9 +143,10 @@ steps:
       displayName: WinUIGallery
       solution: Samples\WinUIGallery\WinUIGallery\WinUIGallery.csproj
       artifactsRoot: ${{ parameters.artifactsRoot }}
+      restoreConfigFile: $(Build.SourcesDirectory)\Samples\WinUIGallery\nuget.config
       useDotNet: true
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-      condition: and(eq(variables['buildConfiguration'], 'Release'), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      condition: eq(variables['buildConfiguration'], 'Release')
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
   - template: WinUI-BuildSampleApp-Steps.yml
