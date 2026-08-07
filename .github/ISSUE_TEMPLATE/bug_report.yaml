@@ -56,6 +56,9 @@ body:
       multiple: true
       options:
         - "Windows Insider Build (xxxxx)"
+        - "Windows 11 (26H1): Build 28000"
+        - "Windows 11 (25H2): Build 26200"
+        - "Windows 11 (24H2): Build 26120"
         - "Windows 11 (24H2): Build 26100"
         - "Windows 11 (23H2): Build 22631"
         - "Windows 11 (22H2): Build 22621"
