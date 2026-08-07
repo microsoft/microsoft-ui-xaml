@@ -274,5 +274,7 @@ HelixPayload/
 UnreliableTestReport.csv
 
 # tools
+/.dotnet/
+/.tools/
 src/.dotnet/
 src/.tools/
