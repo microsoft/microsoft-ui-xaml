@@ -9,7 +9,7 @@ stages:
 - stage: RunScenarioTests
   displayName: Run Scenario App Tests
   dependsOn: ${{ parameters.dependsOn }}
-  condition: and(not(failed()), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+  condition: not(failed())
   jobs:
   - template: WinUI-CreateTestPayload-Job.yml
     parameters:
@@ -17,6 +17,10 @@ stages:
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'ScenarioTestSuite'
       testPayloadArtifactName: 'ScenarioTestPayload'
+      # WinUIGallery scenario tests stay out of GitHub-backed validation until the
+      # Gallery-on-GitHub work (OS 62963099) lands; tracked by the scenario-test sub-issue.
+      ${{ if eq(parameters.pipelineKind, 'GitHubPR') }}:
+        includeWinUIGallery: false
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
@@ -72,5 +76,5 @@ stages:
 
   - template: WinUI-RunScenarioUnitTests-Job.yml
     parameters:
-      ${{ if in(parameters.pipelineKind, 'PR' ) }}:
-        artifactNamePrefix: drop # In PR builds, the scenario apps build in the main build job
+      ${{ if in(parameters.pipelineKind, 'PR', 'GitHubPR' ) }}:
+        artifactNamePrefix: drop # In PR and GitHub PR builds, the scenario apps build in the main build job

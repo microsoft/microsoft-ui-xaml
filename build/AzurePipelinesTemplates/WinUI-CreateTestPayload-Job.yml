@@ -6,6 +6,7 @@ parameters:
   testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
   pipelineKind: '' # can be: Nightly, CI, PR, BuildAndTest, TestLocalBuild, ValidateWindowsAppSDK
   testPayloadArtifactName: 'TestPayload'
+  includeWinUIGallery: true
 
 jobs:
 - job: ${{ parameters.runTestJobName }}
@@ -73,6 +74,12 @@ jobs:
       value: ${{ parameters.testSuite }}.$(buildPlatform).$(normalizedConfiguration)
     - name: pipelineKind
       value: ${{ parameters.pipelineKind }}
+    - ${{ if eq(parameters.includeWinUIGallery, true) }}:
+      - name: scenarioPayloadAdditionalArguments
+        value: ''
+    - ${{ else }}:
+      - name: scenarioPayloadAdditionalArguments
+        value: '-SkipWinUIGallery'
     - name: taefExePath
       value: '$(artifactsDir)\drop\amd64fre\Taef\te.exe' # We need to override this to ensure that we don't try to run arm64 te.exe on this amd64 pipeline machine.
     - name: ob_outputDirectory
@@ -160,7 +167,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: test\CreateTestPayload.ps1
-      arguments: -BinSourceRoot $(artifactsDir)\drop -Platform $(buildPlatform) -Configuration $(normalizedConfiguration) -Mode ${{ parameters.testSuite }} -SkipSymbols
+      arguments: -BinSourceRoot $(artifactsDir)\drop -Platform $(buildPlatform) -Configuration $(normalizedConfiguration) -Mode ${{ parameters.testSuite }} -SkipSymbols $(scenarioPayloadAdditionalArguments)
 
   - task: CopyFiles@2
     displayName: MoveToOutputDirectory
