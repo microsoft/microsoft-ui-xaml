@@ -58,6 +58,8 @@ private:
     // it to the presenter. Called first by AttachToSystemCompositor/AttachToLiftedCompositor, before
     // their compositor-specific rooting.
     void AttachInkVisualToPresenter();
+    // Sizes the lifted PlacementVisual to the control's physical-pixel bounds (lifted path only).
+    void PositionInkVisual();
 
     std::shared_ptr<ThreadData> m_threadData;
  
@@ -80,6 +82,12 @@ private:
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_sizeChangedRevoker;
+    winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker;
+
+    // Last physical-pixel size pushed to the lifted PlacementVisual; lets PositionInkVisual skip
+    // redundant work on the frequent LayoutUpdated event. Reset on (re)attach.
+    float m_lastPlacementWidth = -1;
+    float m_lastPlacementHeight = -1;
 
     // Set during DetachFromVisualLink so queued ink-thread lambdas short-circuit instead of
     // touching torn-down visual resources. Data ops (see QueueInkPresenterWorkItem) do NOT gate on
