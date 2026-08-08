@@ -31,6 +31,7 @@ public sealed partial class MainWindow : Window
             "pixel" => typeof(PixelColumnsPage),
             "mixed" => typeof(MixedColumnsPage),
             "interactive" => typeof(InteractiveCellsPage),
+            "selection" => typeof(SelectionPage),
             _ => typeof(PlaygroundPage),
         };
 
