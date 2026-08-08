@@ -103,6 +103,8 @@ namespace MU_XC_NAMESPACE
 
     [MUX_PREVIEW]
     [contentproperty("Children")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     unsealed runtimeclass InkToolbar
         : Microsoft.UI.Xaml.Controls.Control
     {
@@ -148,6 +150,8 @@ namespace MU_XC_NAMESPACE
     };
 
     [MUX_PREVIEW]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     unsealed runtimeclass InkToolbarFlyoutItem
         : Microsoft.UI.Xaml.Controls.Primitives.ButtonBase
     {
@@ -162,6 +166,8 @@ namespace MU_XC_NAMESPACE
 
     [MUX_PREVIEW]
     [constructor_name("Microsoft.UI.Xaml.Controls.IInkToolbarMenuButtonFactory")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     unsealed runtimeclass InkToolbarMenuButton
         : Microsoft.UI.Xaml.Controls.Primitives.ToggleButton
     {
@@ -171,6 +177,8 @@ namespace MU_XC_NAMESPACE
     };
 
     [MUX_PREVIEW]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     unsealed runtimeclass InkToolbarStencilButton
         : Microsoft.UI.Xaml.Controls.InkToolbarMenuButton
     {
@@ -199,6 +207,8 @@ namespace MU_XC_NAMESPACE
 
     [MUX_PREVIEW]
     [constructor_name("Microsoft.UI.Xaml.Controls.IInkToolbarToolButtonFactory")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     unsealed runtimeclass InkToolbarToolButton
         : Microsoft.UI.Xaml.Controls.RadioButton
     {
@@ -234,6 +244,8 @@ namespace MU_XC_NAMESPACE
     };
 
     [MUX_PREVIEW]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     unsealed runtimeclass InkToolbarEraserButton
         : Microsoft.UI.Xaml.Controls.InkToolbarToolButton
     {
@@ -251,6 +263,8 @@ namespace MU_XC_NAMESPACE
 
     [MUX_PREVIEW]
     [constructor_name("Microsoft.UI.Xaml.Controls.IInkToolbarPenButtonFactory")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
     unsealed runtimeclass InkToolbarPenButton
         : Microsoft.UI.Xaml.Controls.InkToolbarToolButton
     {

@@ -27,6 +27,13 @@ public:
 
     // IFrameworkElementOverrides
     void OnApplyTemplate();
+
+    // Derived-class OnApplyTemplate extension point. Same rationale as InkToolbarToolButton::OnApplyTemplateCore:
+    // the generated per-leaf IFrameworkElementOverridesT<D> forwarder shadows an OnApplyTemplate declared on an
+    // intermediate impl (e.g. StencilButton), so only this base's OnApplyTemplate is dispatched for a concrete
+    // leaf; this plain C++ virtual reaches the derived logic via ordinary vtable dispatch.
+    virtual void OnApplyTemplateCore() {}
+
     // IToggleButtonOverrides - suppress default toggle (container manages tri-state checked value).
     void OnToggle();
     // IUIElementOverrides

@@ -203,6 +203,7 @@ void InkCanvas::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEvent
 
     m_xamlRootChangedRevoker.revoke();
     m_sizeChangedRevoker.revoke();
+    m_layoutUpdatedRevoker.revoke();
 
     DetachFromVisualLink();
 }
@@ -415,6 +416,20 @@ void InkCanvas::AttachToLiftedCompositor()
     // Create the ink visual and bind it to the presenter before the compositor-specific bridge.
     AttachInkVisualToPresenter();
 
+    // A new link means a fresh, unsized PlacementVisual, so drop the cached size to force PositionInkVisual to re-apply.
+    m_lastPlacementWidth = -1;
+    m_lastPlacementHeight = -1;
+
+    // Keep the lifted PlacementVisual sized to the control as layout changes so it has a hit-test area.
+    m_layoutUpdatedRevoker = LayoutUpdated(winrt::auto_revoke,
+        [weakThis{ get_weak() }](auto const& /*sender*/, auto const& /*args*/)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->PositionInkVisual();
+            }
+        });
+
     auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
 
     m_systemVisualLink = winrt::ContentExternalOutputLink::Create(compositor);
@@ -423,7 +438,9 @@ void InkCanvas::AttachToLiftedCompositor()
     winrt::com_ptr<IDCompositionTarget> target = m_systemVisualLink.as<IDCompositionTarget>();
     winrt::check_hresult(target->SetRoot(m_inkRootVisual.get()));
 
+    winrt::check_hresult(m_threadData->m_compositionDevice->Commit());
     winrt::ElementCompositionPreview::SetElementChildVisual(*this, m_systemVisualLink.PlacementVisual());
+    PositionInkVisual();
 }
 
 void InkCanvas::DetachFromVisualLink()
@@ -466,6 +483,42 @@ bool InkCanvas::IsSystemCompositor()
         return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
     }();
     return isSystemCompositor;
+}
+
+// Sizes the lifted PlacementVisual to the control's physical-pixel bounds so it has a hit-test area
+// for pen input. Runs on the lifted path only; the system path leaves m_systemVisualLink null.
+void InkCanvas::PositionInkVisual()
+{
+    if (!m_systemVisualLink)
+    {
+        return;
+    }
+
+    auto xamlRoot = XamlRoot();
+    if (!xamlRoot)
+    {
+        return;
+    }
+
+    // Physical-pixel size of the control (layout size scaled by the accumulated rasterization scale).
+    const float rootScale = static_cast<float>(xamlRoot.RasterizationScale());
+    const float width = static_cast<float>(ActualWidth()) * rootScale;
+    const float height = static_cast<float>(ActualHeight()) * rootScale;
+
+    // LayoutUpdated fires on every layout pass in the tree; only touch the composition visual and the
+    // ink thread when the physical size actually changed, so animations/resize don't post per-frame work.
+    if (width == m_lastPlacementWidth && height == m_lastPlacementHeight)
+    {
+        return;
+    }
+    m_lastPlacementWidth = width;
+    m_lastPlacementHeight = height;
+
+    // ActualWidth/Height are never negative, so always size; a collapse to 0 clears the hit-test
+    // area instead of leaving the previous non-zero size stale.
+    m_systemVisualLink.PlacementVisual().Size({ width, height });
+
+    UpdateInkPresenterSize();
 }
 
 

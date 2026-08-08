@@ -55,6 +55,9 @@ void InkToolbarMenuButton::OnApplyTemplate()
             winrt::AutomationProperties::SetName(flyout, flyoutName);
         }
     }
+
+    // Run derived-class template work (stencil glyph, etc.). See OnApplyTemplateCore.
+    OnApplyTemplateCore();
 }
 
 // UWP OnToggleImpl: ignore all toggle actions. OnToggle() runs before the Click event, so if we let

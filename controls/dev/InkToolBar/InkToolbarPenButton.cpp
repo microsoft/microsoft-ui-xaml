@@ -34,11 +34,10 @@ std::vector<winrt::Windows::UI::Color> InkToolbarPenButton::GetColors()
 }
 
 // UWP OnApplyTemplateImpl: if the app didn't supply a Palette via markup, populate the default one
-// from GetColors(); then sync SelectedBrush to SelectedBrushIndex.
-void InkToolbarPenButton::OnApplyTemplate()
+// from GetColors(); then sync SelectedBrush to SelectedBrushIndex. Runs from the base
+// InkToolbarToolButton::OnApplyTemplate via the OnApplyTemplateCore hook.
+void InkToolbarPenButton::OnApplyTemplateCore()
 {
-    InkToolbarToolButton::OnApplyTemplate();
-
     auto palette = Palette();
     m_normalModeBrushIndex = SelectedBrushIndex();
 

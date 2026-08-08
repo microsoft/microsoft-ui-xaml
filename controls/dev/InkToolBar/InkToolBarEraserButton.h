@@ -39,8 +39,8 @@ public:
     // a separate InkToolbarEraserButtonInternal object; the lift flattened them onto the button itself, so
     // the port uses the inherited DP accessors directly (the manual shadowing members were removed).
 
-    // IFrameworkElementOverrides
-    void OnApplyTemplate();
+    // Runs from the base InkToolbarToolButton::OnApplyTemplate via the OnApplyTemplateCore hook.
+    void OnApplyTemplateCore() override;
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
     // Eraser L3 (flyout) management. NOTE: the eraser flyout content is provided by the XAML template

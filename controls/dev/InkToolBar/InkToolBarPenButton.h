@@ -29,8 +29,9 @@ public:
     using InkToolbarPenButtonProperties::EnsureProperties;
     using InkToolbarPenButtonProperties::ClearProperties;
 
-    // IUIElementOverrides
-    void OnApplyTemplate();
+    // Populate the default palette when the template is applied. Invoked by
+    // InkToolbarToolButton::OnApplyTemplate via the OnApplyTemplateCore hook.
+    void OnApplyTemplateCore() override;
 
     // DP change routing.
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
