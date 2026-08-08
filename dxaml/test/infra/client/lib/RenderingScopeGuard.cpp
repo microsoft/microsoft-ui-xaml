@@ -121,6 +121,12 @@ HRESULT RenderingScopeGuard::Close()
     LogThrow_IfFailed(m_spUtilities->SetRuntimeEnabledFeatureOverride(static_cast<int>(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableWUCShapes), m_wereWUCShapesEnabled, nullptr));
     LogThrow_IfFailed(m_spUtilities->SetRuntimeEnabledFeatureOverride(static_cast<int>(RuntimeFeatureBehavior::RuntimeEnabledFeature::SynchronousCompTreeUpdates), m_wasSynchronousCompTreeEnabled, nullptr));
 
+    // DComp XML variables (set via SetDCompXmlVariable) only take effect under the
+    // MockDComp injected inside a rendering scope, so this is the natural place to
+    // clear them. Doing it here means any test using a rendering scope gets variable
+    // cleanup for free -- no separate guard needed. Clearing an empty set is a no-op.
+    LogThrow_IfFailed(m_spUtilities->ClearDCompXmlVariables());
+
     return S_OK;
 }
 

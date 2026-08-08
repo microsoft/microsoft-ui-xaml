@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.22817.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Simple", "Simple\Simple.vcxproj", "{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM64 = Debug|ARM64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM64 = Release|ARM64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|ARM64.Build.0 = Debug|ARM64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|ARM64.Deploy.0 = Debug|ARM64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|Win32.Build.0 = Debug|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|Win32.Deploy.0 = Debug|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|x64.ActiveCfg = Debug|x64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|x64.Build.0 = Debug|x64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|x64.Deploy.0 = Debug|x64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|x86.ActiveCfg = Debug|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|x86.Build.0 = Debug|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Debug|x86.Deploy.0 = Debug|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|ARM64.ActiveCfg = Release|ARM64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|ARM64.Build.0 = Release|ARM64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|ARM64.Deploy.0 = Release|ARM64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|Win32.ActiveCfg = Release|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|Win32.Build.0 = Release|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|Win32.Deploy.0 = Release|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|x64.ActiveCfg = Release|x64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|x64.Build.0 = Release|x64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|x64.Deploy.0 = Release|x64
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|x86.ActiveCfg = Release|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|x86.Build.0 = Release|Win32
+		{35E8CE4A-A9CA-480E-A6C0-8C61376170CA}.Release|x86.Deploy.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 1
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://vstfdevdiv:8080/devdiv2
+		SccProjectUniqueName0 = Simple\\Simple.vcxproj
+		SccProjectName0 = Simple
+		SccAuxPath0 = http://vstfdevdiv:8080/devdiv2
+		SccLocalPath0 = Simple
+		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,7 @@
+﻿<Application
+    x:Class="XAMLPerf.MinApp.Cs.MUX.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XAMLPerf.MinApp.Cs.MUX">
+
+</Application>

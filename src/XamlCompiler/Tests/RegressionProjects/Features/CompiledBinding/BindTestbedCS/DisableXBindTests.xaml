@@ -1,0 +1,40 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbed.DisableXBindTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:model="using:BindTestbedModel"
+    Tag="This is a tag">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+
+        <ScrollViewer>
+            <StackPanel Margin="30">
+                <TextBlock Style="{StaticResource Section}">Disabled Binding</TextBlock>
+                <TextBlock Style="{StaticResource Note}">Bindings should all be disabled</TextBlock>
+
+                <TextBlock Style="{StaticResource Note}">Function tests</TextBlock>
+                <TextBlock Text="{x:Bind Model.IntPropWithINPC.ToString(), Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.FunctionOnModelTwoArgs(Model.IntPropWithINPC, 3.9), Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.FunctionReturningNull(), TargetNullValue='Great, TargetNullValue works!'}"/>
+                <TextBlock Text="{x:Bind Model.FunctionReturningInt()}"/>
+
+                <TextBlock Style="{StaticResource Note}">Event tests</TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="{x:Bind Click_RegularArgs}">Regular Arguments</Button>
+                    <Button Click="{x:Bind Click_NoArgs}" x:Name="bar">No Arguments</Button>
+                    <GridView IsItemClickEnabled="True" ItemClick="{x:Bind Click_RegularArgs}"/>
+                </StackPanel>
+
+                <TextBlock Style="{StaticResource Note}"><Run>Two Way tests, both sliders, normally identical, should be independent</Run></TextBlock>
+                <Slider x:Name="Yin"  Minimum="20" Maximum="100" Value="{x:Bind DOModel.YinPropertyDP, Mode=TwoWay}"/>
+                <Slider x:Name="Yang" Minimum="20" Maximum="100" Value="{x:Bind DOModel.YangObj.Value, Mode=TwoWay}"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

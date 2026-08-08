@@ -1,0 +1,275 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  runTestJobName: 'CreateTestPayload'
+  dependsOn: ''
+  testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
+  pipelineKind: '' # can be: Nightly, CI, PR, BuildAndTest, TestLocalBuild, ValidateWindowsAppSDK
+  testPayloadArtifactName: 'TestPayload'
+  includeWinUIGallery: true
+
+jobs:
+- job: ${{ parameters.runTestJobName }}
+  timeoutInMinutes: 60
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: not(failed())
+  pool:
+    type: windows
+  strategy:
+    maxParallel: 10
+    matrix:
+      ${{ if eq(parameters.testSuite, 'DevTestSuite') }}:
+        25H2_x86chk:
+          testOS: Win11-25H2
+          buildPlatform: 'x86'
+          buildOutput: 'x86'
+          normalizedConfiguration: 'chk'
+        ${{ if in( parameters.pipelineKind, 'GitHubPR', 'Nightly', 'PR', 'Official' ) }}:
+          RS5_x86chk:
+            testOS: Win10-RS5
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'chk'
+          23H2_x86chk:
+            testOS: Win11-23H2
+            buildPlatform: 'x86'
+            buildOutput: 'x86'
+            normalizedConfiguration: 'chk'
+      ${{ if eq(parameters.testSuite, 'ScenarioTestSuite') }}:
+        RS5_x86chk:
+          testOS: Win10-RS5
+          buildPlatform: 'x86'
+          buildOutput: 'x86'
+          normalizedConfiguration: 'chk'
+        25H2_x64fre:
+          testOS: Win11-25H2
+          buildPlatform: 'x64'
+          buildOutput: 'amd64'
+          normalizedConfiguration: 'fre'
+        23H2_x64fre:
+          testOS: Win11-23H2
+          buildPlatform: 'x64'
+          buildOutput: 'amd64'
+          normalizedConfiguration: 'fre'
+        23H2_arm64fre:
+          testOS: Win11-23H2
+          buildPlatform: 'arm64'
+          buildOutput: 'arm64'
+          normalizedConfiguration: 'fre'
+        23H2_arm64ecfre:
+          testOS: Win11-23H2
+          buildPlatform: 'arm64ec'
+          buildOutput: 'arm64ec'
+          normalizedConfiguration: 'fre'
+
+  variables:
+    - group: WinUI-InternalFeed
+    - name: artifactsDir
+      value: $(Build.ArtifactStagingDirectory)
+    - name: testBinaryPath
+      value: '$(Build.SourcesDirectory)\TestPayload\$(buildPlatform)$(normalizedConfiguration)'
+    - name: testpayloadNuGetFeedUrl
+      value: '$(WinUITestPayloadFeedUri)'
+    - name: helixType
+      value: ${{ parameters.testSuite }}.$(buildPlatform).$(normalizedConfiguration)
+    - name: pipelineKind
+      value: ${{ parameters.pipelineKind }}
+    - ${{ if eq(parameters.includeWinUIGallery, true) }}:
+      - name: scenarioPayloadAdditionalArguments
+        value: ''
+    - ${{ else }}:
+      - name: scenarioPayloadAdditionalArguments
+        value: '-SkipWinUIGallery'
+    - name: taefExePath
+      value: '$(artifactsDir)\drop\amd64fre\Taef\te.exe' # We need to override this to ensure that we don't try to run arm64 te.exe on this amd64 pipeline machine.
+    - name: ob_outputDirectory
+      value: '$(Build.SourcesDirectory)\out'
+    - name: ob_artifactBaseName
+      value: "${{ parameters.testPayloadArtifactName }}_$(testOS)_$(buildOutput)"
+    - ${{ if eq(parameters.pipelineKind, 'ValidateWindowsAppSDK') }}:
+      - name: isValidateWindowsAppSDKRun
+        value: 1
+    - ${{ if ne(parameters.pipelineKind, 'ValidateWindowsAppSDK') }}:
+      - name: isValidateWindowsAppSDKRun
+        value: 0
+    - name: ob_sdl_codeSignValidation_excludes
+      value: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|TestPayload\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+
+  steps:
+  # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
+  # errors from the Guardian PREfast task, which shouldn't even be run in the first place, because its pre-
+  # requisite of isNative=true isn't met currently.
+  - script: |
+      if not exist "C:\__t\NativeCompilerPrefast" (
+        md "C:\__t\NativeCompilerPrefast"
+      )
+    displayName: 'Creating C:\__t\NativeCompilerPrefast to prevent errors from Guardian PREfast'
+
+    # Set values of variables 'targetOsVersion', queue mapping, and 'buildFlavor'
+  - powershell: |
+      $targetOsVersionTable = @{"Win11-23H2" = "22631"; "Win11-21H2" = "22000"; "Win10-22H2" = "19045"; "Win10-20H2" = "19042"; "Win10-RS5" = "17763"; "ni_release" = "22621"; "Win11-25H2" = "26200"}
+      $helixQueueTable = @{ "Win11-23H2" = "invalid"; "Win11-21H2" = "invalid"; "Win10-22H2" = "invalid"; "Win10-20H2" = "windows.10.amd64.client20h2.xaml"; "Win10-RS5" = "windows.10.amd64.clientrs5.xaml"; "ni_release" = "invalid"; "Win11-25H2" = "invalid"}
+
+      $targetOsVersion = $targetOsVersionTable[$env:testOS]
+      $helixQueue = $helixQueueTable[$env:testOS]
+
+      $arch = $env:buildPlatform
+      if($arch -eq "x64")
+      {
+        $arch = "amd64"
+      }
+      $buildFlavor = "$arch$($env:normalizedConfiguration)"
+
+      # DownloadBuildArtifacts is case sensitive and our build is inconsistent in outputting to 'arm64' or 'ARM64' file paths
+      # So we work around it by using both cases as filter
+      $buildFlavorAlt = $buildFlavor
+      if($arch -eq "arm64")
+      {
+        $buildFlavorAlt = "ARM64$($env:normalizedConfiguration)"
+      }
+
+      if($arch -eq "arm64ec")
+      {
+        $buildFlavorAlt = "ARM64EC$($env:normalizedConfiguration)"
+      }
+
+      Write-Host "targetOsVersion = $targetOsVersion"
+      Write-Host "helixQueue = $helixQueue"
+      Write-Host "buildFlavor = $buildFlavor"
+      Write-Host "buildFlavorAlt = $buildFlavorAlt"
+
+      Write-Host "##vso[task.setvariable variable=targetOsVersion;]$targetOsVersion"
+      Write-Host "##vso[task.setvariable variable=helixtargetqueues;]$helixQueue"
+      Write-Host "##vso[task.setvariable variable=buildFlavor;]$buildFlavor"
+      Write-Host "##vso[task.setvariable variable=buildFlavorAlt;]$buildFlavorAlt"
+    displayName: Set computed variables
+
+  - powershell: |
+      gci env:* | sort-object name
+    displayName: Display build machine environment variable
+
+
+  - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+    parameters:
+      enableUseOutputFromPreviousBuild: true
+      itemPattern: '**/?($(buildFlavor)|$(buildFlavorAlt)|GenXBF|Taef)/**'
+      targetPath:  '$(artifactsDir)'
+
+  - task: PowerShell@2
+    displayName: CopyFilesToParent
+    inputs:
+      targetType: 'inline'
+      script: |
+        Copy-Item -Path "$(artifactsDir)\drop_*\*" -Destination "$(artifactsDir)" -Recurse -Force
+
+  - task: powershell@2
+    displayName: 'CreateTestPayload.ps1'
+    inputs:
+      targetType: filePath
+      filePath: test\CreateTestPayload.ps1
+      arguments: -BinSourceRoot $(artifactsDir)\drop -Platform $(buildPlatform) -Configuration $(normalizedConfiguration) -Mode ${{ parameters.testSuite }} -SkipSymbols $(scenarioPayloadAdditionalArguments)
+
+  - task: CopyFiles@2
+    displayName: MoveToOutputDirectory
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\TestPayload'
+      TargetFolder: '$(ob_outputDirectory)\TestPayload'
+
+  - ${{ if eq(parameters.testSuite, 'DevTestSuite') }}:
+    - template: WinUI-CreateHelixProjFile-Steps.yml
+      parameters:
+        testFilePathPattern: 'Test\MUXControls.Test.dll'
+        outputProjFileName: 'RunTestsInHelix-MUXControlsInteractionTests.proj'
+        testBinaryPath: $(testBinaryPath)
+        taefQuery: $(taefQuery)
+        targetOsVersion: $(targetOsVersion)
+        taefExePath: $(taefExePath)
+
+    - template: WinUI-CreateHelixProjFile-Steps.yml
+      parameters:
+        testFilePathPattern: 'Test\UnpackagedApps\MUXControlsTestApp\MUXControlsTestApp.dll'
+        outputProjFileName: 'RunTestsInHelix-MUXControlsApiTests.proj'
+        testBinaryPath: $(testBinaryPath)
+        taefQuery: $(taefQuery)
+        targetOsVersion: $(targetOsVersion)
+        taefExePath: $(taefExePath)
+
+    - template: WinUI-CreateHelixProjFile-Steps.yml
+      parameters:
+        testFilePathPattern: 'Test\IXMPTestApp.appx'
+        outputProjFileName: 'RunTestsInHelix-IXMPTests.proj'
+        testBinaryPath: $(testBinaryPath)
+        taefQuery: $(taefQuery)
+        targetOsVersion: $(targetOsVersion)
+        taefExePath: $(taefExePath)
+
+    - template: WinUI-CreateHelixProjFile-Steps.yml
+      parameters:
+        testFilePathPattern: 'Test\Microsoft.UI.Xaml.Tests.External.*.dll'
+        outputProjFileName: 'RunTestsInHelix-MUXCoreTests.proj'
+        testBinaryPath: $(testBinaryPath)
+        taefQuery: $(taefQuery)
+        hostingMode: UAP
+        targetOsVersion: $(targetOsVersion)
+        taefExePath: $(taefExePath)
+
+    - template: WinUI-CreateHelixProjFile-Steps.yml
+      parameters:
+        testFilePathPattern: 'Test\Microsoft.UI.Xaml.Tests.External.*.dll'
+        outputProjFileName: 'RunTestsInHelix-MUXCoreTests-WPF.proj'
+        testBinaryPath: $(testBinaryPath)
+        taefQuery: $(taefQuery)
+        hostingMode: WPF
+        targetOsVersion: $(targetOsVersion)
+        taefExePath: $(taefExePath)
+
+    - template: WinUI-CreateHelixProjFile-Steps.yml
+      parameters:
+        testFilePathPattern: 'Test\Microsoft.UI.Xaml.Tests.Managed.*.dll'
+        outputProjFileName: 'RunTestsInHelix-MUXCoreManagedTests-WPF.proj'
+        testBinaryPath: $(testBinaryPath)
+        taefQuery: $(taefQuery)
+        hostingMode: WPF
+        targetOsVersion: $(targetOsVersion)
+        taefExePath: $(taefExePath)
+
+    - template: WinUI-CreateHelixProjFile-Steps.yml
+      parameters:
+        testFilePathPattern: 'Test\Microsoft.UI.Xaml.Tests.External.*.dll'
+        outputProjFileName: 'RunTestsInHelix-MUXCoreTests-Win32Explicit.proj'
+        testBinaryPath: $(testBinaryPath)
+        taefQuery: $(taefQuery)
+        hostingMode: Win32Explicit
+        targetOsVersion: $(targetOsVersion)
+        taefExePath: $(taefExePath)
+
+  - ${{ if eq(parameters.testSuite, 'ScenarioTestSuite') }}:
+    - template: WinUI-CreateHelixProjFile-Steps.yml
+      parameters:
+        testFilePathPattern: 'Test\MUXControls.Test.dll'
+        outputProjFileName: 'RunTestsInHelix-ScenarioTests.proj'
+        testBinaryPath: $(testBinaryPath)
+        taefQuery: $(taefQuery)
+        targetOsVersion: $(targetOsVersion)
+        testSuite: 'ScenarioTestSuite'
+        taefExePath: $(taefExePath)
+
+  - task: CopyFiles@2
+    displayName: 'Copy helix work item proj files'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)\helixworkitems'
+      TargetFolder: '$(ob_outputDirectory)\helixworkitems\${{ parameters.testSuite }}\$(buildPlatform)$(normalizedConfiguration)\$(testOS)\'
+      Contents: '*.proj'
+
+  - ${{ if eq(parameters.testSuite, 'DevTestSuite') }}:
+    - task: CopyFiles@2
+      displayName: 'Copy static helix work item proj files'
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)\Helix\staticTestWorkItems'
+        TargetFolder: '$(ob_outputDirectory)\helixworkitems\${{ parameters.testSuite }}\$(buildPlatform)$(normalizedConfiguration)\$(testOS)\'
+        Contents: '*.proj'
+
+  - script: |
+      dir /s $(artifactsDir)
+    displayName: 'DIAG'
+    condition: failed()

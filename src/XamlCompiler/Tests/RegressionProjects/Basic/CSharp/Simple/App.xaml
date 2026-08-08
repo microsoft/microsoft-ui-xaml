@@ -1,0 +1,14 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Application
+    x:Class="Simple.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Simple">
+    <Application.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="CSharpSimpleMainGridWhiteColor">White</SolidColorBrush>
+            <SolidColorBrush x:Key="CSharpSimpleMainGridBlackColor">Black</SolidColorBrush>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,0 +1,8 @@
+<Project>
+  <!-- Intentionally empty. Stops MSBuild walking up the tree and inheriting
+       the repository's WinUI-specific build infrastructure, which is
+       irrelevant (and breaks) for this self-contained, unpackaged WinUI 3
+       (Windows App SDK) app — even though the app itself uses WinUI 3, the
+       repo's WinUI build orchestration assumes the in-repo XAML compiler and
+       cannot coexist with the WindowsAppSDK NuGet flow this sample relies on. -->
+</Project>

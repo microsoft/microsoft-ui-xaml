@@ -171,12 +171,15 @@ CTimedTextSource::SetMediaPlayer(_In_opt_ wmp::IMediaPlayer* pMediaPlayer)
 {
     IFC_RETURN(RemoveMediaPlayerEventRegistrations());
 
-    m_spMediaPlaybackList.Reset();
+    // Remove the track callbacks while m_spCurrentItem is still alive; RemoveAllTrackCallbacks needs it to unregister m_trackAddedEventToken (Reset() later calls it again as a no-op).
+    IFC_RETURN(RemoveAllTrackCallbacks());
+
     if (m_spCurrentItem)
     {
         IFC_RETURN(RemoveCuePresentationModeChangedCallback());
         m_spCurrentItem.Reset();
     }
+    m_spMediaPlaybackList.Reset();
     m_spMediaPlayer = pMediaPlayer;
 
     IFC_RETURN(Reset());

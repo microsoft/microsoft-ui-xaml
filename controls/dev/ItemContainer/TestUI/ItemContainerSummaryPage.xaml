@@ -66,6 +66,11 @@
                         <Button x:Name="btnGetIsSelected" Content="Get IsSelected" Margin="2" VerticalAlignment="Center" Click="BtnGetIsSelected_Click"/>
                     </StackPanel>
 
+                    <StackPanel>
+                        <TextBlock Text="Current visual state:" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="CurrentVisualStateTextBlock" />
+                    </StackPanel>
+
                     <TextBlock Text="ItemInvoked Event" FontWeight="SemiBold" />
                     <TextBlock x:Name="ItemInvokedEventTextBlock"/>
 

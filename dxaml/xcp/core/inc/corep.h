@@ -1495,7 +1495,7 @@ public:
     void SetDCompDeviceLeakDetectionEnabled(bool enableLeakDetection) { m_isDCompLeakDetectionEnabled = enableLeakDetection; }
 
     void GetDCompDevice(
-        _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+        _Outptr_ IDCompositionDevice2 **ppDCompDevice
         ) const;
 
     _Check_return_ HRESULT SetWindowSizeOverride(

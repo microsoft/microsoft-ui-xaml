@@ -17,8 +17,6 @@ class AgCoreCallbacks;
 #include <fwd/microsoft.ui.xaml.media.h>
 #include <microsoft.UI.Dispatching.h>
 
-struct IDCompositionDesktopDevicePartner;
-
 class CJupiterControl;
 class CDependencyObject;
 class CContentRoot;
@@ -567,7 +565,7 @@ namespace DirectUI
         _Check_return_ HRESULT SimulateDeviceLost(bool resetVisuals, bool resetDManip);
 
         void GetDCompDevice(
-            _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+            _Outptr_ IDCompositionDevice2 **ppDCompDevice
             ) const;
 
         _Check_return_ HRESULT SetWindowSizeOverride(

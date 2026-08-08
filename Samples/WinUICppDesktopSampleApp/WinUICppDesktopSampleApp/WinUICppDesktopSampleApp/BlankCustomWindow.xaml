@@ -1,0 +1,18 @@
+﻿<Window
+    x:Class="WinUICppDesktopSampleApp.BlankCustomWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICppDesktopSampleApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel x:Name="containerSP" AutomationProperties.Name="containerSP">
+        <Button Content="Close Window" x:Name="buttonCloseWindow" AutomationProperties.Name="buttonCloseWindow" Click="ButtonCloseWindow_Click" Margin="2"/>
+        <Button Content="Test &quot;Lonely WebView2&quot;" x:Name="buttonTestLonelyWebView2"
+                AutomationProperties.Name="buttonTestLonelyWebView2"
+                Click="ButtonTestLonelyWebView2_Click"
+                ToolTipService.ToolTip = "Set up root for testing tab navigation when WebView2 is the only focusable element"
+                Margin="2"/>
+    </StackPanel>
+</Window>

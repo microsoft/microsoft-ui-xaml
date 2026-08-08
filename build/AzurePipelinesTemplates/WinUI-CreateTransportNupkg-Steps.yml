@@ -1,0 +1,151 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  winUIVersion: $(versionFinal)
+  buildConfiguration: 'Release'
+  signOutput: false # this is true for Release builds
+
+steps:
+- script: |
+    echo parameters.nupkgdir '$(ob_outputDirectory)'
+    echo parameters.buildConfiguration '${{ parameters.buildConfiguration }}'
+  displayName: 'CreateNugetPackage: Display parameters'
+
+- task: PowerShell@2
+  name: DetermineComponentNugetPackageVersion
+  displayName: 'Determine Component Nuget Package Version'
+  inputs:
+    targetType: 'inline'
+    script: |
+      $paddedRevision = '$(versionPrerelease)'
+      if([int]$(versionPrerelease) -lt 10)
+      {
+        $paddedRevision = '00' + '$(versionPrerelease)'
+      }
+      elseif ([int]$(versionPrerelease) -lt 100)
+      {
+        $paddedRevision = '0' + '$(versionPrerelease)'
+      }
+      Write-Host "paddedRevision " $paddedRevision
+
+      if ([int]$(versionPrerelease) -gt 999)
+      {
+        Write-Host "Revision Number limit reach. Please try again the next day"
+        Write-Host "##vso[task.complete result=Failed;]DONE"
+      }
+
+      $buildType = '$(VersionTag)'
+      $majorMinorPatchRev = '$(MajorVersion).$(MinorVersion).$(versionDate)'
+      $majorMinorPatchRev = $majorMinorPatchRev + $paddedRevision
+      $version = $majorMinorPatchRev + '-' + $buildType
+
+      # If using release versioning, drop the version suffix, which includes a tag & build stamp.
+      # This should only be done when prepping final release packages.
+      if ($buildType -eq "stable")
+      {
+        Write-Host "Using Release Versioning"
+        $version = $majorMinorPatchRev
+      }
+
+      Write-Host 'Component Package Version: ' $version
+      Write-Host "##vso[task.setvariable variable=componentPackageVersion;isOutput=true]$version"
+      Write-Host "##vso[task.setvariable variable=componentPackageVersion;]$version"
+
+- template: WinUI-DownloadPipelineArtifacts-Steps.yml
+  parameters:
+    enableUseOutputFromPreviousBuild: true
+    itemPattern: '**/@(packaging|MUXTestInfra)/**'
+    targetPath:  '$(Build.ArtifactStagingDirectory)'
+
+- script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
+  displayName: Dump ArtifactStagingDirectory directory
+
+- task: PowerShell@2
+  displayName: Copy Files
+  inputs:
+    targetType: 'inline'
+    script: |
+      Copy-Item -Path "$(Build.ArtifactStagingDirectory)\drop_*\*" -Destination "$(Build.ArtifactStagingDirectory)" -Recurse -Force
+
+- script: cmd /c dir /s /b $(Build.SourcesDirectory)
+  displayName: Dump sources directory
+
+- script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
+  displayName: Dump ArtifactStagingDirectory directory
+
+
+- task: CmdLine@2
+  displayName: Set NuGet environment variables
+  inputs:
+    script: |
+      $(Build.SourcesDirectory)\scripts\setnugetenvvars.cmd
+
+- task: NuGetCommand@2
+  displayName: 'NuGet locals -clear http-cache'
+  inputs:
+    command: 'custom'
+    arguments: 'locals -clear http-cache'
+
+- powershell: |
+    & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
+      -Nuspec 'Microsoft.WindowsAppSDK.WinUI.nuspec' `
+      -VersionOverride '$(componentPackageVersion)' `
+      -PackageRoot '$(Build.ArtifactStagingDirectory)\packaging\${{ parameters.buildConfiguration }}' `
+      -OutputDir '$(ob_outputDirectory)'
+  displayName: 'build-nupkg.ps1'
+
+- powershell: |
+    & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `
+      -PackageRoot '$(Build.ArtifactStagingDirectory)\packaging\${{ parameters.buildConfiguration }}' `
+      -OutputDir '$(ob_outputDirectory)'
+  displayName: 'build-nupkg.ps1'
+
+- template: WinUI-DownloadPipelineArtifacts-Steps.yml
+  parameters:
+    enableUseOutputFromPreviousBuild: true
+    itemPattern: '**/Test/MUXTestInfra/**'
+    targetPath:  '$(Build.ArtifactStagingDirectory)'
+
+- powershell: |
+    & "$env:Build_SourcesDirectory\Samples\AppTestAutomationHelpers\build-nupkg.ps1" `
+      -BuildBinDir '$(Build.ArtifactStagingDirectory)\drop' `
+      -OutputDir '$(ob_outputDirectory)'
+  displayName: 'Build AppTestAutomationHelpers nupkg'
+
+- powershell: |
+    & "$env:Build_SourcesDirectory\controls\test\testinfra\MUXTestInfra\build-nupkg.ps1" `
+      -BuildBinDir '$(Build.ArtifactStagingDirectory)\drop' `
+      -OutputDir '$(ob_outputDirectory)'
+  displayName: 'Build MUXTestInfra nupkg'
+
+- ${{ if eq(parameters.signOutput, true) }}:
+  - template: AzurePipelinesTemplates/WindowsAppSDK-EsrpCodeSigning-Steps.yml@WindowsAppSDKConfig
+    parameters:
+      FolderPath: '$(ob_outputDirectory)'
+      Pattern: |
+        **/*.nupkg
+      KeyCode: 'CP-401405'
+      UseMinimatch: true
+      DisplayName: 'CodeSign'
+
+# Push to the WinUI.Dependencies feed, since this is where we consume our dependencies
+# In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
+# See known NuGet task issue notes.
+- task: NuGetCommand@2
+  displayName: 'NuGet push to WinUI.Dependencies feed'
+  inputs:
+    command: push
+    publishVstsFeed: 1103ce32-f206-4cab-b967-dcc556dacd13
+    packagesToPush: $(ob_outputDirectory)/*.nupkg
+    # ignore conflicts which come from rerunning with the same input packages
+    allowPackageConflicts: true
+
+# To publish the package to vsts feed, set queue time variable NuGetFeed = 95b74d6d-5ea9-4630-9a07-16616924c91e
+# This is the feed GUID from the pipeline visual designer for this target feed.
+- task: NuGetCommand@2
+  condition: and(ne(variables['NuGetFeed'], ''), eq(variables['privateCsWinRTNupkgVersion'],''))
+  displayName: 'NuGet push to $(NuGetFeed)'
+  inputs:
+    command: push
+    publishVstsFeed: $(NuGetFeed)
+    packagesToPush: $(ob_outputDirectory)/*.nupkg

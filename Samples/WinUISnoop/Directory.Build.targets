@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Intentionally empty: do not inherit from the repo Directory.Build.targets. -->
+<Project>
+</Project>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="OSFrameworkLens.UI.InspectorWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="using:System"
+    Title="OS Framework Lens">
+
+    <Grid Background="#16181D" Padding="10">
+        <Grid.Resources>
+            <SolidColorBrush x:Key="CardBg" Color="#1F232B"/>
+            <SolidColorBrush x:Key="CardBorder" Color="#2C313B"/>
+            <SolidColorBrush x:Key="Text" Color="#E6E6E6"/>
+            <SolidColorBrush x:Key="Muted" Color="#8A93A0"/>
+            <SolidColorBrush x:Key="LabelText" Color="#7C8593"/>
+            <SolidColorBrush x:Key="Code" Color="#B5CEA8"/>
+            <SolidColorBrush x:Key="ChipBg" Color="#2A3140"/>
+            <SolidColorBrush x:Key="ChipFg" Color="#9CDCFE"/>
+
+            <Style x:Key="SectionHeader" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource LabelText}"/>
+                <Setter Property="FontSize" Value="10"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Margin" Value="0,0,0,4"/>
+            </Style>
+            <Style x:Key="Card" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource CardBg}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource CardBorder}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding" Value="11,7"/>
+                <Setter Property="Margin" Value="0,0,0,6"/>
+            </Style>
+            <Style x:Key="FieldLabel" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource LabelText}"/>
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="0,1,12,1"/>
+            </Style>
+            <Style x:Key="FieldValue" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource Text}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="0,1,0,1"/>
+            </Style>
+            <Style x:Key="FieldValueMono" TargetType="TextBlock" BasedOn="{StaticResource FieldValue}">
+                <Setter Property="FontFamily" Value="Cascadia Mono, Consolas"/>
+            </Style>
+            <Style x:Key="ChipText" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource ChipFg}"/>
+                <Setter Property="FontFamily" Value="Cascadia Mono, Consolas"/>
+                <Setter Property="FontSize" Value="11"/>
+            </Style>
+        </Grid.Resources>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" CornerRadius="8" Padding="14,9" Margin="0,0,0,6"
+                Background="{x:Bind ViewModel.FrameworkBrush, Mode=OneWay}">
+            <StackPanel>
+                <TextBlock Text="{x:Bind ViewModel.Framework, Mode=OneWay}" FontSize="18" FontWeight="Bold"
+                           Foreground="White" TextWrapping="Wrap"/>
+                <TextBlock Text="{x:Bind ViewModel.ConfidenceText, Mode=OneWay}" FontSize="11" Margin="0,1,0,0"
+                           Foreground="White" Opacity="0.85"/>
+                <Border Visibility="{x:Bind ViewModel.IslandBadgeVisibility, Mode=OneWay}"
+                        Margin="0,6,0,0" Padding="8,4" CornerRadius="4" Background="#40000000">
+                    <TextBlock Text="{x:Bind ViewModel.IslandBadge, Mode=OneWay}" Foreground="White" FontWeight="SemiBold"
+                               FontSize="11" TextWrapping="Wrap"/>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Body -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
+            <StackPanel>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="WINDOW" Style="{StaticResource SectionHeader}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Class" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.WindowClass, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Title" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.WindowTitle, Mode=OneWay}"
+                                       Foreground="{x:Bind ViewModel.WindowTitleForeground, Mode=OneWay}"
+                                       FontStyle="{x:Bind ViewModel.WindowTitleFontStyle, Mode=OneWay}"
+                                       FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,1,0,1"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="PROCESS" Style="{StaticResource SectionHeader}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Image" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ProcessName, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="PID " Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
+                                <TextBlock Text="{x:Bind ViewModel.Pid, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="14,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="TID " Style="{StaticResource FieldLabel}" Margin="0,0,4,0"/>
+                                <TextBlock Text="{x:Bind ViewModel.Tid, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="HANDLES" Style="{StaticResource SectionHeader}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="HWND" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.HwndHex, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Root HWND" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.RootHwndHex, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Root class" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.RootClassName, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Bounds" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.BoundsText, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="UI AUTOMATION" Style="{StaticResource SectionHeader}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="FrameworkId" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Bind ViewModel.UiaFrameworkId, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="ControlType" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.UiaControlType, Mode=OneWay}" Style="{StaticResource FieldValue}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Name" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.UiaName, Mode=OneWay}" Style="{StaticResource FieldValue}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="AutomationId" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.UiaAutomationId, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="ClassName" Style="{StaticResource FieldLabel}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.UiaClassName, Mode=OneWay}" Style="{StaticResource FieldValueMono}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="MATCHED FRAMEWORK-RUNTIME MODULES" Style="{StaticResource SectionHeader}"/>
+                        <!-- WinUI 3 has no WrapPanel — ItemsRepeater + StackLayout for horizontal chips. -->
+                        <ItemsRepeater ItemsSource="{x:Bind ViewModel.MatchedModules, Mode=OneWay}"
+                                       Visibility="{x:Bind ViewModel.MatchedModulesVisibility, Mode=OneWay}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Horizontal" Spacing="5"/>
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="sys:String">
+                                    <Border Background="{StaticResource ChipBg}" CornerRadius="3" Padding="7,2" Margin="0,1,0,1">
+                                        <TextBlock Text="{x:Bind}" Style="{StaticResource ChipText}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                        <TextBlock Text="{x:Bind ViewModel.ModulesPlaceholder, Mode=OneWay}"
+                                   Foreground="{StaticResource Muted}" FontStyle="Italic" FontSize="12" TextWrapping="Wrap"
+                                   Visibility="{x:Bind ViewModel.ModulesPlaceholderVisibility, Mode=OneWay}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="EVIDENCE" Style="{StaticResource SectionHeader}"/>
+                        <Border Background="#0F1116" CornerRadius="4" Padding="8,6" BorderBrush="#22262F" BorderThickness="1">
+                            <TextBlock Text="{x:Bind ViewModel.Evidence, Mode=OneWay}" Foreground="{StaticResource Code}"
+                                       FontFamily="Cascadia Mono, Consolas" FontSize="11" TextWrapping="Wrap"
+                                       LineHeight="14"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Grid Grid.Row="2" Margin="0,4,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" VerticalAlignment="Center"
+                       Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis"/>
+            <Button Grid.Column="1" Content="⏸  Freeze" Click="OnFreezeClicked"/>
+            <Button Grid.Column="2" Content="📊  Analyze window" Margin="6,0,0,0" Click="OnAnalyzeClicked"/>
+            <Button Grid.Column="3" Content="📋  Copy" Margin="6,0,0,0" Click="OnCopyClicked"/>
+        </Grid>
+    </Grid>
+</Window>

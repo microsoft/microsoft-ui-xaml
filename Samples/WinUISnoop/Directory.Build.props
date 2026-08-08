@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file deliberately does NOT import the parent Directory.Build.props.
+  WinUISnoop is built as a standalone sample against the publicly available
+  Microsoft.WindowsAppSDK NuGet package (no mock-package dependency, no
+  repo-wide build infrastructure).
+-->
+<Project>
+  <PropertyGroup>
+    <WinUISnoopWinAppSdkVersion>2.0.1</WinUISnoopWinAppSdkVersion>
+    <WinUISnoopWindowsSdkBuildToolsVersion>10.0.26100.4654</WinUISnoopWindowsSdkBuildToolsVersion>
+    <WinUISnoopCppWinRTVersion>2.0.250303.1</WinUISnoopCppWinRTVersion>
+    <WinUISnoopWilVersion>1.0.240803.1</WinUISnoopWilVersion>
+  </PropertyGroup>
+</Project>

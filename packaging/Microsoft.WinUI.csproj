@@ -6,7 +6,8 @@
     <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
     <DisableTransitiveProjectReferences>true</DisableTransitiveProjectReferences>
     <ComponentNuGetLicensePath>..\WindowsAppSDKConfig\NuGetLicense\preview\license.txt</ComponentNuGetLicensePath>
-    <ComponentNuGetLicensePath Condition="'$(ProductPrereleaseTag)'=='stable'">..\WindowsAppSDKConfig\NuGetLicense\release\license.txt</ComponentNuGetLicensePath>
+    <!-- Empty ProductPrereleaseTag is the WindowsAppSDKConfig convention for stable releases, so treat it the same as 'stable' (matches WinUI-CreateTransportNupkg-Steps.yml). -->
+    <ComponentNuGetLicensePath Condition="'$(ProductPrereleaseTag)'=='stable' Or '$(ProductPrereleaseTag)'==''">..\WindowsAppSDKConfig\NuGetLicense\release\license.txt</ComponentNuGetLicensePath>
     <!-- Fallback for local builds which don't have WindowsAppSDKConfig. -->
     <ComponentNuGetLicensePath Condition="!Exists('$(ComponentNuGetLicensePath)')">license.txt</ComponentNuGetLicensePath>
     <IntellisenseFolder>Intellisense\generated</IntellisenseFolder>

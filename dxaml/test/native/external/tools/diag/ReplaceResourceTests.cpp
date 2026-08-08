@@ -567,6 +567,60 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             ReplaceResource(actualThemeDictionary, orangeBrushHandle, L"testThemed");
         }
 
+        // Editability coverage for the code theme-binding API. A markup {ThemeResource} registers a
+        // resource-graph dependency at parse time so Hot Reload (IXamlDiagnostics::ReplaceResource) can push
+        // dictionary edits into the live property. FrameworkElement.SetThemeResourceBinding registers the same
+        // dependency (when XamlDiagnostics is attached), so a code-installed binding must react to
+        // ReplaceResource identically to markup - here a markup and a code binding to the same key are edited
+        // in lock-step, twice, to prove the code dependency is registered and stays registered across edits.
+        void ReplaceResourceTests::ReplaceResourceUpdatesCodeThemeResourceBinding()
+        {
+            wrl::ComPtr<VisualTreeServiceCallback> callback;
+            auto cleanup = m_connectionHelper->Advise(
+                L"<Grid x:Name='root' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"  <Grid.Resources>"
+                L"    <SolidColorBrush x:Key='themedBrush' Color='AliceBlue' />"
+                L"  </Grid.Resources>"
+                L"  <Rectangle x:Name='markupChild' Fill='{ThemeResource themedBrush}' Height='30' Width='30' />"
+                L"  <Rectangle x:Name='codeChild' Height='30' Width='30' />"
+                L"</Grid>",
+                callback);
+
+            auto root = callback->GetElementByName(L"root");
+            auto markupChild = callback->GetElementByName(L"markupChild");
+            auto codeChild = callback->GetElementByName(L"codeChild");
+
+            // Install the theme binding from code now that XamlDiagnostics is attached, so the code
+            // registration path runs. codeChild starts with no Fill.
+            RunOnUIThread([&]()
+            {
+                auto rect = GetFromInstanceHandle<Microsoft::UI::Xaml::Shapes::Rectangle>(codeChild.Handle);
+                rect->SetThemeResourceBinding(Microsoft::UI::Xaml::Shapes::Shape::FillProperty, L"themedBrush");
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            // Both bindings resolve to the dictionary's current value.
+            VERIFY_ARE_EQUAL(Microsoft::UI::Colors::AliceBlue, GetColorProperty(markupChild.Handle, L"Fill", BaseValueSourceLocal));
+            VERIFY_ARE_EQUAL(Microsoft::UI::Colors::AliceBlue, GetColorProperty(codeChild.Handle, L"Fill", BaseValueSourceLocal));
+
+            auto dictionaryHandle = GetProperty(root.Handle, L"Microsoft.UI.Xaml.FrameworkElement.Resources");
+
+            // Hot Reload the dictionary entry. Without the code-path registration only the markup binding
+            // would update; with it, the code-installed binding updates too.
+            auto redBrushHandle = CreateInstance(L"Microsoft.UI.Xaml.Media.Brush", L"Red");
+            ReplaceResource(dictionaryHandle, redBrushHandle, L"themedBrush");
+
+            VERIFY_ARE_EQUAL(Microsoft::UI::Colors::Red, GetColorProperty(markupChild.Handle, L"Fill", BaseValueSourceLocal));
+            VERIFY_ARE_EQUAL(Microsoft::UI::Colors::Red, GetColorProperty(codeChild.Handle, L"Fill", BaseValueSourceLocal));
+
+            // A second replace proves the code dependency stays registered across edits, not just for the first.
+            auto greenBrushHandle = CreateInstance(L"Microsoft.UI.Xaml.Media.Brush", L"Green");
+            ReplaceResource(dictionaryHandle, greenBrushHandle, L"themedBrush");
+
+            VERIFY_ARE_EQUAL(Microsoft::UI::Colors::Green, GetColorProperty(markupChild.Handle, L"Fill", BaseValueSourceLocal));
+            VERIFY_ARE_EQUAL(Microsoft::UI::Colors::Green, GetColorProperty(codeChild.Handle, L"Fill", BaseValueSourceLocal));
+        }
+
         void ReplaceResourceTests::ReplaceLanguagePrimitives()
         {
             auto xamlStr = ref new Platform::String(

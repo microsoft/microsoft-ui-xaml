@@ -1558,7 +1558,7 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         FlipView,
     }
 
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [NativeName("APAutomationEvents")]
     [NativeCategory(EnumCategory.AutomationEnum)]
     [EnumFlags(HasTypeConverter = true, IsTypeConverter = true, NativeUsesNumericValues = false)]

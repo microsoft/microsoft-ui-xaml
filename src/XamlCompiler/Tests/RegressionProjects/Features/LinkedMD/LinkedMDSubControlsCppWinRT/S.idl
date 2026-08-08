@@ -1,0 +1,13 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+import "T.idl";
+
+namespace LinkedMDSubControlsCppWinRT
+{
+    runtimeclass S : Microsoft.UI.Xaml.Controls.Page
+    {
+        S();
+        String StringPropertyOnS{ get; };
+        T TPropertyOnS{ get; };
+    }
+}

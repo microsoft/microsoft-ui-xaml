@@ -18,6 +18,8 @@ param(
 
     [switch]$SkipSymbols,
 
+    [switch]$SkipWinUIGallery,
+
     [switch]$Clean,
 
     [switch]$Quiet
@@ -67,6 +69,7 @@ function Print-Config
     Write-Host "Platform:                          $Platform"
     Write-Host "Configuration:                     $Configuration"
     Write-Host "Skip Symbols:                      $SkipSymbols"
+    Write-Host "Skip WinUIGallery:                 $SkipWinUIGallery"
     Write-Host "Show Payload:                      $ShowPayload"
     Write-Host "Mode set (manually set by -mode):  $Mode"
     Write-Host "Modes not set [X] :                $modes"
@@ -226,26 +229,34 @@ if ($Mode -eq "ScenarioTestSuite")
     {
         Publish-Item "$binpath\Samples\WinUICsDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
         Publish-Item "$binpath\Samples\WinUICppDesktopSampleApp_Test\*.msix*" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCs_Test\*.msix" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCs_Test\*.msix" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainCpp_Test\*.msix" "$outpath\Test\"
+        Publish-Item "$binpath\Samples\DisableXamlGeneratedMainNoCtorCpp_Test\*.msix" "$outpath\Test\"
     }
-    # The Windows App SDK MSIX tooling stamps platform/version/config into the test-package directory name,
-    # e.g. WinUIGallery_x86_1.0.0.0_Debug_Test. Discover it dynamically rather than hard-coding the suffix.
-    $galleryTestDir = Get-ChildItem -Path "$binpath\Samples" -Directory -Filter "WinUIGallery*Test" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $galleryTestDir)
+    if (-not $SkipWinUIGallery)
     {
-        throw "WinUIGallery test package directory not found under '$binpath\Samples' (expected a folder matching 'WinUIGallery*Test')."
-    }
-    Publish-Item "$($galleryTestDir.FullName)\WinUIGallery*.msix*" "$outpath\Test\"
-    Get-ChildItem -Path "$outpath\Test" -Filter "WinUIGallery*.msix*" -File -ErrorAction SilentlyContinue |
-        Where-Object { $_.Extension -in @(".msix", ".msixbundle") } |
-        ForEach-Object {
-            $target = Join-Path $_.DirectoryName ("WinUIGallery$($_.Extension)")
-            if ($_.FullName -ne $target) { Move-Item -Path $_.FullName -Destination $target -Force }
+        # The Windows App SDK MSIX tooling stamps platform/version/config into the test-package directory name,
+        # e.g. WinUIGallery_x86_1.0.0.0_Debug_Test. Discover it dynamically rather than hard-coding the suffix.
+        $galleryTestDir = Get-ChildItem -Path "$binpath\Samples" -Directory -Filter "WinUIGallery*Test" -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $galleryTestDir)
+        {
+            throw "WinUIGallery test package directory not found under '$binpath\Samples' (expected a folder matching 'WinUIGallery*Test')."
         }
+        Publish-Item "$($galleryTestDir.FullName)\WinUIGallery*.msix*" "$outpath\Test\"
+        Get-ChildItem -Path "$outpath\Test" -Filter "WinUIGallery*.msix*" -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -in @(".msix", ".msixbundle") } |
+            ForEach-Object {
+                $target = Join-Path $_.DirectoryName ("WinUIGallery$($_.Extension)")
+                if ($_.FullName -ne $target) { Move-Item -Path $_.FullName -Destination $target -Force }
+            }
+
+        Publish-Item "$binpath\Test\WinUIGalleryTestData.xml" "$outpath\Test\"
+    }
 
     Publish-Item "$binpath\Test\MUXControls.Test.dll" "$outpath\Test\"
     Publish-Item "$binpath\Test\MUXTestInfra.dll" "$outpath\Test\"
     Publish-Item "$binpath\Test\Microsoft.Windows.Apps.Test.*.dll" "$outpath\Test\"
-    Publish-Item "$binpath\Test\WinUIGalleryTestData.xml" "$outpath\Test\"
 
     # TODO: Remove below check
     if (-not ($env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK"))))
@@ -254,7 +265,7 @@ if ($Mode -eq "ScenarioTestSuite")
     }
 
     # TODO: Remove below check
-    if ($env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK")))
+    if ((-not $SkipWinUIGallery) -and $env:BUILD_DEFINITIONNAME -and ($env:BUILD_DEFINITIONNAME.Contains("ValidateReunion") -or $env:BUILD_DEFINITIONNAME.Contains("WindowsAppSDK")))
     {
         Publish-Item "$($galleryTestDir.FullName)\Dependencies\$redistPlatform\*.msix" "$outpath\Test\"
     }

@@ -1,0 +1,126 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+trigger: none
+name: $(versionFinal)
+
+parameters: # parameters are shown up in ADO UI in a build queue time
+- name: SignOutput
+  type: boolean
+  default: true
+- name: PublishToMaestro
+  type: boolean
+  default: true
+- name: runArm64Tests
+  displayName: "Enable running tests on arm64"
+  type: boolean
+  default: true
+- name: MUXFinalRelease
+  type: boolean
+  default: false
+- name: runStaticAnalysis
+  displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
+  type: boolean
+  # Set this to true when longer pipeline duration and higher resource usage are acceptable.
+  default: true
+- name: CheckApiChanges
+  displayName: "Run Api Diff against latest stable package"
+  type: boolean
+  default: true
+
+variables:
+- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+- group: WinUITeamKeyVault-Secrets  # NOTE: Only the WinUI-Xaml-Nightly,
+                                    # and WinUI-Xaml-Official pipelines have access
+                                    # to this variable group
+- group: WinUI-Variable-Library
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+    - repository: WindowsAppSDKVersionConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked' # windows undocked
+    globalsdl:
+      tsa:
+        enabled: true
+      enableXFGCheck: false
+      codeql:
+        tsandjs:
+          enabled: true
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: true
+      prefast:
+        ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+          enabled: true
+        ${{ else }}:
+          enabled: false
+        break: true
+      apiscan:
+        # We are enabling APIScan on a per job basis, as this scanner is not applicable to most jobs.
+        enabled: false
+        # Note: Once existing errors are cleared, consider setting this to true.
+        break: false
+      binskim:
+        enabled: true
+        analyzeTargetGlob: $(BinskimExclusion)
+        break: true
+      policheck:
+        exclusionsFile: $(Build.SourcesDirectory)\.config\PolicheckExclusions.xml
+
+    stages:
+    - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
+      parameters:
+        pipelineKind: Nightly
+        signOutput: ${{ parameters.SignOutput }}
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    - template: AzurePipelinesTemplates\WinUI-BuildScenarioApps-Stage.yml
+      parameters:
+        pipelineKind: Nightly
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
+      parameters:
+        pipelineKind: Nightly
+        dependsOn: BuildScenarioApps
+        runArm64Tests: ${{ parameters.runArm64Tests }}
+
+    - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+      parameters:
+        pipelineKind: Nightly
+
+    - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
+      parameters:
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+
+    - template: AzurePipelinesTemplates\WinUI-Packaging-Stage.yml
+      parameters:
+        signOutput: ${{ parameters.SignOutput }}
+        publishToMaestro: ${{ parameters.PublishToMaestro }}
+
+    - ${{ if eq( parameters.CheckApiChanges, true ) }}:
+      - template: AzurePipelinesTemplates\WinUI-CheckApiChanges-Stage.yml

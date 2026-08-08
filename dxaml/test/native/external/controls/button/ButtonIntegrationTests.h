@@ -39,6 +39,10 @@ public:
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")
     END_TEST_METHOD()
 
+    BEGIN_TEST_METHOD(CanRecoverKeyboardInvocationAfterPointerCancellation)
+        TEST_METHOD_PROPERTY(L"Description", L"Validates that a button can still be invoked by keyboard after its parent is collapsed while the pointer is pressed.")
+    END_TEST_METHOD()
+
     BEGIN_TEST_METHOD(ValidateUIElementTree)
         TEST_METHOD_PROPERTY(L"Description", L"Validates the UI element tree of Button in various visual states.")
         TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")

@@ -35,6 +35,10 @@ using TakeFocusRequestedHandler = wf::ITypedEventHandler<
     xaml_hosting::DesktopWindowXamlSource*,
     xaml_hosting::DesktopWindowXamlSourceTakeFocusRequestedEventArgs*>;
 
+using AppWindowChangedHandler = wf::ITypedEventHandler<
+    ixp::AppWindow*,
+    ixp::AppWindowChangedEventArgs*>;
+
 // ----------------------------------------------------------------------
 //                          DesktopWindowImpl
 // ----------------------------------------------------------------------
@@ -136,6 +140,18 @@ void DesktopWindowImpl::OnCreate() noexcept
     // instead of whenever user code calls appwindow api, providing subclassing consistency
     ctl::ComPtr<ixp::IAppWindow> appWindow;
     IFCFAILFAST(get_AppWindowImpl(&appWindow));
+
+    // Watch for presenter changes so a Width/Height or Min/Max constraint set while a non-sizing presenter
+    // (FullScreen/CompactOverlay) was active gets applied when we return to one that sizes. See
+    // OnAppWindowChanged. One eager subscription shared by both features; skipped when the new windowing
+    // APIs are off so we don't add a subscription that never fires.
+    if (AreNewWindowingApisEnabled())
+    {
+        IFCFAILFAST(appWindow->add_Changed(
+            wrl::Callback<AppWindowChangedHandler>(this, &DesktopWindowImpl::OnAppWindowChanged).Get(),
+            &m_appWindowChangedToken));
+        m_appWindowForChangedEvent = appWindow;
+    }
 }
 
 DesktopWindowImpl::~DesktopWindowImpl()
@@ -191,9 +207,7 @@ _Check_return_ HRESULT DesktopWindowImpl::get_BoundsImpl(_Out_ wf::Rect* pValue)
             IFC_RETURN(hr);
         }
 
-        double rasterizationScale = 0;
-        const auto dpi = ::GetDpiForWindow(m_hwnd.get());
-        rasterizationScale = static_cast<float>(dpi) / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
+        const double rasterizationScale = GetWindowScale();
 
         // Adjust dimensions for rasterization scale
         ASSERT(rasterizationScale);
@@ -414,6 +428,17 @@ _Check_return_ HRESULT DesktopWindowImpl::ActivateImpl()
     {
         nCmdShow = SW_RESTORE;
     }
+
+    if (m_bInitialWindowActivation)
+    {
+        // Apply any Width/Height that were requested before the window was first shown
+        // (e.g. from XAML markup). Skipped when the feature is contained off.
+        if (AreNewWindowingApisEnabled())
+        {
+            IFC_RETURN(ApplyPendingClientSizeIfNeeded());
+        }
+    }
+
     ::ShowWindow(m_hwnd.get(), nCmdShow);
     ::UpdateWindow(m_hwnd.get());
 
@@ -491,6 +516,172 @@ _Check_return_ HRESULT DesktopWindowImpl::get_CompositorImpl(_Outptr_result_mayb
     return S_OK;
 }
 
+float DesktopWindowImpl::GetWindowScale()
+{
+    return static_cast<float>(::GetDpiForWindow(m_hwnd.get())) / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::MeasureLiveChromeInPixels(_Out_ SIZE* pChromeSize)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFCPTR_RETURN(pChromeSize);
+    *pChromeSize = {};
+
+    // The chrome size is outer window rect minus client rect... the size of the non-client area. We need this value for
+    // cases where the client rect gets customized, for example when ExtendsContentIntoTitleBar is enabled.
+    RECT outerRect{};
+    RECT clientRect{};
+    if (::GetWindowRect(m_hwnd.get(), &outerRect) == 0 || ::GetClientRect(m_hwnd.get(), &clientRect) == 0)
+    {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+    }
+
+    pChromeSize->cx = (outerRect.right - outerRect.left) - (clientRect.right - clientRect.left);
+    pChromeSize->cy = (outerRect.bottom - outerRect.top) - (clientRect.bottom - clientRect.top);
+    return S_OK;
+}
+
+void DesktopWindowImpl::SetTrackedRestoredSize(wf::Size clientDips, wf::Size chromeDips)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    m_trackedRestoredSize = TrackedRestoredSize{ clientDips, chromeDips };
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::GetRestoredClientSizeInDips(_Out_ wf::Size* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Maximized / minimized: report the Win32 restore size (what the window snaps back to).
+    bool useRestoredClientSize = false;
+    wf::Size restoredClientSize{};
+    IFC_RETURN(TryGetWin32RestoredClientSizeInDips(&useRestoredClientSize, &restoredClientSize));
+    if (useRestoredClientSize)
+    {
+        *pValue = restoredClientSize;
+        return S_OK;
+    }
+
+    // In a non-sizing presenter (FullScreen/CompactOverlay) the OS doesn't expose the size the window
+    // will restore to (it overwrites the Win32 restore rect with the live full-screen / PiP rect), so
+    // we report the restored size we tracked from the last time the window was at its restored size.
+    // This is independent of whether the app set Width/Height - the opt-in only governs whether the
+    // runtime *resizes* the window, not what the getter reports. If nothing is tracked yet (e.g. the
+    // window entered the presenter before it was ever shown in its restored state), fall back to the live size.
+    if (!AppWindowPresenterSupportsSizing() && m_trackedRestoredSize)
+    {
+        *pValue = m_trackedRestoredSize->client;
+        return S_OK;
+    }
+
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    *pValue = wf::Size{ bounds.Width, bounds.Height };
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_WidthImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(CheckIsWindowClosed());
+
+    if (m_pendingClientWidthDips)
+    {
+        *pValue = *m_pendingClientWidthDips;
+        return S_OK;
+    }
+
+    wf::Size size{};
+    IFC_RETURN(GetRestoredClientSizeInDips(&size));
+    *pValue = size.Width;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_WidthImpl(DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(CheckIsWindowClosed());
+    IFC_RETURN(ValidateWidthHeightValue(value));
+    return ApplyOrDeferClientSizeInDips(value, std::nullopt);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_HeightImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(CheckIsWindowClosed());
+
+    if (m_pendingClientHeightDips)
+    {
+        *pValue = *m_pendingClientHeightDips;
+        return S_OK;
+    }
+
+    wf::Size size{};
+    IFC_RETURN(GetRestoredClientSizeInDips(&size));
+    *pValue = size.Height;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_HeightImpl(DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(CheckIsWindowClosed());
+    IFC_RETURN(ValidateWidthHeightValue(value));
+    return ApplyOrDeferClientSizeInDips(std::nullopt, value);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ApplyOrDeferClientSizeInDips(std::optional<double> width, std::optional<double> height)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Setting either property opts the window into the Width/Height resize behaviors (see
+    // m_hasExplicitClientSize).
+    m_hasExplicitClientSize = true;
+
+    // If we can't honor the size right now - either the window hasn't been shown yet, or the current
+    // presenter (FullScreen/CompactOverlay) doesn't support Width/Height - remember the requested
+    // client size and apply it later: on first activation (ApplyPendingClientSizeIfNeeded from ActivateImpl),
+    // or when the presenter changes back to Default/Overlapped (OnAppWindowChanged). This mimics how
+    // SetWindowPlacement remembers rcNormalPosition while maximized/minimized.
+    if (m_bInitialWindowActivation || !AppWindowPresenterSupportsSizing())
+    {
+        if (width)
+        {
+            m_pendingClientWidthDips = width;
+        }
+        if (height)
+        {
+            m_pendingClientHeightDips = height;
+        }
+        return S_OK;
+    }
+
+    return SetRestoredClientSizeInDips(width, height);
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ValidateWidthHeightValue(DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Width/Height (DIPs) are later scaled to pixels and stored in an int for the Win32 sizing
+    // calls, so cap them to keep value * scale within int range and avoid overflow. INT_MAX divided
+    // by a generous max DPI scale (real displays top out around 500%).
+    constexpr double c_maxDpiScale = 16.0;
+    constexpr double c_maxClientSizeDips = static_cast<double>(INT_MAX) / c_maxDpiScale;
+
+    if (DoubleUtil::IsNaN(value) || DoubleUtil::IsInfinity(value) || value < 0.0 || value > c_maxClientSizeDips)
+    {
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_WINDOW_DESKTOP_WIDTH_HEIGHT_INVALID));
+    }
+
+    return S_OK;
+}
+
 // ----------------------------------------------------------------------
 //                          IWindowPrivate
 // ----------------------------------------------------------------------
@@ -551,6 +742,344 @@ _Check_return_ HRESULT DesktopWindowImpl::MoveWindowImpl(_In_ INT x, _In_ INT y,
 
         IFC_RETURN(hr);
     }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::SetRestoredClientSizeInDips(std::optional<double> width, std::optional<double> height)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFC_RETURN(CheckIsWindowClosed());
+    IFCEXPECT_RETURN(width.has_value() || height.has_value());
+
+    if (width)
+    {
+        IFC_RETURN(ValidateWidthHeightValue(*width));
+    }
+    if (height)
+    {
+        IFC_RETURN(ValidateWidthHeightValue(*height));
+    }
+
+    // Window.Width/Height describe the client area (in DIPs). There is no public Win32 API that
+    // converts client<->window for a specific HWND while honoring its WM_NCCALCSIZE handler
+    // (which is how ExtendsContentIntoTitleBar removes the top non-client area), and
+    // AppWindow.ResizeClient gets this wrong for ExtendsContentIntoTitleBar windows (see
+    // https://github.com/microsoft/microsoft-ui-xaml/issues/9529). So we compute the chrome
+    // (outer-minus-client) ourselves:
+    //   * Restored / live state: measure the live window directly (GetWindowRect - GetClientRect),
+    //     which is exact because GetClientRect already reflects WM_NCCALCSIZE / ExtendsContentIntoTitleBar.
+    //   * Maximized / minimized: the live rects don't represent the restored-state chrome, so we
+    //     synthesize it (GetSavedRestoreChromeSizeInPixels). That restored path is the one spot we
+    //     make assumptions, and is covered by regression tests.
+
+    RECT windowRectScreen{};
+    if (::GetWindowRect(m_hwnd.get(), &windowRectScreen) == 0)
+    {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+    }
+
+    const float scale = GetWindowScale();
+
+    WINDOWPLACEMENT placement = {};
+    placement.length = sizeof(placement);
+
+    bool updateRestoredBoundsOnly = false;
+    if (::GetWindowPlacement(m_hwnd.get(), &placement) != 0)
+    {
+        updateRestoredBoundsOnly = (placement.showCmd == SW_SHOWMAXIMIZED ||
+                                   placement.showCmd == SW_SHOWMINIMIZED);
+    }
+
+    if (updateRestoredBoundsOnly)
+    {
+        SIZE chromeSize{};
+        IFC_RETURN(GetSavedRestoreChromeSizeInPixels(&chromeSize));
+
+        // Tell Win32 the restored rect for this window using SetWindowPlacement.
+        // It's awkward for a few reasons:
+        //  - We need to set the rect, but we only care about the size.
+        //  - We're only setting one axis (width or height) at a time, so we need to preserve the other axis.
+        //  - It's possible we don't know the restored rect yet (e.g. app was launched maximized)
+        //  - rcNormalPosition is in "workspace" coordinates, which are not the same as screen coordinates.
+        // Solutions:
+        //  - We first calculate what the restored rect currently is, then set only the axis we're updating.
+        //  - If we don't have a restored rect, borrow the window's live rect. Expect app to set Width/Height together.
+        //  - We reuse the origin as-is (workspace when we have a restored rect), and the extent is the same in both
+        //    coord spaces, so no conversion is needed. Corner case: the "no restored rect" fallback borrows a screen
+        //    origin, so restored position can be slightly off (top/left taskbar or 2nd monitor) - size is unaffected,
+        //    and it only happens when launched maximized + never restored, so not worth converting.
+
+        const RECT& restoredRectWs = placement.rcNormalPosition;
+        const bool hasRestoredRect = !::IsRectEmpty(&restoredRectWs);
+        placement.rcNormalPosition =
+            hasRestoredRect
+                ? restoredRectWs         // workspace coords (reused as-is)
+                : windowRectScreen;      // screen coords - best-effort fallback, see corner case above
+
+        if (width)
+        {
+            placement.rcNormalPosition.right = placement.rcNormalPosition.left +
+                static_cast<int>(std::round(*width * scale)) + chromeSize.cx;
+        }
+        if (height)
+        {
+            placement.rcNormalPosition.bottom = placement.rcNormalPosition.top +
+                static_cast<int>(std::round(*height * scale)) + chromeSize.cy;
+        }
+
+        if (::SetWindowPlacement(m_hwnd.get(), &placement) == 0)
+        {
+            HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+            IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+        }
+
+        // Keep the tracked restored size in sync with the rcNormalPosition we just wrote (same as the
+        // live path below). Without this, switching straight from maximized/minimized into a non-sizing
+        // presenter (FullScreen/CompactOverlay) - whose getter reads m_trackedRestoredSize - would
+        // report the previously tracked size instead of the value just set.
+        const int restoredOuterWidth = placement.rcNormalPosition.right - placement.rcNormalPosition.left;
+        const int restoredOuterHeight = placement.rcNormalPosition.bottom - placement.rcNormalPosition.top;
+        SetTrackedRestoredSize(
+            wf::Size{ static_cast<float>((restoredOuterWidth - chromeSize.cx) / scale),
+                      static_cast<float>((restoredOuterHeight - chromeSize.cy) / scale) },
+            wf::Size{ static_cast<float>(chromeSize.cx) / scale,
+                      static_cast<float>(chromeSize.cy) / scale });
+
+        return S_OK;
+    }
+
+    // Restored / live state: measure the actual chrome from the live window (exact w.r.t.
+    // WM_NCCALCSIZE / ExtendsContentIntoTitleBar - see MeasureLiveChromeInPixels).
+    SIZE chromePx{};
+    IFC_RETURN(MeasureLiveChromeInPixels(&chromePx));
+
+    wf::Rect bounds{};
+    IFC_RETURN(get_BoundsImpl(&bounds));
+    const int windowWidth = static_cast<int>(std::round(width.value_or(bounds.Width) * scale)) + chromePx.cx;
+    const int windowHeight = static_cast<int>(std::round(height.value_or(bounds.Height) * scale)) + chromePx.cy;
+
+    // SetWindowPos is in screen coordinates, matching GetWindowRect above.
+    if (::SetWindowPos(m_hwnd.get(), nullptr, windowRectScreen.left, windowRectScreen.top, windowWidth, windowHeight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER) == 0)
+    {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+    }
+
+    // The window is now at the requested client size in its restored state. Record it synchronously
+    // (the same tracked size the deferred WM_SIZE capture populates), so an app that sets Width/Height
+    // and switches to a non-sizing presenter in the same message-loop turn - before the deferred
+    // capture runs - still reports the value it just set. User resizes have no such setter call, so
+    // they continue to flow through the WM_SIZE path.
+    SetTrackedRestoredSize(
+        wf::Size{ static_cast<float>(width.value_or(bounds.Width)),
+                  static_cast<float>(height.value_or(bounds.Height)) },
+        wf::Size{ static_cast<float>(chromePx.cx) / scale,
+                  static_cast<float>(chromePx.cy) / scale });
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::TryGetWin32RestoredClientSizeInDips(_Out_ bool* pUseRestoredClientSize, _Out_ wf::Size* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFCPTR_RETURN(pUseRestoredClientSize);
+    IFCPTR_RETURN(pValue);
+
+    // The Win32 restore size: when the window is maximized or minimized, the client-area size (in
+    // DIPs) it will snap back to when restored, derived from WINDOWPLACEMENT.rcNormalPosition. The
+    // Width/Height getters report that instead of the live maximized/minimized size.
+    // pUseRestoredClientSize is the "did this apply?" flag - we set it true (and fill pValue) only in
+    // the maximized/minimized case; otherwise the caller falls back to another source.
+    *pUseRestoredClientSize = false;
+    *pValue = {};
+
+    // This path only applies to a maximized or minimized window under a sizing-capable presenter.
+    // For any other state (restored, or a non-sizing presenter like FullScreen/CompactOverlay) we
+    // bail and let the caller use its own source: rcNormalPosition below is only meaningful as the
+    // "restore to" rect for maximized/minimized, and the non-sizing presenters overwrite it anyway.
+    WINDOWPLACEMENT placement = {};
+    placement.length = sizeof(placement);
+    if (::GetWindowPlacement(m_hwnd.get(), &placement) == 0 ||
+        (placement.showCmd != SW_SHOWMAXIMIZED && placement.showCmd != SW_SHOWMINIMIZED) ||
+        !AppWindowPresenterSupportsSizing())
+    {
+        return S_OK;
+    }
+
+    // rcNormalPosition is the window's restore rect (outer window rect). It is in *workspace*
+    // coordinates while GetWindowRect (the empty-rect fallback below) is in *screen* coordinates.
+    // That mismatch is harmless here because we only ever read this rect's extent (width/height) -
+    // and a rect's extent is identical in both coordinate spaces, only the origin differs. We never
+    // use restoredRect.left/top.
+    RECT restoredRect = placement.rcNormalPosition;
+    if (::IsRectEmpty(&restoredRect))
+    {
+        // The window has never had a restore rect (e.g. it was shown maximized and never restored),
+        // so rcNormalPosition is empty. Fall back to the live window rect as a best-effort stand-in.
+        if (::GetWindowRect(m_hwnd.get(), &restoredRect) == 0)
+        {
+            HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+            IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+        }
+    }
+
+    // Convert the restore *window* rect to a *client* size: subtract the chrome (caption + borders),
+    // then scale physical pixels down to DIPs. GetSavedRestoreChromeSizeInPixels returns the chrome for
+    // the restored state (measured when possible, synthesized otherwise - it handles ECITB).
+    const int outerWidth = restoredRect.right - restoredRect.left;
+    const int outerHeight = restoredRect.bottom - restoredRect.top;
+
+    SIZE chromeSize{};
+    IFC_RETURN(GetSavedRestoreChromeSizeInPixels(&chromeSize));
+
+    const float scale = GetWindowScale();
+
+    pValue->Width = static_cast<float>((outerWidth - chromeSize.cx) / scale);
+    pValue->Height = static_cast<float>((outerHeight - chromeSize.cy) / scale);
+    *pUseRestoredClientSize = true;
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::GetSavedRestoreChromeSizeInPixels(_Out_ SIZE* pChromeSize)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    IFCPTR_RETURN(pChromeSize);
+
+    // Preferred path: reuse the real chrome we measured from the live window while it was in its
+    // restored state (see UpdateLastRestoredClientSize). That measurement
+    // (GetWindowRect - GetClientRect) already reflects WM_NCCALCSIZE, so it accounts for
+    // ExtendsContentIntoTitleBar.  FRAGILE: note if ExtendsContentIntoTitleBar has changed since we
+    // measured it, or the client area is getting customized in some other way, this is no longer
+    // correct.  The app is going to have to fix things up.
+    if (m_trackedRestoredSize)
+    {
+        const float scale = GetWindowScale();
+        pChromeSize->cx = static_cast<LONG>(std::round(m_trackedRestoredSize->chrome.Width * scale));
+        pChromeSize->cy = static_cast<LONG>(std::round(m_trackedRestoredSize->chrome.Height * scale));
+        return S_OK;
+    }
+
+    // Fallback: the window has never been in its restored state yet (e.g. launched maximized), so we
+    // have no measured chrome to reuse and must synthesize it from the window styles.
+    // AdjustWindowRectExForDpi takes no HWND and so can't run the window's WM_NCCALCSIZE handler;
+    // ExtendsContentIntoTitleBar works *by* handling WM_NCCALCSIZE (it folds the top caption region
+    // into the client area). So when ExtendsContentIntoTitleBar is active we zero out the top caption that
+    // AdjustWindowRectExForDpi always adds, otherwise the restored window would come back ~31 DIP
+    // too short. This synthesized branch is approximate; the measured path above is exact.
+    RECT chromeRect = { 0, 0, 0, 0 };
+    const UINT dpi = ::GetDpiForWindow(m_hwnd.get());
+    const DWORD style = static_cast<DWORD>(::GetWindowLongPtrW(m_hwnd.get(), GWL_STYLE));
+    const DWORD exStyle = static_cast<DWORD>(::GetWindowLongPtrW(m_hwnd.get(), GWL_EXSTYLE));
+    if (::AdjustWindowRectExForDpi(&chromeRect, style, ::GetMenu(m_hwnd.get()) != nullptr, exStyle, dpi) == 0)
+    {
+        HRESULT hr = HRESULT_FROM_WIN32(GetLastError());
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(SUCCEEDED(hr) ? E_FAIL : hr, ERROR_WINDOW_DESKTOP_SIZE_OR_POSITION_FAILED));
+    }
+
+    if (m_windowChrome && m_windowChrome->IsChromeActive())
+    {
+        chromeRect.top = 0;
+    }
+
+    pChromeSize->cx = chromeRect.right - chromeRect.left;
+    pChromeSize->cy = chromeRect.bottom - chromeRect.top;
+    return S_OK;
+}
+
+bool DesktopWindowImpl::AppWindowPresenterSupportsSizing()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Sizing is supported exactly when the window is on an OverlappedPresenter - the Default presenter
+    // kind is backed by one so it QIs successfully, while FullScreen / CompactOverlay do not. This is the
+    // same check the Min/Max feature uses to decide whether it has a presenter to push constraints to, so
+    // we share TryGetOverlappedPresenter. Failures are logged (TRACE_HR_NORETURN) and fall through to a
+    // null presenter -> "not sizing", which is the safe, conservative answer for callers (they use the
+    // tracked restored size / cached chrome rather than trusting the live window rect).
+    ctl::ComPtr<ixp::IOverlappedPresenter3> presenter;
+    TRACE_HR_NORETURN(TryGetOverlappedPresenter(&presenter));
+
+    return presenter != nullptr;
+}
+
+bool DesktopWindowImpl::IsInOverlappedRestoredState()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // A sizing-capable presenter (Default/Overlapped), neither maximized nor minimized. In any other
+    // state the live window rect is the maximized / minimized / full-screen / compact rect, so it
+    // does not represent the window's restored geometry.
+    return AppWindowPresenterSupportsSizing() &&
+           !::IsZoomed(m_hwnd.get()) &&
+           !::IsIconic(m_hwnd.get());
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ApplyPendingClientSizeIfNeeded()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    if (!m_pendingClientWidthDips && !m_pendingClientHeightDips)
+    {
+        return S_OK;
+    }
+
+    // Leave the request pending if the current presenter can't honor Width/Height (e.g.
+    // FullScreen/CompactOverlay). We'll re-apply it when the presenter changes back to one that
+    // does (OnAppWindowChanged), mimicking how the OS restores rcNormalPosition when the window
+    // leaves the maximized/minimized state.
+    if (!AppWindowPresenterSupportsSizing())
+    {
+        return S_OK;
+    }
+
+    const std::optional<double> width = m_pendingClientWidthDips;
+    const std::optional<double> height = m_pendingClientHeightDips;
+
+    IFC_RETURN(SetRestoredClientSizeInDips(width, height));
+
+    m_pendingClientWidthDips.reset();
+    m_pendingClientHeightDips.reset();
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::OnAppWindowChanged(_In_ ixp::IAppWindow* /*sender*/, _In_ ixp::IAppWindowChangedEventArgs* args)
+{
+    // We only subscribe when the new windowing APIs are enabled, so the flag is always true here.
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Internal callback shared by the Width/Height and Min/Max size features. Once the window is closed
+    // there's nothing to update, so quietly do nothing (unlike the public getters/setters, which error).
+    if (m_bIsClosed)
+    {
+        return S_OK;
+    }
+
+    boolean didPresenterChange = false;
+    IFC_RETURN(args->get_DidPresenterChange(&didPresenterChange));
+    if (!didPresenterChange)
+    {
+        return S_OK;
+    }
+
+    // Width/Height: when the presenter changes to one that supports Width/Height again (Default/Overlapped),
+    // apply any client size we remembered while a non-sizing presenter (FullScreen/CompactOverlay) was
+    // active. ApplyPendingClientSizeIfNeeded is a no-op when nothing is pending or the new presenter still
+    // doesn't support sizing. We skip this until the window has been shown once - the initial pending size
+    // is applied by ActivateImpl to avoid resizing before the first show.
+    if (!m_bInitialWindowActivation)
+    {
+        IFC_RETURN(ApplyPendingClientSizeIfNeeded());
+    }
+
+    // Min/Max size: re-apply the app's constraints now that we may be back on an OverlappedPresenter (they
+    // may have been set while a different presenter was active). No-op if the app never set any.
+    IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
 
     return S_OK;
 }
@@ -689,6 +1218,22 @@ LRESULT DesktopWindowImpl::OnMessage(
         PostQuitMessage(0);
 
         return 0;
+    }
+
+    if (AreNewWindowingApisEnabled())
+    {
+        switch (uMsg)
+        {
+            case WM_ENTERSIZEMOVE:
+                m_inSizeMove = true;
+                break;
+            case WM_EXITSIZEMOVE:
+                m_inSizeMove = false;
+                // This message means an end-user drag just finished, so the window is now at its final size.
+                // Capture it immediately.
+                UpdateLastRestoredClientSize();
+                break;
+        }
     }
 
     switch (uMsg)
@@ -912,6 +1457,19 @@ LRESULT DesktopWindowImpl::OnDpiChanged(
 {
     RECT* const rcWindow = (RECT*)lParam;
 
+    // Min/max constraints live on the presenter as physical pixels. The presenter enforces the max as a
+    // Win32 max track size (and the min as a min track size), so resizing with the stale old-DPI pixel
+    // values still in place would clamp the window. Clear the constraints we own, let SetWindowPos resize
+    // to the new DPI unhindered, then re-apply: now that the window sits at the new DPI, ApplySizeConstraints
+    // measures the live chrome and pushes exact new-DPI pixel values (no rescale rounding drift). We only
+    // bother when the app has set a constraint, so windows that don't use the feature pay nothing here.
+    const bool hasSizeConstraints =
+        AreNewWindowingApisEnabled() && (m_minWidth || m_minHeight || m_maxWidth || m_maxHeight);
+    if (hasSizeConstraints)
+    {
+        VERIFYHR(ClearOwnedConstraintsOnPresenterIfOverlapped());
+    }
+
     SetWindowPos(m_hwnd.get(),
                     nullptr,
                     rcWindow->left,
@@ -919,6 +1477,11 @@ LRESULT DesktopWindowImpl::OnDpiChanged(
                     rcWindow->right - rcWindow->left,
                     rcWindow->bottom - rcWindow->top,
                     SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+    if (hasSizeConstraints)
+    {
+        VERIFYHR(ApplySizeConstraintsToPresenterIfOverlapped());
+    }
 
     return 0;
 }
@@ -955,8 +1518,98 @@ _Check_return_ HRESULT DesktopWindowImpl::OnSizeChanged(
         }
         break;
     }
+    
+    // NOTE: This is fragile. We need the window's "restored size" while the AppWindow is in a presenter
+    // other than Overlapped (FullScreen/CompactOverlay) so the Width/Height getters return correct values.
+    // BUT the AppWindow gives us no API to get (or set) that restored size, and when the presenter changes
+    // it resizes the window *before* raising the Changed event. (The clean fix would be an AppWindow/IXP
+    // API to read the true restored rect - that would let us delete most of this WM_SIZE shadow-tracking.)
+    //
+    // SO we track the size from WM_SIZE ourselves. For non-drag size changes we defer the write to a
+    // DispatcherQueue callback (below) so we can re-check, once things settle, that the change wasn't just
+    // the presenter mid-transition. (A user drag is captured synchronously at WM_EXITSIZEMOVE, and our own
+    // Width/Height setter records synchronously too - neither of those is ambiguous.)
+    //
+    // Note this staleness is limited to the getter. We never push tracked/stale sizes back onto the window.
+    // We only re-apply a size on presenter-exit when the app set one through Width/Height while in the presenter
+    // (using ApplyPendingClientSizeIfNeeded).
+    // Only SIZE_RESTORED represents the window in its restored geometry - maximize/minimize (and the
+    // owner-driven SIZE_MAXSHOW/SIZE_MAXHIDE) don't, and UpdateLastRestoredClientSize would ignore them
+    // anyway (it re-checks IsInOverlappedRestoredState), so there's no point scheduling a no-op there.
+    if (AreNewWindowingApisEnabled() && wParam == SIZE_RESTORED && m_hwnd && !m_inSizeMove)
+    {
+        ScheduleUpdateLastRestoredClientSize();
+    }
 
     return S_OK;
+}
+
+void DesktopWindowImpl::ScheduleUpdateLastRestoredClientSize()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Coalesce the burst of WM_SIZE messages a drag produces into a single deferred re-evaluation.
+    if (m_restoredSizeUpdateScheduled || !m_dxamlCoreNoRef)
+    {
+        return;
+    }
+
+    msy::IDispatcherQueue* dispatcherQueue = m_dxamlCoreNoRef->GetDispatcherQueueNoRef();
+    if (!dispatcherQueue)
+    {
+        return;
+    }
+
+    // Capture a lifetime sentinel (a shared flag) instead of relying on 'this' staying alive: the
+    // queued callback runs on a later turn of the message loop, and the window could be closed and
+    // this object destroyed before then (e.g. in a multi-window app). Shutdown() clears the flag, so
+    // a callback that outlives the window simply does nothing instead of touching freed memory. The
+    // sentinel is allocated lazily here (first enqueue) so windows that never schedule one pay nothing.
+    if (!m_isWindowAlive)
+    {
+        m_isWindowAlive = std::make_shared<bool>(true);
+    }
+    std::shared_ptr<bool> alive = m_isWindowAlive;
+    auto callback = WRLHelper::MakeAgileCallback<msy::IDispatcherQueueHandler>([this, alive]() -> HRESULT
+    {
+        if (*alive)
+        {
+            UpdateLastRestoredClientSize();
+        }
+        return S_OK;
+    });
+
+    boolean enqueued = false;
+    if (SUCCEEDED(dispatcherQueue->TryEnqueue(callback.Get(), &enqueued)) && enqueued)
+    {
+        m_restoredSizeUpdateScheduled = true;
+    }
+}
+
+void DesktopWindowImpl::UpdateLastRestoredClientSize()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    m_restoredSizeUpdateScheduled = false;
+
+    // Only record the size when the live window actually represents its restored geometry.
+    if (!IsInOverlappedRestoredState())
+    {
+        return;
+    }
+
+    // Capture the client size and its chrome together (the maximized/minimized restored path reuses
+    // the chrome instead of synthesizing it from window styles). Best-effort: if either read fails we
+    // leave the previously tracked size untouched.
+    wf::Rect bounds{};
+    SIZE chromePx{};
+    if (SUCCEEDED(get_BoundsImpl(&bounds)) && SUCCEEDED(MeasureLiveChromeInPixels(&chromePx)))
+    {
+        const float scale = GetWindowScale();
+        SetTrackedRestoredSize(
+            wf::Size{ bounds.Width, bounds.Height },
+            wf::Size{ static_cast<float>(chromePx.cx) / scale, static_cast<float>(chromePx.cy) / scale });
+    }
 }
 
 _Check_return_ HRESULT DesktopWindowImpl::OnMoved(WPARAM wParam, LPARAM lParam)
@@ -1066,6 +1719,9 @@ _Check_return_ HRESULT DesktopWindowImpl::RaiseWindowSizeChangedEvent()
 // ResizeWindowToDesktopWindowXamlSourceWindowDimensions is only called from Desktop Window's OnSizeChanged
 void DesktopWindowImpl::ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam)
 {
+    // A reentrant message during teardown finds m_desktopWindow already null.
+    if (m_bIsClosed) return;
+
     if (m_windowChrome)
     {
         m_windowChrome->ResizeContainer(wParam, lParam);
@@ -1075,6 +1731,9 @@ void DesktopWindowImpl::ResizeWindowToDesktopWindowXamlSourceWindowDimensions(WP
 // ResizeWindowToDesktopWindowXamlSourceWindowDimensions is only called from Desktop Window's OnMoved
 void DesktopWindowImpl::RepositionWindowToDesktopWindowXamlSourceWindowDimensions(WPARAM wParam, LPARAM lParam)
 {
+    // A reentrant message during teardown finds m_desktopWindow already null.
+    if (m_bIsClosed) return;
+
     if (m_windowChrome)
     {
         m_windowChrome->MoveContainer(wParam, lParam);
@@ -1091,9 +1750,27 @@ _Check_return_ HRESULT DesktopWindowImpl::get_WindowHandle(_Out_ HWND* pValue)
 
 void DesktopWindowImpl::Shutdown()
 {
+    // Disarm any deferred restored-size re-evaluation that may still be queued on the dispatcher: once
+    // the window is torn down the callback must not touch this (soon to be destroyed) object. Feature
+    // code, so contained by AreNewWindowingApisEnabled; the sentinel is also only allocated once a
+    // callback has been scheduled, so it may still be null even when enabled.
+    if (AreNewWindowingApisEnabled() && m_isWindowAlive)
+    {
+        *m_isWindowAlive = false;
+    }
+
     // Unregister from TakeFocusRequested event on DWXS
     IFCFAILFAST(m_desktopWindowXamlSource->remove_TakeFocusRequested(m_takeFocusRequestedEventToken));
     m_takeFocusRequestedEventToken.value = 0;
+
+    // Unsubscribe from AppWindow.Changed (shared by the Width/Height and Min/Max size features). We hold
+    // the AppWindow strongly for exactly this, so we don't have to re-resolve it after the HWND is gone.
+    if (m_appWindowChangedToken.value != 0 && m_appWindowForChangedEvent)
+    {
+        VERIFYHR(m_appWindowForChangedEvent->remove_Changed(m_appWindowChangedToken));
+    }
+    m_appWindowChangedToken.value = 0;
+    m_appWindowForChangedEvent.Reset();
 
     m_islandInputSite = nullptr;
     m_positioningBridgeWindowHandle = NULL;
@@ -1285,7 +1962,53 @@ _Check_return_ HRESULT DesktopWindowImpl::get_ExtendsContentIntoTitleBarImpl(_Ou
 _Check_return_ HRESULT DesktopWindowImpl::put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN value)
 {
     IFC_RETURN(CheckIsWindowClosed());
+
+    // Toggling the title-bar chrome changes what counts as client area (ExtendsContentIntoTitleBar
+    // folds the ~caption-height top region into the client area via WM_NCCALCSIZE). If the app has
+    // opted into Window.Width/Height, we keep the client size stable across the toggle - the window
+    // grows/shrinks by the caption instead - so that setting Height and toggling
+    // ExtendsContentIntoTitleBar are order-independent. If the app never set
+    // Width/Height, we leave the window untouched so non-users see no behavior change.
+    //
+    // We only do this on the live, restored window (IsInOverlappedRestoredState). Before first
+    // activation, a pending size is applied on activation with the final chrome state. But in any
+    // other state - maximized, minimized, or a non-default presenter (FullScreen/CompactOverlay) - a
+    // bare ECITB toggle does NOT preserve the client size: nothing re-applies it, so on return to the
+    // restored state the client area is off by about the folded caption height. Known limitation (see
+    // the Width/Height note in Microsoft.UI.Xaml.cs). In a non-default presenter an app can work
+    // around it by setting Width/Height there - that stashes a pending value which is re-applied with
+    // the current chrome on return to Overlapped.
+    const bool preserveClientSize =
+        AreNewWindowingApisEnabled() &&
+        HasExplicitClientSize() &&
+        !m_bInitialWindowActivation &&
+        IsInOverlappedRestoredState();
+
+    wf::Rect boundsBefore{};
+    if (preserveClientSize)
+    {
+        IFC_RETURN(get_BoundsImpl(&boundsBefore));
+    }
+
     IFC_RETURN(m_windowChrome->SetIsChromeActive(!!value));
+
+    if (preserveClientSize)
+    {
+        IFC_RETURN(SetRestoredClientSizeInDips(boundsBefore.Width, boundsBefore.Height));
+    }
+
+    // Toggling the title bar also changes the non-client chrome our size constraints are measured
+    // against (we push outer-window pixels to the presenter). Refresh the tracked restored chrome from
+    // the live window (a no-op unless we're in the restored state) so the re-apply below sees the new
+    // chrome, then re-push the constraints. In a non-restored state we can't remeasure, so - like the
+    // client-size preservation above - the constraints refresh on the next size change after we return
+    // to the restored state.
+    if (AreNewWindowingApisEnabled() && (m_minWidth || m_minHeight || m_maxWidth || m_maxHeight))
+    {
+        UpdateLastRestoredClientSize();
+        IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
+    }
+
     return S_OK;
 }
 
@@ -1337,6 +2060,316 @@ _Check_return_ HRESULT DesktopWindowImpl::get_AppWindowImpl(_Outptr_result_maybe
     IFC_RETURN(m_appWindowStatics->GetFromWindowId(windowId, &appWindow));
     *ppValue = appWindow.Detach(); // ref pointer to app window object, single copy used every time
 
+    return S_OK;
+}
+
+// ----------------------------------------------------------------------
+//   Restored client-size constraints: MinWidth/MinHeight/MaxWidth/MaxHeight
+//
+//   These are stored in DIPs and describe the restored *client* size. They're applied
+//   to the live window through the AppWindow OverlappedPresenter's
+//   PreferredMinimum/MaximumWidth/Height, which operate on the *outer* window rect in
+//   physical pixels. So we convert: client DIPs -> client physical px -> outer window
+//   physical px (by adding the observed non-client chrome).
+// ----------------------------------------------------------------------
+
+_Check_return_ HRESULT DesktopWindowImpl::ValidateMinConstraint(double value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Min: finite and >= 0. Reject NaN, negative, +/-Infinity.
+    if (DoubleUtil::IsNaN(value) || DoubleUtil::IsInfinity(value) || value < 0.0)
+    {
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_WINDOW_MIN_SIZE_INVALID));
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ValidateMaxConstraint(double value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    // Max: >= 0, or +Infinity (meaning "no maximum"). Reject NaN and anything negative - note that a
+    // negative check also rejects -Infinity, while +Infinity passes straight through.
+    if (DoubleUtil::IsNaN(value) || value < 0.0)
+    {
+        IFC_RETURN(ErrorHelper::OriginateErrorUsingResourceID(E_INVALIDARG, ERROR_WINDOW_MAX_SIZE_INVALID));
+    }
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::TryGetOverlappedPresenter(_Outptr_result_maybenull_ ixp::IOverlappedPresenter3** ppPresenter)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    *ppPresenter = nullptr;
+
+    ctl::ComPtr<ixp::IAppWindow> appWindow;
+    IFC_RETURN(get_AppWindowImpl(&appWindow));
+    if (!appWindow)
+    {
+        return S_OK;
+    }
+
+    ctl::ComPtr<ixp::IAppWindowPresenter> presenter;
+    IFC_RETURN(appWindow->get_Presenter(&presenter));
+    if (!presenter)
+    {
+        return S_OK;
+    }
+
+    // Constraints only exist on the OverlappedPresenter. If the window is using a different
+    // presenter (FullScreen, CompactOverlay, ...), the QI fails and we leave the values stored;
+    // they'll be applied the next time we're asked while an OverlappedPresenter is active.
+    ctl::ComPtr<ixp::IOverlappedPresenter3> overlapped;
+    if (SUCCEEDED(presenter.As(&overlapped)))
+    {
+        *ppPresenter = overlapped.Detach();
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ApplySizeConstraintsToPresenterIfOverlapped()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    ctl::ComPtr<ixp::IOverlappedPresenter3> presenter;
+    IFC_RETURN(TryGetOverlappedPresenter(&presenter));
+    if (!presenter)
+    {
+        // No overlapped presenter right now; values remain stored.
+        return S_OK;
+    }
+
+    const double scale = static_cast<double>(GetWindowScale());
+
+    // We convert to physical pixels using the window's current DPI and push fixed pixel values to the
+    // presenter. Those don't re-scale on their own, so we also re-apply from WM_DPICHANGED (see OnDpiChanged)
+    // to keep them matching the requested DIPs after the window moves to a different-DPI monitor.
+
+    // Non-client chrome (outer window minus client) in physical pixels for the *restored* window. Our
+    // constraints govern the restored size, so we always want restored chrome:
+    //   * Restored right now: measure the live window directly (GetWindowRect - GetClientRect). It's exact
+    //     at the current DPI - no rescale rounding, no cache staleness - and reflects WM_NCCALCSIZE /
+    //     ExtendsContentIntoTitleBar because GetClientRect already accounts for them.
+    //   * Maximized / minimized: the live rects aren't the restored frame, so fall back to the chrome we
+    //     measured while restored (ExtendsContentIntoTitleBar-aware), or synthesize it.
+    SIZE chromePx{};
+    if (IsInOverlappedRestoredState())
+    {
+        IFC_RETURN(MeasureLiveChromeInPixels(&chromePx));
+    }
+    else
+    {
+        IFC_RETURN(GetSavedRestoreChromeSizeInPixels(&chromePx));
+    }
+    const int chromeWidth = chromePx.cx;
+    const int chromeHeight = chromePx.cy;
+
+    // Turn a stored DIP constraint into the nullable Int32 the presenter wants: client DIPs -> client
+    // physical px -> outer-window physical px (adding the observed non-client chrome). A null reference
+    // clears the constraint on the presenter.
+    auto transformToPixelsAndBox = [scale](double dips, int chrome, _Out_ ctl::ComPtr<wf::IReference<int>>& ref) -> HRESULT
+    {
+        ref = nullptr;
+
+        // Work in double, then clamp to the presenter's Int32 range. The reapply paths (DPI change,
+        // presenter/chrome changes) can't safely fail here, so a value too large to represent clamps to
+        // INT_MAX rather than erroring - still an effectively unbounded size, just one the presenter can hold.
+        double outerPx = dips * scale + static_cast<double>(chrome);
+        const double maxPx = static_cast<double>(std::numeric_limits<int>::max());
+        if (outerPx < 0.0)
+        {
+            outerPx = 0.0;
+        }
+        else if (outerPx > maxPx)
+        {
+            outerPx = maxPx;
+        }
+
+        ctl::ComPtr<IInspectable> boxed;
+        IFC_RETURN(DirectUI::PropertyValue::CreateFromInt32(static_cast<int>(std::lround(outerPx)), &boxed));
+        IFC_RETURN(boxed.As(&ref));
+        return S_OK;
+    };
+
+    // Only touch a presenter property the app has opted into (the optional has a value). A minimum of 0
+    // means "no app-requested minimum" and a maximum of +Infinity means "no maximum", so those map to a
+    // null reference, clearing the constraint while still leaving it under our ownership.
+    if (m_minWidth.has_value())
+    {
+        ctl::ComPtr<wf::IReference<int>> ref;
+        if (*m_minWidth > 0.0)
+        {
+            IFC_RETURN(transformToPixelsAndBox(*m_minWidth, chromeWidth, ref));
+        }
+        IFC_RETURN(presenter->put_PreferredMinimumWidth(ref.Get()));
+    }
+    if (m_minHeight.has_value())
+    {
+        ctl::ComPtr<wf::IReference<int>> ref;
+        if (*m_minHeight > 0.0)
+        {
+            IFC_RETURN(transformToPixelsAndBox(*m_minHeight, chromeHeight, ref));
+        }
+        IFC_RETURN(presenter->put_PreferredMinimumHeight(ref.Get()));
+    }
+    if (m_maxWidth.has_value())
+    {
+        ctl::ComPtr<wf::IReference<int>> ref;
+        if (!DoubleUtil::IsInfinity(*m_maxWidth))
+        {
+            IFC_RETURN(transformToPixelsAndBox(*m_maxWidth, chromeWidth, ref));
+        }
+        IFC_RETURN(presenter->put_PreferredMaximumWidth(ref.Get()));
+    }
+    if (m_maxHeight.has_value())
+    {
+        ctl::ComPtr<wf::IReference<int>> ref;
+        if (!DoubleUtil::IsInfinity(*m_maxHeight))
+        {
+            IFC_RETURN(transformToPixelsAndBox(*m_maxHeight, chromeHeight, ref));
+        }
+        IFC_RETURN(presenter->put_PreferredMaximumHeight(ref.Get()));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::ClearOwnedConstraintsOnPresenterIfOverlapped()
+{
+    ASSERT(AreNewWindowingApisEnabled());
+
+    ctl::ComPtr<ixp::IOverlappedPresenter3> presenter;
+    IFC_RETURN(TryGetOverlappedPresenter(&presenter));
+    if (!presenter)
+    {
+        // No overlapped presenter right now; nothing on it to clear.
+        return S_OK;
+    }
+
+    // Push a null reference (no constraint) for each dimension we own. Used on WM_DPICHANGED just before
+    // resizing the window, so the old-DPI pixel values don't clamp the resize. We only clear what we own,
+    // to avoid disturbing a constraint the app set directly on the presenter for a dimension it didn't
+    // route through Window.
+    if (m_minWidth.has_value())
+    {
+        IFC_RETURN(presenter->put_PreferredMinimumWidth(nullptr));
+    }
+    if (m_minHeight.has_value())
+    {
+        IFC_RETURN(presenter->put_PreferredMinimumHeight(nullptr));
+    }
+    if (m_maxWidth.has_value())
+    {
+        IFC_RETURN(presenter->put_PreferredMaximumWidth(nullptr));
+    }
+    if (m_maxHeight.has_value())
+    {
+        IFC_RETURN(presenter->put_PreferredMaximumHeight(nullptr));
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_MinWidthImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(CheckIsWindowClosed());
+    *pValue = m_minWidth.value_or(0.0);
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_MinWidthImpl(_In_ DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(CheckIsWindowClosed());
+    IFC_RETURN(ValidateMinConstraint(value));
+
+    // If pushing to the presenter fails, don't leave a value the getter would report but we never applied.
+    const std::optional<double> previous = m_minWidth;
+    auto restoreOnFailure = wil::scope_exit([this, previous]() { m_minWidth = previous; });
+
+    m_minWidth = value;
+    IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
+
+    restoreOnFailure.release();
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_MinHeightImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(CheckIsWindowClosed());
+    *pValue = m_minHeight.value_or(0.0);
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_MinHeightImpl(_In_ DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(CheckIsWindowClosed());
+    IFC_RETURN(ValidateMinConstraint(value));
+
+    // If pushing to the presenter fails, don't leave a value the getter would report but we never applied.
+    const std::optional<double> previous = m_minHeight;
+    auto restoreOnFailure = wil::scope_exit([this, previous]() { m_minHeight = previous; });
+
+    m_minHeight = value;
+    IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
+
+    restoreOnFailure.release();
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_MaxWidthImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(CheckIsWindowClosed());
+    *pValue = m_maxWidth.value_or(std::numeric_limits<double>::infinity());
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_MaxWidthImpl(_In_ DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(CheckIsWindowClosed());
+    IFC_RETURN(ValidateMaxConstraint(value));
+
+    // If pushing to the presenter fails, don't leave a value the getter would report but we never applied.
+    const std::optional<double> previous = m_maxWidth;
+    auto restoreOnFailure = wil::scope_exit([this, previous]() { m_maxWidth = previous; });
+
+    m_maxWidth = value;
+    IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
+
+    restoreOnFailure.release();
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::get_MaxHeightImpl(_Out_ DOUBLE* pValue)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(CheckIsWindowClosed());
+    *pValue = m_maxHeight.value_or(std::numeric_limits<double>::infinity());
+    return S_OK;
+}
+
+_Check_return_ HRESULT DesktopWindowImpl::put_MaxHeightImpl(_In_ DOUBLE value)
+{
+    ASSERT(AreNewWindowingApisEnabled());
+    IFC_RETURN(CheckIsWindowClosed());
+    IFC_RETURN(ValidateMaxConstraint(value));
+
+    // If pushing to the presenter fails, don't leave a value the getter would report but we never applied.
+    const std::optional<double> previous = m_maxHeight;
+    auto restoreOnFailure = wil::scope_exit([this, previous]() { m_maxHeight = previous; });
+
+    m_maxHeight = value;
+    IFC_RETURN(ApplySizeConstraintsToPresenterIfOverlapped());
+
+    restoreOnFailure.release();
     return S_OK;
 }
 

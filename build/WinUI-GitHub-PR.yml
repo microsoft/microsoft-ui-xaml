@@ -73,7 +73,9 @@ extends:
     platform:
       name: 'windows_undocked'
     git:
-      submodules: false
+      # Recursively check out submodules so the public github.com/microsoft/WinUI-Gallery
+      # submodule (Samples/WinUIGallery) is available for GitHub PR sample-build validation.
+      submodules: recursive
     globalsdl:
       tsa:
         enabled: false
@@ -147,11 +149,11 @@ extends:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
         parameters:
           pipelineKind: GitHubPR
-          buildScenarioApps: false
+          buildScenarioApps: true
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
-          buildProductOnly: true
+          buildProductOnly: false
           dependsOn: ValidateGitHubPrContext
 
     - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
@@ -165,6 +167,13 @@ extends:
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
           dependsOn: ValidateGitHubPrContext
+
+    - ${{ if eq(parameters.runFullValidation, true) }}:
+      - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
+        parameters:
+          pipelineKind: PR
+          # Test results are published but do not gate the pipeline yet.
+          failOnTestFailure: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal

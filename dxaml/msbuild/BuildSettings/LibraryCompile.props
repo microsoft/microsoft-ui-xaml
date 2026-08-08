@@ -70,6 +70,7 @@
       <AdditionalOptions Condition="'%(Optimization)'=='Disabled'">%(AdditionalOptions) -DMSC_NOOPT /wd4748</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'!='Debug'">%(AdditionalOptions) -DNDEBUG</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'=='Debug'">%(AdditionalOptions) -DDBG=1</AdditionalOptions>
+      <AdditionalOptions Condition="'$(XamlProfilerEnabled)'=='true'">%(AdditionalOptions) -DXAMLPROFILER_ENABLED=1</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'!='Debug'">%(AdditionalOptions) -d1nodatetime</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64' or '$(Configuration)|$(Platform)'=='Debug|arm64ec'">%(AdditionalOptions) -homeparams</AdditionalOptions>
       <AdditionalOptions Condition="'$(Platform)'=='Win32'">%(AdditionalOptions) -arch:IA32 -d2VolatileMetadata -DBUILD_UMS_ENABLED=0 -DBUILD_WOW64_ENABLED=0 -DFPO=0</AdditionalOptions>

@@ -18,7 +18,7 @@ Param(
     [ValidateSet("UAP", "WPF", "Win32Explicit", "")]
     [string]$HostingMode,
 
-    [ValidateSet("18362", "17763", "17134", "19042", "19045", "22000", "22621", "22631")]
+    [ValidateSet("18362", "17763", "17134", "19042", "19045", "22000", "22621", "22631", "26200")]
     [string]$TargetOSVersion = "18362",
 
     [int]$TestExecutionMultiplier = 1,

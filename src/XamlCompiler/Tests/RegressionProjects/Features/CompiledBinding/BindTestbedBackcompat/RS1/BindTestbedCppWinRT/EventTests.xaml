@@ -1,0 +1,56 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbed.EventTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    xmlns:Subfolder="using:BindTestbed.subfolder"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:model="using:BindTestbedModel">
+
+    <UserControl.Resources>
+        <DataTemplate x:DataType="model:IEmployee" x:Key="ManagerTemplate">
+            <Grid Width="200" Height="40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{x:Bind Name}" />
+                <Button Click="{x:Bind Click}" Grid.Column="1">Poke Employees</Button>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+
+        <ScrollViewer>
+            <StackPanel Margin="30">
+
+                <TextBlock Style="{StaticResource Section}">Event Binding</TextBlock>
+
+                <TextBlock Style="{StaticResource Note}">Binding on Click</TextBlock>
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="{x:Bind Click_RegularArgs}">Regular Arguments</Button>
+                    <Button Click="{x:Bind Click_NoArgs}" x:Name="bar">No Arguments</Button>
+                    <Button Click="{x:Bind Click_BaseArgs}" x:Name="baz">Base Arguments</Button>
+                    <Button Click="{x:Bind Model.ManagerProp.ReportsOC[0].Click}"><TextBlock Text="{x:Bind Model.ManagerProp.LastName, Mode=OneWay}"/></Button>
+                    <Button Click="{x:Bind Click_RegularArgs}">Another Regular Arguments</Button>
+                    <GridView IsItemClickEnabled="True" ItemClick="{x:Bind Click_RegularArgs}"/>
+                </StackPanel>
+                <ListView Width="200" MaxHeight="400" ItemsSource="{x:Bind Model.Employees}" ItemTemplate="{StaticResource ManagerTemplate}"></ListView>
+
+                <TextBlock Style="{StaticResource Note}">Event binding at the root of a template</TextBlock>
+                <ItemsControl ItemsSource="{x:Bind Model.Employees}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="model:IEmployee">
+                            <Button Content="x" Click="{x:Bind Click}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

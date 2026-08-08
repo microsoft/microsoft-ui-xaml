@@ -13,50 +13,57 @@
 #define INKTOOLBAR_TRACE_ERROR INKTOOLBAR_TRACE_INFO
 #define INKTOOLBAR_TRACE_WARNING INKTOOLBAR_TRACE_INFO
 
-inline bool IsInkToolBarTracingEnabled()
+inline bool IsInkToolbarTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
         (g_LoggingProviderMatchAnyKeyword & KEYWORD_INKTOOLBAR || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
-inline bool IsInkToolBarVerboseTracingEnabled()
+inline bool IsInkToolbarVerboseTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
         (g_LoggingProviderMatchAnyKeyword & KEYWORD_INKTOOLBAR || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
+inline bool IsInkToolbarPerfTracingEnabled()
+{
+    return g_IsLoggingProviderEnabled &&
+        g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_INKTOOLBAR || g_LoggingProviderMatchAnyKeyword == 0);
+}
+
 #define INKTOOLBAR_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
-InkToolBarTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
+InkToolbarTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
 
 #define INKTOOLBAR_TRACE_INFO(sender, message, ...) \
-if (IsInkToolBarTracingEnabled()) \
+if (IsInkToolbarTracingEnabled()) \
 { \
     INKTOOLBAR_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
-else if (InkToolBarTrace::s_IsDebugOutputEnabled || InkToolBarTrace::s_IsVerboseDebugOutputEnabled) \
+else if (InkToolbarTrace::s_IsDebugOutputEnabled || InkToolbarTrace::s_IsVerboseDebugOutputEnabled) \
 { \
     INKTOOLBAR_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
 
 #define INKTOOLBAR_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
-InkToolBarTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
+InkToolbarTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
 
 #define INKTOOLBAR_TRACE_VERBOSE(sender, message, ...) \
-if (IsInkToolBarVerboseTracingEnabled()) \
+if (IsInkToolbarVerboseTracingEnabled()) \
 { \
     INKTOOLBAR_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
-else if (InkToolBarTrace::s_IsVerboseDebugOutputEnabled) \
+else if (InkToolbarTrace::s_IsVerboseDebugOutputEnabled) \
 { \
     INKTOOLBAR_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
 
 #define INKTOOLBAR_TRACE_PERF(info) \
-if (IsInkToolBarPerfTracingEnabled()) \
+if (IsInkToolbarPerfTracingEnabled()) \
 { \
-    InkToolBarTrace::TracePerfInfo(info); \
+    InkToolbarTrace::TracePerfInfo(info); \
 } \
 
 #ifdef DBG
@@ -69,7 +76,7 @@ if (IsInkToolBarPerfTracingEnabled()) \
 #define INKTOOLBAR_TRACE_PERF_DBG(info)
 #endif // DBG
 
-class InkToolBarTrace
+class InkToolbarTrace
 {
 public:
     static bool s_IsDebugOutputEnabled;
@@ -86,7 +93,7 @@ public:
             {
                 TraceLoggingWrite(
                     g_hLoggingProvider,
-                    "InkToolBarInfo" /* eventName */,
+                    "InkToolbarInfo" /* eventName */,
                     TraceLoggingLevel(WINEVENT_LEVEL_INFO),
                     TraceLoggingKeyword(KEYWORD_INKTOOLBAR),
                     TraceLoggingWideString(buffer, "Message"));
@@ -100,7 +107,7 @@ public:
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
             if (globalTestHooks &&
-                (globalTestHooks->GetLoggingLevelForType(L"InkToolBar") >= WINEVENT_LEVEL_INFO || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
+                (globalTestHooks->GetLoggingLevelForType(L"InkToolbar") >= WINEVENT_LEVEL_INFO || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
             {
                 globalTestHooks->LogMessage(sender, buffer, false /*isVerboseLevel*/);
             }
@@ -119,7 +126,7 @@ public:
             {
                 TraceLoggingWrite(
                     g_hLoggingProvider,
-                    "InkToolBarVerbose" /* eventName */,
+                    "InkToolbarVerbose" /* eventName */,
                     TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
                     TraceLoggingKeyword(KEYWORD_INKTOOLBAR),
                     TraceLoggingWideString(buffer, "Message"));
@@ -133,7 +140,7 @@ public:
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
             if (globalTestHooks &&
-                (globalTestHooks->GetLoggingLevelForType(L"InkToolBar") >= WINEVENT_LEVEL_VERBOSE || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
+                (globalTestHooks->GetLoggingLevelForType(L"InkToolbar") >= WINEVENT_LEVEL_VERBOSE || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
             {
                 globalTestHooks->LogMessage(sender, buffer, true /*isVerboseLevel*/);
             }

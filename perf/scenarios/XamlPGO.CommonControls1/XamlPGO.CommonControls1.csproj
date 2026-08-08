@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Build">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<RootNamespace>XamlPGO.CommonControls1</RootNamespace>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<Platforms>x86;x64;ARM64;ARM64EC</Platforms>
+		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+		<RuntimeIdentifier Condition="'$(Platform)' == 'ARM64EC'">win-x64</RuntimeIdentifier>
+		<WindowsAppSDKSelfContained Condition="'$(Platform)' == 'ARM64EC'">true</WindowsAppSDKSelfContained>
+		<WindowsPackageType Condition="'$(Platform)' == 'ARM64EC'">None</WindowsPackageType>
+		<PublishProfile>win-$(Platform).pubxml</PublishProfile>
+		<UseUAP>false</UseUAP>
+		<UseWinUI>true</UseWinUI>
+		<VersionString>WinUI</VersionString>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+		<GenerateAppxPackageOnBuild Condition="'$(Platform)' != 'ARM64EC'">true</GenerateAppxPackageOnBuild>
+		<GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+		<WindowsSdkPackageVersion>10.0.26100.38</WindowsSdkPackageVersion>  <!--fix for pipeline failure. need future investigation -->
+		<AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+		<PackageCertificateKeyFile>$(ProjectRoot)\build\WinUITest.pfx</PackageCertificateKeyFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+    	<PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="[$(WinUIVersion)]" />
+		<PackageReference Include="Microsoft.Windows.CSWinRT" Version="[$(MicrosoftCsWinRTPackageVersion)]" />
+	    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="[$(MicrosoftWindowsSDKBuildToolsNugetPackageVersion)]" />
+		<Manifest Include="$(ApplicationManifest)" />
+	</ItemGroup>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="Assets\SplashScreen.scale-200.png" />
+		<Content Include="Assets\LockScreenLogo.scale-200.png" />
+		<Content Include="Assets\Square150x150Logo.scale-200.png" />
+		<Content Include="Assets\Square44x44Logo.scale-200.png" />
+		<Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+		<Content Include="Assets\StoreLogo.png" />
+		<Content Include="Assets\Wide310x150Logo.scale-200.png" />
+	</ItemGroup>
+
+	<!-- 
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <!-- 
+    Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 
+    Explorer "Package and Publish" context menu entry to be enabled for this project even if 
+    the Windows App SDK Nuget package has not yet been restored.
+  -->
+  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+  </PropertyGroup>
+</Project>

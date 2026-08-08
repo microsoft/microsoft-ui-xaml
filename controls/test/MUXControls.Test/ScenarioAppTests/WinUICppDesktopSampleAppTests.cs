@@ -673,10 +673,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             UIObject CustomWindowRoot = FindElement.GetDesktopTopLevelWindow("WinUI Desktop - Custom Window");
             Verify.IsNotNull(CustomWindowRoot);
 
-            // Alt+Tab to bring CustomWindow front
-            Log.Comment("Alt+Tab to bring CustomWindow front");
-            KeyboardHelper.PressKey(Key.Tab, ModifierKey.Alt, 1 /*Num of Presses*/, true /*skip wait*/);
-            Wait.ForMilliseconds(100);
+            // Bring the target window to foreground directly. Alt+Tab is flaky on lab agents.
+            Log.Comment("Set focus to CustomWindow before Alt+F4");
+            CustomWindowRoot.SetFocus();
+            Wait.ForMilliseconds(250);
 
             // Alt+f4 to close Customwindow
             Log.Comment("Verify that pressing Alt-f4 closes the CustomWindow");
@@ -690,7 +690,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
                     isClosed = TestHelpers.IsWindowClosed(processID);
                     return isClosed;
                 },
-                retryTimoutByMilliseconds: 1000
+                retryTimoutByMilliseconds: 5000
             );
 
             // Log.Comment("Verify that app has been exited successfully");

@@ -152,6 +152,17 @@ goto:parseArgs
 
 :doneParsingArgs
 
+rem Determine whether this is an internal (ADO) or OSS (public GitHub) build and expose it
+rem to the build scripts (e.g. PostInit.ps1). The .azuredevops folder exists only in the
+rem internal repo (it is excluded from the public mirror), matching the IsInternalWinUIBuild
+rem MSBuild property in eng\Versions.props. Use explicit true/false (never empty) so
+rem init.ps1's Invoke-CmdScript propagates the value.
+if exist "%RepoRoot%\.azuredevops" (
+    call :SetEnviromentVariable IsInternalWinUIBuild true
+) else (
+    call :SetEnviromentVariable IsInternalWinUIBuild false
+)
+
 rem If /envcheck is specified, verify that a full init has been run at least once.
 rem Without a prior full init, required tools and NuGet packages won't be available.
 if "%EnvCheck%"=="true" (

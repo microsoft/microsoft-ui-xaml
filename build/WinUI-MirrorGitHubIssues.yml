@@ -1,0 +1,40 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+- name: commitChanges
+  displayName: Commit changes
+  type: boolean
+  default: true
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+jobs:
+- job: Mirror
+  ${{ if eq(parameters.commitChanges, 'true') }}:
+    displayName: Mirror GitHub issues
+  ${{ if ne(parameters.commitChanges, 'true') }}:
+    displayName: Mirror GitHub issues (dry run - will not actually commit changes)
+  pool:
+    vmImage: 'windows-2022'
+  timeoutInMinutes: 300
+  variables:
+  - group: WinUI-InternalFeed
+  - name: GITHUB_PAT
+    value: $(GitHubPersonalAccessToken)
+  - name: ADO_PAT
+    value: $(AzureDevOpsPersonalAccessToken)
+  steps:
+  - task: powershell@2
+    displayName: Perform mirroring
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      OSAzureDevOpsWitApiUri: $(OSAzureDevOpsWitApiUri)
+      OSAzureDevOpsWorkItemsWebUri: $(OSAzureDevOpsWorkItemsWebUri)
+      OSAzureDevOpsMirrorQueryId: $(OSAzureDevOpsMirrorQueryId)
+    inputs:
+      targetType: filePath
+      filePath: $(Build.SourcesDirectory)\scripts\MirrorGitHubIssues.ps1
+      ${{ if eq(parameters.commitChanges, 'true') }}:
+        arguments: -AzureDevOpsRelease "$(AzureDevOpsRelease)" -AzureDevOpsOrganization "$(AzureDevOpsOrganization)" -AzureDevOpsProject "$(AzureDevOpsProject)" -GitHubPersonalAccessToken "$(GITHUB_PAT)" -UseSystemAccessToken -BaseAreaPath "$(AreaPath_Base)" -ControlsAreaPath "$(AreaPath_Controls)" -InputAreaPath "$(AreaPath_Input)" -IoAreaPath "$(AreaPath_IO)" -LifetimeAreaPath "$(AreaPath_Lifetime)" -MarkupAreaPath "$(AreaPath_Markup)" -MrtAreaPath "$(AreaPath_MRT)" -RenderingAreaPath "$(AreaPath_Rendering)" -OnBehalfOfIdentity "$(OnBehalfOfIdentity)" -CommitChanges
+      ${{ if ne(parameters.commitChanges, 'true') }}:
+        arguments: -AzureDevOpsRelease "$(AzureDevOpsRelease)" -AzureDevOpsOrganization "$(AzureDevOpsOrganization)" -AzureDevOpsProject "$(AzureDevOpsProject)" -GitHubPersonalAccessToken "$(GITHUB_PAT)" -UseSystemAccessToken -BaseAreaPath "$(AreaPath_Base)" -ControlsAreaPath "$(AreaPath_Controls)" -InputAreaPath "$(AreaPath_Input)" -IoAreaPath "$(AreaPath_IO)" -LifetimeAreaPath "$(AreaPath_Lifetime)" -MarkupAreaPath "$(AreaPath_Markup)" -MrtAreaPath "$(AreaPath_MRT)" -RenderingAreaPath "$(AreaPath_Rendering)" -OnBehalfOfIdentity "$(OnBehalfOfIdentity)"

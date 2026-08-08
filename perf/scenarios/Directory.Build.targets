@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Intentionally empty to avoid importing parent Directory.Build.targets -->
+
+  <!-- Work around to keep UWP samples building - add explicit reference to WinUI metadata. -->
+  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'UAP'" >
+    <ResolveAssemblyReferencesDependsOn>ReferenceWinUIUapMetadata;$(ResolveAssemblyReferencesDependsOn)</ResolveAssemblyReferencesDependsOn>
+  </PropertyGroup>
+  <Target Name="ReferenceWinUIUapMetadata">
+    <ItemGroup>
+      <_WinUIUapMetadata Include="$(_WinUIDllDir)..\..\..\lib\uap10.0\Microsoft.UI.Xaml.winmd" />
+      <Reference Include="@(_WinUIUapMetadata)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Enable appx manifest activatable class entries, for execution on RS5 (system reg-free WinRT added with 19H1) -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\eng\adhocappreg.targets"/>
+
+ <!-- Due to a recent change to include WinMDs when unpacking for WindowsAppSdkSelfContained
+    The build will fails
+    error APPX1112: Payload contains two or more files with the same destination path 'Microsoft.Foundation.winmd', but they have different content.
+    Source files:
+      [C:\__w\1\s\perf\scenarios\XAMLPerf.NavApp.Cs.WUX\XAMLPerf.NavApp.Cs.WUX.csproj]
+    error APPX1112: C:\__w\1\s\perf\scenarios\packages\microsoft.windowsappsdk\999.0.0-mock-3.0.0-zmain.240214.1-nightly-x64-release\lib\uap10.0.17763\Microsoft.Foundation.winmd
+      [C:\__w\1\s\perf\scenarios\XAMLPerf.NavApp.Cs.WUX\XAMLPerf.NavApp.Cs.WUX.csproj]
+    error APPX1112: C:\__w\1\s\BuildOutput\obj\amd64fre\perf\apps\XAMLPerf.NavApp.Cs.WUX\obj\MsixContent\Microsoft.Foundation.winmd
+      [C:\__w\1\s\perf\scenarios\XAMLPerf.NavApp.Cs.WUX\XAMLPerf.NavApp.Cs.WUX.csproj]
+    This error originated because the WindowsAppSDK FWP takes 18362 version of the winmd instead of 17763. But the apps targets 17763 hence the difference.
+    But we can use MicrosoftWindowsAppSDKFilesExcluded to exclude all the WinMDs from being unpacked preventing this issue. -->
+  <Target Name="ExcludeMicrosoftWindowsAppSDKPayloadFiles"
+      BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix"
+      DependsOnTargets="ExtractMicrosoftWindowsAppSDKMsixFiles" >
+    <ItemGroup>
+      <MicrosoftWindowsAppSDKFilesExcluded Include="$(MicrosoftWindowsAppSDKMsixContent)\**\*.winmd"/>
+    </ItemGroup>
+  </Target>
+</Project>

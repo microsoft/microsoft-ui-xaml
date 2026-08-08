@@ -170,6 +170,7 @@
       <PreprocessorDefinitions Condition="'$(XamlConsumesWinRT)'!='true'">%(PreprocessorDefinitions);_USE_DEV11_CRT;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)'!='Debug'">%(PreprocessorDefinitions);NDEBUG;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">%(PreprocessorDefinitions);DBG=1;</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(XamlProfilerEnabled)'=='true'">%(PreprocessorDefinitions);XAMLPROFILER_ENABLED=1;</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(_MSDeployUserAgent)'!=''">%(PreprocessorDefinitions) IS_LAB_BUILD;</PreprocessorDefinitions>
 
       <!--

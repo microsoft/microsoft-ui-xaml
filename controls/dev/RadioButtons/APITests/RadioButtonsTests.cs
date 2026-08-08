@@ -136,5 +136,102 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Normal", commonStatesGroup.CurrentState.Name);
             });
         }
+
+        [TestMethod]
+        public void VerifySelectionChangedArgsDoNotContainNullItems()
+        {
+            RadioButtons radioButtons = null;
+            var selectionChangedArgs = new List<SelectionChangedEventArgs>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = new List<string>() { "0", "1", "2", "3" };
+                radioButtons.SelectionChanged += (s, e) => selectionChangedArgs.Add(e);
+
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            // Local helper: verify every captured event so far has no null entries
+            // in either collection, then clear the buffer for the next scenario.
+            // The args collections are UI-thread objects, so access them on the UI thread.
+            void VerifyNoNullItemsAndClear()
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var args in selectionChangedArgs)
+                    {
+                        foreach (var item in args.AddedItems)
+                        {
+                            Verify.IsNotNull(item, "AddedItems should never contain a null entry.");
+                        }
+                        foreach (var item in args.RemovedItems)
+                        {
+                            Verify.IsNotNull(item, "RemovedItems should never contain a null entry.");
+                        }
+                    }
+                });
+                selectionChangedArgs.Clear();
+            }
+
+            // Scenario 1: first selection (nothing was selected before). RemovedItems
+            // must be empty (Count == 0), AddedItems must contain the newly selected item.
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 0;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(selectionChangedArgs.Count, 0, "SelectionChanged should have fired for the first selection.");
+                var lastArgs = selectionChangedArgs.Last();
+                Verify.AreEqual(0, lastArgs.RemovedItems.Count, "First selection should report no removed items.");
+                Verify.AreEqual(1, lastArgs.AddedItems.Count, "First selection should report exactly one added item.");
+            });
+            VerifyNoNullItemsAndClear();
+
+            // Scenario 2: switching selection to another item. No event should carry a null.
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 2;
+            });
+            IdleSynchronizer.Wait();
+            VerifyNoNullItemsAndClear();
+
+            // Scenario 3: out-of-range positive SelectedIndex. GetDataAtIndex returns
+            // null for such an index, but the args must not carry a null entry.
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 99;
+            });
+            IdleSynchronizer.Wait();
+            VerifyNoNullItemsAndClear();
+
+            // Scenario 4: deselect everything. AddedItems must be empty and no null entries.
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 0;
+            });
+            IdleSynchronizer.Wait();
+            selectionChangedArgs.Clear();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = -1;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var args in selectionChangedArgs)
+                {
+                    Verify.AreEqual(0, args.AddedItems.Count, "Deselecting should report no added items.");
+                }
+            });
+            VerifyNoNullItemsAndClear();
+        }
     }
 }

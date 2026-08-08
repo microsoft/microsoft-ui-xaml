@@ -20,6 +20,7 @@ this doc does not apply to them. This doc covers:
 * WinUIGallery
 * WinUICppDesktopSampleApp
 * WinUICsDesktopSampleApp
+* DisableXamlGeneratedMain
 
 In addition to the apps themselves, there is also test automation that is used to validate their functionality. See
 the Sample App Tests section of [testing-FAQ.md](../testing/testing-FAQ.md) for more details.

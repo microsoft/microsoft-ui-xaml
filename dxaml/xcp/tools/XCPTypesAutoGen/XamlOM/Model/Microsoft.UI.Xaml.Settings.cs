@@ -8,7 +8,7 @@ namespace Microsoft.UI.Xaml.Settings
     // Identifies an individual optional change that can be enabled or disabled
     // through XamlOptionalChanges. Each value corresponds to a specific feature,
     // fix, or behavioral change documented in the WinUI release notes.
-    [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 10)]
+    [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 11)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     public enum XamlChangeId
@@ -30,7 +30,7 @@ namespace Microsoft.UI.Xaml.Settings
     // WindowsXamlManager.InitializeForCurrentThread(). The state is
     // automatically locked at the entry point of whichever of those methods
     // is called first in the process.
-    [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 10, ForcePrimaryInterfaceGeneration = true)]
+    [Contract(typeof(Microsoft.UI.Xaml.WinUIContract), 11, ForcePrimaryInterfaceGeneration = true)]
     [DXamlIdlGroup("coretypes2")]
     [TypeTable(IsExcludedFromDXaml = true, IsExcludedFromCore = true)]
     [ClassFlags(HasBaseTypeInDXamlInterface = false)]

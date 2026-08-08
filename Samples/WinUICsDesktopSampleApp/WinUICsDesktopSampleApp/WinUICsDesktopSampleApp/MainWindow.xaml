@@ -1,0 +1,202 @@
+﻿<Window
+    x:Class="WinUICsDesktopSampleApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUICsDesktopSampleApp"
+    xmlns:helpers="using:AppTestAutomationHelpers"
+    xmlns:lib="using:WinUICsDesktopClassLibrary"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel x:Name="rootStackPanel">
+        <TextBlock Text="Custom title bar testing" x:Name="customTitleBarTest" Height="32"/>
+
+        <NavigationView
+        x:Name="navigationView"
+        PaneTitle="WinUICsDesktopSampleApp" IsBackButtonVisible="Collapsed" IsSettingsVisible="False" SelectionChanged="NavigationView_SelectionChanged"
+            PaneClosed="navigationView_PaneClosed">
+            <NavigationView.Header>
+                <TextBlock Text="Header" AutomationProperties.Name="safeElementToClick"  />
+            </NavigationView.Header>
+
+            <local:AttachedPropSampleExtensions.MyAttachedProp>
+                <TextBlock x:Name="elementNameBindingSource" Text="lorem ipsum" />
+            </local:AttachedPropSampleExtensions.MyAttachedProp>
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="navigationViewItemExternalControl" AutomationProperties.Name="navigationViewItemExternalControl" Content="External Control" Icon="Home"/>
+                <NavigationViewItem x:Name="navigationViewItemWindow" AutomationProperties.Name="navigationViewItemWindow" Content="Window" Icon="NewWindow" />
+                <NavigationViewItem x:Name="navigationViewItemBinding" AutomationProperties.Name="navigationViewItemBinding" Content="Binding" Icon="Switch" />
+                <NavigationViewItem x:Name="navigationViewItemKeyPress" AutomationProperties.Name="navigationViewItemKeyPress" Content="Key Press" Icon="NewWindow" />
+            </NavigationView.MenuItems>
+
+            <StackPanel Orientation="Vertical">
+                <Button Click="CustomTitleBar_Click" Content="Extend + toggle custom titlebar"/>
+                <helpers:TestAutomationHelpersPanel/>
+
+                <StackPanel x:Name="stackPanelExternalControl">
+                    <TextBox PlaceholderText="Type here" Margin="2"/>
+                    <lib:ButtonControl  x:Name="buttonControl" Margin="2"/>
+
+                    <!-- Test image resource loading -->
+                    <StackPanel x:Name="imageStackPanel" Orientation="Horizontal" Height="100">
+                        <Button x:Name="addImageButton" Content="AddImage" Click="addImageButton_Click" />
+                        <Image Source="ms-appx:///Images/TestImage1.png" Width="100" Height="100"/>
+                    </StackPanel>
+
+                    <Button Content="Create Window on same thread" x:Name="CreateWindowButton" AutomationProperties.Name="CreateWindowButton" Click="OnClickCreateWindow" Margin="2"/>
+                    <Button Content="Close Latest Window" x:Name="CloseLastestWindowButton" AutomationProperties.Name="CloseLastestWindowButton" Click="OnClickCloseLatestWindow" Margin="2"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Toggle TextBlock text (Ctrl-J)" AutomationProperties.Name="buttonAcceleratorToggleText" Click="OnClickToggleText" Margin="2"  >
+                            <Button.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="J" Modifiers="Control"/>
+                            </Button.KeyboardAccelerators>
+                        </Button>
+                        <TextBlock x:Name="AcceleratorTextBlock" AutomationProperties.Name="AcceleratorTextBlock" Text="lorem ipsum" />
+                    </StackPanel>
+                    <TextBlock Text="Other APIs" FontSize="16" FontWeight="SemiBold" Margin="2"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="buttonResetDODispatcher" AutomationProperties.Name="buttonResetDODispatcher" Content="Reset" Click="ButtonResetDODispatcher_Click" Margin="2"/>
+                        <Button x:Name="buttonGetDODispatcher" AutomationProperties.Name="buttonGetDODispatcher" Content="Get" Click="ButtonGetDODispatcher_Click" Margin="2"/>
+                        <TextBlock Text="DependencyObject.Dispatcher" VerticalAlignment="Center" Margin="2"/>
+                        <TextBlock x:Name="textBlockDODispatcher" VerticalAlignment="Center" AutomationProperties.Name="textBlockDODispatcher" Margin="2"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel x:Name="stackPanelWindow" Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="WindowName:" VerticalAlignment="Top" Margin="2,6,2,2"/>
+                        <ComboBox x:Name="comboBoxWindowName" AutomationProperties.Name="comboBoxWindowName" Margin="2" MinWidth="150" SelectedIndex="0" SelectionChanged="ComboBoxWindowName_SelectionChanged">
+                            <ComboBoxItem>MainWindow</ComboBoxItem>
+                            <ComboBoxItem>MarkupWindow</ComboBoxItem>
+                            <ComboBoxItem>RuntimeWindow</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="checkBoxAsyncWindowLifetimeOperation" AutomationProperties.Name="checkBoxAsyncWindowLifetimeOperation" Content="Async operations?" Margin="2" VerticalAlignment="Center"/>
+                        <Button x:Name="buttonCreateWindow" AutomationProperties.Name="buttonCreateWindow" Content="Create Window on same thread" Click="ButtonCreateWindow_Click" Margin="2" IsEnabled="False"/>
+                        <Button x:Name="buttonActivateWindow" AutomationProperties.Name="buttonActivateWindow" Content="Activate Window" Click="ButtonActivateWindow_Click" Margin="2" IsEnabled="False"/>
+                        <Button x:Name="buttonCloseWindow" AutomationProperties.Name="buttonCloseWindow" Content="Close Window" Click="ButtonCloseWindow_Click" Margin="2" IsEnabled="True"/>
+                        <Button x:Name="buttonDiscardWindow" AutomationProperties.Name="buttonDiscardWindow" Content="Discard Window" Click="ButtonDiscardWindow_Click" Margin="2" IsEnabled="False"/>
+                    </StackPanel>
+                    <TextBox Margin="2" x:Name="mainWindowTextBox" AutomationProperties.Name="mainWindowTextBox" Text="mainWindowTextBox" />
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel>
+                            <TextBlock Text="Properties" FontSize="16" FontWeight="SemiBold" Margin="2"/>
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="buttonResetBounds" AutomationProperties.Name="buttonResetBounds" Content="Reset" Click="ButtonResetBounds_Click" Margin="2"/>
+                                <Button x:Name="buttonGetBounds" AutomationProperties.Name="buttonGetBounds" Content="Get" Click="ButtonGetBounds_Click" Margin="2"/>
+                                <TextBlock Text="Bounds:" VerticalAlignment="Center" Margin="2"/>
+                                <TextBlock x:Name="textBlockBoundsX" VerticalAlignment="Center" AutomationProperties.Name="textBlockBoundsX" Margin="2"/>
+                                <TextBlock x:Name="textBlockBoundsY" VerticalAlignment="Center" AutomationProperties.Name="textBlockBoundsY" Margin="2"/>
+                                <TextBlock x:Name="textBlockBoundsWidth" VerticalAlignment="Center" AutomationProperties.Name="textBlockBoundsWidth" Margin="2"/>
+                                <TextBlock x:Name="textBlockBoundsHeight" VerticalAlignment="Center" AutomationProperties.Name="textBlockBoundsHeight" Margin="2"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="buttonResetVisible" AutomationProperties.Name="buttonResetVisible" Content="Reset" Click="ButtonResetVisible_Click" Margin="2"/>
+                                <Button x:Name="buttonGetVisible" AutomationProperties.Name="buttonGetVisible" Content="Get" Click="ButtonGetVisible_Click" Margin="2"/>
+                                <TextBlock Text="Visible:" VerticalAlignment="Center" Margin="2"/>
+                                <TextBlock x:Name="textBlockVisible" VerticalAlignment="Center" AutomationProperties.Name="textBlockVisible" Margin="2"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="buttonResetContent" AutomationProperties.Name="buttonResetContent" Content="Reset" Click="ButtonResetContent_Click" Margin="2"/>
+                                <Button x:Name="buttonGetContent" AutomationProperties.Name="buttonGetContent" Content="Get" Click="ButtonGetContent_Click" Margin="2"/>
+                                <TextBlock Text="Content:" VerticalAlignment="Center" Margin="2"/>
+                                <TextBlock x:Name="textBlockContent" VerticalAlignment="Center" AutomationProperties.Name="textBlockContent" Margin="2"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="buttonResetTitle" AutomationProperties.Name="buttonResetTitle" Content="Reset" Click="ButtonResetTitle_Click" Margin="2"/>
+                                <Button x:Name="buttonGetTitle" AutomationProperties.Name="buttonGetTitle" Content="Get" Click="ButtonGetTitle_Click" Margin="2"/>
+                                <Button x:Name="buttonSetTitle" AutomationProperties.Name="buttonSetTitle" Content="Set" Click="ButtonSetTitle_Click" Margin="2"/>
+                                <TextBlock Text="Title:" VerticalAlignment="Center" Margin="2"/>
+                                <TextBox x:Name="textBoxTitle" VerticalAlignment="Center" AutomationProperties.Name="textBoxTitle" Margin="2" MinWidth="200"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="buttonResetCoreWindow" AutomationProperties.Name="buttonResetCoreWindow" Content="Reset" Click="ButtonResetCoreWindow_Click" Margin="2"/>
+                                <Button x:Name="buttonGetCoreWindow" AutomationProperties.Name="buttonGetCoreWindow" Content="Get" Click="ButtonGetCoreWindow_Click" Margin="2"/>
+                                <TextBlock Text="CoreWindow:" VerticalAlignment="Center" Margin="2"/>
+                                <TextBlock x:Name="textBlockCoreWindow" VerticalAlignment="Center" AutomationProperties.Name="textBlockCoreWindow" Margin="2"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="buttonResetDispatcher" AutomationProperties.Name="buttonResetDispatcher" Content="Reset" Click="ButtonResetDispatcher_Click" Margin="2"/>
+                                <Button x:Name="buttonGetDispatcher" AutomationProperties.Name="buttonGetDispatcher" Content="Get" Click="ButtonGetDispatcher_Click" Margin="2"/>
+                                <TextBlock Text="Dispatcher:" VerticalAlignment="Center" Margin="2"/>
+                                <TextBlock x:Name="textBlockDispatcher" VerticalAlignment="Center" AutomationProperties.Name="textBlockDispatcher" Margin="2"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="buttonResetCompositor" AutomationProperties.Name="buttonResetCompositor" Content="Reset" Click="ButtonResetCompositor_Click" Margin="2"/>
+                                <Button x:Name="buttonGetCompositor" AutomationProperties.Name="buttonGetCompositor" Content="Get" Click="ButtonGetCompositor_Click" Margin="2"/>
+                                <TextBlock Text="Compositor:" VerticalAlignment="Center" Margin="2"/>
+                                <TextBlock x:Name="textBlockCompositor" VerticalAlignment="Center" AutomationProperties.Name="textBlockCompositor" Margin="2"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="buttonResetCurrent" AutomationProperties.Name="buttonResetCurrent" Content="Reset" Click="ButtonResetCurrent_Click" Margin="2"/>
+                                <Button x:Name="buttonGetCurrent" AutomationProperties.Name="buttonGetCurrent" Content="Get" Click="ButtonGetCurrent_Click" Margin="2"/>
+                                <TextBlock Text="Current:" VerticalAlignment="Center" Margin="2"/>
+                                <TextBlock x:Name="textBlockCurrent" VerticalAlignment="Center" AutomationProperties.Name="textBlockCurrent" Margin="2"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Methods" FontSize="16" FontWeight="SemiBold" Margin="2"/>
+
+                            <Button x:Name="buttonUseDispatcherQueue" AutomationProperties.Name="buttonUseDispatcherQueue" Content="Use DispatcherQueue" Click="ButtonUseDispatcherQueue_Click" Margin="2"/>
+
+                            <TextBlock Text="Other APIs" FontSize="16" FontWeight="SemiBold" Margin="2"/>
+
+                            <Button Content="Open ContentDialog in PopUp" AutomationProperties.Name="buttonOpenContentDialog" Click="OnOpenContentDialogButtonClick" Margin="2"/>
+                            <Button Content="Close ContentDialog in PopUp" AutomationProperties.Name="buttonCloseContentDialog" Click="OnCloseContentDialogButtonClick" Margin="2"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Events" FontSize="16" FontWeight="SemiBold" Margin="2"/>
+
+                            <Button x:Name="buttonClearEvents" AutomationProperties.Name="buttonClearEvents" Content="Clear" Click="ButtonClearEvents_Click" Margin="2"/>
+                            <TextBox x:Name="textBoxLastEvent" AutomationProperties.Name="textBoxLastEvent" Margin="2" MinWidth="200"/>
+                            <ComboBox x:Name="comboBoxEvents" AutomationProperties.Name="comboBoxEvents" Margin="2" MinWidth="200"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="buttonClearError" AutomationProperties.Name="buttonClearError" Content="Clear" Click="ButtonClearError_Click" Margin="2"/>
+                        <TextBlock Text="Error:" VerticalAlignment="Center" Margin="2"/>
+                        <TextBox x:Name="textBoxError" VerticalAlignment="Center" AutomationProperties.Name="textBoxError" IsReadOnly="True" Margin="2"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel x:Name="stackPanelBinding" Visibility="Collapsed">
+                    <TextBlock Text="{Binding Text,ElementName=elementNameBindingSource}" x:Name="elementNameBindingTextBlock" AutomationProperties.Name="elementNameBindingTextBlock"/>
+                </StackPanel>
+
+                <StackPanel x:Name="stackPanelKeyPress" Visibility="Collapsed">
+                    <TextBlock Text="Last key down detected was: none" x:Name="downTextBlock" AutomationProperties.Name="downTextBlock"/>
+                    <TextBlock Text="Last key up detected was: none" x:Name="upTextBlock" AutomationProperties.Name="upTextBlock"/>
+                    <Button x:Name="openPopupButton" AutomationProperties.Name="openPopupButton" Content="Open Popup" Click="openPopupButton_Click" Margin="2"/>
+                    <Popup x:Name="keyPressPopup" AutomationProperties.Name="keyPressPopup">
+                        <Button x:Name="popupButton" AutomationProperties.Name="popupButton" Content="This button doesn't do anything" Margin="2"/>
+                    </Popup>
+                </StackPanel>
+
+                <!-- Controls that use private APIs -->
+                <Pivot>
+                    <Pivot.Items>
+                        <PivotItem Header="Item 1">
+                            <TextBlock Text="Item 1" />
+                        </PivotItem>
+                        <PivotItem Header="Item 2">
+                            <TextBlock Text="Item 2" />
+                        </PivotItem>
+                    </Pivot.Items>
+                </Pivot>
+
+                <DatePicker />
+
+                <!-- Regression test for x:Bind in ResourceDictionary NullReferenceException. See control source code
+                     for details. -->
+                <lib:UserControlWithXBindResource />
+            </StackPanel>
+        </NavigationView>
+    </StackPanel>
+</Window>
+
+

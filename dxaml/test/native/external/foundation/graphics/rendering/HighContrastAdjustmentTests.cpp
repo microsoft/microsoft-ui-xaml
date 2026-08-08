@@ -13,6 +13,7 @@
 #include <UIAutomationCore.h>
 #include <WUCRenderingScopeGuard.h>
 #include <RuntimeEnabledFeatureOverride.h>
+#include <TestComparisonGuards.h>
 
 using namespace ::Windows::UI;
 using namespace Microsoft::UI::Xaml;
@@ -338,6 +339,16 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
         void HighContrastAdjustmentTests::VerifySelectedTextBoxDCompTree()
         {
+            // Win11 25H2 changed the default accent color from #0078D7 to #0078D4.
+            if (IsOSBuildAtLeast(26200))
+            {
+                TestServices::Utilities->SetDCompXmlVariable(L"AccentBlue", L"rgb {0, 0.4706, 0.8314}");
+            }
+            else
+            {
+                TestServices::Utilities->SetDCompXmlVariable(L"AccentBlue", L"rgb {0, 0.4706, 0.8431}");
+            }
+
             TestCleanupWrapper cleanup([]()
             {
                 TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();

@@ -1,0 +1,59 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<ResourceDictionary
+    x:Class="BindTestbed.Templates"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:model="using:BindTestbedModel"
+    xmlns:local="using:BindTestbed">
+
+    <DataTemplate x:Key="FullNameTemplateInRDFile" x:DataType="model:IEmployee">
+        <!-- x:Bind on the root of the template, causes field to be WeakRef instead -->
+        <TextBlock Text="{x:Bind LastName, Mode=TwoWay}" x:Phase="1"/>
+    </DataTemplate>
+
+    <DataTemplate x:Name="TemplateWithUserControl" x:DataType="model:IEmployee">
+        <Grid>
+            <StackPanel>
+                <local:MyUserControl1 Tag="{x:Bind FirstName, Mode=OneWay}" Visibility="{x:Bind Visibility, Converter={StaticResource BoolToVisibility}}"/>
+                <TextBlock x:Name="namedTextBlock" Text="this text should be displayed twice" />
+                <TextBlock Text="{x:Bind namedTextBlock.Text, Mode=OneWay}" />
+
+                <TextBlock Text="the three TextBlocks below here should always have matching text" />
+                <TextBlock x:Name="outOfScopeBlock" Text="{x:Bind LastName, Mode=OneWay}" />
+                <TextBox>
+                    <TextBox.Template>
+                        <ControlTemplate TargetType="TextBox">
+                            <StackPanel>
+                                <TextBlock Text="{x:Bind outOfScopeBlock.Text, Mode=OneWay}" />
+                                <TextBox>
+                                    <TextBox.Template>
+                                        <ControlTemplate TargetType="TextBox">
+                                            <StackPanel>
+                                                <TextBlock Text="{x:Bind outOfScopeBlock.Text, Mode=OneWay}" />
+                                                <TextBlock Text="{x:Bind forwardReference.Text, Mode=TwoWay}" />
+                                            </StackPanel>
+                                        </ControlTemplate>
+                                    </TextBox.Template>
+                                </TextBox>
+                            </StackPanel>
+                        </ControlTemplate>
+                    </TextBox.Template>
+                </TextBox>
+
+                <TextBlock x:Name="forwardReference" Text="forward reference text" />
+            </StackPanel>
+        </Grid>
+    </DataTemplate>
+
+    <ControlTemplate TargetType="Button" x:Name="ControlTemplateInRDFile" x:DefaultBindMode="OneWay">
+        <Border BorderBrush="{x:Bind BorderBrush}" BorderThickness="{x:Bind BorderThickness}">
+            <StackPanel>
+                <TextBlock Text="{x:Bind Content}" Foreground="{x:Bind Foreground}"/>
+                <TextBlock x:Name="namedTextBlock" Text="this text should be displayed twice (control template)" />
+                <TextBlock Text="{x:Bind namedTextBlock.Text, Mode=OneWay}" />
+            </StackPanel>
+        </Border>
+    </ControlTemplate>
+
+</ResourceDictionary>

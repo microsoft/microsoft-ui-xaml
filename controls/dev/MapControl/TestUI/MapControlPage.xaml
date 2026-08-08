@@ -17,6 +17,9 @@
                     <PasswordBox Width="300" x:Name="MapServiceToken" PlaceholderText="Map Service Token"/>
                     <Button Content="Go" Click="GoButton_Click" />
                 </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Set Bogus Token" AutomationProperties.AutomationId="SetBogusTokenButton" Click="SetBogusTokenButton_Click" />
+                </StackPanel>
                 <controls:MapControl x:Name="myMap" 
                                     Width="800" 
                                     Height="600" 
@@ -64,6 +67,7 @@
 
                 <TextBlock>Output</TextBlock>
                 <TextBox x:Name="output" AutomationProperties.AutomationId="output" IsReadOnly="true"/>
+                <Button Content="Clear Output" AutomationProperties.AutomationId="ClearOutputButton" Click="ClearOutputButton_Click" />
             </StackPanel>
         </StackPanel>
     </Grid>

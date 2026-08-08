@@ -4,94 +4,94 @@
 #pragma once
 
 #include "InkCanvas.g.h"
-#include "InkCanvas.properties.h"
 #include "dcomp.h"
 #include <windows.ui.input.inking.h>
 #include <inkpresenterdesktop.h>
+#include <map>
+#include <memory>
 
-struct ThreadData;  
+// Both the OS Windows.UI.Input.Inking types and the MUXC types are folded into winrt::,
+// and the name InkPresenter collides. Alias the two namespaces so every use is
+// unambiguous: 'inking' for the OS type, 'muxc' for our projected type.
+namespace inking = winrt::Windows::UI::Input::Inking;
+namespace muxc = winrt::Microsoft::UI::Xaml::Controls;
+
+// Shared per-UI-thread data (the ink host + its dedicated thread, and the DComp device).
+// Defined in InkCanvas.cpp; InkCanvas holds it and hands the ink host to the InkPresenter proxy.
+struct ThreadData;
 
 class InkCanvas :
-    public ReferenceTracker<InkCanvas, winrt::implementation::InkCanvasT>,
-    public InkCanvasProperties
+    public ReferenceTracker<InkCanvas, winrt::implementation::InkCanvasT>
 {
 public:
     InkCanvas();
     virtual ~InkCanvas();
 
-   winrt::InkPresenter InkPresenter() {
-        return m_inkPresenter;
-    };
+    // Public API surface — mirrors Windows.UI.Xaml.Controls.InkCanvas: only the
+    // InkPresenter is exposed and all ink configuration flows through it. Returns our
+    // marshaling InkPresenter (see InkPresenter.h) rather than the sealed OS presenter,
+    // which is only serviceable on the ink thread. Created lazily and cached so callers
+    // observe a stable instance, just like WUXC.
+    muxc::InkPresenter InkPresenter();
  
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
-    void OnIsEnabledPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     winrt::AutomationPeer OnCreateAutomationPeer();
-
-    winrt::IAsyncAction QueueInkPresenterWorkItem(winrt::DoInkPresenterWork workItem);
 
 private:
 
-    void CreateInkPresenter();
+    void EnsureInkPresenter();
     void UpdateInkPresenterSize();
 
     void AttachToVisualLink();
     void DetachFromVisualLink();
 
+    // Compositor fork: IsSystemCompositor() detects (via CompositionEngine::GetForSystemEngine)
+    // whether the process runs on the system composition engine. A system-backed process splices the
+    // ink visual under a lifted MUC visual (AttachToSystemCompositor); a lifted process bridges it
+    // into the XAML tree via ContentExternalOutputLink (AttachToLiftedCompositor).
+    void EnsureCompositionDevice();
+    bool IsSystemCompositor();
+    void AttachToSystemCompositor();
+    void AttachToLiftedCompositor();
+    // Shared by both compositor paths: creates the ink visual on the shared DComp device and binds
+    // it to the presenter. Called first by AttachToSystemCompositor/AttachToLiftedCompositor, before
+    // their compositor-specific rooting.
+    void AttachInkVisualToPresenter();
+    // Sizes the lifted PlacementVisual to the control's physical-pixel bounds (lifted path only).
+    void PositionInkVisual();
+
     std::shared_ptr<ThreadData> m_threadData;
  
     HWND m_hostHwnd = NULL;
     winrt::com_ptr<IDCompositionVisual> m_inkRootVisual;
-    winrt::InkPresenter m_inkPresenter{ nullptr };
 
+    // Lazily created marshaling presenter returned from InkPresenter(). This proxy is the sole
+    // owner of the thread-affine OS InkPresenter (stored on it, created on the ink thread); the
+    // InkCanvas never holds the OS presenter directly and reaches it only through this proxy.
+    muxc::InkPresenter m_inkPresenterProxy{ nullptr };
+
+    // ContentExternalOutputLink host for the lifted compositor path; null on the system path.
     winrt::IContentExternalOutputLink m_systemVisualLink{ nullptr };
+
+    // Writer-side DComp target from the system splice; roots the ink visual under the MUC visual and
+    // is released in DetachFromVisualLink. Null on the lifted path.
+    winrt::com_ptr<IDCompositionTarget> m_systemDCompTarget;
 
     winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
     winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
     winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
-    winrt::FrameworkElement::SizeChanged_revoker m_sizeChanged_revoker;
-
-    // These methods (and struct) are all in support of the Composition Target method of
-    // doing things.  They all can just go away and calls to them be removed when we
-    // get the bug fixed for the visual link method and get that code path tested and enabled.
-protected:
-    bool UseSystemVisualLink();
-    bool AttachToCompositionTarget();
-    void DetachFromCompositionTarget();
-    void PositionInkVisual();
-
+    winrt::FrameworkElement::SizeChanged_revoker m_sizeChangedRevoker;
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedRevoker;
 
-    struct TargetData
-    {
-        static thread_local std::map<HWND, std::weak_ptr<TargetData>> m_tlsMap;
-        winrt::com_ptr<IDCompositionTarget> m_compositionTarget;
-        winrt::com_ptr<IDCompositionVisual> m_targetRootVisual;
-        HWND m_hwnd;
+    // Last physical-pixel size pushed to the lifted PlacementVisual; lets PositionInkVisual skip
+    // redundant work on the frequent LayoutUpdated event. Reset on (re)attach.
+    float m_lastPlacementWidth = -1;
+    float m_lastPlacementHeight = -1;
 
-        static std::shared_ptr<TargetData> Get(HWND hwnd)
-        {
-            // Have we previously initialized target data for this hwnd.
-            auto iter = m_tlsMap.find(hwnd);
-            if (iter != m_tlsMap.end())
-            {
-                return iter->second.lock();
-            }
-            // No, so initialize it
-            auto targetData = std::make_shared<TargetData>(hwnd);
-            m_tlsMap[hwnd] = targetData;
-            return targetData;
-        }
+    // Set during DetachFromVisualLink so queued ink-thread lambdas short-circuit instead of
+    // touching torn-down visual resources. Data ops (see QueueInkPresenterWorkItem) do NOT gate on
+    // this. AttachToVisualLink clears it for the rapid Loaded/Unloaded re-attach case.
+    std::atomic<bool> m_isDetached{ false };
 
-        TargetData(HWND hwnd) : m_hwnd(hwnd)
-        {
-        }
-
-        ~TargetData()
-        {
-            m_tlsMap.erase(m_hwnd);
-        }
-    };
-    std::shared_ptr<TargetData> m_targetData;
-
- };
+};

@@ -132,8 +132,8 @@ _Check_return_ HRESULT TextBoxPlaceholderTextHelper::UpdatePlaceholderTextPresen
         wrl::ComPtr<xaml::IDependencyObject> spPlaceholderTextAsDO;
         IFC_RETURN(placeholderTextAsUIElement->QueryInterface(IID_PPV_ARGS(&spPlaceholderTextAsDO)));
 
-        // To ensure that the placeholder text cannot be focused through narrator, we should set the AccessibilityView to Raw
-        IFC_RETURN(spAutomationPropertiesStatic->SetAccessibilityView(spPlaceholderTextAsDO.Get(), xaml_automation_peers::AccessibilityView::AccessibilityView_Raw));
+        // Visible placeholder text must participate in the UIA Control view.
+        IFC_RETURN(spAutomationPropertiesStatic->SetAccessibilityView(spPlaceholderTextAsDO.Get(), xaml_automation_peers::AccessibilityView::AccessibilityView_Control));
     }
     else
     {

@@ -1,0 +1,27 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  artifactName: ''
+  targetPath: ''
+  itemPattern: ''
+  enableUseOutputFromPreviousBuild: false
+
+steps:
+- ${{ if eq(parameters.enableUseOutputFromPreviousBuild, 'true') }}:
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      source: specific
+      runVersion: specific
+      project: $(System.TeamProjectId)
+      pipeline: $(_useBuildOutputFromPipeline)
+      pipelineId: $(_useBuildOutputFromBuildId)
+      artifactName: ${{ parameters.artifactName }}
+      targetPath: ${{ parameters.targetPath }}
+      itemPattern: ${{ parameters.itemPattern }}
+
+- ${{ if ne(parameters.enableUseOutputFromPreviousBuild, 'true') }}:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        artifactName: ${{ parameters.artifactName }}
+        targetPath: ${{ parameters.targetPath }}
+        itemPattern: ${{ parameters.itemPattern }}

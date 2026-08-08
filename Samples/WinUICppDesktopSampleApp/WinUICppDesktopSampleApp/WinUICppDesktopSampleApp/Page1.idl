@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace WinUICppDesktopSampleApp
+{
+    [default_interface]
+    unsealed runtimeclass Page1 : Microsoft.UI.Xaml.Controls.Page
+    {
+        Page1();
+    }
+}

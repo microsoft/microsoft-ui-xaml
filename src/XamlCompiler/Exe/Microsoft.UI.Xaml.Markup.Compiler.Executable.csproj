@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Microsoft.Windows.UI.Xaml.Build.Tasks</RootNamespace>
+    <RootNamespace>Microsoft.UI.Xaml.Markup.Compiler</RootNamespace>
     <AssemblyName>XamlCompiler</AssemblyName>
     <TargetFrameworks>net472</TargetFrameworks>
     <TargetDestination>$(MarkupCompilerDestinationPath).Executable</TargetDestination>

@@ -9,6 +9,23 @@
     the projects that produce these assemblies. That way you are guaranteed that a clean build of the project will succeed. However,
     there are cases where that isn't always possible, or doesn't make sense, and so we maintain the lists here.
   -->
+  <PropertyGroup>
+    <FeatureChartEnabled Condition="'$(FeatureChartEnabled)' == ''">false</FeatureChartEnabled>
+    <ChartSourceRoot>$(ProjectRoot)controls\dev\dll-chart</ChartSourceRoot>
+    <ChartSourceProject>$(ChartSourceRoot)\Microsoft.UI.Xaml.Controls.Chart.vcxproj</ChartSourceProject>
+  </PropertyGroup>
+
+  <!-- Chart is internal source excluded from the public mirror, so a build that opts in must
+       actually have it, and it must never be enabled for a final release. -->
+  <Target Name="ValidateChartFeatureSource"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(FeatureChartEnabled)' == 'true'">
+    <Error Condition="'$(MUXFinalRelease)' == 'true'"
+           Text="FeatureChartEnabled cannot be true for a final-release build." />
+    <Error Condition="!Exists('$(ChartSourceProject)')"
+           Text="FeatureChartEnabled requires the internal Chart source at $(ChartSourceProject)." />
+  </Target>
+
   <ItemGroup>
     <MuxWinMDs Include="$(XamlBinaryPath)\xcp\dxaml\idl\winrt\main\microsoft.ui.xaml.winmd"/>
     <!-- We may want to remove the private WinMD in the future -->
@@ -42,6 +59,10 @@
 
     <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.dll</ImplementationDll>
+    </MuxControlsWinMD>
+    <!-- Gated off until public-winmd dedup + framework-MSIX wiring lands. -->
+    <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="'$(IncludeTabularControlsInPublicMetadata)' == 'true'">
+      <ImplementationDll>Microsoft.UI.Xaml.Controls.Tabular.dll</ImplementationDll>
     </MuxControlsWinMD>
 
     <WinUIEditWinMD Include="$(WinUIDetailsLibPath)\Microsoft.UI.Text.winmd">

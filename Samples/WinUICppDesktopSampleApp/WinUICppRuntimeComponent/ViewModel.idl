@@ -1,0 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace WinUICppRuntimeComponent
+{
+    [bindable]
+    [default_interface]
+    runtimeclass ViewModel : Microsoft.UI.Xaml.DependencyObject
+    {
+        ViewModel();
+        String Text;
+        Boolean BoolProperty;
+    }
+}

@@ -1,0 +1,9 @@
+<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<InstalledMSBuildPath>$(ProgramFiles)\MSBuild\$(BUILD_PRODUCT_VER)\Bin\MSBuild.exe</InstalledMSBuildPath>
+		<UnRazzlePath>$(DepotRoot)\Bliss\Tools\UnRazzle.cmd</UnRazzlePath>
+	</PropertyGroup>
+</Project>
+

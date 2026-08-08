@@ -167,7 +167,7 @@ namespace Microsoft.UI.Xaml.Markup
     }
 
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 1, ForcePrimaryInterfaceGeneration = true)]
-    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_2_2)]
     [PartialFactory]
     [DXamlIdlGroup("coretypes2")]
     [Guids(ClassGuid = "5907bcb4-ff97-47ad-8049-fa5b5da86032")]
@@ -301,7 +301,7 @@ namespace Microsoft.UI.Xaml.Markup
         }
     }
 
-    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.WinAppSDK_2_0)]
     [TypeTable(IsExcludedFromNewTypeTable = true)]
     [DXamlIdlGroup("coretypes2")]
     public interface IXamlCondition

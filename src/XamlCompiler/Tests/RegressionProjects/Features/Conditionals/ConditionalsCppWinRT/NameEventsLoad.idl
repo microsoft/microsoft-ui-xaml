@@ -1,0 +1,15 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace ConditionalsCppWinRT
+{
+    runtimeclass NameEventsLoad : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        NameEventsLoad();
+
+        void Button_Click(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Button_Click_V1(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Button_Click_V2(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Button_Click_V3(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+        void Button_Click_notV3(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+    }
+}

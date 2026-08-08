@@ -109,7 +109,7 @@
                     </TransformMatrix>
                     <Visual Tag="ContentVisual">
                       <wucSpriteVisual SizeX="138" SizeY="29" BorderMode="Soft" OffsetX="69" OffsetY="0" OffsetZ="0">
-                        <ColorBrush Color="rgb {0, 0.4706, 0.8431}" />
+                        <ColorBrush Color="$$AccentBlue$$" />
                       </wucSpriteVisual>
                       <wucSpriteVisual SizeX="53" SizeY="16" BorderMode="Hard" OffsetX="1" OffsetY="6" OffsetZ="0">
                         <MaskBrush>

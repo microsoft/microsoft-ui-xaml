@@ -288,6 +288,14 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Description", L"When a popup increases in size after being opened, we should not be swapping its calculated position.")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(InitializeWithIsOpenTrueDoesNotCrash)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a Popup initialized with IsOpen='True' during parsing (IsOpen set before the child) does not crash and opens once it enters the live tree.")
+        END_TEST_METHOD()
+
+        BEGIN_TEST_METHOD(InitializeWithChildBeforeIsOpenDoesNotCrash)
+            TEST_METHOD_PROPERTY(L"Description", L"Verify a Popup whose Child is parsed before IsOpen='True' (property-element ordering) does not crash and opens once it enters the live tree.")
+        END_TEST_METHOD()
+
     private:
         void PopupRTLHelper(bool isWindowed);
         void WindowedPopupOpenAndCloseHelper();

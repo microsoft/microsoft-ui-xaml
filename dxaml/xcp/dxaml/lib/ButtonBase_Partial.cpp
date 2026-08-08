@@ -409,6 +409,7 @@ _Check_return_ HRESULT ButtonBase::ReleasePointerCaptureInternal(
     }
 
     m_bIsPointerCaptured = FALSE;
+    m_bIsPointerLeftButtonDown = FALSE;
 
 Cleanup:
     RRETURN(hr);

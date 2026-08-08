@@ -19,8 +19,31 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 {
 <# if (Model.CodeInfo.IsApplication) #>
 <# {#>
+<#     // When DISABLE_XAML_GENERATED_MAIN is defined, the generated entry point helper defers #>
+<#     // construction of the application to the partial method implemented below. We only emit #>
+<#     // that implementation (and therefore the "new App()" call) when the application class #>
+<#     // actually declares a parameterless constructor, so the helper still compiles when a #>
+<#     // developer that defines DISABLE_XAML_GENERATED_MAIN omits it. #>
+<#     bool hasParameterlessCtor = true; #>
+<#     var appClassType = Model.CodeInfo.ClassType; #>
+<#     if (appClassType != null && appClassType.UnderlyingType != null) #>
+<#     { #>
+<#         var ctor = appClassType.UnderlyingType.GetConstructor(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, null, System.Type.EmptyTypes, null); #>
+<#         hasParameterlessCtor = ctor != null; #>
+<#     } #>
     partial class <#=Model.CodeInfo.ClassName.ShortName#> : <#=Globalize(Model.CodeInfo.BaseTypeName)#>
     {
+<#     if (hasParameterlessCtor) #>
+<#     { #>
+#if DISABLE_XAML_GENERATED_MAIN
+        <#=GeneratedCodeAttribute#>
+        <#=DebuggerNonUserCodeAttribute#>
+        static partial void _XamlGeneratedCreateApplicationInstance()
+        {
+            new <#=Model.CodeInfo.ClassName.ShortName#>();
+        }
+#endif
+<#     } #>
     }
 <# }#>
 <# else #>
@@ -125,7 +148,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 Output_PushDeprecated(element.Type.IsDeprecated()); #>
                 {
 <#+                 Output_ApiInformationCall_Push(element.ApiInformation, Indent.TwoTabs); #>
-                    <#=objectInitName#> = <#=ObjectCast(element.Type.ToString(), "target")#>;
+                    <#=objectInitName#> = <#=ObjectCast(element.Type, "target")#>;
 <#+                 foreach (EventAssignment ev in element.EventAssignments) #>
 <#+                 { #>
 <#+                     Output_ApiInformationCall_Push(ev.ApiInformation, Indent.TwoTabs); #>
@@ -544,7 +567,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 Output_ApiInformationCall_Push(element.ApiInformation, Indent.ThreeTabs); #>
 <#+                 if (element.IsWeakRef)#>
 <#+                 {#>
-                        this.<#=element.ObjectCodeName#> = new <#=Globalize(WeakReferenceTypeName)#>(<#=ObjectCast(element.Type.ToString(), "target")#>);
+                        this.<#=element.ObjectCodeName#> = new <#=Globalize(WeakReferenceTypeName)#>(<#=ObjectCast(element.Type, "target")#>);
 <#+                 }#>
 <#+                 else if (element.Type.IsDerivedFromControlTemplate())#>
 <#+                 {#>
@@ -552,7 +575,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 }#>
 <#+                 else#>
 <#+                 {#>
-                        this.<#=element.ObjectCodeName#> = <#=ObjectCast(element.Type.ToString(), "target")#>;
+                        this.<#=element.ObjectCodeName#> = <#=ObjectCast(element.Type, "target")#>;
 <#+                 }#>
 <#+                 if (element.IsUsedByOtherScopes) #>
 <#+                 { #>
@@ -563,7 +586,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 {#>
 <#+                     Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+                     Output_NullCheckedEventAssignment(evt); #>
-                        (<#=ObjectCast(element.Type.ToString(), "target")#>).<#=evt.MemberName#> += <#=evt.EventHandlerCodeName#>;
+                        (<#=ObjectCast(element.Type, "target")#>).<#=evt.MemberName#> += <#=evt.EventHandlerCodeName#>;
 <#+                     Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+                 }#>
 <#+                 if (element.CanBeInstantiatedLater && (element.HasBindAssignments || element.HasBoundEventAssignments))#>
@@ -823,7 +846,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
                         break;
 <#+                     } #>
                 }
-                this.Update_(<#=ObjectCast(bindUniverse.RootStep.ValueType.ToString(), "item")#>, 1 << phase);
+                this.Update_(<#=ObjectCast(bindUniverse.RootStep.ValueType, "item")#>, 1 << phase);
             }
 
             public void Recycle()
@@ -975,7 +998,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+             }#>
                 if (newDataRoot != null)
                 {
-                    this.dataRoot = <#=ObjectCast(bindUniverse.DataRootType.ToString(), "newDataRoot")#>;
+                    this.dataRoot = <#=ObjectCast(bindUniverse.DataRootType, "newDataRoot")#>;
                     return true;
                 }
                 return false;

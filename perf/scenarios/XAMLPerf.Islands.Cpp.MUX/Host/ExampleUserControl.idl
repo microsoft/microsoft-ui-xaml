@@ -1,0 +1,8 @@
+namespace IslandSimple
+{
+    [default_interface]
+    runtimeclass ExampleUserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        ExampleUserControl();
+    }
+}

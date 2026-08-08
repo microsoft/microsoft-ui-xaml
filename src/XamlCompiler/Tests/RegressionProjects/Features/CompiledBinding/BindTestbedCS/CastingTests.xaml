@@ -1,0 +1,104 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl x:Class="BindTestbed.CastingTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    >
+
+    <UserControl.DataContext>
+        <local:CastingTestsVM Username="Robert" />
+    </UserControl.DataContext>
+
+    <ScrollViewer>
+        <StackPanel Margin="30" >
+
+            <TextBlock Style="{StaticResource Section}" Text="Casts" />
+            <TextBlock Style="{StaticResource Note}" Text="None should update; all should build" />
+
+            <!-- root implicit string and explicit Thickness -->
+            <TextBlock Text="{x:Bind}" Margin="{x:Bind (Thickness), Mode=OneTime}" />
+            <TextBlock Text="{x:Bind}" Margin="{x:Bind (Thickness), Mode=OneTime}" />
+            <!--<TextBlock Text="{x:Bind}" Margin="{x:Bind (Thickness), Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- object to string -->
+            <TextBlock Text="{x:Bind (x:String)DataContext, Mode=OneTime}" />
+            <TextBlock Text="{x:Bind (x:String)DataContext, Mode=OneWay}" />
+            <!--<TextBlock Text="{x:Bind (x:String)DataContext, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- object to local with property -->
+            <TextBlock Text="{x:Bind ((local:CastingTestsVM)DataContext).Username, Mode=OneTime}" />
+            <TextBlock Text="{x:Bind ((local:CastingTestsVM)DataContext).Username, Mode=OneWay}" />
+            <TextBlock Text="{x:Bind ((local:CastingTestsVM)DataContext).Username, Mode=TwoWay}" />
+
+            <!-- bool to bool --><!-- of course these should work -->
+            <TextBlock Text="bool from bool" IsTapEnabled="{x:Bind ((local:CastingTestsVM)DataContext).IsChecked, Mode=OneTime}" />
+            <TextBlock Text="bool from bool" IsTapEnabled="{x:Bind ((local:CastingTestsVM)DataContext).IsChecked, Mode=OneWay}" />
+            <TextBlock Text="bool from bool" IsTapEnabled="{x:Bind ((local:CastingTestsVM)DataContext).IsChecked, Mode=TwoWay}" />
+
+            <!-- set bool? from bool -->
+            <CheckBox Content="bool? from bool" IsChecked="{x:Bind ((local:CastingTestsVM)DataContext).IsChecked, Mode=OneTime}" />
+            <CheckBox Content="bool? from bool" IsChecked="{x:Bind ((local:CastingTestsVM)DataContext).IsChecked, Mode=OneWay}" />
+            <CheckBox Content="bool? from bool" IsChecked="{x:Bind ((local:CastingTestsVM)DataContext).IsChecked, Mode=TwoWay}" />
+
+            <!-- set bool from bool? -->
+            <TextBlock Text="bool from bool?" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneTime}" />
+            <TextBlock Text="bool from bool?" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneWay}" />
+            <!--<TextBlock Text="bool from bool?" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- bool to visibility without cast -->
+            <TextBlock Text="Visibility from bool" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsVisible, Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsVisible, Mode=OneWay}" />
+            <!--<TextBlock Text="Visibility from bool" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsVisible, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- bool to visibility with cast -->
+            <TextBlock Text="Visibility from bool" Visibility="{x:Bind (Visibility)((local:CastingTestsVM)DataContext).IsVisible, Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool" Visibility="{x:Bind (Visibility)((local:CastingTestsVM)DataContext).IsVisible, Mode=OneWay}" />
+            <!--<TextBlock Text="Visibility from bool" Visibility="{x:Bind (Visibility)((local:CastingTestsVM)DataContext).IsVisible, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- bool? to visibility without cast -->
+            <TextBlock Text="Visibility from bool?" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool?" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneWay}" />
+            <!--<TextBlock Text="Visibility from bool?" Visibility="{x:Bind ((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- bool? to visibility with cast -->
+            <TextBlock Text="Visibility from bool?" Visibility="{x:Bind (Visibility)((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneTime}" />
+            <TextBlock Text="Visibility from bool?" Visibility="{x:Bind (Visibility)((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=OneWay}" />
+            <!--<TextBlock Text="Visibility from bool?" Visibility="{x:Bind (Visibility)((local:CastingTestsVM)DataContext).IsVisibleNullable, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- visibility to bool -->
+            <TextBlock Text="bool from Visbility" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).VisibilityValue, Mode=OneTime}" />
+            <TextBlock Text="bool from Visbility" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).VisibilityValue, Mode=OneWay}" />
+            <!--<TextBlock Text="bool from Visbility" IsTapEnabled="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).VisibilityValue, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- visibility to bool? -->
+            <CheckBox Content="bool? from Visibility" IsChecked="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).VisibilityValue, Mode=OneTime}" />
+            <CheckBox Content="bool? from Visibility" IsChecked="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).VisibilityValue, Mode=OneWay}" />
+            <!--<CheckBox Content="bool? from Visibility" IsChecked="{x:Bind (x:Boolean)((local:CastingTestsVM)DataContext).VisibilityValue, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- double to int -->
+            <Button Content="int from double" TabIndex="{x:Bind (x:Int32)((local:CastingTestsVM)DataContext).DoubleVal, Mode=OneTime}" />
+            <Button Content="int from double" TabIndex="{x:Bind (x:Int32)((local:CastingTestsVM)DataContext).DoubleVal, Mode=OneWay}" />
+            <!--<Button Content="int from double" TabIndex="{x:Bind (x:Int32)((local:CastingTestsVM)DataContext).DoubleVal, Mode=TwoWay}" />--><!-- fails by design -->
+
+            <!-- int to double -->
+            <TextBlock Text="double from int" FontSize="{x:Bind ((local:CastingTestsVM)DataContext).IntVal, Mode=OneTime}" />
+            <TextBlock Text="double from int" FontSize="{x:Bind ((local:CastingTestsVM)DataContext).IntVal, Mode=OneWay}" />
+            <TextBlock Text="double from int" FontSize="{x:Bind ((local:CastingTestsVM)DataContext).IntVal, Mode=TwoWay}" />
+
+            <!-- Regression: github #4787 / #7986. Non-primitive source (Money) to primitive target (int)
+                 via a user-defined explicit operator. x:Bind auto-applies only *implicit* conversions,
+                 so an *explicit* op_Explicit conversion requires an explicit cast (otherwise WMC1121).
+                 The (x:Int32) cast invokes Money's `explicit operator int` and routes through the
+                 CppWinRTCast fallthrough, which must stay non-fatal so this C# project still builds. -->
+            <Button Content="int from Money (op_Explicit)" TabIndex="{x:Bind (x:Int32)((local:CastingTestsVM)DataContext).MoneyProp, Mode=OneTime}" />
+            <Button Content="int from Money (op_Explicit)" TabIndex="{x:Bind (x:Int32)((local:CastingTestsVM)DataContext).MoneyProp, Mode=OneWay}" />
+
+            <!-- yes, functions work too -->
+            <TextBlock Text="{x:Bind ((local:CastingTestsVM)DataContext).CombineStringWithInt(((local:CastingTestsVM)DataContext).Prefix, (x:Int32)((local:CastingTestsVM)DataContext).Postfix)}" />
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>

@@ -1,0 +1,140 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+trigger: none
+name: $(versionFinal)
+
+parameters: # parameters are shown up in ADO UI in a build queue time
+- name: MUXFinalRelease
+  type: boolean
+  default: false
+- name: runArm64Tests
+  displayName: "Enable running tests on arm64"
+  type: boolean
+  default: true
+- name: runStaticAnalysis
+  displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
+  type: boolean
+  default: false
+- name: QuickBuild
+  displayName: "Quick build: x86chk only, skip scenario tests"
+  type: boolean
+  default: false
+
+variables:
+- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+- group: WinUI-Variable-Library
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: OneBranch.Pipelines/GovernedTemplates
+      ref: refs/heads/main
+    - repository: WindowsAppSDKConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+    - repository: WindowsAppSDKVersionConfig
+      type: git
+      name: ProjectReunion/WindowsAppSDKConfig
+      ref: refs/heads/main
+
+extends:
+  template: v2/Microsoft.NonOfficial.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: 'windows_undocked' # windows undocked
+    globalsdl:
+      tsa:
+        enabled: false
+      enableXFGCheck: false
+      codeql:
+        tsandjs:
+          enabled: true
+        python:
+          enabled: false
+        psscriptanalyzer:
+          enable: true
+      prefast:
+        ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+          enabled: true
+        ${{ else }}:
+          enabled: false
+        break: true
+      apiscan:
+        # We are enabling APIScan on a per job basis, as this scanner is not applicable to most jobs.
+        enabled: false
+        # Note: Once existing errors are cleared, consider setting this to true.
+        break: false
+      binskim:
+        enabled: true
+        analyzeTargetGlob: $(BinskimExclusion)
+        break: true
+      policheck:
+        exclusionsFile: $(Build.SourcesDirectory)\.config\PolicheckExclusions.xml
+
+    stages:
+    - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
+      parameters:
+        ${{ if eq(parameters.QuickBuild, true) }}:
+          pipelineKind: QuickPR
+        ${{ else }}:
+          pipelineKind: PR
+        ${{ if eq(parameters.QuickBuild, true) }}:
+          buildScenarioApps: false
+        ${{ else }}:
+          buildScenarioApps: true
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    - ${{ if eq(parameters.QuickBuild, false) }}:
+      - template: AzurePipelinesTemplates\WinUI-TestWinUIComponentPackageUpdate-Stage.yml
+        parameters:
+          pipelineKind: PR
+          buildScenarioApps: false
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    - ${{ if and(eq(parameters.MUXFinalRelease, 'false'), eq(parameters.QuickBuild, false)) }}:
+      - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
+        parameters:
+          stageName: Build_MUXFinalRelease
+          pipelineKind: PR-2
+          buildScenarioApps: false
+          MUXFinalRelease: true
+          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+    - template: AzurePipelinesTemplates\WinUI-RunTests-Stage.yml
+      parameters:
+        ${{ if eq(parameters.QuickBuild, true) }}:
+          pipelineKind: QuickPR
+        ${{ else }}:
+          pipelineKind: PR
+
+    - ${{ if eq(parameters.QuickBuild, false) }}:
+      - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
+        parameters:
+          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+
+      - template: AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml
+        parameters:
+          pipelineKind: PR
+          dependsOn: Build
+          runArm64Tests: ${{ parameters.runArm64Tests }}
+
+    - template: AzurePipelinesTemplates\WinUI-AbandonLiftedIxpValidationPullRequest-Stage.yml
+      parameters:
+        ${{ if eq(parameters.QuickBuild, true) }}:
+          dependsOn:
+          - RunTests
+        ${{ else }}:
+          dependsOn:
+          - RunTests
+          - RunScenarioTests
+          - RunStaticTests

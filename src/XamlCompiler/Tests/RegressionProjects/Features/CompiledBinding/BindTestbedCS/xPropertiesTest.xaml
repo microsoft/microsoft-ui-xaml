@@ -1,0 +1,42 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbed.xPropertiesTest"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:BindTestbedModel"
+    
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+    <x:Properties>
+        <x:Property Name="TestStr" Type="x:String" DefaultValue="default value" />
+        <x:Property Name="TestInt" Type="x:Int32" DefaultValue="2" IsReadOnly="True" />
+        <x:Property Name="TestComplexDefaultValue" Type="model:Circle">
+            <model:Circle Diameter="300" TestStringProperty="test string prop default\ttab"/>
+        </x:Property>
+        <x:Property Name="TestMultilineDefaultValue" Type="Button">
+            <Button>
+                hello world!
+            </Button>
+        </x:Property>
+        <x:Property Name="TestCreateFromString" Type="model:Diameter" DefaultValue="400" />
+    </x:Properties>
+    <Grid>
+        <ScrollViewer>
+            <StackPanel>
+                <TextBlock Style="{StaticResource Note}">TestComplexDefaultValue test: this should display 300</TextBlock>
+                <TextBlock Text="{x:Bind TestComplexDefaultValue.Diameter.Width}" x:Name="testText1"/>
+
+                <TextBlock Style="{StaticResource Note}">TestComplexDefaultValue test: this should display 'test string prop default\ttab</TextBlock>
+                <TextBlock Text="{x:Bind TestComplexDefaultValue.TestStringProperty}" x:Name="testText2"/>
+
+                <TextBlock Style="{StaticResource Note}">TestCreateFromString test: this should display 400</TextBlock>
+                <TextBlock Text="{x:Bind TestCreateFromString.Width}" x:Name="testText3"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

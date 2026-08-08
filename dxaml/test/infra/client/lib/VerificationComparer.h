@@ -7,6 +7,8 @@ struct IWICImagingFactory;
 struct IWICBitmapSource;
 
 #include "ImageBuffer.h"
+#include <map>
+#include <string>
 
 namespace Private {
     namespace Infrastructure {
@@ -26,6 +28,9 @@ namespace Private {
         };
 
         // Byte-by-byte comparison with diff output.
+        // Supports $$variable$$ substitution in master files for OS-dependent values
+        // (e.g. Surface CRC hashes, accent colors). Tests call SetDCompXmlVariable()
+        // to set values; the comparer replaces $$name$$ placeholders before comparing.
 
         class ByteByByteComparer : public VerificationComparer
         {
@@ -37,9 +42,13 @@ namespace Private {
             void OutputAdditionalResults(
                 bool isXmlFile) override;
 
+            // Set variables for $$name$$ substitution in master files.
+            void SetVariables(const std::map<std::wstring, std::wstring>& vars) { m_variables = vars; }
+
         private:
             WEX::Common::String m_file1;
             WEX::Common::String m_file2;
+            std::map<std::wstring, std::wstring> m_variables;
         };
         
         // Image data comparison with diff output.
@@ -52,6 +61,11 @@ namespace Private {
 
             void SetErrorFilePath(
                 _In_ const wrl::Wrappers::HStringReference& errorFilePath);
+
+            // Per-channel pixel tolerance. Pixels that differ by at most this
+            // amount in every channel (R, G, B, A) are treated as matching.
+            // Default is 0 (exact match).
+            void SetTolerance(int tolerance) { m_tolerance = tolerance; }
 
             bool CompareFiles(
                 _In_ const wrl::Wrappers::HStringReference& s1,
@@ -70,6 +84,8 @@ namespace Private {
 
             ImageBuffer m_diffBuffer;
             ImageBuffer m_errorBuffer;
+
+            int m_tolerance = 0;
         };
 
         // Validation of XML tree dumps.

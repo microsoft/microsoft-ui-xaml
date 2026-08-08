@@ -1,0 +1,7 @@
+﻿<Application
+    x:Class="XAMLPerf_TextBlockApp_Cpp_MUX.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XAMLPerf_TextBlockApp_Cpp_MUX">
+
+</Application>

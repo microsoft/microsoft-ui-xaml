@@ -1,0 +1,172 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbed.LoadAndCreateFromStringTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbed"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:model="using:BindTestbedModel"
+    Tag="This is a tag">
+    <!--TODO: Convert BindTestbedModelCX to C++/WinRT-->
+    <!--xmlns:modelCx="using:BindTestbedCXModel"-->
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <Style x:Key="Stylish" TargetType="ListViewItem">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <Grid x:Name="StylishGrid" Background="Transparent">
+                                <!-- This is a regression test for code introduced with x:Load -->
+                                <!-- We test that we correctly handle connectionId objects that belong in a Control Tamplate -->
+                                <TextBlock x:Name="StylishTextBlock" Tapped="Button_Click"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+
+        <ScrollViewer>
+            <StackPanel Margin="30" Grid.Row="0">
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                </StackPanel>
+
+                <TextBlock Text="Basic x:Load without x:Bind" Style="{StaticResource Section}"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Load Outer" Click="LoadOuterPanel_Click"/>
+                    <Button Content="Unload Outer" Click="UnloadOuterPanel_Click"/>
+                    <Button Content="Load Inner" x:Name="LoadInnerPanel" Click="LoadInnerPanel_Click"/>
+                    <Button Content="Unload Inner" Click="UnloadInnerPanel_Click"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource Note}">Numbers below should be:</TextBlock>
+                    <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}" />
+                </StackPanel>
+
+                <StackPanel x:Load="False" x:Name="OuterPanel">
+                    <TextBlock Text="I'm a textblock with no name or bindings" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Note}">TextBlock/OneWay/Unnamed</TextBlock>
+                        <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Style="{StaticResource Note}">TextBlock/OneWay/Named</TextBlock>
+                        <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}" x:Name="TextBox1"/>
+                    </StackPanel>
+                    <StackPanel x:Load="False" x:Name="InnerPanel" Margin="20,0,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Note}">TextBlock/OneWay/Unnamed</TextBlock>
+                            <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource Note}">TextBlock/OneWay/Named</TextBlock>
+                            <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}" x:Name="TextBox2"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock Text="Simple x:Load with x:Bind" Style="{StaticResource Section}"/>
+
+                <TextBlock Text="One time visible" x:Name="YouShouldSeeMe" x:Load="{x:Bind Model.BoolPropWithINPCDefaultTrue, Mode=OneTime}"/>
+                <TextBlock Text="You should not see me" x:Name="YouShouldNotSeeMe" x:Load="{x:Bind Model.BoolPropWithINPC, Mode=OneTime}"/>
+
+                <StackPanel x:Name="UberStackPanel" x:Load="{x:Bind Model.BoolPropWithINPC, Mode=OneWay}">
+                    <TextBlock Style="{StaticResource Note}">I apear and dissapear as you click the Update button</TextBlock>
+                    <TextBlock x:Name="ANamedTextBlock" Text="A static, visible, named, TextBlock"/>
+                    <Button Click="Button_Click" Content="FindName('AnUnloadedTextBlock')"/>
+                    <TextBlock x:Name="AnUnloadedTextBlock" x:Load="False" Text="I was unloaded and now I'm back"/>
+                </StackPanel>
+
+                <TextBlock Text="Nested x:Load with x:Bind" Style="{StaticResource Section}"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <Button Click="{x:Bind Model.NestedLoad.Option1Click}" Background="{x:Bind model:NestedLoadModel.ColorToBrush(Model.NestedLoad.Option1Background), Mode=OneWay}">Option 1</Button>
+                    <Button Click="{x:Bind Model.NestedLoad.Option2Click}" Background="{x:Bind model:NestedLoadModel.ColorToBrush(Model.NestedLoad.Option2Background), Mode=OneWay}">Option 2</Button>
+                    <Button Click="{x:Bind Model.NestedLoad.Option3Click}" Background="{x:Bind model:NestedLoadModel.ColorToBrush(Model.NestedLoad.Option3Background), Mode=OneWay}">Option 3</Button>
+                </StackPanel>
+                <StackPanel BorderBrush="{x:Bind model:NestedLoadModel.ColorToBrush(Model.NestedLoad.Option2Background), Mode=OneWay}" BorderThickness="3" Padding="10"
+                    x:Load="{x:Bind model:NestedLoadModel.IsGreen(Model.NestedLoad.Option1Background), Mode=OneWay}" x:Name="nestedOuterPanel">
+                    <TextBlock>Outer pannel: Inner should also show if Option2 is green</TextBlock>
+                    <StackPanel BorderBrush="{x:Bind model:NestedLoadModel.ColorToBrush(Model.NestedLoad.Option3Background), Mode=OneWay}"  BorderThickness="1" Padding="10"
+                        x:Load="{x:Bind model:NestedLoadModel.IsGreen(Model.NestedLoad.Option2Background), Mode=OneWay}" x:Name="nestedInnerPanel">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock>Inner pannel</TextBlock>
+                            <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}" />
+                            <Grid x:Name="NamedElementBetweenXLoads">
+                                <StackPanel BorderBrush="{x:Bind model:NestedLoadModel.ColorToBrush(Model.NestedLoad.Option3Background), Mode=OneWay}"  BorderThickness="1" Padding="10"
+                                x:Load="{x:Bind model:NestedLoadModel.IsGreen(Model.NestedLoad.Option3Background), Mode=OneWay}" x:Name="innerMostNestedPanel">
+                                    <TextBlock Text="Inner most nested panel" x:Name="innerMostNestedPanelStaticText"/>
+                                    <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}" />
+                                    <Grid x:Name="AnotherNamedElementBetweenXLoads">
+                                        <Button x:Name="ButtonWithXLoadOn" x:Load="{x:Bind Model.BoolPropWithINPC, Mode=OneTime}" Content="Another x:Load after x:name"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock>Next lines should say 'Inner most nested panel' when the inner most panel is loaded</TextBlock>
+                    <TextBlock Text="{x:Bind innerMostNestedPanelStaticText.Text, Mode=OneTime, FallbackValue='Unloaded OneTime'}"/>
+                    <TextBlock Text="{x:Bind innerMostNestedPanelStaticText.Text, Mode=OneWay, FallbackValue='Unloaded OneWay'}"/>
+                </StackPanel>
+
+
+                <TextBlock Text="Other x:Load scenarios" Style="{StaticResource Section}"/>
+
+                <TextBlock Style="{StaticResource Note}">The following text block should always be visible</TextBlock>
+                <TextBlock Text="I am a visible FallbackValue OneTime x:Load" x:Name="FallbackValueLoad" x:Load="{x:Bind Model.NullEmployee.IsManager, FallbackValue=True, Mode=OneTime}"/>
+
+                <TextBlock Text="x:Load in DataTemplate" Style="{StaticResource Section}"/>
+                <ListView Width="200" ItemsSource="{x:Bind Model.Employees}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="model:IEmployee">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text=">>" x:Load="{x:Bind IsEmployeeOfTheMonth, Mode=OneWay}" x:Name="IsEOM"/>
+                                <TextBlock Text="{x:Bind Name}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <TextBlock Text="CreateFromString Tests" Style="{StaticResource Section}"/>
+
+                <model:Circle Diameter="300" x:Name="test1" Height="10" TestStringProperty=""/>
+                <model:Circle Diameter="{x:Bind test1.TestStringProperty,TargetNullValue=375, FallbackValue=395}" x:Name="test2" Height="10" TestStringProperty="50"/>
+                <model:Circle Diameter="{x:Bind test2.TestStringProperty}" x:Name="test3" Height="10"/>
+                <model:Circle Diameter="{x:Bind Model.StringPropertyDP, Mode=OneWay}" x:Name="test4" Height="10" />
+                <!--<modelCx:StarCx Coords="1,2" x:Name="test5" TestString="1,2" Height="10"/>
+                <modelCx:StarCx Coords="{x:Bind test5.TestString}" x:Name="test6" Height="10"/>-->
+
+                <TextBlock Style="{StaticResource Note}">TargetNullValue Binding test: this should display 375</TextBlock>
+                <TextBlock Text="{x:Bind test2.Diameter.Width}" x:Name="testText2"/>
+
+                <TextBlock Style="{StaticResource Note}">Regular Binding test: this should display 50</TextBlock>
+                <TextBlock Text="{x:Bind test3.Diameter.Width}" x:Name="testText3"/>
+                <TextBlock Style="{StaticResource Note}">OneWay Binding test: the two values below should always match</TextBlock>
+                <TextBlock Style="{StaticResource Note}">and also change when clicking the buttons at the top.</TextBlock>
+                <TextBlock Style="{StaticResource Note}">Click UpdateValues to make them initially appear.</TextBlock>
+                <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}"></TextBlock>
+                <TextBlock Text="{x:Bind test4.Diameter.Width, Mode=OneWay}" x:Name="testText4"/>
+
+                <TextBlock Style="{StaticResource Note}">Value struct binding tests: these should display 1</TextBlock>
+                <!--<TextBlock Text="{x:Bind test5.Coords.x}" x:Name="testText5"/>
+                <TextBlock Text="{x:Bind test6.Coords.x}" x:Name="testText6"/>-->
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

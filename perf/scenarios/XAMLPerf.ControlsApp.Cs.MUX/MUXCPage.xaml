@@ -1,0 +1,73 @@
+﻿<Page
+    x:Class="XAMLPerf.ControlsApp.Cs.MUX.MUXCPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XAMLPerf.ControlsApp.Cs.MUX"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <StackLayout x:Name="VerticalStackLayout" Orientation="Vertical" Spacing="8"/>
+        <DataTemplate x:Key="ItemTemplate" x:DataType="local:Item">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Width="200" Text="{x:Bind Mountain}" />
+                <TextBlock Width="80" Text="{x:Bind Height_m}" />
+                <TextBlock Text="{x:Bind Range}" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate x:Key="HeaderTemplate">
+            <TextBlock FontSize="30" FontWeight="Bold" Text="{Binding}"/>
+        </DataTemplate>
+    </Page.Resources>
+    <Grid>
+        <NavigationView x:Name="navView"
+                        Header="This is Header Text"
+                        IsSettingsVisible="True"
+                        IsBackButtonVisible="Visible"
+                        HeaderTemplate="{StaticResource HeaderTemplate}"
+                        OpenPaneLength="200">
+            <NavigationView.Resources>
+                <TeachingTip x:Key="teachingTip"
+                             Target="{x:Bind navViewPlay}"
+                             Title="Title"
+                             Subtitle="Subtitle"
+                             PreferredPlacement="Right"
+                             Content="Hello!">
+                    <TeachingTip.HeroContent>
+                        <Image Source="Assets\StoreLogo.png" />
+                    </TeachingTip.HeroContent>
+                </TeachingTip>
+            </NavigationView.Resources>
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="navViewPlay" Content="Menu Item1" Icon="Play" />
+                <NavigationViewItem Content="Menu Item2" Icon="Save" />
+                <NavigationViewItem Content="Menu Item3" Icon="Refresh" />
+                <NavigationViewItem Content="Menu Item4" Icon="Download" />
+            </NavigationView.MenuItems>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer>
+                    <ItemsRepeater Layout="{StaticResource VerticalStackLayout}"
+                                   ItemsSource="{x:Bind Items}"
+                                   ItemTemplate="{StaticResource ItemTemplate}"/>
+                </ScrollViewer>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ProgressRing Margin="4" IsActive="True"/>
+                    <ProgressBar x:Name="progressBar" Grid.Column="1" Margin="4" Maximum="60" />
+                </Grid>
+            </Grid>
+            <NavigationView.PaneFooter>
+                <TextBlock>Pane footer content</TextBlock>
+            </NavigationView.PaneFooter>
+        </NavigationView>
+    </Grid>
+</Page>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <ProjectRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..\..\..'))</ProjectRoot>
+    <ScenariosRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)\..'))</ScenariosRoot>
+    <ScenariosPackagesPath>$(ScenariosRoot)\packages</ScenariosPackagesPath>
+
+    <ProjectBaseOutputPath>$(ProjectRoot)\BuildOutput\obj\$(_BuildArch.ToLowerInvariant())$(_BuildType)\perf\apps\$(ProjectName)\</ProjectBaseOutputPath>
+    <CommonIntermediateOutputPath>$(ProjectBaseOutputPath)obj\</CommonIntermediateOutputPath>
+    <CommonOutputPath>$(ProjectBaseOutputPath)bin\</CommonOutputPath>
+
+    <AppxPackageDir>$(ProjectRoot)\BuildOutput\bin\$(_BuildArch.ToLowerInvariant())$(_BuildType)\Test\perf\apps\</AppxPackageDir>
+
+    <MSBuildProjectExtensionsPath>$(CommonIntermediateOutputPath)</MSBuildProjectExtensionsPath>
+    <GeneratedFilesDir>$(CommonIntermediateOutputPath)generated\</GeneratedFilesDir>
+  </PropertyGroup>
+
+  <!-- <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <IntermediateOutputPath>$(CommonIntermediateOutputPath)</IntermediateOutputPath>
+    <OutputPath>$(CommonOutputPath)</OutputPath>
+  </PropertyGroup> -->
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+    <IntDir>$(CommonIntermediateOutputPath)</IntDir>
+    <OutDir>$(AppxPackageDir)$(ProjectName)\</OutDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <IntermediateOutputPath>$(CommonIntermediateOutputPath)</IntermediateOutputPath>
+    <OutputPath>$(CommonOutputPath)</OutputPath>
+    <IntDir>$(CommonIntermediateOutputPath)</IntDir>
+    <OutDir>$(CommonOutputPath)</OutDir>
+  </PropertyGroup>
+</Project>

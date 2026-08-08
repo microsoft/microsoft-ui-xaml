@@ -1410,7 +1410,7 @@ namespace Microsoft.UI.Xaml.Controls
         Close = 3,
     }
 
-    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.LatestVersion)]
+    [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("Controls2")]
     [FrameworkTypePattern]
     [EnumFlags(HasTypeConverter = true, IsExcludedFromNative = true)]

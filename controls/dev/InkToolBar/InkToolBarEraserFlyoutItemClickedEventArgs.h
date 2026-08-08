@@ -7,15 +7,26 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarEraserFlyoutItemClickedEventArgs.g.h"
+#include "InkToolbarEraserFlyoutItemClickedEventArgs.g.h"
 
-class InkToolBarEraserFlyoutItemClickedEventArgs :
-    public ReferenceTracker<InkToolBarEraserFlyoutItemClickedEventArgs, winrt::implementation::InkToolBarEraserFlyoutItemClickedEventArgsT>
+// This event args type is a transient, value-like object passed synchronously to handlers. It is
+// not a DependencyObject (see InkToolbar.idl), so it must NOT use ReferenceTracker, which derives
+// from DependencyObject and breaks winrt::make. Derive directly from the generated projection base
+// so the args can actually be constructed and raised.
+class InkToolbarEraserFlyoutItemClickedEventArgs :
+    public winrt::implementation::InkToolbarEraserFlyoutItemClickedEventArgsT<InkToolbarEraserFlyoutItemClickedEventArgs>
 {
 public:
 
-    winrt::InkToolBarEraserFlyoutItemKind EraserFlyoutItemKind() { winrt::throw_hresult(E_NOTIMPL); }
-    bool Handled() { winrt::throw_hresult(E_NOTIMPL); }
-    void Handled(bool value) { winrt::throw_hresult(E_NOTIMPL); } 
+    InkToolbarEraserFlyoutItemClickedEventArgs(winrt::InkToolbarEraserFlyoutItemKind kind)
+        : m_kind(kind) {}
+
+    winrt::InkToolbarEraserFlyoutItemKind EraserFlyoutItemKind() { return m_kind; }
+    bool Handled() { return m_handled; }
+    void Handled(bool value) { m_handled = value; }
+
+private:
+    winrt::InkToolbarEraserFlyoutItemKind m_kind{ winrt::InkToolbarEraserFlyoutItemKind::StrokeEraser };
+    bool m_handled{ false };
 };
 
