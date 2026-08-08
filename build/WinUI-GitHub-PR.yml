@@ -73,7 +73,9 @@ extends:
     platform:
       name: 'windows_undocked'
     git:
-      submodules: true
+      # Recursively check out submodules so the public github.com/microsoft/WinUI-Gallery
+      # submodule (Samples/WinUIGallery) is available for GitHub PR sample-build validation.
+      submodules: recursive
     globalsdl:
       tsa:
         enabled: false
