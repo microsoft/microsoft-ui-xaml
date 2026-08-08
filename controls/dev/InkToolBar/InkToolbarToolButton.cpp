@@ -57,6 +57,9 @@ void InkToolbarToolButton::OnApplyTemplate()
         winrt::ToolTipService::SetToolTip(*this, winrt::box_value(localizedToolName));
         winrt::AutomationProperties::SetName(*this, localizedToolName);
     }
+
+    // Run derived-class template work (pen palette, eraser flyout, etc.). See OnApplyTemplateCore.
+    OnApplyTemplateCore();
 }
 
 winrt::AutomationPeer InkToolbarToolButton::OnCreateAutomationPeer()

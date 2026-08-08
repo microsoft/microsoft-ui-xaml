@@ -50,12 +50,56 @@ namespace
         }
         return nullptr;
     }
+
+    // Build one L3 flyout item (glyph icon + name column) in code. The item resolves its control
+    // template from the InkToolbarFlyoutItem default style (generic scope) via SetDefaultStyleKey.
+    // Lift adaptation: UWP inflated these items from the InkToolbarStencilButtonFlyoutContentTemplate
+    // DataTemplate scoped in generic.xaml; the lift builds the identical two-column tree in code
+    // because a keyed DataTemplate lookup from XamlControlsResources / Application.Current.Resources
+    // is unreliable (see InkToolbarEraserButton.cpp).
+    winrt::InkToolbarFlyoutItem MakeFlyoutItem(
+        std::wstring_view name,
+        std::wstring_view automationId,
+        wchar_t const* glyph)
+    {
+        winrt::InkToolbarFlyoutItem item{};
+        item.Name(winrt::hstring{ name });
+        item.Kind(winrt::InkToolbarFlyoutItemKind::RadioCheck);
+        winrt::AutomationProperties::SetAutomationId(item, winrt::hstring{ automationId });
+
+        winrt::Grid grid{};
+        winrt::ColumnDefinition iconColumn{};
+        iconColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
+        winrt::ColumnDefinition textColumn{};
+        textColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
+        grid.ColumnDefinitions().Append(iconColumn);
+        grid.ColumnDefinitions().Append(textColumn);
+
+        winrt::TextBlock icon{};
+        icon.FontFamily(winrt::FontFamily{ L"Segoe Fluent Icons, Segoe MDL2 Assets" });
+        icon.FontSize(16.0);
+        icon.Text(winrt::hstring{ glyph });
+        icon.HorizontalAlignment(winrt::HorizontalAlignment::Center);
+        icon.VerticalAlignment(winrt::VerticalAlignment::Center);
+        icon.Margin(winrt::ThicknessHelper::FromLengths(12, 0, 12, 0));
+        winrt::Grid::SetColumn(icon, 0);
+        grid.Children().Append(icon);
+
+        // The localized item name is a resource gap in the lift (empty); the TextBlock is still
+        // created so the layout matches the UWP two-column template.
+        winrt::TextBlock text{};
+        text.VerticalAlignment(winrt::VerticalAlignment::Center);
+        text.Margin(winrt::ThicknessHelper::FromLengths(0, 0, 12, 0));
+        winrt::Grid::SetColumn(text, 1);
+        grid.Children().Append(text);
+
+        item.Content(grid);
+        return item;
+    }
 }
 
-void InkToolbarStencilButton::OnApplyTemplate()
+void InkToolbarStencilButton::OnApplyTemplateCore()
 {
-    InkToolbarMenuButton::OnApplyTemplate();
-
     // Is<Stencil>ItemVisible takes precedence over SelectedStencil at template time (see UWP comment):
     // if the developer hides the ruler, keep only the protractor rather than re-adding the ruler.
     bool isRulerVisible = IsRulerItemVisible();
@@ -109,25 +153,19 @@ void InkToolbarStencilButton::OnApplyTemplate()
         }
     }
 
-    // Load the stencil flyout content template into the attached flyout.
-    if (auto resources = Resources())
+    // Build the stencil L3 flyout content in code and set it on the attached flyout (created empty in
+    // the InkToolbarMenuButton ctor). The named items (StencilRuler/StencilProtractor) are what
+    // SetupL3 / FindChild wire up to the stencil Checked handling and radio group.
+    if (auto flyoutBase = winrt::FlyoutBase::GetAttachedFlyout(*this))
     {
-        auto key = winrt::box_value(L"InkToolbarStencilButtonFlyoutContentTemplate");
-        if (resources.HasKey(key))
+        if (auto flyout = flyoutBase.try_as<winrt::Flyout>())
         {
-            if (auto stencilFlyoutTemplate = resources.Lookup(key).try_as<winrt::DataTemplate>())
-            {
-                if (auto flyoutBase = winrt::FlyoutBase::GetAttachedFlyout(*this))
-                {
-                    if (auto flyout = flyoutBase.try_as<winrt::Flyout>())
-                    {
-                        if (auto flyoutContent = stencilFlyoutTemplate.LoadContent().try_as<winrt::UIElement>())
-                        {
-                            flyout.Content(flyoutContent);
-                        }
-                    }
-                }
-            }
+            winrt::StackPanel panel{};
+            panel.Name(L"InkToolbarStencilButtonFlyoutContent");
+            panel.Margin(winrt::ThicknessHelper::FromLengths(0, 1, 0, 1));
+            panel.Children().Append(MakeFlyoutItem(STENCIL_RULERITEMNAME, L"InkToolbarStencilRuler", RULER_ICON));
+            panel.Children().Append(MakeFlyoutItem(STENCIL_PROTRACTORITEMNAME, L"InkToolbarStencilProtractor", PROTRACTOR_ICON));
+            flyout.Content(panel);
         }
     }
 }

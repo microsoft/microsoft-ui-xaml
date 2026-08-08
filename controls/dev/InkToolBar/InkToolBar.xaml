@@ -185,9 +185,6 @@
   <x:Double x:Key="InkToolbarButtonWidth">36</x:Double>
   <x:Double x:Key="InkToolbarButtonHeight">36</x:Double>
   <x:Double x:Key="InkToolbarButtonFontSize">16</x:Double>
-  <Thickness x:Key="InkToolbarFlyoutPanelMargin">0,1,0,1</Thickness>
-  <Thickness x:Key="InkToolbarFlyoutItemIconMargin">12,0,12,0</Thickness>
-  <Thickness x:Key="InkToolbarFlyoutItemTextBlockMargin">0,0,12,0</Thickness>
   <Style x:Key="InkToolbarGlyphFontStyle" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
     <Setter Property="FontSize" Value="{StaticResource InkToolbarButtonFontSize}" />
@@ -251,23 +248,8 @@
     <Setter Property="Text" Value="&#xE96E;" />
     <Setter Property="HighContrastAdjustment" Value="None" />
   </Style>
-  <Style x:Key="InkToolbarFlyoutItemContentTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
-    <Setter Property="HorizontalAlignment" Value="Left" />
-    <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="HighContrastAdjustment" Value="None" />
-  </Style>
   <Style x:Key="InkToolbarPenConfigurationControlTextStyle" TargetType="TextBlock" BasedOn="{StaticResource BodyTextBlockStyle}">
     <Setter Property="FontWeight" Value="SemiBold" />
-  </Style>
-  <Style x:Key="InkToolbarFlyoutItemSelectionAccentStyle" TargetType="Rectangle">
-    <Setter Property="Opacity" Value="0" />
-    <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="HorizontalAlignment" Value="Left" />
-    <Setter Property="Height" Value="16" />
-    <Setter Property="Width" Value="3" />
-    <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
-    <Setter Property="RadiusX" Value="1.5" />
-    <Setter Property="RadiusY" Value="1.5" />
   </Style>
   <Style TargetType="InkToolbarBallpointPenButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
     <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarBallpointPenButton" />
@@ -874,7 +856,23 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <Style x:Key="InkToolbarFlyoutItemStyle" TargetType="InkToolbarFlyoutItem">
+
+  <!-- Flyout (L3) item resources. The eraser/stencil flyout content is built in code (see
+       InkToolbarEraserButton.cpp / InkToolbarStencilButton.cpp); those InkToolbarFlyoutItem
+       instances resolve THIS implicit default style via SetDefaultStyleKey from the generic
+       (DefaultStyle) scope. The keyed selection-accent style is referenced by the item template. -->
+  <Style x:Key="InkToolbarFlyoutItemSelectionAccentStyle" TargetType="Rectangle">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Width" Value="3" />
+    <Setter Property="Fill" Value="{ThemeResource InkToolbarAccentColorForegroundThemeBrush}" />
+    <Setter Property="RadiusX" Value="1.5" />
+    <Setter Property="RadiusY" Value="1.5" />
+  </Style>
+
+  <Style TargetType="InkToolbarFlyoutItem">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -959,58 +957,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <DataTemplate x:Key="InkToolbarEraserButtonFlyoutContentTemplate">
-    <StackPanel x:Name="InkToolbarEraserButtonFlyoutContent" Margin="{StaticResource InkToolbarFlyoutPanelMargin}">
-      <InkToolbarFlyoutItem x:Name="StrokeEraser" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarStrokeEraser" Style="{StaticResource InkToolbarFlyoutItemStyle}">
-        <InkToolbarFlyoutItem.Content>
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="auto" />
-              <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock x:Name="StrokeEraserIcon" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="&#xF128;" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{StaticResource InkToolbarFlyoutItemIconMargin}" />
-            <TextBlock x:Name="StrokeEraserName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}" Text="" TextAlignment="Center" Grid.Column="1" Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}" />
-          </Grid>
-        </InkToolbarFlyoutItem.Content>
-      </InkToolbarFlyoutItem>
-      <InkToolbarFlyoutItem x:Name="SmallEraser" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarSmallEraser" Style="{StaticResource InkToolbarFlyoutItemStyle}">
-        <InkToolbarFlyoutItem.Content>
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="auto" />
-              <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock x:Name="SmallEraserIcon" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="&#xF129;" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{StaticResource InkToolbarFlyoutItemIconMargin}" />
-            <TextBlock x:Name="SmallEraserName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}" Text="" TextAlignment="Center" Grid.Column="1" Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}" />
-          </Grid>
-        </InkToolbarFlyoutItem.Content>
-      </InkToolbarFlyoutItem>
-      <InkToolbarFlyoutItem x:Name="LargeEraser" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarLargeEraser" Style="{StaticResource InkToolbarFlyoutItemStyle}">
-        <InkToolbarFlyoutItem.Content>
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="auto" />
-              <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock x:Name="LargeEraserIcon" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="&#xF12A;" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{StaticResource InkToolbarFlyoutItemIconMargin}" />
-            <TextBlock x:Name="LargeEraserName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}" Text="" TextAlignment="Center" Grid.Column="1" Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}" />
-          </Grid>
-        </InkToolbarFlyoutItem.Content>
-      </InkToolbarFlyoutItem>
-      <InkToolbarFlyoutItem x:Name="ClearAll" Kind="Simple" AutomationProperties.AutomationId="InkToolbarClearAll" Style="{StaticResource InkToolbarFlyoutItemStyle}">
-        <InkToolbarFlyoutItem.Content>
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="auto" />
-              <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock x:Name="ClearAllIcon" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="&#xE74D;" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{StaticResource InkToolbarFlyoutItemIconMargin}" />
-            <TextBlock x:Name="ClearAllName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}" Text="" TextAlignment="Center" Grid.Column="1" Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}" />
-          </Grid>
-        </InkToolbarFlyoutItem.Content>
-      </InkToolbarFlyoutItem>
-    </StackPanel>
-  </DataTemplate>
+
   <Style TargetType="InkToolbarEraserButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
     <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarEraserButton" />
     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
@@ -1434,34 +1381,6 @@
       </Setter.Value>
     </Setter>
   </Style>
-  <DataTemplate x:Key="InkToolbarStencilButtonFlyoutContentTemplate">
-    <StackPanel x:Name="InkToolbarStencilButtonFlyoutContent" Margin="{StaticResource InkToolbarFlyoutPanelMargin}">
-      <InkToolbarFlyoutItem x:Name="StencilRuler" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarStencilRuler" Style="{StaticResource InkToolbarFlyoutItemStyle}">
-        <InkToolbarFlyoutItem.Content>
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="auto" />
-              <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock x:Name="RulerIcon" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="&#xECC6;" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{StaticResource InkToolbarFlyoutItemIconMargin}" />
-            <TextBlock x:Name="RulerName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}" Text="" TextAlignment="Center" Grid.Column="1" Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}" />
-          </Grid>
-        </InkToolbarFlyoutItem.Content>
-      </InkToolbarFlyoutItem>
-      <InkToolbarFlyoutItem x:Name="StencilProtractor" Kind="RadioCheck" AutomationProperties.AutomationId="InkToolbarStencilProtractor" Style="{StaticResource InkToolbarFlyoutItemStyle}">
-        <InkToolbarFlyoutItem.Content>
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="auto" />
-              <ColumnDefinition Width="auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock x:Name="ProtractorIcon" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="&#xF0B4;" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{StaticResource InkToolbarFlyoutItemIconMargin}" />
-            <TextBlock x:Name="ProtractorName" Style="{StaticResource InkToolbarFlyoutItemContentTextStyle}" Text="" TextAlignment="Center" Grid.Column="1" Margin="{StaticResource InkToolbarFlyoutItemTextBlockMargin}" />
-          </Grid>
-        </InkToolbarFlyoutItem.Content>
-      </InkToolbarFlyoutItem>
-    </StackPanel>
-  </DataTemplate>
   <Style TargetType="InkToolbarStencilButton" BasedOn="{StaticResource InkToolbarCommonButtonStyle}">
     <Setter Property="AutomationProperties.AutomationId" Value="InkToolbarStencilButton" />
     <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
@@ -1614,8 +1533,8 @@
               <Grid.RenderTransform>
                 <ScaleTransform x:Name="ContentTransform" />
               </Grid.RenderTransform>
-              <TextBlock x:Name="Content" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="" AutomationProperties.AccessibilityView="Raw" Canvas.ZIndex="1" Foreground="{ThemeResource InkToolbarButtonForeground}" />
-              <TextBlock x:Name="CheckedContent" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="" AutomationProperties.AccessibilityView="Raw" Canvas.ZIndex="1" Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}" Opacity="0" />
+              <TextBlock x:Name="Content" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="&#xECC6;" AutomationProperties.AccessibilityView="Raw" Canvas.ZIndex="1" Foreground="{ThemeResource InkToolbarButtonForeground}" />
+              <TextBlock x:Name="CheckedContent" Style="{StaticResource InkToolbarGlyphFontStyle}" Text="&#xECC6;" AutomationProperties.AccessibilityView="Raw" Canvas.ZIndex="1" Foreground="{ThemeResource InkToolbarButtonSelectedForegroundThemeBrush}" Opacity="0" />
               <Border x:Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Grid.RowSpan="2" Grid.ColumnSpan="2" Margin="1,0" CornerRadius="{TemplateBinding CornerRadius}" />
             </Grid>
           </Grid>

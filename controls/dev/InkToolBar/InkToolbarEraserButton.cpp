@@ -60,6 +60,53 @@ namespace
         }
         return nullptr;
     }
+
+    // Build one L3 flyout item (glyph icon + name column) in code. The item resolves its control
+    // template from the InkToolbarFlyoutItem default style (generic scope) via SetDefaultStyleKey.
+    // Lift adaptation: UWP inflated these items from the InkToolbarEraserButtonFlyoutContentTemplate
+    // DataTemplate scoped in generic.xaml; the lift builds the identical two-column tree in code
+    // because XamlControlsResources merges the app-referenced themeresources (not the flyout data
+    // templates), so a keyed DataTemplate lookup from Application.Current.Resources is unreliable.
+    winrt::InkToolbarFlyoutItem MakeFlyoutItem(
+        std::wstring_view name,
+        std::wstring_view automationId,
+        winrt::InkToolbarFlyoutItemKind kind,
+        wchar_t const* glyph)
+    {
+        winrt::InkToolbarFlyoutItem item{};
+        item.Name(winrt::hstring{ name });
+        item.Kind(kind);
+        winrt::AutomationProperties::SetAutomationId(item, winrt::hstring{ automationId });
+
+        winrt::Grid grid{};
+        winrt::ColumnDefinition iconColumn{};
+        iconColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
+        winrt::ColumnDefinition textColumn{};
+        textColumn.Width(winrt::GridLengthHelper::FromValueAndType(0, winrt::GridUnitType::Auto));
+        grid.ColumnDefinitions().Append(iconColumn);
+        grid.ColumnDefinitions().Append(textColumn);
+
+        winrt::TextBlock icon{};
+        icon.FontFamily(winrt::FontFamily{ L"Segoe Fluent Icons, Segoe MDL2 Assets" });
+        icon.FontSize(16.0);
+        icon.Text(winrt::hstring{ glyph });
+        icon.HorizontalAlignment(winrt::HorizontalAlignment::Center);
+        icon.VerticalAlignment(winrt::VerticalAlignment::Center);
+        icon.Margin(winrt::ThicknessHelper::FromLengths(12, 0, 12, 0));
+        winrt::Grid::SetColumn(icon, 0);
+        grid.Children().Append(icon);
+
+        // The localized item name is a resource gap in the lift (empty); the TextBlock is still
+        // created so the layout matches the UWP two-column template.
+        winrt::TextBlock text{};
+        text.VerticalAlignment(winrt::VerticalAlignment::Center);
+        text.Margin(winrt::ThicknessHelper::FromLengths(0, 0, 12, 0));
+        winrt::Grid::SetColumn(text, 1);
+        grid.Children().Append(text);
+
+        item.Content(grid);
+        return item;
+    }
 }
 
 void InkToolbarEraserButton::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
@@ -84,30 +131,23 @@ void InkToolbarEraserButton::OnPropertyChanged(winrt::DependencyPropertyChangedE
     }
 }
 
-void InkToolbarEraserButton::OnApplyTemplate()
+void InkToolbarEraserButton::OnApplyTemplateCore()
 {
-    InkToolbarToolButton::OnApplyTemplate();
-
-    // The eraser button flyout content lives in a data template (InkToolbarEraserButtonFlyoutContentTemplate)
-    // instead of the button style template. Load it into the attached flyout's content.
-    if (auto resources = Resources())
+    // Build the eraser L3 flyout content in code and set it on the attached flyout (created empty in
+    // the InkToolbarToolButton ctor). The named items (StrokeEraser/SmallEraser/LargeEraser/ClearAll)
+    // are what SetupL3 / FindChild wire up to the eraser Checked handling and radio group.
+    if (auto flyoutBase = winrt::FlyoutBase::GetAttachedFlyout(*this))
     {
-        auto key = winrt::box_value(L"InkToolbarEraserButtonFlyoutContentTemplate");
-        if (resources.HasKey(key))
+        if (auto flyout = flyoutBase.try_as<winrt::Flyout>())
         {
-            if (auto eraserFlyoutTemplate = resources.Lookup(key).try_as<winrt::DataTemplate>())
-            {
-                if (auto flyoutBase = winrt::FlyoutBase::GetAttachedFlyout(*this))
-                {
-                    if (auto flyout = flyoutBase.try_as<winrt::Flyout>())
-                    {
-                        if (auto flyoutContent = eraserFlyoutTemplate.LoadContent().try_as<winrt::UIElement>())
-                        {
-                            flyout.Content(flyoutContent);
-                        }
-                    }
-                }
-            }
+            winrt::StackPanel panel{};
+            panel.Name(L"InkToolbarEraserButtonFlyoutContent");
+            panel.Margin(winrt::ThicknessHelper::FromLengths(0, 1, 0, 1));
+            panel.Children().Append(MakeFlyoutItem(STROKEERASER_ITEM_NAME, L"InkToolbarStrokeEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF128"));
+            panel.Children().Append(MakeFlyoutItem(SMALLERASER_ITEM_NAME, L"InkToolbarSmallEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF129"));
+            panel.Children().Append(MakeFlyoutItem(LARGEERASER_ITEM_NAME, L"InkToolbarLargeEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF12A"));
+            panel.Children().Append(MakeFlyoutItem(CLEARALL_ITEM_NAME, L"InkToolbarClearAll", winrt::InkToolbarFlyoutItemKind::Simple, L"\uE74D"));
+            flyout.Content(panel);
         }
     }
 

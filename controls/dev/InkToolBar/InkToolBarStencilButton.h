@@ -35,8 +35,8 @@ public:
     // StencilRuler/StencilProtractor) - until that template is ported, FindChild returns null and the
     // flyout logic no-ops (documented gap).
 
-    // IFrameworkElementOverrides
-    void OnApplyTemplate();
+    // Runs from the base InkToolbarMenuButton::OnApplyTemplate via the OnApplyTemplateCore hook.
+    void OnApplyTemplateCore() override;
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
     void SetL3StencilItemCheck(winrt::InkToolbarStencilKind stencilKind, bool check);

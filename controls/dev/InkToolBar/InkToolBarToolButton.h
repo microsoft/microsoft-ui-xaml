@@ -50,6 +50,14 @@ public:
 protected:
     void SetToolKind(winrt::InkToolbarTool kind) { m_toolKind = kind; }
 
+    // Derived-class OnApplyTemplate extension point. The generated per-leaf IFrameworkElementOverridesT<D>
+    // default forwarder shadows any OnApplyTemplate declared on an *intermediate* impl (e.g. PenButton,
+    // EraserButton), so only this deepest base's OnApplyTemplate is dispatched at runtime for a concrete
+    // leaf button (Ballpoint/Pencil/Highlighter/Eraser). To reach the intermediate logic we invoke this
+    // plain C++ virtual at the end of OnApplyTemplate: ordinary vtable dispatch on the impl object reliably
+    // reaches the most-derived override.
+    virtual void OnApplyTemplateCore() {}
+
 private:
     // Pushes IsExtensionGlyphShown / RTL / flyout-direction visual states (UWP UpdateStates).
     void UpdateStates(bool useTransitions);
