@@ -477,8 +477,62 @@ namespace BindTestbed
 
             // Fields for each event bindings event handler.
             private global::Windows.UI.Xaml.RoutedEventHandler obj40Click;
+
+            private void obj40ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Model.NestedLoad.Option1Click();
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj40Click()
+            {
+                var weakBindings = new global::System.WeakReference<LoadAndCreateFromStringTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    LoadAndCreateFromStringTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj40ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj41Click;
+
+            private void obj41ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Model.NestedLoad.Option2Click();
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj41Click()
+            {
+                var weakBindings = new global::System.WeakReference<LoadAndCreateFromStringTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    LoadAndCreateFromStringTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj41ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj42Click;
+
+            private void obj42ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Model.NestedLoad.Option3Click();
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj42Click()
+            {
+                var weakBindings = new global::System.WeakReference<LoadAndCreateFromStringTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    LoadAndCreateFromStringTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj42ClickHandler(p0, p1);
+                    }
+                };
+            }
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj6LoadDisabled = false;
@@ -832,26 +886,17 @@ namespace BindTestbed
                         break;
                     case 40: // LoadAndCreateFromStringTests.xaml line 92
                         this.obj40 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj40Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Model.NestedLoad.Option1Click();
-                        };
+                        this.obj40Click = this.Create_obj40Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj40Click;
                         break;
                     case 41: // LoadAndCreateFromStringTests.xaml line 93
                         this.obj41 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj41Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Model.NestedLoad.Option2Click();
-                        };
+                        this.obj41Click = this.Create_obj41Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj41Click;
                         break;
                     case 42: // LoadAndCreateFromStringTests.xaml line 94
                         this.obj42 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj42Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Model.NestedLoad.Option3Click();
-                        };
+                        this.obj42Click = this.Create_obj42Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj42Click;
                         break;
                     case 47: // LoadAndCreateFromStringTests.xaml line 72

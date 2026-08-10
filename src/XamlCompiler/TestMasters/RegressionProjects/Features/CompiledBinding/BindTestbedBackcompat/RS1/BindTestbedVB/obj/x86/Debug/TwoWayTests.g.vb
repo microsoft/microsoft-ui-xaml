@@ -83,9 +83,21 @@ Namespace Global.BindTestbed
 
             ' Subs for each event bindings event handler.
 
-            Private Sub obj6Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private obj6Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj6ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Click(p0, p1)
             End Sub
+
+            Private Function Create_obj6Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of TwoWayTests_obj3_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As TwoWayTests_obj3_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj6ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
 
             ' Static fields for each binding's enabled/disabled state
             Private Shared isobj4TextDisabled As Boolean = False
@@ -101,7 +113,7 @@ Namespace Global.BindTestbed
                 ElseIf (lineNumber = 26 And columnNumber = 46) Then
                     isobj5TextDisabled = True
                 ElseIf (lineNumber = 27 And columnNumber = 29) Then
-                    RemoveHandler Me.obj6.Click, AddressOf obj6Click
+                    RemoveHandler Me.obj6.Click, Me.obj6Click
                 End If
             End Sub
 
@@ -121,7 +133,8 @@ Namespace Global.BindTestbed
                         Exit Select
                     Case 6: ' TwoWayTests.xaml line 27                        
                         Me.obj6 = DirectCast(target, Global.Windows.UI.Xaml.Controls.Button)
-                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, AddressOf obj6Click
+                        Me.obj6Click = Me.Create_obj6Click()
+                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, Me.obj6Click
                         Exit Select
                     Case Else
                         Exit Select

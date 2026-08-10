@@ -317,7 +317,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                         { #>
                     this.Bindings = bindings;
 <#+                             if (element.Type.IsDerivedFromWindow()) { #>
-                    <#=element.ElementCodeName#>.Activated += bindings.Activated;
+                    bindings.SubscribeToWindowActivated();
 <#+                             } #>
 <#+                             else { #>
                     <#=element.ElementCodeName#>.Loading += bindings.Loading;
@@ -468,6 +468,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 foreach (BoundEventAssignment evt in element.BoundEventAssignments)#>
 <#+                 {#>
             private <#=evt.MemberType#> <#=evt.EventHandlerCodeName#>;
+<#+                     Output_WeakEventHandlerMembers(bindUniverse, evt);#>
 <#+                 }#>
 <#+             }#>
 <#+             if (ProjectInfo.ShouldGenerateDisableXBind) #>
@@ -585,7 +586,7 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+                 foreach (BoundEventAssignment evt in element.BoundEventAssignments)#>
 <#+                 {#>
 <#+                     Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); #>
-<#+                     Output_NullCheckedEventAssignment(evt); #>
+                        this.<#=evt.EventHandlerCodeName#> = this.Create_<#=evt.EventHandlerCodeName#>();
                         (<#=ObjectCast(element.Type, "target")#>).<#=evt.MemberName#> += <#=evt.EventHandlerCodeName#>;
 <#+                     Output_ApiInformationCall_Pop(evt.ApiInformation, Indent.ThreeTabs); #>
 <#+                 }#>
@@ -1005,6 +1006,22 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
             }
 <#+             if (bindUniverse.RootElement.IsBindingFileRoot)#>
 <#+             {#>
+<#+                 if (bindUniverse.RootElement.Type.IsDerivedFromWindow())#>
+<#+                 {#>
+
+            public void SubscribeToWindowActivated()
+            {
+                var weakBindings = new <#=Globalize(WeakReferenceTypeName)#><<#=bindUniverse.BindingsClassName#>>(this);
+                this.dataRoot.Activated += (obj, data) =>
+                {
+                    <#=bindUniverse.BindingsClassName#> bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.Activated(obj, data);
+                    }
+                };
+            }
+<#+                 }#>
 
             public void Activated(object obj, <#=Globalize(KnownNamespaces.Xaml)#>.WindowActivatedEventArgs data)
             {
@@ -1485,25 +1502,37 @@ namespace <#=Model.CodeInfo.ClassName.Namespace#>
 <#+     PopIndent();#>
 <#+ } #>
 
-<#+ void  Output_NullCheckedEventAssignment(BoundEventAssignment evt) #>
+<#+ void Output_WeakEventHandlerMembers(BindUniverse bindUniverse, BoundEventAssignment evt)#>
 <#+ { #>
-                        this.<#=evt.EventHandlerCodeName#> = (<#=evt.Parameters.Declaration()#>) =>
-                        {
+
+            private void <#=evt.EventHandlerCodeName#>Handler(<#=evt.Parameters.Declaration()#>)
+            {
 <#+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
-                            if (<#=parent.CodeGen().PathExpression#> != null)
-                            {
-<#+         PushIndent(); #>
+                if (<#=parent.CodeGen().PathExpression#> != null)
+                {
 <#+     } #>
 <#+     if (!evt.PathStep.ValueType.IsDelegate()) { #>
-                            <#=evt.PathStep.CodeGen().PathExpression#>;
+                <#=evt.PathStep.CodeGen().PathExpression#>;
 <#+     } else { #>
-                            <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
+                <#=evt.PathStep.CodeGen().PathExpression#>(<#=evt.Parameters.ForCall()#>);
 <#+     } #>
 <#+     foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { #>
-<#+         PopIndent(); #>
-                            }
+                }
 <#+     } #>
-                        };
+            }
+
+            private <#=evt.MemberType#> Create_<#=evt.EventHandlerCodeName#>()
+            {
+                var weakBindings = new <#=Globalize(WeakReferenceTypeName)#><<#=bindUniverse.BindingsClassName#>>(this);
+                return (<#=evt.Parameters.Declaration()#>) =>
+                {
+                    <#=bindUniverse.BindingsClassName#> bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.<#=evt.EventHandlerCodeName#>Handler(<#=evt.Parameters.ForCall()#>);
+                    }
+                };
+            }
 <#+ } #>
 
 <#+ void Output_UpdateErrors(BindUniverse bindUniverse) #>

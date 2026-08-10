@@ -438,11 +438,119 @@ namespace Conditionals
 
             // Fields for each event bindings event handler.
             private global::Windows.UI.Xaml.RoutedEventHandler obj4Click;
+
+            private void obj4ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click_V2(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj4Click()
+            {
+                var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    BindTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj4ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj6Click;
+
+            private void obj6ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click_V3(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj6Click()
+            {
+                var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    BindTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj6ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj21Click;
+
+            private void obj21ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Model.Org.Hire1();
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj21Click()
+            {
+                var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    BindTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj21ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj22Click;
+
+            private void obj22ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Model.Org.Hire2();
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj22Click()
+            {
+                var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    BindTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj22ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj23Click;
+
+            private void obj23ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Model.Org.Hire3();
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj23Click()
+            {
+                var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    BindTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj23ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj24Click;
+
+            private void obj24ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Model.Org.Fire();
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj24Click()
+            {
+                var weakBindings = new global::System.WeakReference<BindTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    BindTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj24ClickHandler(p0, p1);
+                    }
+                };
+            }
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj3TextDisabled = false;
@@ -567,10 +675,7 @@ namespace Conditionals
                             this.obj4 = (global::ConditionalControls.Button1)target;
                             if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                             {
-                                this.obj4Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                                {
-                                    this.dataRoot.Click_V2(p0, p1);
-                                };
+                                this.obj4Click = this.Create_obj4Click();
                                 ((global::ConditionalControls.Button1)target).Click += obj4Click;
                             }
                         }
@@ -581,10 +686,7 @@ namespace Conditionals
                             this.obj6 = (global::ConditionalControls.Button1)target;
                             if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                             {
-                                this.obj6Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                                {
-                                    this.dataRoot.Click_V3(p0, p1);
-                                };
+                                this.obj6Click = this.Create_obj6Click();
                                 ((global::ConditionalControls.Button1)target).Click += obj6Click;
                             }
                         }
@@ -638,10 +740,7 @@ namespace Conditionals
                             this.obj21 = (global::ConditionalControls.Button1)target;
                             if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                             {
-                                this.obj21Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                                {
-                                    this.dataRoot.Model.Org.Hire1();
-                                };
+                                this.obj21Click = this.Create_obj21Click();
                                 ((global::ConditionalControls.Button1)target).Click += obj21Click;
                             }
                         }
@@ -652,10 +751,7 @@ namespace Conditionals
                             this.obj22 = (global::ConditionalControls.Button1)target;
                             if (BindTests.IsTypePresent_ConditionalControls_V2Type)
                             {
-                                this.obj22Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                                {
-                                    this.dataRoot.Model.Org.Hire2();
-                                };
+                                this.obj22Click = this.Create_obj22Click();
                                 ((global::ConditionalControls.Button1)target).Click += obj22Click;
                             }
                         }
@@ -666,10 +762,7 @@ namespace Conditionals
                             this.obj23 = (global::ConditionalControls.Button1)target;
                             if (BindTests.IsTypePresent_ConditionalControls_V3Type)
                             {
-                                this.obj23Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                                {
-                                    this.dataRoot.Model.Org.Hire3();
-                                };
+                                this.obj23Click = this.Create_obj23Click();
                                 ((global::ConditionalControls.Button1)target).Click += obj23Click;
                             }
                         }
@@ -680,10 +773,7 @@ namespace Conditionals
                             this.obj24 = (global::ConditionalControls.Button1)target;
                             if (BindTests.IsTypePresent_ConditionalControls_V1Type)
                             {
-                                this.obj24Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                                {
-                                    this.dataRoot.Model.Org.Fire();
-                                };
+                                this.obj24Click = this.Create_obj24Click();
                                 ((global::ConditionalControls.Button1)target).Click += obj24Click;
                             }
                         }

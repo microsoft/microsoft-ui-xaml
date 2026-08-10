@@ -68,6 +68,24 @@ namespace BindTestbed
             // Fields for each event bindings event handler.
             private global::Windows.UI.Xaml.RoutedEventHandler obj5Click;
 
+            private void obj5ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj5Click()
+            {
+                var weakBindings = new global::System.WeakReference<EventTests_obj3_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    EventTests_obj3_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj5ClickHandler(p0, p1);
+                    }
+                };
+            }
+
             // Static fields for each binding's enabled/disabled state
             private static bool isobj4TextDisabled = false;
 
@@ -101,10 +119,7 @@ namespace BindTestbed
                         break;
                     case 5: // EventTests.xaml line 20
                         this.obj5 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj5Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Click(p0, p1);
-                        };
+                        this.obj5Click = this.Create_obj5Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj5Click;
                         break;
                     default:
@@ -239,6 +254,24 @@ namespace BindTestbed
             // Fields for each event bindings event handler.
             private global::Windows.UI.Xaml.RoutedEventHandler obj9Click;
 
+            private void obj9ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj9Click()
+            {
+                var weakBindings = new global::System.WeakReference<EventTests_obj9_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    EventTests_obj9_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj9ClickHandler(p0, p1);
+                    }
+                };
+            }
+
             // Static fields for each binding's enabled/disabled state
 
             public EventTests_obj9_Bindings()
@@ -264,10 +297,7 @@ namespace BindTestbed
                 {
                     case 9: // EventTests.xaml line 47
                         this.obj9 = new global::System.WeakReference((global::Windows.UI.Xaml.Controls.Button)target);
-                        this.obj9Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Click(p0, p1);
-                        };
+                        this.obj9Click = this.Create_obj9Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj9Click;
                         break;
                     default:
@@ -391,11 +421,119 @@ namespace BindTestbed
 
             // Fields for each event bindings event handler.
             private global::Windows.UI.Xaml.RoutedEventHandler obj10Click;
+
+            private void obj10ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click_RegularArgs(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj10Click()
+            {
+                var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    EventTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj10ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj11Click;
+
+            private void obj11ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click_NoArgs();
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj11Click()
+            {
+                var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    EventTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj11ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj12Click;
+
+            private void obj12ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click_BaseArgs(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj12Click()
+            {
+                var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    EventTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj12ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj13Click;
+
+            private void obj13ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Model.ManagerProp.ReportsOC[0].Click(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj13Click()
+            {
+                var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    EventTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj13ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.RoutedEventHandler obj14Click;
+
+            private void obj14ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click_RegularArgs(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj14Click()
+            {
+                var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    EventTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj14ClickHandler(p0, p1);
+                    }
+                };
+            }
             private global::Windows.UI.Xaml.Controls.ItemClickEventHandler obj15ItemClick;
+
+            private void obj15ItemClickHandler(global::System.Object p0, global::Windows.UI.Xaml.Controls.ItemClickEventArgs p1)
+            {
+                this.dataRoot.Click_RegularArgs(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.Controls.ItemClickEventHandler Create_obj15ItemClick()
+            {
+                var weakBindings = new global::System.WeakReference<EventTests_obj1_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.Controls.ItemClickEventArgs p1) =>
+                {
+                    EventTests_obj1_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj15ItemClickHandler(p0, p1);
+                    }
+                };
+            }
 
             // Static fields for each binding's enabled/disabled state
             private static bool isobj6ItemsSourceDisabled = false;
@@ -463,50 +601,32 @@ namespace BindTestbed
                         break;
                     case 10: // EventTests.xaml line 34
                         this.obj10 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj10Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Click_RegularArgs(p0, p1);
-                        };
+                        this.obj10Click = this.Create_obj10Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj10Click;
                         break;
                     case 11: // EventTests.xaml line 35
                         this.obj11 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj11Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Click_NoArgs();
-                        };
+                        this.obj11Click = this.Create_obj11Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj11Click;
                         break;
                     case 12: // EventTests.xaml line 36
                         this.obj12 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj12Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Click_BaseArgs(p0, p1);
-                        };
+                        this.obj12Click = this.Create_obj12Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj12Click;
                         break;
                     case 13: // EventTests.xaml line 37
                         this.obj13 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj13Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Model.ManagerProp.ReportsOC[0].Click(p0, p1);
-                        };
+                        this.obj13Click = this.Create_obj13Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj13Click;
                         break;
                     case 14: // EventTests.xaml line 38
                         this.obj14 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj14Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Click_RegularArgs(p0, p1);
-                        };
+                        this.obj14Click = this.Create_obj14Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj14Click;
                         break;
                     case 15: // EventTests.xaml line 39
                         this.obj15 = (global::Windows.UI.Xaml.Controls.GridView)target;
-                        this.obj15ItemClick = (global::System.Object p0, global::Windows.UI.Xaml.Controls.ItemClickEventArgs p1) =>
-                        {
-                            this.dataRoot.Click_RegularArgs(p0, p1);
-                        };
+                        this.obj15ItemClick = this.Create_obj15ItemClick();
                         ((global::Windows.UI.Xaml.Controls.GridView)target).ItemClick += obj15ItemClick;
                         break;
                     default:

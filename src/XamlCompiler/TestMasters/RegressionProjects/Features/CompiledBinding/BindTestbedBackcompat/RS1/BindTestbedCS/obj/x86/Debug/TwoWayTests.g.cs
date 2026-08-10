@@ -91,6 +91,24 @@ namespace BindTestbed
             // Fields for each event bindings event handler.
             private global::Windows.UI.Xaml.RoutedEventHandler obj6Click;
 
+            private void obj6ClickHandler(global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1)
+            {
+                this.dataRoot.Click(p0, p1);
+            }
+
+            private global::Windows.UI.Xaml.RoutedEventHandler Create_obj6Click()
+            {
+                var weakBindings = new global::System.WeakReference<TwoWayTests_obj3_Bindings>(this);
+                return (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
+                {
+                    TwoWayTests_obj3_Bindings bindings;
+                    if (weakBindings.TryGetTarget(out bindings))
+                    {
+                        bindings.obj6ClickHandler(p0, p1);
+                    }
+                };
+            }
+
             // Static fields for each binding's enabled/disabled state
             private static bool isobj4TextDisabled = false;
             private static bool isobj5TextDisabled = false;
@@ -136,10 +154,7 @@ namespace BindTestbed
                         break;
                     case 6: // TwoWayTests.xaml line 27
                         this.obj6 = (global::Windows.UI.Xaml.Controls.Button)target;
-                        this.obj6Click = (global::System.Object p0, global::Windows.UI.Xaml.RoutedEventArgs p1) =>
-                        {
-                            this.dataRoot.Click(p0, p1);
-                        };
+                        this.obj6Click = this.Create_obj6Click();
                         ((global::Windows.UI.Xaml.Controls.Button)target).Click += obj6Click;
                         break;
                     default:

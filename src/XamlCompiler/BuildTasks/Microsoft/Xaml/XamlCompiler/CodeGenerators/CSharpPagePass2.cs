@@ -568,11 +568,7 @@ this.Write("                    this.RootWeakReference.TryGetTarget(out rootRefe
 this.Write("                    this.Bindings = bindings;\r\n");
 
                              if (element.Type.IsDerivedFromWindow()) { 
-this.Write("                    ");
-
-this.Write(this.ToStringHelper.ToStringWithCulture(element.ElementCodeName));
-
-this.Write(".Activated += bindings.Activated;\r\n");
+this.Write("                    bindings.SubscribeToWindowActivated();\r\n");
 
                              } 
                              else { 
@@ -873,6 +869,7 @@ this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
 
 this.Write(";\r\n");
 
+                     Output_WeakEventHandlerMembers(bindUniverse, evt);
                  }
              }
              if (ProjectInfo.ShouldGenerateDisableXBind) 
@@ -1122,8 +1119,15 @@ this.Write("(target);\r\n                        NotifyDependentScopes(connectio
                  foreach (BoundEventAssignment evt in element.BoundEventAssignments)
                  {
                      Output_ApiInformationCall_Push(evt.ApiInformation, Indent.ThreeTabs); 
-                     Output_NullCheckedEventAssignment(evt); 
-this.Write("                        (");
+this.Write("                        this.");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write(" = this.Create_");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write("();\r\n                        (");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(ObjectCast(element.Type, "target")));
 
@@ -1779,6 +1783,27 @@ this.Write(";\r\n                    return true;\r\n                }\r\n      
 
              if (bindUniverse.RootElement.IsBindingFileRoot)
              {
+                 if (bindUniverse.RootElement.Type.IsDerivedFromWindow())
+                 {
+this.Write("\r\n            public void SubscribeToWindowActivated()\r\n            {\r\n          " +
+        "      var weakBindings = new ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(WeakReferenceTypeName)));
+
+this.Write("<");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
+
+this.Write(">(this);\r\n                this.dataRoot.Activated += (obj, data) =>\r\n            " +
+        "    {\r\n                    ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
+
+this.Write(" bindings;\r\n                    if (weakBindings.TryGetTarget(out bindings))\r\n   " +
+        "                 {\r\n                        bindings.Activated(obj, data);\r\n    " +
+        "                }\r\n                };\r\n            }\r\n");
+
+                 }
 this.Write("\r\n            public void Activated(object obj, ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(KnownNamespaces.Xaml)));
@@ -2735,36 +2760,35 @@ this.Write("            }\r\n");
      } 
      PopIndent();
  } 
- void  Output_NullCheckedEventAssignment(BoundEventAssignment evt) 
+ void Output_WeakEventHandlerMembers(BindUniverse bindUniverse, BoundEventAssignment evt)
  { 
-this.Write("                        this.");
+this.Write("\r\n            private void ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
 
-this.Write(" = (");
+this.Write("Handler(");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
 
-this.Write(") =>\r\n                        {\r\n");
+this.Write(")\r\n            {\r\n");
 
      foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { 
-this.Write("                            if (");
+this.Write("                if (");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(parent.CodeGen().PathExpression));
 
-this.Write(" != null)\r\n                            {\r\n");
+this.Write(" != null)\r\n                {\r\n");
 
-         PushIndent(); 
      } 
      if (!evt.PathStep.ValueType.IsDelegate()) { 
-this.Write("                            ");
+this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
 
 this.Write(";\r\n");
 
      } else { 
-this.Write("                            ");
+this.Write("                ");
 
 this.Write(this.ToStringHelper.ToStringWithCulture(evt.PathStep.CodeGen().PathExpression));
 
@@ -2776,11 +2800,43 @@ this.Write(");\r\n");
 
      } 
      foreach (var parent in evt.PathStep.Parents.Where(parent => parent.NeedsCheckForNull)) { 
-         PopIndent(); 
-this.Write("                            }\r\n");
+this.Write("                }\r\n");
 
      } 
-this.Write("                        };\r\n");
+this.Write("            }\r\n\r\n            private ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.MemberType));
+
+this.Write(" Create_");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write("()\r\n            {\r\n                var weakBindings = new ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(Globalize(WeakReferenceTypeName)));
+
+this.Write("<");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
+
+this.Write(">(this);\r\n                return (");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.Declaration()));
+
+this.Write(") =>\r\n                {\r\n                    ");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(bindUniverse.BindingsClassName));
+
+this.Write(" bindings;\r\n                    if (weakBindings.TryGetTarget(out bindings))\r\n   " +
+        "                 {\r\n                        bindings.");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.EventHandlerCodeName));
+
+this.Write("Handler(");
+
+this.Write(this.ToStringHelper.ToStringWithCulture(evt.Parameters.ForCall()));
+
+this.Write(");\r\n                    }\r\n                };\r\n            }\r\n");
 
  } 
  void Output_UpdateErrors(BindUniverse bindUniverse) 
