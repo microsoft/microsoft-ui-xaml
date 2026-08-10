@@ -228,8 +228,15 @@ void InkToolbarEraserButton::OnSelectedEraserChanged(winrt::InkToolbarEraserKind
 // Called when any L3 item visibility changes: update the extension glyph.
 void InkToolbarEraserButton::OnL3ItemsVisibilitiesChanged()
 {
-    auto self = try_as<winrt::InkToolbarToolButton>();
-    bool shouldShowExtensionGlyph = ShouldShowL3() && InkToolbar::IsButtonChecked(self);
+    // The extension glyph is only meaningful once this button has been realized as a ToggleButton and
+    // is checked. A visibility property can change before the button is fully realized (immediately
+    // after construction, or in a bare test host with no visual tree), so guard the cast: an
+    // unrealized button is treated as unchecked rather than dereferencing a null interface.
+    bool shouldShowExtensionGlyph = false;
+    if (auto self = try_as<winrt::InkToolbarToolButton>())
+    {
+        shouldShowExtensionGlyph = ShouldShowL3() && InkToolbar::IsButtonChecked(self);
+    }
     IsExtensionGlyphShown(shouldShowExtensionGlyph);
 }
 
@@ -464,9 +471,11 @@ void InkToolbarEraserButton::OnAccessKeyInvoked(winrt::IInspectable const& sende
     UNREFERENCED_PARAMETER(sender);
     UNREFERENCED_PARAMETER(args);
 
-    auto self = try_as<winrt::InkToolbarToolButton>();
-    if (ShouldShowL3() && InkToolbar::IsButtonChecked(self))
+    if (auto self = try_as<winrt::InkToolbarToolButton>())
     {
-        InkToolbarToolButton::OpenL3();
+        if (ShouldShowL3() && InkToolbar::IsButtonChecked(self))
+        {
+            InkToolbarToolButton::OpenL3();
+        }
     }
 }
