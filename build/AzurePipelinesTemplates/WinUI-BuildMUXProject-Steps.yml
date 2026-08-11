@@ -238,28 +238,6 @@ steps:
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
         condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
 
-  # Chart lives in the internal-only MUXControlsChart.sln for the same reason as Tabular above: it is
-  # excluded from the public mirror, so it must not be referenced by the mirrored MUXControls.sln and
-  # must be guarded off GitHub-backed legs where the source tree does not contain it.
-  # FeatureChartEnabled is off by default, so this step is what actually compiles the binary -- without
-  # it a break in Chart would not fail any build. Chart's own ProjectReference builds the dxaml private
-  # merged winmds it consumes, so the placement here is for consistency with Tabular rather than a
-  # build-order requirement.
-  # Skipped on final-release legs: Chart is internal and experimental, and forcing FeatureChartEnabled
-  # there would trip the ValidateChartFeatureSource guard in eng\productmetadata.props. Tabular does not
-  # need this because it never forces its feature on.
-  - ${{ if and(eq(parameters.buildProductOnly, 'false'), ne(parameters.MUXFinalRelease, true)) }}:
-    - template: WinUI-BuildProject-Steps.yml
-      parameters:
-        solutionName: MUXControlsChart.sln
-        solutionPath: $(Build.SourcesDirectory)\controls
-        nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue) /p:FeatureChartEnabled=true'
-        msbuildInstallDir: $(_buildToolsDirectory)
-        projectCaching: ${{ parameters.projectCaching }}
-        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-        condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
-
   - script: |
      dir /b /s $(Build.SourcesDirectory)\packages\*.nupkg
     displayName: 'List contents of packages dir'
@@ -407,7 +385,6 @@ steps:
           **/Microsoft.UI.Text.winmd
           **/Microsoft.UI.Xaml.winmd
           **/Microsoft.UI.Xaml.Controls.dll
-          **/Microsoft.UI.Xaml.Controls.Chart.dll
           **/Microsoft.UI.Xaml.Controls.Tabular.dll
           **/Microsoft.ui.xaml.dll
           **/Microsoft.ui.xaml.dll.mui
