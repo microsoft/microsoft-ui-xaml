@@ -815,6 +815,12 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                         }                               #>
 <#+                         if (uentry.HasCreateFromStringMethod)#>
 <#+                         {#>
+<#+                             // Suppress CS0618 when the CreateFromString type/method is [Obsolete]. Note: a hard-obsolete#>
+<#+                             // ([Obsolete(message, true)]) emits CS0619 (an error), which pragma 0618 does not suppress.#>
+<#+                             if (uentry.IsDeprecated)#>
+<#+                             {#>
+#pragma warning disable 0618  //   Warning on Deprecated usage
+<#+                             }#>
 <#+                             if (uentry.TypeEntry.UnderlyingType.IsValueType)#>
 <#+                             {#>
                 userType.CreateFromStringMethod = x => (global::System.Object)<#=uentry.CreateFromStringMethod.ResolvedName.CSharpName()#>(x);
@@ -822,6 +828,10 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                             else#>
 <#+                             {#>
                 userType.CreateFromStringMethod = <#=uentry.CreateFromStringMethod.ResolvedName.CSharpName()#>;
+<#+                             }#>
+<#+                             if (uentry.IsDeprecated)#>
+<#+                             {#>
+#pragma warning restore 0618
 <#+                             }#>
 <#+                         }#>
 <#+                         foreach(InternalXamlUserMemberInfo mem in uentry.Members)   #>
