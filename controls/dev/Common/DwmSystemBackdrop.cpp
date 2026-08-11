@@ -116,10 +116,8 @@ DwmSystemBackdrop::DwmSystemBackdrop(HWND windowHandle, DWM_SYSTEMBACKDROP_TYPE 
 
 DwmSystemBackdrop::~DwmSystemBackdrop()
 {
-    // Undo only our own configuration. If the app has written the attribute behind our back it is the last
-    // writer and gets to keep what it asked for.
-    DWM_SYSTEMBACKDROP_TYPE currentBackdropType = DWMSBT_AUTO;
-    if (TryGetWindowBackdropType(m_windowHandle, currentBackdropType) && currentBackdropType == m_appliedBackdropType)
+    // Undo only our own configuration, so that an app that took the attribute over keeps what it asked for.
+    if (IsLastWriter())
     {
         TrySetWindowBackdropType(m_windowHandle, m_previousBackdropType);
     }
@@ -127,8 +125,16 @@ DwmSystemBackdrop::~DwmSystemBackdrop()
 
 void DwmSystemBackdrop::BackdropType(DWM_SYSTEMBACKDROP_TYPE backdropType)
 {
-    if (backdropType != m_appliedBackdropType && TrySetWindowBackdropType(m_windowHandle, backdropType))
+    // Same ownership rule as the destructor: once an app has written the attribute behind our back it is the
+    // last writer, and a later Kind change must not take the window back off it.
+    if (backdropType != m_appliedBackdropType && IsLastWriter() && TrySetWindowBackdropType(m_windowHandle, backdropType))
     {
         m_appliedBackdropType = backdropType;
     }
+}
+
+bool DwmSystemBackdrop::IsLastWriter() const
+{
+    DWM_SYSTEMBACKDROP_TYPE currentBackdropType = DWMSBT_AUTO;
+    return TryGetWindowBackdropType(m_windowHandle, currentBackdropType) && currentBackdropType == m_appliedBackdropType;
 }

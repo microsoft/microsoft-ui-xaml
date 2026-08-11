@@ -35,11 +35,15 @@ public:
     DwmSystemBackdrop(const DwmSystemBackdrop& other) = delete;
     DwmSystemBackdrop& operator=(const DwmSystemBackdrop& other) = delete;
 
-    // Switches the window to a different material, for instance when MicaBackdrop.Kind changes.
+    // Switches the window to a different material, for instance when MicaBackdrop.Kind changes. Leaves the
+    // window alone once an app has taken the attribute over, just like the destructor does.
     void BackdropType(DWM_SYSTEMBACKDROP_TYPE backdropType);
 
 private:
     DwmSystemBackdrop(HWND windowHandle, DWM_SYSTEMBACKDROP_TYPE previousBackdropType, DWM_SYSTEMBACKDROP_TYPE backdropType);
+
+    // Whether the window is still configured with what we last applied to it.
+    bool IsLastWriter() const;
 
     HWND m_windowHandle{ nullptr };
 

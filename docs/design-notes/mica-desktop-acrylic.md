@@ -184,8 +184,9 @@ back to. `MicaKind.Base` maps onto `DWMSBT_MAINWINDOW` and `MicaKind.BaseAlt` on
 Two pieces cooperate:
 * `MicaBackdrop` (controls layer) forks on the engine. On the system engine it configures the attribute through
   `DwmSystemBackdrop` instead of creating a `MicaController`. `DwmSystemBackdrop` snapshots the window's previous
-  attribute value and restores it on detach, but only while Xaml is still the last writer, so an app that
-  configures the attribute itself keeps its own choice.
+  attribute value and restores it on detach. It only updates or restores the attribute while Xaml is still the
+  last writer, so an app that configures the attribute itself keeps its own choice - a later `Kind` change won't
+  take the window back off it either.
 * `DirectUI::DesktopWindowImpl` (framework layer) makes the window itself stop covering the material up. DWM
   composes the material behind the window's redirection surface, which Xaml erases with the theme's window
   background color, so while a DWM system backdrop is configured the window extends its frame across the client
