@@ -22,6 +22,7 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ColorConversion.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)DwmSystemBackdrop.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LifetimeHandler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SystemCompositionEngine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CornerRadiusFilterConverter.properties.cpp" />
@@ -32,6 +33,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ColorConversion.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusToThicknessConverter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)DwmSystemBackdrop.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Flags_Enum.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)LifetimeHandler.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PointerInfo.h" />
