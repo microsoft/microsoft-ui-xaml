@@ -117,6 +117,11 @@ steps:
   # we can hit build breaks caused by MSBuild instances trying to produce DLLs that it's
   # already loaded.  To avoid that, we'll build the parts of the XAML compiler we need to build
   # before we build the solutions that consume them.
+  #
+  # XamlCompilerPrerequisites.sln builds the XAML compiler from the checked-out source for all
+  # providers, including GitHub-backed builds, so validation uses a compiler built from the same
+  # source revision being validated.  The solution also builds GenXbf (via the
+  # BuildGenXbfForMSBuild project it contains), so no separate GenXbf step is needed.
   - template: WinUI-BuildProject-Steps.yml
     parameters:
       solutionName: XamlCompilerPrerequisites.sln
@@ -126,29 +131,7 @@ steps:
       msbuildInstallDir: $(_buildToolsDirectory)
       projectCaching: ${{ parameters.projectCaching }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
-
-  - template: WinUI-BuildProject-Steps.yml
-    parameters:
-      solutionName: XamlCompilerPublic.csproj
-      solutionPath: $(Build.SourcesDirectory)
-      nugetConfigPath: nuget.config
-      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
-      msbuildInstallDir: $(_buildToolsDirectory)
-      projectCaching: ${{ parameters.projectCaching }}
-      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-      condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
-
-  - template: WinUI-BuildProject-Steps.yml
-    parameters:
-      solutionName: BuildGenXbfForMSBuild.csproj
-      solutionPath: $(Build.SourcesDirectory)\eng\BuildGenXbfForMSBuild
-      nugetConfigPath: nuget.config
-      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
-      msbuildInstallDir: $(_buildToolsDirectory)
-      projectCaching: ${{ parameters.projectCaching }}
-      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-      condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+      condition: succeeded()
 
   - ${{ if eq(parameters.buildProductOnly, 'false') }}:
     - template: WinUI-BuildProject-Steps.yml
