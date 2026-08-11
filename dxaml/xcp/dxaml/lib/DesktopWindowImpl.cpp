@@ -1252,40 +1252,7 @@ LRESULT DesktopWindowImpl::OnMessage(
         case WM_NCRBUTTONUP:
             return LResultFromHResult(OnNonClientRegionButtonUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
         case WM_ERASEBKGND:
-        {
-            // Without a redirection surface there is nothing to erase: GDI painting on this window goes
-            // nowhere, so the themed fill below would have no effect. See CreateDesktopWindow.
-            if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
-            {
-                return 1;
-            }
-
-            Theming::Theme appTheme = Theming::Theme::None;
-            ctl::ComPtr<xaml::IUIElement> content;
-            if(!m_bIsClosed && SUCCEEDED(get_ContentImpl(&content)) && content)
-            {
-                ctl::ComPtr<DirectUI::FrameworkElement> contentAsFE;
-                VERIFYHR(content.As<DirectUI::FrameworkElement>(&contentAsFE));
-                ASSERT(contentAsFE != nullptr);
-
-                xaml::ElementTheme actualTheme;
-                VERIFYHR(contentAsFE->get_ActualTheme(&actualTheme));
-                if (actualTheme != xaml::ElementTheme_Default)
-                {
-                    appTheme = actualTheme == xaml::ElementTheme_Light ? Theming::Theme::Light : Theming::Theme::Dark;
-                }
-            }
-
-            auto hdc = (HDC)wParam;
-            auto color = ColorUtils::GetWUColor(dxamlCore->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme));
-            RECT rc = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
-            auto oldColor  = ::SetBkColor(hdc, RGB(color.R, color.G, color.B));
-            ASSERT(oldColor != CLR_INVALID);
-            ::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &rc, NULL, 0, NULL);
-            // restore old color back
-            ::SetBkColor(hdc, oldColor);
-            return 1;
-        }
+            return OnEraseBackground(reinterpret_cast<HDC>(wParam));
         default:
         {
             LRESULT nonClientAreaResult = 0;
@@ -1300,6 +1267,140 @@ LRESULT DesktopWindowImpl::OnMessage(
     }
 
     return BaseWindow::OnMessage(uMsg, wParam, lParam);
+}
+
+// Fills the window's redirection surface. That surface is composed underneath the Xaml content island, so it
+// shows through wherever the island is transparent - which is the case whenever a SystemBackdrop is set (see
+// SetXamlIslandRootBackground).
+//
+// Normally we fill it with the theme's window background color, so that the window doesn't flash unpainted
+// content before the island renders its first frame. While DWM draws a system backdrop material for this
+// window we fill it with black instead, which UpdateDwmSystemBackdropState has arranged for DWM to treat as
+// fully transparent, so the material shows through.
+LRESULT DesktopWindowImpl::OnEraseBackground(_In_ HDC hdc)
+{
+    // Without a redirection surface there is nothing to erase - GDI painting on this window goes nowhere -
+    // and nothing opaque for a DWM system backdrop to show through, so none of the work below applies.
+    if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
+    {
+        return 1;
+    }
+
+    // Reconcile first. Anyone can configure DWMWA_SYSTEMBACKDROP_TYPE on this window at any time, and the frame
+    // and the background color have to agree for the window to look right either way. Nothing to repaint on a
+    // change - we're painting right now - so the return value doesn't matter here.
+    UpdateDwmSystemBackdropState();
+
+    const COLORREF backgroundColor = m_hasDwmSystemBackdrop ? RGB(0, 0, 0) : GetThemedBackgroundColor();
+    const RECT clientRect = WindowHelpers::GetClientWindowCoordinates(m_hwnd.get());
+
+    const COLORREF previousColor = ::SetBkColor(hdc, backgroundColor);
+    ASSERT(previousColor != CLR_INVALID);
+    ::ExtTextOut(hdc, 0, 0, ETO_OPAQUE, &clientRect, nullptr, 0, nullptr);
+    ::SetBkColor(hdc, previousColor);
+
+    // Non-zero tells the caller the background is erased, so DefWindowProc doesn't paint over it.
+    return 1;
+}
+
+// The window background color for the theme the window's content is actually rendering in. The content's
+// ActualTheme takes precedence over the app's base theme so that content overriding RequestedTheme doesn't
+// briefly flash the base theme's color.
+COLORREF DesktopWindowImpl::GetThemedBackgroundColor()
+{
+    Theming::Theme appTheme = Theming::Theme::None;
+
+    ctl::ComPtr<xaml::IUIElement> content;
+    if (!m_bIsClosed && SUCCEEDED(get_ContentImpl(&content)) && content)
+    {
+        ctl::ComPtr<DirectUI::FrameworkElement> contentAsFE;
+        VERIFYHR(content.As<DirectUI::FrameworkElement>(&contentAsFE));
+        ASSERT(contentAsFE != nullptr);
+
+        xaml::ElementTheme actualTheme;
+        VERIFYHR(contentAsFE->get_ActualTheme(&actualTheme));
+        if (actualTheme != xaml::ElementTheme_Default)
+        {
+            appTheme = actualTheme == xaml::ElementTheme_Light ? Theming::Theme::Light : Theming::Theme::Dark;
+        }
+    }
+
+    const auto color = ColorUtils::GetWUColor(DXamlCore::GetCurrent()->GetHandle()->GetFrameworkTheming()->GetHwndBackground(appTheme));
+    return RGB(color.R, color.G, color.B);
+}
+
+// Whether DWM draws one of its backdrop materials behind a window with this attribute value. DWMSBT_AUTO
+// leaves the choice to DWM, which draws no material for an ordinary top-level window.
+static bool IsDwmSystemBackdropMaterial(DWM_SYSTEMBACKDROP_TYPE backdropType)
+{
+    return backdropType == DWMSBT_MAINWINDOW
+        || backdropType == DWMSBT_TRANSIENTWINDOW
+        || backdropType == DWMSBT_TABBEDWINDOW;
+}
+
+// Brings the window's frame in line with the DWM system backdrop configured on it, so that the frame and the
+// background OnEraseBackground paints always agree. Returns whether that changed, so callers that aren't
+// already painting can repaint the window.
+//
+// Mica and desktop Acrylic are normally drawn by a lifted SystemBackdropController into the Xaml content
+// island. Those controllers can only render through the lifted compositor, so when the process runs on the
+// system composition engine the material is drawn by DWM for the window itself instead - the SystemBackdrop
+// object sets DWMWA_SYSTEMBACKDROP_TYPE on our HWND (see MicaBackdrop). DWM composes that material behind the
+// window, so the window has to stop contributing opaque pixels for it to be visible.
+//
+// The window is reconciled against the attribute rather than against our own writes, because an app is free to
+// configure DWMWA_SYSTEMBACKDROP_TYPE on a Xaml Window itself, at any time.
+//
+// None of this is needed when the window has no redirection surface to begin with - see
+// XamlChangeId::SkipWindowRedirectionSurface and CreateDesktopWindow. That is the cheaper arrangement (DWM
+// neither allocates nor blends a full-window surface that contributes nothing), but it is opt-in, because a
+// window without a redirection surface can't paint with GDI at all.
+bool DesktopWindowImpl::UpdateDwmSystemBackdropState()
+{
+    // Nothing to reconcile when the window has no redirection surface: it contributes no opaque pixels in the
+    // first place, so a DWM system backdrop shows through on its own and the frame is left alone.
+    if (OptionalChangeState::IsSkipWindowRedirectionSurfaceEnabled())
+    {
+        return false;
+    }
+
+    const bool hadDwmSystemBackdrop = m_hasDwmSystemBackdrop;
+
+    DWM_SYSTEMBACKDROP_TYPE backdropType = DWMSBT_AUTO;
+    // The attribute doesn't exist before Windows 11 22H2, where a failed query just means no DWM backdrop.
+    if (FAILED(DwmGetWindowAttribute(m_hwnd.get(), DWMWA_SYSTEMBACKDROP_TYPE, &backdropType, sizeof(backdropType))))
+    {
+        backdropType = DWMSBT_AUTO;
+    }
+
+    if (IsDwmSystemBackdropMaterial(backdropType))
+    {
+        // Negative margins extend the frame across the whole window, which is what makes DWM honor per-pixel
+        // transparency in the client area and compose the material through the black background
+        // OnEraseBackground leaves behind. Re-applied rather than applied once, because the same frame carries
+        // the window's title bar configuration (see WindowChrome) and we have no way of noticing someone else
+        // replacing the margins.
+        //
+        // Only take on the material once DWM has accepted that - it refuses for windows that run outside the
+        // shell, for instance - so that the window never erases to a black nothing composes away.
+        static constexpr MARGINS wholeWindowMargins{ -1, -1, -1, -1 };
+        m_hasDwmSystemBackdrop = SUCCEEDED(DwmExtendFrameIntoClientArea(m_hwnd.get(), &wholeWindowMargins));
+    }
+    else if (m_hasDwmSystemBackdrop)
+    {
+        // Xaml never extends this window's frame otherwise, so undoing our extension means a frame that isn't
+        // extended at all. DWM has no way to read the current margins back, so an app that extended the frame of
+        // a Xaml Window itself has its margins replaced rather than restored.
+        //
+        // Dropping the material goes through even if DWM refuses, because painting an opaque background over a
+        // frame we no longer control is the safe fallback.
+        static constexpr MARGINS defaultMargins{ 0, 0, 0, 0 };
+        IGNOREHR(DwmExtendFrameIntoClientArea(m_hwnd.get(), &defaultMargins));
+
+        m_hasDwmSystemBackdrop = false;
+    }
+
+    return m_hasDwmSystemBackdrop != hadDwmSystemBackdrop;
 }
 
 // This is a private method that is only called from a Microsoft::UI::XAML::Window
@@ -1678,7 +1779,8 @@ void DesktopWindowImpl::CreateDesktopWindow()
     // WS_EX_NOREDIRECTIONBITMAP tells the system not to give this window a GDI redirection surface at all.
     // Xaml barely uses it: the content island covers the client area, so the surface only really shows before
     // the island's first frame - but DWM still allocates it and blends it every frame, at the cost of one
-    // full-window 32-bit bitmap. Skipping it drops both.
+    // full-window 32-bit bitmap. Skipping it drops both, and it is also what lets a DWM system backdrop show
+    // through without any further help (see UpdateDwmSystemBackdropState).
     //
     // The catch is that the window can no longer paint with GDI, which is a behavior change rather than a pure
     // optimization, so it is opt-in through XamlChangeId::SkipWindowRedirectionSurface. The style is only
@@ -2401,8 +2503,17 @@ _Check_return_ HRESULT DesktopWindowImpl::get_SystemBackdropImpl(_Outptr_result_
 
 _Check_return_ HRESULT DesktopWindowImpl::put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* systemBackdrop)
 {
+    // Connecting the SystemBackdrop is what gives it the chance to configure a DWM system backdrop on this
+    // window, so bring the window's own painting in line with it afterwards.
     IFC_RETURN(m_desktopWindowXamlSource->put_SystemBackdropImpl(systemBackdrop));
     IFC_RETURN(SetXamlIslandRootBackground(nullptr, systemBackdrop));
+
+    if (UpdateDwmSystemBackdropState())
+    {
+        // The background is erased with a different color now, so anything already painted has to be repainted.
+        IFCW32_RETURN(::InvalidateRect(m_hwnd.get(), nullptr, TRUE));
+    }
+
     return S_OK;
 }
 
