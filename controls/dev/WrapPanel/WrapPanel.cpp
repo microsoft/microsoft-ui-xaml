@@ -109,7 +109,7 @@ winrt::Size WrapPanel::UpdateRows(winrt::Size availableSize)
             }
 
             UvMeasure desiredMeasure(orientation, child.DesiredSize());
-            if ((desiredMeasure.U + position.U + paddingEnd.U) > parentMeasure.U)
+            if ((desiredMeasure.U + position.U + paddingEnd.U) > parentMeasure.U || position.U >= parentMeasure.U)
             {
                 // next row!
                 position.U = paddingStart.U;
@@ -119,7 +119,7 @@ winrt::Size WrapPanel::UpdateRows(winrt::Size availableSize)
             }
 
             // Stretch the last item to fill the available space
-            if (isLast)
+            if (isLast && std::isfinite(parentMeasure.U))
             {
                 desiredMeasure.U = parentMeasure.U - position.U;
             }

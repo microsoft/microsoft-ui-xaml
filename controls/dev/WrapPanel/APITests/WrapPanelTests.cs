@@ -174,6 +174,93 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyItemsStretchLastWithInfinitePrimaryMeasure()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var orientation in new[] { Orientation.Horizontal, Orientation.Vertical })
+                {
+                    Log.Comment("Verify finite measurement for {0} orientation", orientation);
+
+                    var panel = new WrapPanel
+                    {
+                        Orientation = orientation,
+                        ItemsStretch = WrapPanelItemsStretch.Last
+                    };
+                    var child1 = new Border { Width = 40, Height = 20 };
+                    var child2 = new Border { Width = 40, Height = 20 };
+
+                    panel.Children.Add(child1);
+                    panel.Children.Add(child2);
+
+                    var availableSize = orientation == Orientation.Horizontal ?
+                        new Size(float.PositiveInfinity, 100) :
+                        new Size(100, float.PositiveInfinity);
+
+                    panel.Measure(availableSize);
+
+                    Verify.IsTrue(
+                        !double.IsInfinity(panel.DesiredSize.Width) && !double.IsNaN(panel.DesiredSize.Width) &&
+                        !double.IsInfinity(panel.DesiredSize.Height) && !double.IsNaN(panel.DesiredSize.Height),
+                        "WrapPanel DesiredSize should remain finite.");
+
+                    panel.Arrange(new Rect(0, 0, panel.DesiredSize.Width, panel.DesiredSize.Height));
+
+                    var expectedLastChildLayoutSlot = orientation == Orientation.Horizontal ?
+                        new Rect(40, 0, 40, 20) :
+                        new Rect(0, 20, 40, 20);
+                    Verify.AreEqual(
+                        expectedLastChildLayoutSlot,
+                        LayoutInformation.GetLayoutSlot(child2),
+                        "The last child should retain its desired primary-axis size.");
+                }
+            });
+        }
+
+        [TestMethod]
+        public void VerifyZeroSizedLastChildWrapsAndStretchesToFullLine()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var orientation in new[] { Orientation.Horizontal, Orientation.Vertical })
+                {
+                    Log.Comment("Verify full-line wrapping for {0} orientation", orientation);
+
+                    var panel = new WrapPanel
+                    {
+                        Orientation = orientation,
+                        ItemsStretch = WrapPanelItemsStretch.Last
+                    };
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        panel.Children.Add(new Border { Width = 44, Height = 44 });
+                    }
+
+                    var lastChild = orientation == Orientation.Horizontal ?
+                        new Border { Height = 44 } :
+                        new Border { Width = 44 };
+                    panel.Children.Add(lastChild);
+
+                    var panelSize = orientation == Orientation.Horizontal ?
+                        new Size(132, 88) :
+                        new Size(88, 132);
+
+                    panel.Measure(panelSize);
+                    panel.Arrange(new Rect(0, 0, panelSize.Width, panelSize.Height));
+
+                    var expectedLastChildLayoutSlot = orientation == Orientation.Horizontal ?
+                        new Rect(0, 44, 132, 44) :
+                        new Rect(44, 0, 44, 132);
+                    Verify.AreEqual(
+                        expectedLastChildLayoutSlot,
+                        LayoutInformation.GetLayoutSlot(lastChild),
+                        "The zero-desired-size last child should wrap and stretch across the new line.");
+                }
+            });
+        }
+
+        [TestMethod]
         public void VerifyItemsStretchNone()
         {
             RunOnUIThread.Execute(() =>
