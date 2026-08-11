@@ -7,6 +7,7 @@
 #include "InkCanvasAutomationPeer.h"
 #include "InkPresenter.h"
 #include "RuntimeProfiler.h"
+#include "SystemCompositionEngine.h"
 #include "Microsoft.UI.Xaml.xamlroot.h"
 #include "Microsoft.UI.Composition.h"
 #include <pplawait.h>
@@ -310,11 +311,10 @@ void InkCanvas::AttachToVisualLink()
     // until the compositor engine has been decided.
     EnsureCompositionDevice();
 
-    // Fork on the compositor engine (IsSystemCompositor detects it via GetForSystemEngine): a
-    // system-backed process splices the ink visual under a lifted MUC visual; a lifted process
-    // bridges it into the XAML tree via ContentExternalOutputLink. Each path binds the ink visual to
-    // the presenter (AttachInkVisualToPresenter) first, then roots it under its own target.
-    if (IsSystemCompositor())
+    // Fork on the compositor engine: a system-backed process splices the ink visual under a lifted MUC
+    // visual; a lifted process bridges it into the XAML tree via ContentExternalOutputLink. Each path binds
+    // the ink visual to the presenter (AttachInkVisualToPresenter) first, then roots it under its own target.
+    if (SystemCompositionEngine::IsEnabledForProcess())
     {
         AttachToSystemCompositor();
     }
@@ -372,7 +372,7 @@ void InkCanvas::AttachInkVisualToPresenter()
 
 // System compositor path: splices the ink visual directly under a lifted MUC visual via
 // IExpCompositorInterop2::CreateDCompVisualUnderMUCVisual, so lifted XAML natively clips/scrolls/
-// z-orders it. Only reached when IsSystemCompositor() is true, so the interop must be present.
+// z-orders it. Only reached on the system composition engine, so the interop must be present.
 void InkCanvas::AttachToSystemCompositor()
 {
     // Create the ink visual and bind it to the presenter before the compositor-specific splice.
@@ -465,24 +465,6 @@ void InkCanvas::DetachFromVisualLink()
     {
         m_threadData->m_compositionDevice->Commit();
     }
-}
-
-// Compositor-engine detection: true when the process runs on the system composition engine.
-// CompositionEngine::GetForSystemEngine returns a non-null system object only on a system-backed
-// compositor, so it selects the system splice (AttachToSystemCompositor) over the lifted
-// ContentExternalOutputLink path (AttachToLiftedCompositor). Evaluated once per process on first
-// use, so every InkCanvas on the thread agrees for the process lifetime.
-bool InkCanvas::IsSystemCompositor()
-{
-    static bool isSystemCompositor = [] {
-        auto compositor = winrt::CompositionTarget::GetCompositorForCurrentThread();
-        // GetForSystemEngine takes any composition object (IInspectable); pass the compositor
-        // directly rather than allocating a throwaway visual just to probe the engine.
-        // CompositionEngine lives in the Microsoft.UI.Composition namespace (it was promoted out of
-        // the Experimental namespace in the InteractiveExperiences transport), so reference it there.
-        return winrt::Microsoft::UI::Composition::CompositionEngine::GetForSystemEngine(compositor) != nullptr;
-    }();
-    return isSystemCompositor;
 }
 
 // Sizes the lifted PlacementVisual to the control's physical-pixel bounds so it has a hit-test area

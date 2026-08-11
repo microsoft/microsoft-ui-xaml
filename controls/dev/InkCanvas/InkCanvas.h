@@ -46,12 +46,10 @@ private:
     void AttachToVisualLink();
     void DetachFromVisualLink();
 
-    // Compositor fork: IsSystemCompositor() detects (via CompositionEngine::GetForSystemEngine)
-    // whether the process runs on the system composition engine. A system-backed process splices the
-    // ink visual under a lifted MUC visual (AttachToSystemCompositor); a lifted process bridges it
+    // Compositor fork on SystemCompositionEngine::IsEnabledForProcess(): a system-backed process splices
+    // the ink visual under a lifted MUC visual (AttachToSystemCompositor); a lifted process bridges it
     // into the XAML tree via ContentExternalOutputLink (AttachToLiftedCompositor).
     void EnsureCompositionDevice();
-    bool IsSystemCompositor();
     void AttachToSystemCompositor();
     void AttachToLiftedCompositor();
     // Shared by both compositor paths: creates the ink visual on the shared DComp device and binds
