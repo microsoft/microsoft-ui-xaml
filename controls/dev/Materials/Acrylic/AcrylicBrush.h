@@ -60,6 +60,7 @@ private:
     static constexpr auto LuminosityColorColor{ L"LuminosityColor.Color"sv };
     static constexpr auto FallbackColorColor{ L"FallbackColor.Color"sv };
     static constexpr auto OpaqueFallbackColorColor{ L"OpaqueFallbackColor.Color"sv };
+    static constexpr auto NoiseOpacityOpacity{ L"NoiseOpacity.Opacity"sv };
 
     static constexpr float sc_blurRadius = 30.0f;
     static constexpr float sc_noiseOpacity = 0.02f;
