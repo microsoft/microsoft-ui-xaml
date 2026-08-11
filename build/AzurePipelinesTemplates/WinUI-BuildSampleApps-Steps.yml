@@ -14,11 +14,6 @@ steps:
       $nugetConfigPath = "$(Build.SourcesDirectory)\Samples\WinUIGallery\nuget.config"
       $sourceName = "MUX-Dependencies"
       $newSourceUrl = "$(WinUILKGDependenciesFeedUri)"
-
-      # GitHub-backed PRs restore the Gallery's public dependencies anonymously from the shine-oss
-      # MUX-Dependencies feed and cannot reach the internal WinUI Dependencies feed, so the
-      # internal-feed repoint and nuget.org removal below are skipped for GitHub/GitHubEnterprise.
-      # Only the repo-root PackageStore add further down applies to every provider.
       $isGitHub = $env:BUILD_REPOSITORY_PROVIDER -in @('GitHub', 'GitHubEnterprise')
 
       if (Test-Path $nugetConfigPath) {
@@ -97,12 +92,7 @@ steps:
       # PublishAot must be specified at restore, as it conditionally generates nuget.g.* imports
       $publishAot = $env:buildConfiguration -eq "Release" -and $env:buildPlatform -ne "x86"
       $galleryTrimArg = ""
-      # The NativeAOT ILCompiler pack (Microsoft.DotNet.ILCompiler) ships only on the internal
-      # WinUI.Dependencies feed, so AOT cannot restore/complete on GitHub-backed validation
-      # (it 401s against the public shine-oss feed). Left enabled, the ILLink trim pass also
-      # emits a duplicate linked\WinUIGallery.pdb that fails the Gallery UnitTests MSIX with
-      # APPX1101. Disable AOT and trimming on GitHub so the Gallery build matches the known-green
-      # ADO layout (single, untrimmed WinUIGallery.pdb). ADO is unaffected.
+
       if ($env:BUILD_REPOSITORY_PROVIDER -in @('GitHub','GitHubEnterprise')) {
         $publishAot = $false
         $galleryTrimArg = "/p:PublishTrimmed=false"
