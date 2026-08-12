@@ -358,29 +358,101 @@ Namespace Global.Conditionals
 
             ' Subs for each event bindings event handler.
 
-            Private Sub obj4Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private obj4Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj4ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Click_V2(p0, p1)
             End Sub
 
-            Private Sub obj6Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private Function Create_obj4Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of BindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As BindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj4ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj6Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj6ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Click_V3(p0, p1)
             End Sub
 
-            Private Sub obj21Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private Function Create_obj6Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of BindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As BindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj6ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj21Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj21ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Model.Org.Hire1()
             End Sub
 
-            Private Sub obj22Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private Function Create_obj21Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of BindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As BindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj21ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj22Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj22ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Model.Org.Hire2()
             End Sub
 
-            Private Sub obj23Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private Function Create_obj22Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of BindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As BindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj22ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj23Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj23ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Model.Org.Hire3()
             End Sub
 
-            Private Sub obj24Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private Function Create_obj23Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of BindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As BindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj23ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj24Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj24ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Model.Org.Fire()
             End Sub
+
+            Private Function Create_obj24Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of BindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As BindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj24ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
 
             ' Static fields for each binding's enabled/disabled state
             Private Shared isobj3TextDisabled As Boolean = False
@@ -406,9 +478,9 @@ Namespace Global.Conditionals
                 If (lineNumber = 27 And columnNumber = 28) Then
                     isobj3TextDisabled = True
                 ElseIf (lineNumber = 54 And columnNumber = 30) Then
-                    RemoveHandler Me.obj4.Click, AddressOf obj4Click
+                    RemoveHandler Me.obj4.Click, Me.obj4Click
                 ElseIf (lineNumber = 56 And columnNumber = 30) Then
-                    RemoveHandler Me.obj6.Click, AddressOf obj6Click
+                    RemoveHandler Me.obj6.Click, Me.obj6Click
                 ElseIf (lineNumber = 96 And columnNumber = 33) Then
                     isobj8TextDisabled = True
                 ElseIf (lineNumber = 97 And columnNumber = 33) Then
@@ -424,15 +496,15 @@ Namespace Global.Conditionals
                 ElseIf (lineNumber = 70 And columnNumber = 41) Then
                     isobj20TextDisabled = True
                 ElseIf (lineNumber = 61 And columnNumber = 38) Then
-                    RemoveHandler Me.obj21.Click, AddressOf obj21Click
+                    RemoveHandler Me.obj21.Click, Me.obj21Click
                 ElseIf (lineNumber = 62 And columnNumber = 38) Then
-                    RemoveHandler Me.obj22.Click, AddressOf obj22Click
+                    RemoveHandler Me.obj22.Click, Me.obj22Click
                 ElseIf (lineNumber = 63 And columnNumber = 38) Then
-                    RemoveHandler Me.obj23.Click, AddressOf obj23Click
+                    RemoveHandler Me.obj23.Click, Me.obj23Click
                 ElseIf (lineNumber = 64 And columnNumber = 89) Then
                     isobj24LoadDisabled = True
                 ElseIf (lineNumber = 64 And columnNumber = 38) Then
-                    RemoveHandler Me.obj24.Click, AddressOf obj24Click
+                    RemoveHandler Me.obj24.Click, Me.obj24Click
                 ElseIf (lineNumber = 46 And columnNumber = 62) Then
                     isobj25TextDisabled = True
                 ElseIf (lineNumber = 48 And columnNumber = 62) Then
@@ -457,7 +529,8 @@ Namespace Global.Conditionals
                         If BindTests.IsTypePresent_ConditionalControls_V1Type Then
                             Me.obj4 = DirectCast(target, Global.ConditionalControls.Button1)
                             If BindTests.IsTypePresent_ConditionalControls_V2Type Then
-                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, AddressOf obj4Click
+                                Me.obj4Click = Me.Create_obj4Click()
+                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, Me.obj4Click
                             End If
                         End If
                         Exit Select
@@ -465,7 +538,8 @@ Namespace Global.Conditionals
                         If BindTests.IsTypePresent_ConditionalControls_V1Type Then
                             Me.obj6 = DirectCast(target, Global.ConditionalControls.Button1)
                             If BindTests.IsTypePresent_ConditionalControls_V3Type Then
-                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, AddressOf obj6Click
+                                Me.obj6Click = Me.Create_obj6Click()
+                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, Me.obj6Click
                             End If
                         End If
                         Exit Select
@@ -510,7 +584,8 @@ Namespace Global.Conditionals
                         If BindTests.IsTypePresent_ConditionalControls_V1Type Then
                             Me.obj21 = DirectCast(target, Global.ConditionalControls.Button1)
                             If BindTests.IsTypePresent_ConditionalControls_V1Type Then
-                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, AddressOf obj21Click
+                                Me.obj21Click = Me.Create_obj21Click()
+                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, Me.obj21Click
                             End If
                         End If
                         Exit Select
@@ -518,7 +593,8 @@ Namespace Global.Conditionals
                         If BindTests.IsTypePresent_ConditionalControls_V1Type Then
                             Me.obj22 = DirectCast(target, Global.ConditionalControls.Button1)
                             If BindTests.IsTypePresent_ConditionalControls_V2Type Then
-                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, AddressOf obj22Click
+                                Me.obj22Click = Me.Create_obj22Click()
+                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, Me.obj22Click
                             End If
                         End If
                         Exit Select
@@ -526,7 +602,8 @@ Namespace Global.Conditionals
                         If BindTests.IsTypePresent_ConditionalControls_V1Type Then
                             Me.obj23 = DirectCast(target, Global.ConditionalControls.Button1)
                             If BindTests.IsTypePresent_ConditionalControls_V3Type Then
-                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, AddressOf obj23Click
+                                Me.obj23Click = Me.Create_obj23Click()
+                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, Me.obj23Click
                             End If
                         End If
                         Exit Select
@@ -534,7 +611,8 @@ Namespace Global.Conditionals
                         If BindTests.IsTypePresent_ConditionalControls_V1Type Then
                             Me.obj24 = DirectCast(target, Global.ConditionalControls.Button1)
                             If BindTests.IsTypePresent_ConditionalControls_V1Type Then
-                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, AddressOf obj24Click
+                                Me.obj24Click = Me.Create_obj24Click()
+                                AddHandler DirectCast(target, Global.ConditionalControls.Button1).Click, Me.obj24Click
                             End If
                         End If
                         Exit Select

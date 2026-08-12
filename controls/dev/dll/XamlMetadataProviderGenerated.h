@@ -1455,6 +1455,27 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkHighContrastAdjustment",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkHighContrastAdjustment",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"UseSystemColorsWhenNecessary") return box_value(winrt::InkHighContrastAdjustment::UseSystemColorsWhenNecessary);
+                    if (fromString == L"UseSystemColors") return box_value(winrt::InkHighContrastAdjustment::UseSystemColors);
+                    if (fromString == L"UseOriginalColors") return box_value(winrt::InkHighContrastAdjustment::UseOriginalColors);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.InkInputConfiguration",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -1624,6 +1645,22 @@ Entry c_typeEntries[] =
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"StrokeInput", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkStrokeInput", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::InkPresenter>().StrokeInput(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"UnprocessedInput", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.InkUnprocessedInput", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::InkPresenter>().UnprocessedInput(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -1654,6 +1691,26 @@ Entry c_typeEntries[] =
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
                 });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkStrokeInput",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkStrokeInput",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -2305,6 +2362,26 @@ Entry c_typeEntries[] =
                 });
 
             return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.InkUnprocessedInput",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.InkUnprocessedInput",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
         }
     },
     {

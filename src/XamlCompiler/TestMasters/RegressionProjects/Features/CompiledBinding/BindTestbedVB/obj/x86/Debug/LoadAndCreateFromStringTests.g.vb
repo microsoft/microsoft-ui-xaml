@@ -392,17 +392,53 @@ Namespace Global.BindTestbed
 
             ' Subs for each event bindings event handler.
 
-            Private Sub obj40Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private obj40Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj40ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Model.NestedLoad.Option1Click()
             End Sub
 
-            Private Sub obj41Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private Function Create_obj40Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of LoadAndCreateFromStringTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As LoadAndCreateFromStringTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj40ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj41Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj41ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Model.NestedLoad.Option2Click()
             End Sub
 
-            Private Sub obj42Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private Function Create_obj41Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of LoadAndCreateFromStringTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As LoadAndCreateFromStringTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj41ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj42Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj42ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Model.NestedLoad.Option3Click()
             End Sub
+
+            Private Function Create_obj42Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of LoadAndCreateFromStringTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As LoadAndCreateFromStringTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj42ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
 
             ' Static fields for each binding's enabled/disabled state
             Private Shared isobj6LoadDisabled As Boolean = False
@@ -500,15 +536,15 @@ Namespace Global.BindTestbed
                 ElseIf (lineNumber = 92 And columnNumber = 76) Then
                     isobj40BackgroundDisabled = True
                 ElseIf (lineNumber = 92 And columnNumber = 29) Then
-                    RemoveHandler Me.obj40.Click, AddressOf obj40Click
+                    RemoveHandler Me.obj40.Click, Me.obj40Click
                 ElseIf (lineNumber = 93 And columnNumber = 76) Then
                     isobj41BackgroundDisabled = True
                 ElseIf (lineNumber = 93 And columnNumber = 29) Then
-                    RemoveHandler Me.obj41.Click, AddressOf obj41Click
+                    RemoveHandler Me.obj41.Click, Me.obj41Click
                 ElseIf (lineNumber = 94 And columnNumber = 76) Then
                     isobj42BackgroundDisabled = True
                 ElseIf (lineNumber = 94 And columnNumber = 29) Then
-                    RemoveHandler Me.obj42.Click, AddressOf obj42Click
+                    RemoveHandler Me.obj42.Click, Me.obj42Click
                 ElseIf (lineNumber = 72 And columnNumber = 40) Then
                     isobj47TextDisabled = True
                 ElseIf (lineNumber = 68 And columnNumber = 40) Then
@@ -652,15 +688,18 @@ Namespace Global.BindTestbed
                         Exit Select
                     Case 40: ' LoadAndCreateFromStringTests.xaml line 92                        
                         Me.obj40 = DirectCast(target, Global.Windows.UI.Xaml.Controls.Button)
-                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, AddressOf obj40Click
+                        Me.obj40Click = Me.Create_obj40Click()
+                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, Me.obj40Click
                         Exit Select
                     Case 41: ' LoadAndCreateFromStringTests.xaml line 93                        
                         Me.obj41 = DirectCast(target, Global.Windows.UI.Xaml.Controls.Button)
-                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, AddressOf obj41Click
+                        Me.obj41Click = Me.Create_obj41Click()
+                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, Me.obj41Click
                         Exit Select
                     Case 42: ' LoadAndCreateFromStringTests.xaml line 94                        
                         Me.obj42 = DirectCast(target, Global.Windows.UI.Xaml.Controls.Button)
-                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, AddressOf obj42Click
+                        Me.obj42Click = Me.Create_obj42Click()
+                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, Me.obj42Click
                         Exit Select
                     Case 47: ' LoadAndCreateFromStringTests.xaml line 72                        
                         Me.obj47 = DirectCast(target, Global.Windows.UI.Xaml.Controls.TextBlock)

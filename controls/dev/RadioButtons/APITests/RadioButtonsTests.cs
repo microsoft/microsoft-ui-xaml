@@ -138,6 +138,93 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void VerifyVirtualizingTemplateDoesNotRetainRecycledContainers()
+        {
+            RadioButtons radioButtons = null;
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            int clearingCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Creating virtualizing RadioButtons template.");
+                var virtualizingTemplate = (ControlTemplate)XamlReader.Load(TestUtilities.ProcessTestXamlForRepo(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                        TargetType='controls:RadioButtons'>
+                        <ScrollViewer Height='120'>
+                            <controls:ItemsRepeater x:Name='InnerRepeater'>
+                                <controls:ItemsRepeater.Layout>
+                                    <controls:StackLayout />
+                                </controls:ItemsRepeater.Layout>
+                            </controls:ItemsRepeater>
+                        </ScrollViewer>
+                    </ControlTemplate>"));
+
+                Log.Comment("Creating RadioButtons instance.");
+                radioButtons = new RadioButtons
+                {
+                    ItemsSource = Enumerable.Range(0, 100).Select(index => $"Option {index}").ToList(),
+                    SelectedIndex = 0,
+                    Template = virtualizingTemplate
+                };
+
+                Log.Comment("Applying RadioButtons template.");
+                Content = radioButtons;
+                Content.UpdateLayout();
+
+                Log.Comment("Finding virtualizing template descendants.");
+                scrollViewer = radioButtons.FindVisualChildByType<ScrollViewer>();
+                repeater = radioButtons.FindVisualChildByType<ItemsRepeater>();
+                Verify.IsNotNull(scrollViewer);
+                Verify.IsNotNull(repeater);
+
+                repeater.ElementClearing += (sender, args) => clearingCount++;
+            });
+
+            IdleSynchronizer.Wait();
+
+            void Scroll(bool toEnd)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollViewer.ChangeView(null, toEnd ? scrollViewer.ScrollableHeight : 0, null, true);
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+            }
+
+            Scroll(true);
+            Scroll(false);
+
+            int baselineChildCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                baselineChildCount = VisualTreeHelper.GetChildrenCount(repeater);
+                Verify.IsLessThan(baselineChildCount, 100);
+            });
+
+            for (int iteration = 0; iteration < 5; iteration++)
+            {
+                Scroll(true);
+                Scroll(false);
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                int finalChildCount = VisualTreeHelper.GetChildrenCount(repeater);
+                Verify.IsGreaterThan(clearingCount, 0);
+                Verify.AreEqual(baselineChildCount, finalChildCount);
+
+                var selectedContainer = radioButtons.ContainerFromIndex(0) as RadioButton;
+                Verify.IsNotNull(selectedContainer);
+                Verify.AreEqual("Option 0", selectedContainer.Content);
+            });
+        }
+
+        [TestMethod]
         public void VerifySelectionChangedArgsDoNotContainNullItems()
         {
             RadioButtons radioButtons = null;

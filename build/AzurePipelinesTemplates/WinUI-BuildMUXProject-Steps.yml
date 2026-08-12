@@ -117,6 +117,11 @@ steps:
   # we can hit build breaks caused by MSBuild instances trying to produce DLLs that it's
   # already loaded.  To avoid that, we'll build the parts of the XAML compiler we need to build
   # before we build the solutions that consume them.
+  #
+  # XamlCompilerPrerequisites.sln builds the XAML compiler from the checked-out source for all
+  # providers, including GitHub-backed builds, so validation uses a compiler built from the same
+  # source revision being validated.  The solution also builds GenXbf (via the
+  # BuildGenXbfForMSBuild project it contains), so no separate GenXbf step is needed.
   - template: WinUI-BuildProject-Steps.yml
     parameters:
       solutionName: XamlCompilerPrerequisites.sln
@@ -126,29 +131,7 @@ steps:
       msbuildInstallDir: $(_buildToolsDirectory)
       projectCaching: ${{ parameters.projectCaching }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-      condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
-
-  - template: WinUI-BuildProject-Steps.yml
-    parameters:
-      solutionName: XamlCompilerPublic.csproj
-      solutionPath: $(Build.SourcesDirectory)
-      nugetConfigPath: nuget.config
-      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
-      msbuildInstallDir: $(_buildToolsDirectory)
-      projectCaching: ${{ parameters.projectCaching }}
-      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-      condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
-
-  - template: WinUI-BuildProject-Steps.yml
-    parameters:
-      solutionName: BuildGenXbfForMSBuild.csproj
-      solutionPath: $(Build.SourcesDirectory)\eng\BuildGenXbfForMSBuild
-      nugetConfigPath: nuget.config
-      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
-      msbuildInstallDir: $(_buildToolsDirectory)
-      projectCaching: ${{ parameters.projectCaching }}
-      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-      condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+      condition: succeeded()
 
   - ${{ if eq(parameters.buildProductOnly, 'false') }}:
     - template: WinUI-BuildProject-Steps.yml
@@ -233,28 +216,6 @@ steps:
         solutionPath: $(Build.SourcesDirectory)\controls
         nugetConfigPath: nuget.config
         msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
-        msbuildInstallDir: $(_buildToolsDirectory)
-        projectCaching: ${{ parameters.projectCaching }}
-        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-        condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
-
-  # Chart lives in the internal-only MUXControlsChart.sln for the same reason as Tabular above: it is
-  # excluded from the public mirror, so it must not be referenced by the mirrored MUXControls.sln and
-  # must be guarded off GitHub-backed legs where the source tree does not contain it.
-  # FeatureChartEnabled is off by default, so this step is what actually compiles the binary -- without
-  # it a break in Chart would not fail any build. Chart's own ProjectReference builds the dxaml private
-  # merged winmds it consumes, so the placement here is for consistency with Tabular rather than a
-  # build-order requirement.
-  # Skipped on final-release legs: Chart is internal and experimental, and forcing FeatureChartEnabled
-  # there would trip the ValidateChartFeatureSource guard in eng\productmetadata.props. Tabular does not
-  # need this because it never forces its feature on.
-  - ${{ if and(eq(parameters.buildProductOnly, 'false'), ne(parameters.MUXFinalRelease, true)) }}:
-    - template: WinUI-BuildProject-Steps.yml
-      parameters:
-        solutionName: MUXControlsChart.sln
-        solutionPath: $(Build.SourcesDirectory)\controls
-        nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue) /p:FeatureChartEnabled=true'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -407,7 +368,6 @@ steps:
           **/Microsoft.UI.Text.winmd
           **/Microsoft.UI.Xaml.winmd
           **/Microsoft.UI.Xaml.Controls.dll
-          **/Microsoft.UI.Xaml.Controls.Chart.dll
           **/Microsoft.UI.Xaml.Controls.Tabular.dll
           **/Microsoft.ui.xaml.dll
           **/Microsoft.ui.xaml.dll.mui

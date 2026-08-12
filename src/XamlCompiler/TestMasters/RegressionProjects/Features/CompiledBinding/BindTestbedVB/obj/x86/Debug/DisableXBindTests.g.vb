@@ -60,17 +60,53 @@ Namespace Global.BindTestbed
 
             ' Subs for each event bindings event handler.
 
-            Private Sub obj8Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private obj8Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj8ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Click_RegularArgs(p0, p1)
             End Sub
 
-            Private Sub obj9Click(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+            Private Function Create_obj8Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of DisableXBindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As DisableXBindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj8ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj9Click As Global.Windows.UI.Xaml.RoutedEventHandler
+
+            Private Sub obj9ClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
                 Me.dataRoot.Click_NoArgs()
             End Sub
 
-            Private Sub obj10ItemClick(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.Controls.ItemClickEventArgs)
+            Private Function Create_obj9Click() As Global.Windows.UI.Xaml.RoutedEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of DisableXBindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.RoutedEventArgs)
+                    Dim bindings As DisableXBindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj9ClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
+
+            Private obj10ItemClick As Global.Windows.UI.Xaml.Controls.ItemClickEventHandler
+
+            Private Sub obj10ItemClickHandler(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.Controls.ItemClickEventArgs)
                 Me.dataRoot.Click_RegularArgs(p0, p1)
             End Sub
+
+            Private Function Create_obj10ItemClick() As Global.Windows.UI.Xaml.Controls.ItemClickEventHandler
+                Dim weakBindings = New Global.System.WeakReference(Of DisableXBindTests_obj1_Bindings)(Me)
+                Return Sub(p0 As Global.System.Object, p1 As Global.Windows.UI.Xaml.Controls.ItemClickEventArgs)
+                    Dim bindings As DisableXBindTests_obj1_Bindings = Nothing
+                    If weakBindings.TryGetTarget(bindings) Then
+                        bindings.obj10ItemClickHandler(p0, p1)
+                    End If
+                End Sub
+            End Function
 
             ' Static fields for each binding's enabled/disabled state
             Private Shared isobj2TextDisabled As Boolean = False
@@ -98,11 +134,11 @@ Namespace Global.BindTestbed
                 ElseIf (lineNumber = 34 And columnNumber = 66) Then
                     isobj7ValueDisabled = True
                 ElseIf (lineNumber = 27 And columnNumber = 29) Then
-                    RemoveHandler Me.obj8.Click, AddressOf obj8Click
+                    RemoveHandler Me.obj8.Click, Me.obj8Click
                 ElseIf (lineNumber = 28 And columnNumber = 29) Then
-                    RemoveHandler Me.obj9.Click, AddressOf obj9Click
+                    RemoveHandler Me.obj9.Click, Me.obj9Click
                 ElseIf (lineNumber = 29 And columnNumber = 57) Then
-                    RemoveHandler Me.obj10.ItemClick, AddressOf obj10ItemClick
+                    RemoveHandler Me.obj10.ItemClick, Me.obj10ItemClick
                 End If
             End Sub
 
@@ -132,15 +168,18 @@ Namespace Global.BindTestbed
                         Exit Select
                     Case 8: ' DisableXBindTests.xaml line 27                        
                         Me.obj8 = DirectCast(target, Global.Windows.UI.Xaml.Controls.Button)
-                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, AddressOf obj8Click
+                        Me.obj8Click = Me.Create_obj8Click()
+                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, Me.obj8Click
                         Exit Select
                     Case 9: ' DisableXBindTests.xaml line 28                        
                         Me.obj9 = DirectCast(target, Global.Windows.UI.Xaml.Controls.Button)
-                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, AddressOf obj9Click
+                        Me.obj9Click = Me.Create_obj9Click()
+                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.Button).Click, Me.obj9Click
                         Exit Select
                     Case 10: ' DisableXBindTests.xaml line 29                        
                         Me.obj10 = DirectCast(target, Global.Windows.UI.Xaml.Controls.GridView)
-                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.GridView).ItemClick, AddressOf obj10ItemClick
+                        Me.obj10ItemClick = Me.Create_obj10ItemClick()
+                        AddHandler DirectCast(target, Global.Windows.UI.Xaml.Controls.GridView).ItemClick, Me.obj10ItemClick
                         Exit Select
                     Case Else
                         Exit Select

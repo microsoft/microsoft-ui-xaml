@@ -1,0 +1,62 @@
+parameters:
+- name: sourceBranchName
+  displayName: GitHub source branch to mirror
+  type: string
+  default: winui3/main
+- name: targetBranchName
+  displayName: Internal ADO target branch to update
+  type: string
+  default: user/hmishra/winui3/main
+
+stages:
+- stage: Source
+  dependsOn: []
+  jobs:
+  - job: MirrorGitHubToInternal
+    pool:
+      type: windows
+    timeoutInMinutes: 60
+    variables:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+      ob_git_skip_checkout_none: true
+      sourceRepoRelativePath: 's\source'
+      targetRepoRelativePath: 's\target'
+    steps:
+    - checkout: self
+      submodules: false
+      persistCredentials: false
+      fetchDepth: 0
+      fetchTags: false
+      path: '$(sourceRepoRelativePath)'
+      displayName: Checkout GitHub source repository '$(sourceRepoRelativePath)'
+    - checkout: targetRepository
+      submodules: false
+      persistCredentials: true
+      fetchDepth: 0
+      path: '$(targetRepoRelativePath)'
+      displayName: Checkout internal target repository '$(targetRepoRelativePath)'
+
+    - script: set
+      displayName: Display machine environment variables
+
+    # This keeps Guardian happy by allowing it to find the TSA config.
+    - task: CopyFiles@2
+      displayName: Copy `.config\` to `$(Build.SourcesDirectory)`
+      inputs:
+        SourceFolder: '$(Pipeline.Workspace)\$(sourceRepoRelativePath)'
+        TargetFolder: '$(Build.SourcesDirectory)'
+        Contents: |
+          .config\**
+
+    - task: PowerShell@2
+      displayName: Mirror GitHub source to internal repository
+      inputs:
+        workingDirectory: '$(Pipeline.Workspace)'
+        filePath: '$(Pipeline.Workspace)\$(sourceRepoRelativePath)\scripts\MirrorGitRepositoryWithHistory.ps1'
+        arguments: >
+          -SourceRepositoryDirectory $(sourceRepoRelativePath)
+          -SourceBranchName '${{ parameters.sourceBranchName }}'
+          -TargetRepositoryDirectory $(targetRepoRelativePath)
+          -TargetBranchName '${{ parameters.targetBranchName }}'
+          -SourceRemoteUrlPattern '$(GitHubToAdoMirrorSourceRemoteUrlPattern)'
+          -TargetRemoteUrlPattern '$(GitHubToAdoMirrorTargetRemoteUrlPattern)'

@@ -34,6 +34,9 @@
         Windows.Foundation.Rect SelectWithLine(Windows.Foundation.Point from, Windows.Foundation.Point to);
         Windows.Foundation.Rect SelectWithPolyLine(Windows.Foundation.Collections.IIterable<Windows.Foundation.Point> points);
         Windows.Foundation.Rect BoundingRect{ get; };
+        void CopySelectedToClipboard();
+        Windows.Foundation.Rect PasteFromClipboard(Windows.Foundation.Point position);
+        Boolean CanPasteFromClipboard();
     }
 
     // Mirror of Windows.UI.Input.Inking.InkInputProcessingMode.
@@ -69,6 +72,57 @@
         Boolean IsEraserInputEnabled;
     }
 
+    // Mirror of Windows.UI.Input.Inking.InkHighContrastAdjustment (identical values).
+    [MUX_PREVIEW]
+    enum InkHighContrastAdjustment
+    {
+        UseSystemColorsWhenNecessary = 0,
+        UseSystemColors = 1,
+        UseOriginalColors = 2,
+    };
+
+    // Ink-thread-marshaled mirror of Windows.UI.Input.Inking.InkStrokeInput. The OS object is
+    // thread-affine to the ink thread; the owning InkPresenter subscribes there and re-raises these
+    // events on the UI thread, passing the OS PointerEventArgs through.
+    [MUX_PREVIEW]
+    runtimeclass InkStrokeInput
+    {
+        event Windows.Foundation.TypedEventHandler<InkStrokeInput, Windows.UI.Core.PointerEventArgs> StrokeStarted;
+        event Windows.Foundation.TypedEventHandler<InkStrokeInput, Windows.UI.Core.PointerEventArgs> StrokeContinued;
+        event Windows.Foundation.TypedEventHandler<InkStrokeInput, Windows.UI.Core.PointerEventArgs> StrokeEnded;
+        event Windows.Foundation.TypedEventHandler<InkStrokeInput, Windows.UI.Core.PointerEventArgs> StrokeCanceled;
+
+        // Back-pointer to the owning presenter (parity with UWP InkStrokeInput.InkPresenter). Returns
+        // our mirror InkPresenter, not the OS one, consistent with the wrapping model. Exposed as a
+        // method, NOT a property: a property here generates a XAML metadata thunk, and because
+        // InkPresenter.StrokeInput is itself a property thunk pointing back to InkStrokeInput, the two
+        // thunks form a cycle the metadata provider walks recursively (stack overflow at first use).
+        // A method carries no metadata thunk, breaking the cycle (same reasoning as
+        // InkPresenter.GetHighContrastAdjustment below). UWP's get_InkPresenter is a method at the ABI.
+        InkPresenter GetInkPresenter();
+    }
+
+    // Ink-thread-marshaled mirror of Windows.UI.Input.Inking.InkUnprocessedInput. Fires the raw
+    // pointer events the presenter did not turn into ink (used with InputProcessingMode.None, e.g.
+    // lasso selection). Re-raised on the UI thread, passing the OS PointerEventArgs through.
+    [MUX_PREVIEW]
+    runtimeclass InkUnprocessedInput
+    {
+        event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerEntered;
+        event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerHovered;
+        event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerExited;
+        event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerPressed;
+        event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerMoved;
+        event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerReleased;
+        event Windows.Foundation.TypedEventHandler<InkUnprocessedInput, Windows.UI.Core.PointerEventArgs> PointerLost;
+
+        // Back-pointer to the owning presenter (parity with UWP InkUnprocessedInput.InkPresenter).
+        // Returns our mirror InkPresenter, not the OS one, consistent with the wrapping model. Exposed
+        // as a method, NOT a property, to avoid the recursive XAML metadata thunk cycle with
+        // InkPresenter.UnprocessedInput (see InkStrokeInput.GetInkPresenter above).
+        InkPresenter GetInkPresenter();
+    }
+
     // Ink-thread-marshaled subset of Windows.UI.Input.Inking.InkPresenter.
     [MUX_PREVIEW]
     runtimeclass InkPresenter
@@ -79,9 +133,18 @@
         Windows.UI.Input.Inking.InkDrawingAttributes CopyDefaultDrawingAttributes();
         void SetPredefinedConfiguration(Windows.UI.Input.Inking.InkPresenterPredefinedConfiguration configuration);
 
+        // High-contrast rendering adjustment. Exposed as get/set methods rather than a property:
+        // our InkPresenter runtimeclass name-collides with Windows.UI.Input.Inking.InkPresenter, so
+        // the generated XAML metadata property thunk would bind to the OS presenter (whose enum type
+        // differs). Methods carry no XAML metadata thunk, so the mirror enum flows correctly.
+        InkHighContrastAdjustment GetHighContrastAdjustment();
+        void SetHighContrastAdjustment(InkHighContrastAdjustment value);
+
         InkStrokeContainer StrokeContainer{ get; };
         InkInputProcessingConfiguration InputProcessingConfiguration{ get; };
         InkInputConfiguration InputConfiguration{ get; };
+        InkStrokeInput StrokeInput{ get; };
+        InkUnprocessedInput UnprocessedInput{ get; };
 
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesCollectedEventArgs> StrokesCollected;
         event Windows.Foundation.TypedEventHandler<InkPresenter, InkStrokesErasedEventArgs> StrokesErased;

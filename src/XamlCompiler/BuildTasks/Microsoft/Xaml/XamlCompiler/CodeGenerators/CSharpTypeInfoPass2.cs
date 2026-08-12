@@ -902,6 +902,13 @@ this.Write(";\r\n");
                          }                               
                          if (uentry.HasCreateFromStringMethod)
                          {
+                             // Suppress CS0618 when the CreateFromString type/method is [Obsolete]. Note: a hard-obsolete
+                             // ([Obsolete(message, true)]) emits CS0619 (an error), which pragma 0618 does not suppress.
+                             if (uentry.IsDeprecated)
+                             {
+this.Write("#pragma warning disable 0618  //   Warning on Deprecated usage\r\n");
+
+                             }
                              if (uentry.TypeEntry.UnderlyingType.IsValueType)
                              {
 this.Write("                userType.CreateFromStringMethod = x => (global::System.Object)");
@@ -918,6 +925,11 @@ this.Write("                userType.CreateFromStringMethod = ");
 this.Write(this.ToStringHelper.ToStringWithCulture(uentry.CreateFromStringMethod.ResolvedName.CSharpName()));
 
 this.Write(";\r\n");
+
+                             }
+                             if (uentry.IsDeprecated)
+                             {
+this.Write("#pragma warning restore 0618\r\n");
 
                              }
                          }

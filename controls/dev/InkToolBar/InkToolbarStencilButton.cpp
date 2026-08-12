@@ -196,11 +196,17 @@ void InkToolbarStencilButton::OnPropertyChanged(winrt::DependencyPropertyChanged
 
 void InkToolbarStencilButton::OnL3ItemsVisibilitiesChanged()
 {
-    auto thisAsMenuButton = try_as<winrt::InkToolbarMenuButton>();
-    auto isChecked = InkToolbar::IsButtonChecked(thisAsMenuButton);
-
-    bool shouldShowExtensionGlyph =
-        (NumberOfStencils() > 1) && (isChecked == InkToolbarMenuButtonCheckedState::Checked);
+    // The extension glyph is only meaningful once this button has been realized as a ToggleButton and
+    // is checked. A visibility property can change before the button is fully realized (immediately
+    // after construction, or in a bare test host with no visual tree), so guard the cast: an
+    // unrealized button is treated as unchecked rather than dereferencing a null interface.
+    bool shouldShowExtensionGlyph = false;
+    if (auto self = try_as<winrt::InkToolbarMenuButton>())
+    {
+        shouldShowExtensionGlyph =
+            (NumberOfStencils() > 1) &&
+            (InkToolbar::IsButtonChecked(self) == InkToolbarMenuButtonCheckedState::Checked);
+    }
 
     IsExtensionGlyphShown(shouldShowExtensionGlyph);
 
@@ -244,8 +250,12 @@ void InkToolbarStencilButton::OnSelectedStencilChanged(winrt::DependencyProperty
         SetL3StencilItemCheck(oldKind, false);
         if (!IsAnyStencilSelected())
         {
-            auto thisAsMenuButton = try_as<winrt::InkToolbarMenuButton>();
-            InkToolbar::SetButtonCheck(thisAsMenuButton, InkToolbarMenuButtonCheckedState::Unchecked);
+            // Guard the cast: this can run before the button is realized as a ToggleButton, in which
+            // case there is no checked state to clear (matches UWP's guaranteed-non-null QueryInterface).
+            if (auto self = try_as<winrt::InkToolbarMenuButton>())
+            {
+                InkToolbar::SetButtonCheck(self, InkToolbarMenuButtonCheckedState::Unchecked);
+            }
         }
     }
 
