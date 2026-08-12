@@ -17,15 +17,16 @@ $nuget_exe = . "$PSScriptRoot\Initialize-DownloadLatest.ps1" -OutDir $toolsDir -
 Write-Progress "Downloading the Azure Artifacts Credential Provider"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# If this is PowerShell 5, remove PowerShell 7 module paths from PSModulePath to avoid module loading conflicts.
-# The pwsh7 path can cause an error inside the credprovider install via missing Get-FileHash command.
+# If this is PowerShell 5, remove PowerShell 7+ module paths from PSModulePath to avoid module loading conflicts.
+# The pwsh module path can cause an error inside the credprovider install via missing Get-FileHash command,
+# because the PowerShell 7 Microsoft.PowerShell.Utility module is not compatible with PowerShell 5.
 $originalPSModulePath = $env:PSModulePath
-if ($PSVersionTable.PSVersion.Major -eq 5)
+if ($PSVersionTable.PSVersion.Major -eq 5 -and $env:PSModulePath)
 {
-    if ($env:PSModulePath -like "*powershell\7\Modules*")
+    if ($env:PSModulePath -match '\\PowerShell\\\d+')
     {
         $paths = $env:PSModulePath -split ';'
-        $filteredPaths = $paths | Where-Object { $_ -notlike "*powershell\7\Modules*" }
+        $filteredPaths = $paths | Where-Object { $_ -notmatch '\\PowerShell\\\d+(?:-preview)?\\Modules' }
         $env:PSModulePath = $filteredPaths -join ';'
     }
 }
