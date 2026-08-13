@@ -21,13 +21,15 @@ class DwmSystemBackdrop
 {
 public:
     // Asks DWM to draw 'backdropType' behind the Xaml Window that 'systemBackdrop' is set on and that 'target'
-    // covers. Returns null when the backdrop isn't attached to a Xaml Window that way, or when DWM doesn't
-    // support the attribute - callers then fall back to the lifted SystemBackdropController.
+    // covers, in the light or dark variant selected by 'useDarkMode'. Returns null when the backdrop isn't
+    // attached to a Xaml Window that way, or when DWM doesn't support the attribute - callers then fall back to
+    // the lifted SystemBackdropController.
     static std::unique_ptr<DwmSystemBackdrop> TryApplyToXamlWindow(
         const winrt::Microsoft::UI::Xaml::Media::SystemBackdrop& systemBackdrop,
         const winrt::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop& target,
         const winrt::Microsoft::UI::Xaml::XamlRoot& xamlRoot,
-        DWM_SYSTEMBACKDROP_TYPE backdropType);
+        DWM_SYSTEMBACKDROP_TYPE backdropType,
+        bool useDarkMode);
 
     ~DwmSystemBackdrop();
 
@@ -39,11 +41,22 @@ public:
     // window alone once an app has taken the attribute over, just like the destructor does.
     void BackdropType(DWM_SYSTEMBACKDROP_TYPE backdropType);
 
+    // Switches the window between the light and dark variants of the material, for instance when the app's
+    // theme changes. Leaves the window alone once an app has taken the attribute over.
+    void DarkMode(bool useDarkMode);
+
 private:
-    DwmSystemBackdrop(HWND windowHandle, DWM_SYSTEMBACKDROP_TYPE previousBackdropType, DWM_SYSTEMBACKDROP_TYPE backdropType);
+    DwmSystemBackdrop(
+        HWND windowHandle,
+        DWM_SYSTEMBACKDROP_TYPE previousBackdropType,
+        DWM_SYSTEMBACKDROP_TYPE backdropType,
+        bool ownsDarkMode,
+        BOOL previousDarkMode,
+        BOOL appliedDarkMode);
 
     // Whether the window is still configured with what we last applied to it.
     bool IsLastWriter() const;
+    bool IsLastDarkModeWriter() const;
 
     HWND m_windowHandle{ nullptr };
 
@@ -53,4 +66,11 @@ private:
 
     // What we last configured the window with, so we can tell whether we are still the last writer.
     DWM_SYSTEMBACKDROP_TYPE m_appliedBackdropType{ DWMSBT_AUTO };
+
+    // DWM picks the light material unless it is told the window is dark, and it knows nothing about the Xaml
+    // theme, so the theme has to be forwarded to it. The attribute predates the backdrop types but is still
+    // guarded, because a window whose light/dark state we couldn't read isn't ours to restore.
+    bool m_ownsDarkMode{ false };
+    BOOL m_previousDarkMode{ FALSE };
+    BOOL m_appliedDarkMode{ FALSE };
 };

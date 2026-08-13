@@ -21,8 +21,10 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     public class MicaBackdropTests : ApiTestBase
     {
         // DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE and the DWM_SYSTEMBACKDROP_TYPE values, neither of which
-        // is projected into managed code.
+        // is projected into managed code. DWMWA_USE_IMMERSIVE_DARK_MODE selects the light or dark variant of
+        // the material DWM draws.
         private const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
+        private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
         private const int DWMSBT_AUTO = 0;
         private const int DWMSBT_TRANSIENTWINDOW = 3;
 
@@ -157,6 +159,37 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Verify.IsTrue(TryGetDwmSystemBackdropType(window, out int backdropTypeAfter));
                     Verify.AreEqual(DWMSBT_TRANSIENTWINDOW, backdropTypeAfter, "The app's DWM system backdrop should survive attaching and detaching a MicaBackdrop");
+                });
+            });
+        }
+
+        // DWM draws the light variant of a material unless it is told the window is dark, so Xaml forwards the
+        // theme to it along with the material. That attribute is the app's to set otherwise, and an app that
+        // set it has to get its choice back - the same rule the material itself follows.
+        [TestMethod]
+        public void VerifyAppConfiguredDarkModeSurvivesAMicaBackdrop()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                UsingWindow(window =>
+                {
+                    IntPtr windowHandle = Win32Interop.GetWindowFromWindowId(window.AppWindow.Id);
+                    if (DwmGetWindowAttribute(windowHandle, DWMWA_USE_IMMERSIVE_DARK_MODE, out _, sizeof(int)) != 0)
+                    {
+                        Log.Comment("DWMWA_USE_IMMERSIVE_DARK_MODE is not supported on this OS, skipping.");
+                        return;
+                    }
+
+                    int appDarkMode = 1;
+                    Verify.AreEqual(0, DwmSetWindowAttribute(windowHandle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref appDarkMode, sizeof(int)));
+
+                    var backdrop = new MicaBackdrop();
+                    window.SystemBackdrop = backdrop;
+                    backdrop.Kind = MicaKind.BaseAlt;
+                    window.SystemBackdrop = null;
+
+                    Verify.AreEqual(0, DwmGetWindowAttribute(windowHandle, DWMWA_USE_IMMERSIVE_DARK_MODE, out int darkModeAfter, sizeof(int)));
+                    Verify.AreEqual(appDarkMode, darkModeAfter, "The app's dark mode choice should survive attaching and detaching a MicaBackdrop");
                 });
             });
         }

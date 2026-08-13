@@ -30,6 +30,7 @@ void MicaBackdrop::OnTargetConnected(ICompositionSupportsSystemBackdrop target, 
     __super::OnTargetConnected(target, xamlRoot);
 
     auto systemBackdrop = this->try_as<winrt::Microsoft::UI::Xaml::Media::SystemBackdrop>();
+    auto configuration = systemBackdrop.GetDefaultSystemBackdropConfiguration(target, xamlRoot);
 
     // Fork on the composition engine. MicaController renders the material into the target through the lifted
     // compositor, so in a process running on the system composition engine it has nothing to render into and
@@ -40,7 +41,8 @@ void MicaBackdrop::OnTargetConnected(ICompositionSupportsSystemBackdrop target, 
     {
         if (const auto dwmBackdropType = ToDwmBackdropType(Kind()))
         {
-            if (auto dwmBackdrop = DwmSystemBackdrop::TryApplyToXamlWindow(systemBackdrop, target, xamlRoot, *dwmBackdropType))
+            if (auto dwmBackdrop = DwmSystemBackdrop::TryApplyToXamlWindow(
+                    systemBackdrop, target, xamlRoot, *dwmBackdropType, IsDarkTheme(configuration)))
             {
                 m_targets.push_back(std::make_unique<TargetEntry>(target, std::move(dwmBackdrop)));
                 return;
@@ -50,8 +52,35 @@ void MicaBackdrop::OnTargetConnected(ICompositionSupportsSystemBackdrop target, 
 
     auto newController = MicaController();
     newController.Kind(Kind());
-    auto configuration = systemBackdrop.GetDefaultSystemBackdropConfiguration(target, xamlRoot);
     m_targets.push_back(std::make_unique<TargetEntry>(target, newController, configuration));
+}
+
+// The theme is the only part of the configuration a DWM-drawn backdrop can act on: DWM owns the material, so
+// input activation and the high contrast colors are already its own business. Xaml only ever leaves the theme
+// at Default before it has resolved one, which is the same light default DWM would pick on its own.
+bool MicaBackdrop::IsDarkTheme(const SystemBackdropConfiguration& configuration)
+{
+    return configuration && configuration.Theme() == SystemBackdropTheme::Dark;
+}
+
+void MicaBackdrop::OnDefaultSystemBackdropConfigurationChanged(
+    ICompositionSupportsSystemBackdrop target,
+    winrt::Microsoft::UI::Xaml::XamlRoot xamlRoot)
+{
+    __super::OnDefaultSystemBackdropConfigurationChanged(target, xamlRoot);
+
+    auto entryIterator = std::find_if(
+        m_targets.begin(),
+        m_targets.end(),
+        [target](const std::unique_ptr<TargetEntry>& entry){ return entry->Target() == target; });
+
+    if (entryIterator == m_targets.end())
+    {
+        return;
+    }
+
+    auto systemBackdrop = this->try_as<winrt::Microsoft::UI::Xaml::Media::SystemBackdrop>();
+    (*entryIterator)->UpdateDarkMode(IsDarkTheme(systemBackdrop.GetDefaultSystemBackdropConfiguration(target, xamlRoot)));
 }
 
 void MicaBackdrop::OnTargetDisconnected(ICompositionSupportsSystemBackdrop target)
@@ -129,4 +158,14 @@ void MicaBackdrop::TargetEntry::UpdateKind(MicaKind kind, std::optional<DWM_SYST
 
     // A kind with no DWM equivalent leaves the window on the material it already has, for the same reason
     // OnTargetConnected doesn't take the DWM path for one: drawing the wrong material is worse.
+}
+
+void MicaBackdrop::TargetEntry::UpdateDarkMode(bool useDarkMode)
+{
+    // A lifted controller reads the theme out of the SystemBackdropConfiguration it was given, so there is
+    // nothing to forward for one.
+    if (m_dwmBackdrop)
+    {
+        m_dwmBackdrop->DarkMode(useDarkMode);
+    }
 }

@@ -24,6 +24,20 @@ namespace
         return SUCCEEDED(DwmSetWindowAttribute(windowHandle, DWMWA_SYSTEMBACKDROP_TYPE, &backdropType, sizeof(backdropType)));
     }
 
+    // Reads whether DWM currently draws 'windowHandle' dark. This selects the light or dark variant of the
+    // backdrop material as well as the window's frame, and DWM defaults it to light for every window - it has
+    // no knowledge of the Xaml theme, and doesn't follow the system one either.
+    bool TryGetWindowDarkMode(HWND windowHandle, BOOL& useDarkMode)
+    {
+        useDarkMode = FALSE;
+        return SUCCEEDED(DwmGetWindowAttribute(windowHandle, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode, sizeof(useDarkMode)));
+    }
+
+    bool TrySetWindowDarkMode(HWND windowHandle, BOOL useDarkMode)
+    {
+        return SUCCEEDED(DwmSetWindowAttribute(windowHandle, DWMWA_USE_IMMERSIVE_DARK_MODE, &useDarkMode, sizeof(useDarkMode)));
+    }
+
     // Returns the handle of the Xaml Window whose backdrop 'systemBackdrop' is, given that it was just connected
     // to 'target' inside 'xamlRoot'. Returns null for every other way a SystemBackdrop can be attached.
     //
@@ -87,7 +101,8 @@ namespace
     const winrt::Microsoft::UI::Xaml::Media::SystemBackdrop& systemBackdrop,
     const winrt::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop& target,
     const winrt::Microsoft::UI::Xaml::XamlRoot& xamlRoot,
-    DWM_SYSTEMBACKDROP_TYPE backdropType)
+    DWM_SYSTEMBACKDROP_TYPE backdropType,
+    bool useDarkMode)
 {
     const HWND windowHandle = TryGetXamlWindowForTarget(systemBackdrop, target, xamlRoot);
     if (!windowHandle)
@@ -104,13 +119,31 @@ namespace
         return nullptr;
     }
 
-    return std::unique_ptr<DwmSystemBackdrop>(new DwmSystemBackdrop(windowHandle, previousBackdropType, backdropType));
+    // The material is the point of this object, so it is what decides whether we could attach at all. The
+    // light/dark variant is taken on separately and only when the window lets us read it back, because an
+    // attribute we can't read is one we can't tell apart from an app's own later write.
+    const BOOL appliedDarkMode = useDarkMode ? TRUE : FALSE;
+    BOOL previousDarkMode = FALSE;
+    const bool ownsDarkMode = TryGetWindowDarkMode(windowHandle, previousDarkMode) &&
+                              TrySetWindowDarkMode(windowHandle, appliedDarkMode);
+
+    return std::unique_ptr<DwmSystemBackdrop>(new DwmSystemBackdrop(
+        windowHandle, previousBackdropType, backdropType, ownsDarkMode, previousDarkMode, appliedDarkMode));
 }
 
-DwmSystemBackdrop::DwmSystemBackdrop(HWND windowHandle, DWM_SYSTEMBACKDROP_TYPE previousBackdropType, DWM_SYSTEMBACKDROP_TYPE backdropType)
+DwmSystemBackdrop::DwmSystemBackdrop(
+    HWND windowHandle,
+    DWM_SYSTEMBACKDROP_TYPE previousBackdropType,
+    DWM_SYSTEMBACKDROP_TYPE backdropType,
+    bool ownsDarkMode,
+    BOOL previousDarkMode,
+    BOOL appliedDarkMode)
     : m_windowHandle(windowHandle)
     , m_previousBackdropType(previousBackdropType)
     , m_appliedBackdropType(backdropType)
+    , m_ownsDarkMode(ownsDarkMode)
+    , m_previousDarkMode(previousDarkMode)
+    , m_appliedDarkMode(appliedDarkMode)
 {
 }
 
@@ -120,6 +153,11 @@ DwmSystemBackdrop::~DwmSystemBackdrop()
     if (IsLastWriter())
     {
         TrySetWindowBackdropType(m_windowHandle, m_previousBackdropType);
+    }
+
+    if (IsLastDarkModeWriter())
+    {
+        TrySetWindowDarkMode(m_windowHandle, m_previousDarkMode);
     }
 }
 
@@ -133,8 +171,26 @@ void DwmSystemBackdrop::BackdropType(DWM_SYSTEMBACKDROP_TYPE backdropType)
     }
 }
 
+void DwmSystemBackdrop::DarkMode(bool useDarkMode)
+{
+    const BOOL darkMode = useDarkMode ? TRUE : FALSE;
+
+    if (darkMode != m_appliedDarkMode && IsLastDarkModeWriter() && TrySetWindowDarkMode(m_windowHandle, darkMode))
+    {
+        m_appliedDarkMode = darkMode;
+    }
+}
+
 bool DwmSystemBackdrop::IsLastWriter() const
 {
     DWM_SYSTEMBACKDROP_TYPE currentBackdropType = DWMSBT_AUTO;
     return TryGetWindowBackdropType(m_windowHandle, currentBackdropType) && currentBackdropType == m_appliedBackdropType;
+}
+
+bool DwmSystemBackdrop::IsLastDarkModeWriter() const
+{
+    BOOL currentDarkMode = FALSE;
+    return m_ownsDarkMode &&
+           TryGetWindowDarkMode(m_windowHandle, currentDarkMode) &&
+           currentDarkMode == m_appliedDarkMode;
 }
