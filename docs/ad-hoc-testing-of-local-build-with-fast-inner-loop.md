@@ -16,7 +16,7 @@ You should also be able to build this repo. See [developer guide](./building/dev
 
 # Steps
 
-## Initial Build of Lifted Xaml
+## Initial Build
 Build the repo as normal. See the [developer guide](./building/developer-guide.md) for more information.
 In short, run `init.cmd` and then run `build.cmd`. If you want you can skip building the test code by running `build.cmd product`.
 The test code is not necessary for this scenario.
@@ -27,7 +27,7 @@ Assuming the build completes sucessfully it will create a local WinUI component 
 Launch Visual Studio.  
 Create a new project.  
 Create a new "Blank App, Packaged (WinUI in Desktop)" app for either C# or C++.  
-Create this project in a regular directory on your machine - i.e. not in the lifted xaml repo.
+Create this project in a regular directory on your machine - i.e. not in this repo.
 Visual Studio will create a new WinUI app that is targetting the latest public release of WinAppSDK.  
 As a validation, verify that you can build and launch this app.
 
@@ -61,8 +61,8 @@ Add the following text to that file:
 ```
 Update the path to PackageStore so that it points to the PackageStore directory in your local WinUI repo.
 
-Adding this config does two things. First, it adds the location of the 'PackageStore' directory from your local lifted 
-xaml git repo to the list of locations that nuget.exe will search for packages. This will allow the Visual Studio project
+Adding this config does two things. First, it adds the location of the 'PackageStore' directory from your local WinUI
+git repo to the list of locations that nuget.exe will search for packages. This will allow the Visual Studio project
 to target this local build. 
 
 Second, it updates nuget to cache all its packages in a subdirectory of this directory instead of using the global package 
@@ -92,7 +92,7 @@ Rebuild and launch your app with F5.
 You should now have your test app running against your local build. You can try out your scenario by updating the test
 app.
 
-You will probably want to iterate on your changes in the lifted xaml repo. Below describes a good inner loop for this.
+You will probably want to iterate on your changes in this repo. Below describes a good inner loop for this.
 
 ## Inner Loop
 
@@ -115,9 +115,9 @@ like this:
 `<repo-root>\BuildOutput\obj\amd64chk\dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.pdb`. If the 
 symbols are not being loaded (or are being loaded from a different location) something is likely wrong.
 
-### Build your changes in lifted-xaml repo
+### Build your changes in the WinUI repo
 
-Make whatever code changes you need in the lifted xaml repo. Before building make sure to stop debugging your app in Visual Studio.
+Make whatever code changes you need in this repo. Before building make sure to stop debugging your app in Visual Studio.
 
 Build your changes. If you are making changes to Microsoft.UI.Xaml.dll the quickest way to rebuild that dll is
 
