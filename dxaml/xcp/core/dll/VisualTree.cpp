@@ -1188,6 +1188,13 @@ _Check_return_ HRESULT VisualTree::ResetRoots( _Out_opt_ bool *pReleasePopup)
         RECORDFAILURE(RemoveRoot(m_visualDiagnosticsRoot.get()));
     }
 
+    if (m_publicRootVisual)
+    {
+        // Cancel any open automatic ToolTip for this root. Must run before popup root removal below so the
+        // ToolTip's host popup root still exists and its popup can close cleanly.
+        DirectUI::ToolTipService::OnPublicRootRemoved(m_publicRootVisual.get());
+    }
+
     if (m_popupRoot && m_rootElement)
     {
         // The popup root does not always get cleared so it needs to be checked in the collection before attempting to remove
@@ -1226,13 +1233,6 @@ _Check_return_ HRESULT VisualTree::ResetRoots( _Out_opt_ bool *pReleasePopup)
     if (m_xamlIslandRootCollection)
     {
         RECORDFAILURE(RemoveRoot(m_xamlIslandRootCollection.get()));
-    }
-
-    if (m_publicRootVisual)
-    {
-        // ToolTipService attaches handlers to the public root of the main window and each Xaml island. Clean up its
-        // bookkeeping now that the root is going away.
-        DirectUI::ToolTipService::OnPublicRootRemoved(m_publicRootVisual.get());
     }
 
     if (m_rootScrollViewer && m_bIsRootScrollViewerAddedToRoot)
