@@ -150,6 +150,34 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         return result;
     }
 
+    void ParserIntegrationTests::DataTemplateLoadContentRootIsCollectibleAfterRelease()
+    {
+        TestCleanupWrapper cleanup;
+        DependencyObject^ strongRoot;
+        WeakReference weakRoot;
+
+        RunOnUIThread([&]()
+        {
+            auto dataTemplate = safe_cast<DataTemplate^>(XamlReader::Load(
+                L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'"
+                L"              xmlns:local='using:Tests.Native.External.Framework.Parser.Control'>"
+                L"    <local:AwesomeParserButton />"
+                L"</DataTemplate>"));
+            strongRoot = dataTemplate->LoadContent();
+
+            VERIFY_IS_TRUE(dynamic_cast<::Tests::Native::External::Framework::Parser::Control::AwesomeParserButton^>(strongRoot) != nullptr);
+            weakRoot = WeakReference(strongRoot);
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            VERIFY_IS_NOT_NULL(weakRoot.Resolve<DependencyObject>());
+            strongRoot = nullptr;
+            VERIFY_IS_NULL(weakRoot.Resolve<DependencyObject>());
+        });
+    }
+
     void ParserIntegrationTests::CanControlTemplateNameHideVisualStateGroups()
     {
         TestCleanupWrapper cleanup;
