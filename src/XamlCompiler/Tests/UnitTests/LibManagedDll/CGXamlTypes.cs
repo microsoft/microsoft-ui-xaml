@@ -84,6 +84,19 @@ namespace LibManagedDll
     }
 
 
+    public class MyRefReturnClass
+    {
+        private int _backingField = 0;
+
+        // A ref-return property. Its reflected PropertyType is "System.Int32&"
+        // (IsByRef == true), which must not leak into the generated XamlTypeInfo
+        // type table as typeof(global::System.Int32&) - that is invalid C#/VB.
+        public ref int RefReturnProperty { get { return ref _backingField; } }
+
+        // A normal property that must still be collected as usual.
+        public int NormalProperty { get; set; }
+    }
+
     public class MyContentClass
     {
         public object Content { get; set; }
