@@ -1324,10 +1324,14 @@ _Check_return_ HRESULT CConnectedAnimation::ClearElementInfo(_In_ ConnectedAnima
     {
         // Detach the visual surface so its cached snapshot can be released.
         Microsoft::WRL::ComPtr<WUComp::ICompositionSurfaceBrush> surfaceBrush;
-        IFC_RETURN(info.surfaceBrush.As(&surfaceBrush));
-        IFC_RETURN(surfaceBrush->put_Surface(nullptr));
+        HRESULT hr = S_OK;
+        if (SUCCEEDED(info.surfaceBrush.As(&surfaceBrush)))
+        {
+            hr = surfaceBrush->put_Surface(nullptr);
+        }
+        info.surfaceBrush.Reset();
+        IFC_RETURN_ALLOW(hr, RO_E_CLOSED);
     }
-    info.surfaceBrush.Reset();
     return S_OK;
 }
 
