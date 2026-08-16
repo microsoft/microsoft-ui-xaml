@@ -25,7 +25,7 @@ stages:
     - checkout: self
       submodules: false
       persistCredentials: false
-      fetchDepth: 0
+      fetchDepth: 1
       fetchTags: false
       path: '$(sourceRepoRelativePath)'
       displayName: Checkout GitHub source repository '$(sourceRepoRelativePath)'
