@@ -813,6 +813,57 @@ Cleanup:
                     rootElement),
                 toolTipServiceMetadataNoRef->m_rootElementsWithHandlersNoRef.end());
         }
+
+        // Teardown delivers no pointer exit/lost/canceled event, and the safe-zone timer treats a
+        // stationary cursor as intentional, so cancel any open pointer ToolTip in the removed tree here.
+        if (toolTipServiceMetadataNoRef->m_tpCurrentToolTip)
+        {
+            // Default to cancelling: a current ToolTip with a null owner is anomalous, so cancel defensively.
+            bool ownerInRemovedTree = true;
+
+            if (auto owner = toolTipServiceMetadataNoRef->m_tpOwner.Get())
+            {
+                // Only cancel if the ToolTip's owner lives in the removed tree, sparing other islands.
+                ownerInRemovedTree = false;
+                ctl::ComPtr<xaml::IDependencyObject> ownerDO(owner);
+                if (CDependencyObject* ownerHandle = ownerDO.Cast<DependencyObject>()->GetHandle())
+                {
+                    VisualTree* ownerVisualTree = VisualTree::GetForElementNoRef(ownerHandle);
+                    if (ownerVisualTree != nullptr && ownerVisualTree->GetPublicRootVisual() == publicRoot)
+                    {
+                        ownerInRemovedTree = true;
+                    }
+                }
+            }
+
+            if (ownerInRemovedTree)
+            {
+                // Best-effort teardown path (callers ignore failures); Stop()/CancelAutomaticToolTip()
+                // may fail benignly on a draining dispatcher or already-removed popup root, so don't crash.
+                if (toolTipServiceMetadataNoRef->m_tpSafeZoneCheckTimer)
+                {
+                    IGNOREHR(toolTipServiceMetadataNoRef->m_tpSafeZoneCheckTimer->Stop());
+                }
+
+                // Clear the cached safe-zone start point so a pending timer tick can't early-return.
+                ToolTipService::s_pointerPointWhenSafeZoneTimerStart = {};
+
+                // CancelAutomaticToolTip() can bail early via IFC; trace the swallowed failure and then
+                // unconditionally clear the tracked state so nothing outlives the destroyed root.
+                const HRESULT cancelHr = ToolTipService::CancelAutomaticToolTip();
+                if (FAILED(cancelHr))
+                {
+                    TRACE(TraceAlways, L"ToolTipService::OnPublicRootRemoved: CancelAutomaticToolTip failed with 0x%08X during teardown; clearing ToolTip state unconditionally.", cancelHr);
+
+                    CStaticLock lock;
+                    toolTipServiceMetadataNoRef->m_tpCurrentToolTip.Clear();
+                    toolTipServiceMetadataNoRef->m_tpCurrentPopup.Clear();
+                    toolTipServiceMetadataNoRef->m_tpOwner.Clear();
+                    toolTipServiceMetadataNoRef->m_tpContainer.Clear();
+                    toolTipServiceMetadataNoRef->m_tpLastEnterSource.Clear();
+                }
+            }
+        }
     }
 }
 

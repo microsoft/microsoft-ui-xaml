@@ -240,7 +240,13 @@ Assert-RemoteUrlMatches $TargetRepositoryDirectoryFullPath $TargetRemoteName $Ta
 Write-Host "##[endgroup]"
 
 Write-Host "##[group]Fetching source and target branches"
-Invoke-GitCommand $SourceRepositoryDirectoryFullPath @("fetch", "--prune", $SourceRemoteName, "+refs/heads/$SourceBranchName`:refs/remotes/$SourceRemoteName/$SourceBranchName")
+$sourceFetchArguments = @("fetch", "--prune", "--no-tags")
+$sourceRepositoryIsShallow = Get-GitCommandOutput $SourceRepositoryDirectoryFullPath @("rev-parse", "--is-shallow-repository")
+if ($sourceRepositoryIsShallow -eq "true") {
+    $sourceFetchArguments += "--unshallow"
+}
+$sourceFetchArguments += @($SourceRemoteName, "+refs/heads/$SourceBranchName`:refs/remotes/$SourceRemoteName/$SourceBranchName")
+Invoke-GitCommand $SourceRepositoryDirectoryFullPath $sourceFetchArguments
 
 $sourceTrackingRef = "refs/remotes/$SourceRemoteName/$SourceBranchName"
 $sourceCommit = Get-GitCommandOutput $SourceRepositoryDirectoryFullPath @("rev-parse", "--verify", "$sourceTrackingRef^{commit}")

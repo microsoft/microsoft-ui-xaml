@@ -9,7 +9,7 @@ parameters:
   default: 'PublishSource'
 - name: targetRepositoryBranchName
   type: string
-  default: 'winui3/main'
+  default: 'user/hmishra/temporary/main'
 - name: exclusionPathspecsFile
   type: string
   default: 'build\PipelineScripts\WinUISourceMirroringExclusions.txt'

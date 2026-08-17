@@ -45,6 +45,9 @@ extends:
         Network: KS3
     platform:
       name: 'windows_undocked'
+    globalsdl:
+      tsa:
+        enabled: false
     git:
       submodules: false
       persistCredentials: true

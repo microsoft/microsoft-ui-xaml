@@ -120,6 +120,14 @@ winrt::AutomationPeer NavigationView::OnCreateAutomationPeer()
 
 void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 {
+    // Revoke per-item revokers early (before template fields are nulled) so we revoke against still-connected sources.
+    if (isFromDestructor)
+    {
+        m_selectionChangedRevoker.revoke();
+        m_autoSuggestBoxQuerySubmittedRevoker.revoke();
+        ClearAllNavigationViewItemBaseRevokers();
+    }
+
     m_titleBarMetricsChangedRevoker.revoke();
     m_titleBarIsVisibleChangedRevoker.revoke();
     m_paneToggleButtonClickRevoker.revoke();
@@ -177,13 +185,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavOverflowItemsCollectionChangedRevoker.revoke();
 
     m_shadowCasterEaseOutStoryboardRevoker.revoke();
-
-    if (isFromDestructor)
-    {
-        m_selectionChangedRevoker.revoke();
-        m_autoSuggestBoxQuerySubmittedRevoker.revoke();
-        ClearAllNavigationViewItemBaseRevokers();
-    }
 }
 
 NavigationView::NavigationView()
@@ -3599,46 +3600,45 @@ void NavigationView::SetNavigationViewItemRevokers(const winrt::NavigationViewIt
 
 void NavigationView::ClearNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
 {
-    RevokeNavigationViewItemBaseRevokers(nvib);
-    nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
+    RevokeAndClearNavigationViewItemBaseRevokers(nvib);
     m_itemsWithRevokerObjects.erase(nvib);
 }
 
 void NavigationView::ClearAllNavigationViewItemBaseRevokers() noexcept
 {
-    for (const auto& nvib : m_itemsWithRevokerObjects)
+    // Swap into a local first so the member is cleared before iterating, avoiding mutation during iteration.
+    std::set<winrt::NavigationViewItemBase> itemsWithRevokers;
+    itemsWithRevokers.swap(m_itemsWithRevokerObjects);
+
+    for (const auto& nvib : itemsWithRevokers)
     {
-        // ClearAllNavigationViewItemBaseRevokers is only called in the destructor, where exceptions cannot be thrown.
-        // If the associated NV has not yet been cleaned up, we must detach these revokers or risk a call into freed
-        // memory being made. However if dxaml peer is disconnected from core element then a direct GetValue call on nvib will throw
-        // in c++/winrt layer. The exception thrown can cause noise when debugger is attached. To avoid the noise, we will use
-        // TryGetDependencyPropertyValue helper that will safely call GetValue at ABI level.
+        // Only revoke here (no SetValue): the items are being destroyed, so writing the attached property back is pointless and would just add shutdown noise.
         if (nvib)
         {
             try
             {
-                winrt::IInspectable value = nullptr;
-                if (TryGetDependencyPropertyValue(nvib, s_NavigationViewItemBaseRevokersProperty, value) && value)
-                {
-                    // inline RevokeNavigationViewItemBaseRevokers to avoid calling to GetValue through C++/winrt
-                    if (auto const revokersAsNVIBR = value.try_as<NavigationViewItemBaseRevokers>())
-                    {
-                        revokersAsNVIBR->RevokeAll();
-                    }
-                    nvib.SetValue(s_NavigationViewItemBaseRevokersProperty, nullptr);
-                }
+                RevokeNavigationViewItemBaseRevokers(nvib);
             }
             catch (...) {}
         }
     }
-    m_itemsWithRevokerObjects.clear();
+}
+
+void NavigationView::RevokeAndClearNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
+{
+    RevokeNavigationViewItemBaseRevokers(nvib);
+    // Clear the attached property at the ABI level; a projected SetValue on a disconnected peer throws hresult_error noise.
+    TrySetDependencyPropertyValue(nvib, s_NavigationViewItemBaseRevokersProperty, nullptr);
 }
 
 void NavigationView::RevokeNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib)
 {
-    if (auto const revokers = nvib.GetValue(s_NavigationViewItemBaseRevokersProperty))
+    // Read the attached property at the ABI level; a projected GetValue on a disconnected peer throws hresult_error noise.
+    winrt::IInspectable value = nullptr;
+    if (TryGetDependencyPropertyValue(nvib, s_NavigationViewItemBaseRevokersProperty, value) && value)
     {
-        if (auto const revokersAsNVIBR = revokers.try_as<NavigationViewItemBaseRevokers>()) {
+        if (auto const revokersAsNVIBR = value.try_as<NavigationViewItemBaseRevokers>())
+        {
             revokersAsNVIBR->RevokeAll();
         }
     }
