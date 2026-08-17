@@ -60,6 +60,41 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             return true;
         }
 
+        void ResolveResourceTests::ExpiredGenerationsDoNotAccumulate()
+        {
+#ifdef DBG
+            constexpr unsigned int generationCount = 64;
+            Platform::String^ markup =
+                L"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' "
+                L"xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>"
+                L"<Grid.Resources><SolidColorBrush x:Key='brush' Color='Red'/></Grid.Resources>"
+                L"<Border Background='{StaticResource brush}'/></Grid>";
+
+            RunOnUIThread([&]
+            {
+                const auto createGenerations = [&]
+                {
+                    for (unsigned int generation = 0; generation < generationCount; ++generation)
+                    {
+                        xaml_markup::XamlReader::Load(markup);
+                    }
+                };
+
+                createGenerations();
+                const auto outstandingBefore = TestServices::WindowHelper->GetAllocationCount() -
+                    TestServices::WindowHelper->GetDeallocationCount();
+                createGenerations();
+                const auto outstandingAfter = TestServices::WindowHelper->GetAllocationCount() -
+                    TestServices::WindowHelper->GetDeallocationCount();
+                const auto growth = static_cast<int64_t>(outstandingAfter) -
+                    static_cast<int64_t>(outstandingBefore);
+
+                LOG_OUTPUT(L"Outstanding allocation growth: %lld", growth);
+                VERIFY_IS_LESS_THAN(growth, static_cast<int64_t>(generationCount / 2));
+            });
+#endif
+        }
+
         void ResolveResourceTests::ResolveThemeResource()
         {
             wrl::ComPtr<VisualTreeServiceCallback> callback;
