@@ -81,7 +81,7 @@ extends:
         analyzeTargetGlob: $(BinskimExclusion)
         break: true
       policheck:
-        exclusionsFile: $(Build.SourcesDirectory)\.config\PolicheckExclusions.xml
+        enabled: false
 
     stages:
     - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
