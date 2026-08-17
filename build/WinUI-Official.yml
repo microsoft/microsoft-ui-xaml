@@ -55,7 +55,8 @@ extends:
       name: 'windows_undocked' # windows undocked
     globalsdl:
       tsa:
-        enabled: true
+        # The public GitHub source tree does not contain .config\tsaoptions.json.
+        enabled: false
       enableXFGCheck: false
       codeql:
         tsandjs:
@@ -86,9 +87,10 @@ extends:
     - template: AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml
       parameters:
         pipelineKind: Nightly
-        signOutput: true
+        signOutput: false
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
 
     - template: AzurePipelinesTemplates\WinUI-BuildScenarioApps-Stage.yml
       parameters:
@@ -112,7 +114,7 @@ extends:
 
     - template: AzurePipelinesTemplates\WinUI-Packaging-Stage.yml
       parameters:
-        signOutput: true
+        signOutput: false
         publishToMaestro: ${{ parameters.PublishToMaestro }}
 
     - ${{ if eq( parameters.CheckApiChanges, true ) }}:
