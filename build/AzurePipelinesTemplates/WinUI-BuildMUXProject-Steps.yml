@@ -56,7 +56,6 @@ steps:
 
   - task: PowerShell@2
     displayName: GenerateVersionInfo
-    condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
     inputs:
       filePath: '$(REPOROOT)\build\PipelineScripts\GenerateVersionInfo.ps1'
       arguments: >
@@ -108,7 +107,7 @@ steps:
   # Inject the Azure Maps token into the MapControl test page
   - task: PowerShell@2
     displayName: 'Inject AzureMaps Token'
-    condition: and(succeeded(), or(and(ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise')), and(or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')), ne(variables['System.PullRequest.IsFork'], 'True'))))
+    condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
     inputs:
       filePath: 'scripts\InjectAzureMapsToken.ps1'
       arguments: "-MapsToken '$(WinUIAzureMapsKey)'"
