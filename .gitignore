@@ -278,3 +278,49 @@ UnreliableTestReport.csv
 /.tools/
 src/.dotnet/
 src/.tools/
+.buildtools/
+
+# Test payload folder produced by test\CreateTestPayload.ps1
+TestPayload*
+
+# Files created by init.cmd and SetupDotNetFiles.cmd to target different .NET versions
+dxaml/test/infra/taefhostappnetcore/WinRT.Host.runtimeconfig.json
+
+# Build logs and outputs
+build*.err
+build*.wrn
+msbuild-install-logs/
+*.ProjectImports.zip
+*.sln.metaproj
+
+# MSBuildCache
+MSBuildCache/
+MSBuildCacheLogs/
+
+# Code coverage results
+*.coverage
+*.coveragexml
+
+# Additional compiler/tool intermediates
+*.iobj
+*.ipdb
+*.ndf
+*.jfm
+*.e2e
+*.sap
+*.vbw
+*.nvuser
+CppProperties.json
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Python
+__pycache__/
+*.pyc
+
+# perf results
+perf/results
+perf/scenarios/**/x64/**/*
+perf/scenarios/**/x86/**/*
