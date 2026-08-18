@@ -83,9 +83,32 @@ all (x86, x64, arm64).
 ### Update the Package References
 In Visual Studio, use Tools -> Nuget Package Manager -> Manage Nuget Packages for Solution.
 Make sure you have the `Include prerelease` checkbox checked to ensure that the local WinUI component package shows up.
-Update your app to target the local WinUI component package instead of the public stable package.
+Your local build produces a *component* package named `Microsoft.WindowsAppSDK.WinUI`. This is a different package ID
+from the `Microsoft.WindowsAppSDK` meta-package that the Visual Studio template references, so this is not a version
+update: you must **remove** the `Microsoft.WindowsAppSDK` reference and **add** `Microsoft.WindowsAppSDK.WinUI`.
 
-If you prefer, instead of using the UI, you can also do this by modifying the .csproj and updating the `<PackageReference>` element.
+Instead of using the UI, you can edit the .csproj directly. Replace:
+```xml
+<PackageReference Include="Microsoft.WindowsAppSDK" Version="<template-version>" />
+```
+with the version produced by your local build (`3.0.0-dev` in the examples here):
+```xml
+<PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="3.0.0-dev" />
+```
+
+Do not reference both packages. If you do, restore will still succeed, but the build will fail with:
+```
+Microsoft.WindowsAppSDK.ComponentReference.targets(123,9): error : One or more referenced Windows App SDK components
+are newer than the versions expected by the Microsoft.WindowsAppSDK.Runtime package:
+    Microsoft.WindowsAppSDK.WinUI: Microsoft.WindowsAppSDK.Runtime expected version <version>, but version 3.0.0-dev
+    was referenced..
+```
+Neither fix suggested by that error applies here: the local package's version is fixed, and setting
+`WindowsAppSDKSelfContained` hides the symptom without correcting the package graph. Remove the meta-package instead.
+
+Note that the `nuget.config` above does not clear the default package sources, and nuget.org must remain reachable.
+Only the WinUI component package comes from your local `PackageStore`; its dependencies (`Microsoft.WindowsAppSDK.Base`,
+`.Foundation`, `.InteractiveExperiences` and `Microsoft.Web.WebView2`) are restored from nuget.org.
 
 Rebuild and launch your app with F5. 
 
@@ -173,7 +196,12 @@ of the package locally in the package cache and it is those files that are used 
 
 So, after you build a new version of the local WinUI component package, you want to delete it from the cache to force Visual Studio to pick
 up the changes. Earlier in this document we described creating the nuget.config file which pointed to a local package 
-cache. Go to that directory now in Explorer and delete 'microsoft.windowsappsdk'. 
+cache. Go to that directory now in Explorer and delete `microsoft.windowsappsdk.winui\<version>`.
+
+Note that the folder is named after the component package you referenced above, not the `Microsoft.WindowsAppSDK`
+meta-package. `<version>` is the version your local build produced - the same one in your `<PackageReference>`, which
+you can confirm from the .nupkg filename in `<repo-root>\PackageStore`. Deleting only that subfolder leaves any other
+cached versions of the package intact.
 
 Now when you build, Visual Studio will pick up the new local WinUI component package from your local repo and unpack it into the local
 package cache again so you can start using the updated build.
