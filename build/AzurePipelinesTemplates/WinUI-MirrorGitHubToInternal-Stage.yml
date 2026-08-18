@@ -2,7 +2,7 @@ parameters:
 - name: sourceBranchName
   displayName: GitHub source branch to mirror
   type: string
-  default: winui3/main
+  default: main
 - name: targetBranchName
   displayName: Internal ADO target branch to update
   type: string
@@ -39,14 +39,13 @@ stages:
     - script: set
       displayName: Display machine environment variables
 
-    # This keeps Guardian happy by allowing it to find the TSA config.
+    # This keeps Guardian happy without exposing other internal .config files.
     - task: CopyFiles@2
-      displayName: Copy `.config\` to `$(Build.SourcesDirectory)`
+      displayName: Copy TSA configuration to `$(Build.SourcesDirectory)`
       inputs:
-        SourceFolder: '$(Pipeline.Workspace)\$(sourceRepoRelativePath)'
+        SourceFolder: '$(Pipeline.Workspace)\$(targetRepoRelativePath)'
         TargetFolder: '$(Build.SourcesDirectory)'
-        Contents: |
-          .config\**
+        Contents: '.config\tsaoptions.json'
 
     - task: PowerShell@2
       displayName: Mirror GitHub source to internal repository
@@ -56,6 +55,7 @@ stages:
         arguments: >
           -SourceRepositoryDirectory $(sourceRepoRelativePath)
           -SourceBranchName '${{ parameters.sourceBranchName }}'
+          -ExpectedSourceCommit '$(Build.SourceVersion)'
           -TargetRepositoryDirectory $(targetRepoRelativePath)
           -TargetBranchName '${{ parameters.targetBranchName }}'
           -SourceRemoteUrlPattern '$(GitHubToAdoMirrorSourceRemoteUrlPattern)'

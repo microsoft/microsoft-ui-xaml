@@ -19,6 +19,10 @@ Path to the local clone of the source repository.
 .PARAMETER SourceBranchName
 Name of the branch in the source repository to mirror.
 
+.PARAMETER ExpectedSourceCommit
+Optional full commit hash that the source branch must contain and the mirror
+must publish. Use this to bind a pipeline run to its triggering commit.
+
 .PARAMETER TargetRepositoryDirectory
 Path to the local clone of the target repository.
 
@@ -47,6 +51,10 @@ param(
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
     [string]$SourceBranchName,
+
+    [parameter(Mandatory=$false)]
+    [ValidatePattern("^[0-9a-fA-F]{40}$")]
+    [string]$ExpectedSourceCommit,
 
     [parameter(Mandatory=$true)]
     [ValidateNotNullOrEmpty()]
@@ -249,18 +257,39 @@ $sourceFetchArguments += @($SourceRemoteName, "+refs/heads/$SourceBranchName`:re
 Invoke-GitCommand $SourceRepositoryDirectoryFullPath $sourceFetchArguments
 
 $sourceTrackingRef = "refs/remotes/$SourceRemoteName/$SourceBranchName"
-$sourceCommit = Get-GitCommandOutput $SourceRepositoryDirectoryFullPath @("rev-parse", "--verify", "$sourceTrackingRef^{commit}")
+$sourceBranchCommit = Get-GitCommandOutput $SourceRepositoryDirectoryFullPath @("rev-parse", "--verify", "$sourceTrackingRef^{commit}")
+Write-Host "##[debug]Source $SourceRemoteName/$SourceBranchName branch commit: $sourceBranchCommit"
+
+if ($ExpectedSourceCommit) {
+    $sourceCommit = Get-GitCommandOutput $SourceRepositoryDirectoryFullPath @("rev-parse", "--verify", "$ExpectedSourceCommit^{commit}")
+
+    Write-Host -ForegroundColor Blue "##[command]git -C '$SourceRepositoryDirectoryFullPath' merge-base --is-ancestor $sourceCommit $sourceBranchCommit"
+    & git -C $SourceRepositoryDirectoryFullPath merge-base --is-ancestor $sourceCommit $sourceBranchCommit
+    $exitCode = $global:LASTEXITCODE
+
+    if ($exitCode -eq 1) {
+        throw "Expected source commit '$sourceCommit' is not contained in source branch '$SourceBranchName' at '$sourceBranchCommit'."
+    } elseif ($exitCode) {
+        throw "Source branch containment validation failed with error code '$exitCode'."
+    }
+} else {
+    $sourceCommit = $sourceBranchCommit
+}
+
 Write-Host "##[debug]Source $SourceRemoteName/$SourceBranchName commit: $sourceCommit"
 Write-Host "##[endgroup]"
 
 Write-Host "##[group]Importing source commit into target repository"
-$sourceRefInTargetRepository = "refs/remotes/sourceRepository/$SourceBranchName"
-Invoke-GitCommand $TargetRepositoryDirectoryFullPath @("fetch", "--no-tags", $SourceRepositoryDirectoryFullPath, "+$sourceTrackingRef`:$sourceRefInTargetRepository")
-$sourceCommitInTargetRepository = Get-GitCommandOutput $TargetRepositoryDirectoryFullPath @("rev-parse", "--verify", "$sourceRefInTargetRepository^{commit}")
+$sourceBranchRefInTargetRepository = "refs/remotes/sourceRepository/$SourceBranchName"
+Invoke-GitCommand $TargetRepositoryDirectoryFullPath @("fetch", "--no-tags", $SourceRepositoryDirectoryFullPath, "+$sourceTrackingRef`:$sourceBranchRefInTargetRepository")
+$sourceCommitInTargetRepository = Get-GitCommandOutput $TargetRepositoryDirectoryFullPath @("rev-parse", "--verify", "$sourceCommit^{commit}")
 
 if ($sourceCommitInTargetRepository -ne $sourceCommit) {
     throw "Source commit imported into target repository as '$sourceCommitInTargetRepository', expected '$sourceCommit'."
 }
+
+$sourceRefInTargetRepository = "refs/remotes/sourceRepository/mirrorSource"
+Invoke-GitCommand $TargetRepositoryDirectoryFullPath @("update-ref", $sourceRefInTargetRepository, $sourceCommitInTargetRepository)
 Write-Host "##[endgroup]"
 
 Write-Host "##[group]Validating fast-forward mirror"
@@ -294,6 +323,18 @@ Write-Host "##[endgroup]"
 
 Write-Host "##[group]Publishing mirror"
 Invoke-GitCommand $TargetRepositoryDirectoryFullPath @("push", $TargetRemoteName, "$sourceRefInTargetRepository`:refs/heads/$TargetBranchName")
+
+$publishedTargetBranch = Get-GitCommandOutputWithExitCode $TargetRepositoryDirectoryFullPath @("ls-remote", "--exit-code", $TargetRemoteName, $targetBranchRef)
+if ($publishedTargetBranch.ExitCode) {
+    throw "Unable to verify published target branch '$TargetBranchName'. 'git ls-remote' failed with error code '$($publishedTargetBranch.ExitCode)'."
+}
+
+$publishedTargetCommit = ($publishedTargetBranch.Output -split "\s+")[0]
+if ($publishedTargetCommit -ne $sourceCommitInTargetRepository) {
+    throw "Published target branch '$TargetBranchName' is at '$publishedTargetCommit', expected '$sourceCommitInTargetRepository'."
+}
+
+Write-Host "Published target branch '$TargetBranchName' at expected commit $publishedTargetCommit."
 Write-Host "##[endgroup]"
 
 exit 0
