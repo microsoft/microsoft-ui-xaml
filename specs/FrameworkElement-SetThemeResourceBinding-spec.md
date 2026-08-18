@@ -36,8 +36,6 @@ Note that this means the API does not apply to `Setter` objects, because they do
 
 # API Pages
 
-_(Each of the following L2 sections correspond to a page that will be on learn.microsoft.com)_
-
 ## FrameworkElement.SetThemeResourceBinding(DependencyProperty, String) method
 
 Establishes a live theme resource binding on the given dependency property, equivalent to setting
@@ -87,8 +85,9 @@ in code. As with any binding:
   binding with that local value (the theme binding is removed).
 * Calling `ClearValue(property)` removes the binding and restores the property's default value.
 
-Setting a new theme resource binding on a property that already has one replaces the previous
-binding.
+Setting a new theme resource binding on a property that already has a theme resource binding replaces
+the previous one. Do not mix theme resource bindings with other types of bindings (e.g. classic `Binding`
+or `x:Bind`) on the same property.
 
 > **Note:** This binding tracks theme and high-contrast changes, updating the value to match the new
 > theme. It also re-resolves when the element is moved to a new location in the live tree, falling
@@ -97,8 +96,6 @@ binding.
 > dictionary does not, trigger re-resolution. This matches the behavior of `{ThemeResource}` in markup.
 
 # Examples
-
-_(This is conceptual documentation that will go to learn.microsoft.com "how to" page)_
 
 ## Example: Setting a property to a ThemeResource in code
 
@@ -130,6 +127,17 @@ textBlock.SetThemeResourceBinding(TextBlock.ForegroundProperty, "SystemControlFo
 
 // ...later, replace the ThemeResource with another value:
 textBlock.Foreground = new SolidColorBrush(Colors.Red);
+```
+
+## Example: Overwriting a ThemeResource binding with a new ThemeResource binding
+
+A subsequent SetThemeResourceBinding will replace the existing binding:
+
+```cs
+textBlock.SetThemeResourceBinding(TextBlock.ForegroundProperty, "SystemControlForegroundBaseHighBrush");
+
+// ...later, replace the ThemeResource with another ThemeResource:
+textBlock.SetThemeResourceBinding(TextBlock.ForegroundProperty, "SystemControlForegroundBaseLowBrush");
 ```
 
 # API Details
