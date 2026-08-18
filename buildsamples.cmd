@@ -50,6 +50,13 @@ call :buildSamplesSolution %reporoot%\Samples\WinUIGallery\WinUIGallery.slnx /m 
 if ERRORLEVEL 1 goto:eof
 call :buildSamplesSolution %reporoot%\Samples\WinUIDesktop\NativeDX12DesktopSample.sln
 if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\ChartApp\ChartApp.sln
+if ERRORLEVEL 1 goto:eof
+call :buildSamplesSolution %reporoot%\Samples\ChartApp\ChartAppCsUnpackaged\ChartAppCsUnpackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
+REM The C# packaged Chart app is a single-project MSIX app, so it only emits its .msix when published.
+call :buildSamplesSolution %reporoot%\Samples\ChartApp\ChartAppCsPackaged\ChartAppCsPackaged.csproj /t:Publish /p:PublishProfile=win-%BUILDPLATFORM%.pubxml
+if ERRORLEVEL 1 goto:eof
 
 exit /b 0
 
