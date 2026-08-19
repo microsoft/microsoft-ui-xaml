@@ -187,6 +187,35 @@ steps:
       condition: ${{ ne(parameters.MUXFinalRelease, true) }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartApp
+      solution: Samples\ChartApp\ChartApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartAppCsUnpackaged
+      solution: Samples\ChartApp\ChartAppCsUnpackaged\ChartAppCsUnpackaged.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartAppCsPackaged
+      solution: Samples\ChartApp\ChartAppCsPackaged\ChartAppCsPackaged.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
   - ${{ if in(parameters.pipelineKind, 'PR', 'PR-2') }}:
     - template: WinUI-BuildSampleApp-Steps.yml
       parameters:

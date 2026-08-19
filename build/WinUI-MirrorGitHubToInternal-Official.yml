@@ -1,23 +1,17 @@
-# Mirrors the public GitHub source branch to an internal Azure Repos user branch.
+# Mirrors the public GitHub main branch to its internal Azure Repos mirror branch.
 #
 # This is intentionally history-preserving and fast-forward-only. The target
 # branch must not contain ADO-only commits or files; exact mirrors cannot
-# preserve target-only content. For validation, the defaults mirror GitHub
-# winui3/main into an ADO user branch, not ADO main. This pipeline publishes
-# when run. The pipeline is defined from the public GitHub repository, so its
-# CI trigger runs directly when winui3/main advances.
+# preserve target-only content. This pipeline publishes when run. It must be
+# defined from the public GitHub repository so CI runs directly when main
+# advances.
 
 trigger:
+  batch: true
   branches:
     include:
-    - winui3/main
+    - main
 pr: none
-
-parameters:
-- name: sourceBranchName
-  displayName: GitHub source branch to mirror
-  type: string
-  default: winui3/main
 
 variables:
 - group: WinUI-InternalFeed
@@ -45,6 +39,15 @@ extends:
         Network: KS3
     platform:
       name: 'windows_undocked'
+    globalsdl:
+      tsa:
+        enabled: true
+        useDynamicRouting: false
+        configFile: $(Build.SourcesDirectory)\.config\tsaoptions.json
+      evidence:
+        enabled: false
+      evidenceV2:
+        enabled: false
     git:
       submodules: false
       persistCredentials: true
@@ -52,5 +55,5 @@ extends:
     stages:
     - template: AzurePipelinesTemplates\WinUI-MirrorGitHubToInternal-Stage.yml@self
       parameters:
-        sourceBranchName: ${{ parameters.sourceBranchName }}
-        targetBranchName: user/hmishra/winui3/main
+        sourceBranchName: main
+        targetBranchName: github/internal/main

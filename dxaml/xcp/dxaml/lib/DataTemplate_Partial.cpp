@@ -33,6 +33,14 @@ _Check_return_ HRESULT DirectUI::DataTemplate::LoadContentImpl(_Outptr_ xaml::ID
     }
 
 Cleanup:
+    // Template loading leaves the root pegged until an owning reference exists
+    // outside the parser. The returned interface (or this peer during failure
+    // cleanup) now provides that reference.
+    if (pReturnValuePeer)
+    {
+        pReturnValuePeer->UnpegNoRef();
+    }
+
     ReleaseInterface(returnValueNative);
     ctl::release_interface(pReturnValuePeer);
     RRETURN(hr);
