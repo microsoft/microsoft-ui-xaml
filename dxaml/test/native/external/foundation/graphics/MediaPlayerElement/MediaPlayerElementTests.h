@@ -31,6 +31,15 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(CanEnableDisableMTC)
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(RetainedMediaPlayerSurvivesElementDestruction)
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SharedMediaPlayerSurvivesElementDestruction)
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(ConfigureThenRemoveDefaultMediaPlayer)
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(ParseSourceUri)
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
