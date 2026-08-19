@@ -70,6 +70,11 @@ cache from the machine (e.g. `C:\Users\alias\.nuget\packages`). This is importan
 being cached globally since that can cause issues. It does mean that ALL the nuget packages that this project depends on 
 will get cached here, which is a little redundant, but it is a worthwhile trade-off.
 
+> [!IMPORTANT]
+> `NUGET_PACKAGES` overrides `globalPackagesFolder`. If it is set, packages are cached machine-globally instead of in
+> the local `packages` folder - silently - so you keep building against stale cached bits (the fixed `3.0.0-dev` version
+> is immutable). Check with `echo %NUGET_PACKAGES%`; if set, clear it and restart Visual Studio.
+
 ### Update the Project Target Platform (e.g. to x64)
 Open the .sln in Visual Studio again. 
 
@@ -172,8 +177,8 @@ package is immutable. The package version does not update with each build (it is
 of the package locally in the package cache and it is those files that are used in the build.
 
 So, after you build a new version of the local WinUI component package, you want to delete it from the cache to force Visual Studio to pick
-up the changes. Earlier in this document we described creating the nuget.config file which pointed to a local package 
-cache. Go to that directory now in Explorer and delete 'microsoft.windowsappsdk'. 
+up the changes. Close Visual Studio first (it locks the cached package files), then go to your NuGet package cache in
+Explorer and delete the `microsoft.windowsappsdk.winui` folder.
 
 Now when you build, Visual Studio will pick up the new local WinUI component package from your local repo and unpack it into the local
 package cache again so you can start using the updated build.
