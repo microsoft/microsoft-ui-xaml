@@ -119,6 +119,9 @@ stages:
       ob_outputDirectory: '$(Build.SourcesDirectory)\out'
       ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
       ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+      ${{ if eq(parameters.signOutput, false) }}:
+        ob_signing_setup_enabled: false
+        ob_sdl_codeSignValidation_enabled: false
       # The default ob checkout only does a shallow fetch. For PGO to work, it needs to fetch deeper.
       ob_git_fetchDepth: -1
       # Currently, the version of PREfast in Guardian does not correctly detect VSBuild tasks, which is a known pipeline-template issue.

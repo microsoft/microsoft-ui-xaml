@@ -27,10 +27,6 @@ variables:
                                     # and WinUI-Xaml-Official pipelines have access
                                     # to this variable group
 - group: WinUI-Variable-Library
-- name: ob_signing_setup_enabled
-  value: false
-- name: ob_sdl_codeSignValidation_enabled
-  value: false
 
 resources:
   repositories:

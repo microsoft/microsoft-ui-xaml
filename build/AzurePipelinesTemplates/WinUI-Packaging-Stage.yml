@@ -21,6 +21,9 @@ stages:
       ob_outputDirectory: '$(Build.SourcesDirectory)\out'
       ob_artifactBaseName: 'NugetPackages'
       ob_sdl_codeSignValidation_excludes: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|*Microsoft.Internal.MUXAppTestHelpers.WinUI*\**;-|*Microsoft.Internal.MUXTestInfra*\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
+      ${{ if eq(parameters.signOutput, false) }}:
+        ob_signing_setup_enabled: false
+        ob_sdl_codeSignValidation_enabled: false
 
     steps:
     # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
