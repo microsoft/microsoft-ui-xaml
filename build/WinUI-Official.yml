@@ -89,6 +89,7 @@ extends:
         signOutput: true
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        useInternalPgoFeed: true
 
     - template: AzurePipelinesTemplates\WinUI-BuildScenarioApps-Stage.yml
       parameters:

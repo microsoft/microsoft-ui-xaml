@@ -11,6 +11,7 @@ parameters:
   projectCaching: false
   buildProductOnly: false
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
+  useInternalPgoFeed: false
 
 steps:
   - task: NuGetAuthenticate@1
@@ -27,14 +28,61 @@ steps:
       # PublishAot must be specified at restore, as it conditionally generates nuget.g.* imports
       $publishAot = $env:buildConfiguration -eq "Release" -and $env:buildPlatform -ne "x86"
       Write-Host "##vso[task.setvariable variable=publishAotValue;]$publishAot"
+      Write-Host "##vso[task.setvariable variable=pgoNuGetConfigMSBuildArg;]"
 
-      if ($env:BUILD_REPOSITORY_PROVIDER -in @("GitHub", "GitHubEnterprise"))
+      $isGitHub = $env:BUILD_REPOSITORY_PROVIDER -in @("GitHub", "GitHubEnterprise")
+      $useInternalPgoFeed = $env:USE_INTERNAL_PGO_FEED -ieq "true"
+
+      if ($isGitHub -and $useInternalPgoFeed)
+      {
+        if ($env:BUILD_REPOSITORY_NAME -ne "microsoft/microsoft-ui-xaml")
+        {
+          throw "Internal PGO dependencies are only allowed for microsoft/microsoft-ui-xaml."
+        }
+
+        if ($env:SYSTEM_PULLREQUEST_ISFORK -eq "True")
+        {
+          throw "Internal PGO dependencies are not available to forked pull requests."
+        }
+      }
+      elseif ($isGitHub)
       {
         Write-Host "Disabling PGO for GitHub-backed validation."
         Write-Host "##vso[task.setvariable variable=PGODisable;]true"
         Write-Host "##vso[task.setvariable variable=pgoBuildMode;]Off"
       }
     displayName: Set computed variables
+    env:
+      USE_INTERNAL_PGO_FEED: ${{ parameters.useInternalPgoFeed }}
+
+  - task: PowerShell@2
+    displayName: Configure internal PGO package source
+    condition: and(succeeded(), eq(variables['shouldPgo'], 'true'), ${{ eq(parameters.useInternalPgoFeed, true) }}, or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+    inputs:
+      targetType: inline
+      script: |
+        $ErrorActionPreference = 'Stop'
+
+        if ([string]::IsNullOrWhiteSpace($env:WINUI_LKG_DEPENDENCIES_FEED_URI))
+        {
+          throw "WinUILKGDependenciesFeedUri is required for trusted GitHub PGO builds."
+        }
+
+        $configPath = Join-Path $env:AGENT_TEMPDIRECTORY 'WinUI.PGO.nuget.config'
+        $escapedFeedUri = [System.Security.SecurityElement]::Escape($env:WINUI_LKG_DEPENDENCIES_FEED_URI)
+        @"
+        <?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+          <packageSources>
+            <clear />
+            <add key="WinUI.Dependencies" value="$escapedFeedUri" />
+          </packageSources>
+        </configuration>
+        "@ | Set-Content -Path $configPath -Encoding UTF8
+
+        Write-Host "##vso[task.setvariable variable=pgoNuGetConfigMSBuildArg;]/p:PGONuGetConfigPath=`"$configPath`""
+    env:
+      WINUI_LKG_DEPENDENCIES_FEED_URI: $(WinUILKGDependenciesFeedUri)
 
   # Cleans anything left over from previous builds (including VS build tools) and installs NuGet
   - template: WinUI-InitializeMachineState-Steps.yml
@@ -65,7 +113,7 @@ steps:
 
   - script: |
       echo ##vso[task.setvariable variable=pgoBuildMode]Optimize
-    condition: and(eq(variables['shouldPgo'], 'true'), ne(variables['PGODisable'], 'true'), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+    condition: and(eq(variables['shouldPgo'], 'true'), ne(variables['PGODisable'], 'true'))
     displayName: Enable PGO
 
   - template: WinUI-InstallDependencies-Steps.yml
@@ -126,7 +174,7 @@ steps:
       solutionName: XamlCompilerPrerequisites.sln
       solutionPath: $(Build.SourcesDirectory)
       nugetConfigPath: nuget.config
-      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
+      msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} $(pgoNuGetConfigMSBuildArg) /m ${{parameters.additionalMSBuildOptions}}'
       msbuildInstallDir: $(_buildToolsDirectory)
       projectCaching: ${{ parameters.projectCaching }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -138,7 +186,7 @@ steps:
         solutionName: Microsoft.UI.Xaml.sln
         solutionPath: $(Build.SourcesDirectory)\dxaml
         nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} $(pgoNuGetConfigMSBuildArg) /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -150,7 +198,7 @@ steps:
         solutionName: Microsoft.UI.Xaml-Product.sln
         solutionPath: $(Build.SourcesDirectory)
         nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} $(pgoNuGetConfigMSBuildArg) /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -197,7 +245,7 @@ steps:
         solutionName: MUXControls.sln
         solutionPath: $(Build.SourcesDirectory)\controls
         nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} $(pgoNuGetConfigMSBuildArg) /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -214,7 +262,7 @@ steps:
         solutionName: MUXControlsTabular.sln
         solutionPath: $(Build.SourcesDirectory)\controls
         nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
+        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} $(pgoNuGetConfigMSBuildArg) /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}

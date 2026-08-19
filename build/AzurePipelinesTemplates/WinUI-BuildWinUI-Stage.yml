@@ -9,6 +9,7 @@ parameters:
   runStaticAnalysis: true
   projectCaching: false
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
+  useInternalPgoFeed: false
   buildProductOnly: false
   dependsOn: ''
 
@@ -159,6 +160,7 @@ stages:
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
         projectCaching: ${{ parameters.projectCaching }}
         pgoBuildModeMSBuildArg: ${{ parameters.pgoBuildModeMSBuildArg }}
+        useInternalPgoFeed: ${{ parameters.useInternalPgoFeed }}
         buildProductOnly: ${{ parameters.buildProductOnly }}
 
     - ${{ if eq(parameters.pipelineKind, 'Nightly') }}:
