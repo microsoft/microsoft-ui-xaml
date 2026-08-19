@@ -1,4 +1,4 @@
-# Mirrors the public GitHub main branch to an internal Azure Repos user branch.
+# Mirrors the public GitHub main branch to its internal Azure Repos mirror branch.
 #
 # This is intentionally history-preserving and fast-forward-only. The target
 # branch must not contain ADO-only commits or files; exact mirrors cannot
@@ -56,4 +56,4 @@ extends:
     - template: AzurePipelinesTemplates\WinUI-MirrorGitHubToInternal-Stage.yml@self
       parameters:
         sourceBranchName: main
-        targetBranchName: user/hmishra/winui3/main
+        targetBranchName: github/internal/main

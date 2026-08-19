@@ -6,7 +6,7 @@ parameters:
 - name: targetBranchName
   displayName: Internal ADO target branch to update
   type: string
-  default: user/hmishra/winui3/main
+  default: github/internal/main
 
 stages:
 - stage: Source
