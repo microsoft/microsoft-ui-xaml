@@ -41,9 +41,7 @@ extends:
       name: 'windows_undocked'
     globalsdl:
       tsa:
-        enabled: true
-        useDynamicRouting: false
-        configFile: $(Build.SourcesDirectory)\.config\tsaoptions.json
+        enabled: false
       evidence:
         enabled: false
       evidenceV2:
