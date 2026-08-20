@@ -22,6 +22,7 @@ using WEX.Logging.Interop;
 
 namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
 {
+    // This test class contains tests for the AnimatedIcon control. Simple change for testing purposes.
     [TestClass]
     public class AnimatedIconTests : ApiTestBase
     {
