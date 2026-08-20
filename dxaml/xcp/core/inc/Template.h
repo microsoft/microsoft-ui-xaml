@@ -183,7 +183,21 @@ public:
         return PARTICIPATES_IN_MANAGED_TREE;
     }
 
+    // Set by the DXAML peer (DirectUI::DataTemplate::SetElementFactory) when this DataTemplate was
+    // constructed from code with an element-factory callback (rather than a piece of markup). The
+    // callback itself lives on the peer. The core only remembers that one exists so that LoadContent
+    // can call it instead of using parsed markup content. This is only set during DataTemplate
+    // construction, and can't be changed afterwards.
+    void SetHasElementFactory(bool value)
+    {
+        ASSERT(value);
+        ASSERT(m_pTemplateContent == nullptr);
+        m_hasElementFactory = value;
+    }
+    bool HasElementFactory() const { return m_hasElementFactory; }
+
 private:
+    bool m_hasElementFactory = false;
     xref_ptr<CDependencyObject> m_cachedInstance;
 };
 
