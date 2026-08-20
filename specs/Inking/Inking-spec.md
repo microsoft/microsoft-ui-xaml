@@ -27,30 +27,9 @@ contract. The public names live in `Microsoft.UI.Xaml.Controls` and
 
 # API diff from WinUI 2 (UWP)
 
-The inking controls shipped in the UWP system XAML framework - `InkCanvas` and `InkToolbar` in
-`Windows.UI.Xaml.Controls`, with `InkPresenter` and the stroke model in `Windows.UI.Input.Inking`; they
-were never part of the WinUI 2 NuGet packages. This WinUI 3 stack is a port of that surface, so most
-types keep their exact member shape and only change namespace. The tables below capture the full delta
-a UWP inking app sees.
-
-## Namespace and type mapping
-
-| WinUI 2 / UWP type | WinUI 3 type | Change |
-|---|---|---|
-| `Windows.UI.Xaml.Controls.InkCanvas` | `Microsoft.UI.Xaml.Controls.InkCanvas` | Namespace only - same single `InkPresenter` property. |
-| `Windows.UI.Xaml.Controls.InkToolbar` and every `InkToolbar*` button type | `Microsoft.UI.Xaml.Controls.*` | Namespace only - same button hierarchy, properties, events, and `Get*Button` methods. |
-| `Windows.UI.Xaml.Controls.InkToolbarTool` / `InkToolbarToggle` / the other `InkToolbar*` enums | `Microsoft.UI.Xaml.Controls.*` | Namespace only - same values. |
-| `Windows.UI.Input.Inking.InkPresenter` | `Microsoft.UI.Xaml.Controls.InkPresenter` | Moved into the XAML controls namespace; still reached through `InkCanvas.InkPresenter`. Member shape changes below. |
-| `Windows.UI.Input.Inking.InkStrokeContainer` | `Microsoft.UI.Xaml.Controls.InkStrokeContainer` | Re-declared as an ink-thread-marshaled mirror; same member names, still holds `Windows.UI.Input.Inking.InkStroke`. |
-| `Windows.UI.Input.Inking.InkStrokeInput` | `Microsoft.UI.Xaml.Controls.InkStrokeInput` | Namespace, plus one shape change below. |
-| `Windows.UI.Input.Inking.InkUnprocessedInput` | `Microsoft.UI.Xaml.Controls.InkUnprocessedInput` | Namespace, plus one shape change below. |
-| `Windows.UI.Input.Inking.InkInputConfiguration`, `InkInputProcessingConfiguration` | `Microsoft.UI.Xaml.Controls.*` | Re-declared as marshaled mirrors; same members. |
-
-Reused unchanged (still `Windows.UI.Input.Inking.*`, not re-declared): `InkStroke`, `InkStrokeBuilder`,
-`InkDrawingAttributes`, `InkPresenterRuler`, `InkPresenterProtractor`, `InkPersistenceFormat`,
-`InkPresenterPredefinedConfiguration`, and the `CoreInputDeviceTypes` input mask. The mirrored enums
-(`InkInputProcessingMode`, `InkInputRightDragAction`, `InkHighContrastAdjustment`) keep the UWP names
-and values one-to-one.
+This WinUI 3 stack is a port of the UWP inking surface, so nearly every type keeps its exact member
+shape. The meaningful delta is the short set of member changes below; the namespace move and the reused
+types are noted briefly at the end of this section.
 
 ## Member shape changes
 
@@ -76,6 +55,13 @@ follow-up (see the [Not yet in this preview](#not-yet-in-this-preview) appendix)
 - The `UseSystemColorsWhenNecessary` high-contrast default-palette filtering.
 
 Every other member on the UWP inking types is present with the same name and signature.
+
+**Namespaces and reused types.** The UWP types move from `Windows.UI.Xaml.Controls` and
+`Windows.UI.Input.Inking` into `Microsoft.UI.Xaml.Controls` (automation peers into
+`Microsoft.UI.Xaml.Automation.Peers`). `InkPresenter`, `InkStrokeContainer`, `InkStrokeInput`,
+`InkUnprocessedInput`, and the input-configuration types are re-declared as ink-thread-marshaled
+mirrors; `InkStroke`, `InkDrawingAttributes`, `InkStrokeBuilder`, the rulers, `InkPersistenceFormat`,
+and `CoreInputDeviceTypes` are reused from `Windows.UI.Input.Inking` unchanged.
 
 # Conceptual pages (How To)
 
