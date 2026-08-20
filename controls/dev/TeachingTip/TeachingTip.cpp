@@ -669,7 +669,13 @@ bool TeachingTip::PositionUntargetedPopup()
 
 void TeachingTip::UpdateSizeBasedTemplateSettings()
 {
-    auto const templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
+    auto const templateSettingsRef = TemplateSettings();
+    if (!templateSettingsRef)
+    {
+        return;
+    }
+
+    auto const templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(templateSettingsRef);
     auto const [width, height] = [this]()
     {
         if (auto&& contentRootGrid = m_contentRootGrid.get())
@@ -1035,7 +1041,14 @@ void TeachingTip::OnTailVisibilityChanged()
 
 void TeachingTip::OnIconSourceChanged()
 {
-    auto const templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(TemplateSettings());
+    // TemplateSettingsProperty is a public read/write DP, so an app can clear it to null.
+    auto const templateSettingsRef = TemplateSettings();
+    if (!templateSettingsRef)
+    {
+        return;
+    }
+
+    auto const templateSettings = winrt::get_self<::TeachingTipTemplateSettings>(templateSettingsRef);
     if (auto const source = IconSource())
     {
         templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
