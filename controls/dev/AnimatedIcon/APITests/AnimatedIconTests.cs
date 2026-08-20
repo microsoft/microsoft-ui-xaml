@@ -25,6 +25,15 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class AnimatedIconTests : ApiTestBase
     {
+        // TEMPORARY infrastructure probe. WinUI-GitHub-PR.yml passes failOnTestFailure: false
+        // to WinUI-RunTests-Stage.yml, so a failing test is expected to be published but not to
+        // fail the pipeline. Revert once the result is recorded.
+        [TestMethod]
+        public void BuildTypeCoverageProbe_IntentionalFailure()
+        {
+            Verify.AreEqual(1, 2, "Intentional failure - GitHub PR test gating probe");
+        }
+
         [TestMethod]
         public void SettingStateOnParentPropagatesToChildAnimatedIcon()
         {
