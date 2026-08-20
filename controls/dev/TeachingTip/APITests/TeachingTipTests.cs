@@ -192,6 +192,64 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void TeachingTipWithClearedTemplateSettingsDoesNotCrash()
+        {
+            // Regression test for AB#60057581: clearing the public TemplateSettingsProperty left
+            // OnIconSourceChanged and UpdateSizeBasedTemplateSettings dereferencing a null peer.
+            var loadedEvent = new AutoResetEvent(false);
+            TeachingTip teachingTip = null;
+            Border content = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                content = new Border { Width = 200, Height = 100 };
+                teachingTip = new TeachingTip();
+                teachingTip.Content = content;
+                teachingTip.IconSource = new SymbolIconSource { Symbol = Symbol.People };
+                teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
+                Content = teachingTip;
+            });
+
+            IdleSynchronizer.Wait();
+            loadedEvent.WaitOne();
+
+            RunOnUIThread.Execute(() =>
+            {
+                teachingTip.ClearValue(TeachingTip.TemplateSettingsProperty);
+                Verify.IsNull(teachingTip.TemplateSettings, "TemplateSettings should be null after ClearValue");
+
+                // OnIconSourceChanged, reached directly through the property-changed callback.
+                teachingTip.IconSource = new SymbolIconSource { Symbol = Symbol.Accept };
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // OnApplyTemplate -> OnIconSourceChanged, reached from the measure pass.
+                teachingTip.IsOpen = true;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // OnContentSizeChanged -> UpdateSizeBasedTemplateSettings.
+                content.Width = 420;
+                content.Height = 260;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                teachingTip.IsOpen = false;
+            });
+
+            IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
         public void PropagatePropertiesDown()
         {
             TextBlock content = null;
