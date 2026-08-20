@@ -25,6 +25,58 @@ contract. The public names live in `Microsoft.UI.Xaml.Controls` and
 
 ![An InkCanvas with an InkToolbar](./inking-overview.png)
 
+# API diff from WinUI 2 (UWP)
+
+The inking controls shipped in the UWP system XAML framework - `InkCanvas` and `InkToolbar` in
+`Windows.UI.Xaml.Controls`, with `InkPresenter` and the stroke model in `Windows.UI.Input.Inking`; they
+were never part of the WinUI 2 NuGet packages. This WinUI 3 stack is a port of that surface, so most
+types keep their exact member shape and only change namespace. The tables below capture the full delta
+a UWP inking app sees.
+
+## Namespace and type mapping
+
+| WinUI 2 / UWP type | WinUI 3 type | Change |
+|---|---|---|
+| `Windows.UI.Xaml.Controls.InkCanvas` | `Microsoft.UI.Xaml.Controls.InkCanvas` | Namespace only - same single `InkPresenter` property. |
+| `Windows.UI.Xaml.Controls.InkToolbar` and every `InkToolbar*` button type | `Microsoft.UI.Xaml.Controls.*` | Namespace only - same button hierarchy, properties, events, and `Get*Button` methods. |
+| `Windows.UI.Xaml.Controls.InkToolbarTool` / `InkToolbarToggle` / the other `InkToolbar*` enums | `Microsoft.UI.Xaml.Controls.*` | Namespace only - same values. |
+| `Windows.UI.Input.Inking.InkPresenter` | `Microsoft.UI.Xaml.Controls.InkPresenter` | Moved into the XAML controls namespace; still reached through `InkCanvas.InkPresenter`. Member shape changes below. |
+| `Windows.UI.Input.Inking.InkStrokeContainer` | `Microsoft.UI.Xaml.Controls.InkStrokeContainer` | Re-declared as an ink-thread-marshaled mirror; same member names, still holds `Windows.UI.Input.Inking.InkStroke`. |
+| `Windows.UI.Input.Inking.InkStrokeInput` | `Microsoft.UI.Xaml.Controls.InkStrokeInput` | Namespace, plus one shape change below. |
+| `Windows.UI.Input.Inking.InkUnprocessedInput` | `Microsoft.UI.Xaml.Controls.InkUnprocessedInput` | Namespace, plus one shape change below. |
+| `Windows.UI.Input.Inking.InkInputConfiguration`, `InkInputProcessingConfiguration` | `Microsoft.UI.Xaml.Controls.*` | Re-declared as marshaled mirrors; same members. |
+
+Reused unchanged (still `Windows.UI.Input.Inking.*`, not re-declared): `InkStroke`, `InkStrokeBuilder`,
+`InkDrawingAttributes`, `InkPresenterRuler`, `InkPresenterProtractor`, `InkPersistenceFormat`,
+`InkPresenterPredefinedConfiguration`, and the `CoreInputDeviceTypes` input mask. The mirrored enums
+(`InkInputProcessingMode`, `InkInputRightDragAction`, `InkHighContrastAdjustment`) keep the UWP names
+and values one-to-one.
+
+## Member shape changes
+
+The only member-level differences are three `property -> method` changes forced by XAML metadata
+generation - none of them changes behavior.
+
+| WinUI 2 / UWP member | WinUI 3 | Reason |
+|---|---|---|
+| `InkPresenter.HighContrastAdjustment` (property) | `GetHighContrastAdjustment()` / `SetHighContrastAdjustment(value)` (methods) | The mirror `InkPresenter` shares its name with the OS `InkPresenter`; a property would bind XAML metadata to the OS presenter's differently-typed enum. |
+| `InkStrokeInput.InkPresenter` (property) | `GetInkPresenter()` (method) | A property forms a metadata cycle with `InkPresenter.StrokeInput`. UWP's `get_InkPresenter` is already a method at the ABI. |
+| `InkUnprocessedInput.InkPresenter` (property) | `GetInkPresenter()` (method) | Same cycle with `InkPresenter.UnprocessedInput`. |
+
+`InkPresenter.StrokeContainer` is get/set in UWP; the mirror exposes it read-only (`get`) because the
+presenter owns its container - strokes are still added and removed through the container's own methods.
+
+## Not ported in this preview
+
+Present on the UWP types, intentionally left out of the `[MUX_PREVIEW]` surface and tracked as
+follow-up (see the [Not yet in this preview](#not-yet-in-this-preview) appendix):
+
+- `InkPresenter.ActivateCustomDrying()` and the `InkSynchronizer` it returns - app-driven rendering of dry ink.
+- The pen-flyout live wet-stroke preview.
+- The `UseSystemColorsWhenNecessary` high-contrast default-palette filtering.
+
+Every other member on the UWP inking types is present with the same name and signature.
+
 # Conceptual pages (How To)
 
 ## How to add an inking surface
