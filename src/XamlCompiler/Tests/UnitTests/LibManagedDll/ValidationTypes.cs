@@ -91,17 +91,6 @@ namespace LibManagedDll
         public ButtonDictionary ButtonDictionaryProp { get; set; }
     }
 
-    public class PrimitiveHolder
-    {
-        public short Int16Prop { get; set; }
-        public ushort UInt16Prop { get; set; }
-        public char Char16Prop { get; set; }
-        public int Int32Prop { get; set; }
-        public long Int64Prop { get; set; }
-        public uint UInt32Prop { get; set; }
-        public ulong UInt64Prop { get; set; }
-    }
-
     [ContentPropertyAttribute(Name = "Something")]
     public class GoodCpaClass : Control
     {
