@@ -260,6 +260,29 @@ _Check_return_ __declspec(allocator) void *XcpDebugAllocate(
     return pNewMemory;
 }
 
+// Returns the originally requested size for a live allocation returned by
+// XcpDebugAllocate. pAddress may be null, in which case 0 is returned.
+// Header validation detects allocator metadata corruption; this function must
+// not be used to probe arbitrary pointers.
+_Check_return_ UINT64 XcpDebugGetAllocationSize(_In_opt_ const void *pAddress) noexcept
+{
+    if (pAddress == nullptr)
+    {
+        return 0;
+    }
+
+    const DebugMemoryCheckBlock *pHeader = static_cast<const DebugMemoryCheckBlock*>(pAddress) - 1;
+
+    if (pHeader->chXcpB != XcpHdrB ||
+        pHeader->chXcpE != XcpHdrE ||
+        pHeader->blockSignature != BLOCK_SIGNATURE)
+    {
+        return 0;
+    }
+
+    return pHeader->cSize;
+}
+
 void XcpDebugFreeStackTrace(void* pCallers)
 {
     HeapFree( GetProcessHeap(), 0, pCallers );

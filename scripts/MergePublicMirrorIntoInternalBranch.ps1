@@ -172,14 +172,24 @@ $sourceTrackingRef = "refs/remotes/$RemoteName/$SourceBranchName"
 $targetTrackingRef = "refs/remotes/$RemoteName/$TargetBranchName"
 
 Write-Host "##[group]Fetching integration branches"
-Invoke-GitCommand -Repository $repositoryFullPath -Arguments @(
+$fetchArguments = @(
     "fetch",
     "--prune",
-    "--no-tags",
+    "--no-tags"
+)
+$repositoryIsShallow = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @(
+    "rev-parse",
+    "--is-shallow-repository"
+)
+if ($repositoryIsShallow -eq "true") {
+    $fetchArguments += "--unshallow"
+}
+$fetchArguments += @(
     $RemoteName,
     "+$sourceRefName`:$sourceTrackingRef",
     "+$targetRefName`:$targetTrackingRef"
 )
+Invoke-GitCommand -Repository $repositoryFullPath -Arguments $fetchArguments
 $sourceCommit = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @("rev-parse", "--verify", "$sourceTrackingRef^{commit}")
 $targetCommit = Get-GitCommandOutput -Repository $repositoryFullPath -Arguments @("rev-parse", "--verify", "$targetTrackingRef^{commit}")
 Write-Host "Source '$SourceBranchName': $sourceCommit"
