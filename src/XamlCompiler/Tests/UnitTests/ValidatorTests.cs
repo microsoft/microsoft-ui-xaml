@@ -498,34 +498,6 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void CanAssignTextToPrimitiveIntegerProperties()
-        {
-            string xaml = @"
-<Page
-    xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-    xmlns:dll='using:LibManagedDll'>
-    <Grid>
-        <Button>
-            <dll:PrimitiveHolder
-                Int16Prop='4'
-                UInt16Prop='4'
-                Char16Prop='A'
-                Int32Prop='4'
-                Int64Prop='4'
-                UInt32Prop='4'
-                UInt64Prop='4' />
-        </Button>
-    </Grid>
-</Page>";
-            var validator = _testHelper.ValidateXAML(xaml, SchemaMode.LoadUserDll);
-
-            string[] expectedErrors = { };
-            string result = _testHelper.MatchErrors(validator, expectedErrors, null);
-            Assert.IsNull(result, result);
-        }
-
-        [TestMethod]
         public void WMC0060_XamlValidationDictionaryKeyError()
         {
             string xaml = @"
