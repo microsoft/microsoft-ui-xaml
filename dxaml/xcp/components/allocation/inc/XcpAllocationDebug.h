@@ -154,6 +154,12 @@ _Check_return_ __declspec(allocator) void *XcpDebugResize(
     DebugAllocationClass  allocationClass
 );
 
+// Returns the originally requested size for a live allocation returned by
+// XcpDebugAllocate. pAddress may be null, in which case 0 is returned.
+// Header validation detects allocator metadata corruption; this function must
+// not be used to probe arbitrary pointers.
+_Check_return_ UINT64 XcpDebugGetAllocationSize(_In_opt_ const void *pAddress) noexcept;
+
 // Mark LeakDetection flag in individual object that was allocated
 // through XcpDebugAllocate.
 void XcpDebugSetLeakDetectionFlag(_In_ void *pAddress, _In_ bool fDisableLeakDetection);

@@ -24,6 +24,15 @@ class CDependencyObject;
 // are what stitch the logical/visual/composition trees together. Defined in uielement.cpp.
 uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexcept;
 
+// Returns the actual heap-allocation size (in bytes) of the core object — its concrete,
+// most-derived C++ instance footprint (NOT sizeof(CUIElement), which is the base-class size and
+// identical for every element). Core objects go through the global operator new, so the allocator
+// records the true block size; the size is recovered from the debug allocator's validation header
+// in debug builds (or HeapSize in retail) for every creation path. This is only the fixed per-type
+// "core block"; the element's sparse property table and its DXaml peer are separate allocations,
+// measured on demand. 0 when obj is null. Defined in uielement.cpp alongside XamlProfilerGetPeerHandle.
+uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept;
+
 // TraceLogging provider for XAML Profiler tree-tracking events.
 // These events allow an out-of-process profiler to reconstruct and diff the logical tree,
 // visual tree, and composition tree over the lifetime of the host process.
@@ -83,13 +92,20 @@ public:
     // Label is the element's GetDebugLabel().
     // IsTemplateChild is true when the element was created by a ControlTemplate (GetTemplatedParent() != null).
     // PeerHandle is the element's DXaml-peer InstanceHandle (0 when no peer) for live highlighting.
-    DEFINE_TRACELOGGING_EVENT_PARAM6(ElementEnteredTree,
+    // CoreSize is the fixed core-object allocation size; sparse properties and the DXaml peer are separate.
+    // SourceFileUri/Line/Column are populated when source-info storage is enabled and the peer has source info.
+    // Missing source info uses an empty URI and 0 coordinates; XBF without line info also uses 0 coordinates.
+    DEFINE_TRACELOGGING_EVENT_PARAM10(ElementEnteredTree,
         uint64_t, ElementId,
         uint64_t, ParentId,
         bool,     IsLive,
         PCWSTR,   Label,
         bool,     IsTemplateChild,
         uint64_t, PeerHandle,
+        uint64_t, CoreSize,
+        PCWSTR,   SourceFileUri,
+        uint32_t, SourceLine,
+        uint32_t, SourceColumn,
         TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE));
 
     // Fired when a UIElement leaves the live tree.

@@ -21,6 +21,19 @@ void EnsureHeap()
     }
 }
 
+_Check_return_ size_t XcpAllocation::OSMemoryGetBlockSize(_In_opt_ const void *pAddress) noexcept
+{
+    if (pAddress == nullptr)
+    {
+        return 0;
+    }
+
+    EnsureHeap();
+
+    const SIZE_T size = HeapSize(ghHeap, 0, pAddress);
+    return size == static_cast<SIZE_T>(-1) ? 0 : size;
+}
+
 #if DBG
 #define COUNT_ALLOC 1
 #endif

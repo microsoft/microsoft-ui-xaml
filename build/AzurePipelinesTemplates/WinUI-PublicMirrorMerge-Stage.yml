@@ -22,7 +22,7 @@ stages:
     - checkout: self
       submodules: false
       persistCredentials: true
-      fetchDepth: 0
+      fetchDepth: 1
       fetchTags: false
       path: '$(repositoryRelativePath)'
       displayName: Checkout internal repository

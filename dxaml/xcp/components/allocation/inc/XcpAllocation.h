@@ -27,6 +27,7 @@ namespace XcpAllocation {
     _Check_return_ __declspec(allocator) void *OSMemoryAllocateNoFailFast(_In_ size_t cSize);
     _Check_return_ __declspec(allocator) void *OSMemoryAllocateZeroMemoryFailFast(_In_ size_t cSize);
     _Check_return_ __declspec(allocator) void *OSMemoryResize(_Frees_ptr_opt_ void *pAddress, _In_ size_t cSize);
+    _Check_return_ size_t OSMemoryGetBlockSize(_In_opt_ const void *pAddress) noexcept;
     void __stdcall OSMemoryFree(_Frees_ptr_opt_ void *pAddress);
 
     // Test hooks to expose allocation statistics
