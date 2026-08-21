@@ -721,6 +721,14 @@ CTemplateContent::LoadXbfVersion2(
     if (bTryOptimizeContent && !m_bContentAlreadyOptimized)
     {
         m_bContentAlreadyOptimized = true;
+
+        // The cache is populated only on this first optimization pass (via emplace_back,
+        // which grows capacity geometrically); every later template expansion only reads
+        // it by index. Now that it is sealed, reclaim the growth overshoot so this
+        // CShareableDependencyObject-retained buffer commits only what it holds.
+        // shrink_to_fit() changes capacity only, not contents, so the size()-based read
+        // paths in GenerateOptimizedNode() are unaffected.
+        m_cachedTemplateContentObjects.shrink_to_fit();
     }
 
     return S_OK;
