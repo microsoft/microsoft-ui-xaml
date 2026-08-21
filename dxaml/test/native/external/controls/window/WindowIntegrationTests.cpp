@@ -14,6 +14,10 @@
 #include <WindowAutoCloser.h>
 #include <microsoft.ui.xaml.window.h> // for IWindowNative
 
+#include <memory>
+#include <string>
+#include <vector>
+
 using namespace Microsoft::UI::Xaml::Tests::Common;
 using namespace test_infra;
 
@@ -2388,6 +2392,129 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
     }
 
 #endif // MUX_PRERELEASE
+
+void WindowIntegrationTests::ContentSetInMarkupIsReleasedWhenCleared()
+    {
+        // Regression test for "Window.Content set in .xaml is held alive for the lifetime of the Window".
+        //
+        // The element tree lives in two places at once: the DXaml (C++/COM) peers and the core
+        // (C++, manually ref-counted) objects.  The bug only leaked the core side: the parser set the
+        // private Window_Content DP on the core CWindow, which took a native ref on the markup root and
+        // was never dropped for the Window's lifetime - even after the app set Window.Content to null.
+        //
+        // Strategy (see PR discussion): compare how many core objects stay alive after Window.Content is
+        // cleared, for a baseline markup tree vs a loaded one, while keeping every Window alive the whole
+        // time.  The delta isolates the memory held by the tree itself.  Core object counts come from the
+        // existing allocation counters (GetAllocationCount / GetDeallocationCount).  With the fix the
+        // cleared tree is released, so the delta is tiny; without it, nearly the whole loaded tree lingers.
+        TestCleanupWrapper cleanup;
+
+        const int windowCount = 4;
+
+        auto makeMarkup = [](int elementCount) -> Platform::String^
+        {
+            // Must be a <Window> at the root: the tree is loaded via XamlReader::Load and cast to
+            // xaml::Window, and only a Window sets the private Window_Content DP that this test exercises.
+            std::wstring markup = L"<Window xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>"
+                                  L"<Grid>";
+            for (int i = 0; i < elementCount; ++i)
+            {
+                // Anonymous (no x:Name) elements so the cost is dominated by the tree itself and the
+                // core objects are held only by native refs, not by test-side managed references.
+                markup += L"<Border><TextBlock Text='x'/></Border>";
+            }
+            markup += L"</Grid></Window>";
+            return ref new Platform::String(markup.c_str());
+        };
+
+        Platform::String^ baselineMarkup = makeMarkup(0);
+        Platform::String^ loadedMarkup = makeMarkup(400);
+
+        struct AllocMetrics
+        {
+            INT64 outstanding; // core objects still alive after Content was cleared
+            INT64 footprint;   // core objects allocated while building the windows' content
+        };
+
+        // Windows are kept alive here for the whole test so that we are measuring content lifetime,
+        // not Window lifetime.  They are closed by the vector's destructor at the end of the test.
+        std::vector<std::shared_ptr<WindowAutoCloser>> keepAlive;
+
+        auto measure = [&](Platform::String^ markup) -> AllocMetrics
+        {
+            TestServices::WindowHelper->WaitForIdle();
+
+            const UINT64 initialAllocCount = TestServices::WindowHelper->GetAllocationCount();
+            const UINT64 initialDeallocCount = TestServices::WindowHelper->GetDeallocationCount();
+
+            std::vector<std::shared_ptr<WindowAutoCloser>> windows;
+            for (int i = 0; i < windowCount; ++i)
+            {
+                auto closer = std::make_shared<WindowAutoCloser>();
+                RunOnUIThread([&]()
+                {
+                    closer->Attach(safe_cast<xaml::Window^>(xaml_markup::XamlReader::Load(markup)));
+                    (*closer)->Activate();
+                });
+                windows.push_back(closer);
+            }
+            TestServices::WindowHelper->WaitForIdle();
+
+            const UINT64 createdAllocCount = TestServices::WindowHelper->GetAllocationCount();
+            const INT64 footprint = static_cast<INT64>(createdAllocCount - initialAllocCount);
+
+            // Clear each Window's content but keep the Window itself alive.
+            for (auto& closer : windows)
+            {
+                RunOnUIThread([&]()
+                {
+                    // The markup really did load a content tree, so clearing it exercises the bug.
+                    auto content = (*closer)->Content;
+                    VERIFY_IS_NOT_NULL(content);
+                    (*closer)->Content = nullptr;
+                });
+            }
+            TestServices::WindowHelper->WaitForIdle();
+            // A second idle pass lets any deferred unload/release work drain.
+            TestServices::WindowHelper->WaitForIdle();
+
+            const UINT64 afterAllocCount = TestServices::WindowHelper->GetAllocationCount();
+            const UINT64 afterDeallocCount = TestServices::WindowHelper->GetDeallocationCount();
+            const INT64 outstanding =
+                static_cast<INT64>(afterAllocCount - initialAllocCount) -
+                static_cast<INT64>(afterDeallocCount - initialDeallocCount);
+
+            keepAlive.insert(keepAlive.end(), windows.begin(), windows.end());
+            return { outstanding, footprint };
+        };
+
+        const AllocMetrics baseline = measure(baselineMarkup);
+        const AllocMetrics loaded = measure(loadedMarkup);
+
+        // Isolate the loaded tree: subtract the baseline windows' cost, which covers the fixed
+        // per-Window overhead shared by both phases.
+        const INT64 treeFootprint = loaded.footprint - baseline.footprint;
+        const INT64 heldByTrees = loaded.outstanding - baseline.outstanding;
+
+        LOG_OUTPUT(L"windowCount:                  %d", windowCount);
+        LOG_OUTPUT(L"baseline: footprint=%lld outstanding=%lld", baseline.footprint, baseline.outstanding);
+        LOG_OUTPUT(L"loaded:   footprint=%lld outstanding=%lld", loaded.footprint, loaded.outstanding);
+        LOG_OUTPUT(L"loaded tree core allocations:      %lld", treeFootprint);
+        LOG_OUTPUT(L"loaded tree still held after clear: %lld", heldByTrees);
+
+#ifdef DBG
+        // Sanity check: the loaded markup really did allocate a substantial number of core objects, so the
+        // comparison below is meaningful (in free builds the counters return 0 and this is skipped).
+        VERIFY_IS_GREATER_THAN(treeFootprint, static_cast<INT64>(windowCount) * 400);
+
+        // With the fix, clearing Window.Content releases the markup-loaded tree, so only a small fraction
+        // of the tree's core objects remain outstanding.  Without the fix, nearly the entire tree is still
+        // held by the core CWindow's Content DP.
+        VERIFY_IS_LESS_THAN(heldByTrees, treeFootprint / 10);
+#else
+        LOG_OUTPUT(L"Skipping allocation count verification in free build because we don't count allocations in free.");
+#endif
+    }
 
 
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::Window
