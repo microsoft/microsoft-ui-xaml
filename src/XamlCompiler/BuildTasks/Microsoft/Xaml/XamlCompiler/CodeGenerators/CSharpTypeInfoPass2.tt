@@ -392,7 +392,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)
@@ -797,7 +797,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                         {                               #>
                 userType.Activator = <#=Model.ActivatorName(uentry)#>;
 <#+                         }                               #>
-<#+                         if(!uentry.IsArray)  #>
+<#+                         if(uentry.RequiresStaticInitializer)  #>
 <#+                         {                               #>
                 userType.StaticInitializer = <#=Model.StaticInitializerName(uentry)#>;
 <#+                         }                               #>
@@ -904,7 +904,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+         {                                                                       #>
 <#+             foreach(InternalXamlUserTypeInfo entry in SchemaInfo.UserTypeInfo)  #>
 <#+             {                                                                   #>
-<#+                 if(!entry.IsArray)                                              #>
+<#+                 if(entry.RequiresStaticInitializer)                             #>
 <#+                 {                                                               #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>
