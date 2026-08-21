@@ -607,6 +607,18 @@ XamlOptimizedNodeList::ReserveBasedOn(const std::shared_ptr<XamlOptimizedNodeLis
 void XamlOptimizedNodeList::Close()
 {
     m_fReadMode = true;
+
+    // This node list is write-once / read-many and is retained for the lifetime of the
+    // cached template, cached node stream, or deferred dictionary that owns it. The
+    // append path grows m_bytes from reserve(128), and ReserveBasedOn() pre-sizes the
+    // vectors from a sibling list, so both routinely leave excess capacity. Now that
+    // writing is done, reclaim that overshoot so the retained buffers only commit what
+    // they actually hold. shrink_to_fit() changes capacity only, not contents, so the
+    // size()-based read paths are unaffected.
+    m_bytes.shrink_to_fit();
+    m_values.shrink_to_fit();
+    m_strings.shrink_to_fit();
+    m_unknownNamespaces.shrink_to_fit();
 }
 
 
