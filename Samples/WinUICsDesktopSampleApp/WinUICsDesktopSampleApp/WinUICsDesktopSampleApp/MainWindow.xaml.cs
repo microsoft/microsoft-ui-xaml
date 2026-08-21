@@ -36,6 +36,14 @@ namespace WinUICsDesktopSampleApp
             this.SetTitleBar(this.customTitleBarTest);
         }
 
+        // Test properties for 'required' and 'init'.
+        // See:
+        //   https://github.com/microsoft/microsoft-ui-xaml/issues/8723
+        //   https://github.com/microsoft/microsoft-ui-xaml/issues/2519
+        public TypeWithRequiredMember SettableProperty { get; set; }
+        public TypeWithRequiredMember InitOnlyProperty { get; init; }
+        public TypeWithoutRequiredMember InitOnlyPropertyOfTypeWithoutRequiredMember { get; init; }
+
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
             // If we were on the Key Press page but no longer are, unsubscribe from events
@@ -843,5 +851,22 @@ namespace WinUICsDesktopSampleApp
         {
             element.SetValue(MyAttachedPropProperty, value);
         }
+    }
+
+    public class TypeWithRequiredMember
+    {
+        public required string Name { get; set; }
+    }
+
+    public class TypeWithoutRequiredMember
+    {
+        public string Name { get; set; }
+    }
+
+    public partial class RequiredAndInitTestControl : Control
+    {
+        public TypeWithRequiredMember TypeWithRequiredMemberProperty { get; set; }
+
+        public TypeWithoutRequiredMember TypeWithoutRequiredMemberProperty { get; set; }
     }
 }

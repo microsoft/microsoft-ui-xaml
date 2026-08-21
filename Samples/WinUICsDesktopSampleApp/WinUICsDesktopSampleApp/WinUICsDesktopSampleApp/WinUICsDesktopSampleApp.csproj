@@ -14,6 +14,9 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <DefaultLanguage>en-US</DefaultLanguage>
+
+    <!-- Needed by the 'required' members used by the XAML compiler regression tests in MainWindow.xaml.cs -->
+    <LangVersion>11</LangVersion>
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
     <AppxPackageName>WinUICsDesktopSampleApp</AppxPackageName>
     <AppxBundleNameForOutput>WinUICsDesktopSampleApp</AppxBundleNameForOutput>
