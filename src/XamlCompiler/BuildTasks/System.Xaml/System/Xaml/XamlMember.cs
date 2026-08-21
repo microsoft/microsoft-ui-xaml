@@ -714,7 +714,7 @@ namespace System.Xaml
         protected virtual bool LookupIsWritePublic()
         {
             MethodInfo setter = Setter;
-            if (setter != null && !setter.IsPublic)
+            if (setter != null && (!setter.IsPublic || MemberReflector.IsInitOnly(setter)))
             {
                 return false;
             }
