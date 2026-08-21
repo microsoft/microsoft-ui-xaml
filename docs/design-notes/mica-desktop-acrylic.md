@@ -195,20 +195,42 @@ Two pieces cooperate:
   `DWMWA_SYSTEMBACKDROP_TYPE` on a Xaml `Window` itself gets the same treatment, and the frame and the
   background color never disagree.
 
+DWM draws the light variant of a material unless it is told otherwise. It knows nothing about the Xaml theme and
+does not follow the system one either, so a dark themed window would get a near-white material behind its light
+content. `DwmSystemBackdrop` therefore also carries `DWMWA_USE_IMMERSIVE_DARK_MODE`, taking the theme from the
+same `SystemBackdropConfiguration` a lifted `MicaController` reads so that both engines follow one source, and
+`OnDefaultSystemBackdropConfigurationChanged` keeps the window in step when the theme changes later. That
+attribute is owned under the same last-writer rule as the material itself.
+
 Only a Xaml `Window` is configured this way, because the attribute covers a whole top-level window. `MicaBackdrop`
 only takes the DWM path when its target is the island a `Window` hosts its content in, that window is one of the
 app's Xaml `Window`s, and this backdrop object is that window's own `SystemBackdrop`. A backdrop attached to a
 windowed `Popup`, to a `SystemBackdropElement`, to an island the app hosts in a window of its own, or to an
 island the app nested inside a Xaml `Window` keeps using its (inert) `SystemBackdropController`.
 
-Three behaviors differ from the lifted path and are accepted:
-* DWM picks the material's light/dark appearance from the system theme, where a `SystemBackdropController`
-  follows the element tree's `ActualTheme`. An app that overrides `RequestedTheme` against the system theme gets
-  a material for the system theme.
+Two behaviors differ from the lifted path and are accepted:
 * Xaml can't read the window's current frame margins back from DWM, so a Xaml `Window` whose frame the app
   extended itself has its margins replaced rather than restored.
 * If DWM refuses to extend the window's frame, the window keeps erasing an opaque background and the material
   stays hidden, which is the behavior from before this fallback existed.
+
+#### Why the frame is extended
+
+Extending the frame and erasing to black is what makes the window stop covering the material up, but it is not
+the cheapest way to get there. `WS_EX_NOREDIRECTIONBITMAP` skips allocating the GDI redirection surface
+altogether, so DWM neither allocates it nor blends it; with the frame extended it still composes a full-window
+surface that contributes nothing.
+
+That is available as the opt-in `XamlChangeId.SkipWindowRedirectionSurface` (see
+[the Window design note](./xaml-window.md#the-windows-redirection-surface)). When it is enabled none of this
+applies: there is nothing opaque in the way, so the material shows through on its own and neither the frame
+extension nor the black erase runs.
+
+It stays opt-in rather than becoming the way this fallback works, because the decision has to be made when the
+window is created - the style is only honored when passed to `CreateWindowEx`, so the backdrop code can't turn
+it on when `Window.SystemBackdrop` is set - and deciding for the window as a whole means deciding for windows
+that never use a backdrop. A window without a redirection surface can't paint with GDI at all, which is a
+behavior change as much as an optimization.
 
 ### Custom title bar
 
