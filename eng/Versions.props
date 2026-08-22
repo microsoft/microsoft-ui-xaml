@@ -19,6 +19,16 @@
     <MicrosoftWindowsSDKCppNugetPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(PackagesPlatformConfigContents), 'Microsoft.Windows.SDK.cpp.*?version="(.*?)"').Groups[1].Value)</MicrosoftWindowsSDKCppNugetPackageVersion>
     <!-- Determine if this is an internal build, and change some values if not -->
     <IsInternalWinUIBuild Condition="Exists('$(MSBuildThisFileDirectory)..\.azuredevops')">true</IsInternalWinUIBuild>
+    <!-- Trusted GitHub PRs can use the current WinUIDetails package; forks and normal OSS builds stay on the public pin. -->
+    <IsTrustedGitHubPrBuild Condition="'$(TF_BUILD)' == 'True'
+      and '$(BUILD_REASON)' == 'PullRequest'
+      and ('$(BUILD_REPOSITORY_PROVIDER)' == 'GitHub' or '$(BUILD_REPOSITORY_PROVIDER)' == 'GitHubEnterprise')
+      and '$(SYSTEM_PULLREQUEST_ISFORK)' == 'False'">true</IsTrustedGitHubPrBuild>
+    <UseVersionDetailsWinUIDetails Condition="'$(UseVersionDetailsWinUIDetails)' == ''
+      and '$(IsTrustedGitHubPrBuild)' == 'true'">true</UseVersionDetailsWinUIDetails>
+    <UseVersionDetailsWinUIDetails Condition="'$(UseVersionDetailsWinUIDetails)' == ''">false</UseVersionDetailsWinUIDetails>
+    <RestoreAdditionalProjectSources Condition="'$(UseVersionDetailsWinUIDetails)' == 'true'
+      and '$(WinUIInternalFeedUri)' != ''">$(WinUIInternalFeedUri);$(RestoreAdditionalProjectSources)</RestoreAdditionalProjectSources>
     <LiftedIXPTransportPackageName Condition="'$(IsInternalWinUIBuild)' != 'true'">Microsoft.WindowsAppSDK.InteractiveExperiences</LiftedIXPTransportPackageName>
     <ProjectReunionFoundationTransportPackageName Condition="'$(IsInternalWinUIBuild)' != 'true'">Microsoft.WindowsAppSDK.Foundation</ProjectReunionFoundationTransportPackageName>
     <!-- Package names for sample and test apps. Revert this when transport packages are removed -->
@@ -57,7 +67,7 @@
     <FrameworkUdkPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">3.0.0-experimental-27300.1893.260705-0915.0</FrameworkUdkPackageVersion>
     <IxpTransportPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.1.4-experimental</IxpTransportPackageVersion>
     <BasePackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.3-experimental1</BasePackageVersion>
-    <WinUIDetailsNugetVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.10.0-experimental.20260625.0</WinUIDetailsNugetVersion>
+    <WinUIDetailsNugetVersion Condition="'$(IsInternalWinUIBuild)' != 'true' and '$(UseVersionDetailsWinUIDetails)' != 'true'">2.10.0-experimental.20260625.0</WinUIDetailsNugetVersion>
     <!-- Package Versions for use in sample and test apps. Once Transport packages are removed revert to using old version variables -->
     <FoundationPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.19-experimental</FoundationPackageVersion>
     <IXPPackageVersion Condition="'$(IsInternalWinUIBuild)' != 'true'">2.0.11-experimental</IXPPackageVersion>

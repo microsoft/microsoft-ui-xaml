@@ -126,8 +126,17 @@ steps:
       msBuildArgs: '/t:restore'
 
   - task: VSBuild@1
+    displayName: 'Restore OSS Maestro dependencies with WinUI.Dependencies'
+    condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['System.PullRequest.IsFork'], 'False'))
+    inputs:
+      solution: '$(Build.SourcesDirectory)\eng\Microsoft.MaestroRestore.csproj'
+      msBuildArgs: '/t:restore /p:IsInternalWinUIBuild=false'
+    env:
+      WinUIInternalFeedUri: $(WinUIInternalFeedUri)
+
+  - task: VSBuild@1
     displayName: 'Restore OSS Maestro dependencies'
-    condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
+    condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')), or(ne(variables['Build.Reason'], 'PullRequest'), ne(variables['System.PullRequest.IsFork'], 'False')))
     inputs:
       solution: '$(Build.SourcesDirectory)\eng\Microsoft.MaestroRestore.csproj'
       msBuildArgs: '/t:restore /p:IsInternalWinUIBuild=false'
