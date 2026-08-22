@@ -31,12 +31,6 @@ steps:
 
   - task: NuGetAuthenticate@1
 
-  - powershell: |
-      $restoreArguments = "/p:UseVersionDetailsWinUIDetails=true /p:RestoreAdditionalProjectSources=$(WinUIInternalFeedUri)"
-      Write-Host "##vso[task.setvariable variable=winUIDetailsRestoreArguments;]$restoreArguments"
-    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')), ne(variables['System.PullRequest.IsFork'], 'True'))
-    displayName: Configure GitHub-backed WinUIDetails restore
-
   # If a custom IXP transport package version is provided, restore it first and update the config
   # files to point at the new version.
   - powershell: |
@@ -129,14 +123,14 @@ steps:
     condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
     inputs:
       solution: '$(Build.SourcesDirectory)\eng\Microsoft.MaestroRestore.csproj'
-      msBuildArgs: '/t:restore $(winUIDetailsRestoreArguments)'
+      msBuildArgs: '/t:restore'
 
   - task: VSBuild@1
     displayName: 'Restore OSS Maestro dependencies'
     condition: and(succeeded(), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')))
     inputs:
       solution: '$(Build.SourcesDirectory)\eng\Microsoft.MaestroRestore.csproj'
-      msBuildArgs: '/t:restore /p:IsInternalWinUIBuild=false $(winUIDetailsRestoreArguments)'
+      msBuildArgs: '/t:restore /p:IsInternalWinUIBuild=false'
 
   - task: PowerShell@2
     displayName: SetupMockArm64EC

@@ -55,9 +55,6 @@ variables:
   # Use the following corresponding version string instead of the above when calling nuget install directly.
   compilerOverrideNupkgVersion: "19.44.35215100"
 
-  # Temporary GitHub-backed ADO validation override; ordinary builds leave restore args empty.
-  winUIDetailsRestoreArguments: ''
-
 # Pipeline variables that can be set at queue time:
 #   customTaefQuery: Optional: run a subset of the tests
 #   useBuildOutputFromBuildId: Optional: re-use build output from a previous run

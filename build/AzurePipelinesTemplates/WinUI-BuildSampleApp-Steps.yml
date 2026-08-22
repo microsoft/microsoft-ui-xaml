@@ -30,7 +30,6 @@ steps:
         /p:RestoreConfigFile=${{ parameters.restoreConfigFile }}
         /p:Platform=$(buildPlatform)
         /p:WinUIVersion=$(versionFinal)
-        $(winUIDetailsRestoreArguments)
       configuration: '$(buildConfiguration)'
     env:
       # Provide the internal dependencies feed so NuGet can expand the
@@ -50,7 +49,7 @@ steps:
       configuration: '$(buildConfiguration)'
       enableDefaultLogger: false
       restoreNuGetPackages: false
-      msbuildArguments: ${{ parameters.msBuildArgs }} $(winUIDetailsRestoreArguments) /p:WinUIVersion=$(versionFinal) /p:ArtifactsRoot=${{ parameters.artifactsRoot }} /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).binlog /restore /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
+      msbuildArguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(versionFinal) /p:ArtifactsRoot=${{ parameters.artifactsRoot }} /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).binlog /restore /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
     env:
       LkgVcToolsName: $(compilerOverridePackageName)
       LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
@@ -94,5 +93,4 @@ steps:
       feedsToUse: config
       restoreArguments: >
         --configfile ${{ parameters.restoreConfigFile }}
-        $(winUIDetailsRestoreArguments)
       arguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(versionFinal) -p:ArtifactsRoot=${{ parameters.artifactsRoot }} -binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).dotnet.binlog -p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
