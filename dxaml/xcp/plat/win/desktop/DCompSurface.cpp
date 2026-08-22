@@ -9,6 +9,8 @@
 #include <DependencyLocator.h>
 #include <PixelFormat.h>
 
+#include "XcpAllocation.h"
+
 extern UINT32 g_uD3D11TextureMemoryUsage;
 extern UINT32 g_uD3D11TextureMemoryUsageNPOT;
 
@@ -1311,6 +1313,7 @@ DCompSurface::UpdateMemoryFootprint(bool increase)
     if (m_pCompositionSurface != NULL)
     {
         TraceMemoryUpdateAllocationDCompSurfaceInfo(static_cast<int32_t>(textureSize));
+        XcpAllocation::UpdateAllocatedMemory(textureSize);
     }
 }
 

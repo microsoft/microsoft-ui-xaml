@@ -580,9 +580,97 @@ public:
             pCore->ReleaseQueuedObjects( /*bSync*/ false );
         }
 
+        if (ReferenceTrackerManager::HaveHost())
+        {
+            TriggerCollectionForOrphanedObjects();
+        }
+
         #if DBG
         IGNOREHR(static_cast<ReferenceTrackerManager*>(ReferenceTrackerManager::GetNoRef())->RunValidation());
         #endif
+    }
+
+    // Detect orphaned native XAML objects and trigger GC to clean them up.
+    //
+    // When objects are removed from the visual tree (e.g. TabItems.Clear(), Frame
+    // navigation), they remain allocated until the .NET GC runs a reference tracker
+    // walk. The GC may not run because:
+    //   - Native memory (g_allocatedMemory) is high but .NET GC only sees the managed heap
+    //   - No significant managed allocations happening to trigger GC naturally
+    //
+    // Reporting native memory via AddMemoryPressure is not effective here because
+    // it uses its own internal budget logic to decide when to trigger a GC, which
+    // tends to fire during allocation (before objects are orphaned). Additionally,
+    // the GCs it triggers use collection_non_blocking which may run as background
+    // GCs that skip the reference tracker walk needed for cleanup.
+    //
+    // Instead, we detect stable high memory directly and call TriggerCollection
+    // which calls GC.Collect (collection_blocking) ensuring the reference tracker
+    // walk runs.
+    //
+    // The cleanup cascade needs 2 GC cycles:
+    //   1) First GC: tracker walk marks objects unreachable, NativeObjectWrapper
+    //      goes on finalization queue, but re-registers because proxy is still alive
+    //   2) Second GC: NativeObjectWrapper.Finalize calls ReleaseFromTrackerSource,
+    //      dropping expectedRefCount to 0, triggering native destruction
+    //
+    // We avoid triggering during allocation bursts (memory actively growing) to
+    // prevent UI freezes during tab creation or page loading.
+    static void TriggerCollectionForOrphanedObjects()
+    {
+        extern INT64 g_allocatedMemory;
+        static INT64 s_previousAllocatedMemory = 0;
+        static int s_stableFrameCount = 0;
+        static int s_triggerCount = 0;
+
+        // Only consider triggering if native memory is significant
+        const INT64 MemoryCollectionThreshold = 10 * 1024 * 1024;
+        // Number of stable frames before triggering (~1 second at 60fps)
+        const int StableFrameThreshold = 60;
+        // Memory change below this is considered "stable"
+        const INT64 StableDelta = 1024 * 1024;
+        // Maximum triggers per stable plateau (2 for the finalization cascade + 1 margin)
+        const int MaxTriggerAttempts = 3;
+
+        // If another thread is already reporting, no need to report again so quickly
+        static SRWLOCK s_lock = SRWLOCK_INIT;
+        auto guard = wil::TryAcquireSRWLockExclusive(&s_lock);
+        if (!guard) return;
+
+        INT64 currentMemory = g_allocatedMemory;
+
+        // If memory is above the significant threshold and hasn't changed much
+        // since the last frame, count it as stable
+        if (currentMemory > MemoryCollectionThreshold &&
+            _abs64(currentMemory - s_previousAllocatedMemory) < StableDelta)
+        {
+            if (++s_stableFrameCount >= StableFrameThreshold)
+            {
+                // On the first trigger, always fire — we need a GC to discover
+                // unreachable objects. On subsequent triggers, only fire if the
+                // previous GC actually found unreachable objects, indicating
+                // more cleanup work is needed (e.g. finalization cascade).
+                bool shouldTrigger = (s_triggerCount == 0) ||
+                    (s_triggerCount < MaxTriggerAttempts &&
+                     ReferenceTrackerManager::GetUnreachableCount() > 0);
+
+                if (shouldTrigger)
+                {
+                    IGNOREHR(ReferenceTrackerManager::TriggerCollection());
+                    s_triggerCount++;
+                }
+                s_stableFrameCount = 0;
+            }
+        }
+        else
+        {
+            // Memory is changing (growing or shrinking) — reset counters.
+            // This avoids triggering during allocation bursts.
+            s_stableFrameCount = 0;
+            s_triggerCount = 0;
+        }
+
+        s_previousAllocatedMemory = currentMemory;
     }
 };
 
