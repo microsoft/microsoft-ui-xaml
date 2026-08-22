@@ -44,9 +44,9 @@ steps:
       enableDefaultLogger: false
       ${{ if eq(parameters.doRestore, 'true') }}:
         ${{ if eq(parameters.projectCaching, true) }}:
-          msbuildArguments: '${{ parameters.msBuildArgs }} /restore /graph /reportfileaccesses /p:MSBuildCacheEnabled=true /p:MSBuildCacheLogDirectory=$(ob_outputDirectory)/MSBuildCacheLogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration) /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+          msbuildArguments: '${{ parameters.msBuildArgs }} $(winUIDetailsRestoreArguments) /restore /graph /reportfileaccesses /p:MSBuildCacheEnabled=true /p:MSBuildCacheLogDirectory=$(ob_outputDirectory)/MSBuildCacheLogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration) /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
         ${{ if ne(parameters.projectCaching, true) }}:
-          msbuildArguments: '${{ parameters.msBuildArgs }} /restore /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+          msbuildArguments: '${{ parameters.msBuildArgs }} $(winUIDetailsRestoreArguments) /restore /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
       ${{ if ne(parameters.doRestore, 'true') }}:
         ${{ if eq(parameters.projectCaching, true) }}:
           msbuildArguments: '${{ parameters.msBuildArgs }} /graph /reportfileaccesses /p:MSBuildCacheEnabled=true /p:MSBuildCacheLogDirectory=$(ob_outputDirectory)/MSBuildCacheLogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration) /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'

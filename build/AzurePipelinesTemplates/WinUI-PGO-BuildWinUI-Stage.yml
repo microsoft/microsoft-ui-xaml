@@ -160,7 +160,7 @@ stages:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
         enableDefaultLogger: false
-        msbuildArguments: '/p:WinUIVersion=$(versionFinal) /p:PGOCopyRuntime=true /p:PublishReadyToRun=true /m /restore /p:RestoreConfigFile=$(Build.SourcesDirectory)\nuget.config /binaryLogger:$(ob_outputDirectory)/binlogs/PGO-set.sln.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+        msbuildArguments: '/p:WinUIVersion=$(versionFinal) /p:PGOCopyRuntime=true /p:PublishReadyToRun=true /m $(winUIDetailsRestoreArguments) /restore /p:RestoreConfigFile=$(Build.SourcesDirectory)\nuget.config /binaryLogger:$(ob_outputDirectory)/binlogs/PGO-set.sln.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
       env:
         LkgVcToolsName: $(compilerOverridePackageName)
         LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
