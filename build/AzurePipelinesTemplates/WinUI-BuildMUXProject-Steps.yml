@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 parameters:
   buildArtifactsDirectory: $(Build.SourcesDirectory)\BuildOutput
+  outputDirectory: $(ob_outputDirectory)
   additionalMSBuildOptions: ''
   pipelineKind: ''
   buildScenarioApps: false
@@ -47,6 +48,7 @@ steps:
       msbuildInstallDir: '$(_buildToolsDirectory)'
       msbuildInstallLogsDir: '$(_buildToolsInstallLogsDirectory)'
       pipelineKind: ${{ parameters.pipelineKind }}
+      outputDirectory: ${{ parameters.outputDirectory }}
 
   - task: CmdLine@2
     displayName: Set up environment
@@ -128,6 +130,7 @@ steps:
       nugetConfigPath: nuget.config
       msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /m ${{parameters.additionalMSBuildOptions}}'
       msbuildInstallDir: $(_buildToolsDirectory)
+      outputDirectory: ${{ parameters.outputDirectory }}
       projectCaching: ${{ parameters.projectCaching }}
       runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
       condition: succeeded()
@@ -140,6 +143,7 @@ steps:
         nugetConfigPath: nuget.config
         msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
+        outputDirectory: ${{ parameters.outputDirectory }}
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
       # Build log is published by the WinUI-BuildProject-Steps.yml pipeline
@@ -152,6 +156,7 @@ steps:
         nugetConfigPath: nuget.config
         msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:WinUIVersion=$(versionFinal) /m ${{parameters.additionalMSBuildOptions}} /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
+        outputDirectory: ${{ parameters.outputDirectory }}
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
       # Build log is published by the WinUI-BuildProject-Steps.yml pipeline
@@ -187,7 +192,7 @@ steps:
     condition: succeeded()
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)\PackageStore'
-      TargetFolder: '$(ob_outputDirectory)\WinUIComponentPackage'
+      TargetFolder: '${{ parameters.outputDirectory }}\WinUIComponentPackage'
       Contents: |
         Microsoft.WindowsAppSDK.WinUI.*.nupkg
 
@@ -199,6 +204,7 @@ steps:
         nugetConfigPath: nuget.config
         msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
+        outputDirectory: ${{ parameters.outputDirectory }}
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
@@ -216,6 +222,7 @@ steps:
         nugetConfigPath: nuget.config
         msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
         msbuildInstallDir: $(_buildToolsDirectory)
+        outputDirectory: ${{ parameters.outputDirectory }}
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
         condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
@@ -228,6 +235,7 @@ steps:
     - template: WinUI-BuildSampleApps-Steps.yml
       parameters:
         artifactsRoot: ${{ parameters.buildArtifactsDirectory }}\
+        outputDirectory: ${{ parameters.outputDirectory }}
         pipelineKind: ${{ parameters.pipelineKind }}
         MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
@@ -247,7 +255,7 @@ steps:
       contents: |
         **\*
         !**\*.pdb
-      targetFolder: $(ob_outputDirectory)\drop
+      targetFolder: ${{ parameters.outputDirectory }}\drop
 
   # An app that includes the transport package won't run properly if these files aren't present,
   # since then they're part of the NuGet package that are detected to be missing.
@@ -262,7 +270,7 @@ steps:
           !AppTestAutomationHelpers.pdb
           !Microsoft.WinUI.pdb
           !MUXControlsTestApp.pdb
-        targetFolder: $(ob_outputDirectory)\drop\$(buildOutput)$(normalizedConfiguration)\Test\UnpackagedApps\MUXControlsTestApp
+        targetFolder: ${{ parameters.outputDirectory }}\drop\$(buildOutput)$(normalizedConfiguration)\Test\UnpackagedApps\MUXControlsTestApp
 
   - task: PowerShell@2
     displayName: 'Generate fusion manifest'
@@ -290,7 +298,7 @@ steps:
         **\*
         !**\*.pdb
         !**\tools\!($(buildPlatform))\GenXbf.dll
-      targetFolder: $(ob_outputDirectory)\packaging
+      targetFolder: ${{ parameters.outputDirectory }}\packaging
 
   - task: PublishSymbols@2
     displayName: 'Publish full symbols to internal symbol server'
@@ -319,7 +327,7 @@ steps:
     condition: succeeded()
     inputs:
       SourceFolder: '${{ parameters.buildArtifactsDirectory }}\bin\$(buildOutput)$(normalizedConfiguration)\Symbols'
-      TargetFolder: '$(ob_outputDirectory)\Symbols'
+      TargetFolder: '${{ parameters.outputDirectory }}\Symbols'
 
   # Copy Product binaries for APIScan. To save time/resources, not running APIScan on Samples apps for now.
   # We are using this copy as a way to focus on scanning product code only and also a workaround for an APIScan limitation:
@@ -361,7 +369,7 @@ steps:
   - ${{ if eq(parameters.signOutput, true) }}:
     - template: AzurePipelinesTemplates/WindowsAppSDK-EsrpCodeSigning-Steps.yml@WindowsAppSDKConfig
       parameters:
-        FolderPath: '$(ob_outputDirectory)'
+        FolderPath: '${{ parameters.outputDirectory }}'
         Pattern: |
           **/Microsoft.WinUI.dll
           **/Microsoft.UI.Text.winmd

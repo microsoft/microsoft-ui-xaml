@@ -3,6 +3,7 @@
 parameters:
   pipelineKind: ''
   failOnTestFailure: true
+  publishArtifactsWithOneBranch: true
 
 stages:
 - stage: RunTests
@@ -16,6 +17,7 @@ stages:
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'DevTestSuite'
       testPayloadArtifactName: 'TestPayload'
+      publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
@@ -24,6 +26,7 @@ stages:
       testOS: 'Win11-25H2'
       testPayloadArtifactName: 'TestPayload'
       failOnTestFailure: ${{ parameters.failOnTestFailure }}
+      publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
 
   - ${{ if ne(parameters.pipelineKind, 'QuickPR') }}:
     - template: WinUI-RunTestPassOnPipeline-Job.yml
@@ -33,6 +36,7 @@ stages:
         testOS: 'Win11-23H2'
         testPayloadArtifactName: 'TestPayload'
         failOnTestFailure: ${{ parameters.failOnTestFailure }}
+        publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
 
     - template: WinUI-RunTestPassOnPipeline-Job.yml
       parameters:
@@ -41,3 +45,4 @@ stages:
         testOS: 'Win10-RS5'
         testPayloadArtifactName: 'TestPayload'
         failOnTestFailure: ${{ parameters.failOnTestFailure }}
+        publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}

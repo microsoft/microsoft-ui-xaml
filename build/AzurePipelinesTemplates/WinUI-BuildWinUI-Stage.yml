@@ -11,6 +11,7 @@ parameters:
   pgoBuildModeMSBuildArg: '/p:PGOBuildMode=$(pgoBuildMode)'
   buildProductOnly: false
   dependsOn: ''
+  publishArtifactsWithOneBranch: true
 
 stages:
 - stage: ${{ parameters.stageName }}
@@ -116,8 +117,10 @@ stages:
             normalizedConfiguration: 'chk'
             shouldPgo: false
     variables:
-      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
-      ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
+      winuiOutputDirectory: '$(Build.SourcesDirectory)\out'
+      ${{ if eq(parameters.publishArtifactsWithOneBranch, true) }}:
+        ob_outputDirectory: '$(winuiOutputDirectory)'
+        ob_artifactBaseName: 'drop_$(buildOutput)$(normalizedConfiguration)'
       ob_sdl_codeSignValidation_excludes: '-|WinUIComponentPackage\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
       # The default ob checkout only does a shallow fetch. For PGO to work, it needs to fetch deeper.
       ob_git_fetchDepth: -1
@@ -160,7 +163,15 @@ stages:
         projectCaching: ${{ parameters.projectCaching }}
         pgoBuildModeMSBuildArg: ${{ parameters.pgoBuildModeMSBuildArg }}
         buildProductOnly: ${{ parameters.buildProductOnly }}
+        outputDirectory: $(winuiOutputDirectory)
 
     - ${{ if eq(parameters.pipelineKind, 'Nightly') }}:
       - task: CodeQL3000Finalize@0
         displayName: Finalize CodeQL
+
+    - ${{ if eq(parameters.publishArtifactsWithOneBranch, false) }}:
+      - task: PublishPipelineArtifact@1
+        displayName: Publish build outputs
+        inputs:
+          targetPath: $(winuiOutputDirectory)
+          artifact: 'drop_$(buildOutput)$(normalizedConfiguration)'

@@ -4,6 +4,7 @@ parameters:
   pipelineKind: ''
   dependsOn: ''
   runArm64Tests: true
+  publishArtifactsWithOneBranch: true
 
 stages:
 - stage: RunScenarioTests
@@ -17,6 +18,7 @@ stages:
       pipelineKind: ${{ parameters.pipelineKind }}
       testSuite: 'ScenarioTestSuite'
       testPayloadArtifactName: 'ScenarioTestPayload'
+      publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
       # Include WinUIGallery on GitHub PR validation.
       ${{ if eq(parameters.pipelineKind, 'GitHubPR') }}:
         includeWinUIGallery: true
@@ -30,6 +32,7 @@ stages:
       buildConfiguration: chk
       testOS: Win10-RS5
       testPayloadArtifactName: 'ScenarioTestPayload'
+      publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
@@ -40,6 +43,7 @@ stages:
       buildConfiguration: fre
       testOS: Win11-25H2
       testPayloadArtifactName: 'ScenarioTestPayload'
+      publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:
@@ -50,6 +54,7 @@ stages:
       buildConfiguration: fre
       testOS: Win11-23H2
       testPayloadArtifactName: 'ScenarioTestPayload'
+      publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
 
   - ${{ if in(parameters.pipelineKind, 'Nightly', 'Official' ) }}:
     - ${{ if eq(parameters.runArm64Tests, true ) }}:
@@ -62,6 +67,7 @@ stages:
           buildConfiguration: fre
           testOS: Win11-23H2
           testPayloadArtifactName: 'ScenarioTestPayload'
+          publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
 
       - template: WinUI-RunTestPassOnPipeline-Job.yml
         parameters:
@@ -72,6 +78,7 @@ stages:
           buildConfiguration: fre
           testOS: Win11-23H2
           testPayloadArtifactName: 'ScenarioTestPayload'
+          publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}
 
   - template: WinUI-RunScenarioUnitTests-Job.yml
     parameters:

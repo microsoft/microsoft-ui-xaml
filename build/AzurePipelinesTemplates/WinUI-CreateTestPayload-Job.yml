@@ -7,6 +7,7 @@ parameters:
   pipelineKind: '' # can be: Nightly, CI, PR, BuildAndTest, TestLocalBuild, ValidateWindowsAppSDK
   testPayloadArtifactName: 'TestPayload'
   includeWinUIGallery: true
+  publishArtifactsWithOneBranch: true
 
 jobs:
 - job: ${{ parameters.runTestJobName }}
@@ -82,10 +83,13 @@ jobs:
         value: '-SkipWinUIGallery'
     - name: taefExePath
       value: '$(artifactsDir)\drop\amd64fre\Taef\te.exe' # We need to override this to ensure that we don't try to run arm64 te.exe on this amd64 pipeline machine.
-    - name: ob_outputDirectory
+    - name: winuiOutputDirectory
       value: '$(Build.SourcesDirectory)\out'
-    - name: ob_artifactBaseName
-      value: "${{ parameters.testPayloadArtifactName }}_$(testOS)_$(buildOutput)"
+    - ${{ if eq(parameters.publishArtifactsWithOneBranch, true) }}:
+      - name: ob_outputDirectory
+        value: '$(winuiOutputDirectory)'
+      - name: ob_artifactBaseName
+        value: "${{ parameters.testPayloadArtifactName }}_$(testOS)_$(buildOutput)"
     - ${{ if eq(parameters.pipelineKind, 'ValidateWindowsAppSDK') }}:
       - name: isValidateWindowsAppSDKRun
         value: 1
@@ -173,7 +177,7 @@ jobs:
     displayName: MoveToOutputDirectory
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)\TestPayload'
-      TargetFolder: '$(ob_outputDirectory)\TestPayload'
+      TargetFolder: '$(winuiOutputDirectory)\TestPayload'
 
   - ${{ if eq(parameters.testSuite, 'DevTestSuite') }}:
     - template: WinUI-CreateHelixProjFile-Steps.yml
@@ -258,7 +262,7 @@ jobs:
     displayName: 'Copy helix work item proj files'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)\helixworkitems'
-      TargetFolder: '$(ob_outputDirectory)\helixworkitems\${{ parameters.testSuite }}\$(buildPlatform)$(normalizedConfiguration)\$(testOS)\'
+      TargetFolder: '$(winuiOutputDirectory)\helixworkitems\${{ parameters.testSuite }}\$(buildPlatform)$(normalizedConfiguration)\$(testOS)\'
       Contents: '*.proj'
 
   - ${{ if eq(parameters.testSuite, 'DevTestSuite') }}:
@@ -266,8 +270,15 @@ jobs:
       displayName: 'Copy static helix work item proj files'
       inputs:
         SourceFolder: '$(Build.SourcesDirectory)\Helix\staticTestWorkItems'
-        TargetFolder: '$(ob_outputDirectory)\helixworkitems\${{ parameters.testSuite }}\$(buildPlatform)$(normalizedConfiguration)\$(testOS)\'
+        TargetFolder: '$(winuiOutputDirectory)\helixworkitems\${{ parameters.testSuite }}\$(buildPlatform)$(normalizedConfiguration)\$(testOS)\'
         Contents: '*.proj'
+
+  - ${{ if eq(parameters.publishArtifactsWithOneBranch, false) }}:
+    - task: PublishPipelineArtifact@1
+      displayName: Publish test payload
+      inputs:
+        targetPath: $(winuiOutputDirectory)
+        artifact: "${{ parameters.testPayloadArtifactName }}_$(testOS)_$(buildOutput)"
 
   - script: |
       dir /s $(artifactsDir)

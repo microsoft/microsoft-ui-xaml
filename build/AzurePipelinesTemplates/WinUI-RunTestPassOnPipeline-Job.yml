@@ -11,6 +11,7 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   testPayloadArtifactName: 'TestPayload'
   failOnTestFailure: true
+  publishArtifactsWithOneBranch: true
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
 # These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
 # This approach allows us to run tests on prerelease builds of Windows.
@@ -59,8 +60,9 @@ jobs:
     # This should reduce concurrent memory allocations and allow us to make better use of our buffer pool which will help with the failures on arm64 machines to download artifacts
     AZURE_PIPELINES_DEDUP_PARALLELISM: 16
 
-    ob_outputDirectory: '$(uploadRoot)'
-    ob_artifactBaseName: '${{ parameters.runTestStageName }}_${{ parameters.runTestJobName }}_$(System.JobPositionInPhase)_$(artifactStatus)'
+    ${{ if eq(parameters.publishArtifactsWithOneBranch, true) }}:
+      ob_outputDirectory: '$(uploadRoot)'
+      ob_artifactBaseName: '${{ parameters.runTestStageName }}_${{ parameters.runTestJobName }}_$(System.JobPositionInPhase)_$(artifactStatus)'
 
     ${{ if eq( parameters.buildPlatform, 'arm64') }}:
       skipComponentGovernanceDetection: true # dotnet install currently fails on arm64 with "Unsupported OS/platform configuration detected, not downloading .NET..."

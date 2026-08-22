@@ -2,6 +2,7 @@
 # Licensed under the MIT License.
 parameters:
   MUXFinalRelease: false
+  publishArtifactsWithOneBranch: true
 
 stages:
 - stage: RunStaticTests
@@ -13,3 +14,4 @@ stages:
     parameters:
       runTestJobName: RunStaticTests
       MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      publishArtifactsWithOneBranch: ${{ parameters.publishArtifactsWithOneBranch }}

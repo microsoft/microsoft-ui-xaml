@@ -4,6 +4,7 @@ parameters:
   runTestJobName: 'RunStaticTests'
   dependsOn: ''
   MUXFinalRelease: false
+  publishArtifactsWithOneBranch: true
 
 jobs:
 - job: ${{ parameters.runTestJobName }}
@@ -15,7 +16,8 @@ jobs:
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
     packagesDir: $(Agent.TempDirectory)\WinUI-RunStaticTests-Job\packages
-    ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+    ${{ if eq(parameters.publishArtifactsWithOneBranch, true) }}:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
     ob_sdl_codeSignValidation_excludes: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
     ob_sdl_prefast_enabled: false   # this job does no native build
 

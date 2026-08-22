@@ -3,6 +3,7 @@
 parameters:
   msbuildInstallDir: 'c:\.buildtools'
   pipelineKind: ''
+  outputDirectory: $(ob_outputDirectory)
 
 steps:
   - script: |
@@ -17,7 +18,7 @@ steps:
       inputs:
         targetType: filePath
         filePath: $(Build.SourcesDirectory)\scripts\init\Initialize-InstallMSBuild.ps1
-        arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "$(ob_outputDirectory)\MSBuildToolLogs" -ignoreInstalledVS -VsVersionToInstall $(_VsVersionToInstall)'
+        arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "${{ parameters.outputDirectory }}\MSBuildToolLogs" -ignoreInstalledVS -VsVersionToInstall $(_VsVersionToInstall)'
 
   - ${{ if ne(parameters.pipelineKind, 'Preview') }}:
     - task: powershell@2
@@ -26,7 +27,7 @@ steps:
       inputs:
         targetType: filePath
         filePath: $(Build.SourcesDirectory)\scripts\init\Initialize-InstallMSBuild.ps1
-        arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "$(ob_outputDirectory)\MSBuildToolLogs" -ignoreInstalledVS'
+        arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "${{ parameters.outputDirectory }}\MSBuildToolLogs" -ignoreInstalledVS'
 
   - task: powershell@2
     displayName: 'Update installed VS'
@@ -34,7 +35,7 @@ steps:
     inputs:
       targetType: filePath
       filePath: $(Build.SourcesDirectory)\scripts\init\Initialize-InstallMSBuild.ps1
-      arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "$(ob_outputDirectory)\MSBuildToolLogs"'
+      arguments: '-installDir "${{ parameters.msbuildInstallDir }}" -logsDir "${{ parameters.outputDirectory }}\MSBuildToolLogs"'
 
   - task: CmdLine@2
     displayName: Add the VS build tools to the path
