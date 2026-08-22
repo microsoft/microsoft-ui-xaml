@@ -56,7 +56,6 @@ variables:
   compilerOverrideNupkgVersion: "19.44.35215100"
 
   # Temporary GitHub-backed ADO validation override; ordinary builds leave restore args empty.
-  winUIDetailsPrivateFeedVersion: '3.10.0-experimental.20260819.0'
   winUIDetailsRestoreArguments: ''
 
 # Pipeline variables that can be set at queue time:

@@ -32,7 +32,7 @@ steps:
   - task: NuGetAuthenticate@1
 
   - powershell: |
-      $restoreArguments = "/p:WinUIDetailsNugetVersion=$(winUIDetailsPrivateFeedVersion) /p:RestoreAdditionalProjectSources=$(WinUIInternalFeedUri)"
+      $restoreArguments = "/p:UseVersionDetailsWinUIDetails=true /p:RestoreAdditionalProjectSources=$(WinUIInternalFeedUri)"
       Write-Host "##vso[task.setvariable variable=winUIDetailsRestoreArguments;]$restoreArguments"
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), or(eq(variables['Build.Repository.Provider'], 'GitHub'), eq(variables['Build.Repository.Provider'], 'GitHubEnterprise')), ne(variables['System.PullRequest.IsFork'], 'True'))
     displayName: Configure GitHub-backed WinUIDetails restore
