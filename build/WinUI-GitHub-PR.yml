@@ -20,10 +20,6 @@ pr:
 name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
 
 parameters:
-- name: runFullValidation
-  displayName: "Run full WinUI PR validation stages"
-  type: boolean
-  default: true
 - name: MUXFinalRelease
   type: boolean
   default: false
@@ -102,61 +98,17 @@ extends:
         break: true
 
     stages:
-    - stage: ValidateGitHubPrContext
-      displayName: Validate GitHub PR context
-      jobs:
-      - job: ValidateGitHubPrContext
-        displayName: Validate GitHub PR context
-        pool:
-          type: windows
-        variables:
-          ob_outputDirectory: '$(Build.SourcesDirectory)\out'
-        steps:
-        - checkout: self
-          submodules: false
-          fetchDepth: 1
-          fetchTags: false
+    - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
+      parameters:
+        pipelineKind: GitHubPR
+        buildScenarioApps: true
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+        pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
+        buildProductOnly: false
+        publishArtifactsWithOneBranch: false
 
-        - task: PowerShell@2
-          displayName: Validate GitHub PR context
-          inputs:
-            targetType: inline
-            script: |
-              $ErrorActionPreference = 'Stop'
-
-              Write-Host "Build.Reason=$env:BUILD_REASON"
-              Write-Host "Build.Repository.Provider=$env:BUILD_REPOSITORY_PROVIDER"
-              Write-Host "Build.Repository.Name=$env:BUILD_REPOSITORY_NAME"
-              Write-Host "Build.SourceBranch=$env:BUILD_SOURCEBRANCH"
-              Write-Host "System.PullRequest.TargetBranch=$env:SYSTEM_PULLREQUEST_TARGETBRANCH"
-
-              if ($env:BUILD_REPOSITORY_PROVIDER -notin @('GitHub', 'GitHubEnterprise')) {
-                throw "Expected a GitHub-backed Azure Pipelines run, but Build.Repository.Provider was '$env:BUILD_REPOSITORY_PROVIDER'."
-              }
-
-              if ($env:BUILD_REASON -eq 'PullRequest') {
-                $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
-                $allowedExactTargetBranches = @('main', 'winui3/main', 'refs/heads/main', 'refs/heads/winui3/main')
-                $isAllowedFeatureBranch = $targetBranch -like 'feature/*' -or $targetBranch -like 'refs/heads/feature/*'
-                if (($allowedExactTargetBranches -notcontains $targetBranch) -and -not $isAllowedFeatureBranch) {
-                  throw "Unexpected GitHub PR target branch '$env:SYSTEM_PULLREQUEST_TARGETBRANCH'."
-                }
-              }
-
-              Write-Host "GitHub PR context validation completed."
-
-    - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: GitHubPR
-          buildScenarioApps: true
-          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-          pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
-          buildProductOnly: false
-          dependsOn: ValidateGitHubPrContext
-
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
+    - ${{ if eq(parameters.MUXFinalRelease, false) }}:
       - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
         parameters:
           stageName: Build_MUXFinalRelease
@@ -166,22 +118,22 @@ extends:
           runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
           pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
           buildProductOnly: true
-          dependsOn: ValidateGitHubPrContext
+          publishArtifactsWithOneBranch: false
 
-    - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: PR
-          # Test results are published but do not gate the pipeline yet.
-          failOnTestFailure: false
+    - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
+      parameters:
+        pipelineKind: PR
+        publishArtifactsWithOneBranch: false
+        # Test results are published but do not gate the pipeline yet.
+        failOnTestFailure: false
 
-    - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
-        parameters:
-          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+    - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
+      parameters:
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        publishArtifactsWithOneBranch: false
 
-    - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: GitHubPR
-          dependsOn: Build
+    - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal
+      parameters:
+        pipelineKind: GitHubPR
+        dependsOn: Build
+        publishArtifactsWithOneBranch: false
