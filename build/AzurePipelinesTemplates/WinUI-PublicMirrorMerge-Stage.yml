@@ -1,0 +1,38 @@
+parameters:
+- name: sourceBranchName
+  type: string
+- name: targetBranchName
+  type: string
+
+stages:
+- stage: IntegratePublicMirror
+  displayName: Integrate public mirror
+  dependsOn: []
+  jobs:
+  - job: MergePublicMirror
+    displayName: Merge public mirror
+    pool:
+      type: windows
+    timeoutInMinutes: 30
+    variables:
+      ob_outputDirectory: '$(Build.SourcesDirectory)\out'
+      ob_git_skip_checkout_none: true
+      repositoryRelativePath: 's\repository'
+    steps:
+    - checkout: self
+      submodules: false
+      persistCredentials: true
+      fetchDepth: 1
+      fetchTags: false
+      path: '$(repositoryRelativePath)'
+      displayName: Checkout internal repository
+
+    - task: PowerShell@2
+      displayName: Merge public mirror into internal branch
+      inputs:
+        workingDirectory: '$(Pipeline.Workspace)'
+        filePath: '$(Pipeline.Workspace)\$(repositoryRelativePath)\scripts\MergePublicMirrorIntoInternalBranch.ps1'
+        arguments: >
+          -RepositoryDirectory '$(repositoryRelativePath)'
+          -SourceBranchName '${{ parameters.sourceBranchName }}'
+          -TargetBranchName '${{ parameters.targetBranchName }}'

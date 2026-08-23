@@ -27,9 +27,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
         readonly MemberInfo m_member;
         readonly Type m_paramType;
         readonly int m_position;
+        readonly CustomModifiers m_customModifiers;
 
         // Create via code:IMetadataExtensionsPolicy.GetFakeParameterInfo
         internal SimpleParameterInfo(MemberInfo member, Type paramType, int position)
+            : this(member, paramType, position, null)
+        {
+        }
+
+        internal SimpleParameterInfo(MemberInfo member, Type paramType, int position, CustomModifiers customModifiers)
         {
             Debug.Assert(member != null);
             Debug.Assert(paramType != null);
@@ -37,6 +43,7 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
             m_member = member;
             m_paramType = paramType;
             m_position = position;
+            m_customModifiers = customModifiers;
 
         }
 
@@ -105,12 +112,20 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Lmr
 
         public override Type[] GetOptionalCustomModifiers()
         {
-            return Type.EmptyTypes;
+            if (m_customModifiers == null)
+            {
+                return Type.EmptyTypes;
+            }
+            return m_customModifiers.OptionalCustomModifiers;
         }
 
         public override Type[] GetRequiredCustomModifiers()
         {
-            return Type.EmptyTypes;
+            if (m_customModifiers == null)
+            {
+                return Type.EmptyTypes;
+            }
+            return m_customModifiers.RequiredCustomModifiers;
         }
         #endregion // Default properties
     }

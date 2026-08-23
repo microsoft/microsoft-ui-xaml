@@ -960,8 +960,6 @@ private:
 
 protected:
 
-    bool AreMemoryPressureCallbacksRegistered();
-
 private:
 
     double  m_eFrequency;

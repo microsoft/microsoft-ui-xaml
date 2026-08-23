@@ -87,6 +87,13 @@ namespace OM
                         return true;
                     }
                 }
+                foreach (DelegateDefinition definition in ns.Delegates)
+                {
+                    if (definition.VelocityVersion != 0)
+                    {
+                        return true;
+                    }
+                }
             }
             return false;
         }
