@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>$(SamplesTargetFrameworkMoniker)</TargetFramework>
+    <TargetFramework>$(DotNetCoreTargetFrameworkMoniker)</TargetFramework>
     <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
     <RootNamespace>XAMLPerf.UnpackagedApp.Cs.MUX</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
