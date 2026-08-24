@@ -1,0 +1,53 @@
+{
+    "name": "creating-winappsdk-experimental-sample",
+    "displayName": "Create WinAppSDK Experimental Sample App",
+    "version": "1.0.0",
+    "description": "Use when a new monthly experimental Windows App SDK (WinAppSDK) release ships and you need to scaffold, build, and launch a minimal self-contained WinUI 3 sample pinned to that exact package version to smoke-test the release. Also use when a WinUI 3 build fails with 'Unable to find package Microsoft.Windows.SDK.NET.Ref' (only searches library-packs), or a NuGet credential-provider / private-feed error blocks restore of Microsoft.WindowsAppSDK experimental packages.",
+    "author": "protikbiswas100",
+    "category": "winui-tooling",
+    "keywords": [
+        "winui",
+        "winui3",
+        "windows-app-sdk",
+        "winappsdk",
+        "experimental",
+        "nuget",
+        "scaffold",
+        "sample-app",
+        "self-contained",
+        "unpackaged",
+        "Microsoft.WindowsAppSDK",
+        "Microsoft.Windows.SDK.NET.Ref",
+        "library-packs",
+        "fallback-package-folder",
+        "NUGET_PLUGIN_PATHS",
+        "credential-provider",
+        "smoke-test",
+        "monthly-release"
+    ],
+    "skill_file": "SKILL.md",
+    "supporting_files": [
+        "New-WinAppSdkSample.ps1"
+    ],
+    "usage": {
+        "install_methods": [
+            {
+                "method": "copy",
+                "description": "Copy this skill directory into your personal Copilot skills directory so Copilot CLI auto-discovers it. Replace <skill-source> with the absolute path to this folder.",
+                "command": "xcopy /E /I <skill-source> \"%USERPROFILE%\\.copilot\\skills\\creating-winappsdk-experimental-sample\""
+            },
+            {
+                "method": "copilot-instructions",
+                "description": "Reference this skill from the repo's .github/copilot-instructions.md so it is active for anyone working in the repo.",
+                "example": "To scaffold/build/launch a WinUI 3 sample for an experimental Windows App SDK release, follow the skill at .github/skills/creating-winappsdk-experimental-sample/SKILL.md"
+            }
+        ],
+        "invoke": {
+            "description": "Skills are not invoked with @name (that mentions files). After the skill is discovered, trigger it by describing the task; the description's triggers match. Use /skills to view/manage.",
+            "example_prompts": [
+                "Create a new WinUI app for the latest experimental Windows App SDK release and launch it.",
+                "Scaffold and build a WinUI 3 sample pinned to Microsoft.WindowsAppSDK 2.3.2-experimentalA."
+            ]
+        }
+    }
+}
