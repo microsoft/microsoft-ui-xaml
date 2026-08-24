@@ -39,7 +39,7 @@ namespace RichTextServices
             // BreakRecord. A break record is bound to the exact LS context that created it, so
             // continuation formatting must run on this formatter. Non ref-counting accessor - the
             // returned formatter is kept alive by this object's own reference (see m_pTextFormatter).
-            LsTextFormatter* GetTextFormatter() const;
+            TextFormatter* GetTextFormatter() const override;
 
         protected:
 
@@ -69,21 +69,6 @@ namespace RichTextServices
         inline Ptls6::PLSBREAKRECLINE LsTextLineBreak::GetLsBreakRecord() const
         {
             return m_pBreakRecord;
-        }
-
-        //---------------------------------------------------------------------------
-        //
-        //  Member:
-        //      LsTextLineBreak::GetTextFormatter
-        //
-        //  Returns:
-        //      The formatter that owns the LineServices context used to create the wrapped
-        //      BreakRecord, or NULL for a parameterless (empty) break record.
-        //
-        //---------------------------------------------------------------------------
-        inline LsTextFormatter* LsTextLineBreak::GetTextFormatter() const
-        {
-            return m_pTextFormatter;
         }
     }
 }

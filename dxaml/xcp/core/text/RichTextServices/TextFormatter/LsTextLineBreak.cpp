@@ -78,3 +78,19 @@ LsTextLineBreak::~LsTextLineBreak()
         ReleaseInterface(m_pTextFormatter);
     }
 }
+
+//---------------------------------------------------------------------------
+//
+//  Member:
+//      LsTextLineBreak::GetTextFormatter
+//
+//  Returns:
+//      The formatter that owns the LineServices context used to create the wrapped
+//      BreakRecord, or NULL for a parameterless (empty) break record. Kept out-of-line so
+//      the upcast to the TextFormatter base type sees the complete LsTextFormatter type.
+//
+//---------------------------------------------------------------------------
+TextFormatter* LsTextLineBreak::GetTextFormatter() const
+{
+    return m_pTextFormatter;
+}

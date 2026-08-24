@@ -56,11 +56,45 @@ TextFormatterCache::~TextFormatterCache()
 //---------------------------------------------------------------------------
 Result::Enum  
 TextFormatterCache::AcquireTextFormatter(
-    _Outptr_ TextFormatter **ppTextFormatter
+    _Outptr_ TextFormatter **ppTextFormatter,
+    _In_opt_ TextFormatter *pPreferredTextFormatter
     )
 {
     Result::Enum txhr = Result::Success;
     TextFormatterData *pTextFormatterData;
+
+    // If a specific formatter is requested (e.g. the one that produced a previous line break, whose
+    // LineServices break record is bound to that formatter's context), pick it from the free list
+    // so continuation formatting runs on the correct formatter. Only formatters currently on the
+    // free list are eligible - this keeps the used/free bookkeeping intact so the returned formatter
+    // is released back to the pool normally. If it is not available (already in use, or purged by
+    // ReleaseUnusedTextFormatters) fall through to the default acquisition below.
+    if (pPreferredTextFormatter != NULL)
+    {
+        TextFormatterData *pPrevTextFormatterData = NULL;
+        pTextFormatterData = m_pFreeTextFormatters;
+        while (pTextFormatterData != NULL)
+        {
+            if (pTextFormatterData->pTextFormatter == pPreferredTextFormatter)
+            {
+                // Unlink from the free list and push onto the used list.
+                if (pPrevTextFormatterData != NULL)
+                {
+                    pPrevTextFormatterData->pNext = pTextFormatterData->pNext;
+                }
+                else
+                {
+                    m_pFreeTextFormatters = pTextFormatterData->pNext;
+                }
+                pTextFormatterData->pNext = m_pUsedTextFormatters;
+                m_pUsedTextFormatters = pTextFormatterData;
+                *ppTextFormatter = pTextFormatterData->pTextFormatter;
+                goto Cleanup;
+            }
+            pPrevTextFormatterData = pTextFormatterData;
+            pTextFormatterData = pTextFormatterData->pNext;
+        }
+    }
 
     // If free TextFormatter is not available, create one and add it to the used formatters list.
     // Otherwise use existing one.

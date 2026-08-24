@@ -1078,8 +1078,8 @@ Result::Enum LsTextLine::Format(
         // is bound to the LS context that produced it, which is owned by the previous break's
         // formatter. That formatter must be the one formatting this line - otherwise LsCreateLine
         // would receive this formatter's context paired with a foreign break record. This is
-        // guaranteed by LsTextFormatter::FormatLine, which re-routes continuation formatting to the
-        // originating formatter.
+        // guaranteed by the caller selecting the originating formatter when it acquires a formatter
+        // (see BlockLayoutHelpers::GetTextFormatter, which prefers the previous break's formatter).
         ASSERT(pPreviousLineBreak->GetTextFormatter() == m_pTextFormatter);
     }
 

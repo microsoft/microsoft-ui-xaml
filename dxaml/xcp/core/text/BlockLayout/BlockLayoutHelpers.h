@@ -5,6 +5,8 @@
 
 namespace RichTextServices
 {
+    class TextFormatter;
+    class TextLineBreak;
     class TextParagraphProperties;
     class TextCollapsingSymbol;
 }
@@ -13,10 +15,14 @@ class BlockLayoutHelpers
 {
 public:
 
-    // Get TextFormatter instance.
+    // Get TextFormatter instance. When a previous line break is supplied, the formatter that
+    // produced it is preferred so that continuation formatting runs on the originating
+    // LineServices context (the break record is bound to it). This keeps formatter selection at
+    // acquisition time rather than having the formatter re-route the call.
     static _Check_return_ HRESULT GetTextFormatter(
         _In_ CDependencyObject *pLayoutOwner,
-        _Outptr_ RichTextServices::TextFormatter **ppTextFormatter
+        _Outptr_ RichTextServices::TextFormatter **ppTextFormatter,
+        _In_opt_ RichTextServices::TextLineBreak *pPreviousLineBreak = nullptr
         );
 
     // Release TextFormatter instance.
