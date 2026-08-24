@@ -64,13 +64,16 @@ TextFormatterCache::AcquireTextFormatter(
     TextFormatterData *pTextFormatterData;
 
     // If a specific formatter is requested (e.g. the one that produced a previous line break, whose
-    // LineServices break record is bound to that formatter's context), pick it from the free list
-    // so continuation formatting runs on the correct formatter. Only formatters currently on the
-    // free list are eligible - this keeps the used/free bookkeeping intact so the returned formatter
-    // is released back to the pool normally. If it is not available (already in use, or purged by
-    // ReleaseUnusedTextFormatters) fall through to the default acquisition below.
+    // LineServices break record is bound to that formatter's context), it must be checked out so
+    // continuation formatting runs on the exact context that created the break record - never on an
+    // arbitrary formatter. A break record made by context A can only be continued as
+    // "context A + break record A"; "context B + break record A" is invalid and crashes LsCreateLine.
     if (pPreferredTextFormatter != NULL)
     {
+        // Case 1: the preferred formatter is still registered on the free list (it was returned to
+        // the cache after its previous formatting operation and has not been evicted). Move its
+        // entry from free to used, preserving the pool's used/free bookkeeping so it is released
+        // back normally later.
         TextFormatterData *pPrevTextFormatterData = NULL;
         pTextFormatterData = m_pFreeTextFormatters;
         while (pTextFormatterData != NULL)
@@ -94,6 +97,29 @@ TextFormatterCache::AcquireTextFormatter(
             pPrevTextFormatterData = pTextFormatterData;
             pTextFormatterData = pTextFormatterData->pNext;
         }
+
+        // Case 2: the preferred formatter is not on the free list. Under memory pressure,
+        // ReleaseUnusedTextFormatters() evicts free entries and releases the cache's reference, so a
+        // formatter that is still alive only because a cached break record AddRefs it is no longer
+        // registered here. Re-register that still-live formatter (rather than creating a different
+        // one) so the continuation runs on its original context. It is guaranteed alive by the break
+        // record's reference; the cache takes its own reference, mirroring the AddRef held for
+        // Create()'d entries and balanced by ReleaseInterface in ReleaseUnusedTextFormatters/dtor.
+        // Continuation formatting is sequential, so the preferred formatter is never simultaneously
+        // checked out on the used list - assert that invariant rather than duplicate-register it.
+#if DBG
+        for (TextFormatterData *pUsed = m_pUsedTextFormatters; pUsed != NULL; pUsed = pUsed->pNext)
+        {
+            ASSERT(pUsed->pTextFormatter != pPreferredTextFormatter);
+        }
+#endif
+        IFC_OOM_RTS(pTextFormatterData = new TextFormatterData());
+        pTextFormatterData->pTextFormatter = pPreferredTextFormatter;
+        AddRefInterface(pPreferredTextFormatter);
+        pTextFormatterData->pNext = m_pUsedTextFormatters;
+        m_pUsedTextFormatters = pTextFormatterData;
+        *ppTextFormatter = pPreferredTextFormatter;
+        goto Cleanup;
     }
 
     // If free TextFormatter is not available, create one and add it to the used formatters list.
