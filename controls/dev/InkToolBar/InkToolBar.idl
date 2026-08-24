@@ -123,7 +123,7 @@ namespace MU_XC_NAMESPACE
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> ActiveToolChanged;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> InkDrawingAttributesChanged;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Object> EraseAllClicked;
-        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbarEraserFlyoutItemClickedEventArgs,Object> EraserFlyoutItemClicked;
+        event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Microsoft.UI.Xaml.Controls.InkToolbarEraserFlyoutItemClickedEventArgs> EraserFlyoutItemClicked;
         event Windows.Foundation.TypedEventHandler<Microsoft.UI.Xaml.Controls.InkToolbar,Microsoft.UI.Xaml.Controls.InkToolbarIsStencilButtonCheckedChangedEventArgs> IsStencilButtonCheckedChanged;
         Microsoft.UI.Xaml.Controls.InkToolbarToolButton GetToolButton(Microsoft.UI.Xaml.Controls.InkToolbarTool tool);
         Microsoft.UI.Xaml.Controls.InkToolbarToggleButton GetToggleButton(Microsoft.UI.Xaml.Controls.InkToolbarToggle tool);

@@ -475,15 +475,10 @@ winrt::InkToolbarStencilKind InkToolbar::InkPresenterStencilKindToInkToolbarSten
 // Which stencil is currently visible on the target InkPresenter (defaults to Ruler).
 winrt::Windows::UI::Input::Inking::InkPresenterStencilKind InkToolbar::GetShowingStencilKind()
 {
-    if (auto stencilButton = GetMenuButton(winrt::InkToolbarMenuKind::Stencil).try_as<winrt::InkToolbarStencilButton>())
+    // Read the tracked on-canvas state (the Ruler/Protractor DPs are unused under the lift).
+    if (m_protractorVisible)
     {
-        if (auto protractor = stencilButton.Protractor())
-        {
-            if (protractor.IsVisible())
-            {
-                return winrt::Windows::UI::Input::Inking::InkPresenterStencilKind::Protractor;
-            }
-        }
+        return winrt::Windows::UI::Input::Inking::InkPresenterStencilKind::Protractor;
     }
     return winrt::Windows::UI::Input::Inking::InkPresenterStencilKind::Ruler;
 }
@@ -884,6 +879,24 @@ winrt::Windows::UI::Input::Inking::InkPresenter InkToolbar::GetInkPresenter(winr
     return winrt::get_self<InkToolbar>(inkToolbar)->GetInkPresenter();
 }
 
+// Current InkPresenter.HighContrastAdjustment as an int (0 UseSystemColorsWhenNecessary, 1 UseSystemColors,
+// 2 UseOriginalColors), read from an explicit OS presenter or the target canvas's proxy.
+int32_t InkToolbar::GetHighContrastAdjustmentValue()
+{
+    if (auto osPresenter = GetInkPresenter())
+    {
+        return static_cast<int32_t>(osPresenter.HighContrastAdjustment());
+    }
+    if (auto canvas = TargetInkCanvas())
+    {
+        if (auto proxy = canvas.InkPresenter())
+        {
+            return static_cast<int32_t>(proxy.GetHighContrastAdjustment());
+        }
+    }
+    return 0; // UseSystemColorsWhenNecessary
+}
+
 // Build the drawing attributes for the active pen tool and push them onto the container's
 // InkDrawingAttributes DP (which then flows to the canvas via OnInkDrawingAttributesChanged).
 void InkToolbar::UpdateInkDrawingAttributes(winrt::InkToolbarToolButton const& toolButton)
@@ -1258,19 +1271,37 @@ void InkToolbar::SetStencilVisibility(bool isVisible, winrt::InkToolbarStencilKi
         return;
     }
 
+    // Lift adaptation: the OS InkPresenterRuler/Protractor are thread-affine to the ink-thread OS
+    // presenter, so drive visibility through the InkPresenter proxy (which marshals stencil creation
+    // and IsVisible onto the ink thread) rather than the UI-thread Ruler/Protractor DPs. Honor the
+    // TargetInkPresenter-over-TargetInkCanvas precedence (see OnTargetInkCanvasChanged).
+    winrt::Microsoft::UI::Xaml::Controls::InkPresenter proxy{ nullptr };
+    if (auto target = TargetInkPresenter())
+    {
+        proxy = target.try_as<winrt::Microsoft::UI::Xaml::Controls::InkPresenter>();
+    }
+    else if (auto targetInkCanvas = TargetInkCanvas())
+    {
+        proxy = targetInkCanvas.InkPresenter();
+    }
+    if (!proxy)
+    {
+        // No lift InkPresenter to drive: either no target is set, or TargetInkPresenter is a raw OS
+        // InkPresenter the toolbar cannot marshal stencils to. UWP no-ops the same way - GetInkPresenter
+        // returns null when neither target is set and SetStencilVisibility guards with if (inkPresenter).
+        return;
+    }
+    auto proxyImpl = winrt::get_self<::InkPresenter>(proxy);
+
     switch (kind)
     {
     case winrt::InkToolbarStencilKind::Ruler:
-        if (auto ruler = stencilButton.Ruler())
-        {
-            ruler.IsVisible(isVisible);
-        }
+        proxyImpl->SetRulerEnabled(isVisible);
+        m_rulerVisible = isVisible;
         break;
     case winrt::InkToolbarStencilKind::Protractor:
-        if (auto protractor = stencilButton.Protractor())
-        {
-            protractor.IsVisible(isVisible);
-        }
+        proxyImpl->SetProtractorEnabled(isVisible);
+        m_protractorVisible = isVisible;
         break;
     default:
         break;
@@ -1338,12 +1369,12 @@ bool InkToolbar::IsAnyStencilVisible(winrt::Windows::UI::Input::Inking::InkPrese
         return false;
     }
 
-    if (auto ruler = stencilButton.Ruler(); ruler && ruler.IsVisible())
+    if (m_rulerVisible)
     {
         kind = winrt::InkToolbarStencilKind::Ruler;
         return true;
     }
-    if (auto protractor = stencilButton.Protractor(); protractor && protractor.IsVisible())
+    if (m_protractorVisible)
     {
         kind = winrt::InkToolbarStencilKind::Protractor;
         return true;
@@ -1404,6 +1435,23 @@ void InkToolbar::OnTargetInkCanvasChanged(winrt::DependencyPropertyChangedEventA
     if (TargetInkPresenter())
     {
         return;
+    }
+
+    // Hide any stencil still showing on the previous canvas before switching - its proxy owns the OS
+    // stencil (the null Ruler/Protractor DPs can't reach it), so it would otherwise stay drawn.
+    if (m_rulerVisible || m_protractorVisible)
+    {
+        if (auto oldCanvas = args.OldValue().try_as<winrt::InkCanvas>())
+        {
+            if (auto oldProxy = oldCanvas.InkPresenter())
+            {
+                auto oldImpl = winrt::get_self<::InkPresenter>(oldProxy);
+                oldImpl->SetRulerEnabled(false);
+                oldImpl->SetProtractorEnabled(false);
+            }
+        }
+        m_rulerVisible = false;
+        m_protractorVisible = false;
     }
 
     auto getPresenter = [](winrt::IInspectable const& val) -> winrt::Windows::UI::Input::Inking::InkPresenter
@@ -1502,7 +1550,7 @@ void InkToolbar::OnEraserL3ItemsClicked(winrt::IInspectable const& sender, winrt
 
     // Fire the EraserFlyoutItemClicked event (UWP routed via IInkToolbarInternal; raised directly here).
     auto eventArgs = winrt::make<InkToolbarEraserFlyoutItemClickedEventArgs>(kind);
-    m_eraserFlyoutItemClickedEventSource(eventArgs, nullptr);
+    m_eraserFlyoutItemClickedEventSource(*this, eventArgs);
 
     if (kind == winrt::InkToolbarEraserFlyoutItemKind::ClearAll && !IsCustomDry())
     {

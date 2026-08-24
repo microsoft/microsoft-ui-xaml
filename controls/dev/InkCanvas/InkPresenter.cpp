@@ -586,12 +586,22 @@ void InkPresenter::UpdateDefaultDrawingAttributes(winrt::InkDrawingAttributes co
 
 winrt::InkDrawingAttributes InkPresenter::CopyDefaultDrawingAttributes()
 {
-    if (!m_defaultDrawingAttributes)
-    {
-        m_defaultDrawingAttributes = winrt::InkDrawingAttributes();
-    }
+    // Parity with UWP: return an independent copy from the OS presenter (InkDrawingAttributes is agile,
+    // so it crosses back to the UI thread) so the caller can mutate it without touching the stored
+    // default. Falls back to a fresh default if the ink thread has not created the OS presenter yet.
+    winrt::InkDrawingAttributes result{ nullptr };
+    RunInkPresenterWorkItemSync(
+        [&result](inking::InkPresenter const& presenter)
+        {
+            result = presenter.CopyDefaultDrawingAttributes();
+        },
+        /* propagateException */ false, /* pumpMessages */ false);
 
-    return m_defaultDrawingAttributes;
+    if (!result)
+    {
+        result = winrt::InkDrawingAttributes();
+    }
+    return result;
 }
 
 void InkPresenter::SetPredefinedConfiguration(inking::InkPresenterPredefinedConfiguration const& configuration)

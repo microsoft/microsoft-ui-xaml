@@ -174,6 +174,49 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void InkToolbarStencilToggleWithTargetCanvasTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                // Unlike InkToolbarIsStencilButtonCheckedPropertyTest (bare toolbar, returns early with
+                // no target), this wires a loaded TargetInkCanvas and a stencil button so toggling
+                // actually drives SetStencilVisibility -> the InkPresenter proxy (covers the real
+                // stencil toggle path per review).
+                var root = (Grid)XamlReader.Load(
+                    @"<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                           xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                           xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height='Auto' />
+                            <RowDefinition Height='*' />
+                        </Grid.RowDefinitions>
+                        <controls:InkToolbar x:Name='TestToolBar' Grid.Row='0'>
+                            <controls:InkToolbarStencilButton />
+                        </controls:InkToolbar>
+                        <controls:InkCanvas x:Name='TestCanvas'
+                            Grid.Row='1' Width='400' Height='300' />
+                    </Grid>");
+
+                var toolbar = (InkToolbar)root.FindName("TestToolBar");
+                var canvas = (InkCanvas)root.FindName("TestCanvas");
+                toolbar.TargetInkCanvas = canvas;
+
+                Content = root;
+                Content.UpdateLayout();
+
+                // Toggle on with a live target: reaches SetStencilVisibility -> proxy; state reports checked.
+                toolbar.IsStencilButtonChecked = true;
+                Verify.IsTrue(toolbar.IsStencilButtonChecked,
+                    "IsStencilButtonChecked should be true after toggling on with a target canvas.");
+
+                // Toggle off: state clears.
+                toolbar.IsStencilButtonChecked = false;
+                Verify.IsFalse(toolbar.IsStencilButtonChecked,
+                    "IsStencilButtonChecked should be false after toggling off.");
+            });
+        }
+
+        [TestMethod]
         public void InkToolbarTargetInkCanvasPropertyTest()
         {
             RunOnUIThread.Execute(() =>
@@ -495,14 +538,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(button.IsRulerItemVisible, "IsRulerItemVisible should default to true (UWP parity).");
                 Verify.IsTrue(button.IsProtractorItemVisible, "IsProtractorItemVisible should default to true (UWP parity).");
 
-                // Host the button in the visual tree so its template is applied (OnApplyTemplate builds
-                // the stencil L3/flyout content). Driving SelectedStencil and the item-visibility DPs below
-                // on an unrealized, off-tree button is an unsupported state whose L3/flyout side effects
-                // (OnSelectedStencilChanged / OnL3ItemsVisibilitiesChanged) mirror the eraser-button crash;
-                // the control is only ever used realized inside a live InkToolbar, so exercise it that way.
-                Content = button;
-                Content.UpdateLayout();
-
                 // SelectedStencil
                 button.SelectedStencil = InkToolbarStencilKind.Ruler;
                 Verify.AreEqual(InkToolbarStencilKind.Ruler, button.SelectedStencil,
@@ -570,14 +605,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 var button = new InkToolbarEraserButton();
                 Verify.IsNotNull(button, "EraserButton should be constructible.");
                 Verify.AreEqual(InkToolbarTool.Eraser, button.ToolKind, "ToolKind should be Eraser.");
-
-                // Host the button in the visual tree so its template is applied (OnApplyTemplate builds
-                // the eraser L3/flyout content). Driving the eraser DPs below on an unrealized, off-tree
-                // button is an unsupported state whose L3/flyout side effects crashed the test host; the
-                // control is only ever used realized inside a live InkToolbar, so exercise it that way.
-                Content = button;
-                Content.UpdateLayout();
-
                 Verify.IsTrue(button.IsClearAllVisible, "IsClearAllVisible should default to true (UWP parity).");
 
                 button.SelectedEraser = InkToolbarEraserKind.PrecisionSmall;

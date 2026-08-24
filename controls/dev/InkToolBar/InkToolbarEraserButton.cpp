@@ -14,6 +14,7 @@
 #include "InkToolbarFlyoutItem.h"
 #include "ButtonManager.h"
 #include "InkToolbar.h"
+#include "InkToolbarTrace.h"
 
 namespace
 {
@@ -71,7 +72,8 @@ namespace
         std::wstring_view name,
         std::wstring_view automationId,
         winrt::InkToolbarFlyoutItemKind kind,
-        wchar_t const* glyph)
+        wchar_t const* glyph,
+        wchar_t const* labelResourceKey)
     {
         winrt::InkToolbarFlyoutItem item{};
         item.Name(winrt::hstring{ name });
@@ -96,9 +98,18 @@ namespace
         winrt::Grid::SetColumn(icon, 0);
         grid.Children().Append(icon);
 
-        // The localized item name is a resource gap in the lift (empty); the TextBlock is still
-        // created so the layout matches the UWP two-column template.
+        // Localized display name for the flyout item (UWP IDS_INKTOOLBAR_ERASER* via PutLocalizedContent).
+        // Guard the lookup: a missing resource degrades to an empty label instead of propagating out of
+        // OnApplyTemplateCore (parity with InkToolbarToolButton::OnApplyTemplate).
         winrt::TextBlock text{};
+        try
+        {
+            text.Text(ResourceAccessor::GetLocalizedStringResource(labelResourceKey));
+        }
+        catch (winrt::hresult_error const& e)
+        {
+            InkToolbarLogHResult(e.code(), L"eraser flyout item label lookup");
+        }
         text.VerticalAlignment(winrt::VerticalAlignment::Center);
         text.Margin(winrt::ThicknessHelper::FromLengths(0, 0, 12, 0));
         winrt::Grid::SetColumn(text, 1);
@@ -143,10 +154,10 @@ void InkToolbarEraserButton::OnApplyTemplateCore()
             winrt::StackPanel panel{};
             panel.Name(L"InkToolbarEraserButtonFlyoutContent");
             panel.Margin(winrt::ThicknessHelper::FromLengths(0, 1, 0, 1));
-            panel.Children().Append(MakeFlyoutItem(STROKEERASER_ITEM_NAME, L"InkToolbarStrokeEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF128"));
-            panel.Children().Append(MakeFlyoutItem(SMALLERASER_ITEM_NAME, L"InkToolbarSmallEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF129"));
-            panel.Children().Append(MakeFlyoutItem(LARGEERASER_ITEM_NAME, L"InkToolbarLargeEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF12A"));
-            panel.Children().Append(MakeFlyoutItem(CLEARALL_ITEM_NAME, L"InkToolbarClearAll", winrt::InkToolbarFlyoutItemKind::Simple, L"\uE74D"));
+            panel.Children().Append(MakeFlyoutItem(STROKEERASER_ITEM_NAME, L"InkToolbarStrokeEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF128", SR_InkToolbarStrokeEraserLabel));
+            panel.Children().Append(MakeFlyoutItem(SMALLERASER_ITEM_NAME, L"InkToolbarSmallEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF129", SR_InkToolbarSmallEraserLabel));
+            panel.Children().Append(MakeFlyoutItem(LARGEERASER_ITEM_NAME, L"InkToolbarLargeEraser", winrt::InkToolbarFlyoutItemKind::RadioCheck, L"\uF12A", SR_InkToolbarLargeEraserLabel));
+            panel.Children().Append(MakeFlyoutItem(CLEARALL_ITEM_NAME, L"InkToolbarClearAll", winrt::InkToolbarFlyoutItemKind::Simple, L"\uE74D", SR_InkToolbarClearAllLabel));
             flyout.Content(panel);
         }
     }
@@ -168,12 +179,14 @@ void InkToolbarEraserButton::SetupL3(wchar_t const* itemName)
         auto itemAsControl = FindChild(flyoutContent, itemName);
         if (!itemAsControl)
         {
+            InkToolbarLogHResult(E_UNEXPECTED, L"SetupL3: eraser L3 item is missing");
             throw winrt::hresult_error(E_UNEXPECTED, L"SetupL3: eraser L3 item is missing.");
         }
 
         auto item = itemAsControl.try_as<winrt::InkToolbarFlyoutItem>();
         if (!item)
         {
+            InkToolbarLogHResult(E_UNEXPECTED, L"SetupL3: eraser L3 item is not an InkToolbarFlyoutItem");
             throw winrt::hresult_error(E_UNEXPECTED, L"SetupL3: eraser L3 item is not an InkToolbarFlyoutItem.");
         }
 

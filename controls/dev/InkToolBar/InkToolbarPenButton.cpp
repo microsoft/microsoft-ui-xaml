@@ -3,12 +3,14 @@
 
 // Faithful C++/WinRT port of onecoreuap\...\inkcontrols\lib\InkToolbarPenButton_Partial.cpp.
 // OS-dxaml scaffolding (composable ToolButton factory, QI override, HRESULT/boxing) dropped.
-// High-contrast palette switching (AccessibilitySettings + IInkPresenterInternal2 color adjust)
-// is a lifted-platform delta and is not wired yet; the normal palette is used.
+// High-contrast palette switching is wired via AccessibilitySettings; the internal per-color adjust
+// (IInkPresenterInternal2::GetHighContrastAdjustedInkColor) is replaced by a WCAG >=7.0 contrast filter.
 
 #include "pch.h"
 #include "common.h"
 #include "InkToolbarPenButton.h"
+#include <winrt/Windows.UI.ViewManagement.h>
+#include "InkToolbarTrace.h"
 
 InkToolbarPenButton::InkToolbarPenButton()
 {
@@ -75,7 +77,7 @@ void InkToolbarPenButton::OnPropertyChanged(winrt::DependencyPropertyChangedEven
     }
 }
 
-// UWP SetSelectedBrushByIndex (normal palette; high-contrast palette is the delta noted above).
+// UWP SetSelectedBrushByIndex: index into the active palette (high-contrast when HC is on, else normal).
 void InkToolbarPenButton::SetSelectedBrushByIndex(int index)
 {
     if (index < 0)
@@ -83,11 +85,13 @@ void InkToolbarPenButton::SetSelectedBrushByIndex(int index)
         return;
     }
 
-    auto palette = Palette();
+    bool highContrast = IsHighContrast();
+    auto palette = (highContrast && m_highContrastPalette) ? m_highContrastPalette : Palette();
     if (palette && static_cast<uint32_t>(index) < palette.Size())
     {
         SelectedBrush(palette.GetAt(index));
-        m_normalModeBrushIndex = index;
+        if (highContrast) { m_highContrastModeBrushIndex = index; }
+        else { m_normalModeBrushIndex = index; }
     }
 }
 
@@ -116,4 +120,108 @@ float InkToolbarPenButton::DetermineStrokeWidth(winrt::InkToolbarPenButton const
     if (width < minWidth) { width = minWidth; }
     if (maxWidth > 0 && width > maxWidth) { width = maxWidth; }
     return static_cast<float>(width);
+}
+
+bool InkToolbarPenButton::IsHighContrast()
+{
+    try
+    {
+        if (!m_accessibilitySettings)
+        {
+            m_accessibilitySettings = winrt::Windows::UI::ViewManagement::AccessibilitySettings();
+        }
+        return m_accessibilitySettings.HighContrast();
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        InkToolbarLogHResult(e.code(), L"high-contrast state query");
+        return false;
+    }
+}
+
+// Relative luminance of an sRGB color (0..1), WCAG 2.1 definition. This is a faithful reimplementation
+// of the OS ink engine's own high-contrast math in
+// onecoreuap/windows/AdvCore/WinRT/DirectInk/Helpers/HighContrastHelper.cpp (GetLuminance /
+// ClampLuminanceValue / FindContrastRatio, MinContrastRatio = 7.0f). UWP reached it through the internal
+// IInkPresenterInternal2::GetHighContrastAdjustedInkColor, which is not projected to lifted, so we
+// compute the identical formula and 7.0 threshold here.
+double InkToolbarPenButton::RelativeLuminance(winrt::Windows::UI::Color const& c)
+{
+    auto channel = [](double v)
+    {
+        v /= 255.0;
+        return v <= 0.03928 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(c.R) + 0.7152 * channel(c.G) + 0.0722 * channel(c.B);
+}
+
+// WCAG contrast ratio between two colors (1..21).
+double InkToolbarPenButton::ContrastRatio(winrt::Windows::UI::Color const& a, winrt::Windows::UI::Color const& b)
+{
+    double la = RelativeLuminance(a);
+    double lb = RelativeLuminance(b);
+    double hi = (std::max)(la, lb);
+    double lo = (std::min)(la, lb);
+    return (hi + 0.05) / (lo + 0.05);
+}
+
+// Build the high-contrast pen-flyout palette, matching the OS ink engine's HighContrastHelper /
+// GetHighContrastAdjustedInkColor (onecoreuap/windows/AdvCore/WinRT/DirectInk/Helpers/HighContrastHelper.cpp).
+// Branch on InkPresenter.HighContrastAdjustment as UWP does: UseOriginalColors keeps every color,
+// UseSystemColors keeps none, and UseSystemColorsWhenNecessary keeps colors whose contrast against the
+// system Background is >= 7.0 (MinContrastRatio); the system color is appended when not already present.
+// UWP reached the per-color check through IInkPresenterInternal2 (not in lifted); we compute the same
+// WCAG contrast and 7.0 threshold inline.
+winrt::IVector<winrt::Brush> InkToolbarPenButton::GetHighContrastPalette(int highContrastAdjustment)
+{
+    auto hcPalette = winrt::single_threaded_vector<winrt::Brush>();
+    try
+    {
+        winrt::Windows::UI::ViewManagement::UISettings settings;
+        // UWP resolves the system color by tool type: Highlight for the highlighter, WindowText for pens.
+        auto systemColor = try_as<winrt::InkToolbarHighlighterButton>()
+            ? settings.UIElementColor(winrt::Windows::UI::ViewManagement::UIElementType::Highlight)
+            : settings.UIElementColor(winrt::Windows::UI::ViewManagement::UIElementType::WindowText);
+        // Match the OS reference background: HighContrastHelper uses UIElementType_Background (PageBackground fallback).
+        winrt::Windows::UI::Color background{};
+        try { background = settings.UIElementColor(winrt::Windows::UI::ViewManagement::UIElementType::Background); }
+        catch (winrt::hresult_error const&) { background = settings.UIElementColor(winrt::Windows::UI::ViewManagement::UIElementType::PageBackground); }
+
+        bool systemPresent = false;
+        if (auto palette = Palette())
+        {
+            for (auto const& brush : palette)
+            {
+                if (auto solid = brush.try_as<winrt::SolidColorBrush>())
+                {
+                    auto color = solid.Color();
+                    bool keep = false;
+                    switch (highContrastAdjustment)
+                    {
+                    case 2: keep = true; break;                                    // UseOriginalColors
+                    case 1: keep = false; break;                                   // UseSystemColors
+                    default: keep = ContrastRatio(color, background) >= 7.0; break; // UseSystemColorsWhenNecessary
+                    }
+                    if (keep)
+                    {
+                        hcPalette.Append(brush);
+                        if (color.R == systemColor.R && color.G == systemColor.G && color.B == systemColor.B && color.A == systemColor.A)
+                        {
+                            systemPresent = true;
+                        }
+                    }
+                }
+            }
+        }
+        if (!systemPresent)
+        {
+            hcPalette.Append(winrt::SolidColorBrush(systemColor));
+        }
+    }
+    catch (winrt::hresult_error const& e)
+    {
+        InkToolbarLogHResult(e.code(), L"high-contrast palette build");
+    }
+    m_highContrastPalette = hcPalette;
+    return hcPalette;
 }

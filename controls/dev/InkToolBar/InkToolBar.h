@@ -87,6 +87,9 @@ public:
 
     static winrt::Windows::UI::Input::Inking::InkPresenter GetInkPresenter(winrt::InkToolbar const& inkToolbar);
 
+    // Current InkPresenter.HighContrastAdjustment as an int (0/1/2), or the default when there is no target.
+    int32_t GetHighContrastAdjustmentValue();
+
 private:
     // Children observation.
     void OnChildrenChanged(winrt::IObservableVector<winrt::DependencyObject> const& sender, winrt::IVectorChangedEventArgs const& args);
@@ -175,6 +178,12 @@ private:
     bool m_inking = false;
     winrt::Visibility m_lastVisibility = winrt::Visibility::Collapsed;
     bool m_configuredStencilButtonIntoToggleMode = false;
+
+    // Lift adaptation: the stencil button's Ruler/Protractor DPs are never assigned (the OS stencils
+    // are ink-thread-affine, driven via the InkPresenter proxy), so SetStencilVisibility records the
+    // on-canvas stencil state here for the button/state read-backs.
+    bool m_rulerVisible = false;
+    bool m_protractorVisible = false;
 
     // Most-recently selected non-eraser tool (restored after "Clear all").
     winrt::weak_ref<winrt::InkToolbarToolButton> m_mostRecentNonEraserTool;
