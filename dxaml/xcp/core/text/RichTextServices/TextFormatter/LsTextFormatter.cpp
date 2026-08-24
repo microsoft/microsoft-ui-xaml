@@ -4,6 +4,7 @@
 #include "precomp.h"
 #include "LsTextFormatter.h"
 #include "LsTextLine.h"
+#include "LsTextLineBreak.h"
 #include "TextStore.h"
 #include "LineServicesCallbacks.h"
 #include "InlineObjectHandlers.h"
@@ -97,6 +98,30 @@ Result::Enum LsTextFormatter::FormatLine(
 
     // Assume that formatter was called with Ls line break.
     pPreviousLsLineBreak = reinterpret_cast<LsTextLineBreak *>(pPreviousLineBreak);
+
+    // Context-identity invariant: a LineServices break record is bound to the exact LS context
+    // (owned by a specific LsTextFormatter) that produced it. Continuation formatting therefore
+    // must run on that originating formatter. When the caller re-acquired a *different* formatter
+    // from the TextFormatterCache (e.g. after low-memory cleanup released the original back to the
+    // free list), formatting the continuation on "this" would pass "context B + break record A" to
+    // LsCreateLine, which is invalid. Re-route the call to the originating formatter, which is kept
+    // alive by the break record's own reference, so the break record is always consumed by the LS
+    // context that created it.
+    if (pPreviousLsLineBreak != NULL)
+    {
+        LsTextFormatter *pOriginatingFormatter = pPreviousLsLineBreak->GetTextFormatter();
+        if (pOriginatingFormatter != NULL && pOriginatingFormatter != this)
+        {
+            return pOriginatingFormatter->FormatLine(
+                pTextSource,
+                firstCharIndex,
+                wrappingWidth,
+                pTextParagraphProperties,
+                pPreviousLineBreak,
+                pTextRunCache,
+                ppTextLine);
+        }
+    }
 
     if (pTextRunCache == NULL)
     {
