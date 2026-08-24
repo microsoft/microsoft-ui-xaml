@@ -244,4 +244,247 @@
   </Style>
   <Style TargetType="controls:SplitButton" BasedOn="{StaticResource SplitButtonStyle}" />
   <Style TargetType="controls:ToggleSplitButton" BasedOn="{StaticResource SplitButtonStyle}" />
+  <Style x:Key="AccentSplitButtonStyle" TargetType="controls:SplitButton">
+    <Setter Property="Background" Value="{ThemeResource AccentButtonBackground}" />
+    <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}" />
+    <Setter Property="BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{ThemeResource SplitButtonBorderThemeThickness}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+    <Setter Property="UseSystemFocusVisuals" Value="True" />
+    <Setter Property="FocusVisualMargin" Value="-1" />
+    <Setter Property="IsTabStop" Value="True" />
+    <Setter Property="Padding" Value="{ThemeResource SplitButtonPadding}" />
+    <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="controls:SplitButton">
+          <Grid x:Name="RootGrid" Background="Transparent" CornerRadius="{TemplateBinding CornerRadius}">
+            <Grid.Resources>
+              <Style TargetType="Button">
+                <Setter Property="Foreground" Value="{ThemeResource AccentButtonForeground}" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="{ThemeResource SplitButtonBorderThemeThickness}" />
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+                <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                <Setter Property="FocusVisualMargin" Value="-3" />
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                      <Grid x:Name="RootGrid" Background="Transparent">
+                        <VisualStateManager.VisualStateGroups>
+                          <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="PointerOver">
+                              <VisualState.Setters>
+                                <Setter Target="ContentPresenter.(controls:AnimatedIcon.State)" Value="PointerOver" />
+                              </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                              <VisualState.Setters>
+                                <Setter Target="ContentPresenter.(controls:AnimatedIcon.State)" Value="Pressed" />
+                              </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                              <VisualState.Setters>
+                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
+                                <Setter Target="RootGrid.Background" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                                <Setter Target="ContentPresenter.BorderBrush" Value="Transparent" />
+                              </VisualState.Setters>
+                            </VisualState>
+                          </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <ContentPresenter x:Name="ContentPresenter" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" AutomationProperties.AccessibilityView="Raw" local:AnimatedIcon.State="Normal" xmlns:local="using:Microsoft.UI.Xaml.Controls" />
+                      </Grid>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+              </Style>
+            </Grid.Resources>
+            <VisualStateManager.VisualStateGroups>
+              <VisualStateGroup x:Name="CommonStates">
+                <VisualState x:Name="Normal" />
+                <VisualState x:Name="Disabled">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushDisabled}" />
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundDisabled}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundDisabled}" />
+                    <Setter Target="RootGrid.Background" Value="Transparent" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="FlyoutOpen">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}" />
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="TouchPressed">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}" />
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="PrimaryPointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPointerOver}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPointerOver}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackground}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="PrimaryPressed">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackground}" />
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SecondaryPointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackground}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPointerOver}" />
+                    <Setter Target="SecondaryButton.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPointerOver}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPointerOver}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="SecondaryPressed">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackground}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Checked">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForeground}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForeground}" />
+                    <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CheckedFlyoutOpen">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CheckedTouchPressed">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrushPressed}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CheckedPrimaryPointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPointerOver}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPointerOver}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForeground}" />
+                    <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CheckedPrimaryPressed">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForeground}" />
+                    <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CheckedSecondaryPointerOver">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForeground}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPointerOver}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPointerOver}" />
+                    <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="CheckedSecondaryPressed">
+                  <VisualState.Setters>
+                    <Setter Target="PrimaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="SecondaryButtonBorder.BorderBrush" Value="{ThemeResource AccentButtonBorderBrush}" />
+                    <Setter Target="PrimaryBackgroundGrid.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" />
+                    <Setter Target="PrimaryButton.Foreground" Value="{ThemeResource AccentButtonForeground}" />
+                    <Setter Target="SecondaryBackgroundGrid.Background" Value="{ThemeResource AccentButtonBackgroundPressed}" />
+                    <Setter Target="SecondaryButton.Foreground" Value="{ThemeResource AccentButtonForegroundPressed}" />
+                    <Setter Target="DividerBackgroundGrid.Background" Value="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}" />
+                  </VisualState.Setters>
+                </VisualState>
+              </VisualStateGroup>
+              <VisualStateGroup x:Name="SecondaryButtonPlacementStates">
+                <VisualState x:Name="SecondaryButtonRight" />
+                <VisualState x:Name="SecondaryButtonSpan">
+                  <VisualState.Setters>
+                    <Setter Target="SecondaryButton.(Grid.Column)" Value="0" />
+                    <Setter Target="SecondaryButton.(Grid.ColumnSpan)" Value="3" />
+                  </VisualState.Setters>
+                </VisualState>
+              </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition x:Name="PrimaryButtonColumn" Width="*" MinWidth="{ThemeResource SplitButtonPrimaryButtonSize}" />
+              <ColumnDefinition x:Name="Separator" Width="1" />
+              <ColumnDefinition x:Name="SecondaryButtonColumn" Width="{ThemeResource SplitButtonSecondaryButtonSize}" />
+            </Grid.ColumnDefinitions>
+            <Grid x:Name="PrimaryBackgroundGrid" Background="{TemplateBinding Background}" Grid.ColumnSpan="2" />
+            <Grid x:Name="DividerBackgroundGrid" Width="1" Background="{ThemeResource ControlStrokeColorOnAccentDefaultBrush}" Grid.Column="1" />
+            <Grid x:Name="SecondaryBackgroundGrid" Background="{TemplateBinding Background}" Grid.Column="2" />
+            <Button x:Name="PrimaryButton" Grid.Column="0" Foreground="{TemplateBinding Foreground}" Background="{TemplateBinding Background}" BorderThickness="0" BorderBrush="Transparent" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Command="{TemplateBinding Command}" CommandParameter="{TemplateBinding CommandParameter}" FontFamily="{TemplateBinding FontFamily}" FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" Padding="{TemplateBinding Padding}" IsTabStop="False" AutomationProperties.AccessibilityView="Raw" />
+            <Button x:Name="SecondaryButton" Grid.Column="2" Foreground="{ThemeResource AccentButtonForeground}" Background="{TemplateBinding Background}" BorderThickness="0" BorderBrush="Transparent" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Padding="0,0,12,0" IsTabStop="False" AutomationProperties.AccessibilityView="Raw">
+              <Button.Content>
+                <controls:AnimatedIcon Height="12" Width="12" VerticalAlignment="Center" HorizontalAlignment="Right" AutomationProperties.AccessibilityView="Raw">
+                  <animatedvisuals:AnimatedChevronDownSmallVisualSource />
+                  <controls:AnimatedIcon.FallbackIconSource>
+                    <controls:FontIconSource FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="8" Glyph="&#xE96E;" IsTextScaleFactorEnabled="False" />
+                  </controls:AnimatedIcon.FallbackIconSource>
+                </controls:AnimatedIcon>
+              </Button.Content>
+            </Button>
+            <Grid x:Name="PrimaryButtonBorder" Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,1,0,1" CornerRadius="4,0,0,4" />
+            <Grid x:Name="SecondaryButtonBorder" Grid.Column="2" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,1,1,1" CornerRadius="0,4,4,0" />
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
 </ResourceDictionary>
