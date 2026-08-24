@@ -854,7 +854,7 @@ namespace Microsoft.UI.Xaml
             Microsoft.UI.Windowing.AppWindow AppWindow{ get; };
         }
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 13)]
         [feature(Feature_ExperimentalApi)]
         [interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
         {
