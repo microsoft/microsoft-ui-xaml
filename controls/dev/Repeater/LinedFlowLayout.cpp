@@ -6788,7 +6788,7 @@ int LinedFlowLayout::MeasureConstrainedLines(
         if (averageItemsPerLine.first != m_averageItemsPerLine.first)
         {
             // The new raw value becomes the source of the snapped value and the reference point for detecting
-            // deltas accross the median point (1.1^(N+1) - 1.1^N) / 2 greater than 0.1.
+            // deltas across the median point (1.1^(N+1) - 1.1^N) / 2 greater than 0.1.
             SetAverageItemsPerLine(averageItemsPerLine);
         }
     }

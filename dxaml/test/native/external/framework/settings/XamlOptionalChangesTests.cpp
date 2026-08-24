@@ -49,7 +49,6 @@ static ComPtr<xaml_settings_abi::IXamlOptionalChangesStatics> GetStatics()
 }
 
 static const auto c_iconNoGrid = xaml_settings_abi::XamlChangeId_IconNoGridOptimization;
-static const auto c_reserved   = xaml_settings_abi::XamlChangeId__Reserved;
 
 // ---------------------------------------------------------------------------
 // Setup / Cleanup
@@ -96,13 +95,17 @@ void XamlOptionalChangesTests::CanEnableAndQueryBeforeLock()
     VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_iconNoGrid, &val));
     VERIFY_IS_FALSE(!!val);
 
-    // Enable
-    VERIFY_SUCCEEDED(statics->EnableChange(c_iconNoGrid));
+    // Enable — recognized id pre-lock returns TRUE.
+    BOOLEAN mutated = FALSE;
+    VERIFY_SUCCEEDED(statics->EnableChange(c_iconNoGrid, &mutated));
+    VERIFY_IS_TRUE(!!mutated);
     VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_iconNoGrid, &val));
     VERIFY_IS_TRUE(!!val);
 
-    // Disable
-    VERIFY_SUCCEEDED(statics->DisableChange(c_iconNoGrid));
+    // Disable — recognized id pre-lock returns TRUE.
+    mutated = FALSE;
+    VERIFY_SUCCEEDED(statics->DisableChange(c_iconNoGrid, &mutated));
+    VERIFY_IS_TRUE(!!mutated);
     VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_iconNoGrid, &val));
     VERIFY_IS_FALSE(!!val);
 }
@@ -132,8 +135,10 @@ void XamlOptionalChangesTests::EnableChangeFailsAfterLock()
     BOOLEAN dummy;
     VERIFY_SUCCEEDED(statics->Lock(&dummy));
 
-    HRESULT hr = statics->EnableChange(c_iconNoGrid);
+    BOOLEAN mutated = TRUE;
+    HRESULT hr = statics->EnableChange(c_iconNoGrid, &mutated);
     VERIFY_ARE_EQUAL(hr, E_ILLEGAL_STATE_CHANGE);
+    VERIFY_IS_FALSE(!!mutated);
 }
 
 void XamlOptionalChangesTests::DisableChangeFailsAfterLock()
@@ -142,17 +147,21 @@ void XamlOptionalChangesTests::DisableChangeFailsAfterLock()
     BOOLEAN dummy;
     VERIFY_SUCCEEDED(statics->Lock(&dummy));
 
-    HRESULT hr = statics->DisableChange(c_iconNoGrid);
+    BOOLEAN mutated = TRUE;
+    HRESULT hr = statics->DisableChange(c_iconNoGrid, &mutated);
     VERIFY_ARE_EQUAL(hr, E_ILLEGAL_STATE_CHANGE);
+    VERIFY_IS_FALSE(!!mutated);
 }
 
 void XamlOptionalChangesTests::IsChangeEnabledWorksAfterLock()
 {
     auto statics = GetStatics();
     BOOLEAN val = FALSE;
+    BOOLEAN mutated = FALSE;
 
     // Enable, then lock
-    VERIFY_SUCCEEDED(statics->EnableChange(c_iconNoGrid));
+    VERIFY_SUCCEEDED(statics->EnableChange(c_iconNoGrid, &mutated));
+    VERIFY_IS_TRUE(!!mutated);
     BOOLEAN dummy;
     VERIFY_SUCCEEDED(statics->Lock(&dummy));
 
@@ -161,25 +170,43 @@ void XamlOptionalChangesTests::IsChangeEnabledWorksAfterLock()
     VERIFY_IS_TRUE(!!val);
 }
 
-void XamlOptionalChangesTests::UnrecognizedValueSilentlyIgnored()
+void XamlOptionalChangesTests::UnrecognizedValueContract()
 {
     auto statics = GetStatics();
-    BOOLEAN val = TRUE;
 
-    // _Reserved silently no-ops before lock
-    VERIFY_SUCCEEDED(statics->EnableChange(c_reserved));
-    VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_reserved, &val));
-    VERIFY_IS_FALSE(!!val);
+    // Sentinel: _Reserved (= 0) is a non-recognized placeholder value, used here
+    // to exercise the "unrecognized XamlChangeId" contract.
+    const auto sentinel = xaml_settings_abi::XamlChangeId__Reserved;
 
-    // Lock
+    // Pre-lock: EnableChange returns S_OK with out=FALSE (unrecognized), no bit set.
+    BOOLEAN mutated = TRUE;
+    VERIFY_SUCCEEDED(statics->EnableChange(sentinel, &mutated));
+    VERIFY_IS_FALSE(!!mutated);
+    BOOLEAN enabled = TRUE;
+    VERIFY_SUCCEEDED(statics->IsChangeEnabled(sentinel, &enabled));
+    VERIFY_IS_FALSE(!!enabled);
+
+    // Pre-lock: DisableChange behaves identically.
+    mutated = TRUE;
+    VERIFY_SUCCEEDED(statics->DisableChange(sentinel, &mutated));
+    VERIFY_IS_FALSE(!!mutated);
+
+    // Lock the state.
     BOOLEAN dummy;
     VERIFY_SUCCEEDED(statics->Lock(&dummy));
 
-    // _Reserved still silently no-ops after lock (no E_ILLEGAL_STATE_CHANGE)
-    VERIFY_SUCCEEDED(statics->EnableChange(c_reserved));
-    VERIFY_SUCCEEDED(statics->DisableChange(c_reserved));
-    VERIFY_SUCCEEDED(statics->IsChangeEnabled(c_reserved, &val));
-    VERIFY_IS_FALSE(!!val);
+    // Post-lock: Enable/Disable throw E_ILLEGAL_STATE_CHANGE even for unrecognized values.
+    mutated = TRUE;
+    VERIFY_ARE_EQUAL(statics->EnableChange(sentinel, &mutated), E_ILLEGAL_STATE_CHANGE);
+    VERIFY_IS_FALSE(!!mutated);
+    mutated = TRUE;
+    VERIFY_ARE_EQUAL(statics->DisableChange(sentinel, &mutated), E_ILLEGAL_STATE_CHANGE);
+    VERIFY_IS_FALSE(!!mutated);
+
+    // IsChangeEnabled never throws, returns FALSE for unrecognized values.
+    enabled = TRUE;
+    VERIFY_SUCCEEDED(statics->IsChangeEnabled(sentinel, &enabled));
+    VERIFY_IS_FALSE(!!enabled);
 }
 
 } } } } } }

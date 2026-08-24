@@ -196,6 +196,11 @@ namespace Private
         // ITrackerPtrWrapperManager interface
         //
 
+        // PREfast C28196 false positive reported at the signature - the inner CreateTrackerHandle
+        // satisfies the _Outptr_ contract; PREfast cannot see through the virtual call. Suppress at function scope
+        // because the warning is attributed to the declaration, not the return statement.
+        #pragma warning(push)
+        #pragma warning(disable: 28196)
         _Check_return_ HRESULT NewTrackerHandle(_Outptr_ ::TrackerHandle* pValue) final
         {
 #if DBG
@@ -203,6 +208,7 @@ namespace Private
 #endif
             return m_pTrackerOwnerInnerNoRef->CreateTrackerHandle(pValue);
         }
+        #pragma warning(pop)
 
         _Check_return_ HRESULT DeleteTrackerHandle(_In_ ::TrackerHandle handle) final
         {
@@ -220,13 +226,20 @@ namespace Private
             return m_pTrackerOwnerInnerNoRef->SetTrackerValue(handle, pValue);
         }
 
+        // PREfast C6388 false positive reported at the signature - this wrapper forwards to the inner
+        // TryGetSafeTrackerValue which honors the _COM_Outptr_result_maybenull_ contract; PREfast cannot see through
+        // the virtual call. Suppress at function scope because the warning is attributed to the declaration.
+        #pragma warning(push)
+        #pragma warning(disable: 6388)
         _Success_(!!return) _Check_return_ BOOLEAN TryGetSafeTrackerValue(_In_ ::TrackerHandle handle, _COM_Outptr_result_maybenull_ IUnknown** ppValue) final
         {
+            *ppValue = nullptr;
 #if DBG
             ASSERT(m_wasEnsureCalled && m_pTrackerOwnerInnerNoRef);
 #endif
             return m_pTrackerOwnerInnerNoRef->TryGetSafeTrackerValue(handle, ppValue);
         }
+        #pragma warning(pop)
 
         // ComObject<T> leaves this false, AggregableComObject<> overrides this to return true
         // we're composed

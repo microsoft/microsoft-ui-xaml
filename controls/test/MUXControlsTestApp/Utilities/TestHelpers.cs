@@ -30,6 +30,8 @@ namespace MUXControlsTestApp
         public const string _19H1 = "18362";
         public const string _20H2 = "19042";
         public const string _22H2 = "22621";
+        public const string _24H2 = "26100";
+        public const string _25H2 = "26200";
     }
 
     // This type is used for Interaction tests that do verification and log results to a textbox which the

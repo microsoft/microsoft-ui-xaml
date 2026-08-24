@@ -1,0 +1,120 @@
+﻿<Window
+    x:Class="ItemsViewIntegrationApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dataModel="using:ItemsViewIntegrationApp.Samples.Model">
+
+    <Grid x:Name="rootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="4">
+		<Grid.Resources>
+			<StackLayout x:Key="stackLayout"
+            Orientation="Vertical" Spacing="10"/>
+
+			<FlowLayout x:Key="flowLayout"
+                MinItemSpacing="10"
+                LineSpacing="10"/>
+
+			<UniformGridLayout x:Key="uniformGridLayout"
+				MaximumRowsOrColumns="4"
+				MinColumnSpacing="10" MinRowSpacing="10"
+				MinItemWidth="100" MinItemHeight="150"/>
+		</Grid.Resources>
+		
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock x:Name="tblHeader" Style="{StaticResource SubtitleTextBlockStyle}" Margin="10"/>
+
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+			<ComboBox x:Name="SelectionModeComboBox" AutomationProperties.Name="SelectionModeComboBox" Width="160" Margin="4" 
+				VerticalAlignment="Center" PlaceholderText="SelectionMode" SelectionChanged="SelectionModeComboBox_SelectionChanged">
+				<ComboBoxItem>None</ComboBoxItem>
+				<ComboBoxItem>Single</ComboBoxItem>
+				<ComboBoxItem>Multiple</ComboBoxItem>
+				<ComboBoxItem>Extended</ComboBoxItem>
+			</ComboBox>
+
+			<ComboBox x:Name="LayoutComboBox" Width="160" Margin="4" VerticalAlignment="Center " SelectedIndex="0" IsEnabled="False">
+				<ComboBoxItem>RiverFlowLayout</ComboBoxItem>
+				<ComboBoxItem>StackLayout</ComboBoxItem>
+				<ComboBoxItem>UniformGridLayout</ComboBoxItem>
+				<ComboBoxItem>FlowLayout</ComboBoxItem>
+			</ComboBox>
+		</StackPanel>
+
+        <ItemsView 
+            x:Name="itemsView" 
+            Grid.Row="1"
+            AllowDrop="True"
+            DragOver="ItemsView_DragOver"
+            Drop="ItemsView_Drop">
+            <ItemsView.ItemTemplate>
+                <DataTemplate x:DataType="dataModel:Photo">
+                    <ItemContainer
+                            AutomationProperties.Name="Image" 
+                            MinWidth="100" 
+                            MinHeight="150" 
+                            Background="LightGray" 
+                            CanDrag="True"
+                            DragStarting="ItemContainer_DragStarting">
+                        <Image 
+                            x:Name="image" 
+                            Stretch="UniformToFill" 
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center">
+                            <Image.Source>
+                                <BitmapImage DecodePixelHeight="150" UriSource="{Binding ImageUri}"/>
+                            </Image.Source>
+                        </Image>
+                    </ItemContainer>
+                </DataTemplate>
+            </ItemsView.ItemTemplate>
+			<ItemsView.Layout>
+				<LinedFlowLayout
+				    x:Name="riverFlowLayout"
+				    ItemsStretch="Fill"
+				    MinItemSpacing="12"
+				    LineSpacing="12"
+				    LineHeight="150"/>
+			</ItemsView.Layout>
+        </ItemsView>
+
+        <AnnotatedScrollBar
+            x:Name="annotatedScrollBar"
+            Grid.Column="1"
+            Grid.Row="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Stretch">
+            <AnnotatedScrollBar.LabelTemplate>
+                <DataTemplate x:DataType="AnnotatedScrollBarLabel">
+                    <Border MinWidth="{StaticResource LabelsGridMinWidth}">
+                        <TextBlock
+                            Text="{x:Bind Content}"
+                            Style="{StaticResource BodyTextBlockStyle}"
+                            HorizontalTextAlignment="Right"
+                            HorizontalAlignment="Right"
+                            TextWrapping="NoWrap"/>
+                    </Border>
+                </DataTemplate>
+            </AnnotatedScrollBar.LabelTemplate>
+            <AnnotatedScrollBar.DetailLabelTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Border>
+                        <TextBlock 
+                            Text="{x:Bind}" 
+                            Style="{StaticResource BaseTextBlockStyle}" 
+                            TextWrapping="WrapWholeWords"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Right"
+                            Margin="0,0,0,2"/>
+                    </Border>
+                </DataTemplate>
+            </AnnotatedScrollBar.DetailLabelTemplate>
+        </AnnotatedScrollBar>
+    </Grid>
+</Window>

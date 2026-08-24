@@ -302,6 +302,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateNonWindowedFlyoutFlipsUpAlignedToAnchorRowBottom)
+            TEST_METHOD_PROPERTY(L"Description", L"When a non-windowed flyout with side placement flips upward at the window's bottom edge, its bottom must align to the anchor row's bottom.")
+        END_TEST_METHOD()
+
     private:
         template <class DateTimePickerType>
         static void CanOpenDateTimePickerWorker();

@@ -234,6 +234,8 @@ namespace AccessKeys
                 }
                 else
                 {
+                    // PREfast C28183 - e is guaranteed non-null by the !e check at the top of the loop.
+                    #pragma warning(suppress: 28183)
                     e = m_treeLibrary.GetParent(e);
                 }
            };

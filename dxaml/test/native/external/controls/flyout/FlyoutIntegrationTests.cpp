@@ -4234,5 +4234,90 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         TestServices::WindowHelper->WaitForIdle();
     }
 
+    void FlyoutIntegrationTests::ValidateNonWindowedFlyoutFlipsUpAlignedToAnchorRowBottom()
+    {
+        TestCleanupWrapper cleanup([&]()
+        {
+            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+        });
+
+        xaml_controls::Button^ anchor = nullptr;
+        xaml_controls::Flyout^ flyout = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            auto root = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
+                LR"(<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                          xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <Button x:Name='anchor' Content='Anchor'
+                                Width='120' Height='32'
+                                HorizontalAlignment='Left' VerticalAlignment='Bottom' />
+                    </Grid>)"));
+            TestServices::WindowHelper->WindowContent = root;
+            anchor = safe_cast<xaml_controls::Button^>(root->FindName(L"anchor"));
+
+            flyout = ref new xaml_controls::Flyout();
+            flyout->ShouldConstrainToRootBounds = true;
+            flyout->Placement = xaml_primitives::FlyoutPlacementMode::RightEdgeAlignedTop;
+
+            auto content = ref new xaml_controls::StackPanel();
+            content->Width = 100;
+            for (int i = 0; i < 6; i++)
+            {
+                auto tb = ref new xaml_controls::TextBlock();
+                tb->Text = "Item #" + i.ToString();
+                tb->Padding = ThicknessHelper::FromLengths(8, 6, 8, 6);
+                content->Children->Append(tb);
+            }
+            flyout->Content = content;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        xaml_primitives::FlyoutShowOptions^ showOptions = nullptr;
+        RunOnUIThread([&]()
+        {
+            showOptions = ref new xaml_primitives::FlyoutShowOptions();
+            showOptions->Position = wf::Point(static_cast<float>(anchor->ActualWidth), 0.0f);
+            showOptions->ExclusionRect = wf::Rect(
+                0.0f,
+                0.0f,
+                static_cast<float>(anchor->ActualWidth),
+                static_cast<float>(anchor->ActualHeight));
+        });
+
+        FlyoutHelper::ShowFlyoutWithOptions(flyout, anchor, showOptions);
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            wf::Rect anchorBounds = ControlHelper::GetBounds(safe_cast<xaml::FrameworkElement^>(anchor));
+
+            wfc::IVectorView<xaml_primitives::Popup^>^ popups = xaml_media::VisualTreeHelper::GetOpenPopupsForXamlRoot(
+                TestServices::WindowHelper->WindowContent->XamlRoot);
+            VERIFY_ARE_EQUAL(1u, popups->Size);
+            auto presenter = safe_cast<xaml::FrameworkElement^>(popups->GetAt(0)->Child);
+            wf::Rect flyoutBounds = ControlHelper::GetBounds(presenter);
+
+            const float anchorTop = anchorBounds.Y;
+            const float anchorBottom = anchorBounds.Y + anchorBounds.Height;
+            const float flyoutTop = flyoutBounds.Y;
+            const float flyoutBottom = flyoutBounds.Y + flyoutBounds.Height;
+            const float delta = flyoutBottom - anchorBottom;
+            const float absDelta = (delta < 0.0f) ? -delta : delta;
+
+            LOG_OUTPUT(L"Anchor bounds: top=%f bottom=%f height=%f",
+                anchorTop, anchorBottom, anchorBounds.Height);
+            LOG_OUTPUT(L"Flyout bounds: top=%f bottom=%f height=%f",
+                flyoutTop, flyoutBottom, flyoutBounds.Height);
+            LOG_OUTPUT(L"Alignment delta (flyout.Bottom - anchor.Bottom): %f", delta);
+
+            VERIFY_IS_LESS_THAN(flyoutTop, anchorTop);
+            VERIFY_IS_LESS_THAN(absDelta, 1.5f);
+            VERIFY_IS_GREATER_THAN(flyoutBottom, anchorTop + 1.5f);
+        });
+
+        FlyoutHelper::HideFlyout(flyout);
+    }
+
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::Flyout
 

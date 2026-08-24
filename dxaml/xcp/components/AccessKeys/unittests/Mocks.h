@@ -42,7 +42,7 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     class MockAKOwner;
 
     MOCK_CLASS(MockCDO, CDependencyObject)
-        MockAKOwner* m_pOwner;
+        MockAKOwner* m_pOwner = nullptr; // PREfast C26495 - initialize member
 
         xref::details::control_block* EnsureControlBlock()
         {

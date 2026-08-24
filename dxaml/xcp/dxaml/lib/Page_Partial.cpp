@@ -298,13 +298,6 @@ Page::InvokeOnNavigatedTo(
     IFC(NavigationHelpers::CreateINavigationEventArgs(pContentIInspectable, pParameterIInspectable, pTransitionInfo, descriptor, navigationMode, &spINavigationEventArgs));
     IFC(OnNavigatedToProtected(spINavigationEventArgs.Get()));
 
-
-    // Set Automation Page Navigation complete event.
-    if (DXamlCore::GetCurrent()->HasPageNavigationCompleteEvent())
-    {
-        IFC(DXamlCore::GetCurrent()->SetPageNavigationCompleteEvent());
-    }
-
 Cleanup:
     RRETURN(hr);
 }

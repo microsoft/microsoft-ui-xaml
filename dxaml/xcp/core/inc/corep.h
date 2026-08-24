@@ -570,6 +570,7 @@ public:
     ixp::IContentIslandStatics* GetContentIslandStatics();
     ixp::IInputFocusControllerStatics* GetInputFocusControllerStatics();
 
+    ixp::IInputKeyboardSourceStatics* GetInputKeyboardSourceStatics();
     ixp::IInputKeyboardSourceStatics2* GetInputKeyboardSourceStatics2();
     ixp::IInputPreTranslateKeyboardSourceStatics* GetInputPreTranslateKeyboardSourceStatics();
     ixp::IInputPointerSourceStatics* GetInputPointerSourceStatics();
@@ -621,6 +622,7 @@ private:
     wrl::ComPtr<ixp::IContentIslandStatics> m_contentIslandStatics;
     wrl::ComPtr<ixp::IInputFocusControllerStatics> m_inputFocusControllerStatics;
 
+    wrl::ComPtr<ixp::IInputKeyboardSourceStatics> m_inputKeyboardSourceStatics;
     wrl::ComPtr<ixp::IInputKeyboardSourceStatics2> m_inputKeyboardSourceStatics2;
     wrl::ComPtr<ixp::IInputPreTranslateKeyboardSourceStatics> m_inputPreTranslateKeyboardSourceStatics;
     wrl::ComPtr<ixp::IInputPointerSourceStatics> m_inputPointerSourceStatics;
@@ -1493,7 +1495,7 @@ public:
     void SetDCompDeviceLeakDetectionEnabled(bool enableLeakDetection) { m_isDCompLeakDetectionEnabled = enableLeakDetection; }
 
     void GetDCompDevice(
-        _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+        _Outptr_ IDCompositionDevice2 **ppDCompDevice
         ) const;
 
     _Check_return_ HRESULT SetWindowSizeOverride(

@@ -1089,6 +1089,10 @@ namespace CoreImports
         _In_ CDataTemplate* pNativeInstance,
         _Outptr_ CDependencyObject** returnValue);
 
+    _Check_return_ HRESULT CDataTemplate_SetHasElementFactory(
+        _In_ CDataTemplate* pNativeInstance,
+        _In_ bool hasElementFactory);
+
     // Build a LayoutTransition visual
     // pTargetUIElement: A pointer to the visual content to be displayed on the parent layer. This visual must be in the visual tree.
     //                   It will be hidden from view until LayoutTransitionElement_Destroy is called. However, the visual will continue to

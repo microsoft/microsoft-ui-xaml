@@ -24,7 +24,7 @@ namespace DirectUI
 
         IFACEMETHOD_(bool, IsDragDropInProgress)() override;
 
-        IFACEMETHOD_(void, GetDCompDevice)(_Outptr_ IDCompositionDesktopDevice **ppDCompDevice) const override;
+        IFACEMETHOD_(void, GetDCompDevice)(_Outptr_ IDCompositionDevice2 **ppDCompDevice) const override;
 
         IFACEMETHOD(MarkDeviceInstanceLost)() const override;
         IFACEMETHOD(GetD3D11GraphicsDeviceAddress)(_Out_ INT64* ppCD3D11Device) const override;
@@ -298,6 +298,7 @@ namespace DirectUI
 
         // XamlOptionalChanges test hooks
         IFACEMETHOD_(void, ResetOptionalChanges)() override;
+        _Check_return_ HRESULT ResetOptionalChangesImpl();
 
         IFACEMETHOD(PauseNewDispatchForTest)() override;
         IFACEMETHOD(ResumeNewDispatchForTest)() override;

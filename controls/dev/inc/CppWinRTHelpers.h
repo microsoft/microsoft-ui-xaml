@@ -74,6 +74,30 @@ inline bool TryGetDependencyPropertyValue(
     return false;
 }
 
+// Sets a dependency property via the ABI projection, returning true on success. Avoids the throwing
+// C++/WinRT wrapper (and its hresult_error noise) when the dxaml peer is disconnected, e.g. during shutdown.
+inline bool TrySetDependencyPropertyValue(
+    winrt::DependencyObject const& dependencyObject,
+    winrt::DependencyProperty const& dependencyProperty,
+    winrt::IInspectable const& value
+)
+{
+    if (dependencyObject)
+    {
+        com_ptr<winrt::impl::abi<winrt::Microsoft::UI::Xaml::IDependencyObject>::type> dependencyObjectAbi;
+        HRESULT hr = dependencyObject.as<::IUnknown>()->QueryInterface(winrt::impl::guid_v<winrt::Microsoft::UI::Xaml::IDependencyObject>, dependencyObjectAbi.put_void());
+        if (SUCCEEDED(hr) && dependencyObjectAbi)
+        {
+            hr = dependencyObjectAbi->SetValue(winrt::get_abi(dependencyProperty), winrt::get_abi(value));
+            if (SUCCEEDED(hr))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 // Helper to provide default values and boxing without differences at the call sites
 template <typename T, typename Enable = void>
 struct ValueHelper
@@ -334,7 +358,13 @@ struct PropertyChanged_revoker
 
         if (auto object = m_object.get())
         {
-            object.UnregisterPropertyChangedCallback(m_property, m_token);
+            // Unregister via the IDependencyObject ABI (discarding the HRESULT) instead of the projected
+            // call, which check_hresult-throws on a disconnected peer; revoke() is noexcept, so a throw would terminate.
+            com_ptr<winrt::impl::abi<winrt::Microsoft::UI::Xaml::IDependencyObject>::type> dependencyObjectAbi;
+            if (SUCCEEDED(object.as<::IUnknown>()->QueryInterface(winrt::impl::guid_v<winrt::Microsoft::UI::Xaml::IDependencyObject>, dependencyObjectAbi.put_void())) && dependencyObjectAbi)
+            {
+                dependencyObjectAbi->UnregisterPropertyChangedCallback(winrt::get_abi(m_property), m_token);
+            }
         }
 
         m_object = nullptr;

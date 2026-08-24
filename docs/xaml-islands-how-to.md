@@ -44,7 +44,7 @@ On the app side, the steps to hook it up to the XAML content depends on the fram
 
 1. Add a reference to WinUI 3, 
    [Microsoft.Toolkit.Win32.UI.XamlApplication.vcxproj](../src/XamlHost/Microsoft.Toolkit.Win32.UI.XamlApplication/Microsoft.Toolkit.Win32.UI.XamlApplication.vcxproj)
-   (or to the corresponding NuGet package once we have one), and to the the XAML application project (e.g., 
+   (or to the corresponding NuGet package once we have one), and to the XAML application project (e.g., 
    [XamlApplicationCppWinRT.vcxproj](../Samples/XamlIslands/Shared/XamlApplicationCppWinRT/XamlApplicationCppWinRT.vcxproj)).
 2. In the Win32 application (see [this source code](../Samples/XamlIslands/Win32/XamlIslands.Win32.cpp) for an example):
     1. Create an `App` object;
@@ -62,7 +62,7 @@ On the app side, the steps to hook it up to the XAML content depends on the fram
    [Microsoft.Toolkit.Wpf.UI.XamlHost.csproj](../src/XamlHost/Microsoft.Toolkit.Wpf.UI.XamlHost/Microsoft.Toolkit.Wpf.UI.XamlHost.csproj)
    or 
    [Microsoft.Toolkit.Forms.UI.XamlHost.csproj](../src/XamlHost/Microsoft.Toolkit.Forms.UI.XamlHost/Microsoft.Toolkit.Forms.UI.XamlHost.csproj) 
-   (depending on framework, or to the corresponding NuGet package once we have one), and to the the XAML application 
+   (depending on framework, or to the corresponding NuGet package once we have one), and to the XAML application 
    project (e.g., 
    [XamlApplicationCSharp.vcxproj](../Samples/XamlIslands/Shared/XamlApplicationCSharp/XamlApplicationCSharp.csproj)).
 2. In the non-XAML application (see [this WPF markup](../Samples/XamlIslands/WPF/MainWindow.xaml) for an example):

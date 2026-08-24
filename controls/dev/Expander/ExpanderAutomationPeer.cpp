@@ -51,7 +51,7 @@ winrt::AutomationControlType ExpanderAutomationPeer::GetAutomationControlTypeCor
 
 winrt::AutomationPeer ExpanderAutomationPeer::GetExpanderToggleButtonPeer()
 {
-    // We are not going to call the overriden one because that one doesn't have the toggle button.
+    // We are not going to call the overridden one because that one doesn't have the toggle button.
     auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
 
     for (const auto& peer : childrenPeers)

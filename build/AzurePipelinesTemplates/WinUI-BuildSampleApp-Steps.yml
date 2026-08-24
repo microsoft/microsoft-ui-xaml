@@ -1,0 +1,96 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  solution: ''
+  msBuildArgs: ''
+  msbuildInstallDir: $(_buildToolsDirectory)
+  artifactsRoot: $(Build.SourcesDirectory)\BuildOutput\
+  displayName: ''
+  condition: 'always()'
+  useDotNet: false
+  MUXFinalRelease: false
+  runStaticAnalysis: true
+  # NuGet.config used for restore. Defaults to the repo-root config (internal
+  # WinUI.Dependencies feed, rewritten to the public shine-oss WinUI-Dependencies
+  # feed for GitHub-backed runs). Sample apps that carry their own config (e.g.
+  # WinUIGallery, which restores from the public MUX-Dependencies feed) override this.
+  restoreConfigFile: $(Build.SourcesDirectory)\nuget.config
+
+steps:
+- task: NuGetAuthenticate@1
+  
+- ${{ if eq(parameters.useDotNet, false) }}:
+  - task: MSBuild@1
+    displayName: 'Nuget Restore ${{ parameters.solution }}'
+    condition: and(succeeded(), ${{ parameters.condition }})
+    inputs:
+      solution: ${{ parameters.solution }}
+      msbuildArguments: >
+        /t:restore
+        /p:RestoreConfigFile=${{ parameters.restoreConfigFile }}
+        /p:Platform=$(buildPlatform)
+        /p:WinUIVersion=$(versionFinal)
+      configuration: '$(buildConfiguration)'
+    env:
+      # Provide the internal dependencies feed so NuGet can expand the
+      # %WinUILKGDependenciesFeedUri% token in perf\scenarios\nuget.config.
+      # Secret variables from the WinUI-InternalFeed group are not exposed as
+      # environment variables automatically, so map it explicitly here.
+      WinUILKGDependenciesFeedUri: $(WinUILKGDependenciesFeedUri)
+
+  - task: MSBuild@1
+    displayName: 'Build ${{ parameters.displayName }}'
+    condition: ${{ parameters.condition }}
+    inputs:
+      msbuildLocationMethod: 'location'
+      msbuildLocation: ${{ parameters.msbuildInstallDir }}\MSBuild\Current\Bin\amd64\MSBuild.exe
+      solution: ${{ parameters.solution }}
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+      enableDefaultLogger: false
+      restoreNuGetPackages: false
+      msbuildArguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(versionFinal) /p:ArtifactsRoot=${{ parameters.artifactsRoot }} /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).binlog /restore /p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}
+    env:
+      LkgVcToolsName: $(compilerOverridePackageName)
+      LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
+      # Provide the internal dependencies feed so NuGet's /restore can expand the
+      # %WinUILKGDependenciesFeedUri% token in perf\scenarios\nuget.config.
+      WinUILKGDependenciesFeedUri: $(WinUILKGDependenciesFeedUri)
+
+  # When "${{ parameters.condition }}" disables the MSBuild above, "ne(parameters.MUXFinalRelease, true)" below will disable the PREFast scan accordingly.
+  - ${{ if and(eq(parameters.runStaticAnalysis, 'true'), ne(parameters.MUXFinalRelease, true)) }}:
+    - task: SDLNativeRules@3
+      condition: and(succeeded(), eq(variables['buildConfiguration'], 'Release'), eq(variables['buildPlatform'], 'x64'))
+      displayName: Run the PREfast SDL Native Rules 
+      inputs:
+        # Using the auto parameter below is simpler, but unfortunately during the PREFast scan, "Error C1002: compiler is out of heap space in pass 2" was hit.
+        # Working around that error using a simplified msbuild commandline for now.
+        #userProvideBuildInfo: auto
+        setupCommandlines: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsMSBuildCmd.bat"'
+        msBuildArchitecture: amd64
+        msBuildCommandline: 'msbuild.exe ${{ parameters.msBuildArgs }} /nologo /nr:false /p:configuration=release /p:platform=$(buildPlatform) $(Build.SourcesDirectory)\${{ parameters.solution }}'
+        # Generally speaking, we leave it to the external repos to scan the bits in their packages.
+        excludedPaths: |
+          $(Build.SourcesDirectory)\packages
+        # Explicitly specify the EO-compliant rule set, as the default Sdl.Recommended.Warning.ruleset is not EO-compliant.
+        rulesetName: Custom
+        customRuleset: $(Agent.ToolsDirectory)\NativeCompilerStaticAnalysisRuleset\mandatory_to_fix.ruleset
+        policyName: 'WindowsUndocked'
+      continueOnError: true
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      # PREFast scanning for sample apps is temporarily disabled to avoid pipeline timeouts.
+      enabled: false
+
+- ${{ if eq(parameters.useDotNet, true) }}:
+  - task: DotNetCoreCLI@2
+    displayName: 'Build ${{ parameters.displayName}} using dotnet build'
+    condition: ${{ parameters.condition }}
+    inputs:
+      command: build
+      projects: ${{ parameters.solution }}
+      includeNuGetOrg: false
+      feedsToUse: config
+      restoreArguments: >
+        --configfile ${{ parameters.restoreConfigFile }}
+      arguments: ${{ parameters.msBuildArgs }} /p:WinUIVersion=$(versionFinal) -p:ArtifactsRoot=${{ parameters.artifactsRoot }} -binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.displayName }}.$(buildPlatform).$(buildConfiguration).dotnet.binlog -p:MUXFinalRelease=${{ parameters.MUXFinalRelease }}

@@ -1,0 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+import "Page1.idl";
+
+namespace WinUICppDesktopSampleApp
+{
+    [default_interface]
+    runtimeclass Page2 : WinUICppDesktopSampleApp.Page1
+    {
+        Page2();
+        Boolean FooBool{ get; set; };
+    }
+}

@@ -3,7 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Image x:Name="imageElement">
         <Image.Source>
-            <BitmapImage UriSource="ms-appx:///resources/native/external/foundation/graphics/image/Rainier_444_2048x1536.jpg"/>
+            <BitmapImage UriSource="ms-appx:///resources/native/external/foundation/graphics/image/rainier_2048x1536.png"/>
         </Image.Source>
     </Image>
 </Grid>

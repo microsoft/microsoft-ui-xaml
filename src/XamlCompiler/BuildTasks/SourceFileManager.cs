@@ -92,6 +92,17 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
         }
 
+        public void MarkApplicationFilesDirty()
+        {
+            foreach (TaskItemFilename tif in ProjectXamlTaskItems)
+            {
+                if (tif.IsApplication)
+                {
+                    tif.IsForcedOutOfDate = true;
+                }
+            }
+        }
+
         public void PropagateOutOfDateStatus(DirectUI.DirectUISchemaContext context)
         {
             HashSet<string> outOfDateClasses = null;

@@ -186,7 +186,7 @@ _Check_return_ HRESULT
 CUIDMContainer::GetManipulatedElement(
     _In_opt_ CDependencyObject* pPointedElement,
     _In_opt_ CUIElement* pChildElement,
-    _Outptr_ CUIElement** ppManipulatedElement) const
+    _Outptr_result_maybenull_ CUIElement** ppManipulatedElement) const  // null on success when the owning UIElement weakref is dead
 {
     HRESULT hr = S_OK;
     CUIElement* pManipulatedElement = nullptr;
@@ -239,6 +239,10 @@ CUIDMContainer::GetManipulationViewport(
     if (pBounds)
     {
         pBounds->X = pBounds->Y = pBounds->Width = pBounds->Height = 0.0f;
+    }
+    if (pInputTransform)
+    {
+        pInputTransform->SetToIdentity();   // PREfast C6101 - _Out_opt_ pInputTransform must be initialized on all paths
     }
     if (pTouchConfiguration)
     {

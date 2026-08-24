@@ -120,6 +120,7 @@ private:
     void RecycleEvents(bool useSafeGet = false);
 
     double CoerceValueBetweenMinAndMax(double value);
+    double CoercePlaceholderValueBetweenMinAndMax(double value);
 
     float RenderingRatingFontSize();
     float ActualRatingFontSize();

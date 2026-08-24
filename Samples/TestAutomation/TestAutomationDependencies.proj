@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AdHocApp>false</AdHocApp>
+  </PropertyGroup>
+
+  <!-- Builds the test automation components required to run the Scenario App test automation -->
+  
+  <ItemGroup >
+    <ProjectReference Include="$(ProjectRoot)\dxaml\test\infra\taefhostappnetcore\taefhostappnetcore.csproj" LinkLibraryDependencies="false" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(ProjectRoot)\dxaml\test\infra\BinplaceTestDependencies.csproj" LinkLibraryDependencies="false" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(ProjectRoot)\controls\test\MUXControls.Test\MUXControls.Test.csproj" LinkLibraryDependencies="false" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+</Project>

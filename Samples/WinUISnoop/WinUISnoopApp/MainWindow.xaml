@@ -1,0 +1,122 @@
+<Window
+    x:Class="WinUISnoopApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinUISnoopApp"
+    xmlns:controls="using:WinUISnoopApp.Controls"
+    xmlns:data="using:WinUISnoopApp.SnoopData"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="RootLayout" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <!-- Custom title bar -->
+        <Grid x:Name="AppTitleBar" Height="32">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftInsetColumn" Width="0" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition x:Name="RightInsetColumn" Width="0" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="1" Text="WinUI Snoop" VerticalAlignment="Center" FontSize="12" Margin="12,0,0,0" />
+            <Grid x:Name="TitleBarDragRegion" Grid.Column="2" Background="Transparent" />
+        </Grid>
+
+        <!-- Command bar -->
+        <Grid Grid.Row="1" Padding="8,8" Background="{ThemeResource ControlFillColorTertiaryBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                        PointerPressed="PickPressed"
+                        PointerCaptureLost="PickCaptureLost"
+                        PointerReleased="PickReleased"
+                        PointerMoved="PickMoved"
+                        ToolTipService.ToolTip="Drag over a WinUI window to connect">
+                <FontIcon Glyph="&#xF8AA;" FontFamily="Segoe MDL2 Assets" FontSize="14" VerticalAlignment="Center" />
+                <TextBlock x:Name="tbConnectedStatus" Text="Drag to select target process" FontSize="12" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <ToggleButton
+                Grid.Column="2"
+                x:Name="themeToggleButton"
+                VerticalAlignment="Center"
+                Padding="8,4"
+                Click="ThemeToggleButton_Click"
+                ToolTipService.ToolTip="{x:Bind ThemeToggleTooltip, Mode=OneWay}">
+                <FontIcon Glyph="&#xE793;" FontFamily="Segoe MDL2 Assets" FontSize="14" />
+            </ToggleButton>
+        </Grid>
+
+        <!-- Main content -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Column="0"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          Margin="0 0 4 0">
+                <TreeView x:Name="treeView"
+                          Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                          ItemsSource="{x:Bind DataSource}"
+                          SelectionChanged="TreeSelectionChanged"
+                          PointerMoved="TreeViewPointerMoved"
+                          PointerExited="TreeViewPointerExited"
+                          CornerRadius="0 4 0 0"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                    <TreeView.ItemTemplate>
+                        <DataTemplate x:DataType="data:TreeItem">
+                            <TreeViewItem ItemsSource="{x:Bind Children}" Content="{x:Bind Name}" IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}" MinHeight="12">
+                                <TreeViewItem.ContextFlyout>
+                                    <MenuFlyout>
+                                        <MenuFlyoutItem Text="Copy Instance ID" Click="CopyInstanceId_Click" Tag="{x:Bind}" />
+                                        <MenuFlyoutSeparator />
+                                        <MenuFlyoutItem Text="Expand SubTree" Click="ExpandSubTree_Click" Tag="{x:Bind}" />
+                                        <MenuFlyoutItem Text="Collapse SubTree" Click="CollapseSubTree_Click" Tag="{x:Bind}" />
+                                        <MenuFlyoutSeparator />
+                                        <MenuFlyoutSubItem Text="Export Element XAML">
+                                            <MenuFlyoutItem Text="Non-default properties only" Click="ExportElementXaml_Click" Tag="{x:Bind}" />
+                                            <MenuFlyoutItem Text="Include all properties" Click="ExportElementXamlAll_Click" Tag="{x:Bind}" />
+                                        </MenuFlyoutSubItem>
+                                        <MenuFlyoutSubItem Text="Export SubTree XAML">
+                                            <MenuFlyoutItem Text="Non-default properties only" Click="ExportSubTreeXaml_Click" Tag="{x:Bind}" />
+                                            <MenuFlyoutItem Text="Include all properties" Click="ExportSubTreeXamlAll_Click" Tag="{x:Bind}" />
+                                        </MenuFlyoutSubItem>
+                                    </MenuFlyout>
+                                </TreeViewItem.ContextFlyout>
+                            </TreeViewItem>
+                        </DataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
+            </ScrollViewer>
+
+            <Border Grid.Column="1" BorderThickness="1,0,0,0" Background="{ThemeResource LayerOnMicaBaseAltFillColorTransparentBrush}" CornerRadius="0 0 0 0">
+                <TabView x:Name="rightTabView" IsAddTabButtonVisible="False" CanReorderTabs="False" CanDragTabs="False" TabWidthMode="Equal">
+                    <TabView.TabItems>
+                        <TabViewItem Header="Properties" IsClosable="False">
+                            <controls:PropertiesPane
+                                DisplayedProperties="{x:Bind DisplayedProperties, Mode=OneWay}"
+                                SelectedProperty="{x:Bind SelectedProperty, Mode=TwoWay}"
+                                SelectedPropertyName="{x:Bind SelectedPropertyName, Mode=OneWay}"
+                                PropertyValueText="{x:Bind PropertyValueText, Mode=TwoWay}"
+                                PropertyFilterText="{x:Bind PropertyNameFilter, Mode=TwoWay}"
+                                PropertyValueSubmitted="PropertiesPane_PropertyValueSubmitted" />
+                        </TabViewItem>
+                    </TabView.TabItems>
+                </TabView>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

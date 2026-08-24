@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemGroup Condition="'$(UseUAP)' == 'true'">
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="[$(MicrosoftNETCoreUniversalWindowsPlatformVersion)]" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseWinUI)' == 'true'">
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="[$(WinUIVersion)]" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+
+  <Import Project="AppVersion.targets" />
+</Project>

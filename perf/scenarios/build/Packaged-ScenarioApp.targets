@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemGroup Condition="'$(UseWinUI)' == 'true'">
+    <PackageReference Include="Microsoft.WindowsAppSDK.WinUI" Version="[$(WinUIVersion)]" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <AppxPackageDir>$(AppxPackageDirOverride)</AppxPackageDir>
+  </PropertyGroup>
+
+  <Import Project="AppVersion.targets" />
+</Project>

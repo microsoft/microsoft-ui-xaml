@@ -3519,9 +3519,23 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
             // the menu target top position is set to the begin of the screen position.
             if (verticalOffset > availableRect.Y)
             {
-                verticalOffset = verticalOffset - DoubleUtil::Min(
+                // For side placements (Left/Right) with an exclusion rect,
+                // verticalOffset is the anchor's top edge, not its bottom.
+                // Use exclusionRect.Bottom so the flipped flyout aligns to
+                // the anchor's bottom edge.
+                double bottomAlignmentY = verticalOffset;
+                const bool sidePlacement =
+                    (majorPlacementMode == FlyoutBase::MajorPlacementMode::Left ||
+                     majorPlacementMode == FlyoutBase::MajorPlacementMode::Right);
+                if (sidePlacement && !RectUtil::GetIsEmpty(m_exclusionRect) &&
+                    std::abs(verticalOffset - m_exclusionRect.Y) <= 1.0)
+                {
+                    bottomAlignmentY = m_exclusionRect.Y + m_exclusionRect.Height;
+                }
+
+                verticalOffset = bottomAlignmentY - DoubleUtil::Min(
                     presenterSize.Height,
-                    DoubleUtil::Max(0, targetPoint.Y - availableRect.Y));
+                    DoubleUtil::Max(0, bottomAlignmentY - availableRect.Y));
             }
             else // if it spans two monitors, make it start at the second.
             {
@@ -3533,7 +3547,20 @@ _Check_return_ HRESULT FlyoutBase::UpdateTargetPosition(
             // Update the target vertical position if the target is out of the available rect
             if (m_isPositionedAtPoint)
             {
-                verticalOffset -= DoubleUtil::Min(presenterSize.Height, verticalOffset);
+                // Same bottom-alignment correction as the windowed branch above.
+                // The non-windowed branch implicitly treats availableRect.Y as 0,
+                // so the clamp's second argument simplifies to bottomAlignmentY.
+                double bottomAlignmentY = verticalOffset;
+                const bool sidePlacement =
+                    (majorPlacementMode == FlyoutBase::MajorPlacementMode::Left ||
+                     majorPlacementMode == FlyoutBase::MajorPlacementMode::Right);
+                if (sidePlacement && !RectUtil::GetIsEmpty(m_exclusionRect) &&
+                    std::abs(verticalOffset - m_exclusionRect.Y) <= 1.0)
+                {
+                    bottomAlignmentY = m_exclusionRect.Y + m_exclusionRect.Height;
+                }
+
+                verticalOffset = bottomAlignmentY - DoubleUtil::Min(presenterSize.Height, bottomAlignmentY);
             }
             else
             {

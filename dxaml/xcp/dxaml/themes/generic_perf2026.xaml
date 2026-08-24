@@ -7482,216 +7482,320 @@
                     <Grid x:Name="Root">
 
                         <Grid.Resources>
-                            <ControlTemplate x:Key="RepeatButtonTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="Transparent">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
 
-                                </Grid>
-                            </ControlTemplate>
-                            <ControlTemplate x:Key="HorizontalIncrementTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
-                                            <VisualState x:Name="PointerOver">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                            <VisualState x:Name="Disabled">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE0E3;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                            <!--
+                                ScrollBar's RepeatButtons have simple Grids in their templates that don't have any {TemplateBinding}s to any properties of
+                                the RepeatButton, but they will still pick up the default RepeatButton style for properties like Background. Those properties
+                                will evaluate ThemeResource and StaticResource references for values that are never used in the template. Override all those
+                                properties to skip all the lookups.
+                            -->
+                            <Style x:Key="ScrollBarRepeatButtonStyle" TargetType="RepeatButton">
+                                <Setter Property="Background" Value="{x:Null}" />
+                                <Setter Property="Foreground" Value="{x:Null}" />
+                                <Setter Property="BorderBrush" Value="{x:Null}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="Padding" Value="11,5,11,6" />
+                                <Setter Property="FontFamily" Value="{x:Null}" />
+                                <Setter Property="FontSize" Value="14" />
+                                <!-- UseSystemFocusVisuals is left alone -->
+                                <Setter Property="CornerRadius" Value="4" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Grid x:Name="Root" Background="Transparent">
+                                                <VisualStateManager.VisualStateGroups>
+                                                    <VisualStateGroup x:Name="CommonStates">
+                                                        <VisualState x:Name="Normal" />
+                                                    </VisualStateGroup>
+                                                </VisualStateManager.VisualStateGroups>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
 
-                                </Grid>
-                            </ControlTemplate>
-                            <ControlTemplate x:Key="HorizontalDecrementTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
-                                            <VisualState x:Name="PointerOver">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                            <VisualState x:Name="Disabled">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE0E2;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" MirroredWhenRightToLeft="True" />
+                            <Style x:Key="ScrollBarHorizontalIncrementStyle" TargetType="RepeatButton">
+                                <Setter Property="Background" Value="{x:Null}" />
+                                <Setter Property="Foreground" Value="{x:Null}" />
+                                <Setter Property="BorderBrush" Value="{x:Null}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="Padding" Value="0,0,4,0" />
+                                <Setter Property="FontFamily" Value="{x:Null}" />
+                                <Setter Property="FontSize" Value="14" />
+                                <!-- UseSystemFocusVisuals is left alone -->
+                                <Setter Property="CornerRadius" Value="4" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                                <VisualStateManager.VisualStateGroups>
+                                                    <VisualStateGroup x:Name="CommonStates">
+                                                        <VisualState x:Name="Normal" />
+                                                        <VisualState x:Name="PointerOver">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Pressed">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Disabled">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                    </VisualStateGroup>
+                                                </VisualStateManager.VisualStateGroups>
+                                                <FontIcon x:Name="Arrow"
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    Glyph="&#xE0E3;"
+                                                    Foreground="{ThemeResource ScrollBarButtonArrowForeground}"
+                                                    FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}"
+                                                    MirroredWhenRightToLeft="True" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
 
-                                </Grid>
-                            </ControlTemplate>
-                            <ControlTemplate x:Key="VerticalIncrementTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
-                                            <VisualState x:Name="PointerOver">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                            <VisualState x:Name="Disabled">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE0E5;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" />
+                            <Style x:Key="ScrollBarHorizontalDecrementStyle" TargetType="RepeatButton">
+                                <Setter Property="Background" Value="{x:Null}" />
+                                <Setter Property="Foreground" Value="{x:Null}" />
+                                <Setter Property="BorderBrush" Value="{x:Null}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="Padding" Value="4,0,0,0" />
+                                <Setter Property="FontFamily" Value="{x:Null}" />
+                                <Setter Property="FontSize" Value="14" />
+                                <!-- UseSystemFocusVisuals is left alone -->
+                                <Setter Property="CornerRadius" Value="4" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                                <VisualStateManager.VisualStateGroups>
+                                                    <VisualStateGroup x:Name="CommonStates">
+                                                        <VisualState x:Name="Normal" />
+                                                        <VisualState x:Name="PointerOver">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Pressed">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Disabled">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                    </VisualStateGroup>
+                                                </VisualStateManager.VisualStateGroups>
+                                                <FontIcon x:Name="Arrow"
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    Glyph="&#xE0E2;"
+                                                    Foreground="{ThemeResource ScrollBarButtonArrowForeground}"
+                                                    FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}"
+                                                    MirroredWhenRightToLeft="True" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
 
-                                </Grid>
-                            </ControlTemplate>
-                            <ControlTemplate x:Key="VerticalDecrementTemplate" TargetType="RepeatButton">
-                                <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
-                                            <VisualState x:Name="PointerOver">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                            <VisualState x:Name="Disabled">
-                                                <Storyboard>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
-                                                        <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
-                                                    </ObjectAnimationUsingKeyFrames>
-                                                </Storyboard>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-                                    <FontIcon x:Name="Arrow" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE0E4;" Foreground="{ThemeResource ScrollBarButtonArrowForeground}" FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" />
+                            <Style x:Key="ScrollBarVerticalIncrementStyle" TargetType="RepeatButton">
+                                <Setter Property="Background" Value="{x:Null}" />
+                                <Setter Property="Foreground" Value="{x:Null}" />
+                                <Setter Property="BorderBrush" Value="{x:Null}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="Padding" Value="4,0,0,0" />
+                                <Setter Property="FontFamily" Value="{x:Null}" />
+                                <Setter Property="FontSize" Value="14" />
+                                <!-- UseSystemFocusVisuals is left alone -->
+                                <Setter Property="CornerRadius" Value="4" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                                <VisualStateManager.VisualStateGroups>
+                                                    <VisualStateGroup x:Name="CommonStates">
+                                                        <VisualState x:Name="Normal" />
+                                                        <VisualState x:Name="PointerOver">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Pressed">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Disabled">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                    </VisualStateGroup>
+                                                </VisualStateManager.VisualStateGroups>
+                                                <FontIcon x:Name="Arrow"
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    Glyph="&#xE0E5;"
+                                                    Foreground="{ThemeResource ScrollBarButtonArrowForeground}"
+                                                    FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
 
-                                </Grid>
-                            </ControlTemplate>
+                            <Style x:Key="ScrollBarVerticalDecrementStyle" TargetType="RepeatButton">
+                                <Setter Property="Background" Value="{x:Null}" />
+                                <Setter Property="Foreground" Value="{x:Null}" />
+                                <Setter Property="BorderBrush" Value="{x:Null}" />
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="Padding" Value="0,4,0,0" />
+                                <Setter Property="FontFamily" Value="{x:Null}" />
+                                <Setter Property="FontSize" Value="14" />
+                                <!-- UseSystemFocusVisuals is left alone -->
+                                <Setter Property="CornerRadius" Value="4" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="RepeatButton">
+                                            <Grid x:Name="Root" Background="{ThemeResource ScrollBarButtonBackground}" BorderBrush="{ThemeResource ScrollBarButtonBorderBrush}">
+                                                <VisualStateManager.VisualStateGroups>
+                                                    <VisualStateGroup x:Name="CommonStates">
+                                                        <VisualState x:Name="Normal" />
+                                                        <VisualState x:Name="PointerOver">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPointerOver}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Pressed">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Disabled">
+                                                            <Storyboard>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="Background">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBackgroundPressed}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Root" Storyboard.TargetProperty="BorderBrush">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonBorderBrushDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Arrow" Storyboard.TargetProperty="Foreground">
+                                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ScrollBarButtonArrowForegroundDisabled}" />
+                                                                </ObjectAnimationUsingKeyFrames>
+                                                            </Storyboard>
+                                                        </VisualState>
+                                                    </VisualStateGroup>
+                                                </VisualStateManager.VisualStateGroups>
+                                                <FontIcon x:Name="Arrow"
+                                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                    Glyph="&#xE0E4;"
+                                                    Foreground="{ThemeResource ScrollBarButtonArrowForeground}"
+                                                    FontSize="{ThemeResource ScrollBarButtonArrowIconFontSize}" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+
+                            <!--
+                                The ControlTemplates for Thumb do use TemplateBindings for Background and BorderBrush, and the default Thumb style doesn't have
+                                any other properties that are resource lookups, so there's no need to override any other properties on the style.
+                            -->
                             <ControlTemplate x:Key="VerticalThumbTemplate" TargetType="Thumb">
                                 <Rectangle x:Name="ThumbVisual" Fill="{TemplateBinding Background}">
                                     <VisualStateManager.VisualStateGroups>
@@ -7973,15 +8077,15 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Rectangle x:Name="HorizontalTrackRect" Opacity="0" Grid.ColumnSpan="5" Margin="0" StrokeThickness="{ThemeResource ScrollBarTrackBorderThemeThickness}" Fill="{ThemeResource ScrollBarTrackFill}" Stroke="{ThemeResource ScrollBarTrackStroke}" />
-                            <RepeatButton x:Name="HorizontalSmallDecrease" Opacity="0" Grid.Column="0" MinHeight="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalDecrementTemplate}" Width="{ThemeResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
-                            <RepeatButton x:Name="HorizontalLargeDecrease" Opacity="0" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Template="{StaticResource RepeatButtonTemplate}" Width="0" AllowFocusOnInteraction="False" />
+                            <RepeatButton x:Name="HorizontalSmallDecrease" Opacity="0" Grid.Column="0" MinHeight="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Style="{StaticResource ScrollBarHorizontalDecrementStyle}" Width="{ThemeResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
+                            <RepeatButton x:Name="HorizontalLargeDecrease" Opacity="0" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Style="{StaticResource ScrollBarRepeatButtonStyle}" Width="0" AllowFocusOnInteraction="False" />
                             <Thumb x:Name="HorizontalThumb" Opacity="0" Grid.Column="2" Background="{ThemeResource ScrollBarPanningThumbBackground}" Template="{StaticResource HorizontalThumbTemplate}" Height="{ThemeResource ScrollBarSize}" MinWidth="{ThemeResource ScrollBarSize}" AutomationProperties.AccessibilityView="Raw" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,1">
                                 <Thumb.RenderTransform>
                                     <CompositeTransform x:Name="HorizontalThumbTransform" ScaleX="1.0" ScaleY="{ThemeResource SmallScrollThumbScale}" TranslateX="0" TranslateY="{ThemeResource SmallScrollThumbOffset}" />
                                 </Thumb.RenderTransform>
                             </Thumb>
-                            <RepeatButton x:Name="HorizontalLargeIncrease" Opacity="0" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
-                            <RepeatButton x:Name="HorizontalSmallIncrease" Opacity="0" Grid.Column="4" MinHeight="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Template="{StaticResource HorizontalIncrementTemplate}" Width="{ThemeResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
+                            <RepeatButton x:Name="HorizontalLargeIncrease" Opacity="0" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" AllowFocusOnInteraction="False" Style="{StaticResource ScrollBarRepeatButtonStyle}" />
+                            <RepeatButton x:Name="HorizontalSmallIncrease" Opacity="0" Grid.Column="4" MinHeight="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Style="{StaticResource ScrollBarHorizontalIncrementStyle}" Width="{ThemeResource ScrollBarSize}" AllowFocusOnInteraction="False" VerticalAlignment="Center" />
 
                         </Grid>
                         <Grid x:Name="HorizontalPanningRoot" MinWidth="24" Visibility="Collapsed" Opacity="0">
@@ -7998,15 +8102,15 @@
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Rectangle x:Name="VerticalTrackRect" Opacity="0" Grid.RowSpan="5" Margin="0" StrokeThickness="{ThemeResource ScrollBarTrackBorderThemeThickness}" Fill="{ThemeResource ScrollBarTrackFill}" Stroke="{ThemeResource ScrollBarTrackStroke}" />
-                            <RepeatButton x:Name="VerticalSmallDecrease" Opacity="0" Height="{ThemeResource ScrollBarSize}" MinWidth="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="0" Template="{StaticResource VerticalDecrementTemplate}" HorizontalAlignment="Center" />
-                            <RepeatButton x:Name="VerticalLargeDecrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="0" IsTabStop="False" Interval="50" Grid.Row="1" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
+                            <RepeatButton x:Name="VerticalSmallDecrease" Opacity="0" Height="{ThemeResource ScrollBarSize}" MinWidth="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="0" Style="{StaticResource ScrollBarVerticalDecrementStyle}" HorizontalAlignment="Center" />
+                            <RepeatButton x:Name="VerticalLargeDecrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Height="0" IsTabStop="False" Interval="50" Grid.Row="1" AllowFocusOnInteraction="False" Style="{StaticResource ScrollBarRepeatButtonStyle}" />
                             <Thumb x:Name="VerticalThumb" Opacity="0" Grid.Row="2" Background="{ThemeResource ScrollBarPanningThumbBackground}" Template="{StaticResource VerticalThumbTemplate}" Width="{ThemeResource ScrollBarSize}" MinHeight="{ThemeResource ScrollBarSize}" AutomationProperties.AccessibilityView="Raw" RenderTransformOrigin="1,0.5">
                                 <Thumb.RenderTransform>
                                     <CompositeTransform x:Name="VerticalThumbTransform" ScaleX="{ThemeResource SmallScrollThumbScale}" ScaleY="1.0" TranslateX="{ThemeResource SmallScrollThumbOffset}" TranslateY="0" />
                                 </Thumb.RenderTransform>
                             </Thumb>
-                            <RepeatButton x:Name="VerticalLargeIncrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Grid.Row="3" AllowFocusOnInteraction="False" Template="{StaticResource RepeatButtonTemplate}" />
-                            <RepeatButton x:Name="VerticalSmallIncrease" Opacity="0" Height="{ThemeResource ScrollBarSize}" MinWidth="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="4" Template="{StaticResource VerticalIncrementTemplate}" HorizontalAlignment="Center" />
+                            <RepeatButton x:Name="VerticalLargeIncrease" Opacity="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsTabStop="False" Interval="50" Grid.Row="3" AllowFocusOnInteraction="False" Style="{StaticResource ScrollBarRepeatButtonStyle}" />
+                            <RepeatButton x:Name="VerticalSmallIncrease" Opacity="0" Height="{ThemeResource ScrollBarSize}" MinWidth="{ThemeResource ScrollBarSize}" IsTabStop="False" Interval="50" Margin="0" Grid.Row="4" Style="{StaticResource ScrollBarVerticalIncrementStyle}" HorizontalAlignment="Center" />
 
                         </Grid>
                         <Grid x:Name="VerticalPanningRoot" MinHeight="24" Visibility="Collapsed" Opacity="0">

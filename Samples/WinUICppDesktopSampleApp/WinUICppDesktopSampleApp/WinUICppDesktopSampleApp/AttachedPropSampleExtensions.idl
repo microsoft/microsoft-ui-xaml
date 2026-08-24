@@ -1,0 +1,13 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace WinUICppDesktopSampleApp
+{
+    [default_interface]
+    runtimeclass AttachedPropSampleExtensions
+    {
+        static Microsoft.UI.Xaml.DependencyProperty MyAttachedPropProperty { get; };
+        static Microsoft.UI.Xaml.DependencyObject GetMyAttachedProp(Microsoft.UI.Xaml.DependencyObject target);
+        static void SetMyAttachedProp(Microsoft.UI.Xaml.DependencyObject target, Microsoft.UI.Xaml.DependencyObject value);
+    }
+}

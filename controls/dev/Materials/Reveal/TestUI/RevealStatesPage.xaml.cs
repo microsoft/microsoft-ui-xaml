@@ -484,7 +484,7 @@ namespace MUXControlsTestApp
                         _compositionPropertyLogger.UnregisterProperty(_pressSpotlight, "OuterConeAngle", CompositionPropertyLogger.LoggableType.Float);
                         Array.Clear(pressLight_ValueValidationEvents, 0, 3);
 
-                        logger.Verify(hoverLight_Result && hoverLight_Result, "StateValidationResult: error occured");
+                        logger.Verify(hoverLight_Result && hoverLight_Result, "StateValidationResult: error occurred");
                     }
                 });
             });
@@ -594,7 +594,7 @@ namespace MUXControlsTestApp
                         _compositionPropertyLogger.UnregisterProperty(_hoverSpotlight, "Offset", CompositionPropertyLogger.LoggableType.Vector3);
                         Array.Clear(valueValidationEvents, 0, 1);
 
-                        logger.Verify(result, "PositionValidationResult: error occured");
+                        logger.Verify(result, "PositionValidationResult: error occurred");
                     }
                 });
             });

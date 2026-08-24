@@ -143,10 +143,8 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="XamlControlsResources.h" />
-    <ClInclude Include="XamlMember.h" />
     <ClInclude Include="XamlMetadataProvider.h" />
     <ClInclude Include="XamlMetadataProviderGenerated.h" />
-    <ClInclude Include="XamlType.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(GeneratedFilesDir)\module.g.cpp" />
@@ -159,12 +157,9 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SharedHelpers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
     <ClCompile Include="XamlControlsResources.cpp" />
-    <ClCompile Include="XamlMember.cpp" />
     <ClCompile Include="XamlMetadataProvider.cpp" />
-    <ClCompile Include="XamlType.cpp" />
     <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
     <None Include="WinRtType.tt" />
   </ItemGroup>

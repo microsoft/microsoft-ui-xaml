@@ -1,0 +1,31 @@
+﻿// Framework-internal: the private namespace (not the MUX_INTERNAL attribute) is what keeps this
+// out of every shipped WinMD. Move to MU_XCP_NAMESPACE + MUX_PREVIEW only if it is ever exposed.
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+// Numerically aligned with Microsoft.UI.Xaml.Data.SortDirection so the bridge is a trivial mapping.
+// They are still distinct WinRT types: a {Binding} between them silently fails, so map in code.
+[MUX_INTERNAL]
+[webhosthidden]
+enum SortIndicatorDirection
+{
+    None = 0,
+    Ascending = 1,
+    Descending = 2,
+};
+
+// Policy-free sort chevron. Owns no sorting behavior: consumers position it and set Direction.
+[MUX_INTERNAL]
+[webhosthidden]
+unsealed runtimeclass SortIndicator : Microsoft.UI.Xaml.Controls.Control
+{
+    SortIndicator();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::SortIndicatorDirection::None")]
+    SortIndicatorDirection Direction { get; set; };
+
+    static Microsoft.UI.Xaml.DependencyProperty DirectionProperty { get; };
+};
+
+}

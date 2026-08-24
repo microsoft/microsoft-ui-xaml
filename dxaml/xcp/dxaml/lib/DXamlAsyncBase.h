@@ -115,7 +115,8 @@ namespace DirectUI
                         Microsoft::WRL::ComPtr<DXamlAsyncBaseImpl<TComplete, TAsyncInterface, TAsyncBaseOptions>>(this),
                         &DXamlAsyncBaseImpl::CompletionDispatcherCallback);
 
-                m_spDispatcher->RunAsync(spCallback);
+                // PREfast C6031 - best-effort completion dispatch; a failed RunAsync is non-fatal here.
+                (void)m_spDispatcher->RunAsync(spCallback);
             }
 
             ctl::ComPtr<DirectUI::IDispatcher> m_spDispatcher;

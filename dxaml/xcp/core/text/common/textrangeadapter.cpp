@@ -698,7 +698,7 @@ _Check_return_ HRESULT CTextRangeAdapter::Move(_In_ UIAXcp::TextUnit unit, _In_ 
             ASSERT(startOffset <= endOffset);
             IFC(pTextContainer->GetText(startOffset, endOffset, TRUE, &cCharacters, &pCharacters, &isTakeOwnership));
 
-            // handles reserved runs in begining. Start pointer is already at begining so no need to move here
+            // handles reserved runs in beginning. Start pointer is already at beginning so no need to move here
             if (cCharacters == 0)
             {
                 moveCount = 0;
@@ -1322,7 +1322,7 @@ _Check_return_ HRESULT CTextRangeAdapter::ExpandToFormat(_In_ UIAXcp::TextPatter
         }
 
         // Retrieve the pointer corresponding to the found Element depending upon the direction, if element is nullptr
-        // that means we reached begining/end of the document and we should utilize DocumentRange's start/end pointers accordingly.
+        // that means we reached beginning/end of the document and we should utilize DocumentRange's start/end pointers accordingly.
         if (direction > 0)
         {
             // when moving fwd as we are using element before boundary for last eleemnt we don't need to use DocumentRange's end pointer.
@@ -1430,7 +1430,7 @@ _Check_return_ HRESULT CTextRangeAdapter::MoveByWord(
 }
 
 // pbIsEmptyLine is to be used only from Move methods, we could use a separate function to determine if we are on empty line, though
-// that operation is costly as it requires to retreive visible ranges and we actually can get that info right here.
+// that operation is costly as it requires to retrieve visible ranges and we actually can get that info right here.
 _Check_return_ HRESULT CTextRangeAdapter::ExpandToLine(
     _In_ UIAXcp::TextPatternRangeEndpoint endPoint,
     _In_ CTextRangeAdapter* pTextRangeAdapter,

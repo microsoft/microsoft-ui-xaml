@@ -49,7 +49,7 @@ namespace ImageTestHelper
     {
         WEX::TestExecution::SetVerifyOutput verifySettings(WEX::TestExecution::VerifyOutputSettings::LogOnlyFailures);
 
-        WCHAR picturesPath[wil::max_path_length];
+        WCHAR picturesPath[MAX_PATH] = {}; // PREfast C6386 - use SHGetFolderPathW buffer capacity
 
         VERIFY_SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_MYPICTURES, NULL, SHGFP_TYPE_CURRENT, picturesPath));
 

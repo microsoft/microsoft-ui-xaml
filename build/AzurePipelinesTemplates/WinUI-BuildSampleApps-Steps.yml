@@ -1,0 +1,226 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  artifactsRoot: $(Build.SourcesDirectory)\BuildOutput\
+  MUXFinalRelease: false
+  runStaticAnalysis: true
+  pipelineKind: ''
+
+steps:
+  # this task is used to update the nuget.config file to point to the WinUI Dependencies feed
+  - powershell: |
+      Set-StrictMode -Version 3.0
+      $ErrorActionPreference = "Stop"
+      $nugetConfigPath = "$(Build.SourcesDirectory)\Samples\WinUIGallery\nuget.config"
+      $sourceName = "MUX-Dependencies"
+      $newSourceUrl = "$(WinUILKGDependenciesFeedUri)"
+      $isGitHub = $env:BUILD_REPOSITORY_PROVIDER -in @('GitHub', 'GitHubEnterprise')
+
+      if (Test-Path $nugetConfigPath) {
+          [xml]$config = Get-Content $nugetConfigPath
+
+          $packageSourcesNode = $config.configuration.packageSources
+          $packageSources = $packageSourcesNode.add
+          $changed = $false
+
+          # Point the MUX-Dependencies source at the internal WinUI Dependencies feed.
+          $existingSource = $packageSources | Where-Object { $_.key -eq $sourceName }
+          if ($existingSource -and -not $isGitHub) {
+              $existingSource.value = $newSourceUrl
+              Write-Host "Updated source '$sourceName' to '$newSourceUrl'"
+              $changed = $true
+          }
+
+          # Remove the public nuget.org source. The internal build container has no network
+          # egress to api.nuget.org, so any restore fall-through to it fails with NU1301
+          # ("a socket in a way forbidden by its access permissions"). All required packages
+          # are served by the internal WinUI Dependencies feed above.
+          $nugetOrgSource = $packageSources | Where-Object { $_.key -eq "nuget.org" }
+          if ($nugetOrgSource -and -not $isGitHub) {
+              [void]$packageSourcesNode.RemoveChild($nugetOrgSource)
+              Write-Host "Removed public 'nuget.org' source for the internal build."
+              $changed = $true
+          }
+
+          # Add a source for the repo-root PackageStore. The build stage emits the self-built
+          # Microsoft.WindowsAppSDK.WinUI.<versionFinal> component package to $(Build.SourcesDirectory)\PackageStore
+          # (see WinUI-BuildMUXProject-Steps.yml). The Gallery ships its own nuget.config with a <clear/> and only a
+          # Gallery-relative 'packagestore' source, so - unlike the sample apps that inherit the repo-root nuget.config -
+          # it cannot see the repo-root PackageStore. Without this the WinUIGallery restore fails with NU1102 for the
+          # self-built WinUI component package (transitively required via the Microsoft.WindowsAppSDK metapackage).
+          $rootPackageStorePath = "$(Build.SourcesDirectory)\PackageStore"
+          $rootStoreKey = "rootpackagestore"
+          $existingRootStore = $packageSources | Where-Object { $_.key -eq $rootStoreKey }
+          if (-not $existingRootStore) {
+              $addNode = $config.CreateElement("add")
+              $addNode.SetAttribute("key", $rootStoreKey)
+              $addNode.SetAttribute("value", $rootPackageStorePath)
+              [void]$packageSourcesNode.AppendChild($addNode)
+              Write-Host "Added '$rootStoreKey' source -> $rootPackageStorePath"
+              $changed = $true
+          }
+
+          if ($changed) {
+              $config.Save($nugetConfigPath)
+              Write-Host "nuget.config updated successfully."
+          }
+      } else {
+          Write-Host "nuget.config file does not exist."
+      }
+    displayName: 'Modify NuGet.config feed to WinUI Dependencies feed'
+
+  - task: NuGetAuthenticate@1
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: WinUICsDesktopSampleApp
+      solution: Samples\WinUICsDesktopSampleApp\WinUICsDesktopSampleApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: WinUICppDesktopSampleApp
+      solution: Samples\WinUICppDesktopSampleApp\WinUICppDesktopSampleApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - powershell: |
+      # PublishAot must be specified at restore, as it conditionally generates nuget.g.* imports
+      $publishAot = $env:buildConfiguration -eq "Release" -and $env:buildPlatform -ne "x86"
+      $galleryTrimArg = ""
+
+      if ($env:BUILD_REPOSITORY_PROVIDER -in @('GitHub','GitHubEnterprise')) {
+        $publishAot = $false
+        $galleryTrimArg = "/p:PublishTrimmed=false"
+      }
+      Write-Host "##vso[task.setvariable variable=publishAotValue;]$publishAot"
+      Write-Host "##vso[task.setvariable variable=galleryTrimArg;]$galleryTrimArg"
+    displayName: Set PublishAot variable
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: WinUIGallery
+      solution: Samples\WinUIGallery\WinUIGallery.slnx
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      restoreConfigFile: $(Build.SourcesDirectory)\Samples\WinUIGallery\nuget.config
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish /p:PublishAot=$(publishAotValue) $(galleryTrimArg)'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+      condition: not(and(eq(variables['buildConfiguration'], 'Release'), eq(variables['buildPlatform'], 'x86')))
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: NativeDX12DesktopSample
+      solution: Samples\WinUIDesktop\NativeDX12DesktopSample.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: WinUICppNoPCHSampleApp
+      solution: Samples\WinUICppNoPCHSampleApp\WinUICppNoPCHSampleApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: WinUIGallery
+      solution: Samples\WinUIGallery\WinUIGallery\WinUIGallery.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      restoreConfigFile: $(Build.SourcesDirectory)\Samples\WinUIGallery\nuget.config
+      useDotNet: true
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: eq(variables['buildConfiguration'], 'Release')
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: WinUICppIsland2SampleApp
+      solution: Samples\WinUICppIsland2SampleApp\WinUICppIsland2SampleApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      pipelineKind: ${{parameters.pipelineKind}}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: WinUICppIslandsSampleApp
+      solution: Samples\WinUICppIslandsSampleApp\WinUICppIslandsSampleApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: DisableXamlGeneratedMain
+      solution: Samples\DisableXamlGeneratedMain\DisableXamlGeneratedMain.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: DisableXamlGeneratedMainCs
+      solution: Samples\DisableXamlGeneratedMain\Cs\DisableXamlGeneratedMainCs.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: DisableXamlGeneratedMainNoCtorCs
+      solution: Samples\DisableXamlGeneratedMain\CsNoCtor\DisableXamlGeneratedMainNoCtorCs.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: ${{ ne(parameters.MUXFinalRelease, true) }}
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartApp
+      solution: Samples\ChartApp\ChartApp.sln
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartAppCsUnpackaged
+      solution: Samples\ChartApp\ChartAppCsUnpackaged\ChartAppCsUnpackaged.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - template: WinUI-BuildSampleApp-Steps.yml
+    parameters:
+      displayName: ChartAppCsPackaged
+      solution: Samples\ChartApp\ChartAppCsPackaged\ChartAppCsPackaged.csproj
+      artifactsRoot: ${{ parameters.artifactsRoot }}
+      msBuildArgs: '/p:PublishProfile=win-$(buildPlatform).pubxml /t:Publish'
+      MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+      condition: and(${{ ne(parameters.MUXFinalRelease, true) }}, ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
+      runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
+
+  - ${{ if in(parameters.pipelineKind, 'PR', 'PR-2') }}:
+    - template: WinUI-BuildSampleApp-Steps.yml
+      parameters:
+        displayName: PGO-set
+        solution: perf\scenarios\PGO-set.sln
+        artifactsRoot: ${{ parameters.artifactsRoot }}
+        MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}

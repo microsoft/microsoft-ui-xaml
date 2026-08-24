@@ -1,0 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace LinkedMDSubControlsCppWinRT
+{
+    runtimeclass T : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        T();
+        String StringPropertyOnT{ get; };
+    }
+}

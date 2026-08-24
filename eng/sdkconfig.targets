@@ -7,6 +7,16 @@
    -->
   <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">
     <DisableCheckingDuplicateNuGetItems>true</DisableCheckingDuplicateNuGetItems>
+    <!--
+        NU1505: Duplicate PackageDownload for Microsoft.Windows.SDK.NET.Ref.
+        The .NET SDK bundles its own SDK.NET.Ref version (e.g. 10.0.17763.55) as an
+        implicit FrameworkReference. Our explicit override below pins a different patch
+        (TargetPlatformVersion + MicrosoftWindowsSDKNetRefPackVersionSuffixOverride, e.g.
+        10.0.17763.38). Both get translated to PackageDownload entries, triggering NU1505.
+        The explicit Remove/Include further down ensures the runtime uses our pinned version;
+        the warning is informational.
+    -->
+    <NoWarn>$(NoWarn);NU1505</NoWarn>
   </PropertyGroup>
 
   <!--
@@ -23,5 +33,32 @@
                         PrivateAssets="All"
                         TargetingPackVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)"
                         RuntimeFrameworkVersion="$(TargetPlatformVersion.TrimEnd('0'))$(MicrosoftWindowsSDKNetRefPackVersionSuffixOverride)" />
+  </ItemGroup>
+
+  <!--
+      The .NET 8 targeting packs are never referenced explicitly; the SDK injects them as implicit
+      FrameworkReferences and picks the patch version from its own bundled KnownFrameworkReference
+      table. Because DownloadDotNetCoreSdk.ps1 installs the SDK by channel ($(dotNetSdkChannel))
+      rather than by exact version, that patch drifts over time and differs between contributors.
+
+      OSS builds restore these packs from the shine-oss feed, which only serves versions that were
+      explicitly published to it, so a drifting patch makes fresh clones fail to restore. Updating
+      these Known*Pack items here pins every .NET 8 pack family (targeting, runtime, apphost,
+      crossgen2, ILCompiler) to a single known-published version.
+
+      This must live in a .targets file: KnownFrameworkReference is defined by the .NET SDK, so the
+      items do not exist yet while .props files are being evaluated. The condition is deliberately
+      scoped to .NET 8 only so that net9.0+ projects continue to use their own targeting packs.
+   -->
+  <ItemGroup Condition="'$(Net8TargetingPackVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' == 'v8.0'">
+    <KnownFrameworkReference Update="Microsoft.NETCore.App;Microsoft.AspNetCore.App;Microsoft.WindowsDesktop.App;Microsoft.WindowsDesktop.App.WPF;Microsoft.WindowsDesktop.App.WindowsForms"
+                             TargetingPackVersion="$(Net8TargetingPackVersion)"
+                             LatestRuntimeFrameworkVersion="$(Net8TargetingPackVersion)"
+                             DefaultRuntimeFrameworkVersion="$(Net8TargetingPackVersion)" />
+    <KnownRuntimePack Update="Microsoft.NETCore.App;Microsoft.AspNetCore.App;Microsoft.WindowsDesktop.App"
+                      LatestRuntimeFrameworkVersion="$(Net8TargetingPackVersion)" />
+    <KnownAppHostPack Update="Microsoft.NETCore.App" AppHostPackVersion="$(Net8TargetingPackVersion)" />
+    <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2" Crossgen2PackVersion="$(Net8TargetingPackVersion)" />
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler" ILCompilerPackVersion="$(Net8TargetingPackVersion)" />
   </ItemGroup>
 </Project>

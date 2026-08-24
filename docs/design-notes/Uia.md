@@ -148,7 +148,7 @@ the hwnd's location and size:
 * `UIA_HWNDWidth`
 * `UIA_HWNDHeight`
 
-The input hwnd should have UIA properties set to the the same size and location as the browser hwnd, so UIA hit testing
+The input hwnd should have UIA properties set to the same size and location as the browser hwnd, so UIA hit testing
 can drill down through the input window and find elements in the browser.
 
 ## UIA Hit-Testing

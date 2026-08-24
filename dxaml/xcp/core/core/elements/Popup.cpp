@@ -3,6 +3,10 @@
 
 #include "precomp.h"
 #include <DependencyLocator.h>
+#ifdef XAMLPROFILER_ENABLED
+#include "XamlProfilerTracing.h"
+#include <WucVisualTreeProfiler.h>
+#endif // XAMLPROFILER_ENABLED
 #include <D2DUtils.h>
 #include <FrameworkTheming.h>
 #include <AutoReentrantReferenceLock.h>
@@ -56,6 +60,7 @@ CPopup::CPopup(_In_ CCoreServices *pCore)
     : CFrameworkElement(pCore)
     , m_pChild(nullptr)
     , m_fIsOpen(false)
+    , m_fIsOpenPending(false)
     , m_fIsLightDismissEnabled(false)
     , m_fIsLightDismiss(FALSE)
     , m_fIsContentDialog(false)
@@ -220,7 +225,27 @@ _Check_return_ HRESULT CPopup::SetValue(_In_ const SetValueParams& args)
                 }
 
                 // Open or Close the popup
-                hr = m_fIsOpen ? Open() : Close();
+                if (m_fIsOpen && IsParsing())
+                {
+                    // GitHub #3879: When popup is initialized with IsOpen property, there is no 
+                    // popup root available yet and this causes Open to throw.
+                    // Defer this open until one is available post EnterImpl
+                    CPopupRoot* pPopupRootNoRef = nullptr;
+                    IFC(GetContext()->GetAdjustedPopupRootForElement(this, &pPopupRootNoRef));
+                    if (!pPopupRootNoRef)
+                    {
+                        m_fIsOpenPending = true;
+                        hr = S_OK;
+                    }
+                    else
+                    {
+                        hr = Open();
+                    }
+                }
+                else
+                {
+                    hr = m_fIsOpen ? Open() : Close();
+                }
                 IFC(hr);
             }
 
@@ -511,6 +536,18 @@ _Check_return_ HRESULT CPopup::Open()
         }
         IFC_RETURN(hr);
 
+#ifdef XAMLPROFILER_ENABLED
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            XamlProfilerTracing::PopupOpened(
+                reinterpret_cast<uint64_t>(this),
+                reinterpret_cast<uint64_t>(m_pChild),
+                GetDebugLabel().GetBuffer(),
+                m_pChild ? m_pChild->GetDebugLabel().GetBuffer() : L"",
+                XamlProfilerGetPeerHandle(m_pChild));
+        }
+#endif // XAMLPROFILER_ENABLED
+
         if (m_isOverlayVisible)
         {
             IFC_RETURN(AddOverlayElementToPopupRoot());
@@ -677,6 +714,14 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
 
     ReentrancyGuard guard(this);
 
+    // GitHub #3879: When popup is initialized with IsOpen property, there is no 
+    // popup root available yet and this causes Open to throw. We defer it until the tree is live in EnterImpl.
+    // Cancelling any deferred open that was queued during parsing here.
+    // Close() is reached from, SetValue(IsOpen=false), RemoveChild's implicit close (which leaves m_fIsOpen
+    // true and bypasses SetValue), and tree reset.
+    // So Clearing it here helps avoid a stale pending open in EnterImpl-Open() on a null child.
+    m_fIsOpenPending = false;
+
     if (!m_isImplicitClose)
     {
         DCompTreeHost* dcompTreeHost = GetDCompTreeHost();
@@ -725,6 +770,15 @@ _Check_return_ HRESULT CPopup::Close(bool forceCloseforTreeReset)
         //
         // If the child has KeepVisible requirements, then this will keep it visible via CUIElementCollection.
         IFC_RETURN(pPopupRoot->RemoveChild(m_pChild));
+
+#ifdef XAMLPROFILER_ENABLED
+        if (XamlProfilerTracing::IsEnabled())
+        {
+            XamlProfilerTracing::PopupClosed(
+                reinterpret_cast<uint64_t>(this),
+                reinterpret_cast<uint64_t>(m_pChild));
+        }
+#endif // XAMLPROFILER_ENABLED
 
         // set the association flag, visual link is no longer present
         m_pChild->SetAssociated(true, nullptr /* Association owner needed only for shareable, non-parent aware DOs */);
@@ -1263,34 +1317,45 @@ _Check_return_ HRESULT CPopup::EnsureDCompResourcesForWindowedPopup()
         IFC_RETURN(compositorNoRef->CreateContainerVisual(&containerVisual));
         wrl::ComPtr<ixp::IVisual> visual;
         IFC_RETURN(containerVisual.As(&visual));
+
         {
-            // The Create call is causing re-entrancy, hence using PauseNewDispatch here.
+            // Creating the content island and connecting it to the bridge (and initializing the input
+            // site adapter) can pump messages. When this resource creation happens while Xaml is in a
+            // sensitive state - e.g. opening a TextBox context menu flyout - the nested message pump
+            // trips the reentrancy checks. Pause new dispatch around the resource creation path to
+            // prevent reentrant execution. This covers the Create, Connect and input site Initialize
+            // calls. The pause is explicitly scoped to end after Initialize and must NOT extend over
+            // UpdateTranslationFromContentRoot below: that path runs its own PauseNewDispatch (in
+            // PositionAndSizeWindowForWindowedPopup), and because PauseNewDispatch has no nesting
+            // count, its destructor would otherwise resume dispatch prematurely and un-pause the
+            // remainder of this scope.
             PauseNewDispatch deferReentrancy(core);
+
             IFC_RETURN(contentStatics->Create(visual.Get(), &m_contentIsland));
-        }
 
-        IFC_RETURN(m_contentIsland->add_AutomationProviderRequested(WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<
-            ixp::ContentIsland*,
-            ixp::ContentIslandAutomationProviderRequestedEventArgs*>>([&](
-                ixp::IContentIsland* content,
-                ixp::IContentIslandAutomationProviderRequestedEventArgs* args) -> HRESULT
-                {
-                    return OnContentAutomationProviderRequested(content, args);
-                }).Get(),
-                &m_automationProviderRequestedToken));
-                
-        if (m_desktopBridge)
-        {
-            IFC_RETURN(m_desktopBridge->Connect(m_contentIsland.Get()));
-        }
-        else
-        {
-            IFC_RETURN(m_desktopPopupSiteBridge->Connect(m_contentIsland.Get()));
-        }
+            IFC_RETURN(m_contentIsland->add_AutomationProviderRequested(WRLHelper::MakeAgileCallback<wf::ITypedEventHandler<
+                ixp::ContentIsland*,
+                ixp::ContentIslandAutomationProviderRequestedEventArgs*>>([&](
+                    ixp::IContentIsland* content,
+                    ixp::IContentIslandAutomationProviderRequestedEventArgs* args) -> HRESULT
+                    {
+                        return OnContentAutomationProviderRequested(content, args);
+                    }).Get(),
+                    &m_automationProviderRequestedToken));
 
-        m_inputSiteAdapter = std::make_unique<WindowedPopupInputSiteAdapter>();
-        CContentRoot* contentRoot = VisualTree::GetContentRootForElement(this);
-        m_inputSiteAdapter->Initialize(this, m_contentIsland.Get(), contentRoot, DirectUI::DXamlServices::GetCurrentJupiterWindow());
+            if (m_desktopBridge)
+            {
+                IFC_RETURN(m_desktopBridge->Connect(m_contentIsland.Get()));
+            }
+            else
+            {
+                IFC_RETURN(m_desktopPopupSiteBridge->Connect(m_contentIsland.Get()));
+            }
+
+            m_inputSiteAdapter = std::make_unique<WindowedPopupInputSiteAdapter>();
+            CContentRoot* contentRoot = VisualTree::GetContentRootForElement(this);
+            m_inputSiteAdapter->Initialize(this, m_contentIsland.Get(), contentRoot, DirectUI::DXamlServices::GetCurrentJupiterWindow());
+        }
 
         // Force an update of the input offset to make sure it is initialized to something and
         // propogated to the inputsite adapter.
@@ -1399,6 +1464,12 @@ void CPopup::ReleaseDCompResourcesForWindowedPopup()
         wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
         IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
         contentIslandExperimental->put_Root(nullptr);
+#ifdef XAMLPROFILER_ENABLED
+        if (WucVisualTreeProfiler::IsEnabled())
+        {
+            WucVisualTreeProfiler::NotifyRootCleared(reinterpret_cast<uint64_t>(m_contentIsland.Get()));
+        }
+#endif // XAMLPROFILER_ENABLED
     }
 
     m_contentIslandRootVisual.Reset();
@@ -2196,6 +2267,12 @@ _Check_return_ HRESULT CPopup::SetRootVisualForWindowedPopupWindow(_In_ ixp::IVi
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(containerVisual->get_Children(&visualChildren))
         IFCFAILFAST(visualChildren->InsertAtTop(m_publicRootVisual.Get()));
+#ifdef XAMLPROFILER_ENABLED
+        if (WucVisualTreeProfiler::IsEnabled())
+        {
+            WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_publicRootVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+        }
+#endif // XAMLPROFILER_ENABLED
 
         // Position & size window
         IFC_RETURN(PositionAndSizeWindowForWindowedPopup());
@@ -2227,6 +2304,12 @@ void CPopup::AddAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* popupV
     wrl::ComPtr<ixp::IVisualCollection> visualChildren;
     IFCFAILFAST(containerVisual->get_Children(&visualChildren));
     IFCFAILFAST(visualChildren->InsertAtTop(popupVisual));
+#ifdef XAMLPROFILER_ENABLED
+    if (WucVisualTreeProfiler::IsEnabled())
+    {
+        WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), popupVisual, 0 /* ownerCompNodeId */, -1 /* index */);
+    }
+#endif // XAMLPROFILER_ENABLED
 }
 
 // Used for inline popups nested inside windowed popups
@@ -2240,6 +2323,12 @@ void CPopup::RemoveAdditionalVisualForWindowedPopupWindow(_In_ ixp::IVisual* pop
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(containerVisual->get_Children(&visualChildren));
         IFCFAILFAST(visualChildren->Remove(popupVisual));
+#ifdef XAMLPROFILER_ENABLED
+        if (WucVisualTreeProfiler::IsEnabled())
+        {
+            WucVisualTreeProfiler::NotifyChildRemoved(m_animationRootVisual.Get(), popupVisual);
+        }
+#endif // XAMLPROFILER_ENABLED
     }
 }
 
@@ -2307,11 +2396,23 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
             wrl::ComPtr<ixp::IVisualCollection> animationVisualChildren;
             IFCFAILFAST(animationCV->get_Children(&animationVisualChildren))
             IFCFAILFAST(animationVisualChildren->InsertAtBottom(m_systemBackdropPlacementVisual.Get()));
+#ifdef XAMLPROFILER_ENABLED
+            if (WucVisualTreeProfiler::IsEnabled())
+            {
+                WucVisualTreeProfiler::NotifyChildInserted(m_animationRootVisual.Get(), m_systemBackdropPlacementVisual.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+            }
+#endif // XAMLPROFILER_ENABLED
         }
 
         wrl::ComPtr<ixp::IVisualCollection> visualChildren;
         IFCFAILFAST(windowCV->get_Children(visualChildren.ReleaseAndGetAddressOf()));
         IFCFAILFAST(visualChildren->InsertAtTop(animationV.Get()));
+#ifdef XAMLPROFILER_ENABLED
+        if (WucVisualTreeProfiler::IsEnabled())
+        {
+            WucVisualTreeProfiler::NotifyChildInserted(m_contentIslandRootVisual.Get(), animationV.Get(), 0 /* ownerCompNodeId */, -1 /* index */);
+        }
+#endif // XAMLPROFILER_ENABLED
 
         if (RuntimeFeatureBehavior::GetRuntimeEnabledFeatureDetector()->IsFeatureEnabled(RuntimeFeatureBehavior::RuntimeEnabledFeature::EnableWindowedPopupDebugVisual))
         {
@@ -2340,6 +2441,12 @@ void CPopup::EnsureWindowedPopupRootVisualTree()
         wrl::ComPtr<ixp::IContentIslandExperimental> contentIslandExperimental;
         IFCFAILFAST(m_contentIsland.As(&contentIslandExperimental));
         contentIslandExperimental->put_Root(m_contentIslandRootVisual.Get());
+#ifdef XAMLPROFILER_ENABLED
+        if (WucVisualTreeProfiler::IsEnabled())
+        {
+            WucVisualTreeProfiler::NotifyRootSet(m_contentIslandRootVisual.Get(), reinterpret_cast<uint64_t>(m_contentIsland.Get()), 0 /* ownerCompNodeId */);
+        }
+#endif // XAMLPROFILER_ENABLED
     }
 }
 
@@ -2597,6 +2704,13 @@ _Check_return_ HRESULT CPopup::SetChild(
             {
                 IFC(pPopupRoot->AddToDeferredOpenPopupList(this));
             }
+            else if (IsParsing() && !pPopupRoot)
+            {
+                // GitHub #3879: When popup is initialized with IsOpen property, there is no 
+                // popup root available yet and this causes Open to throw.
+                // Defer this open until one is available post EnterImpl
+                m_fIsOpenPending = true;
+            }
             else
             {
                 IFC(Open());
@@ -2847,6 +2961,17 @@ CPopup::EnterImpl(_In_ CDependencyObject *pNamescopeOwner, _In_ EnterParams para
     bool bOldFlowDirection = IsRightToLeft();
 
     IFC_RETURN(CFrameworkElement::EnterImpl(pNamescopeOwner, params));
+
+    if(params.fIsLive && m_fIsOpen && m_fIsOpenPending)
+    {
+        // GitHub #3879: When popup is initialized with IsOpen property, there is no 
+        // popup root available yet and this causes Open to throw.
+        // We deferred this open in SetChild.
+        // Post the above CFrameworkElement::EnterImpl the popup root is available
+        // So we reset the flag here and call Open()
+        m_fIsOpenPending = false;
+        IFC_RETURN(Open());
+    }
 
     // If the Popup is entering the live tree, ensure that it is marked for composition.
     // If the Popup was already opened (i.e. a 'parentless Popup') then there's no need to mark it again.

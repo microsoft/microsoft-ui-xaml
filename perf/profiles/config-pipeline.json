@@ -1,0 +1,34 @@
+{
+  "AppsFilePath": "apps.json",
+  "ScenariosFilePath": "scenarios.json",
+  "ProfilesFilePath": "profiles.json",
+  "ShiftsDirectory": "%BUILD_ARTIFACTSTAGINGDIRECTORY%\\current",
+  "DeployApps": true,
+  "InstallersRootDirectory": "%PerfArtifactsDir%\\apps",
+  "WPROptions": {
+    "CompressTrace": false
+  },
+  "CsvCollator": {
+    "ExperimentsDirectory": "c:\\results\\experiments\\%USEREXPERIMENTSPATH%",
+    "ProcessedDataArchiveDirectory": "processed"
+  },
+  "MongoDBCollator": {
+    "ServerAddress": "%DATABASE_SERVER_ADDRESS_SECRET%",
+    "DatabaseName": "WinUI",
+    "CollectionName": "PerfData"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information"
+    },
+    "Console": {
+      "FormatterName": "simple",
+      "FormatterOptions": {
+        "ColorBehavior": "Disabled",
+        "SingleLine": true,
+        "IncludeScopes": true,
+        "TimestampFormat": "HH:mm:ss.ff "
+      }
+    }
+  }
+}

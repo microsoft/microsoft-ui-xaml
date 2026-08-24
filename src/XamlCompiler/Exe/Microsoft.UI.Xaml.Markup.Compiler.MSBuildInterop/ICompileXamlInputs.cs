@@ -109,5 +109,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.MSBuildInterop
         // conditional XAML, etc.)
         // 2. XBF format version
         bool IgnoreSpecifiedTargetPlatformMinVersion { get; set; }
+
+        string EnabledXamlOptionalChanges { get; set; }
+        string DisabledXamlOptionalChanges { get; set; }
     }
 }

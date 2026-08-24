@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="XamlProfiler" Tag="XamlProfiler">
+  <Profiles>
+
+    <!-- Event Collector -->
+    <EventCollector Id="EC_XamlProfiler" Name="XamlProfiler Event Collector">
+      <BufferSize Value="1024" />
+      <Buffers Value="64" />
+    </EventCollector>
+
+    <!-- XAML Profiler TraceLogging Provider -->
+    <EventProvider Id="EP_XamlProfiler" Name="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D" Level="5" />
+
+    <!-- Also capture the existing Microsoft-Windows-XAML provider for reference -->
+    <EventProvider Id="EP_MicrosoftWindowsXaml" Name="531A35AB-63CE-4BCF-AA98-F88C7A89E455" Level="5">
+      <Keywords>
+        <Keyword Value="0xFFFF" />
+      </Keywords>
+    </EventProvider>
+
+    <!-- Profile: Verbose -->
+    <Profile Id="XamlProfiler.Verbose.File" Name="XamlProfiler" Description="XAML Profiler tree-tracking events"
+             LoggingMode="File" DetailLevel="Verbose">
+      <Collectors>
+        <EventCollectorId Value="EC_XamlProfiler">
+          <EventProviders>
+            <EventProviderId Value="EP_XamlProfiler" />
+            <EventProviderId Value="EP_MicrosoftWindowsXaml" />
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+
+  </Profiles>
+</WindowsPerformanceRecorder>

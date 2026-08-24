@@ -7,12 +7,89 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarToolButtonAutomationPeer.g.h"
+#include "InkToolbarToolButton.h"
+#include "ResourceAccessor.h"
+#include "InkToolbarToolButtonAutomationPeer.g.h"
 
-class InkToolBarToolButtonAutomationPeer :
-    public ReferenceTracker<InkToolBarToolButtonAutomationPeer, winrt::implementation::InkToolBarToolButtonAutomationPeerT>
+class InkToolbarToolButtonAutomationPeer :
+    public ReferenceTracker<InkToolbarToolButtonAutomationPeer, winrt::implementation::InkToolbarToolButtonAutomationPeerT>
 {
 public:
-    InkToolBarToolButtonAutomationPeer(winrt::InkToolBarToolButton owner) {};
+    InkToolbarToolButtonAutomationPeer(winrt::InkToolbarToolButton const& owner)
+        : ReferenceTracker(owner)
+    {
+    }
+
+    // IAutomationPeerOverrides
+    winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface)
+    {
+        if (patternInterface == winrt::PatternInterface::ExpandCollapse)
+        {
+            return *this;
+        }
+        return __super::GetPatternCore(patternInterface);
+    }
+
+    winrt::AutomationControlType GetAutomationControlTypeCore()
+    {
+        // UWP returns Custom so Narrator understands the button's primary
+        // (select tool) and secondary (expand flyout) actions.
+        return winrt::AutomationControlType::Custom;
+    }
+
+    hstring GetLocalizedControlTypeCore()
+    {
+        // UWP overrides this because the Custom control type would make Narrator read out "custom";
+        // the actual value of IDS_INKTOOLBAR_TOOL_BUTTON_CONTROLTYPE_NAME is "button" (per the UWP source).
+        try
+        {
+            return ResourceAccessor::GetLocalizedStringResource(SR_InkToolbarToolButtonControlTypeName);
+        }
+        catch (winrt::hresult_error const&)
+        {
+            return __super::GetLocalizedControlTypeCore();
+        }
+    }
+
+    // IExpandCollapseProvider
+    winrt::ExpandCollapseState ExpandCollapseState()
+    {
+        auto state = winrt::ExpandCollapseState::Collapsed;
+        if (auto owner = GetImpl())
+        {
+            if (owner->HasL3() && owner->IsL3Open())
+            {
+                state = winrt::ExpandCollapseState::Expanded;
+            }
+        }
+        return state;
+    }
+
+    void Expand()
+    {
+        if (auto owner = GetImpl())
+        {
+            owner->OpenL3();
+        }
+    }
+
+    void Collapse()
+    {
+        if (auto owner = GetImpl())
+        {
+            owner->CloseL3();
+        }
+    }
+
+private:
+    com_ptr<InkToolbarToolButton> GetImpl()
+    {
+        com_ptr<InkToolbarToolButton> impl;
+        if (auto button = Owner().try_as<winrt::InkToolbarToolButton>())
+        {
+            impl = winrt::get_self<InkToolbarToolButton>(button)->get_strong();
+        }
+        return impl;
+    }
 };
 

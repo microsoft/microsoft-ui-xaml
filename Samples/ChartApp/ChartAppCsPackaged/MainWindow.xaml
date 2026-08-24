@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="ChartAppCsPackaged.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ChartAppCsPackaged"
+    xmlns:charts="using:Microsoft.UI.Xaml.Controls.Charts"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="ChartAppCsPackaged">
+
+    <!-- ToggleTheme_Click sets RequestedTheme on RootGrid. A local RequestedTheme override
+         re-resolves ThemeResource values only on the subtree below it, not on the element
+         it is set on, so the themed Background must live on the child ThemeRoot. -->
+    <Grid x:Name="RootGrid">
+        <Grid x:Name="ThemeRoot"
+              Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+              Padding="24"
+              RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <Button Content="Toggle theme" Click="ToggleTheme_Click" />
+                <TextBlock x:Name="StatusText" VerticalAlignment="Center" />
+            </StackPanel>
+
+            <charts:Chart x:Name="MarkupChart" Grid.Row="1"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+            <StackPanel x:Name="CodeChartHost" Grid.Row="2" />
+        </Grid>
+    </Grid>
+</Window>

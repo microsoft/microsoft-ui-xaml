@@ -123,7 +123,7 @@ example, if an API was previously experimental before but is currently final, ol
       ```
    * Pushing is done by
      * `nuget push <.nupkg path> -Source WinUI.Dependencies -apikey <ask_a_teammate_for_key>`
-     * You need to be part of [WinUI.Dependencies](https://microsoft.visualstudio.com/WinUI/_artifacts/feed/WinUI.Dependencies/settings/permissions) feed to be able to push using the command above.
+     * You need to be part of the WinUI.Dependencies feed (ask a teammate for access) to be able to push using the command above.
      * Example command and output:
       ```
       > nuget push <repo_root>\packages\Microsoft.UI.DCPP.Dependencies.Edge\<created_nupkg> -Source WinUI.Dependencies -apikey <ask_a_teammate_for_key>

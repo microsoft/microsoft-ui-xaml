@@ -5,7 +5,7 @@ This document gives a high-level overview of our CI Build and Test System in Win
 ## Table of Contents
 
   - [Azure Pipelines](#azure-pipelines)
-  - [OneBranch and 1ES](#onebranch-and-1es)
+  - [Build Infrastructure and Agent Pools](#build-infrastructure-and-agent-pools)
   - [Testing](#testing)
   - [The Process in Depth:](#the-process-in-depth)
     - [Create the test payload: CreateTestPayload.ps1](#create-the-test-payload-createtestpayloadps1)
@@ -28,7 +28,7 @@ In our repo we have two main Pipelines:
 * WinUI-Xaml-Nightly: This runs nightly to produce a build of WinUI.
 * WinUI-Xaml-Official: This produces the official builds of WinUI that may end up shipping publicly.
 
-See [build-pipelines.md](build-pipelines.md) for more info on the build Pipelines that are used in this project.
+See [build-pipelines.md](../publishing/build-pipelines.md) for more info on the build Pipelines that are used in this project.
 
 ## Build Infrastructure and Agent Pools
 

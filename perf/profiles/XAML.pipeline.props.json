@@ -1,0 +1,27 @@
+{
+  "AliasingFilter.Aliases": {
+    "xamlperf(\\.[a-z0-9]+){3}(_\\d+\\.\\d+\\.\\d+\\.\\d+)?(_[a-z0-9]+)?(__[a-z0-9]+)?": "[PERFAPP]",
+    "(microsoft.net(\\.native)?.(framework|runtime))(\\.\\d+\\.\\d+)(_\\d+\\.\\d+\\.\\d+\\.\\d+)?(_[a-z0-9]+)?(__[a-z0-9]+)?": "$1",
+    "(microsoft.vclibs)(\\.\\d+\\.\\d+)(\\.\\d+\\.\\d+)(_\\d+\\.\\d+\\.\\d+\\.\\d+)?(_[a-z0-9]+)?(__[a-z0-9]+)?": "$1"
+  },
+  "SkipNRunsFilter.Count": 1,
+  "SkipHighDiskActivityRunsFilter.Threshold": 10.0,
+  "StatSummarizer.FilterWindowInStdDev": 1.0,
+  "TimeDeltaExtractor1.StartEvent": {},                   // Process start
+  "TimeDeltaExtractor1.EndEvent": {
+    "ProviderId": "531A35AB-63CE-4BCF-AA98-F88C7A89E455", // Microsoft-Windows-XAML
+    "Id": 65,                                             // FrameEnd
+    "Opcode": 2,
+    "ImageNameSource": "ProcessName"
+  },
+  "TimeDeltaExtractor1.IntervalName": [ "Startup", "Proc" ],
+  "TimeDeltaExtractor2.StartEvent": {},                   // Process start
+  "TimeDeltaExtractor2.EndEvent": {
+    "ProviderId": "531A35AB-63CE-4BCF-AA98-F88C7A89E455", // Microsoft-Windows-XAML
+    "Id": 31,                                             // InitializeCore
+    "Opcode": 1,
+    "ImageNameSource": "ProcessName"
+  },
+  "TimeDeltaExtractor2.IntervalName": [ "Startup", "PreInitCore" ],
+  "ROIExtractor.RoiFilename": "XAML.regions.xml"
+}

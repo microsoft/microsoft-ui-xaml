@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{66a887d2-2434-4d9e-9953-9953023bf468}</ProjectGuid>
+    <ProjectName>XAMLPerf.HelloWorldApp.Cpp.MUX</ProjectName>
+    <RootNamespace>XAMLPerf_HelloWorldApp_Cpp_MUX</RootNamespace>
+    <AppContainerApplication>false</AppContainerApplication>
+    <UseCppWinRT>true</UseCppWinRT>
+    <UseWinUI>true</UseWinUI>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\Cpp-ScenarioApp.props" />
+
+  <ItemGroup>
+    <ClInclude Include="App.xaml.h">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="MainWindow.xaml.h">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </ClInclude>
+    <ApplicationDefinition Include="App.xaml" />
+    <Page Include="MainWindow.xaml" />
+    <Manifest Include="app.manifest" />
+    <ClCompile Include="App.xaml.cpp">
+      <DependentUpon>App.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="MainWindow.xaml.cpp">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <Midl Include="App.idl">
+      <SubType>Code</SubType>
+      <DependentUpon>App.xaml</DependentUpon>
+    </Midl>
+    <Midl Include="MainWindow.idl">
+      <SubType>Code</SubType>
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Midl>
+  </ItemGroup>
+
+  <Import Project="..\..\build\Cpp-ScenarioApp.targets" />
+</Project>

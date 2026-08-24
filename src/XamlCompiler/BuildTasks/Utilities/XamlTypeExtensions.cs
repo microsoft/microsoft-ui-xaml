@@ -391,6 +391,16 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         // Nullable<int> -> Nullable<double>
         internal static bool CanBoxTo(this XamlType source, XamlType target)
         {
+            // Converting FROM an Object/IInspectable to a nullable/IReference target is not a boxing
+            // operation. Handling it here emits box_value(unbox_value<T>(obj)).as<IReference<T>>(),
+            // whose inner unbox_value<T> throws hresult_no_interface when obj is null (e.g. the
+            // bind-back of a two-way binding on a cleared target). Bail out so the conversion instead
+            // flows through CppWinRTCast's null-safe reference cast (try_as).
+            if (source.IsObject())
+            {
+                return false;
+            }
+
             var sourceType = source.UnderlyingType;
             var sourceTypeName = sourceType.IsGenericType
                 ? XamlSchemaCodeInfo.GetFullGenericNestedName(sourceType, true) // ignore assembly in generic type names
@@ -890,7 +900,32 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
 
         public static string CppWinRTCast(this XamlType source, XamlType target, string expression)
         {
-            if (source.UnderlyingType.IsPrimitive && target.UnderlyingType.IsPrimitive)
+            if (source.IsObject() && target.NeedsBoxUnbox() && !target.IsBoxedType())
+            {
+                // Converting a boxed IInspectable/Object back to a value type or string (e.g. the
+                // bind-back direction of a two-way binding) requires unboxing. Boxed/nullable types
+                // (Nullable<T>/IReference<T>) are excluded here so they fall through to the reference
+                // cast below instead of being unboxed as a scalar.
+                if (target.IsString())
+                {
+                    // A two-way bind-back runs on every target change, including to null. unbox_value
+                    // throws hresult_no_interface on a null IInspectable, so use unbox_value_or to map
+                    // a null/mismatched target to an empty string, matching managed (string)value.
+                    // The default is L"" (not winrt::hstring{}): this string is also used as a
+                    // string.Format template, and a literal "{}" would throw a FormatException (WMC9999).
+                    return $"::winrt::unbox_value_or<{target.CppWinRTName()}>({expression}, L\"\")";
+                }
+
+                return $"::winrt::unbox_value<{target.CppWinRTName()}>({expression})";
+            }
+            else if (target.IsObject() && source.NeedsBoxUnbox() && !source.IsBoxedType())
+            {
+                // Converting a value type or string to an IInspectable/Object target requires boxing.
+                // Boxed/nullable sources are already reference types, so they use the reference cast
+                // below rather than being (re)boxed.
+                return $"::winrt::box_value({expression})";
+            }
+            else if (source.UnderlyingType.IsPrimitive && target.UnderlyingType.IsPrimitive)
             {
                 return $"static_cast<{target.CppWinRTName()}>({expression})";
             }
@@ -900,6 +935,14 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
             }
             else if (!source.UnderlyingType.IsPrimitive && !target.UnderlyingType.IsPrimitive)
             {
+                // When unboxing a nullable/IReference target from an Object (the bind-back direction of
+                // a two-way binding), use try_as so a null (cleared) target maps to an empty nullable
+                // (a null IReference) instead of throwing, matching managed (int?)value == null.
+                if (source.IsObject() && target.IsBoxedType())
+                {
+                    return $"{expression}.try_as<{target.CppWinRTName()}>()";
+                }
+
                 return $"{expression}.as<{target.CppWinRTName()}>()";
             }
             else

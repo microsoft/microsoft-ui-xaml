@@ -631,7 +631,7 @@ Cleanup:
 
 //------------------------------------------------------------------------
 //  Summary:
-//      Retreives the TextFormatterCache from CCoreServices.
+//      Retrieves the TextFormatterCache from CCoreServices.
 //------------------------------------------------------------------------
 _Check_return_ HRESULT CTextFormatterFactory::GetTextFormatterCache(
     _In_ CCoreServices *pCore,

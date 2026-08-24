@@ -25,7 +25,7 @@ Follow these steps:
 4. Install the necessary MSBuild / Visual Studio 2022 dependencies. If you already have VS 2022
    ([see notes](#other-notes)) installed, this command will ensure you have the required components:
    ```
-   cd C:\winui3\src
+   cd C:\winui3
    .\OneTimeSetup.cmd -Install MSBuild
    ```
 
@@ -36,12 +36,7 @@ Follow these steps:
 
 Starting with a command prompt or PowerShell at the root of your WinUI repo:
 
-1. Switch into the `src` directory:
-   ```
-   cd src
-   ```
-
-2. Initialize to build ([details](#initialize-cmd-or-powershell-with-support-for-vs-build-tools)):
+1. Initialize to build ([details](#initialize-cmd-or-powershell-with-support-for-vs-build-tools)):
    ```
    init.cmd
    ```
@@ -50,7 +45,7 @@ Starting with a command prompt or PowerShell at the root of your WinUI repo:
    .\init.ps1
    ```
 
-3. Build the project:
+2. Build the project:
    ```
    .\build.cmd
    ```
@@ -75,8 +70,8 @@ After a successful build, you can find the product binaries in the output packag
 folder `%BuildArtifactsDir%\packaging\%Configuration%\runtimes\win10-%Platform%\native`.
 For example:
 ```
-C:\winui3\src>dir %BuildArtifactsDir%\packaging\%Configuration%\runtimes\win10-%Platform%\native
- Directory of C:\winui3\src\BuildOutput\packaging\Debug\runtimes\win10-x64\native
+C:\winui3>dir %BuildArtifactsDir%\packaging\%Configuration%\runtimes\win10-%Platform%\native
+ Directory of C:\winui3\BuildOutput\packaging\Debug\runtimes\win10-x64\native
 
 Microsoft.Internal.FrameworkUdk.dll
 Microsoft.UI.Xaml
@@ -116,7 +111,7 @@ You could also edit your app project to do this copy automatically, such as by a
 
 ```xml
   <ItemGroup>
-    <None Include="C:\winui3\src\BuildOutput\packaging\Debug\runtimes\win10-$(Platform)\native\**\*.*">
+    <None Include="C:\winui3\BuildOutput\packaging\Debug\runtimes\win10-$(Platform)\native\**\*.*">
       <Visible>false</Visible>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -139,7 +134,7 @@ this `nuget.config` file to the root of your app project (next to your `.csproj`
     <add key="repositoryPath" value="$\..\packages" />
   </config>
   <packageSources>
-    <add key="packagestore" value="C:\winui3\src\PackageStore" />
+    <add key="packagestore" value="C:\winui3\PackageStore" />
   </packageSources>
 </configuration>
 ```
@@ -198,7 +193,7 @@ excluding `Microsoft.UI.Xaml.Internal.dll` (which will not be OSS).
 
 ### Initialize CMD or PowerShell with support for VS build tools
 
-At the CMD prompt, in the `src\` folder off the root of the repo, run (for an x64chk build):
+At the CMD prompt, from the root of the repo, run (for an x64chk build):
 ```
 init.cmd
 ```

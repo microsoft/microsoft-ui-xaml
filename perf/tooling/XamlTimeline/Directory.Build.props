@@ -1,0 +1,21 @@
+<Project>
+  <!--
+    Intentionally does NOT chain to the repo-root Directory.Build.props.
+
+    XamlTimeline is a standalone netstandard2.0 helper library shared by the WinUI
+    viewer (multi-platform: x86/x64/ARM64) and the WPA plugin (AnyCPU). The repo-root
+    build infrastructure (eng\configuration.props) redirects every project's obj /
+    project.assets.json into a build-flavor-specific folder (amd64chk, x86fre, ...)
+    derived from MUXOutputPlatform + MUXOutputConfiguration.
+
+    When the multi-platform viewer references this AnyCPU library, MSBuild forwards
+    the viewer's Platform (e.g. x64 => "amd64chk") down to XamlTimeline, but a clean
+    restore only produced XamlTimeline's "chk"/"fre" flavors — so Visual Studio's
+    design-time restore for Debug|x64 could not locate XamlTimeline's project
+    information ("Unable to find project information for XamlTimeline.csproj").
+
+    Keeping this project on vanilla SDK defaults gives it a single, stable,
+    platform-agnostic obj\project.assets.json that every consumer (Visual Studio,
+    the dotnet CLI, and the .ptix publish) can always find.
+  -->
+</Project>

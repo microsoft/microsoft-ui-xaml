@@ -69,6 +69,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions are removed when the text track is disabled")
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(TimedTextSourceTeardownDoesNotLeak)
+                TEST_METHOD_PROPERTY(L"Description", L"Regression: MediaPlayerElement CC teardown must not leak the TimedMetadataTracksChanged registration (CTimedTextSource::SetMediaPlayer ordering)")
+                TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(MediaPlayerElementWithImageCueNoMTCUsePercent)
                 TEST_METHOD_PROPERTY(L"Description", L"Closed Captions with image cue based on percentage and MTC off")
                 TEST_METHOD_PROPERTY(L"VelocityTestPass:OneCoreStrict", L"Desktop")

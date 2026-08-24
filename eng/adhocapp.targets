@@ -2,7 +2,7 @@
 <Project>
   
   <!-- 
-    Replace mock WinAppSDK nuget's Microsoft.WinUI.dll with private Microsoft.WinUI.dll 
+    Replace the WinAppSDK nuget's Microsoft.WinUI.dll with private Microsoft.WinUI.dll 
   -->
   <Target Name="ResolveLocalPrivateProjection"
           AfterTargets="ResolvePackageAssets;ResolveNuGetPackageAssets"

@@ -7,10 +7,10 @@
 #include "pch.h"
 #include "common.h"
 
-#include "InkToolBarEraserButtonInternal.g.h"
+#include "InkToolbarEraserButtonInternal.g.h"
 
-class InkToolBarEraserButtonInternal :
-    public ReferenceTracker<InkToolBarEraserButtonInternal, winrt::implementation::InkToolBarEraserButtonInternalTundefined>
+class InkToolbarEraserButtonInternal :
+    public ReferenceTracker<InkToolbarEraserButtonInternal, winrt::implementation::InkToolbarEraserButtonInternalTundefined>
 {
 };
 

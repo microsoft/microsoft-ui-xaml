@@ -12,6 +12,15 @@ namespace DirectUI
     {
         public:
             // ---------------------------------------------------------------
+            // Master containment switch for the new windowing APIs - Window.Width/Height and
+            // Window.Min/Max Width/Height (returns true today). When contained off, those public
+            // getters/setters return E_NOTIMPL and none of the side effects run (restored-size WM_SIZE
+            // tracking, ExtendsContentIntoTitleBar client-size preservation, pending/deferred
+            // application, the size-constraint push to the presenter, and the AppWindow.Changed
+            // subscription), so a window behaves exactly as it did before these APIs.
+            static bool AreNewWindowingApisEnabled() { return true; }
+
+            // ---------------------------------------------------------------
             // public Window API: IWindow
             // ---------------------------------------------------------------
             virtual _Check_return_ HRESULT get_BoundsImpl(_Out_ wf::Rect* pValue) = 0;
@@ -37,8 +46,22 @@ namespace DirectUI
             virtual _Check_return_ HRESULT put_ExtendsContentIntoTitleBarImpl(_In_ BOOLEAN value) = 0;
             virtual _Check_return_ HRESULT SetTitleBarImpl(_In_ xaml::IUIElement* pTitleBar) = 0;
 
+            // Experimental restored client-size constraints (in DIPs).
+            virtual _Check_return_ HRESULT get_MinWidthImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_MinWidthImpl(_In_ DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_MinHeightImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_MinHeightImpl(_In_ DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_MaxWidthImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_MaxWidthImpl(_In_ DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_MaxHeightImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_MaxHeightImpl(_In_ DOUBLE value) = 0;
+
             virtual _Check_return_ HRESULT get_CompositorImpl(_Outptr_result_maybenull_ WUComp::ICompositor** compositor) = 0;
             virtual _Check_return_ HRESULT get_AppWindowImpl(_Outptr_result_maybenull_ ixp::IAppWindow** ppValue) = 0;
+            virtual _Check_return_ HRESULT get_WidthImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_WidthImpl(DOUBLE value) = 0;
+            virtual _Check_return_ HRESULT get_HeightImpl(_Out_ DOUBLE* pValue) = 0;
+            virtual _Check_return_ HRESULT put_HeightImpl(DOUBLE value) = 0;
 
             virtual _Check_return_ HRESULT get_SystemBackdropImpl(_Outptr_result_maybenull_ xaml::Media::ISystemBackdrop** systemBackdrop) = 0;
             virtual _Check_return_ HRESULT put_SystemBackdropImpl(_In_opt_ xaml::Media::ISystemBackdrop* systemBackdrop) = 0;

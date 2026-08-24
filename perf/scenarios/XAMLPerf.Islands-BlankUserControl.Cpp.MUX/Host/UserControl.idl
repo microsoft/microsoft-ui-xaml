@@ -1,0 +1,9 @@
+namespace IslandSimple
+{
+    [default_interface]
+    runtimeclass UserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        UserControl();
+        Int32 MyProperty;
+    }
+}

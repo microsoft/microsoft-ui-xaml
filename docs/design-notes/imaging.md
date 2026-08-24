@@ -569,7 +569,7 @@ Thought experiment for a new imaging pipeline:
 * Pipeline cache for looking up pipelines that are currently running. New requests can hop on an existing pipeline (or
   kick off a previously completed pipeline, in case of download image data already available).
   * This consolidates `ImageCache` and `SurfaceCache`. Also removes the need for an `ImageProvider` - the pipeline cache
-    is the place you go to to get a pipeline.
+    is the place you go to get a pipeline.
 * Remove the concept of views. Views were created to abstract change notification. Someone who cares about an image gets
   a view of it, and the view notifies them when it changes (e.g. downloaded image data is available). In practice this
   is too abstract and creates too many classes. `ImageSource` can listen to a pipeline directly. Use plain event

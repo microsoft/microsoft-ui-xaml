@@ -208,7 +208,7 @@ Implements:<br>
 
 #### LayoutDirectionOverride property:
 
-Gets or sets the overriden layout direction. This will affect the `ContentIsland.LayoutDirection`.
+Gets or sets the overridden layout direction. This will affect the `ContentIsland.LayoutDirection`.
 By default, this property is null.  
 
 1. PopupWindowSiteBridge LayoutDirectionOverride:<br>
@@ -236,7 +236,7 @@ By default, this property is null.
 
     b. Behavior when the LayoutDirectionOverride is set to explicit value (LeftToRight or RightToLeft):
     The layoutDirection of this child window is updated. Also, if this window owns any
-    popupWindowSiteBridges (whose layoutDirection is not overriden) then they are updated to
+    popupWindowSiteBridges (whose layoutDirection is not overridden) then they are updated to
     this value as well.  
     
 3. SystemVisualSiteBridge LayoutDirectionOverride: Currently we do not support this. 

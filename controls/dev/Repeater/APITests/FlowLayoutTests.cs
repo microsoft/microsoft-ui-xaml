@@ -1925,7 +1925,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
                 else if (layout is FlowLayout)
                 {
-                    // Extent overriden using GetExtent override.
+                    // Extent overridden using GetExtent override.
                     Verify.AreEqual(numRows * itemSize, om.Major(repeater.DesiredSize));
                 }
             });

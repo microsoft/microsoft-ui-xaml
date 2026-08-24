@@ -146,9 +146,9 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
                 newItems.push_back(item1);
 
 
-                LOG_OUTPUT(L"%i, %i", movedItems.size(), newItems.size());
+                LOG_OUTPUT(L"%i, %i", static_cast<int>(movedItems.size()), static_cast<int>(newItems.size())); // PREfast C6328 - match format arguments
                 movedItems.Update(true /* isOrientationVertical */, newItems, newItemsToMove, oldItemsToMoveBack);
-                LOG_OUTPUT(L"%i, %i", movedItems.size(), newItems.size());
+                LOG_OUTPUT(L"%i, %i", static_cast<int>(movedItems.size()), static_cast<int>(newItems.size())); // PREfast C6328 - match format arguments
 
                 // no items to move
                 VERIFY_ARE_EQUAL(newItemsToMove.size(), static_cast<unsigned int>(0));
@@ -198,9 +198,9 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
                 newItems.clear();
                 newItems.push_back(item0);
 
-                LOG_OUTPUT(L"%i, %i", movedItems.size(), newItems.size());
+                LOG_OUTPUT(L"%i, %i", static_cast<int>(movedItems.size()), static_cast<int>(newItems.size())); // PREfast C6328 - match format arguments
                 movedItems.Update(true /* isOrientationVertical */, newItems, newItemsToMove, oldItemsToMoveBack);
-                LOG_OUTPUT(L"%i, %i", movedItems.size(), newItems.size());
+                LOG_OUTPUT(L"%i, %i", static_cast<int>(movedItems.size()), static_cast<int>(newItems.size())); // PREfast C6328 - match format arguments
 
                 // no items to move
                 VERIFY_ARE_EQUAL(newItemsToMove.size(), static_cast<unsigned int>(0));
@@ -269,9 +269,9 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
                 newItems.push_back(item3);
 
 
-                LOG_OUTPUT(L"%i, %i", movedItems.size(), newItems.size());
+                LOG_OUTPUT(L"%i, %i", static_cast<int>(movedItems.size()), static_cast<int>(newItems.size())); // PREfast C6328 - match format arguments
                 movedItems.Update(true /* isOrientationVertical */, newItems, newItemsToMove, oldItemsToMoveBack);
-                LOG_OUTPUT(L"%i, %i", movedItems.size(), newItems.size());
+                LOG_OUTPUT(L"%i, %i", static_cast<int>(movedItems.size()), static_cast<int>(newItems.size())); // PREfast C6328 - match format arguments
 
                 // 2 items to move
                 VERIFY_ARE_EQUAL(newItemsToMove.size(), static_cast<unsigned int>(2));

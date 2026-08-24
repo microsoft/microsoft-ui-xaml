@@ -194,6 +194,7 @@ private:
     void ClearNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib);
     void ClearAllNavigationViewItemBaseRevokers() noexcept;
     void RevokeNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib);
+    void RevokeAndClearNavigationViewItemBaseRevokers(const winrt::NavigationViewItemBase& nvib);
     std::set<winrt::NavigationViewItemBase> m_itemsWithRevokerObjects;
 
     void InvalidateTopNavPrimaryLayout();

@@ -392,7 +392,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 
         override public void RunInitializer() 
         {
-            StaticInitializer();
+            StaticInitializer?.Invoke();
         }
 
         override public object CreateFromString(string input)
@@ -797,7 +797,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                         {                               #>
                 userType.Activator = <#=Model.ActivatorName(uentry)#>;
 <#+                         }                               #>
-<#+                         if(!uentry.IsArray)  #>
+<#+                         if(uentry.RequiresStaticInitializer)  #>
 <#+                         {                               #>
                 userType.StaticInitializer = <#=Model.StaticInitializerName(uentry)#>;
 <#+                         }                               #>
@@ -815,6 +815,12 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                         }                               #>
 <#+                         if (uentry.HasCreateFromStringMethod)#>
 <#+                         {#>
+<#+                             // Suppress CS0618 when the CreateFromString type/method is [Obsolete]. Note: a hard-obsolete#>
+<#+                             // ([Obsolete(message, true)]) emits CS0619 (an error), which pragma 0618 does not suppress.#>
+<#+                             if (uentry.IsDeprecated)#>
+<#+                             {#>
+#pragma warning disable 0618  //   Warning on Deprecated usage
+<#+                             }#>
 <#+                             if (uentry.TypeEntry.UnderlyingType.IsValueType)#>
 <#+                             {#>
                 userType.CreateFromStringMethod = x => (global::System.Object)<#=uentry.CreateFromStringMethod.ResolvedName.CSharpName()#>(x);
@@ -822,6 +828,10 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+                             else#>
 <#+                             {#>
                 userType.CreateFromStringMethod = <#=uentry.CreateFromStringMethod.ResolvedName.CSharpName()#>;
+<#+                             }#>
+<#+                             if (uentry.IsDeprecated)#>
+<#+                             {#>
+#pragma warning restore 0618
 <#+                             }#>
 <#+                         }#>
 <#+                         foreach(InternalXamlUserMemberInfo mem in uentry.Members)   #>
@@ -894,7 +904,7 @@ namespace <#=ProjectInfo.XamlTypeInfoNamespace#>
 <#+         {                                                                       #>
 <#+             foreach(InternalXamlUserTypeInfo entry in SchemaInfo.UserTypeInfo)  #>
 <#+             {                                                                   #>
-<#+                 if(!entry.IsArray)                                              #>
+<#+                 if(entry.RequiresStaticInitializer)                             #>
 <#+                 {                                                               #>
 <#+                     if (entry.IsDeprecated)                                     #>
 <#+                     {                                                           #>

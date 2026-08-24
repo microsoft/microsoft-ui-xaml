@@ -101,7 +101,18 @@ void UniformGridLayout::OnItemsChangedCore(
     winrt::IInspectable const& source,
     winrt::NotifyCollectionChangedEventArgs const& args)
 {
-    GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
+    // The LayoutState can be null when a collection change is raised against a
+    // layout that has not been (or is no longer) initialized for this context -
+    // for example a stray CollectionChanged delivered to an unloaded ItemsRepeater
+    // whose RepeaterLayoutContext can no longer resolve its owner. Guard against it
+    // (mirrors StackLayout::OnItemsChangedCore) instead of dereferencing a null state.
+    if (auto layoutState = context.LayoutState())
+    {
+        if (auto gridState = GetAsGridState(layoutState))
+        {
+            gridState->FlowAlgorithm().OnItemsSourceChanged(source, args, context);
+        }
+    }
     // Always invalidate layout to keep the view accurate.
     InvalidateLayout();
 }

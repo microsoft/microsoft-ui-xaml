@@ -293,6 +293,7 @@ void ActivationFactoryCache::ResetCache()
     m_inputSystemCursorStatics.Reset();
     m_contentIslandStatics.Reset();
     m_inputFocusControllerStatics.Reset();
+    m_inputKeyboardSourceStatics.Reset();
     m_inputKeyboardSourceStatics2.Reset();
     m_inputPreTranslateKeyboardSourceStatics.Reset();
     m_inputPointerSourceStatics.Reset();
@@ -647,6 +648,20 @@ ixp::IInputFocusControllerStatics* ActivationFactoryCache::GetInputFocusControll
     return m_inputFocusControllerStatics.Get();
 }
 
+ixp::IInputKeyboardSourceStatics* ActivationFactoryCache::GetInputKeyboardSourceStatics()
+{
+    wil::cs_leave_scope_exit guard = m_lock.lock();
+
+    if (!m_inputKeyboardSourceStatics)
+    {
+        // InputKeyboardSource is already activated for the v2 interface.
+        wrl::ComPtr<ixp::IInputKeyboardSourceStatics2> keyboardSourceStatics2 = GetInputKeyboardSourceStatics2();
+        IFCFAILFAST(keyboardSourceStatics2.As(&m_inputKeyboardSourceStatics));
+    }
+
+    return m_inputKeyboardSourceStatics.Get();
+}
+
 ixp::IInputKeyboardSourceStatics2* ActivationFactoryCache::GetInputKeyboardSourceStatics2()
 {
     wil::cs_leave_scope_exit guard = m_lock.lock();
@@ -954,15 +969,18 @@ CCoreServices::~CCoreServices() noexcept
 
     // Take down the visual tree.
     VERIFYHR(ResetCoreWindowVisualTree());
-    m_inputServices = nullptr;
 
     // Clean this up before the rest of the core as its contents may have
     // the final reference to CDependencyObjects. These will not expect
     // the core to be fully shut down before them.
 
     // End of pre-cleanup
+    ASSERT(m_inputServices != nullptr);
     delete m_pTextCore;
     m_pTextCore = NULL;
+
+    // Reset input services only after the text core teardown above, whose callbacks can re-enter input and deref a null CInputServices.
+    m_inputServices = nullptr;
 
     ReleaseInterface(m_pDeploymentTree);
     if (m_pAllSurfaceImageSources != NULL)
@@ -4328,10 +4346,10 @@ _Check_return_ HRESULT CCoreServices::Tick(
 
         FAIL_FAST_ASSERT(m_pNWWindowRenderTarget->GetDCompTreeHost() != nullptr);
 
-        // Wait for resource creation to complete and register the callback thread. Otherwise Xaml timelines can't add
-        // completed time events.
+        // Wait for resource creation to complete.
+        // $REVIEW: There are no more DComp animations, so we don't need to wait for D3D resources
+        // for that reason - but more investigation is needed before this wait can be removed.
         IFC_RETURN_DEVICE_LOST_OTHERWISE_FAIL_FAST(m_pNWWindowRenderTarget->GetGraphicsDeviceManager()->WaitForD3DDependentResourceCreation());
-        m_pNWWindowRenderTarget->GetDCompTreeHost()->RegisterDCompAnimationCompletedCallbackThread();
 
         HRESULT hrTick = m_pTimeManager->Tick(
             FALSE /* newTimelinesOnly */,
@@ -10142,7 +10160,7 @@ CCoreServices::SimulateDeviceLost(bool resetVisuals, bool resetDManip)
 //------------------------------------------------------------------------------
 void
 CCoreServices::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+    _Outptr_ IDCompositionDevice2 **ppDCompDevice
     ) const
 {
     ASSERT(m_pNWWindowRenderTarget != nullptr);

@@ -1,0 +1,27 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+variables:
+  targets: >
+    {
+      Release_x86:
+      {
+        buildPlatform: 'x86',
+        buildOutput: 'x86',
+        buildConfiguration: 'Release',
+        normalizedConfiguration: 'fre'
+      },
+      Release_x64:
+      {
+        buildPlatform: 'x64',
+        buildOutput: 'amd64',
+        buildConfiguration: 'Release',
+        normalizedConfiguration: 'fre'
+      },
+      Release_ARM64:
+      {
+        buildPlatform: 'ARM64',
+        buildOutput: 'arm64',
+        buildConfiguration: 'Release',
+        normalizedConfiguration: 'fre'
+      }
+    }

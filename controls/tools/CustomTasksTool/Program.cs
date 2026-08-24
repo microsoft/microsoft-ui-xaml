@@ -29,7 +29,6 @@ namespace CustomTasksTool
             //TestDependencyPropertyCodeGen();
             //TestTransformTemplate();
             //TestGenerateWinRTClassRegistrations();
-            TestRunPowershellScript();
         }
 
         private static void TestBatchMergeXaml()
@@ -307,16 +306,6 @@ namespace CustomTasksTool
             AddTaskItem($@"{projectRoot}\BuildOutput\obj\{platform}{configuration}\dxaml\xcp\dxaml\idl\winrt\main\microsoft.ui.xaml.private.winmd");
 
             test.WinMDs = taskItemList.ToArray();
-
-            test.Execute();
-        }
-
-        private static void TestRunPowershellScript()
-        {
-            RunPowershellScript test = new RunPowershellScript {
-                Path = $@"{projectRoot}\scripts\buildMockWinAppSdkPackage.ps1",
-                Parameters = $@"{projectRoot} x64 Debug 3.0.0-dev 999.0.0-mock {projectRoot}\BuildOutput\obj\{platform}{configuration}\packages\ -Fake"
-            };
 
             test.Execute();
         }

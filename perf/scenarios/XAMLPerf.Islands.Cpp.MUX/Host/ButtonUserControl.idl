@@ -1,0 +1,8 @@
+namespace IslandSimple
+{
+    [default_interface]
+    runtimeclass ButtonUserControl : Microsoft.UI.Xaml.Controls.UserControl
+    {
+        ButtonUserControl();
+    }
+}

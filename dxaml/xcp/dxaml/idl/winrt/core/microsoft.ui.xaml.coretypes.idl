@@ -39,9 +39,9 @@ cpp_quote("#undef GetCurrentTime")
 
 namespace Microsoft.UI.Xaml
 {
-    [contractversion(10)]
+    [contractversion(12)]
     apicontract WinUIContract{};
-    [contractversion(10)]
+    [contractversion(12)]
     apicontract XamlContract{};
 }
 
@@ -884,7 +884,7 @@ namespace Microsoft.UI.Xaml.Automation.Peers
         TextEditTextChanged,
         LayoutInvalidated,
         [feature(Feature_ExperimentalApi)]
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         Notification,
     };
 
@@ -1908,7 +1908,7 @@ namespace Microsoft.UI.Xaml
         Microsoft.UI.Content.ContentIsland ContentIsland{ get; };
         Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
         [feature(Feature_ExperimentalApi)]
         [interface_name("Microsoft.UI.Xaml.IXamlIslandFeature_ExperimentalApi")]
         {
@@ -2550,6 +2550,13 @@ namespace Microsoft.UI.Xaml
         overridable Windows.Foundation.Size ArrangeOverride(Windows.Foundation.Size finalSize);
         overridable void OnApplyTemplate();
         overridable Boolean GoToElementStateCore(String stateName, Boolean useTransitions);
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.IFrameworkElementFeature_ExperimentalApi")]
+        {
+            void SetThemeResourceBinding(Microsoft.UI.Xaml.DependencyProperty property, String resourceKey);
+        }
     };
 
     [contract(Microsoft.UI.Xaml.WinUIContract, 1)]
@@ -2637,7 +2644,7 @@ namespace Microsoft.UI.Xaml
         Object Value;
         Microsoft.UI.Xaml.TargetPropertyPath Target;
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
         [static_name("Microsoft.UI.Xaml.ISetterStatics2")]
         {
             static Microsoft.UI.Xaml.DependencyProperty ValueProperty{ get; };

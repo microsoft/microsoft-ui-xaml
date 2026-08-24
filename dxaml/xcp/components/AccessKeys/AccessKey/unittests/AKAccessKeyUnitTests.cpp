@@ -17,7 +17,7 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     {
         WaitForDebugger();
         wchar_t myKey[maxAccessKeyLength] = { L'M', L'A', L'8', L'B', L'Z', L'2' };
-        wchar_t emptyKey[maxAccessKeyLength];
+        wchar_t emptyKey[maxAccessKeyLength] = L""; // PREfast C6001 - initialize local
 
         AKAccessKey aKey1(myKey);
         AKAccessKey aKey2(myKey);
@@ -63,8 +63,8 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
     void AKAccessKeyUnitTests::VerifyAccessKeyAssignmentOperator()
     {
         WaitForDebugger();
-        wchar_t myKey1[maxAccessKeyLength] = { L'M' };
-        wchar_t myKey2[maxAccessKeyLength] = { L'T' };
+        wchar_t myKey1[maxAccessKeyLength + 1] = L"M"; // PREfast C6054 - ensure null-terminated
+        wchar_t myKey2[maxAccessKeyLength + 1] = L"T"; // PREfast C6054 - ensure null-terminated
 
         AKAccessKey aKey1(myKey1);
         AKAccessKey aKey2(myKey2);

@@ -20,6 +20,7 @@ xref_ptr<CVisualStateGroupCollection> CVisualStateManager2::GetGroupCollectionFr
 }
 
 VisualStateToken::VisualStateToken()
+    : m_value(static_cast<size_t>(-1)) // PREfast C26495 - initialize members
 {
 }
 

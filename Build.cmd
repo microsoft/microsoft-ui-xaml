@@ -153,21 +153,10 @@ rem we can hit build breaks caused by MSBuild instances trying to produce DLLs t
 rem already loaded.  To avoid that, we'll build the parts of the XAML compiler we need to build
 rem before we build the solutions that consume them.
 rem
-rem First, determine if we have necessary files to build the compiler or if we should download
-rem and use the compiler from a public WinUI package.
-if EXIST "%reporoot%\src\XamlCompiler\BuildTasks\Microsoft\Lmr\XamlTypeUniverse.cs" (
-    rem Build the compiler
-    call :buildSolution %reporoot%\XamlCompilerPrerequisites.sln
-    if ERRORLEVEL 1 goto:showDurationAndExit
-) else (
-    rem Download a recent compatible public WinUI package and copy the necessary compiler
-    rem files into the right location.
-    call :buildSolution %reporoot%\XamlCompilerPublic.csproj
-    if ERRORLEVEL 1 goto:showDurationAndExit
-    rem Ensure GenXbf.dll is available
-    call :buildSolution %reporoot%\eng\BuildGenXbfForMSBuild\BuildGenXbfForMSBuild.csproj
-    if ERRORLEVEL 1 goto:showDurationAndExit
-)
+rem Build the XAML compiler from source. XamlCompilerPrerequisites.sln also builds
+rem GenXbf (via the BuildGenXbfForMSBuild project it contains), so no separate step is needed.
+call :buildSolution %reporoot%\XamlCompilerPrerequisites.sln
+if ERRORLEVEL 1 goto:showDurationAndExit
 
 if "%_targetMux%" == "1" (
     call :buildSolution %reporoot%\dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj
@@ -312,21 +301,11 @@ goto :eof
 
 
 :buildMockPackage
-if EXIST "%RepoRoot%\pack.cmd" (
-    if "%_fake%"=="1" (
-        echo COMMAND: call %RepoRoot%\pack.cmd /version %_version%
-        echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
-        goto :eof
-    )
-    call %RepoRoot%\pack.cmd /version %_version%
-    call %RepoRoot%\pack.component.cmd /version %_version%
-) else (
-    if "%_fake%"=="1" (
-        echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
-        goto :eof
-    )
-    call %RepoRoot%\pack.component.cmd /version %_version%
+if "%_fake%"=="1" (
+    echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
+    goto :eof
 )
+call %RepoRoot%\pack.component.cmd /version %_version%
 if ERRORLEVEL 1 goto :showDurationAndExit
 goto :eof
 

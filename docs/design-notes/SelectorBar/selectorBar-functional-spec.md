@@ -446,10 +446,10 @@ None.
 
 SelectorBar will depend on `ItemsView` keyboard handling. The interactions are as follows:
 
-**Left arrow:** Focus changes to the the next left item and if it is already at the leftmost 
+**Left arrow:** Focus changes to the next left item and if it is already at the leftmost 
 it'll stay at the leftmost item. Selection follows focus.
 
-**Right arrow:** Focus changes to the the next right item will depend on `ItemsView` keyboard handling. 
+**Right arrow:** Focus changes to the next right item will depend on `ItemsView` keyboard handling. 
 and if it is already at the rightmost it'll stay at the rightmost item. Selection follows focus.
 
 **Home:** Focus changes to the leftmost item. Selection follows focus.
@@ -490,11 +490,11 @@ None.
 ## Gamepad handling
 
 GamepadDPadLeft, GamepadRightThumbstickLeft, GamepadLeftTrigger: 
-Focus changes to the the next left item and if it is already at the leftmost it'll stay at the leftmost item. 
+Focus changes to the next left item and if it is already at the leftmost it'll stay at the leftmost item. 
 Selection follows focus.
 
 GamepadDPadRight, GamepadRightThumbstickRight, GamepadRightTrigger: 
-Focus changes to the the next right item and if it is already at the rightmost it'll stay at the rightmost item. 
+Focus changes to the next right item and if it is already at the rightmost it'll stay at the rightmost item. 
 Selection follows focus.
 
 None for the rest.

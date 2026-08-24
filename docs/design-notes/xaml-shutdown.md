@@ -47,7 +47,7 @@ When an app uses Xaml Islands, there are three key objects involved:
 in the templates.
   * It's necessary to create a custom one for the tooling to hook up `IXamlMetadataProvider` correctly.  If an App doesn't
  supply its own Application object, XAML will use the default one.  When creating a custom Application object, the app
- must create it before the first `WindowsXamlManager` is instantiated, becuase the `WindowsXamlManager` creates a
+ must create it before the first `WindowsXamlManager` is instantiated, because the `WindowsXamlManager` creates a
  default Application object if there's not already one available.
   * The Application object is process-global, there can only be one in the process.
   * The threading model of this object is unusual.  Many of its APIs will operate on whatever DXamlCore is on the
@@ -214,7 +214,7 @@ set should reach a plateau.
 We have just one test that runs a leak check on a basic island scenario, `XamlIslandTests::ShutdownWithLeakDetection`.
 We should build this out to validate more complex scenarios.
 
-In the past we have found this to be difficult because there are lots of IXP objects also involved.  As part of the the
+In the past we have found this to be difficult because there are lots of IXP objects also involved.  As part of the
 "Organized Shutdown" effort, let's talk with IXP about the best way to do leak testing between our two teams.
 
 ### Microsoft.ui.xaml.dll can't unload quite yet

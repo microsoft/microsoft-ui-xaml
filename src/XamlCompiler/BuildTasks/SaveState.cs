@@ -27,6 +27,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         public String LocalAssemblyName { get; set; }
 
         public string XamlFeatureControlFlags { get; set; }
+        public string EnabledXamlOptionalChanges { get; set; }
+        public string DisabledXamlOptionalChanges { get; set; }
         public HashSet<String> ReferenceAssemblyList { get; private set; }
         public Dictionary<String, Guid> ReferenceAssemblyGuids { get; private set; }
         public Dictionary<String, SaveStatePerXamlFile> XamlPerFileInfo { get; private set; }
@@ -192,6 +194,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
         private const string XMLNAME_XamlSourceFileDataList = "XamlSourceFileDataList";
         private const string XMLNAME_XamlSourceFileData = "XamlSourceFileData";
         private const string XMLNAME_XamlFeatureControlFlags = "XamlFeatureControlFlags";
+        private const string XMLNAME_EnabledXamlOptionalChanges = "EnabledXamlOptionalChanges";
+        private const string XMLNAME_DisabledXamlOptionalChanges = "DisabledXamlOptionalChanges";
 
         // ------  private -------------
 
@@ -220,7 +224,15 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                                     switch (child.Name)
                                     {
                                         case XMLNAME_XamlFeatureControlFlags:
-                                            XamlFeatureControlFlags = root.InnerText;
+                                            XamlFeatureControlFlags = child.InnerText;
+                                            break;
+
+                                        case XMLNAME_EnabledXamlOptionalChanges:
+                                            EnabledXamlOptionalChanges = child.InnerText;
+                                            break;
+
+                                        case XMLNAME_DisabledXamlOptionalChanges:
+                                            DisabledXamlOptionalChanges = child.InnerText;
                                             break;
 
                                         case XMLNAME_ReferenceAssemblyList:
@@ -307,6 +319,8 @@ namespace Microsoft.UI.Xaml.Markup.Compiler
                 writer.WriteStartElement(XMLNAME_XamlCompilerSaveState);
 
                 writer.WriteElementString(XMLNAME_XamlFeatureControlFlags, XamlFeatureControlFlags);
+                writer.WriteElementString(XMLNAME_EnabledXamlOptionalChanges, EnabledXamlOptionalChanges);
+                writer.WriteElementString(XMLNAME_DisabledXamlOptionalChanges, DisabledXamlOptionalChanges);
 
                 // Write: ReferenceAssemblyList
                 writer.WriteStartElement(XMLNAME_ReferenceAssemblyList);

@@ -3,6 +3,9 @@
 
 #include "precomp.h"
 #include <CoreWindow.h>
+#ifdef XAMLPROFILER_ENABLED
+#include <XamlProfilerTracing.h>
+#endif // XAMLPROFILER_ENABLED
 #include "UserControl.g.h"
 #include "Control.g.h"
 #include "TextBoxView.g.h"
@@ -180,13 +183,6 @@ DXamlCore::~DXamlCore()
     m_pDefaultStyles = NULL;
 
     ReleaseInterface(m_pControl);
-
-    // Release PageNavigation complete event, if exists
-    if (m_pPageNavigationCompleteEvent)
-    {
-        m_pPageNavigationCompleteEvent->Close();
-        m_pPageNavigationCompleteEvent = NULL;
-    }
 
     RemoveAutoHideScrollBarsChangedHandler();
     RemoveAnimationsEnabledChangedHandler();
@@ -1722,6 +1718,22 @@ DXamlCore::GetPeerPrivate(
 
                 m_Peers.insert(pDO);
                 pCoreDO->SetDXamlPeer(pDO);
+
+                // The peer is now bound to the core object. Tell the XAML Profiler so it can
+                // back-fill the PeerHandle on any tree node that was created before the peer
+                // existed (lazy-peer elements traced a PeerHandle of 0 at enter time). The
+                // handle is computed the same way every other profiler event computes it, so
+                // the value matches and the consumer's "first non-zero wins" stamping just works.
+#ifdef XAMLPROFILER_ENABLED
+                if (XamlProfilerTracing::IsEnabled())
+                {
+                    const uint64_t peerHandle = XamlProfilerGetPeerHandle(pCoreDO);
+                    if (peerHandle != 0)
+                    {
+                        XamlProfilerTracing::PeerAssociated(reinterpret_cast<uint64_t>(pCoreDO), peerHandle);
+                    }
+                }
+#endif // XAMLPROFILER_ENABLED
 
                 IFC(CoreImports::DependencyObject_ShouldCreatePeerWithStrongRef(pCoreDO, &fForceStrong));
 
@@ -3599,71 +3611,11 @@ DXamlCore::XamlPalSetCoreWindow()
 
     IFC(m_hCore->InitWaitForIdleEvents());
 
-    // Open PageNavigation complete Named event created by TestAutomationHelper class.
-    IFC(RetrievePageNavigationCompleteEvent());
-
 Cleanup:
     return hr;
 }
 
 
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Retrieves the page navigation complete event,
-//      which are created by TestAutomationHelper.
-//
-//------------------------------------------------------------------------
-_Check_return_ HRESULT
-DXamlCore::RetrievePageNavigationCompleteEvent()
-{
-    HRESULT hr = S_OK;
-
-    IFC(gps->NamedEventCreate(
-        &m_pPageNavigationCompleteEvent,
-        InitModeOpenOrCreate,
-        FALSE /* bInitialState */,
-        FALSE /* bManualReset */,
-        XSTRING_PTR_EPHEMERAL(L"PageNavigationComplete"),
-        FALSE /* bReturnFailureIfCreationFailed */));
-
-Cleanup:
-    return hr;
-}
-
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Returns a value indicating whether or not the page navigation
-//      complete event has been successfully retrieved.
-//
-//------------------------------------------------------------------------
-bool
-DXamlCore::HasPageNavigationCompleteEvent()
-{
-    return m_pPageNavigationCompleteEvent != NULL;
-}
-
-//------------------------------------------------------------------------
-//
-//  Synopsis:
-//      Sets the page navigation complete event, if it exists.
-//
-//------------------------------------------------------------------------
-_Check_return_ HRESULT
-DXamlCore::SetPageNavigationCompleteEvent()
-{
-    HRESULT hr = S_OK;
-
-    if (m_pPageNavigationCompleteEvent != NULL)
-    {
-        IFC(m_pPageNavigationCompleteEvent->Set());
-    }
-
-Cleanup:
-    return hr;
-}
 
 //------------------------------------------------------------------------
 //
@@ -4120,7 +4072,7 @@ Cleanup:
 //------------------------------------------------------------------------------
 void
 DXamlCore::GetDCompDevice(
-    _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+    _Outptr_ IDCompositionDevice2 **ppDCompDevice
     ) const
 {
     CCoreServices* pCoreServices = GetHandle();

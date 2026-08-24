@@ -7,6 +7,7 @@
 #include <ThemeResource.h>
 
 
+#pragma warning(suppress: 26495) // PREfast C26495 - stub ctor; member values are irrelevant for unit tests
 CThemeResourceExtension::CThemeResourceExtension(_In_ CCoreServices* core)
     : CMarkupExtensionBase(core)
 {}

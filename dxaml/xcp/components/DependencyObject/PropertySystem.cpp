@@ -1168,7 +1168,7 @@ _Check_return_ HRESULT CDependencyObject::EnterSparseProperties(_In_ CDependency
     // Don't fetch non-owned IInspectables.
     auto tempValues = GetSparseValueEntries<true>(localArena);
 
-    // For SparseProperties we don't propogate down the visualTree pointer.  These elements seem to be
+    // For SparseProperties we don't propagate down the visualTree pointer.  These elements seem to be
     // able to have parents in different trees.  TODO: Investigate this more.
     // Bug 19548424: Investigate places where an element entering the tree doesn't have a unique VisualTree ptr
     EnterParams newParams(params);

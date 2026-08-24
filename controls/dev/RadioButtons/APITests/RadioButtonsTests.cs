@@ -136,5 +136,189 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Normal", commonStatesGroup.CurrentState.Name);
             });
         }
+
+        [TestMethod]
+        public void VerifyVirtualizingTemplateDoesNotRetainRecycledContainers()
+        {
+            RadioButtons radioButtons = null;
+            ScrollViewer scrollViewer = null;
+            ItemsRepeater repeater = null;
+            int clearingCount = 0;
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Creating virtualizing RadioButtons template.");
+                var virtualizingTemplate = (ControlTemplate)XamlReader.Load(TestUtilities.ProcessTestXamlForRepo(
+                    @"<ControlTemplate
+                        xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                        xmlns:controls='using:Microsoft.UI.Xaml.Controls'
+                        TargetType='controls:RadioButtons'>
+                        <ScrollViewer Height='120'>
+                            <controls:ItemsRepeater x:Name='InnerRepeater'>
+                                <controls:ItemsRepeater.Layout>
+                                    <controls:StackLayout />
+                                </controls:ItemsRepeater.Layout>
+                            </controls:ItemsRepeater>
+                        </ScrollViewer>
+                    </ControlTemplate>"));
+
+                Log.Comment("Creating RadioButtons instance.");
+                radioButtons = new RadioButtons
+                {
+                    ItemsSource = Enumerable.Range(0, 100).Select(index => $"Option {index}").ToList(),
+                    SelectedIndex = 0,
+                    Template = virtualizingTemplate
+                };
+
+                Log.Comment("Applying RadioButtons template.");
+                Content = radioButtons;
+                Content.UpdateLayout();
+
+                Log.Comment("Finding virtualizing template descendants.");
+                scrollViewer = radioButtons.FindVisualChildByType<ScrollViewer>();
+                repeater = radioButtons.FindVisualChildByType<ItemsRepeater>();
+                Verify.IsNotNull(scrollViewer);
+                Verify.IsNotNull(repeater);
+
+                repeater.ElementClearing += (sender, args) => clearingCount++;
+            });
+
+            IdleSynchronizer.Wait();
+
+            void Scroll(bool toEnd)
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    scrollViewer.ChangeView(null, toEnd ? scrollViewer.ScrollableHeight : 0, null, true);
+                    Content.UpdateLayout();
+                });
+                IdleSynchronizer.Wait();
+            }
+
+            Scroll(true);
+            Scroll(false);
+
+            int baselineChildCount = 0;
+            RunOnUIThread.Execute(() =>
+            {
+                baselineChildCount = VisualTreeHelper.GetChildrenCount(repeater);
+                Verify.IsLessThan(baselineChildCount, 100);
+            });
+
+            for (int iteration = 0; iteration < 5; iteration++)
+            {
+                Scroll(true);
+                Scroll(false);
+            }
+
+            RunOnUIThread.Execute(() =>
+            {
+                int finalChildCount = VisualTreeHelper.GetChildrenCount(repeater);
+                Verify.IsGreaterThan(clearingCount, 0);
+                Verify.AreEqual(baselineChildCount, finalChildCount);
+
+                var selectedContainer = radioButtons.ContainerFromIndex(0) as RadioButton;
+                Verify.IsNotNull(selectedContainer);
+                Verify.AreEqual("Option 0", selectedContainer.Content);
+            });
+        }
+
+        [TestMethod]
+        public void VerifySelectionChangedArgsDoNotContainNullItems()
+        {
+            RadioButtons radioButtons = null;
+            var selectionChangedArgs = new List<SelectionChangedEventArgs>();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons = new RadioButtons();
+                radioButtons.ItemsSource = new List<string>() { "0", "1", "2", "3" };
+                radioButtons.SelectionChanged += (s, e) => selectionChangedArgs.Add(e);
+
+                Content = radioButtons;
+                Content.UpdateLayout();
+            });
+            IdleSynchronizer.Wait();
+
+            // Local helper: verify every captured event so far has no null entries
+            // in either collection, then clear the buffer for the next scenario.
+            // The args collections are UI-thread objects, so access them on the UI thread.
+            void VerifyNoNullItemsAndClear()
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    foreach (var args in selectionChangedArgs)
+                    {
+                        foreach (var item in args.AddedItems)
+                        {
+                            Verify.IsNotNull(item, "AddedItems should never contain a null entry.");
+                        }
+                        foreach (var item in args.RemovedItems)
+                        {
+                            Verify.IsNotNull(item, "RemovedItems should never contain a null entry.");
+                        }
+                    }
+                });
+                selectionChangedArgs.Clear();
+            }
+
+            // Scenario 1: first selection (nothing was selected before). RemovedItems
+            // must be empty (Count == 0), AddedItems must contain the newly selected item.
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 0;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.IsGreaterThan(selectionChangedArgs.Count, 0, "SelectionChanged should have fired for the first selection.");
+                var lastArgs = selectionChangedArgs.Last();
+                Verify.AreEqual(0, lastArgs.RemovedItems.Count, "First selection should report no removed items.");
+                Verify.AreEqual(1, lastArgs.AddedItems.Count, "First selection should report exactly one added item.");
+            });
+            VerifyNoNullItemsAndClear();
+
+            // Scenario 2: switching selection to another item. No event should carry a null.
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 2;
+            });
+            IdleSynchronizer.Wait();
+            VerifyNoNullItemsAndClear();
+
+            // Scenario 3: out-of-range positive SelectedIndex. GetDataAtIndex returns
+            // null for such an index, but the args must not carry a null entry.
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 99;
+            });
+            IdleSynchronizer.Wait();
+            VerifyNoNullItemsAndClear();
+
+            // Scenario 4: deselect everything. AddedItems must be empty and no null entries.
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = 0;
+            });
+            IdleSynchronizer.Wait();
+            selectionChangedArgs.Clear();
+
+            RunOnUIThread.Execute(() =>
+            {
+                radioButtons.SelectedIndex = -1;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                foreach (var args in selectionChangedArgs)
+                {
+                    Verify.AreEqual(0, args.AddedItems.Count, "Deselecting should report no added items.");
+                }
+            });
+            VerifyNoNullItemsAndClear();
+        }
     }
 }

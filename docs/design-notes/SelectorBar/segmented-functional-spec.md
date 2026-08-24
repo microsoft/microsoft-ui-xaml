@@ -517,9 +517,9 @@ None
   Specify any control behavior that might depend on a UIElement.XYFocusKeyboardNavigation value.
   Example: ScrollView's handling of navigation keys depends on its own XYFocusKeyboardNavigation setting.
  -->
-**Left arrow:** Focus changes to the the next left SegmentedItem and if it is already at the leftmost it'll stay at the leftmost SegmentedItem. Selection follows focus.
+**Left arrow:** Focus changes to the next left SegmentedItem and if it is already at the leftmost it'll stay at the leftmost SegmentedItem. Selection follows focus.
 
-**Right arrow:** Focus changes to the the next right SegmentedItem and if it is already at the rightmost it'll stay at the rightmost SegmentedItem. Selection follows focus.
+**Right arrow:** Focus changes to the next right SegmentedItem and if it is already at the rightmost it'll stay at the rightmost SegmentedItem. Selection follows focus.
 
 **Home:** Focus changes to the leftmost SegmentedItem. Selection follows focus.
 
@@ -565,9 +565,9 @@ _Spec note: To consider - NavigationView Top does not show an interaction on spa
      GamepadLeftTrigger, GamepadRightTrigger
      GamepadA, GamepadB
  -->
-GamepadDPadLeft, GamepadRightThumbstickLeft, GamepadLeftTrigger: Focus changes to the the next left SegmentedItem and if it is already at the leftmost it'll stay at the leftmost SegmentedItem. Selection follows focus.
+GamepadDPadLeft, GamepadRightThumbstickLeft, GamepadLeftTrigger: Focus changes to the next left SegmentedItem and if it is already at the leftmost it'll stay at the leftmost SegmentedItem. Selection follows focus.
 
-GamepadDPadRight, GamepadRightThumbstickRight, GamepadRightTrigger: Focus changes to the the next right SegmentedItem and if it is already at the rightmost it'll stay at the rightmost SegmentedItem. Selection follows focus.
+GamepadDPadRight, GamepadRightThumbstickRight, GamepadRightTrigger: Focus changes to the next right SegmentedItem and if it is already at the rightmost it'll stay at the rightmost SegmentedItem. Selection follows focus.
 
 None for the rest.
 

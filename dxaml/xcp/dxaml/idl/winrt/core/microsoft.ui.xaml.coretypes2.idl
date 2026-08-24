@@ -511,13 +511,15 @@ namespace Microsoft.UI.Xaml.Hosting
 namespace Microsoft.UI.Xaml.Settings
 {
 
-    [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
     [webhosthidden]
     enum XamlChangeId
     {
         _Reserved,
         IconNoGridOptimization = 61276805,
-        DelayApplyStyleOptimization = 61697456,
+        OptimizeApplyStyles = 61697456,
+        DefaultStyleOptimizations = 60995620,
+        DeferContextFlyoutInit = 61098986,
     };
 }
 
@@ -850,6 +852,18 @@ namespace Microsoft.UI.Xaml
         {
             Microsoft.UI.Xaml.Media.SystemBackdrop SystemBackdrop;
             Microsoft.UI.Windowing.AppWindow AppWindow{ get; };
+        }
+    
+        [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        [feature(Feature_ExperimentalApi)]
+        [interface_name("Microsoft.UI.Xaml.IWindowFeature_ExperimentalApi")]
+        {
+            Double Width;
+            Double Height;
+            Double MinWidth;
+            Double MinHeight;
+            Double MaxWidth;
+            Double MaxHeight;
         }
     };
 
@@ -2234,7 +2248,7 @@ namespace Microsoft.UI.Xaml.Markup
         static void SetPropertyFromUri(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Windows.Foundation.Uri value);
         static void SetPropertyFromObject(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Object value);
     
-        [contract(Microsoft.UI.Xaml.WinUIContract, 10)]
+        [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
         {
             static void SetPropertyFromThickness(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Microsoft.UI.Xaml.Thickness value);
             static void SetPropertyFromCornerRadius(Object dependencyObject, Microsoft.UI.Xaml.DependencyProperty propertyToSet, Microsoft.UI.Xaml.CornerRadius value);
@@ -2337,13 +2351,13 @@ namespace Microsoft.UI.Xaml.Hosting
 }
 namespace Microsoft.UI.Xaml.Settings
 {
-    [contract(Microsoft.UI.Xaml.WinUIContract, 9)]
+    [contract(Microsoft.UI.Xaml.WinUIContract, 11)]
     [webhosthidden]
     [default_interface]
     runtimeclass XamlOptionalChanges
     {
-        static void EnableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
-        static void DisableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean EnableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
+        static Boolean DisableChange(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
         static Boolean IsChangeEnabled(Microsoft.UI.Xaml.Settings.XamlChangeId changeId);
         static Boolean Lock();
         static Boolean IsLocked();

@@ -3070,6 +3070,8 @@ namespace Windows { namespace Foundation { namespace Collections { namespace Int
                 // the collection, avoid the cost of the memory allocation.
                 if (_uDemandCopy != 0)
                 {
+                    // PREfast C28182 - pTemps is allocated (and null-checked) above whenever _uDemandCopy != 0 and hr is still SUCCEEDED here.
+                    _Analysis_assume_(pTemps != nullptr);
                     for (index = 0; (index < capacity) && (index + startIndex < sizeSnap); index++)
                     {
                         // Depending on the temp traits, this may make a temporary copy into pTempts[index] in order to perform
@@ -5008,7 +5010,7 @@ namespace Windows { namespace Foundation { namespace Collections { namespace Int
                     hr = XWinRT::detail::FailsWith(E_BOUNDS);
                 }
 
-                if (SUCCEEDED(hr))
+                if (SUCCEEDED(hr) && pCurPair != nullptr)  // PREfast C6011 - non-null implied by the at-end check above; make it explicit
                 {
                     // construct a new keyValuePair
                     Microsoft::WRL::ComPtr<SimpleKeyValuePair<K, V, KeyLifetime, ValueLifetime>> spPair;
@@ -5090,7 +5092,7 @@ namespace Windows { namespace Foundation { namespace Collections { namespace Int
                     break;
                 }
 
-                if (SUCCEEDED(hr))
+                if (SUCCEEDED(hr) && pCurPair != nullptr)  // PREfast C6011 - non-null implied by the at-end check above; make it explicit
                 {
                     // construct a new keyValuePair
                     Microsoft::WRL::ComPtr<SimpleKeyValuePair<K, V, KeyLifetime, ValueLifetime>> spPair;
@@ -5121,7 +5123,7 @@ namespace Windows { namespace Foundation { namespace Collections { namespace Int
             if(FAILED(hr) && (count > 0))
             {
                 // Loop through and release any allocated before the failure
-                for (unsigned i = 0; i < count; ++i)
+                for (unsigned i = 0; i < count && i < capacity; ++i)  // PREfast C6386 - bound write index by buffer capacity
                 {
                     rgI[i]->Release();
                     rgI[i] = nullptr;
@@ -6022,7 +6024,7 @@ namespace Windows { namespace Foundation { namespace Collections { namespace Int
         Microsoft::WRL::ComPtr<ChunkView>           _spLeftHalf;
         Microsoft::WRL::ComPtr<NaiveSplitView>      _spRightHalf;
         Microsoft::WRL::ComPtr<wfc::IIterator<PairT*>>   _spIterator;
-        unsigned int                        _uSize;
+        unsigned int                        _uSize = 0;  // PREfast C26495 - initialize member
         EqualityPredicate                   _fnEquals;
         bool                                _fInitialized;
     };

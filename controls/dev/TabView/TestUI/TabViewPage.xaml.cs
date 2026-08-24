@@ -312,7 +312,7 @@ namespace MUXControlsTestApp
             object objOriginTabView;
             if (e.DataView.Properties.TryGetValue(DataIdentifier, out obj) && e.DataView.Properties.TryGetValue(DataTabView, out objOriginTabView))
             {
-                // TODO - BUG: obj should never be null, but occassionally is. Why?
+                // TODO - BUG: obj should never be null, but occasionally is. Why?
                 if (obj == null || objOriginTabView == null)
                 {
                     return;

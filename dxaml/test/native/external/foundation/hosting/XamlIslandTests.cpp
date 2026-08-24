@@ -157,6 +157,11 @@ DesktopWindowXamlSource^ CreateDesktopWindowXamlSource(
     DesktopWindowXamlSource^ dwxs = ref new DesktopWindowXamlSource();
     LOG_OUTPUT(L"  ui> DesktopWindowXamlSource created.");
 
+    // Breadcrumb for OS bug #63350935: connecting/re-creating an island can AV in IXP's
+    // DragDropManager::Initialize (dangling factory-cache pointer into unloaded DataExchange.dll).
+    // If the test host crashes shortly after this line, that is the known bug, not a WinUI regression.
+    LOG_OUTPUT(L"  ui> NOTE: connecting island. A crash here (AV in Microsoft.UI.Input DragDropManager::Initialize) is KNOWN OS bug #63350935.");
+
     mu::WindowId windowId;
     VERIFY_SUCCEEDED(GetWindowIdFromWindow(hwnd, (::ABI::Microsoft::UI::WindowId*) &windowId));
 
@@ -177,6 +182,11 @@ XamlIsland^ CreateXamlIsland(
 
     XamlIsland^ xi = ref new XamlIsland();
     LOG_OUTPUT(L"  ui> XamlIsland created.");
+
+    // Breadcrumb for OS bug #63350935: connecting/re-creating an island can AV in IXP's
+    // DragDropManager::Initialize (dangling factory-cache pointer into unloaded DataExchange.dll).
+    // If the test host crashes shortly after this line, that is the known bug, not a WinUI regression.
+    LOG_OUTPUT(L"  ui> NOTE: connecting island. A crash here (AV in Microsoft.UI.Input DragDropManager::Initialize) is KNOWN OS bug #63350935.");
 
     xi->Content = CreateControlSubtree(buttonContent, kind);
     LOG_OUTPUT(L"  ui> XamlIsland.Content assigned.");
@@ -1910,6 +1920,67 @@ void XamlIslandTests::ShowTeachingTipWhileIslandClosing()
         VERIFY_ARE_EQUAL(0.0f, size.Height);
         VERIFY_IS_FALSE(xamlRoot->IsHostVisible);
         VERIFY_IS_NULL(xamlRoot->Content);
+    });
+
+    ::Sleep(100);
+}
+
+// Regression test for bug 56349293 (Watson FailureHash 1ff4e5f0-fbf9-e1d3-0322-cffe35ae64af):
+// setting Content on a DesktopWindowXamlSource after it has been closed must not crash.
+// Before the fix, the call forwarded into the already-disposed core CXamlIslandRoot (whose
+// m_contentRoot is null) and access-violated in VisualTree::SetPublicRootVisual. After the fix,
+// clearing Content (= nullptr) is a benign no-op, and setting non-null Content fails cleanly with
+// E_UNEXPECTED. Run against an unfixed build this test crashes (AV); against a fixed build it passes.
+void XamlIslandTests::SetContentAfterCloseDoesNotCrash()
+{
+    XamlIslandTestHelper testHelper(this);
+    testHelper.StartAppOnCurrentThread();
+    testHelper.StartAndPrepNewUIThreadWithWindow();
+
+    DesktopWindowXamlSource^ dwxs;
+
+    testHelper.RunOnIslandUIThread([&]()
+    {
+        LOG_OUTPUT(L"  > Creating DesktopWindowXamlSource.");
+        dwxs = CreateDesktopWindowXamlSource(testHelper.m_topLevelHwnd, L"Button number 1");
+
+        // Create a spare element up front, while the source is still open, so the post-Close
+        // assignment below is the only thing under test.
+        Button^ lateContent = ref new Button();
+
+        LOG_OUTPUT(L"  > Closing DesktopWindowXamlSource.");
+        CloseObject(dwxs);
+
+        // (1) Clearing Content after Close() is a benign, idempotent no-op -- apps commonly set
+        //     Content = null during their own teardown. This must neither throw nor crash.
+        LOG_OUTPUT(L"  > Setting Content = nullptr after Close (expected: no-op, no crash).");
+        bool clearContentThrew = false;
+        try
+        {
+            dwxs->Content = nullptr;
+        }
+        catch (Platform::Exception^)
+        {
+            clearContentThrew = true;
+        }
+        VERIFY_IS_FALSE(clearContentThrew, L"Clearing Content after Close should be a no-op, not throw.");
+
+        // (2) Setting non-null Content after Close() is invalid (there is no re-open API). It must
+        //     fail cleanly with E_UNEXPECTED instead of access-violating.
+        LOG_OUTPUT(L"  > Setting non-null Content after Close (expected: E_UNEXPECTED).");
+        HRESULT setContentResult = S_OK;
+        try
+        {
+            dwxs->Content = lateContent;
+        }
+        catch (Platform::COMException^ e)
+        {
+            setContentResult = e->HResult;
+            LOG_OUTPUT(L"    Content setter threw hr=0x%08x.", setContentResult);
+        }
+        VERIFY_ARE_EQUAL(E_UNEXPECTED, setContentResult);
+
+        dwxs = nullptr;
     });
 
     ::Sleep(100);
@@ -4022,35 +4093,26 @@ void XamlIslandTests::ValidateNavigationView()
     ::Sleep(500);
 }
 
-void XamlIslandTests::WinUI3CohabitationWithWinUI2()
+void XamlIslandTests::WinUI3CohabitationWithFakeMuxModule()
 {
-    // This test verifies that WinUI3 works correctly when WinUI2's Microsoft.UI.Xaml.dll
-    // is also loaded in the same process, partially simulating the explorer.exe cohabitation scenario.
+    VERIFY_IS_NULL(::GetModuleHandleW(L"Microsoft.UI.Xaml.dll"));
 
-    // Find and load WinUI2 CBS Microsoft.UI.Xaml.dll
-    WCHAR systemRoot[MAX_PATH];
-    GetEnvironmentVariable(L"SYSTEMROOT", systemRoot, MAX_PATH);
-    std::wstring winui2DllPath = std::wstring(systemRoot) +
-        L"\\SystemApps\\Microsoft.UI.Xaml.CBS_8wekyb3d8bbwe\\Microsoft.UI.Xaml.dll";
+    WEX::Common::String deploymentDir;
+    VERIFY_SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(WEX::TestExecution::RuntimeParameterConstants::c_szTestDeploymentDir, deploymentDir));
+    std::wstring baseDir = static_cast<const wchar_t*>(deploymentDir);
+    if (!baseDir.empty() && baseDir.back() != L'\\') { baseDir += L'\\'; }
 
-    if (!PathFileExists(winui2DllPath.c_str()))
-    {
-        LOG_OUTPUT(L"WinUI2 CBS not found at: %s, skipping test.", winui2DllPath.c_str());
-        return;
-    }
+    const std::wstring emptyDllPath = baseDir + L"EmptyDll.dll";
+    const std::wstring fakeDir = baseDir + L"fakemux\\";
+    const std::wstring fakeMuxPath = fakeDir + L"Microsoft.UI.Xaml.dll";
 
-    LOG_OUTPUT(L"Loading WinUI2 DLL from: %s", winui2DllPath.c_str());
-    HMODULE winui2Module = LoadLibraryEx(winui2DllPath.c_str(), nullptr, 0);
-    if (!winui2Module)
-    {
-        LOG_OUTPUT(L"Failed to load WinUI2 DLL (error %d), skipping test.", GetLastError());
-        return;
-    }
-    auto freeWinUI2 = wil::scope_exit([&] { FreeLibrary(winui2Module); });
+    ::CreateDirectoryW(fakeDir.c_str(), nullptr);
+    VERIFY_IS_TRUE(::CopyFileW(emptyDllPath.c_str(), fakeMuxPath.c_str(), FALSE));
 
-    LOG_OUTPUT(L"WinUI2 DLL loaded. Two Microsoft.UI.Xaml.dll modules now in process.");
+    HMODULE fakeModule = ::LoadLibraryExW(fakeMuxPath.c_str(), nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
+    VERIFY_IS_NOT_NULL(fakeModule);
+    auto freeFake = wil::scope_exit([&] { ::FreeLibrary(fakeModule); });
 
-    // Start WinUI3 XAML island and render content
     XamlIslandTestHelper testHelper(this);
     testHelper.StartAppOnCurrentThread();
     testHelper.StartAndPrepNewUIThreadWithWindow();
@@ -4065,13 +4127,11 @@ void XamlIslandTests::WinUI3CohabitationWithWinUI2()
 
     testHelper.RunOnIslandUIThread([&]()
         {
-            LOG_OUTPUT(L"Creating WinUI3 content with WinUI2 also loaded...");
-
             rootPanel = safe_cast<Panel^>(XamlReader::Load(
                 LR"(<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                           Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-                        <TextBlock x:Name="TestText" Text="WinUI3 rendering with WinUI2 loaded"
+                        <TextBlock x:Name="TestText" Text="WinUI3 rendering with fake module loaded"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Grid>)"));
 
@@ -4085,8 +4145,7 @@ void XamlIslandTests::WinUI3CohabitationWithWinUI2()
         {
             auto textBlock = safe_cast<TextBlock^>(rootPanel->FindName("TestText"));
             VERIFY_IS_NOT_NULL(textBlock);
-            VERIFY_ARE_EQUAL(ref new Platform::String(L"WinUI3 rendering with WinUI2 loaded"), textBlock->Text);
-            LOG_OUTPUT(L"WinUI3 content rendered successfully with WinUI2 also loaded.");
+            VERIFY_ARE_EQUAL(ref new Platform::String(L"WinUI3 rendering with fake module loaded"), textBlock->Text);
         });
 }
 

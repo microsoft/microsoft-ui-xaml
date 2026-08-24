@@ -43,6 +43,18 @@
     <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.dll</ImplementationDll>
     </MuxControlsWinMD>
+    <!-- Charts is a standard MUXC control that happens to be built in the closed repo and
+         delivered prebuilt via WinUIDetails. Like MUXC, its metadata merges into the public
+         Microsoft.UI.Xaml.winmd, so it belongs here and not in ExternalWinMDs (which is for
+         lower-level implementation details that MUXC controls depend on). -->
+    <MuxControlsWinMD Include="$(WinUIDetailsLibPath)\Microsoft.UI.Xaml.Controls.Charts.winmd"
+                      Condition="Exists('$(WinUIDetailsLibPath)\Microsoft.UI.Xaml.Controls.Charts.winmd')">
+      <ImplementationDll>Microsoft.UI.Xaml.Controls.Charts.dll</ImplementationDll>
+    </MuxControlsWinMD>
+    <!-- Gated off until public-winmd dedup + framework-MSIX wiring lands. -->
+    <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="'$(IncludeTabularControlsInPublicMetadata)' == 'true'">
+      <ImplementationDll>Microsoft.UI.Xaml.Controls.Tabular.dll</ImplementationDll>
+    </MuxControlsWinMD>
 
     <WinUIEditWinMD Include="$(WinUIDetailsLibPath)\Microsoft.UI.Text.winmd">
       <ImplementationDll>WinUIEdit.dll</ImplementationDll>
@@ -81,6 +93,8 @@
   <ItemGroup>
     <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Internal.dll" />
     <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\WinUIEdit.dll" />
+    <WinUIDetailsBinaries Include="$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Controls.Charts.dll"
+                          Condition="Exists('$(WinUIDetailsRuntimesPath)\Microsoft.UI.Xaml.Controls.Charts.dll')" />
 
     <MuxBinaries Include="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.dll"/>
     <MuxBinaries Include="$(ArtifactsBinDir)Product\Microsoft.UI.Xaml.Phone.dll"/>

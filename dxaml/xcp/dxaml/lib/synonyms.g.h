@@ -22,6 +22,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IColorPaletteResources IColorPaletteResources;
     typedef ABI::Microsoft::UI::Xaml::IDataContextChangedEventArgs IDataContextChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IDataTemplate IDataTemplate;
+    typedef ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi IDataTemplateFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IDataTemplateKey IDataTemplateKey;
     typedef ABI::Microsoft::UI::Xaml::IDebugSettings IDebugSettings;
     typedef ABI::Microsoft::UI::Xaml::IDebugSettings2 IDebugSettings2;
@@ -52,6 +53,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElement IFrameworkElement;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementOverrides IFrameworkElementOverrides;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementProtected IFrameworkElementProtected;
+    typedef ABI::Microsoft::UI::Xaml::IFrameworkElementFeature_ExperimentalApi IFrameworkElementFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementEx IFrameworkElementEx;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkElementExProtected IFrameworkElementExProtected;
     typedef ABI::Microsoft::UI::Xaml::IFrameworkTemplate IFrameworkTemplate;
@@ -112,6 +114,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IVisualTransition IVisualTransition;
     typedef ABI::Microsoft::UI::Xaml::IWindow IWindow;
     typedef ABI::Microsoft::UI::Xaml::IWindow2 IWindow2;
+    typedef ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi IWindowFeature_ExperimentalApi;
     typedef ABI::Microsoft::UI::Xaml::IWindowActivatedEventArgs IWindowActivatedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IWindowChrome IWindowChrome;
     typedef ABI::Microsoft::UI::Xaml::IWindowCreatedEventArgs IWindowCreatedEventArgs;

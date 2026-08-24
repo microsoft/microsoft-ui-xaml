@@ -847,6 +847,36 @@ HRESULT WindowHelper::VerifyTestCleanup()
         ETWWaiterHelperStatics::GetActiveWaiterCountStatic(&countofWaiters);
         Throw::IfFalse(countofWaiters == 0, E_NOTIMPL, L"Active ETWWaiterProxy objects were not cleared!");
 
+        // Make sure image compare tolerance was reset to 0. Tests should use
+        // ImageCompareToleranceGuard or wil::scope_exit to reset after setting.
+        // Make sure DComp XML variables were cleared. A rendering scope clears them
+        // automatically on close (see RenderingScopeGuard::Close); this catches the
+        // rare case of setting a variable without a rendering scope.
+        {
+            wrl::ComPtr<test_infra::IUtilities> spUtilities;
+            if (SUCCEEDED(m_pTestServices->get_Utilities(&spUtilities)))
+            {
+                INT32 tolerance = 0;
+                if (SUCCEEDED(spUtilities->GetImageCompareTolerance(&tolerance)) && tolerance != 0)
+                {
+                    // Reset so the leak doesn't mask diffs or fail cleanup in later tests.
+                    spUtilities->SetImageCompareTolerance(0);
+                    VERIFY_FAIL(L"Image compare tolerance was not reset to 0."
+                                L" Use ImageCompareToleranceGuard or scope_exit to reset.");
+                }
+
+                BOOLEAN hasVars = FALSE;
+                if (SUCCEEDED(spUtilities->HasDCompXmlVariables(&hasVars)) && hasVars)
+                {
+                    // Reset so the leak doesn't feed spurious substitutions into later tests.
+                    spUtilities->ClearDCompXmlVariables();
+                    VERIFY_FAIL(L"DComp XML variables were not cleared."
+                                L" Set them inside a rendering scope (which clears them on close),"
+                                L" or clear them via ClearDCompXmlVariables / scope_exit.");
+                }
+            }
+        }
+
         // In the case of open popups or the input pane still being open there isn't much we can
         // do to recover Jupiter. In these cases to preserve the of the rest of the test
         // run we'll intentionally crater Jupiter. TAEF will, upon encountering a structured
@@ -1442,7 +1472,7 @@ WindowHelper::StopMockDCompDetours()
 //----------------------------------------------------------------------------
 HRESULT
 WindowHelper::get_MockDCompDevice(
-    _Outptr_ mdc::IMockDCompDevice **ppMockDCompDevice
+    _Outptr_result_maybenull_ mdc::IMockDCompDevice **ppMockDCompDevice  // null when no mock device exists
     )
 {
     COM_START
@@ -1457,7 +1487,7 @@ WindowHelper::get_MockDCompDevice(
 wrl::ComPtr<mdc::IMockDCompDevice>
 WindowHelper::TryGetMockDCompDevice()
 {
-    wrl::ComPtr<IDCompositionDesktopDevice> spDCompDevice;
+    wrl::ComPtr<IDCompositionDevice2> spDCompDevice;
     wrl::ComPtr<mdc::IMockDCompDevice> spMockDCompDevice;
 
     RunOnUIThread([&] () {
@@ -2066,9 +2096,17 @@ std::vector<std::pair<xaml_settings::XamlChangeId, bool>> GetXamlOptionalChanges
             {
                 changeId = xaml_settings::XamlChangeId_IconNoGridOptimization;
             }
-            else if (_wcsicmp(name.c_str(), L"DelayApplyStyleOptimization") == 0)
+            else if (_wcsicmp(name.c_str(), L"OptimizeApplyStyles") == 0)
             {
-                changeId = xaml_settings::XamlChangeId_DelayApplyStyleOptimization;
+                changeId = xaml_settings::XamlChangeId_OptimizeApplyStyles;
+            }
+            else if (_wcsicmp(name.c_str(), L"DefaultStyleOptimizations") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_DefaultStyleOptimizations;
+            }
+            else if (_wcsicmp(name.c_str(), L"DeferContextFlyoutInit") == 0)
+            {
+                changeId = xaml_settings::XamlChangeId_DeferContextFlyoutInit;
             }
 
             if (changeId == xaml_settings::XamlChangeId__Reserved)
@@ -2121,7 +2159,7 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
     // declare TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{<XamlChangeId name>:false}") or
     // L"{<XamlChangeId name>:true}" in the header, and TAEF makes the value available via TestData
     // during TestSetup. Multiple values can be specified by separating with pipe (|), such as:
-    //     L"{IconNoGridOptimization:false|DelayApplyStyleOptimization:false}"
+    //     L"{IconNoGridOptimization:false|OptimizeApplyStyles:false}"
     // (Do not use commas or semicolons, since TAEF interprets those as parameter-set separators,
     // per: https://learn.microsoft.com/windows-hardware/drivers/taef/light-weight-data-driven-testing )
     // Test-specified values override the defaults and the "test-default" states set below.
@@ -2145,19 +2183,22 @@ void WindowHelper::InitializeXamlCore(_In_ xaml_markup::IXamlMetadataProvider* c
         // Set the test-default XamlOptionalChanges state.
         windowTestHooks->ResetOptionalChanges();
         auto optionalChangesStatics = GetXamlOptionalChangesStatics();
-        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_IconNoGridOptimization);
-        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DelayApplyStyleOptimization);
+        BOOLEAN mutated = FALSE;
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_IconNoGridOptimization, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_OptimizeApplyStyles, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DefaultStyleOptimizations, &mutated);
+        optionalChangesStatics->EnableChange(xaml_settings::XamlChangeId_DeferContextFlyoutInit, &mutated);
 
         // Apply per-test overrides from XamlOptionalChanges test data.
         for (const auto& [changeId, enabled] : changeOverrides)
         {
             if (enabled)
             {
-                optionalChangesStatics->EnableChange(changeId);
+                optionalChangesStatics->EnableChange(changeId, &mutated);
             }
             else
             {
-                optionalChangesStatics->DisableChange(changeId);
+                optionalChangesStatics->DisableChange(changeId, &mutated);
             }
         }
     });

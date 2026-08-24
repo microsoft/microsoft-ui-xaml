@@ -68,6 +68,7 @@
 #include "HWWalk.h"
 #include "LoadLibraryAbs.h"
 #include "xcpwindow.h"
+#include "OptionalChangeState.h"
 
 #pragma warning(disable:4267) //'var' : conversion from 'size_t' to 'type', possible loss of data
 
@@ -225,7 +226,7 @@ IFACEMETHODIMP_(bool) DxamlCoreTestHooks::IsDragDropInProgress()
 
 // Returns the DComp device for the current thread. If there are multiple windows
 // this will return the device associated with the calling thread.
-IFACEMETHODIMP_(void) DxamlCoreTestHooks::GetDCompDevice(_Outptr_ IDCompositionDesktopDevice **ppDCompDevice) const
+IFACEMETHODIMP_(void) DxamlCoreTestHooks::GetDCompDevice(_Outptr_ IDCompositionDevice2 **ppDCompDevice) const
 {
     DXamlCore::GetCurrent()->GetDCompDevice(ppDCompDevice);
 }
@@ -2046,7 +2047,13 @@ IFACEMETHODIMP DxamlCoreTestHooks::GetElementsRenderedCount(_Out_ int* elementsR
 
 IFACEMETHODIMP_(void) DxamlCoreTestHooks::ResetOptionalChanges()
 {
+    IFCFAILFAST(ResetOptionalChangesImpl());
+}
+
+_Check_return_ HRESULT DxamlCoreTestHooks::ResetOptionalChangesImpl()
+{
     DirectUI::XamlOptionalChanges::ResetInternal();
+    return S_OK;
 }
 
 IFACEMETHODIMP DxamlCoreTestHooks::PauseNewDispatchForTest()

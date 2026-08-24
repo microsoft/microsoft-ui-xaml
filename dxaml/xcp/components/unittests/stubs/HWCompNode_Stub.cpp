@@ -85,6 +85,7 @@ CTransformToRoot::~CTransformToRoot()
 {
 }
 
+#pragma warning(suppress: 26495) // PREfast C26495 - stub ctor; member values are irrelevant for unit tests
 DManipDataBase::DManipDataBase()
 {
 }

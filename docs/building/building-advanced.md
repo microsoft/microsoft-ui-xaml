@@ -1,6 +1,6 @@
 # Advanced build topics
 
-For basic build information, see the [developer guide](../developer-guide.md)
+For basic build information, see the [developer guide](developer-guide.md)
 For more information about the build system, see the [build system how-to guide](./build-system-howto.md)
 
 ## Table of Contents

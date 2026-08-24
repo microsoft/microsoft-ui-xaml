@@ -1,0 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+namespace Simple
+{
+    unsealed runtimeclass MainPageBase : Microsoft.UI.Xaml.Controls.Page
+    {
+        MainPageBase();
+        String PageName { get; };
+        void EventHandlerOnBase(Object sender, Microsoft.UI.Xaml.RoutedEventArgs e);
+    };
+}

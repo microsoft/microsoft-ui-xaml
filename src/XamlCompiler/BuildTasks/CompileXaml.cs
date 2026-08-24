@@ -117,6 +117,9 @@ namespace Microsoft.UI.Xaml.Markup.Compiler.Tasks
         // conditional XAML, etc.)
         // 2. XBF format version
         public bool IgnoreSpecifiedTargetPlatformMinVersion { get; set; }
+
+        public string EnabledXamlOptionalChanges { get; set; } = string.Empty;
+        public string DisabledXamlOptionalChanges { get; set; } = string.Empty;
         #endregion
 
         #region ICompileXamlOutputs backing fields

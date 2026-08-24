@@ -691,7 +691,7 @@ public:
     // IPALTouchInteractionServices
     virtual _Check_return_ HRESULT IsDirectManipulationSupported(_Out_ bool &isDirectManipulationSupported)
     {
-        UNREFERENCED_PARAMETER(isDirectManipulationSupported);
+        isDirectManipulationSupported = false; // PREfast C6001 - initialize output value
         return E_NOTIMPL;
     }
 

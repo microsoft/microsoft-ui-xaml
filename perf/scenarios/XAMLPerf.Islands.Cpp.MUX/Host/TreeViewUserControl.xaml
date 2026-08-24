@@ -1,0 +1,33 @@
+﻿<UserControl
+    x:Class="IslandSimple.TreeViewUserControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:IslandSimple"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Black">
+
+    <StackPanel Background="Black" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TreeView>
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="CollapsedGlyph" Value="&#xE948;"/>
+                    <Setter Property="ExpandedGlyph" Value="&#xE949;"/>
+                    <Setter Property="GlyphBrush" Value="DarkOrange"/>
+                </Style>
+            </TreeView.ItemContainerStyle> 
+       
+            <TreeView.RootNodes>
+                <TreeViewNode Content="Flavors" IsExpanded="True">
+                    <TreeViewNode.Children>
+                        <TreeViewNode Content="Vanilla"/>
+                        <TreeViewNode Content="Strawberry"/>
+                        <TreeViewNode Content="Chocolate"/>
+                    </TreeViewNode.Children>
+                </TreeViewNode>
+            </TreeView.RootNodes>
+        </TreeView>
+    </StackPanel>
+
+</UserControl>

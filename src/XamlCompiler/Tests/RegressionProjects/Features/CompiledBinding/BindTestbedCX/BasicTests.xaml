@@ -1,0 +1,99 @@
+﻿<!-- Copyright (c) Microsoft Corporation.
+ Licensed under the MIT License. -->
+<UserControl
+    x:Class="BindTestbedCX.BasicTests"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BindTestbedCX"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:model="using:BindTestbedModel"
+    Tag="This is a tag"
+    x:Name="MyPage">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Slider">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="Width" Value="250" />
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+
+        <ScrollViewer>
+            <StackPanel Margin="30" Grid.Row="{x:Bind MyInt}">
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                </StackPanel>
+
+                <TextBlock Text="Simple OneTime Bindings" Style="{StaticResource Section}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>None of the following should change when the buttons are pressed</Run></TextBlock>
+
+                <TextBlock Text="{x:Bind NonDPOnPage}"/>
+                <TextBlock Text="{x:Bind Model.ManagerProp.Name, Mode=OneTime}"/>
+                <TextBlock Text="{x:Bind DPOnPage, Mode=OneTime}"/>
+                <TextBlock Text="{x:Bind Model.StringPropNoINPC, Mode=OneTime}"/>
+                <TextBlock Text="{x:Bind Model.IntPropNoINPC, Mode=OneTime}"/>
+                <TextBlock Text="{x:Bind Model.StringPropWithINPC, Mode=OneTime}"/>
+                <TextBlock Text="{x:Bind Model.IntPropWithINPC, Mode=OneTime}"/>
+                <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneTime}"/>
+                <TextBlock Text="{x:Bind Model.IntPropertyDP, Mode=OneTime}"/>
+
+                <TextBlock Text="Simple OneWay Bindings" Style="{StaticResource Section}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>None of the following should change when the buttons are pressed</Run></TextBlock>
+                <TextBlock Text="{x:Bind Model.ManagerProp.Name, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.StringPropNoINPC, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.IntPropNoINPC, Mode=OneWay}"/>
+
+                <TextBlock Style="{StaticResource Note}"><Run>All of the following should change when the buttons are pressed</Run></TextBlock>
+                <TextBlock Text="{x:Bind Model.StringPropWithINPC, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.IntPropWithINPC, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.StringPropertyDP, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.IntPropertyDP, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind DOModel.IntPropertyDP, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind DPOnPage, Mode=OneWay}"/>
+
+                <TextBlock Text="IndexPath bindings, no INCC" Style="{StaticResource Section}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>None of the following should change when the buttons are pressed</Run></TextBlock>
+                <TextBlock Text="{x:Bind Model.Employees[0].Title}"/>
+                <TextBlock Text="{x:Bind Model.Employees[0].Name}"/>
+                <TextBlock Text="{x:Bind Model.Employees[0], Mode=OneTime}"/>
+
+
+                <TextBlock Text="IndexPath bindings, with INCC" Style="{StaticResource Section}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>All of the following should change when the buttons are pressed</Run></TextBlock>
+                <TextBlock Text="{x:Bind Model.ManagerProp.ReportsOC[0].Title, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.ManagerProp.ReportsOC[0].Name, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.ManagerProp.ReportsOC[0], Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.Employees[0].Name, Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.ManagerProp.ReportsOC[0], Mode=OneWay}"/>
+                <TextBlock Text="{x:Bind Model.Managers[0].Name, Mode=OneWay}"/>
+
+                <TextBlock Text="MapIndexPath bindings, with INCC" Style="{StaticResource Section}"/>
+                <TextBlock Style="{StaticResource Note}"><Run>The following should be the same value and should change when the buttons are pressed</Run></TextBlock>
+                <TextBlock Text="{x:Bind Model.ThatOneGuy['You Know'].Name, Mode=OneWay}"/>
+                <TextBlock Text='{x:Bind Model.ThatOneGuy["You Know"].Name, Mode=OneWay}'/>
+
+                <TextBlock Style="{StaticResource Section}" Text="With Casts" />
+                <TextBlock Style="{StaticResource Note}" Text="The following should change when the buttons are pressed" />
+                <Grid Height="20" >
+                    <TextBlock Text="I'm a flasher!" Visibility="{x:Bind (Visibility)Model.Employees[0].Visibility, Mode=OneWay}" />
+                </Grid>
+                <TextBlock Text="{x:Bind Model.ManagerObjectForCasting.(model:IEmployee.Name), Mode=OneWay}" />
+                <TextBlock Text="{x:Bind ((model:IManager)Model.ManagerObjectForCasting).Name, Mode=OneWay}" />
+
+                <StackPanel Orientation="Horizontal" Margin="10">
+                    <Button Click="UpdateValuesClick" >Update Values</Button>
+                    <Button Click="ResetValuesClick" >Reset Values</Button>
+                    <Button Click="StopTrackingClick" >Stop Tracking</Button>
+                    <Button Click="ReInitializeBindingsClick" >Re-Initialize Bindings</Button>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

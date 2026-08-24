@@ -126,6 +126,39 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             });
         }
 
+        void CustomMarkupExtensionTests::VerifyEscapedQuotesInMarkupExtensionValue()
+        {
+            TestCleanupWrapper cleanup;
+
+            // Each tuple is (element name, expected Text value). These exercise
+            // backslash escaping inside quoted markup-extension property values.
+            std::vector<std::tuple<const wchar_t*, const wchar_t*>> verificationParams;
+            verificationParams.push_back(std::make_tuple(L"TextBlock0", L"'hello"));   // escaped single quote inside single-quoted value
+            verificationParams.push_back(std::make_tuple(L"TextBlock1", L"\"hello"));  // escaped double quote inside single-quoted value
+            verificationParams.push_back(std::make_tuple(L"TextBlock2", L"\\hello"));  // escaped backslash inside single-quoted value
+            verificationParams.push_back(std::make_tuple(L"TextBlock3", L"he'llo"));   // escaped quote in the middle of the value
+
+            RunOnUIThread([&verificationParams]() {
+                auto stackPanel = safe_cast<StackPanel^>(XamlReader::Load(
+                    L"<StackPanel"
+                    L"  xmlns='http://schemas.microsoft.com/client/2007' "
+                    L"  xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'"
+                    L"  xmlns:local='using:Tests.Native.External.Framework.MarkupExtensions'>"
+                    L"  <TextBlock x:Name='TextBlock0' Text=\"{local:EchoStringExtension Value='\\'hello'}\" />"
+                    L"  <TextBlock x:Name='TextBlock1' Text=\"{local:EchoStringExtension Value='\\&quot;hello'}\" />"
+                    L"  <TextBlock x:Name='TextBlock2' Text=\"{local:EchoStringExtension Value='\\\\hello'}\" />"
+                    L"  <TextBlock x:Name='TextBlock3' Text=\"{local:EchoStringExtension Value='he\\'llo'}\" />"
+                    L"</StackPanel>"
+                ));
+
+                for (const auto param : verificationParams)
+                {
+                    auto textblock = safe_cast<TextBlock^>(stackPanel->FindName(ref new Platform::String(std::get<0>(param))));
+                    VERIFY_ARE_EQUAL(textblock->Text, Platform::StringReference(std::get<1>(param)));
+                }
+            });
+        }
+
         void CustomMarkupExtensionTests::VerifyCustomMarkupExtensionAsTypeOfProperty()
         {
             TestCleanupWrapper cleanup;
@@ -202,7 +235,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         {
             TestCleanupWrapper cleanup;
             // Run this test in compat mode so style is applied immediately (during CreationComplete) without needing to be added to the tree.
-            VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::DelayApplyStyleOptimization));
+            VERIFY_IS_FALSE(xaml_settings::XamlOptionalChanges::IsChangeEnabled(xaml_settings::XamlChangeId::OptimizeApplyStyles));
 
             std::vector<std::tuple<const wchar_t*, int>> verificationParams;
             verificationParams.push_back(std::make_tuple(L"TextBlock0", 0));

@@ -1,0 +1,171 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  runTestStageName: RunTestsStage
+  runTestJobName: RunTestsJob
+  dependsOn: ''
+  buildPlatform: x86
+  buildConfiguration: chk
+  testOS: 'Win11-25H2'
+  testSuite: 'DevTestSuite' # Can be: DevTestSuite, ScenarioTestSuite
+  rerunPassesRequiredToAvoidFailure: 5
+  testPayloadArtifactName: 'TestPayload'
+  failOnTestFailure: true
+# We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
+# These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
+# This approach allows us to run tests on prerelease builds of Windows.
+
+jobs:
+- job: ${{ parameters.runTestJobName }} #${{ parameters.testOS }}${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}
+  dependsOn: ${{ parameters.dependsOn }}
+  condition: not(failed())
+  pool:
+    type: windows
+    isCustom: true
+    ${{ if or(eq( parameters.buildPlatform, 'arm64' ), eq( parameters.buildPlatform, 'arm64ec' )) }}:
+      name: WinDevPool-Arm64
+      ${{ if eq( parameters.testOS, 'Win11-23H2' ) }}:
+        demands: ImageOverride -equals Win11-23h2-pro-arm64
+    ${{ else }}:
+      name: WinDevPool-Test
+      ${{ if eq( parameters.testOS, 'Win10-RS5' ) }}:
+        demands: ImageOverride -equals Win10-2019-LTSC
+      ${{ if eq( parameters.testOS, 'Win11-25H2' ) }}:
+        demands: ImageOverride -equals Win11-25H2
+      ${{ if eq( parameters.testOS, 'Win11-23H2') }}:
+        demands: ImageOverride -equals Win11-23H2
+  timeoutInMinutes: 100
+  strategy:
+    ${{ if eq( parameters.testSuite, 'DevTestSuite') }}:
+      parallel: 20
+    ${{ if eq( parameters.testSuite, 'ScenarioTestSuite') }}:
+      parallel: 5
+
+  variables:
+    useBuildOutputFromBuildId: $(Build.BuildId)
+    buildPlatform: ${{ parameters.buildPlatform }}
+    buildConfiguration: ${{ parameters.buildConfiguration }}
+    buildFlavor: '${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}'
+    testPayloadDir: $(Build.SourcesDirectory)\TestPayload\$(buildFlavor)
+    testOS: ${{ parameters.testOS }}
+    uploadRoot: c:\uploadroot
+    uploadRootInner: $(uploadRoot)\$(testOS)\$(buildFlavor)
+    testRunTitlePrefix: ${{ parameters.testSuite }}$(testOS)$(buildFlavor)
+    testRunTitle: '$(testRunTitlePrefix)$(System.JobPositionInPhase)'
+    workItemsProjDir: $(Build.SourcesDirectory)\helixworkitems\${{ parameters.testSuite }}\$(buildFlavor)\$(testOS)
+    workItemsProjNameFilter: RunTestsInHelix-*.proj
+    artifactStatus: 'Succeeded'
+    
+    # This should reduce concurrent memory allocations and allow us to make better use of our buffer pool which will help with the failures on arm64 machines to download artifacts
+    AZURE_PIPELINES_DEDUP_PARALLELISM: 16
+
+    ob_outputDirectory: '$(uploadRoot)'
+    ob_artifactBaseName: '${{ parameters.runTestStageName }}_${{ parameters.runTestJobName }}_$(System.JobPositionInPhase)_$(artifactStatus)'
+
+    ${{ if eq( parameters.buildPlatform, 'arm64') }}:
+      skipComponentGovernanceDetection: true # dotnet install currently fails on arm64 with "Unsupported OS/platform configuration detected, not downloading .NET..."
+
+  steps:
+  - task: PowerShell@2
+    displayName: 'Display OS version info'
+    inputs:
+      targetType: 'inline'
+      script: |
+        Get-Item -Path 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion'
+
+  - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+    parameters:
+      itemPattern: '**/@(helixworkitems|TestPayload)/**'
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+
+  # Keeping this commented out for reference
+  # - script: cmd /c dir /s /b $(Build.ArtifactStagingDirectory)
+  #   displayName: Dump artifact staging directory
+
+  - task: PowerShell@2
+    displayName: Copy Files
+    inputs:
+      targetType: 'inline'
+      script: |
+        Copy-Item -Path "$(Build.ArtifactStagingDirectory)\${{ parameters.testPayloadArtifactName }}_*\*" -Destination "$(Build.SourcesDirectory)" -Recurse -Force
+
+  - task: powershell@2
+    displayName: Run Tests
+    timeoutInMinutes: 90
+    inputs:
+      targetType: filePath
+      filePath: Helix\common\pipeline\RunTestPassSliceOnBuildAgent.ps1
+      arguments: -WorkItemProjFileNameFilter $(workItemsProjNameFilter) -WorkItemProjDir $(workItemsProjDir) -TestPayloadDir $(testPayloadDir) -UploadRoot $(uploadRootInner) -JobPositionInPhase $(System.JobPositionInPhase) -TotalJobsInPhase $(System.TotalJobsInPhase) -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }}
+      errorActionPreference: stop
+      workingDirectory: $(Build.SourcesDirectory)\build\PipelineScripts
+
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: testResults-*.xml
+      searchFolder: $(Build.SourcesDirectory)\build\PipelineScripts
+      mergeTestResults: true
+      failTaskOnFailedTests: ${{ parameters.failOnTestFailure }}
+      testRunTitle: '$(testRunTitle)'
+      buildPlatform: $(buildPlatform)
+      buildConfiguration: $(buildConfiguration)
+
+  - task: powershell@2
+    displayName: 'UpdateUnreliableTests.ps1'
+    condition: always()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: Helix\common\pipeline\UpdateUnreliableTests-Pipeline.ps1
+      arguments: -RerunPassesRequiredToAvoidFailure ${{ parameters.rerunPassesRequiredToAvoidFailure }} -TestRunTitle $(testRunTitle) -SubResultsDirPath $(uploadRootInner)
+
+  - task: PowerShell@2
+    displayName: Edit the artifactStatus variable
+    condition: always()
+    inputs:
+      targetType: 'inline'
+      script: |
+        $status = '$(Agent.JobStatus)'
+        if ($status -eq 'SucceededWithIssues') {
+          $status = 'Succeeded'
+        }
+        Write-Host "##vso[task.setvariable variable=artifactStatus]$status"
+
+  # When a job is cancelled by the job-level timeout after PublishPipelineArtifact has already succeeded
+  # (e.g. timeout fires during an auto-injected post-publish step like Component Detection),
+  # The pipeline system auto-retries the cancelled job. The retried attempt re-runs all steps, and the publish
+  # step then fails with 'Artifact ... already exists for build ...' which keeps the job cancelled/failed
+  # and triggers further retries — a retry storm that cannot self-heal.
+  #
+  # Probe whether the artifact already exists for this build; if so, skip the explicit publish so the
+  # retry can complete cleanly. The check is intentionally fail-open: any error querying the API
+  # leaves skipPublish=false so the publish task itself surfaces real problems unchanged.
+  - task: PowerShell@2
+    displayName: Check whether test-output artifact already exists (retry-safety probe)
+    condition: always()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: 'inline'
+      script: |
+        $name = '${{ parameters.runTestStageName }}_${{ parameters.runTestJobName }}_$(System.JobPositionInPhase)_$(artifactStatus)'
+        $uri  = "$env:SYSTEM_COLLECTIONURI$env:SYSTEM_TEAMPROJECT/_apis/build/builds/$env:BUILD_BUILDID/artifacts?artifactName=$name&api-version=7.1"
+        $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
+        $exists = $false
+        try {
+          $null = Invoke-RestMethod -Uri $uri -Headers $headers -ErrorAction Stop
+          $exists = $true
+          Write-Host "Artifact '$name' already exists for build $env:BUILD_BUILDID (produced by a prior attempt of this job). Skipping the explicit publish to avoid 'already exists' collision."
+        } catch {
+          Write-Host "Artifact '$name' does not yet exist for build $env:BUILD_BUILDID. Proceeding with publish."
+        }
+        Write-Host "##vso[task.setvariable variable=skipPublish]$exists"
+
+  - task: PublishPipelineArtifact@1
+    condition: and(always(), ne(variables['skipPublish'], 'true'))
+    inputs:
+      targetPath: $(uploadRoot)
+      artifact: '${{ parameters.runTestStageName }}_${{ parameters.runTestJobName }}_$(System.JobPositionInPhase)_$(artifactStatus)'
+      Parallel: true

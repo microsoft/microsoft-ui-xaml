@@ -27,7 +27,7 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
         }
 
         #pragma warning(suppress: 6387)
-        STDMETHOD_(void, GetFactory)(_Outptr_ ID2D1Factory **factory) CONST
+        STDMETHOD_(void, GetFactory)(_Outptr_result_maybenull_ ID2D1Factory **factory) CONST  // mock factory may be null
         {
             m_factory.CopyTo(factory);
         }

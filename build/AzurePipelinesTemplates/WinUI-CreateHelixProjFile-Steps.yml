@@ -1,0 +1,22 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  condition: ''
+  testFilePathPattern: ''
+  testBinaryPath: ''
+  outputProjFileName: ''
+  outputProjDir: $(Build.SourcesDirectory)\helixworkitems
+  testSuite: 'DevTestSuite'
+  taefQuery: ''
+  hostingMode: ''
+  targetOsVersion: ''
+  taefExePath: ''
+  
+steps:
+  - task: powershell@2
+    displayName: Create ${{ parameters.outputProjFileName }}
+    condition: ${{ parameters.condition }}
+    inputs:
+      targetType: filePath
+      filePath: Helix\GenerateHelixWorkItems.ps1
+      arguments: -TaefExePath "${{ parameters.taefExePath }}" -TestFilePattern "${{ parameters.testFilePathPattern }}" -TestBinaryPath "${{ parameters.testBinaryPath }}" -OutputProjFile "${{ parameters.outputProjDir }}\${{ parameters.outputProjFileName }}" -JobTestSuiteName "${{ parameters.testSuite }}" -CustomTaefQuery "${{ parameters.taefQuery }}" -HostingMode "${{ parameters.hostingMode }}" -TargetOSVersion ${{ parameters.targetOsVersion}} -TestExecutionMultiplier $(_testExecutionMultiplier) -RunIgnoredTests $(_runIgnoredTests) -IsValidateWindowsAppSDKRun $(isValidateWindowsAppSDKRun)

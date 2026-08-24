@@ -85,7 +85,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 L"Verify that a style is available in compat mode even when not live")
             // This test expects style to be applied during CreationComplete to test the old mode. Disable the optimization.
             TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DelayApplyStyleOptimization:false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StyleNotAvailableInNewPerfOptInBehaviorWhenNotLive)
@@ -207,7 +207,7 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
         BEGIN_TEST_METHOD(StyleWithReferenceCycleError)
             // This test crashes if the element is added to the tree. Leave it in compat mode where the style is applied during CreationComplete.
             TEST_METHOD_PROPERTY(L"Data:PerfOptIn", L"{false}")
-            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{DelayApplyStyleOptimization:false}")
+            TEST_METHOD_PROPERTY(L"Data:XamlOptionalChanges", L"{OptimizeApplyStyles:false}")
         END_TEST_METHOD()
 
         BEGIN_TEST_METHOD(StyleBasedOnSameKey)

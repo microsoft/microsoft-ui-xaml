@@ -49,6 +49,7 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ErrorMessages.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ErrorMessages.Designer.cs</LastGenOutput>
+      <LogicalName>Microsoft.UI.Xaml.Markup.Compiler.ErrorMessages.resources</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

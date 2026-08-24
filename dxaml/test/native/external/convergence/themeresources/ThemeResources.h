@@ -6,7 +6,7 @@
 #include <Versioning.h>
 
 namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
-    namespace Convergence { 
+    namespace Convergence {
 
         class ThemeResourcesTests : public WEX::TestClass<ThemeResourcesTests>
         {
@@ -55,6 +55,38 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
                 TEST_METHOD_PROPERTY(L"Description", L"Verifies XAML applies correct RootVisual background when switching between themes in High Contrast.")
                 TEST_METHOD_PROPERTY(L"Hosting:Mode", L"UAP")
                 TEST_METHOD_PROPERTY(L"HasAssociatedMasterFile", L"True")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetThemeResourceBindingMarkupParity)
+                TEST_METHOD_PROPERTY(L"Description", L"Same key via {ThemeResource} markup and via SetThemeResourceBinding produce equal resolved values and both respond to theme changes; two code bindings to the same key share one object instance.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetThemeResourceBindingMissingKeyThrows)
+                TEST_METHOD_PROPERTY(L"Description", L"SetThemeResourceBinding with an unresolvable key throws, matching markup's parse failure.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetThemeResourceBindingLocalOverrideAndClear)
+                TEST_METHOD_PROPERTY(L"Description", L"A local value overrides the code theme binding. ClearValue restores the default value.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetThemeResourceBindingReadOnlyPropertyThrows)
+                TEST_METHOD_PROPERTY(L"Description", L"SetThemeResourceBinding targeting a read-only dependency property is rejected.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetThemeResourceBindingResolutionSources)
+                TEST_METHOD_PROPERTY(L"Description", L"SetThemeResourceBinding resolves keys from global, Application.Resources, the element's own ThemeDictionaries, and an ancestor's Resources - while detached, after entering a tree that overrides them, and when installed on an already-live element.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetThemeResourceBindingTemplateScopeDivergence)
+                TEST_METHOD_PROPERTY(L"Description", L"Markup {ThemeResource} (lexical/parse scope) and code SetThemeResourceBinding (runtime tree walk) resolve slightly differently by design.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetThemeResourceBindingReparentDifferentThemeAndKey)
+                TEST_METHOD_PROPERTY(L"Description", L"Reparenting bound elements into a subtree with a different RequestedTheme re-resolves the binding by walking up the new tree, re-scoping to the new subtree's same-key resource (not the dictionary captured at install time) and reaching App.Resources live so a mid-reparent edit is picked up; a plain in-scope dictionary mutation (no theme change, no reparent) does NOT re-resolve; reparenting into a subtree that does not define the key falls back to the captured dictionary; if that captured dictionary is emptied the fallback throws, and if it is released the binding keeps its last resolved value; markup {ThemeResource} and code SetThemeResourceBinding behave identically and keep sharing one object per key.")
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(SetThemeResourceBindingSecondOrderOverrideAndClone)
+                TEST_METHOD_PROPERTY(L"Description", L"Overriding a second-order resource (SystemAccentColor) in an ancestor scope clones the outer framework brush that references it and applies the overridden accent to the clone; a code SetThemeResourceBinding participates exactly like markup {ThemeResource} (in-scope bindings share the one cloned brush, an out-of-scope binding keeps the shared global original, and editing that original does not affect the clone).")
             END_TEST_METHOD()
 
         private:

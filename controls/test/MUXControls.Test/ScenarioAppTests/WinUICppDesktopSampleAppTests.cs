@@ -7,6 +7,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
@@ -22,6 +23,19 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
     [TestClass]
     public class WinUICppDesktopSampleAppTests
     {
+        private static void WaitForApplicationExit()
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
+            {
+                TestEnvironment.Application.WaitForExit();
+            }
+            finally
+            {
+                Log.Comment("Application process exit wait completed after {0} ms.", stopwatch.ElapsedMilliseconds);
+            }
+        }
+
         public static TestApplicationInfo WinUICppDesktopSampleApp
         {
             get
@@ -566,8 +580,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ClearWindow();
             WinUISampleAppTestsUtils.ClearErrorReport();
             WinUISampleAppTestsUtils.ClearLogEvents();
-            int processID = TestEnvironment.Application.GetProcessIdFromAppWindow();
-
             WinUISampleAppTestsUtils.SelectRadioButton("radioButtonMarkupWindow");
             WinUISampleAppTestsUtils.InvokeButton("buttonSetWindowFree");
 
@@ -596,19 +608,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Verify that pressing Alt-f4 closes the created Window");
             KeyboardHelper.PressKey(Key.F4, ModifierKey.Alt, 1 /*Num of Presses*/, true /*skip wait*/);
 
-            bool isClosed = false;
-            Wait.RetryUntilEvalFuncSuccessOrTimeout(
-                () =>
-                {
-                    isClosed = TestHelpers.IsWindowClosed(processID);
-                    return isClosed;
-                },
-                retryTimoutByMilliseconds: 1000
-            );
-
-            // Log.Comment("Verify that app has been exited successfully");
-            Verify.IsTrue(isClosed);
-            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
+            WaitForApplicationExit();
         }
 
         [TestMethod]
@@ -619,8 +619,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ClearWindow();
             WinUISampleAppTestsUtils.ClearErrorReport();
             WinUISampleAppTestsUtils.ClearLogEvents();
-            int processID = TestEnvironment.Application.GetProcessIdFromAppWindow();
-
             WinUISampleAppTestsUtils.SelectRadioButton("radioButtonMarkupWindow");
             WinUISampleAppTestsUtils.InvokeButton("buttonSetWindowFree");
 
@@ -640,19 +638,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
             WinUISampleAppTestsUtils.InvokeButton("buttonExitAppFromWinUI", true /*Skip Wait*/);
 
-            bool isClosed = false;
-            Wait.RetryUntilEvalFuncSuccessOrTimeout(
-                () =>
-                {
-                    isClosed = TestHelpers.IsWindowClosed(processID);
-                    return isClosed;
-                },
-                retryTimoutByMilliseconds: 1000
-            );
-
-            // Log.Comment("Verify that app has been exited successfully");
-            Verify.IsTrue(isClosed);
-            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
+            WaitForApplicationExit();
         }
 
         [TestMethod]
@@ -663,8 +649,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ClearWindow();
             WinUISampleAppTestsUtils.ClearErrorReport();
             WinUISampleAppTestsUtils.ClearLogEvents();
-            int processID = TestEnvironment.Application.GetProcessIdFromAppWindow();
-
             WinUISampleAppTestsUtils.SelectRadioButton("radioButtonBlankCustomWindow");
 
             WinUISampleAppTestsUtils.InvokeButton("buttonCreateWindow");
@@ -673,29 +657,17 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             UIObject CustomWindowRoot = FindElement.GetDesktopTopLevelWindow("WinUI Desktop - Custom Window");
             Verify.IsNotNull(CustomWindowRoot);
 
-            // Alt+Tab to bring CustomWindow front
-            Log.Comment("Alt+Tab to bring CustomWindow front");
-            KeyboardHelper.PressKey(Key.Tab, ModifierKey.Alt, 1 /*Num of Presses*/, true /*skip wait*/);
-            Wait.ForMilliseconds(100);
+            // Bring the target window to foreground directly. Alt+Tab is flaky on lab agents.
+            Log.Comment("Set focus to CustomWindow before Alt+F4");
+            CustomWindowRoot.SetFocus();
+            Wait.ForMilliseconds(250);
 
             // Alt+f4 to close Customwindow
             Log.Comment("Verify that pressing Alt-f4 closes the CustomWindow");
             KeyboardHelper.PressKey(Key.F4, ModifierKey.Alt, 1 /*Num of Presses*/, true /*skip wait*/);
 
-            // CustomWindow destructor calls Application::Exit. Below code will verify that all windows are closed and app exits gracefully.
-            bool isClosed = false;
-            Wait.RetryUntilEvalFuncSuccessOrTimeout(
-                () =>
-                {
-                    isClosed = TestHelpers.IsWindowClosed(processID);
-                    return isClosed;
-                },
-                retryTimoutByMilliseconds: 1000
-            );
-
-            // Log.Comment("Verify that app has been exited successfully");
-            Verify.IsTrue(isClosed);
-            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
+            // The CustomWindow destructor calls Application::Exit.
+            WaitForApplicationExit();
         }
 
         [TestMethod]
@@ -706,8 +678,6 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             ClearWindow();
             WinUISampleAppTestsUtils.ClearErrorReport();
             WinUISampleAppTestsUtils.ClearLogEvents();
-            int processID = TestEnvironment.Application.GetProcessIdFromAppWindow();
-            
             WinUISampleAppTestsUtils.SelectRadioButton("radioButtonChildWindow");
             WinUISampleAppTestsUtils.InvokeButton("buttonCreateWindow");
             WinUISampleAppTestsUtils.VerifyNoErrorReport();
@@ -728,19 +698,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
 
             WinUISampleAppTestsUtils.InvokeButton("buttonExitAppFromWinUI", true /*Skip Wait*/);
-            bool isClosed = false;
-            Wait.RetryUntilEvalFuncSuccessOrTimeout(
-                () =>
-                {
-                    isClosed = TestHelpers.IsWindowClosed(processID);
-                    return isClosed;
-                },
-                retryTimoutByMilliseconds: 1000
-            );
-
-            Log.Comment("Verify that app has been exited successfully");
-            Verify.IsTrue(isClosed);
-            TestEnvironment.Application.WaitForExit(); // Ensure a crash will fail this test.
+            WaitForApplicationExit();
         }
 
         [TestMethod]

@@ -163,7 +163,7 @@ implications can be found in [Manage user data
 folders](https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/user-data-folder?tabs=win32#avoid-running-too-many-folders-at-once).
 
 ### Default Language setting
-For consistency accross the Xaml framework, the default configuration applies the Language
+For consistency across the Xaml framework, the default configuration applies the Language
 preference of the WebView2 element. This is done by hooking up
 CoreWebViewEnvironmentOptions.Language to the first entry in the list obtained from
 [Windows.Globalization.ApplicationLanguages.Languages](https://learn.microsoft.com/en-us/uwp/api/windows.globalization.applicationlanguages.languages?view=winrt-22621).

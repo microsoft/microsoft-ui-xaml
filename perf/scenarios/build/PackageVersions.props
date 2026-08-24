@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\eng\versions.props"/>
+  <PropertyGroup>
+    <_PackagesConfigContents>$([System.IO.File]::ReadAllText("$(MSBuildThisFileDirectory)..\packages.config"))</_PackagesConfigContents>
+    <CppWinRTPackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(_PackagesConfigContents), 'id\s*=\s*"Microsoft\.Windows\.CppWinRT"\s+version\s*=\s*"(.*?)"').Groups[1].Value)</CppWinRTPackageVersion>
+  </PropertyGroup>
+  <Target Name="ValidatePackageVersionRetrieval" BeforeTargets="Build;CoreCompile;Midl;ResolveAssemblyReferences">
+    <!-- Verify consistency across all SDK package versions. -->
+    <Error Condition="'$(CppWinRTVersion)' != '$(CppWinRTPackageVersion)'" Text="Version mismatch between root and perf Microsoft.Windows.CppWinRT" />
+  </Target>
+</Project>

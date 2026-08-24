@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <ProjectGuid>{C0E01451-FD6C-4AD8-B25F-2E9619765766}</ProjectGuid>
+    <RootNamespace>XAMLPerf.ControlsApp.Cs.MUX</RootNamespace>
+    <AssemblyName>XAMLPerf.ControlsApp.Cs.MUX</AssemblyName>
+    <UseUAP>true</UseUAP>
+    <UseWinUI>true</UseWinUI>
+  </PropertyGroup>
+
+  <Import Project="..\build\Cs-ScenarioApp.props" />
+
+  <ItemGroup>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MUXPage.xaml.cs">
+      <DependentUpon>MUXPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MUXCPage.xaml.cs">
+      <DependentUpon>MUXCPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EmptyPage.xaml.cs">
+      <DependentUpon>EmptyPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Properties\Default.rd.xml" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\winui-logo-16x16.png" />
+    <Content Include="Assets\winui-logo-32x32.png" />
+    <Content Include="Assets\winui-logo-64x64.png" />
+    <Content Include="Assets\winui-logo-128x128.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="MUXPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="MUXCPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EmptyPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <Import Project="..\build\Cs-ScenarioApp.targets" />
+</Project>

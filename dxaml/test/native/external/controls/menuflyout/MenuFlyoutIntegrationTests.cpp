@@ -1740,6 +1740,102 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         FlyoutHelper::HideFlyout(menuFlyout);
     }
 
+    // Verifies that a windowed MenuFlyout shown with a side placement and an ExclusionRect
+    // for its anchor row, when it would overflow the monitor's bottom edge, flips upward such
+    // that the flyout's BOTTOM edge aligns with the anchor row's BOTTOM edge.
+    void MenuFlyoutIntegrationTests::ValidateSubMenuFlipsUpAlignedToAnchorRowBottom()
+    {
+        TestCleanupWrapper cleanup([&]()
+        {
+            TestServices::WindowHelper->ResetWindowContentAndWaitForIdle();
+        });
+
+        // Maximize so an anchor pinned to the bottom of the window has no room below it,
+        // forcing the side-placed flyout to overflow downward and trigger the upward-flip
+        // branch under test.
+        TestServices::WindowHelper->MaximizeDesktopWindow();
+        TestServices::WindowHelper->WaitForIdle();
+
+        xaml_controls::Button^ anchor = nullptr;
+        xaml_controls::MenuFlyout^ menuFlyout = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            auto root = safe_cast<xaml_controls::Grid^>(xaml_markup::XamlReader::Load(
+                LR"(<Grid xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                          xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                        <Grid.Resources>
+                            <MenuFlyout x:Name='menuFlyout'>
+                                <MenuFlyoutItem Text='item 1' />
+                                <MenuFlyoutItem Text='item 2' />
+                                <MenuFlyoutItem Text='item 3' />
+                                <MenuFlyoutItem Text='item 4' />
+                                <MenuFlyoutItem Text='item 5' />
+                                <MenuFlyoutItem Text='item 6' />
+                            </MenuFlyout>
+                        </Grid.Resources>
+                        <Button x:Name='anchor' Content='Anchor'
+                                Width='120' Height='32'
+                                HorizontalAlignment='Left' VerticalAlignment='Bottom' />
+                    </Grid>)"));
+            TestServices::WindowHelper->WindowContent = root;
+            anchor = safe_cast<xaml_controls::Button^>(root->FindName(L"anchor"));
+            menuFlyout = safe_cast<xaml_controls::MenuFlyout^>(root->FindName(L"menuFlyout"));
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        // mouse-hover on a Button.
+        InjectInput(InputMethod::Mouse);
+
+        xaml_primitives::FlyoutShowOptions^ showOptions = nullptr;
+        RunOnUIThread([&]()
+        {
+            showOptions = ref new xaml_primitives::FlyoutShowOptions();
+            showOptions->Placement = xaml_primitives::FlyoutPlacementMode::RightEdgeAlignedTop;
+            showOptions->Position = wf::Point(static_cast<float>(anchor->ActualWidth), 0.0f);
+            showOptions->ExclusionRect = wf::Rect(
+                0.0f,
+                0.0f,
+                static_cast<float>(anchor->ActualWidth),
+                static_cast<float>(anchor->ActualHeight));
+        });
+
+        FlyoutHelper::ShowFlyoutWithOptions(menuFlyout, anchor, showOptions);
+
+        auto presenter = GetCurrentPresenter();
+
+        RunOnUIThread([&]()
+        {
+            wf::Rect anchorBounds = ControlHelper::GetBounds(safe_cast<xaml::FrameworkElement^>(anchor));
+            wf::Rect flyoutBounds = ControlHelper::GetBounds(safe_cast<xaml::FrameworkElement^>(presenter));
+
+            const float anchorTop = anchorBounds.Y;
+            const float anchorBottom = anchorBounds.Y + anchorBounds.Height;
+            const float flyoutTop = flyoutBounds.Y;
+            const float flyoutBottom = flyoutBounds.Y + flyoutBounds.Height;
+            const float delta = flyoutBottom - anchorBottom;
+            const float absDelta = (delta < 0.0f) ? -delta : delta;
+
+            LOG_OUTPUT(L"Anchor bounds: top=%f bottom=%f height=%f",
+                anchorTop, anchorBottom, anchorBounds.Height);
+            LOG_OUTPUT(L"Flyout bounds: top=%f bottom=%f height=%f",
+                flyoutTop, flyoutBottom, flyoutBounds.Height);
+            LOG_OUTPUT(L"Alignment delta (flyout.Bottom - anchor.Bottom): %f", delta);
+
+            // The flyout actually flipped upward: its top edge sits above the anchor's top.
+            VERIFY_IS_LESS_THAN(flyoutTop, anchorTop);
+
+            // The flyout's bottom edge aligns with the anchor's bottom edge
+            // (within 1.5 px rounding tolerance).
+            VERIFY_IS_LESS_THAN(absDelta, 1.5f);
+
+            // The flyout's bottom must NOT sit at (or above) the anchor's top edge.
+            VERIFY_IS_GREATER_THAN(flyoutBottom, anchorTop + 1.5f);
+        });
+
+        FlyoutHelper::HideFlyout(menuFlyout);
+    }
+
     void MenuFlyoutIntegrationTests::ValidateSplitMenuItemPosition()
     {
         TestCleanupWrapper cleanup;

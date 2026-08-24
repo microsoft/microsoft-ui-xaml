@@ -1,0 +1,89 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+parameters:
+  solutionName: ''
+  solutionPath: ''
+  nugetConfigPath: ''
+  msBuildArgs: ''
+  doRestore: 'true'
+  projectCaching: false
+  msbuildInstallDir: $(_buildToolsDirectory)
+  runStaticAnalysis: true
+  condition: succeeded()
+
+steps:
+  - script: |
+      echo parameters.solutionName = '${{ parameters.solutionName }}'
+      echo parameters.solutionPath = '${{ parameters.solutionPath }}'
+      echo parameters.nugetConfigPath = '${{ parameters.nugetConfigPath }}'
+      echo parameters.msBuildArgs = '${{ parameters.msBuildArgs }}'
+      echo parameters.doRestore = '${{ parameters.doRestore }}'
+      echo parameters.projectCaching = '${{ parameters.projectCaching }}'
+      echo parameters.msbuildInstallDir = '${{ parameters.msbuildInstallDir }}'
+    displayName: 'BuildProject: Display parameters'
+
+  - template: WinUI-DisplayMachineState-Steps.yml
+
+  - task: PowerShell@2
+    displayName: Print Peak System Memory
+    inputs:
+      targetType: filePath
+      filePath: 'scripts\SystemMemory.ps1'
+      arguments: '-peakCommit'
+    condition: always()
+
+  - task: MSBuild@1
+    displayName: 'Build solution ${{ parameters.solutionName }}'
+    condition: ${{ parameters.condition }}
+    inputs:
+      msbuildLocationMethod: 'location'
+      msbuildLocation: ${{ parameters.msbuildInstallDir }}\MSBuild\Current\Bin\amd64\MSBuild.exe
+      solution: ${{ parameters.solutionPath }}/${{ parameters.solutionName }}
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+      enableDefaultLogger: false
+      ${{ if eq(parameters.doRestore, 'true') }}:
+        ${{ if eq(parameters.projectCaching, true) }}:
+          msbuildArguments: '${{ parameters.msBuildArgs }} /restore /graph /reportfileaccesses /p:MSBuildCacheEnabled=true /p:MSBuildCacheLogDirectory=$(ob_outputDirectory)/MSBuildCacheLogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration) /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+        ${{ if ne(parameters.projectCaching, true) }}:
+          msbuildArguments: '${{ parameters.msBuildArgs }} /restore /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+      ${{ if ne(parameters.doRestore, 'true') }}:
+        ${{ if eq(parameters.projectCaching, true) }}:
+          msbuildArguments: '${{ parameters.msBuildArgs }} /graph /reportfileaccesses /p:MSBuildCacheEnabled=true /p:MSBuildCacheLogDirectory=$(ob_outputDirectory)/MSBuildCacheLogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration) /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+        ${{ if ne(parameters.projectCaching, true) }}:
+          msbuildArguments: '${{ parameters.msBuildArgs }} /binaryLogger:$(ob_outputDirectory)/binlogs/${{ parameters.solutionName }}.$(buildPlatform).$(buildConfiguration).binlog /ds:false'
+    env:
+      ${{ if eq(parameters.projectCaching, true) }}:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      LkgVcToolsName: $(compilerOverridePackageName)
+      LkgVcToolsVersion: $(compilerOverrideNupkgVersion)
+
+  - ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
+    - task: SDLNativeRules@3
+      condition: and(succeeded(), eq(variables['buildConfiguration'], 'Release'), eq(variables['buildPlatform'], 'x64'))
+      displayName: Run the PREfast SDL Native Rules 
+      inputs:
+        # Using the auto parameter below is simpler, but unfortunately during the PREFast scan, "Error C1002: compiler is out of heap space in pass 2" was hit.
+        # Working around that error using a simplified msbuild commandline for now.
+        # userProvideBuildInfo: auto
+        setupCommandlines: '"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsMSBuildCmd.bat"'
+        msBuildArchitecture: amd64
+        msBuildCommandline: 'msbuild.exe ${{ parameters.msBuildArgs }} /nologo /nr:false /p:configuration=release /p:platform=$(buildPlatform) ${{ parameters.solutionPath }}\${{ parameters.solutionName }}'
+        # Generally speaking, we leave it to the external repos to scan the bits in their packages.
+        excludedPaths: |
+          $(Build.SourcesDirectory)\packages
+        # Explicitly specify the EO-compliant rule set, as the default Sdl.Recommended.Warning.ruleset is not EO-compliant.
+        rulesetName: Custom
+        customRuleset: $(Agent.ToolsDirectory)\NativeCompilerStaticAnalysisRuleset\mandatory_to_fix.ruleset
+        policyName: 'WindowsUndocked'
+      continueOnError: true
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  - task: PowerShell@2
+    displayName: Print Peak System Memory
+    inputs:
+      targetType: filePath
+      filePath: 'scripts\SystemMemory.ps1'
+      arguments: '-peakCommit'
+    condition: always()

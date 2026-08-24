@@ -358,7 +358,7 @@ namespace AccessKeys {
                     // Intentionally not allowing a navigation to also dismiss AK mode.
                     else if (DismissOnInvoked<Element>(invokedElement))
                     {
-                        IFC_RETURN(m_modeContainer.SetIsActive(false));  // Note this will propogate responsibility of exiting the scope to ScopeTree::ProcessCharacter
+                        IFC_RETURN(m_modeContainer.SetIsActive(false));  // Note this will propagate responsibility of exiting the scope to ScopeTree::ProcessCharacter
                     }
                     else if(wasActive) // If this was not a hotkey invoke, e.g. wasActive == false...
                     {

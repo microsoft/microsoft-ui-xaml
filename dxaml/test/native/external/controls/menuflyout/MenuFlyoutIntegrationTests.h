@@ -280,6 +280,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"Desktop,WindowsCore") // Windowed popups make this test moot.
         END_TEST_METHOD()
 
+        BEGIN_TEST_METHOD(ValidateSubMenuFlipsUpAlignedToAnchorRowBottom)
+            TEST_METHOD_PROPERTY(L"Description", L"When a windowed sub-menu flips upward at the monitor's edge, its bottom must align to the parent row's bottom (not the row's top).")
+            TEST_METHOD_PROPERTY(L"TestPass:IncludeOnlyOn", L"Desktop")
+        END_TEST_METHOD()
+
         BEGIN_TEST_METHOD(ValidateSubMenuItemWithLongItems)
             TEST_METHOD_PROPERTY(L"Description", L"Validates showing a sub menu item with the long menu items.")
             TEST_METHOD_PROPERTY(L"TestPass:ExcludeOn", L"WindowsCore")

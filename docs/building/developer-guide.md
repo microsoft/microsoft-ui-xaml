@@ -1,6 +1,7 @@
 # Developer Guide
 
 This guide provides instructions on how to build the repo. If you encouter any errors in building WinUI or the WinUI Gallery, refer to [common errors FAQ](../common-errors-FAQ.md)
+<!-- test comment 3 -->
 Documentation related to concepts and code architecture of the repo can be found here:
 [Code architecture](../design-notes/readme.md). It contains high level concepts, important design decisions and
 coding related information to help get started with the repository.
@@ -210,7 +211,7 @@ For more information about advanced build scenarios, see [Advanced build topics]
 
 For more information about building and using Sample apps, see [WinUI Sample Apps](building-sample-apps.md)
 For more information about manual testing and debugging, see [debugging](../debugging/debugging.md)
-For more information on creating a manual test app in VS and iterating on your changes see [Ad-Hoc testing of local build with fast innerloop](./ad-hoc-testing-of-local-build-with-fast-inner-loop.md).
+For more information on creating a manual test app in VS and iterating on your changes see [Ad-Hoc testing of local build with fast innerloop](../ad-hoc-testing-of-local-build-with-fast-inner-loop.md).
 For more information about automated testing, see [Testing In WinUI FAQ](../testing/testing-FAQ.md) and
 [WinUI CI Test System Overview](../testing/test-system-overview.md)
 

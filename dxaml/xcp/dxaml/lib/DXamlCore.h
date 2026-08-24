@@ -17,8 +17,6 @@ class AgCoreCallbacks;
 #include <fwd/microsoft.ui.xaml.media.h>
 #include <microsoft.UI.Dispatching.h>
 
-struct IDCompositionDesktopDevicePartner;
-
 class CJupiterControl;
 class CDependencyObject;
 class CContentRoot;
@@ -496,11 +494,6 @@ namespace DirectUI
 
         _Check_return_ HRESULT XamlPalSetCoreWindow();
 
-        // Page waiter event Apis
-        _Check_return_ HRESULT RetrievePageNavigationCompleteEvent();
-        bool HasPageNavigationCompleteEvent();
-        _Check_return_ HRESULT SetPageNavigationCompleteEvent();
-
         void SetAtlasSizeHint(XUINT32 width, XUINT32 height);
         void ResetAtlasSizeHint();
         void DisableAtlas();
@@ -572,7 +565,7 @@ namespace DirectUI
         _Check_return_ HRESULT SimulateDeviceLost(bool resetVisuals, bool resetDManip);
 
         void GetDCompDevice(
-            _Outptr_ IDCompositionDesktopDevice **ppDCompDevice
+            _Outptr_ IDCompositionDevice2 **ppDCompDevice
             ) const;
 
         _Check_return_ HRESULT SetWindowSizeOverride(
@@ -833,8 +826,6 @@ namespace DirectUI
 
         xstring_ptr m_genericXamlFilePathFromMUX;
         bool m_shouldCheckGenericXamlFilePathFromMUX {true};
-
-        IPALEvent *m_pPageNavigationCompleteEvent {nullptr};
 
         // Visual Diagnostics
         WCHAR                           m_pszVisualDiagEndpointName[35] = {0};

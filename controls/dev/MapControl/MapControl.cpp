@@ -16,6 +16,7 @@
 #include "MapElementsLayer.h"
 #include "Vector.h"
 #include "MuxcTraceLogging.h"
+#include <optional>
 
 winrt::hstring MapControl::s_mapHtmlContent{};
 
@@ -195,21 +196,79 @@ void MapControl::WebMessageReceived(winrt::WebView2 sender, winrt::CoreWebView2W
         if (winrt::Windows::Data::Json::JsonObject::TryParse(jsonAsString, obj))
         {
             auto type = obj.TryLookup(L"type");
-            // Handles click events on MapElements
-            if (type.GetString() == L"pushpinClickEvent")
+            // A postMessage without a string "type" is malformed; guard against a
+            // null/non-string value so GetString() can't crash the handler.
+            if (type == nullptr || type.ValueType() != winrt::Windows::Data::Json::JsonValueType::String)
             {
-                auto clickedLayer = Layers().GetAt(static_cast<uint32_t>(obj.TryLookup(L"layer").GetNumber())).try_as<MapElementsLayer>();
-                auto location = winrt::Geopoint{ winrt::BasicGeoposition{
-                    obj.TryLookup(L"coordinate").GetObject().TryLookup(L"longitude").GetNumber(),
-                    obj.TryLookup(L"coordinate").GetObject().TryLookup(L"latitude").GetNumber() }};
+                return;
+            }
+            const auto typeString = type.GetString();
+            // Handles click events on MapElements
+            if (typeString == L"pushpinClickEvent")
+            {
+                namespace json = winrt::Windows::Data::Json;
 
-                auto pointId = obj.TryLookup(L"point").GetNumber();
+                // Safely reads a named number, returning std::nullopt when the field is
+                // missing or is not a number. This guards against a malformed postMessage
+                // that would otherwise crash the handler in GetNumber().
+                auto tryGetNumber = [](json::JsonObject const& source, wchar_t const* name) -> std::optional<double>
+                {
+                    auto value = source.TryLookup(name);
+                    if (value == nullptr || value.ValueType() != json::JsonValueType::Number)
+                    {
+                        return std::nullopt;
+                    }
+                    return value.GetNumber();
+                };
+
+                // Safely reads a named object, returning nullptr when the field is missing
+                // or is not an object.
+                auto tryGetObject = [](json::JsonObject const& source, wchar_t const* name) -> json::JsonObject
+                {
+                    auto value = source.TryLookup(name);
+                    if (value == nullptr || value.ValueType() != json::JsonValueType::Object)
+                    {
+                        return nullptr;
+                    }
+                    return value.GetObject();
+                };
+
+                const auto layerIndex = tryGetNumber(obj, L"layer");
+                const auto coordinate = tryGetObject(obj, L"coordinate");
+                const auto pointId = tryGetNumber(obj, L"point");
+                if (!layerIndex || coordinate == nullptr || !pointId)
+                {
+                    return;
+                }
+
+                const auto longitude = tryGetNumber(coordinate, L"longitude");
+                const auto latitude = tryGetNumber(coordinate, L"latitude");
+                if (!longitude || !latitude)
+                {
+                    return;
+                }
+
+                const auto layers = Layers();
+                const auto layerIndexValue = static_cast<uint32_t>(*layerIndex);
+                if (layerIndexValue >= layers.Size())
+                {
+                    return;
+                }
+
+                auto clickedLayer = layers.GetAt(layerIndexValue).try_as<MapElementsLayer>();
+                if (clickedLayer == nullptr)
+                {
+                    return;
+                }
+
+                auto location = winrt::Geopoint{ winrt::BasicGeoposition{ *longitude, *latitude } };
+
                 winrt::MapElement clickedElement{nullptr};
                 auto elements = clickedLayer->MapElements();
                 for (uint32_t i = 0; i < elements.Size(); i++)
                 {
                     auto elem = elements.GetAt(i);
-                    if (winrt::get_self<MapElement>(elem)->Id == winrt::to_hstring(pointId))
+                    if (winrt::get_self<MapElement>(elem)->Id == winrt::to_hstring(*pointId))
                     {
                         clickedElement = elem.try_as<winrt::MapElement>();
                     }
@@ -220,7 +279,7 @@ void MapControl::WebMessageReceived(winrt::WebView2 sender, winrt::CoreWebView2W
                 clickedLayer->RaiseMapElementClick(*clickArgs);
             }
             // Raises error events from WebView
-            else if (type.GetString() == L"javascriptError")
+            else if (typeString == L"javascriptError")
             {
                 auto errorArgs = winrt::make_self<MapControlMapServiceErrorOccurredEventArgs>(jsonAsString);
                 XamlTelemetry::MapControl_WebMessageReceived_Error(reinterpret_cast<uint64_t>(this), jsonAsString.data());

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "XamlTelemtryViewerWInui3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "XamlTelemtryViewerWInui3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

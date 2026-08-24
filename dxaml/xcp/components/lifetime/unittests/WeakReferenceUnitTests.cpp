@@ -768,6 +768,9 @@ namespace Windows { namespace UI { namespace Xaml { namespace Tests { namespace 
 
             VERIFY_ARE_EQUAL(1UL, rc.Get()->Release());
 
+            // PREfast C6388 false positive - spResolved is a fresh local ComPtr (null on entry) as
+            // IWeakReference::Resolve's _COM_Outptr_ contract requires; PREfast cannot prove this here.
+            #pragma warning(suppress: 6388)
             VERIFY_SUCCEEDED(spWeakReference->Resolve<IInspectable>(&spResolved));
 
             VERIFY_ARE_EQUAL(3UL, rc.Get()->AddRef());

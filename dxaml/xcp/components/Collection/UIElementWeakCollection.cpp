@@ -52,11 +52,15 @@ _Check_return_ HRESULT CUIElementWeakCollection::Append(_In_ CValue& value, _Out
     IFC_RETURN(ValidateItem(value));
     CUIElement* element = static_cast<CUIElement*>(value.AsObject());
     m_items.push_back(xref::get_weakref(element));
-    *index = m_items.size() - 1;
+    const XUINT32 newIndex = static_cast<XUINT32>(m_items.size() - 1);
+    if (index != nullptr)   // PREfast C6011 - index is _Out_opt_ and may be null
+    {
+        *index = newIndex;
+    }
 
     if (m_changeCallbackNoRef != nullptr)
     {
-        IFCFAILFAST(m_changeCallbackNoRef->ElementInserted(*index));
+        IFCFAILFAST(m_changeCallbackNoRef->ElementInserted(newIndex));
     }
 
     return S_OK;

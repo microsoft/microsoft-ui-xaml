@@ -135,7 +135,7 @@ We can also support nesting of menu items in this control:
 
 ### Using SplitMenuFlyoutItem in XAML, C#, and C++
 
-As any control can be instantiated using either XANL, C# or C++, here is a table showing how to achieve the same UI with either of the options.
+As any control can be instantiated using either XAML, C# or C++, here is a table showing how to achieve the same UI with either of the options.
 
 <table>
   <tr>
@@ -264,8 +264,7 @@ type of menu flyout item, including separators and sub-items.
 
 Gets or sets the style applied to the submenu's flyout presenter.
 
-This property allows you to customize the appearance of the submenu container. 
-itself, such as background colour, border, and padding.
+This property allows you to customize the appearance of the submenu container itself, such as background colour, border, and padding.
 
 ```xaml
 <SplitMenuFlyoutItem.SubMenuPresenterStyle>

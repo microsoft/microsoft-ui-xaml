@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "precomp.h"
@@ -81,6 +81,7 @@ _Check_return_ HRESULT CClassInfo::RunClassConstructorIfNecessary()
 
 // CThemeResource
 
+#pragma warning(suppress: 26495) // PREfast C26495 - stub ctor; member values are irrelevant for unit tests
 CThemeResource::CThemeResource(_In_ CThemeResourceExtension* pThemeResourceExtension)
 {
 }

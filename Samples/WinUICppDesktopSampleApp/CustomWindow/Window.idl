@@ -1,0 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace CustomWindow
+{
+	[bindable]
+	[default_interface]
+	unsealed runtimeclass Window : Microsoft.UI.Xaml.Window
+	{
+		Window();
+	}
+}

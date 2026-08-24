@@ -334,6 +334,27 @@ _Check_return_ HRESULT DesktopWindowXamlSource::get_ContentImpl(_Outptr_ xaml::I
 
 _Check_return_ HRESULT DesktopWindowXamlSource::put_ContentImpl(_In_opt_ xaml::IUIElement* pValue)
 {
+    if (m_bClosed)
+    {
+        if (pValue == nullptr)
+        {
+            // After Close(), the underlying XamlIsland and its core CXamlIslandRoot have been
+            // disposed (m_contentRoot is null), and Close() has already released the content via
+            // the still-live m_spXamlIslandRoot peer. A later Content=null from an IClosable.Close
+            // caller is therefore a benign, idempotent no-op -- treat as such.
+            return S_OK;
+        }
+
+        // Setting non-null Content on a closed instance is invalid (there is no Re-Open API and
+        // forwarding would AV inside CXamlIslandRoot::SetPublicRootVisual after the core element's
+        // m_contentRoot has been nulled by Close -> m_xamlIsland->Close). Originate a clean stowed
+        // exception (via a normal IFC_RETURN so the failure is traced) so the Watson signal names
+        // the cause instead of presenting as an AV in VisualTree::SetPublicRootVisual.
+        IFC_RETURN(ErrorHelper::OriginateError(
+            E_UNEXPECTED,
+            wrl_wrappers::HStringReference(L"Cannot set non-null Content when the DesktopWindowXamlSource instance has been closed").Get()));
+    }
+
     if (m_childHwnd && pValue)
     {
         ctl::ComPtr<xaml::IFrameworkElement> contentAsFE;
@@ -385,6 +406,19 @@ IFACEMETHODIMP DesktopWindowXamlSource::Close()
         ctl::ComPtr<mu::IClosableNotifier> closableNotifier;
         IFCFAILFAST(m_contentBridgeDW.As(&closableNotifier));
         IGNOREHR(closableNotifier->remove_FrameworkClosed(m_bridgeClosedToken));
+    }
+
+    if (m_spXamlIslandRoot)
+    {
+        // Release the user's element tree while the island core is still valid. XamlIsland::Close()
+        // -> CXamlIslandRoot::Dispose() drops only the *core* public root visual; it does NOT clear
+        // the DXaml-side ContentManager.m_Content (a strong TrackerPtr on the XamlIslandRoot peer,
+        // which m_spXamlIslandRoot keeps alive for this DesktopWindowXamlSource's lifetime). Clear
+        // it here, before the core is disposed below, so the tree is not pinned until this
+        // DesktopWindowXamlSource is destroyed and the post-Close put_Content(nullptr) guard
+        // remains a true no-op.
+        m_xamlIsland->PrepareToClose();
+        IFCFAILFAST(m_spXamlIslandRoot->put_Content(nullptr));
     }
 
     if (m_xamlIsland)

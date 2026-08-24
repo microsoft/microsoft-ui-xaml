@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="TableViewSampleApp.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+
+    <controls:NavigationView x:Name="Nav"
+                             PaneDisplayMode="Left"
+                             IsSettingsVisible="False"
+                             IsBackButtonVisible="Collapsed"
+                             SelectionChanged="Nav_SelectionChanged">
+        <controls:NavigationView.MenuItems>
+            <controls:NavigationViewItem Content="Playground" Tag="playground"/>
+            <controls:NavigationViewItem Content="All Auto columns" Tag="auto"/>
+            <controls:NavigationViewItem Content="All Star columns" Tag="star"/>
+            <controls:NavigationViewItem Content="All Pixel columns" Tag="pixel"/>
+            <controls:NavigationViewItem Content="Mixed columns" Tag="mixed"/>
+            <controls:NavigationViewItem Content="Interactive cells" Tag="interactive"/>
+            <controls:NavigationViewItem Content="Selection" Tag="selection"/>
+        </controls:NavigationView.MenuItems>
+
+        <Frame x:Name="ContentFrame"/>
+    </controls:NavigationView>
+</Window>

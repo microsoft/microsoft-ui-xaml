@@ -34,7 +34,7 @@ for Microsoft.UI.Xaml.dll and Microsoft.UI.Xaml.Phone.dll.
 
 ## /eng
 All build system and other engineering related files go in this directory.
-For more information on the build system, see the [build system design](build-system-design.md)
+For more information on the build system, see the [build system design](building/build-system-design.md)
 
 ## /Helix
 This folder contains scripts as it pertains to running tests in Helix. You shouldn't
