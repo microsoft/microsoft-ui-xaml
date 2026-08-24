@@ -53,13 +53,13 @@ struct Entry
 Entry c_typeEntries[] =
 {
     {
-        /* Arg1 TypeName */ 
+        /* Arg1 TypeName */
         L"Microsoft.UI.Xaml.Controls.AnimatedIcon",
-        /* Arg2 CreateXamlTypeCallback */ 
+        /* Arg2 CreateXamlTypeCallback */
         []()
         {
             auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
+                /* Arg 1 - TypeName */
                 (PCWSTR)L"Microsoft.UI.Xaml.Controls.AnimatedIcon",
                 /* Arg 2 - BaseTypeName */ 
                 (PCWSTR)L"Microsoft.UI.Xaml.Controls.IconElement",
@@ -471,7 +471,7 @@ Entry c_typeEntries[] =
             auto xamlType = winrt::make<EnumXamlType>(
                 /* Arg 1 - TypeName */ 
                 (PCWSTR)L"Microsoft.UI.Xaml.Controls.AnnotatedScrollBarScrollingEventKind",
-                /* Arg 2 - CreateFromString func */ 
+                /* Arg 2 - CreateFromString func */
                 (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
                 {
                     if (fromString == L"Click") return box_value(winrt::AnnotatedScrollBarScrollingEventKind::Click);
