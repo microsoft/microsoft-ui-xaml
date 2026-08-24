@@ -5,3 +5,6 @@ URL not found https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20 
 
 # Microsoft Store returns HTTP 403 to non-browser user agents
 URL not found https://www.microsoft.com/store/p/windbg/9pgjgd53tn86 while parsing debugging_crashes.md (HTTP 403)
+
+# cla.microsoft.com returns HTTP 403 to non-browser user agents
+URL not found https://cla.microsoft.com while parsing contribution_workflow.md (HTTP 403)
