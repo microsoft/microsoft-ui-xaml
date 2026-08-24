@@ -298,7 +298,10 @@ Write-Host 'Generated project files.'
 if ($NoBuild) { Write-Host 'Skipping build (-NoBuild).'; return }
 
 # --- Restore + build ----------------------------------------------------------
-$env:NUGET_PLUGIN_PATHS = ''   # neutralize a broken/absent NuGet credential provider
+# Neutralize a broken/absent NuGet credential provider for this restore only. Save the caller's
+# value first and restore it in finally so later restores in the same session keep their provider.
+$prevNugetPluginPaths = $env:NUGET_PLUGIN_PATHS
+$env:NUGET_PLUGIN_PATHS = ''
 Push-Location $OutputDir
 try {
     Write-Host 'Building...'
@@ -306,6 +309,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "dotnet build failed with exit code $LASTEXITCODE." }
 }
 finally {
+    # Assigning $null (when it was unset) removes the variable, faithfully restoring the prior state.
+    $env:NUGET_PLUGIN_PATHS = $prevNugetPluginPaths
     Pop-Location
 }
 
