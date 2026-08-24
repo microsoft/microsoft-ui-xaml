@@ -24,6 +24,9 @@ void SplitButton::OnApplyTemplate()
 {
     UnregisterEvents();
 
+    m_isEnabledChangedRevoker.revoke();
+    m_isEnabledChangedRevoker = RegisterPropertyChanged(*this, winrt::Control::IsEnabledProperty(), { this, &SplitButton::OnIsEnabledPropertyChanged });
+
     winrt::IControlProtected controlProtected{ *this };
     m_primaryButton.set(GetTemplateChildT<winrt::Button>(L"PrimaryButton", controlProtected));
     m_secondaryButton.set(GetTemplateChildT<winrt::Button>(L"SecondaryButton", controlProtected));
@@ -115,6 +118,16 @@ void SplitButton::OnVisualPropertyChanged(const winrt::DependencyObject& sender,
     UpdateVisualStates();
 }
 
+void SplitButton::OnIsEnabledPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    if (!IsEnabled())
+    {
+        m_isKeyDown = false;
+    }
+
+    UpdateVisualStates();
+}
+
 void SplitButton::UpdateVisualStates(bool useTransitions)
 {
     // place the secondary button
@@ -130,8 +143,12 @@ void SplitButton::UpdateVisualStates(bool useTransitions)
     // change visual state
     auto primaryButton = m_primaryButton.get();
     auto secondaryButton = m_secondaryButton.get();
-    if (!IsEnabled()) {
-        winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+    if (!IsEnabled())
+    {
+        if (!InternalIsChecked() || !winrt::VisualStateManager::GoToState(*this, L"CheckedDisabled", useTransitions))
+        {
+            winrt::VisualStateManager::GoToState(*this, L"Disabled", useTransitions);
+        }
     }
     else if (primaryButton && secondaryButton)
     {
