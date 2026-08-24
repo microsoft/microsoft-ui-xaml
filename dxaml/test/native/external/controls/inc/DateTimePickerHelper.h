@@ -110,7 +110,10 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
                 auto buttonCenter = ControlHelper::GetCenterOfElement(button);
 
                 VERIFY_ARE_EQUAL(highlightRectCenter.X, buttonCenter.X);
-                VERIFY_ARE_EQUAL(highlightRectCenter.Y, buttonCenter.Y);
+                // The button height is now odd (27px due to host padding 0,4,0,6), which puts buttonCenter.Y
+                // on a half-pixel boundary while the HighlightRect lands on a whole pixel. Allow a
+                // half-pixel tolerance instead of requiring exact equality.
+                VERIFY_IS_TRUE(ControlHelper::AreClose(highlightRectCenter.Y, buttonCenter.Y, 0.5f));
             });
 
             ControlHelper::ClickFlyoutCloseButton(dateTimePicker, true /* isAccept */);

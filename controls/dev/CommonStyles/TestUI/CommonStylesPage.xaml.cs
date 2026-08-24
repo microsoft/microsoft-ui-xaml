@@ -176,9 +176,9 @@ namespace MUXControlsTestApp
             var contentPresenter = (ContentPresenter)root.FindName("HeaderContentPresenter");
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
 
-            string expectedHeaderMargin = "0,0,0,4";
-            string expectDatePickerFlyoutPresenterItemPadding = "0,3,0,6";
-            string expectDatePickerFlyoutPresenterMonthPadding = "9,3,0,6";
+            string expectedHeaderMargin = "0,0,0,8";
+            string expectDatePickerFlyoutPresenterItemPadding = "0,4,0,6";
+            string expectDatePickerFlyoutPresenterMonthPadding = "9,4,0,6";
 
             if (contentPresenter != null)
             {
@@ -207,8 +207,8 @@ namespace MUXControlsTestApp
             var contentPresenter = (ContentPresenter)root.FindName("HeaderContentPresenter");
             simpleVerify.IsTrue(contentPresenter != null, "HeaderContentPresenter can't be found");
 
-            string expectedHeaderMargin = "0,0,0,4";
-            string expectTimePickerFlyoutPresenterItemPadding = "0,3,0,6";
+            string expectedHeaderMargin = "0,0,0,8";
+            string expectTimePickerFlyoutPresenterItemPadding = "0,4,0,6";
 
             if (contentPresenter != null)
             {

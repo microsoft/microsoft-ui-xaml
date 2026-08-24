@@ -334,8 +334,8 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         double const expectedTimePickerWidth = 242;
         double const expectedTimePickerWidth_WithWideHeader = 350;
 
-        double const expectedTimePickerHeight = 30;
-        double const expectedTimePickerHeight_WithHeader = 19 + 4 + expectedTimePickerHeight;
+        double const expectedTimePickerHeight = 31;
+        double const expectedTimePickerHeight_WithHeader = 19 + 8 + expectedTimePickerHeight;
 
         xaml_controls::TimePicker^ timePicker;
         xaml_controls::TimePicker^ timePickerWithHeader;
