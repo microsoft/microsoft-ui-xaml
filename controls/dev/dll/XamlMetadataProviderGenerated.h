@@ -7905,8 +7905,14 @@ Entry c_typeEntries[] =
                 /* Arg 3 - Activator func */ 
                 (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IDesktopAcrylicBackdropFactory>(L"Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop"); },
                 /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IDesktopAcrylicBackdropStatics statics = GetFactory<winrt::IDesktopAcrylicBackdropStatics>(L"Microsoft.UI.Xaml.Media.DesktopAcrylicBackdrop");
+                    {
+                        xamlType.AddDPMember(L"Kind", L"Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicKind", statics.KindProperty(), false /* isContent */);
+                    }
+
+                });
 
             return static_cast<winrt::IXamlType>(*xamlType);
         }
@@ -8157,6 +8163,27 @@ Entry c_typeEntries[] =
         {
             auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Microsoft.UI.Composition.CompositionPropertySet", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
             return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicKind",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Composition.SystemBackdrops.DesktopAcrylicKind",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"Default") return box_value(winrt::DesktopAcrylicKind::Default);
+                    if (fromString == L"Base") return box_value(winrt::DesktopAcrylicKind::Base);
+                    if (fromString == L"Thin") return box_value(winrt::DesktopAcrylicKind::Thin);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
         }
     },
     {
@@ -9008,6 +9035,7 @@ std::wstring_view c_knownNamespacePrefixes[] =
 #include "CommandBarFlyoutCommandBarTemplateSettings.properties.h"
 #include "CornerRadiusFilterConverter.properties.h"
 #include "CornerRadiusToThicknessConverter.properties.h"
+#include "DesktopAcrylicBackdrop.properties.h"
 #include "Expander.properties.h"
 #include "FlowLayout.properties.h"
 #include "ImageIcon.properties.h"
@@ -9116,6 +9144,7 @@ void ClearTypeProperties()
     CommandBarFlyoutCommandBarTemplateSettingsProperties::ClearProperties();
     CornerRadiusFilterConverterProperties::ClearProperties();
     CornerRadiusToThicknessConverterProperties::ClearProperties();
+    DesktopAcrylicBackdropProperties::ClearProperties();
     ExpanderProperties::ClearProperties();
     FlowLayoutProperties::ClearProperties();
     ImageIconProperties::ClearProperties();

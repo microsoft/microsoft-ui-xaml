@@ -5,13 +5,12 @@
 #include "common.h"
 #include "DesktopAcrylicBackdrop.h"
 
-#include "DesktopAcrylicBackdrop.properties.cpp"
-
 void DesktopAcrylicBackdrop::OnTargetConnected(ICompositionSupportsSystemBackdrop target, winrt::Microsoft::UI::Xaml::XamlRoot xamlRoot)
 {
     __super::OnTargetConnected(target, xamlRoot);
 
     auto newController = DesktopAcrylicController();
+    newController.Kind(Kind());
     auto systemBackdrop = this->try_as<winrt::Microsoft::UI::Xaml::Media::SystemBackdrop>();
     auto configuration = systemBackdrop.GetDefaultSystemBackdropConfiguration(target, xamlRoot);
     m_controllers.push_back(std::make_unique<ControllerEntry>(target, newController, configuration));
@@ -34,6 +33,20 @@ void DesktopAcrylicBackdrop::OnTargetDisconnected(ICompositionSupportsSystemBack
     {
         MUX_ASSERT(entryIterator != m_controllers.end());
         m_controllers.erase(entryIterator);
+    }
+}
+
+void DesktopAcrylicBackdrop::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    const winrt::IDependencyProperty& property = args.Property();
+
+    if (property == s_KindProperty)
+    {
+        // If no controller exists, Kind will get set as part of OnTargetConnected
+        for (const std::unique_ptr<ControllerEntry>& entry : m_controllers)
+        {
+            entry->m_controller.Kind(Kind());
+        }
     }
 }
 
