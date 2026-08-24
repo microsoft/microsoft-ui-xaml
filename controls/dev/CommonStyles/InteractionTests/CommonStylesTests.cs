@@ -108,6 +108,12 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
             RunDensityTests("AppBarButtonDensityTest");
         }
 
+        [TestMethod]
+        public void AppBarButtonWidthResourceTest()
+        {
+            RunDensityTests("AppBarButtonWidthResourceTest");
+        }
+
         private void RunDensityTests(string buttonName)
         {
             using (var setup = new TestSetupHelper("CommonStyles Tests"))
