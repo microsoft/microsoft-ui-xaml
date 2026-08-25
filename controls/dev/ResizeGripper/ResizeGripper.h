@@ -50,6 +50,7 @@ private:
     void UpdateResizeCursor();
     void UpdateManipulationMode();
     void UpdateVisualState();
+    void UpdateOrientationVisualState();
     double EffectiveKeyboardIncrement();
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);

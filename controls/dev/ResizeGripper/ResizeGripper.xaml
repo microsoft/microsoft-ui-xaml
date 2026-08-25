@@ -22,8 +22,8 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <!-- Drawn on the logical-end edge while pointing at or dragging the gripper. -->
     <Thickness x:Key="ResizeGripperSeparatorThickness">0,0,2,0</Thickness>
+    <Thickness x:Key="ResizeGripperSeparatorThicknessVertical">0,0,0,2</Thickness>
 
     <Style TargetType="privatecontrols:ResizeGripper">
         <!-- A pointer affordance by default: a host that wants it focusable sets IsTabStop="True"
@@ -31,6 +31,7 @@
              cell, where the column commands live. -->
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <!-- A Border with a null Background does not hit-test; being a pointer target is the point. -->
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="{ThemeResource ResizeGripperSeparatorBrush}" />
@@ -43,26 +44,43 @@
                          ResizeGripperSeparatorThickness. -->
                     <Border x:Name="LayoutRoot"
                             Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
+                        <Border x:Name="Separator"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Opacity="0"
+                                IsHitTestVisible="False"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch" />
                         <VisualStateManager.VisualStateGroups>
+                            <!-- Separate groups: sharing one would make hover and orientation fight over BorderThickness. -->
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThickness}" />
+                                        <Setter Target="Separator.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <!-- Same weight as PointerOver: the pointer is still over the
                                      gripper during a drag, and a change mid-gesture reads as a glitch. -->
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThickness}" />
+                                        <Setter Target="Separator.Opacity" Value="1" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Disabled" />
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="OrientationStates">
+                                <VisualState x:Name="Horizontal">
+                                    <VisualState.Setters>
+                                        <Setter Target="Separator.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThickness}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Vertical">
+                                    <VisualState.Setters>
+                                        <Setter Target="Separator.BorderThickness" Value="{ThemeResource ResizeGripperSeparatorThicknessVertical}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                     </Border>

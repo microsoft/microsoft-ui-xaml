@@ -26,6 +26,14 @@ runtimeclass ResizeGripperDragCompletedEventArgs
 
 // Policy-free drag handle. Owns no layout, no value and no bounds: it reports how far the user has
 // dragged, and the host decides what that means and clamps it.
+//
+// Template contract (MIDL3 does not surface [TemplatePart], so this block is it):
+//   Required parts:      none. No GetTemplateChild call; a template may omit everything.
+//   State targets:       "Separator" - the visual-state setters target it by name.
+//   Visual state groups: CommonStates      - Normal, PointerOver, Pressed, Disabled.
+//                        OrientationStates - Horizontal, Vertical; follows DragOrientation.
+//   Styling keys:        ResizeGripperSeparatorBrush, ResizeGripperSeparatorThickness,
+//                        ResizeGripperSeparatorThicknessVertical.
 [MUX_INTERNAL]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

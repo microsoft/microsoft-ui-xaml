@@ -1540,6 +1540,10 @@ void TableView::AppendResizeGripperVisual(
     {
         auto const strongThis = weakThis.get();
 
+        // Before the guard below: a stale didWrite would revert to the previous drag's start width.
+        state->didWrite = false;
+        state->didDelta = false;
+
         // One resize at a time. Manipulation arbitrates per element, so a second contact on a
         // DIFFERENT gripper would otherwise run a concurrent drag that Escape could not reach.
         if (strongThis)
@@ -1561,8 +1565,6 @@ void TableView::AppendResizeGripperVisual(
         {
             state->startValue = col.ActualWidth();
             state->startWidth = col.Width();
-            state->didWrite = false;
-            state->didDelta = false;
         }
 
         // Published so Escape can find the gesture in flight; the gripper owns everything else

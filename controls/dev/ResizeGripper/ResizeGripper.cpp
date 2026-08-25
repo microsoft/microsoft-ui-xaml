@@ -61,6 +61,7 @@ void ResizeGripper::OnApplyTemplate()
     __super::OnApplyTemplate();
     m_templateApplied = true;
     UpdateResizeCursor();
+    UpdateOrientationVisualState();
     UpdateVisualState();
 }
 
@@ -68,6 +69,8 @@ void ResizeGripper::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerEntered(args);
     m_isPointerOver = true;
+    // A cursor assigned before the element is live does not stick (microsoft-ui-xaml#7062).
+    UpdateResizeCursor();
     UpdateVisualState();
 }
 
@@ -88,6 +91,13 @@ void ResizeGripper::UpdateVisualState()
         m_isPointerOver ? L"PointerOver" : L"Normal";
 
     winrt::VisualStateManager::GoToState(*this, state, true /* useTransitions */);
+}
+
+void ResizeGripper::UpdateOrientationVisualState()
+{
+    winrt::VisualStateManager::GoToState(*this,
+        (DragOrientation() == winrt::Orientation::Vertical) ? L"Vertical" : L"Horizontal",
+        true /* useTransitions */);
 }
 
 // Owned by the primitive so every host gets the right shape, keyed off the direction of travel.
@@ -278,6 +288,7 @@ void ResizeGripper::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     if (args.Property() == s_DragOrientationProperty)
     {
         UpdateResizeCursor();
+        UpdateOrientationVisualState();
         UpdateManipulationMode();
     }
 }
@@ -335,8 +346,18 @@ bool ResizeGripper::TryKeyboardStep(winrt::VirtualKey key)
         ? EffectiveKeyboardIncrement() * c_largeIncrementMultiplier
         : EffectiveKeyboardIncrement();
 
-    BeginDrag();
-    TryDrag(direction * step);
+    // No ManipulationCompleted follows a keyboard step, so a throw would strand IsDragging.
+    try
+    {
+        BeginDrag();
+        TryDrag(direction * step);
+    }
+    catch (...)
+    {
+        EndDrag(true /* canceled */);
+        throw;
+    }
+
     EndDrag(false /* canceled */);
     return true;
 }
