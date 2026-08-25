@@ -1,0 +1,115 @@
+<Page
+    x:Class="SelectionModelSampleApp.Pages.GroupedSelectionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="using:SelectionModelSampleApp.Common"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Page.Resources>
+        <common:SelectionStateToBrushConverter x:Key="StateToBrush" />
+        <common:SelectionStateToGlyphConverter x:Key="StateToGlyph" />
+    </Page.Resources>
+
+    <Grid Padding="16" ColumnSpacing="16" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="380" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.ColumnSpan="2" Spacing="4">
+            <TextBlock Text="Grouped selection and the tri-state IsSelected" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock TextWrapping="Wrap"
+                       Text="Each group header shows what IsSelectedAt(R.g) returns: true when every child is selected, null (amber) when only some are, false otherwise." />
+        </StackPanel>
+
+        <Border Grid.Row="1" BorderThickness="1" CornerRadius="4"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+            <ScrollViewer Padding="8">
+                <ItemsControl x:Name="GroupsControl">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,0,0,12">
+                                <Border Background="{Binding IsSelected, Converter={StaticResource StateToBrush}}"
+                                        CornerRadius="4" Padding="8,4" Margin="0,0,0,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <FontIcon FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="14"
+                                                  Glyph="{Binding IsSelected, Converter={StaticResource StateToGlyph}}" />
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    </StackPanel>
+                                </Border>
+                                <ItemsControl ItemsSource="{Binding}" Margin="20,0,0,0">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="8" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{Binding IsSelected, Converter={StaticResource StateToBrush}}"
+                                                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                                    BorderThickness="1" CornerRadius="4"
+                                                    Width="72" Height="56">
+                                                <TextBlock Text="{Binding Label}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Grid.Column="1">
+            <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <StackPanel>
+                        <TextBlock Text="Group" />
+                        <NumberBox x:Name="GroupBox" Value="1" Minimum="0" Maximum="2" Width="110"
+                                   SpinButtonPlacementMode="Inline" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Item" />
+                        <NumberBox x:Name="ItemBox" Value="2" Minimum="0" Maximum="3" Width="110"
+                                   SpinButtonPlacementMode="Inline" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="Select(g,i)" Click="OnSelect" />
+                    <Button Content="Deselect(g,i)" Click="OnDeselect" />
+                    <Button Content="IsSelected(g,i)" Click="OnIsSelected" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="SelectAt(R.g.i)" Click="OnSelectAt" />
+                    <Button Content="DeselectAt(R.g.i)" Click="OnDeselectAt" />
+                    <Button Content="IsSelectedAt(R.g)" Click="OnIsSelectedAtGroup" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button Content="SelectAll()" Click="OnSelectAll" />
+                    <Button Content="SelectAllFlat()" Click="OnSelectAllFlat" />
+                    <Button Content="ClearSelection()" Click="OnClearSelection" />
+                </StackPanel>
+                <Button Content="Select whole group (g)" Click="OnSelectWholeGroup" />
+
+                <TextBlock x:Name="ResultText" TextWrapping="Wrap" FontFamily="Consolas"
+                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1" CornerRadius="4" Padding="10">
+                    <StackPanel>
+                        <TextBlock Text="Model state" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <TextBlock x:Name="StateText" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
