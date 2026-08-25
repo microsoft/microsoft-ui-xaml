@@ -29,6 +29,19 @@ msbuild Samples\SelectionModelSampleApp\SelectionModelSampleApp\SelectionModelSa
 The app is also built by `buildsamples.cmd`, and can be built against a published Windows App SDK
 package with `scripts\buildSample SelectionModelSampleApp <version>`.
 
+### From Visual Studio
+
+Open `SelectionModelSampleApp.sln`. Because this is a packaged single-project MSIX app, Visual
+Studio requires `Properties\launchSettings.json`; it defines two profiles:
+
+| Profile | `commandName` | Notes |
+| --- | --- | --- |
+| `SelectionModelSampleApp (Package)` | `MsixPackage` | Deploys and debugs the MSIX. Use this one by default. |
+| `SelectionModelSampleApp (Unpackaged)` | `Project` | Launches the loose `.exe` directly. Works because the app runs self-contained. |
+
+Pick a profile from the Start button dropdown, and make sure the solution platform is `x64`
+(or `ARM64`) rather than `Any CPU`.
+
 ## Regenerating the spec screenshots
 
 The app can put itself into a named state and render itself to a PNG, so the documentation
