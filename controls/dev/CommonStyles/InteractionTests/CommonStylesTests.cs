@@ -279,6 +279,40 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        [TestProperty("Description", "Verifies the TextBox inline clear (Delete) button is exposed to UIA so Voice Access can target it.")]
+        public void TextBoxClearButtonIsAccessibleTest()
+        {
+            using (var setup = new TestSetupHelper("TextControls Tests"))
+            {
+                Edit textBox = new Edit(FindElement.ByName("ClearButtonTextBox"));
+                Verify.IsNotNull(textBox, "The test TextBox should be found.");
+
+                // The clear (Delete) button is only shown while the TextBox is focused and non-empty.
+                Log.Comment("Focus the TextBox so the clear (Delete) button becomes visible.");
+                textBox.SetFocus();
+                Wait.ForIdle();
+
+                // The clear button (named "Delete") must be exposed to UIA (and therefore to Voice
+                // Access) rather than hidden with AccessibilityView=Raw. Verify it can be found as a
+                // child of the TextBox.
+                Button deleteButton = null;
+                foreach (UIObject elem in textBox.Children)
+                {
+                    if (elem.Name.Equals("Delete"))
+                    {
+                        deleteButton = new Button(elem);
+                        break;
+                    }
+                }
+                Verify.IsNotNull(deleteButton, "The clear button should be exposed as a UIA element.");
+
+                Log.Comment("Invoke the clear button and verify that the text is cleared.");
+                deleteButton.InvokeAndWait();
+                Verify.AreEqual(string.Empty, textBox.GetText());
+            }
+        }
+
+        [TestMethod]
         [TestProperty("Description", "Scrolls a vertical grouped GridView with Mandatory snap points and with the mouse-wheel.")]
         public void ScrollGroupedGridViewWithMandatorySnapPointsTest()
         {

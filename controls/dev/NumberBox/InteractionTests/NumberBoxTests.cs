@@ -108,6 +108,44 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         [TestMethod]
+        public void VerifyClearButtonIsAccessible()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+
+                ComboBox spinModeComboBox = FindElement.ByName<ComboBox>("SpinModeComboBox");
+                spinModeComboBox.SelectItemByName("Inline");
+                Wait.ForIdle();
+
+                Log.Comment("Enter a value so that the clear (delete) button becomes visible.");
+                EnterText(numBox, "42");
+                Wait.ForIdle();
+
+                // The clear button (named "Delete") must be exposed to UIA (and therefore to Voice
+                // Access) rather than hidden with AccessibilityView=Raw. The DeleteButton is authored
+                // inside the inner TextBox's template, so its UIA peer is a child of the TextBox peer
+                // (a grandchild of the NumberBox), not a direct child of the NumberBox. Search the
+                // inner TextBox for it, separately from the Increase/Decrease spin buttons which are
+                // direct NumberBox children.
+                Edit edit = FindTextBox(numBox);
+                Verify.IsNotNull(edit, "The inner TextBox should be found.");
+
+                Button deleteButton = FindButton(edit, "Delete");
+                Verify.IsNotNull(deleteButton, "The clear button should be exposed as a UIA element.");
+
+                Button upButton = FindButton(numBox, "Increase");
+                Button downButton = FindButton(numBox, "Decrease");
+                Verify.IsNotNull(upButton, "The Increase spin button should be exposed.");
+                Verify.IsNotNull(downButton, "The Decrease spin button should be exposed.");
+
+                Log.Comment("Invoke the clear button and verify that the text is cleared.");
+                deleteButton.InvokeAndWait();
+                Verify.AreEqual(string.Empty, edit.GetText());
+            }
+        }
+
+        [TestMethod]
         public void UpDownEnabledTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
