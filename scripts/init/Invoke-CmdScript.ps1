@@ -37,22 +37,32 @@ if (!(Test-Path -Path $env:TEMP))
 $environmentVariablesFile = [IO.Path]::GetTempFileName()
 $workingDirectoryFile = [IO.Path]::GetTempFileName()
 
-## Store the output of cmd.exe.  We also request cmd.exe to output
-## the environment table after the batch file completes.  The same
-## for the current directory.
+try
+{
+    ## Store the output of cmd.exe. We also request cmd.exe to output
+    ## the environment table and current directory after the batch file completes.
+    cmd /c " `"$script`" $parameters && set > `"$environmentVariablesFile`" && cd > `"$workingDirectoryFile`" "
+    $cmdExitCode = $LASTEXITCODE
 
-cmd /c " `"$script`" $parameters && set > `"$environmentVariablesFile`" && cd > `"$workingDirectoryFile`" " 
+    if ($cmdExitCode -eq 0)
+    {
+        # In case the command did a cd
+        Get-Content $workingDirectoryFile | Set-Location
 
-# In case the command did a cd
-Get-Content $workingDirectoryFile | Set-Location
+        ## Go through the environment variables in the temp file.
+        ## For each of them, set the variable in our local environment.
+        Get-Content $environmentVariablesFile | Foreach-Object {
+            if($_ -match "^([^=].*?)=(.*)$")
+            {
+                Set-Content "env:\$($matches[1])" $matches[2]
+            }
+        }
+    }
+}
+finally
+{
+    Remove-Item $environmentVariablesFile, $workingDirectoryFile -ErrorAction SilentlyContinue
+}
 
-## Go through the environment variables in the temp file.  
-## For each of them, set the variable in our local environment.  
-Get-Content $environmentVariablesFile | Foreach-Object {   
-    if($_ -match "^([^=].*?)=(.*)$")  
-    { 
-        Set-Content "env:\$($matches[1])" $matches[2]  
-    } 
-}  
-
-Remove-Item $environmentVariablesFile, $workingDirectoryFile
+# PowerShell commands executed after cmd.exe must not turn a failed init into success.
+$global:LASTEXITCODE = $cmdExitCode

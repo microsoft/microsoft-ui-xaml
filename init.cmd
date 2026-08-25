@@ -163,26 +163,6 @@ if exist "%RepoRoot%\.azuredevops" (
     call :SetEnviromentVariable IsInternalWinUIBuild false
 )
 
-rem If /envcheck is specified, verify that a full init has been run at least once.
-rem Without a prior full init, required tools and NuGet packages won't be available.
-if "%EnvCheck%"=="true" (
-    if not exist "%RepoRoot%\packages" (
-        echo ERROR: Cannot use /envcheck because a full init has not been run yet.
-        echo        Required tools and NuGet packages are missing.
-        echo.
-        echo        Run a full init first:  init.cmd [flavor]
-        echo        Example:                init.cmd amd64chk
-        exit /b 1
-    )
-    if not exist "%RepoRoot%\.tools" (
-        echo ERROR: Cannot use /envcheck because a full init has not been run yet.
-        echo        Required tools and NuGet packages are missing.
-        echo.
-        echo        Run a full init first:  init.cmd [flavor]
-        echo        Example:                init.cmd amd64chk
-        exit /b 1
-    )
-)
 
 if "%_archIsSet%"=="" (
     set amd64=1
@@ -215,6 +195,8 @@ if not "%Pipeline%"=="true" (
 )
 
 
+rem A completion marker is written only after every full-init step succeeds. Directory existence
+rem alone is insufficient because failed restores can leave packages and .tools partially populated.
 if "%fre%"=="1" (
     call :SetEnviromentVariable _BuildType fre
     call :SetEnviromentVariable Configuration Release
@@ -222,6 +204,21 @@ if "%fre%"=="1" (
 if "%chk%"=="1" (
     call :SetEnviromentVariable _BuildType chk
     call :SetEnviromentVariable Configuration Debug
+)
+
+set _InitCompleteMarker=%RepoRoot%\.tools\init-complete-%_BuildArch%%_BuildType%
+if "%EnvCheck%"=="true" if not exist "%_InitCompleteMarker%" (
+    echo ERROR: Cannot use /envcheck because initialization for %_BuildArch%%_BuildType% is incomplete.
+    echo        Required tools or NuGet packages may be missing.
+    echo.
+    echo        Run a full init first:  init.cmd %_BuildArch%%_BuildType%
+    exit /b 1
+)
+
+rem Invalidate a previous successful marker before a new full initialization starts. If any later
+rem step fails, subsequent agent runs will retry initialization instead of trusting stale state.
+if "%EnvOnly%"=="" (
+    if exist "%_InitCompleteMarker%" del /q "%_InitCompleteMarker%"
 )
 
 rem Enable PGO optimization by default for release (fre) builds.
@@ -242,11 +239,11 @@ goto :SkipDevCmd
 :NeedDevCmd
     echo DevEnvDir environment variable not set or msbuild unavailable. Running DevCmd.cmd to get a developer command prompt...
     if "%ARM64EC%"=="1" (
-        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=amd64 -host_arch=amd64
+        call "%RepoRoot%\DevCmd.cmd" /PreserveContext /prerelease -arch=amd64 -host_arch=amd64
     ) else if "%ARM64%"=="1" (
-        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=arm64 -host_arch=amd64
+        call "%RepoRoot%\DevCmd.cmd" /PreserveContext /prerelease -arch=arm64 -host_arch=amd64
     ) else (
-        call %RepoRoot%\DevCmd.cmd /PreserveContext /prerelease -arch=%_BuildArch% -host_arch=amd64
+        call "%RepoRoot%\DevCmd.cmd" /PreserveContext /prerelease -arch=%_BuildArch% -host_arch=amd64
     )
     if errorlevel 1 (echo Could not set up a developer command prompt && exit /b %ERRORLEVEL%)
 :SkipDevCmd
@@ -280,26 +277,38 @@ call :SetEnviromentVariable DOTNET_MULTILEVEL_LOOKUP 0
 
 set PATH=%DOTNET_ROOT%;%DOTNET_ROOT_x86%;%PATH%
 
-call %RepoRoot%\scripts\init\SetupDotNetFiles.cmd %RepoRoot%
+call "%RepoRoot%\scripts\init\SetupDotNetFiles.cmd" "%RepoRoot%"
+if errorlevel 1 exit /b 1
 
-powershell -ExecutionPolicy Bypass -NoProfile %RepoRoot%\scripts\GenerateTestPfx.ps1 %RepoRoot%\build\WinUITest.pfx
+powershell -ExecutionPolicy Bypass -NoProfile -File "%RepoRoot%\scripts\GenerateTestPfx.ps1" "%RepoRoot%\build\WinUITest.pfx"
+if errorlevel 1 exit /b 1
 
 if "%EnvOnly%"=="" (
     rem For pipeline builds, submodules are checked out with authentication elsewhere
     rem For dev builds, ensure that submodules are populated with latest commits
     git submodule update --init --recursive
-    powershell -ExecutionPolicy Bypass -NoProfile -File %RepoRoot%\scripts\init\Initialize-Restore.ps1 -RepoRoot %RepoRoot% %Verbose%
+    if errorlevel 1 exit /b 1
+    powershell -ExecutionPolicy Bypass -NoProfile -File "%RepoRoot%\scripts\init\Initialize-Restore.ps1" -RepoRoot "%RepoRoot%" %Verbose%
+    if errorlevel 1 exit /b 1
 )
 
 if "%ARM64EC%"=="1" (
-    if exist %RepoRoot%\scripts\MockArm64ECFolder.ps1 (
-        powershell -ExecutionPolicy Bypass -NoProfile -File %RepoRoot%\scripts\MockArm64ECFolder.ps1
+    if exist "%RepoRoot%\scripts\MockArm64ECFolder.ps1" (
+        powershell -ExecutionPolicy Bypass -NoProfile -File "%RepoRoot%\scripts\MockArm64ECFolder.ps1"
+        if errorlevel 1 exit /b 1
     )
 )
 
-xcopy /d /y %RepoRoot%\scripts\winui.natvis "%USERPROFILE%\My Documents\Visual Studio 2022\Visualizers\" >nul 2>&1
+xcopy /d /y "%RepoRoot%\scripts\winui.natvis" "%USERPROFILE%\My Documents\Visual Studio 2022\Visualizers\" >nul 2>&1
 
 set EnvironmentInitialized=1
+if "%EnvOnly%"=="" (
+    rem Ignore the optional natvis copy result and test only whether the marker itself can be written.
+    ver >nul
+    >"%_InitCompleteMarker%" echo initialized
+    if errorlevel 1 exit /b 1
+)
+
 
 if "%NoTitle%"=="" (
    title DCPP %RepoRoot% - %_BuildArch%%_BuildType%

@@ -31,6 +31,7 @@ set _verbosity=/verbosity:minimal
 set _analyze=
 set _quiet=
 set _initFlavor=
+set _exitCode=0
 
 :parseArgs
 if "%1"=="/c" (
@@ -81,6 +82,8 @@ if "%1"=="/c" (
     set _verbosity=/verbosity:normal
 ) else if "%1"=="/b" (
     set _procCount=/m:2
+) else if "%1"=="/m:1" (
+    set _procCount=/m:1
 ) else if "%1"=="/analyze" (
     set _analyze=1
 ) else if "%1"=="/m" (
@@ -156,38 +159,92 @@ rem
 rem Build the XAML compiler from source. XamlCompilerPrerequisites.sln also builds
 rem GenXbf (via the BuildGenXbfForMSBuild project it contains), so no separate step is needed.
 call :buildSolution %reporoot%\XamlCompilerPrerequisites.sln
-if ERRORLEVEL 1 goto:showDurationAndExit
+set _rc=!ERRORLEVEL!
+if not "!_rc!"=="0" (
+    set _exitCode=!_rc!
+    goto:showDurationAndExit
+)
 
 if "%_targetMux%" == "1" (
     call :buildSolution %reporoot%\dxaml\xcp\dxaml\dllsrv\winrt\native\Microsoft.ui.xaml.vcxproj
 ) else if "%_targetProduct%" == "1" (
    call :buildSolution %reporoot%\Microsoft.UI.Xaml-Product.sln
-   if ERRORLEVEL 1 goto:showDurationAndExit
+   set _rc=!ERRORLEVEL!
+   if not "!_rc!"=="0" (
+       set _exitCode=!_rc!
+       goto:showDurationAndExit
+   )
    call :buildSolution %reporoot%\controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
-   if not "%_nomock%"=="1" call :buildMockPackage
+   set _rc=!ERRORLEVEL!
+   if not "!_rc!"=="0" (
+       set _exitCode=!_rc!
+       goto:showDurationAndExit
+   )
+   if not "%_nomock%"=="1" (
+       call :buildMockPackage
+       set _rc=!ERRORLEVEL!
+       if not "!_rc!"=="0" (
+           set _exitCode=!_rc!
+           goto:showDurationAndExit
+       )
+   )
 ) else if "%_targetProdTest%" == "1" (
    call :buildSolution %reporoot%\dxaml\Microsoft.UI.Xaml.sln
-   if ERRORLEVEL 1 goto:showDurationAndExit
-   if not "%_nomock%"=="1" call :buildMockPackage
+   set _rc=!ERRORLEVEL!
+   if not "!_rc!"=="0" (
+       set _exitCode=!_rc!
+       goto:showDurationAndExit
+   )
+   if not "%_nomock%"=="1" (
+       call :buildMockPackage
+       set _rc=!ERRORLEVEL!
+       if not "!_rc!"=="0" (
+           set _exitCode=!_rc!
+           goto:showDurationAndExit
+       )
+   )
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 ) else if "%_targetTest%" == "1" (
-   if not "%_nomock%"=="1" call :buildMockPackage
+   if not "%_nomock%"=="1" (
+       call :buildMockPackage
+       set _rc=!ERRORLEVEL!
+       if not "!_rc!"=="0" (
+           set _exitCode=!_rc!
+           goto:showDurationAndExit
+       )
+   )
    call :buildSolution %reporoot%\controls\MUXControls.sln /restore
 )
-if ERRORLEVEL 1 goto:showDurationAndExit
+set _rc=!ERRORLEVEL!
+if not "!_rc!"=="0" (
+    set _exitCode=!_rc!
+    goto:showDurationAndExit
+)
 
 if "%_targetSamples%" == "1" (
     rem If not fake and not building prodtest (so already built the mock), do so
-    if "%_fake%%_targetProdTest%%_nomock%"=="" call :buildMockPackage
+    if "%_fake%%_targetProdTest%%_nomock%"=="" (
+        call :buildMockPackage
+        set _rc=!ERRORLEVEL!
+        if not "!_rc!"=="0" (
+            set _exitCode=!_rc!
+            goto :showDurationAndExit
+        )
+    )
 
     rem Note that buildsamples.cmd does it's own check for "fake", so we just call it directly.
     call :callScript buildsamples.cmd %_versionOption%
+    set _rc=!ERRORLEVEL!
 
     if "%_fake%"=="1" (
         rem buildsamples.cmd has its own /fake support, so we call it here to show the user what it will do.
         call buildsamples.cmd /fake %_versionOption%
+        set _rc=!ERRORLEVEL!
     )
-    if ERRORLEVEL 1 goto :showDurationAndExit
+    if not "!_rc!"=="0" (
+        set _exitCode=!_rc!
+        goto :showDurationAndExit
+    )
 )
 if not "%_quiet%"=="1" (
     echo ---
@@ -263,7 +320,7 @@ set _command=call msbuild !_options!
 
 if "%_fake%"=="1" (
     echo COMMAND: %_command%
-    goto :eof
+    exit /b 0
 )
 
 rem Clear the PSModulePath environment variable. This avoids issues when the caller is a version of
@@ -277,37 +334,40 @@ if NOT "%PSModulePath%" == "" (
 
 %_command%
 
-if ERRORLEVEL 1  (
+set _rc=!ERRORLEVEL!
+if not "!_rc!"=="0"  (
     echo ---
     echo ERROR: buildSolution for !_solution! FAILED.  Binlog is here: !_binlog!
+) else if "%_quiet%"=="1" (
+    echo Binlog: !_binlog!
 )
 
-goto:eof
+exit /b !_rc!
 
 :callScript
 
 if "%_fake%"=="1" (
     echo COMMAND: %*
-    goto :eof
+    exit /b 0
 )
 
 call %*
 
-if ERRORLEVEL 1  (
+set _rc=!ERRORLEVEL!
+if not "!_rc!"=="0"  (
     echo ---
     echo ERROR: callScript FAILED.
 )
-goto :eof
+exit /b !_rc!
 
 
 :buildMockPackage
 if "%_fake%"=="1" (
-    echo COMMAND: call %RepoRoot%\pack.component.cmd /version %_version%
-    goto :eof
+    echo COMMAND: call "%RepoRoot%\pack.component.cmd" /version %_version%
+    exit /b 0
 )
-call %RepoRoot%\pack.component.cmd /version %_version%
-if ERRORLEVEL 1 goto :showDurationAndExit
-goto :eof
+call "%RepoRoot%\pack.component.cmd" /version %_version%
+exit /b %ERRORLEVEL%
 
 
 :showDurationAndExit
@@ -346,8 +406,7 @@ if not "%_quiet%"=="1" (
     echo Start time: %BUILDCMDSTARTTIME%. End time: %BUILDCMDENDTIME%
 )
 echo    Elapsed: %BUILDDURATION_HRS:~-2%:%BUILDDURATION_MIN:~-2%:%BUILDDURATION_SEC:~-2%.%BUILDDURATION_HSC:~-2%
-endlocal
-goto :eof
+endlocal & exit /b %_exitCode%
 
 :usage
 echo Usage:
@@ -379,6 +438,7 @@ echo        /fake           Don't actually do the build--just tell me what you'r
 echo        /nomock         Skip building the mock package
 echo        /lowpri         Launch MSBuild using below normal priority (default if environment variable XAMLBUILD_LOWPRIORITY = 1)
 echo        /normalpri      Launch MSBuild using normal priority (default if environment variable XAMLBUILD_LOWPRIORITY ^^!= 1)
+echo        /m:1            Use one MSBuild process for task-host or severe memory failures
 echo        /version [ver]  Override WinUIVersion property (default is %_version%)
 rem echo        /local          Builds without using IncrediBuild.
 echo.
