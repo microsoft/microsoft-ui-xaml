@@ -11,6 +11,7 @@
 #include "InkToolbarToolButton.h"
 #include "InkToolbarToolButtonAutomationPeer.h"
 #include "InkToolbar.h"
+#include "InkToolbarTrace.h"
 
 InkToolbarToolButton::InkToolbarToolButton()
 {
@@ -49,8 +50,9 @@ void InkToolbarToolButton::OnApplyTemplate()
     {
         localizedToolName = GetLocalizedToolName();
     }
-    catch (winrt::hresult_error const&)
+    catch (winrt::hresult_error const& e)
     {
+        InkToolbarLogHResult(e.code(), L"tool button name lookup");
     }
     if (!localizedToolName.empty())
     {

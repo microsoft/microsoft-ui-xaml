@@ -79,8 +79,8 @@ if (IsInkToolbarPerfTracingEnabled()) \
 class InkToolbarTrace
 {
 public:
-    static bool s_IsDebugOutputEnabled;
-    static bool s_IsVerboseDebugOutputEnabled;
+    static inline bool s_IsDebugOutputEnabled = false;
+    static inline bool s_IsVerboseDebugOutputEnabled = false;
 
     static void TraceInfo(bool includeTraceLogging, const winrt::IInspectable& sender, PCWSTR message, ...) noexcept
     {
@@ -148,3 +148,11 @@ public:
         va_end(args);
     }
 };
+
+// Log-and-continue helper (parity with the UWP LOG_IF_FAILED / LOG_HR_MSG macros): record a recoverable
+// HRESULT on the InkToolbar trace channel and continue, rather than throwing out of the caller or
+// swallowing it silently.
+inline void InkToolbarLogHResult(HRESULT hr, PCWSTR context)
+{
+    INKTOOLBAR_TRACE_INFO(nullptr, L"%ls (hr=0x%08X); continuing.", context, static_cast<unsigned int>(hr));
+}

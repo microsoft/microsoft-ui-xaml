@@ -12,6 +12,7 @@
 #include "InkToolbarMenuButton.h"
 #include "InkToolbarMenuButtonAutomationPeer.h"
 #include "InkToolbar.h"
+#include "InkToolbarTrace.h"
 
 InkToolbarMenuButton::InkToolbarMenuButton()
 {
@@ -138,8 +139,9 @@ void InkToolbarMenuButton::UpdateMenuButtonToolTip()
     {
         localizedToolName = GetLocalizedToolName();
     }
-    catch (winrt::hresult_error const&)
+    catch (winrt::hresult_error const& e)
     {
+        InkToolbarLogHResult(e.code(), L"menu button name lookup");
     }
     if (!localizedToolName.empty())
     {
