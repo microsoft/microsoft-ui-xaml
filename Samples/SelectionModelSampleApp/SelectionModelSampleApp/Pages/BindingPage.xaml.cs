@@ -19,7 +19,6 @@ namespace SelectionModelSampleApp.Pages
             m_items = SampleData.CreateFlat(12);
 
             SharedSelectionModel.Source = m_items;
-            SharedSelectionModel.SingleSelect = true;
             SharedSelectionModel.SelectionChanged += (s, e) => RefreshVisuals();
             SharedSelectionModel.PropertyChanged += OnModelPropertyChanged;
 

@@ -15,7 +15,7 @@ Each page shows the data on the left and a live **Model state** panel on the rig
 | Range and anchor | `AnchorIndex`, `SetAnchorIndex`, `SelectRangeFromAnchor(To)`, `DeselectRangeFromAnchor(To)`, `SelectRange`, `DeselectRange` |
 | IndexPath | `CreateFrom`, `CreateFromIndices`, `GetSize`, `GetAt`, `CompareTo`, `ToString` |
 | Events | `SelectionChanged` and `ChildrenRequested` over a lazily resolved tree |
-| XAML binding | `SelectionModel` declared as a XAML resource and `{Binding SelectedItem}` |
+| XAML binding | `SelectionModel` declared as a XAML resource with `SingleSelect="True"` set from markup, and `{Binding SelectedItem}` |
 
 ## Building and running
 

@@ -7,7 +7,7 @@
 
     <Page.Resources>
         <!-- SelectionModel can be declared in markup and shared as a resource. -->
-        <muxc:SelectionModel x:Key="SharedSelectionModel" x:Name="SharedSelectionModel" />
+        <muxc:SelectionModel x:Key="SharedSelectionModel" x:Name="SharedSelectionModel" SingleSelect="True" />
         <common:SelectionStateToBrushConverter x:Key="StateToBrush" />
         <common:SelectionStateToGlyphConverter x:Key="StateToGlyph" />
     </Page.Resources>

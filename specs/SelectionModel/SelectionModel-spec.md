@@ -203,11 +203,17 @@ The model can be declared in markup and shared as a resource:
 
 ```xaml
 <Page.Resources>
-    <muxc:SelectionModel x:Key="SharedSelectionModel" x:Name="SharedSelectionModel" />
+    <muxc:SelectionModel x:Key="SharedSelectionModel" x:Name="SharedSelectionModel"
+                         SingleSelect="True" />
 </Page.Resources>
 
 <TextBlock Text="{Binding SelectedItem, Source={StaticResource SharedSelectionModel}}" />
 ```
+
+`SelectionModel` is not a `DependencyObject`, but it is an activatable runtime class with
+settable properties, so the XAML parser can construct it and set `SingleSelect` from markup.
+`Source`, the anchor and the selection itself have no markup syntax — everything else is
+imperative.
 
 ```csharp
 var selectionModel = new SelectionModel();
@@ -236,16 +242,38 @@ it produces. The panel on the right of each screenshot prints the live values of
 `SelectedIndex`, `SelectedItem`, `AnchorIndex`, `SingleSelect`, `SelectedIndices` and
 `SelectedItems`.
 
-| Scenario | Code | Result |
-| --- | --- | --- |
-| Multi-select over a flat list | <pre>selectionModel.Source = items;<br>selectionModel.Select(3);<br>selectionModel.Select(4);<br>selectionModel.Select(5);</pre> | ![Multiple selection](./flat-multiple-selection.png) |
-| Single select | <pre>selectionModel.SingleSelect = true;<br>selectionModel.Select(3);<br>selectionModel.Select(7);</pre> | ![Single select](./flat-single-select.png) |
-| Partially selected group | <pre>selectionModel.Source = groups;<br>selectionModel.Select(1, 2);<br>// IsSelectedAt(R.1) -> null</pre> | ![Partial group](./grouped-partial-selection.png) |
-| Fully selected group | <pre>selectionModel.SelectRange(<br>&nbsp;&nbsp;IndexPath.CreateFrom(1, 0),<br>&nbsp;&nbsp;IndexPath.CreateFrom(1, 3));<br>// IsSelectedAt(R.1) -> true</pre> | ![Full group](./grouped-full-selection.png) |
-| Anchor and range | <pre>selectionModel.SetAnchorIndex(4);<br>selectionModel.SelectRangeFromAnchor(9);</pre> | ![Range from anchor](./range-anchor-selection.png) |
-| Addressing items with IndexPath | <pre>IndexPath.CreateFrom(4);<br>IndexPath.CreateFrom(1, 2);<br>IndexPath.CreateFromIndices(<br>&nbsp;&nbsp;new List&lt;int&gt; { 0, 3, 1 });</pre> | ![IndexPath](./indexpath-api.png) |
-| Lazy tree via ChildrenRequested | <pre>model.ChildrenRequested += (s, e) =><br>&nbsp;&nbsp;e.Children = (e.Source as Node)?.Children;<br>model.SelectAt(path);</pre> | ![ChildrenRequested](./events-childrenrequested.png) |
-| Binding to SelectedItem | <pre>&lt;TextBlock Text="{Binding SelectedItem,<br>&nbsp;&nbsp;Source={StaticResource SharedSelectionModel}}" /&gt;</pre> | ![Binding](./binding-selecteditem.png) |
+All rows share the same markup: an `ItemsRepeater` and a `SelectionModel` declared as a page
+resource.
+
+```xaml
+<Page.Resources>
+    <muxc:SelectionModel x:Key="Model" x:Name="Model" />
+</Page.Resources>
+
+<muxc:ItemsRepeater x:Name="Repeater" ItemsSource="{x:Bind Items}">
+    <muxc:ItemsRepeater.ItemTemplate>
+        <DataTemplate x:DataType="local:Item">
+            <Button Content="{x:Bind Label}" Click="OnItemClick" />
+        </DataTemplate>
+    </muxc:ItemsRepeater.ItemTemplate>
+</muxc:ItemsRepeater>
+```
+
+In the code columns, `model` is that `SelectionModel` instance. The C++/WinRT column assumes
+`using namespace winrt::Microsoft::UI::Xaml::Controls;`. Note that the C++/WinRT projection
+exposes the group/item variants as ordinary overloads (`Select(index)` and
+`Select(groupIndex, itemIndex)`), even though the ABI names them `SelectWithGroup` and friends.
+
+| Scenario | XAML | C# | C++/WinRT | Result |
+| --- | --- | --- | --- | --- |
+| Multi-select over a flat list | <pre>&lt;muxc:SelectionModel<br>&nbsp;&nbsp;x:Key="Model" x:Name="Model" /&gt;</pre>Multi-select is the default; no extra markup. | <pre>model.Source = items;<br>model.Select(3);<br>model.Select(4);<br>model.Select(5);</pre> | <pre>model.Source(items);<br>model.Select(3);<br>model.Select(4);<br>model.Select(5);</pre> | ![Multiple selection](./flat-multiple-selection.png) |
+| Single select | <pre>&lt;muxc:SelectionModel<br>&nbsp;&nbsp;x:Key="Model" x:Name="Model"<br>&nbsp;&nbsp;SingleSelect="True" /&gt;</pre>`SingleSelect` is settable from markup. | <pre>model.SingleSelect = true;<br>model.Select(3);<br>model.Select(7);<br>// only R.7 survives</pre> | <pre>model.SingleSelect(true);<br>model.Select(3);<br>model.Select(7);<br>// only R.7 survives</pre> | ![Single select](./flat-single-select.png) |
+| Partially selected group | No markup — `Source` is set in code to a grouped collection. | <pre>model.Source = groups;<br>model.Select(1, 2);<br>bool? g =<br>&nbsp;&nbsp;model.IsSelectedAt(<br>&nbsp;&nbsp;&nbsp;&nbsp;IndexPath.CreateFrom(1));<br>// g == null (partial)</pre> | <pre>model.Source(groups);<br>model.Select(1, 2);<br>IReference&lt;bool&gt; g =<br>&nbsp;&nbsp;model.IsSelectedAt(<br>&nbsp;&nbsp;&nbsp;&nbsp;IndexPath::CreateFrom(1));<br>// g == nullptr (partial)</pre> | ![Partial group](./grouped-partial-selection.png) |
+| Fully selected group | No markup — range selection is imperative. | <pre>model.SelectRange(<br>&nbsp;&nbsp;IndexPath.CreateFrom(1, 0),<br>&nbsp;&nbsp;IndexPath.CreateFrom(1, 3));<br>// IsSelectedAt(R.1) -&gt; true</pre> | <pre>model.SelectRange(<br>&nbsp;&nbsp;IndexPath::CreateFrom(1, 0),<br>&nbsp;&nbsp;IndexPath::CreateFrom(1, 3));<br>// IsSelectedAt(R.1) -&gt; true</pre> | ![Full group](./grouped-full-selection.png) |
+| Anchor and range | No markup — `AnchorIndex` has no markup syntax. | <pre>model.SetAnchorIndex(4);<br>model.SelectRangeFromAnchor(9);</pre> | <pre>model.SetAnchorIndex(4);<br>model.SelectRangeFromAnchor(9);</pre> | ![Range from anchor](./range-anchor-selection.png) |
+| Addressing items with IndexPath | No markup — `IndexPath` is created by its static factories. | <pre>IndexPath.CreateFrom(4);<br>IndexPath.CreateFrom(1, 2);<br>IndexPath.CreateFromIndices(<br>&nbsp;&nbsp;new List&lt;int&gt; { 0, 3, 1 });</pre> | <pre>IndexPath::CreateFrom(4);<br>IndexPath::CreateFrom(1, 2);<br>IndexPath::CreateFromIndices(<br>&nbsp;&nbsp;std::vector&lt;int32_t&gt;{ 0, 3, 1 });</pre> | ![IndexPath](./indexpath-api.png) |
+| Lazy tree via ChildrenRequested | No markup — the handler is wired up in code. | <pre>model.ChildrenRequested +=<br>&nbsp;&nbsp;(s, e) =&gt; e.Children =<br>&nbsp;&nbsp;&nbsp;&nbsp;(e.Source as Node)?.Children;<br>model.SelectAt(path);</pre> | <pre>model.ChildrenRequested(<br>&nbsp;&nbsp;[](auto&amp;&amp;, auto&amp;&amp; e)<br>&nbsp;&nbsp;{<br>&nbsp;&nbsp;&nbsp;&nbsp;e.Children(ChildrenOf(e.Source()));<br>&nbsp;&nbsp;});<br>model.SelectAt(path);</pre> | ![ChildrenRequested](./events-childrenrequested.png) |
+| Binding to SelectedItem | <pre>&lt;TextBlock Text="{Binding<br>&nbsp;&nbsp;SelectedItem,<br>&nbsp;&nbsp;Source={StaticResource Model}}" /&gt;</pre> | <pre>model.PropertyChanged += (s, e) =&gt;<br>{<br>&nbsp;&nbsp;if (e.PropertyName ==<br>&nbsp;&nbsp;&nbsp;&nbsp;"SelectedItem")<br>&nbsp;&nbsp;&nbsp;&nbsp;Update(model.SelectedItem);<br>};</pre> | <pre>model.PropertyChanged(<br>&nbsp;&nbsp;[=](auto&amp;&amp; s, auto&amp;&amp; e)<br>&nbsp;&nbsp;{<br>&nbsp;&nbsp;&nbsp;&nbsp;if (e.PropertyName() ==<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;L"SelectedItem")<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Update(model.SelectedItem());<br>&nbsp;&nbsp;});</pre> | ![Binding](./binding-selecteditem.png) |
 
 # API Pages
 
