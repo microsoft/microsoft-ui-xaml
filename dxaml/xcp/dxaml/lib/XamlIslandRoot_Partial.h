@@ -70,10 +70,14 @@ namespace DirectUI
 
         void SetOwner(_In_opt_ IInspectable* owner);
         _Success_(return != false) bool TryGetOwner(_COM_Outptr_opt_result_maybenull_ IInspectable** owner);
+        void SetHostOverride(_In_opt_ IInspectable* host);
+        _Success_(return != false) bool TryGetHost(_COM_Outptr_opt_result_maybenull_ IInspectable** host);
         static void OnSizeChangedStatic(_In_ CXamlIslandRoot* xamlIslandRoot);
 
     private:
         ContentManager m_contentManager;
         Microsoft::WRL::WeakRef m_owner;
+        Microsoft::WRL::WeakRef m_hostOverride;
+        bool m_hasHostOverride = false;
     };
 }

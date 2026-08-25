@@ -210,6 +210,7 @@ namespace DirectUI
         // ------------------------------------
         bool m_bIsClosed = false;
         bool m_bIsClosing = false;
+        bool m_isXamlRootHostInitialized = false;
         Window* m_dxamlWindowInstance = nullptr;
         DXamlCore* m_dxamlCoreNoRef = nullptr;
         bool m_bMinimizedOrHidden = false;

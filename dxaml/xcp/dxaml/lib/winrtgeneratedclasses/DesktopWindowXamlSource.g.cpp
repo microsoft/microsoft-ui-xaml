@@ -46,6 +46,10 @@ HRESULT DirectUI::DesktopWindowXamlSourceGenerated::QueryInterfaceImpl(_In_ REFI
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlHost)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IXamlHost*>(this);
+    }
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));

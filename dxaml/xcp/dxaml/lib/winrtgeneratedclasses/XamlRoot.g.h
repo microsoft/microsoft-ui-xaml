@@ -38,6 +38,13 @@ namespace ctl
         impl_type* This() { return this->This_helper<impl_type>(); }
         IFACEMETHOD(get_ContentIsland)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIsland** ppValue) override { return This()->get_ContentIsland(ppValue); }
     };
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IXamlRoot5, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IXamlRoot5, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+        IFACEMETHOD(get_Host)(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IXamlHost** ppValue) override { return This()->get_Host(ppValue); }
+    };
 }
 #pragma endregion
 
@@ -52,6 +59,7 @@ namespace DirectUI
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot2, XamlRootGenerated >
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot3, XamlRootGenerated >
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot4, XamlRootGenerated >
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IXamlRoot5, XamlRootGenerated >
     {
         friend class DirectUI::XamlRoot;
 
@@ -62,6 +70,7 @@ namespace DirectUI
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot2)
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot3)
             INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot4)
+            INTERFACE_ENTRY(XamlRootGenerated, ABI::Microsoft::UI::Xaml::IXamlRoot5)
         END_INTERFACE_MAP(XamlRootGenerated, ctl::WeakReferenceSource)
 
     public:
@@ -78,6 +87,7 @@ namespace DirectUI
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ContentIsland(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIsland** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_ContentIslandEnvironment(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentIslandEnvironment** ppValue);
         _Check_return_ HRESULT STDMETHODCALLTYPE get_CoordinateConverter(_Outptr_result_maybenull_ ABI::Microsoft::UI::Content::IContentCoordinateConverter** ppValue);
+        _Check_return_ HRESULT STDMETHODCALLTYPE get_Host(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IXamlHost** ppValue);
         IFACEMETHOD(get_IsHostVisible)(_Out_ BOOLEAN* pValue) override;
         _Check_return_ HRESULT get_IsInputActive(_Out_ BOOLEAN* pValue);
         IFACEMETHOD(get_RasterizationScale)(_Out_ DOUBLE* pValue) override;

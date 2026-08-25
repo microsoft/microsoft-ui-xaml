@@ -825,6 +825,8 @@ namespace Microsoft.UI.Xaml
     [webhosthidden]
     [contentproperty("Content")]
     unsealed runtimeclass Window
+        : [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        Microsoft.UI.Xaml.IXamlHost
     {
         [method_name("CreateInstance")] Window();
         Windows.Foundation.Rect Bounds{ get; };
@@ -2281,6 +2283,8 @@ namespace Microsoft.UI.Xaml.Hosting
     unsealed runtimeclass DesktopWindowXamlSource
         : [contract(Microsoft.UI.Xaml.WinUIContract, 5)]
         Windows.Foundation.IClosable
+        , [contract(Microsoft.UI.Xaml.WinUIContract, 12)]
+        Microsoft.UI.Xaml.IXamlHost
     {
         [method_name("CreateInstance")] DesktopWindowXamlSource();
         Microsoft.UI.Xaml.UIElement Content;

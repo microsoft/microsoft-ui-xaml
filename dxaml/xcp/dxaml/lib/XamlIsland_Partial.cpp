@@ -427,6 +427,8 @@ IFACEMETHODIMP XamlIsland::Close()
 
     if (m_spXamlIsland.Get() != nullptr)
     {
+        m_spXamlIsland.Cast<DirectUI::XamlIslandRoot>()->SetOwner(nullptr);
+
         auto frameworkApplication = FrameworkApplication::GetCurrentNoRef();
         IFCFAILFAST(frameworkApplication->RemoveIsland(m_spXamlIsland.Get()));
 

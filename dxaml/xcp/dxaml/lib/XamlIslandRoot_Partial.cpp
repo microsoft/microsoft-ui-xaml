@@ -153,9 +153,36 @@ _Success_(return != false) bool DirectUI::XamlIslandRoot::TryGetOwner(_COM_Outpt
     if (m_owner && SUCCEEDED(m_owner.As(&resolvedOwner)))
     {
         *owner = resolvedOwner.Detach();
-        return true;
+        return *owner != nullptr;
     }
     return false;
 }
 
+void DirectUI::XamlIslandRoot::SetHostOverride(_In_opt_ IInspectable* host)
+{
+    m_hasHostOverride = true;
+    m_hostOverride = nullptr;
 
+    if (host != nullptr)
+    {
+        IGNOREHR(wrl::AsWeak(host, &m_hostOverride));
+    }
+}
+
+_Success_(return != false) bool DirectUI::XamlIslandRoot::TryGetHost(_COM_Outptr_opt_result_maybenull_ IInspectable** host)
+{
+    *host = nullptr;
+    if (m_hasHostOverride)
+    {
+        wrl::ComPtr<IInspectable> resolvedHost;
+        if (m_hostOverride && SUCCEEDED(m_hostOverride.As(&resolvedHost)))
+        {
+            *host = resolvedHost.Detach();
+            return *host != nullptr;
+        }
+
+        return false;
+    }
+
+    return TryGetOwner(host);
+}

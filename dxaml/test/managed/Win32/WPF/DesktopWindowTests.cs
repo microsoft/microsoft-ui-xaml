@@ -38,8 +38,19 @@ using Private.Infrastructure.Hosting.WPF;
 namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
 {
     [TestClass]
-    public class DesktopWindowTests : XamlTestsBase
+    public partial class DesktopWindowTests : XamlTestsBase
     {
+        private sealed partial class ComposedWindow : Window
+        {
+            public ComposedWindow()
+            {
+                RootPanel = new StackPanel();
+                Content = RootPanel;
+            }
+
+            public StackPanel RootPanel { get; }
+        }
+
         [ClassInitialize]
         [TestProperty("BinaryUnderTest", "Microsoft.UI.Xaml.dll")]
         [TestProperty("RunAs", "UAP")]
@@ -56,7 +67,37 @@ namespace Microsoft.UI.Xaml.Tests.Hosting.Win32.WPF
         {
             base.CommonClassCleanup();
         }
-                
+
+        [TestMethod]
+        [TestProperty("Description", "Validates XamlRoot.Host for a C#/WinRT composed Window.")]
+        public void ValidateXamlRootHostForComposedWindow()
+        {
+            Xaml.XamlRoot xamlRoot = null;
+            WeakReference<ComposedWindow> windowReference = null;
+
+            UIExecutor.Execute(() =>
+            {
+                // Construction itself is the regression. The native Window base constructor must
+                // not ask its still-initializing managed outer for a weak reference.
+                ComposedWindow desktopWindow = new ComposedWindow();
+
+                xamlRoot = desktopWindow.RootPanel.XamlRoot;
+                windowReference = new WeakReference<ComposedWindow>(desktopWindow);
+                Verify.IsTrue(ReferenceEquals(desktopWindow, xamlRoot.Host));
+            });
+            TestServices.WindowHelper.WaitForIdle();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            UIExecutor.Execute(() =>
+            {
+                Verify.IsFalse(windowReference.TryGetTarget(out _));
+                Verify.IsNull(xamlRoot.Host);
+            });
+            TestServices.WindowHelper.WaitForIdle();
+        }
         [TestMethod]
         [TestProperty("Description", "Validates life of DesktopWindow which is not activated.")]
         public void ValidateLifeOfNonActivatedDesktopWindow()

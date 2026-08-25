@@ -3335,9 +3335,11 @@ namespace Microsoft.UI.Xaml
     [TypeTable(IsExcludedFromCore = true)]
     [ClassFlags(HasBaseTypeInDXamlInterface = false)]
     [Implements(typeof(Microsoft.UI.Xaml.IWindowPrivate))]
+    [Implements(typeof(Microsoft.UI.Xaml.IXamlHost), Version = 3)]
     [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 1, ForcePrimaryInterfaceGeneration = true)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 4)]
+    [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("coretypes2")]
     [Guids(ClassGuid = "b0d8d8be-9fae-4cdc-a457-523fb68b3953")]
@@ -5975,11 +5977,18 @@ namespace Microsoft.UI.Xaml
         internal XamlRootChangedEventArgs() { }
     }
 
+    [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
+    [DXamlIdlGroup("Main")]
+    public interface IXamlHost
+    {
+    }
+
     [CodeGen(partial: true)]
     [Guids(ClassGuid = "eaad7a20-751b-4a85-b6c9-50231742b28f")]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 5)]
     [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), 7)]
     [Platform(4, typeof(Microsoft.UI.Xaml.WinUIContract), 8)]
+    [Platform(5, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     public sealed class XamlRoot
     {
         private XamlRoot() { }
@@ -6020,6 +6029,10 @@ namespace Microsoft.UI.Xaml
         [Version(4)]
         [CodeGen(CodeGenLevel.IdlAndPartialStub)]
         public Microsoft.UI.Content.ContentIsland ContentIsland { get; }
+
+        [Version(5)]
+        [CodeGen(CodeGenLevel.IdlAndPartialStub)]
+        public Microsoft.UI.Xaml.IXamlHost Host { get; }
     }
 
     [TypeTable(ForceInclude = true)]
@@ -6030,6 +6043,7 @@ namespace Microsoft.UI.Xaml
     }
 
     [Platform(typeof(Microsoft.UI.Xaml.WinUIContract), 8)]
+    [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [Platform("Feature_ExperimentalApi", typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
@@ -6037,6 +6051,7 @@ namespace Microsoft.UI.Xaml
     [Guids(ClassGuid = "0eb21081-a1b7-4942-925d-23cf4bafd8e1")]
     [ThreadingModel(ThreadingModel.Both)]
     [Implements(typeof(Windows.Foundation.IClosable))]
+    [Implements(typeof(Microsoft.UI.Xaml.IXamlHost), Version = 2)]
     [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     public class XamlIsland
     {

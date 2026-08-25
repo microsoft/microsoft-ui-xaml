@@ -676,6 +676,10 @@ void XamlIslandTests::XamlIslandCreationScenarios()
         auto dqc{DispatcherQueueController::CreateOnCurrentThread()};
 
         auto xi = CreateXamlIsland("Xaml Island Button");
+        auto xamlRoot = xi->Content->XamlRoot;
+        VERIFY_ARE_EQUAL(
+            safe_cast<Platform::Object^>(xi),
+            safe_cast<Platform::Object^>(xamlRoot->Host));
         auto island = xi->ContentIsland;
         auto dispatcherQueue = island->DispatcherQueue;
 
@@ -683,6 +687,11 @@ void XamlIslandTests::XamlIslandCreationScenarios()
 
         dcsb->Connect(island);
         dcsb->Show();
+
+        CloseObject(xi);
+        xi = nullptr;
+        DrainMessageQueue();
+        VERIFY_IS_NULL(xamlRoot->Host);
 
         dqc->ShutdownQueue();
     });
@@ -701,17 +710,33 @@ DWORD WINAPI TwoWindowsOnSameThread_ThreadProc(_In_ LPVOID lpParameter)
 
     DesktopWindowXamlSource^ dwxs1 = CreateDesktopWindowXamlSource(hwnd1, "Window 1 MUX button");
     DesktopWindowXamlSource^ dwxs2 = CreateDesktopWindowXamlSource(hwnd2, "Window 2 MUX button");
+    auto xamlRoot1 = dwxs1->Content->XamlRoot;
+    auto xamlRoot2 = dwxs2->Content->XamlRoot;
+    VERIFY_ARE_EQUAL(
+        safe_cast<Platform::Object^>(dwxs1),
+        safe_cast<Platform::Object^>(xamlRoot1->Host));
+    VERIFY_ARE_EQUAL(
+        safe_cast<Platform::Object^>(dwxs2),
+        safe_cast<Platform::Object^>(xamlRoot2->Host));
 
     xamlIslandTests->PumpMessagesWhileWaitingForFlag(0);
 
     LOG_OUTPUT(L"  > Cleaning up DWXS 1.");
+    CloseObject(dwxs1);
     dwxs1 = nullptr;
 
     LOG_OUTPUT(L"  > Pumping messages for DWXS cleanup.");
     xamlIslandTests->PumpMessagesWhileWaitingForFlag(1);
+    VERIFY_IS_NULL(xamlRoot1->Host);
+    VERIFY_ARE_EQUAL(
+        safe_cast<Platform::Object^>(dwxs2),
+        safe_cast<Platform::Object^>(xamlRoot2->Host));
 
     LOG_OUTPUT(L"  > Cleaning up DWXS 2.");
+    CloseObject(dwxs2);
     dwxs2 = nullptr;
+    DrainMessageQueue();
+    VERIFY_IS_NULL(xamlRoot2->Host);
 
     LOG_OUTPUT(L"  > Pumping messages for DWXS cleanup.");
     xamlIslandTests->PumpMessagesWhileWaitingForFlag(2);    // flag will never come, but that doesn't matter since there's nothing to do afterwards anyway

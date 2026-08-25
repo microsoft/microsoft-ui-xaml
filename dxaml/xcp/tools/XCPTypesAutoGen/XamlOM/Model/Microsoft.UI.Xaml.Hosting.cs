@@ -247,6 +247,7 @@ namespace Microsoft.UI.Xaml.Hosting
 
     [Contract(typeof(WinUIContract), 5)]
     [Platform(2, typeof(Microsoft.UI.Xaml.WinUIContract), 6)]
+    [Platform(3, typeof(Microsoft.UI.Xaml.WinUIContract), Microsoft.UI.Xaml.WinUIContract.Experimental)]
     [DXamlIdlGroup("coretypes2")]
     [CodeGen(partial: true)]
     [FrameworkTypePattern]
@@ -254,6 +255,7 @@ namespace Microsoft.UI.Xaml.Hosting
     [Guids(ClassGuid = "e6336955-51ed-4e64-9067-506501e80451")]
     [ThreadingModel(ThreadingModel.Both)]
     [Implements(typeof(Windows.Foundation.IClosable))]
+    [Implements(typeof(Microsoft.UI.Xaml.IXamlHost), Version = 3)]
     [Implements(typeof(Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop), Version = 1)]
     public class DesktopWindowXamlSource
     {

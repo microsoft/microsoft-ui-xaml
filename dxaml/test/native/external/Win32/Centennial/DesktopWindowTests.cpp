@@ -43,6 +43,7 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
             TestCleanupWrapper cleanup;
 
             Button^ btn = nullptr;
+            XamlRoot^ xamlRoot = nullptr;
             RunOnUIThread([&]()
                 {
                     StackPanel^ mainStackPanel = ref new StackPanel();
@@ -58,6 +59,10 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
                     {
                         Window^ desktopWindow = ref new Window();
                         desktopWindow->Content = mainStackPanel;
+                        xamlRoot = mainStackPanel->XamlRoot;
+                        VERIFY_ARE_EQUAL(
+                            safe_cast<Platform::Object^>(desktopWindow),
+                            safe_cast<Platform::Object^>(xamlRoot->Host));
 
                         // Get the address of window pointed by hat pointer before we release it
                         rawWinPtr = reinterpret_cast<void*>(safe_cast<Platform::Object^>(desktopWindow));
@@ -68,9 +73,9 @@ namespace Microsoft::UI::Xaml::Tests::DesktopWindow {
                     // Close the desktop window
                     Window^ hatWinPtr = reinterpret_cast<Window^>(rawWinPtr);
                     hatWinPtr->Close();
+                    VERIFY_IS_NULL(xamlRoot->Host);
                 });
             TestServices::WindowHelper->WaitForIdle();
         }
 
 }
-

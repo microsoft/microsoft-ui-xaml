@@ -44,6 +44,10 @@ HRESULT DirectUI::XamlRootGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot4>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlRoot5)))
+    {
+        *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IXamlRoot5>(this);
+    }
     else
     {
         RRETURN(ctl::WeakReferenceSource::QueryInterfaceImpl(iid, ppObject));
@@ -91,6 +95,16 @@ _Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlRootGenerated::get_Coordi
     *ppValue={};
     IFC(CheckThread());
     IFC(static_cast<XamlRoot*>(this)->get_CoordinateConverterImpl(ppValue));
+Cleanup:
+    RRETURN(hr);
+}
+_Check_return_ HRESULT STDMETHODCALLTYPE DirectUI::XamlRootGenerated::get_Host(_Outptr_result_maybenull_ ABI::Microsoft::UI::Xaml::IXamlHost** ppValue)
+{
+    HRESULT hr = S_OK;
+    ARG_VALIDRETURNPOINTER(ppValue);
+    *ppValue={};
+    IFC(CheckThread());
+    IFC(static_cast<XamlRoot*>(this)->get_HostImpl(ppValue));
 Cleanup:
     RRETURN(hr);
 }

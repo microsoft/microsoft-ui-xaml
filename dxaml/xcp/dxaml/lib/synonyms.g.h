@@ -73,6 +73,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IUIElementPrivate IUIElementPrivate;
     typedef ABI::Microsoft::UI::Xaml::IUIElementStaticsPrivate IUIElementStaticsPrivate;
     typedef ABI::Microsoft::UI::Xaml::IWindowPrivate IWindowPrivate;
+    typedef ABI::Microsoft::UI::Xaml::IXamlHost IXamlHost;
     typedef ABI::Microsoft::UI::Xaml::IXamlServiceProvider IXamlServiceProvider;
     typedef ABI::Microsoft::UI::Xaml::ILaunchActivatedEventArgs ILaunchActivatedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::IMediaFailedRoutedEventArgs IMediaFailedRoutedEventArgs;
@@ -128,6 +129,7 @@ namespace DirectUISynonyms
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot2 IXamlRoot2;
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot3 IXamlRoot3;
     typedef ABI::Microsoft::UI::Xaml::IXamlRoot4 IXamlRoot4;
+    typedef ABI::Microsoft::UI::Xaml::IXamlRoot5 IXamlRoot5;
     typedef ABI::Microsoft::UI::Xaml::IXamlRootChangedEventArgs IXamlRootChangedEventArgs;
     typedef ABI::Microsoft::UI::Xaml::Automation::IAnnotationPatternIdentifiers IAnnotationPatternIdentifiers;
     typedef ABI::Microsoft::UI::Xaml::Automation::IAutomationAnnotation IAutomationAnnotation;

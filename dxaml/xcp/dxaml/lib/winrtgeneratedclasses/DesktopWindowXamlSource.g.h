@@ -59,6 +59,7 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Windows::Foundation::IClosable
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2, DesktopWindowXamlSourceGenerated >
+        , public ABI::Microsoft::UI::Xaml::IXamlHost
     {
         friend class DirectUI::DesktopWindowXamlSource;
 
@@ -69,6 +70,7 @@ namespace DirectUI
             INTERFACE_ENTRY(DesktopWindowXamlSourceGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(DesktopWindowXamlSourceGenerated, ABI::Windows::Foundation::IClosable)
             INTERFACE_ENTRY(DesktopWindowXamlSourceGenerated, ABI::Microsoft::UI::Xaml::Hosting::IDesktopWindowXamlSource2)
+            INTERFACE_ENTRY(DesktopWindowXamlSourceGenerated, ABI::Microsoft::UI::Xaml::IXamlHost)
         END_INTERFACE_MAP(DesktopWindowXamlSourceGenerated, ctl::WeakReferenceSource)
 
     public:

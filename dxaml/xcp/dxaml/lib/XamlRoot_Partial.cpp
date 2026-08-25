@@ -10,6 +10,7 @@
 #include "WindowChrome_Partial.h"
 #include "ContentDialogMetadata.h"
 #include "RootScrollViewer.g.h"
+#include "XamlIslandRoot_Partial.h"
 #include <windowing.h>
 
 using namespace DirectUI;
@@ -156,6 +157,25 @@ _Check_return_ HRESULT STDMETHODCALLTYPE XamlRoot::get_ContentIslandImpl(_Outptr
         {
             *contentIsland = resultIsland;
             (*contentIsland)->AddRef();
+        }
+    }
+
+    return S_OK;
+}
+
+_Check_return_ HRESULT STDMETHODCALLTYPE XamlRoot::get_HostImpl(_Outptr_result_maybenull_ xaml::IXamlHost** host)
+{
+    *host = nullptr;
+
+    if (auto xamlIslandRoot = GetVisualTreeNoRef()->GetContentRootNoRef()->GetXamlIslandRootNoRef())
+    {
+        ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRootPeer;
+        IFC_RETURN(DXamlCore::GetCurrent()->GetPeer<DirectUI::XamlIslandRoot>(xamlIslandRoot, &xamlIslandRootPeer));
+
+        ctl::ComPtr<IInspectable> hostInspectable;
+        if (xamlIslandRootPeer->TryGetHost(&hostInspectable))
+        {
+            *host = ctl::query_interface<xaml::IXamlHost>(hostInspectable.Get());
         }
     }
 

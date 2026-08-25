@@ -45,6 +45,10 @@ HRESULT DirectUI::WindowGenerated::QueryInterfaceImpl(_In_ REFIID iid, _Outptr_ 
     {
         *ppObject = ctl::interface_cast<ABI::Microsoft::UI::Xaml::IWindow2>(this);
     }
+    else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IXamlHost)))
+    {
+        *ppObject = static_cast<ABI::Microsoft::UI::Xaml::IXamlHost*>(this);
+    }
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
     else if (InlineIsEqualGUID(iid, __uuidof(ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi)) && Feature_ExperimentalApi::IsEnabled())
     {

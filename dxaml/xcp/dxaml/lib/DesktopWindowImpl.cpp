@@ -129,6 +129,9 @@ void DesktopWindowImpl::OnCreate() noexcept
     ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRoot;
     ctl::ComPtr<xaml_hosting::IXamlIslandRoot> ixamlIslandRoot = m_desktopWindowXamlSource->GetXamlIslandRootNoRef();
     IFCFAILFAST(ixamlIslandRoot.As(&xamlIslandRoot));
+    // Mark this as a Window-hosted root now so an uninitialized or expired public host
+    // never falls back to the private DesktopWindowXamlSource.
+    xamlIslandRoot->SetHostOverride(nullptr);
     CXamlIslandRoot* cXamlIslandRoot = static_cast<CXamlIslandRoot*>(xamlIslandRoot->GetHandle());
     cXamlIslandRoot->SetHasTransparentBackground(false);
 
@@ -244,6 +247,17 @@ _Check_return_ HRESULT DesktopWindowImpl::get_ContentImpl(_Outptr_result_maybenu
 _Check_return_ HRESULT DesktopWindowImpl::put_ContentImpl(_In_opt_ xaml::IUIElement* pContent)
 {
     IFC_RETURN(CheckIsWindowClosed());
+
+    if (pContent && !m_isXamlRootHostInitialized)
+    {
+        // OnCreate runs before a composed Window's outer object is initialized. Once the native
+        // base constructor returns, aggregation is established and the outer can provide a weak reference.
+        ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRoot;
+        ctl::ComPtr<xaml_hosting::IXamlIslandRoot> ixamlIslandRoot = m_desktopWindowXamlSource->GetXamlIslandRootNoRef();
+        IFC_RETURN(ixamlIslandRoot.As(&xamlIslandRoot));
+        xamlIslandRoot->SetHostOverride(ctl::iinspectable_cast(m_dxamlWindowInstance));
+        m_isXamlRootHostInitialized = true;
+    }
 
     IFC_RETURN(m_windowChrome->put_Content(static_cast<IInspectable*>(pContent)));
 
@@ -1774,6 +1788,10 @@ void DesktopWindowImpl::Shutdown()
 
     m_islandInputSite = nullptr;
     m_positioningBridgeWindowHandle = NULL;
+    ctl::ComPtr<DirectUI::XamlIslandRoot> xamlIslandRoot;
+    ctl::ComPtr<xaml_hosting::IXamlIslandRoot> ixamlIslandRoot = m_desktopWindowXamlSource->GetXamlIslandRootNoRef();
+    VERIFYHR(ixamlIslandRoot.As(&xamlIslandRoot));
+    xamlIslandRoot->SetHostOverride(nullptr);
     IFCFAILFAST(m_desktopWindowXamlSource->put_Content(nullptr));
     // Explicitly close the private DesktopWindowXamlSource instance
     VERIFYHR(m_desktopWindowXamlSource->Close());

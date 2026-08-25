@@ -64,6 +64,7 @@ namespace DirectUI
         , public ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop
         , public ABI::Microsoft::UI::Xaml::IWindowPrivate
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindow2, WindowGenerated >
+        , public ABI::Microsoft::UI::Xaml::IXamlHost
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
         , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi, WindowGenerated >
 #endif
@@ -77,6 +78,7 @@ namespace DirectUI
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Composition::ICompositionSupportsSystemBackdrop)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindowPrivate)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindow2)
+            INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IXamlHost)
 #if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
             INTERFACE_ENTRY(WindowGenerated, ABI::Microsoft::UI::Xaml::IWindowFeature_ExperimentalApi)
 #endif

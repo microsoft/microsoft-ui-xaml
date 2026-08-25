@@ -410,6 +410,8 @@ IFACEMETHODIMP DesktopWindowXamlSource::Close()
 
     if (m_spXamlIslandRoot)
     {
+        m_spXamlIslandRoot.Cast<DirectUI::XamlIslandRoot>()->SetOwner(nullptr);
+
         // Release the user's element tree while the island core is still valid. XamlIsland::Close()
         // -> CXamlIslandRoot::Dispose() drops only the *core* public root visual; it does NOT clear
         // the DXaml-side ContentManager.m_Content (a strong TrackerPtr on the XamlIslandRoot peer,
