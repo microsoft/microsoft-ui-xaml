@@ -153,7 +153,7 @@ If you are making changes to Microsoft.UI.Xaml.Controls.dll, use:
 These commands will only rebuild these respective dlls. Since it is only incrementally building the changed .cpp/.h files
 it will normally be very quick (a couple of seconds). If you change a common header it might trigger a broader rebuild.
 
-This works well if you are just making pure code changes. If you making other changes (such as updating API surface) you 
+This works well if you are just making pure code changes. If you are making other changes (such as updating API surface) you
 will need to do a more extensive build (such as rerunning build.cmd at the root of the repo). See below for such scenarios.
 
 Take note of the path to the newly built dll. It should be something like:
