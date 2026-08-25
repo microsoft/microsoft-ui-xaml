@@ -1,4 +1,12 @@
 # PR build (OSS). Product-only compile gate; tests and signing run in internal ADO.
+#
+# This is the only validation a fork pull request gets automatically. Azure Pipelines
+# withholds secrets and service connections from fork-sourced builds, so the
+# WinUI-GitHub-PR (OneBranch) pipeline fails at tool install for them; full validation
+# has to be requested by a maintainer via fork-pr-validation.yml, which needs a
+# credential this workflow deliberately does not have. Keep this one secretless:
+# use the `pull_request` trigger (never `pull_request_target`), read-only permissions,
+# GitHub-hosted runners, and the anonymously readable shine-oss dependency feed.
 
 name: PR Build
 
@@ -30,8 +38,10 @@ concurrency:
 permissions:
   contents: read
 
+# Kill switch retained from #11360. Set to 'true' to make every matrix leg a no-op
+# without editing the trigger or disturbing required status checks.
 env:
-  DISABLE_PR_BUILD_MATRIX_VALIDATION: 'true'
+  DISABLE_PR_BUILD_MATRIX_VALIDATION: 'false'
 
 jobs:
   build:
