@@ -77,7 +77,7 @@ For information on how to contribute, please see [Contributing to WinUI](CONTRIB
 
 ## 🛣️ Roadmap
 
-For info on the WinUI release schedule and high level plans please see the [WinUI roadmap](https://aka.ms/winappsdk/plans).
+For info on the WinUI release schedule and high-level plans please see the [WinUI roadmap](https://aka.ms/winappsdk/plans).
 
 ## 🔧 WinUI for UWP
 WinUI for UWP (WinUI 2) is a library of controls that provides Microsoft UI controls and features for [UWP apps](https://docs.microsoft.com/windows/uwp/index). Learn more about WinUI for UWP [here](https://aka.ms/winui2) or download the source code [here](https://github.com/microsoft/microsoft-ui-xaml/tree/winui2/main).
