@@ -43,6 +43,10 @@
     <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.dll</ImplementationDll>
     </MuxControlsWinMD>
+    <!-- Gated off until public-winmd dedup + framework-MSIX wiring lands. -->
+    <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="'$(IncludeTabularControlsInPublicMetadata)' == 'true'">
+      <ImplementationDll>Microsoft.UI.Xaml.Controls.Tabular.dll</ImplementationDll>
+    </MuxControlsWinMD>
 
     <WinUIEditWinMD Include="$(WinUIDetailsLibPath)\Microsoft.UI.Text.winmd">
       <ImplementationDll>WinUIEdit.dll</ImplementationDll>

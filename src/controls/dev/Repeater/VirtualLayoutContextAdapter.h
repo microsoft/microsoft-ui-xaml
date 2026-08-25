@@ -70,7 +70,7 @@ private:
 
     private:
         class Iterator :
-            public ReferenceTracker<Iterator, reference_tracker_implements_t<winrt::IIterator<T>>::type>
+            public ReferenceTracker<Iterator, typename reference_tracker_implements_t<winrt::IIterator<T>>::type>
         {
         public:
             Iterator(const winrt::IVectorView<T>& childCollection)

@@ -18,6 +18,27 @@ namespace MUXControlsTestApp
             _inkPresenter = inkCanvas.InkPresenter;
             _inkPresenter.InputDeviceTypes =
             CoreInputDeviceTypes.Mouse | CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Touch;
+
+            // Surface the toolbar events so they can be verified by manual gallery testing.
+            InkToolbar.ActiveToolChanged += (s, e) =>
+            {
+                var tool = InkToolbar.ActiveTool?.GetType().Name ?? "(none)";
+                StatusText.Text = "Active tool: " + tool;
+            };
+            InkToolbar.EraseAllClicked += (s, e) =>
+            {
+                StatusText.Text = "EraseAllClicked";
+            };
+            InkToolbar.EraserFlyoutItemClicked += (s, e) =>
+            {
+                // This event's TypedEventHandler shape is <EventArgs, Object>, so the
+                // strongly-typed args arrive as the sender.
+                StatusText.Text = "EraserFlyoutItemClicked: " + s.EraserFlyoutItemKind;
+            };
+            InkToolbar.IsStencilButtonCheckedChanged += (s, e) =>
+            {
+                StatusText.Text = "Stencil checked changed";
+            };
         }
     }
 }

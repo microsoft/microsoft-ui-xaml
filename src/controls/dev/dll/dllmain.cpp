@@ -22,6 +22,11 @@ using namespace Microsoft::WRL;
 #define WINAPPSDK_CHANGEID_62676756 62676756
 #endif
 
+// Bug 63503009: Inking support (InkCanvas/InkToolbar/InkPresenter) - RuntimeCompatibilityChange InkCanvas_InkingSupport
+#ifndef WINAPPSDK_CHANGEID_63503009
+#define WINAPPSDK_CHANGEID_63503009 63503009
+#endif
+
 
 HINSTANCE g_hInstance = nullptr;
 
@@ -235,6 +240,20 @@ int32_t __stdcall MuxcActivationHandler(
 
 } // anonymous namespace
 
+// Bug 63503009: Inking (InkCanvas/InkToolbar/InkPresenter and their automation peers) ships via
+// servicing and is gated behind the InkCanvas_InkingSupport change. When the change is disabled,
+// these new runtimeclasses must not activate so a downlevel-compatible app sees them as unimplemented.
+static bool IsInkingTypeGatedOff(std::wstring_view name)
+{
+    if (!name.starts_with(L"Microsoft.UI.Xaml.Controls.Ink") &&
+        !name.starts_with(L"Microsoft.UI.Xaml.Automation.Peers.Ink"))
+    {
+        return false;
+    }
+
+    return !WinAppSdk::Containment::IsChangeEnabled<WINAPPSDK_CHANGEID_63503009>();
+}
+
 STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void *)
 {
     if (DLL_PROCESS_ATTACH == reason)
@@ -277,6 +296,11 @@ HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::
         return WINRT_GetActivationFactory(winrt::get_abi(resources), reinterpret_cast<void**>(factory));
     }
 
+    if (IsInkingTypeGatedOff(name))
+    {
+        return E_NOTIMPL;
+    }
+
     return WINRT_GetActivationFactory(activatableClassId, reinterpret_cast<void**>(factory));
 }
 
@@ -313,6 +337,11 @@ STDAPI DllTryGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::IActi
     uint32_t length{};
     wchar_t const* const buffer = WindowsGetStringRawBuffer(activatableClassId, &length);
     std::wstring_view const name{ buffer, length };
+
+    if (IsInkingTypeGatedOff(name))
+    {
+        return E_NOTIMPL;
+    }
 
     if (auto raw = winrt_get_activation_factory(name))
     {

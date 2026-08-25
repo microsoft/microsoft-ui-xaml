@@ -44,6 +44,7 @@ namespace CustomTasks
                 "Microsoft.UI.Xaml.dll",
                 "Microsoft.UI.Xaml.Phone.dll",
                 "Microsoft.UI.Xaml.Controls.dll",
+                "Microsoft.UI.Xaml.Controls.Tabular.dll",
                 "WinUIEdit.dll",
             };
 

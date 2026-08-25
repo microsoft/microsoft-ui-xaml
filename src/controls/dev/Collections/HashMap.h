@@ -119,7 +119,7 @@ private:
     class Iterator :
         public ReferenceTracker<
             Iterator,
-            reference_tracker_implements_t<winrt::IIterator<KVP>>::type>
+            typename reference_tracker_implements_t<winrt::IIterator<KVP>>::type>
     {
     public:
         Iterator(HashMap<K, V>* map)
@@ -196,7 +196,7 @@ private:
         class KeyValuePair :
             public ReferenceTracker<
                 KeyValuePair,
-                reference_tracker_implements_t<winrt::IKeyValuePair<K, V>>::type>
+                typename reference_tracker_implements_t<winrt::IKeyValuePair<K, V>>::type>
         {
         public:
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -40,6 +40,14 @@ public:
         return resourceId.size() == 0;
     }
 };
+
+#define SR_InkToolbarBallpointPenButtonName L"InkToolbarBallpointPenButtonName"
+#define SR_InkToolbarPencilButtonName L"InkToolbarPencilButtonName"
+#define SR_InkToolbarHighlighterButtonName L"InkToolbarHighlighterButtonName"
+#define SR_InkToolbarEraserButtonName L"InkToolbarEraserButtonName"
+#define SR_InkToolbarStencilRulerName L"InkToolbarStencilRulerName"
+#define SR_InkToolbarStencilProtractorName L"InkToolbarStencilProtractorName"
+#define SR_InkToolbarToolButtonControlTypeName L"InkToolbarToolButtonControlTypeName"
 
 #define SR_BasicRatingString L"BasicRatingString"
 #define SR_CommunityRatingString L"CommunityRatingString"
@@ -142,6 +150,11 @@ public:
 #define SR_ProgressBarErrorStatus L"ProgressBarErrorStatus"
 #define SR_RatingLocalizedControlType L"RatingLocalizedControlType"
 #define SR_BreadcrumbBarItemLocalizedControlType L"BreadcrumbBarItemLocalizedControlType"
+#define SR_InkToolbarBallpointPenButtonLabel L"InkToolbarBallpointPenButtonLabel"
+#define SR_InkToolbarPencilButtonLabel L"InkToolbarPencilButtonLabel"
+#define SR_InkToolbarHighlighterButtonLabel L"InkToolbarHighlighterButtonLabel"
+#define SR_InkToolbarEraserButtonLabel L"InkToolbarEraserButtonLabel"
+#define SR_InkToolbarToolButtonLabel L"InkToolbarToolButtonLabel"
 #define SR_SplitButtonSecondaryButtonName L"SplitButtonSecondaryButtonName"
 #define SR_ProofingMenuItemLabel L"ProofingMenuItemLabel"
 #define SR_TextCommandLabelCut L"TextCommandLabelCut"
