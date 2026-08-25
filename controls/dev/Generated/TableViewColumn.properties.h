@@ -12,6 +12,9 @@ public:
     void ActualWidth(double value);
     double ActualWidth();
 
+    void CanSort(bool value);
+    bool CanSort();
+
     void CellEditingTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate CellEditingTemplate();
 
@@ -36,6 +39,15 @@ public:
     void MinWidth(double value);
     double MinWidth();
 
+    void SortCycle(winrt::TableViewSortCycle const& value);
+    winrt::TableViewSortCycle SortCycle();
+
+    void SortDirection(winrt::SortDirection const& value);
+    winrt::SortDirection SortDirection();
+
+    void SortMemberPath(winrt::hstring const& value);
+    winrt::hstring SortMemberPath();
+
     void Visibility(winrt::Visibility const& value);
     winrt::Visibility Visibility();
 
@@ -43,6 +55,7 @@ public:
     winrt::GridLength Width();
 
     static winrt::DependencyProperty ActualWidthProperty() { return s_ActualWidthProperty; }
+    static winrt::DependencyProperty CanSortProperty() { return s_CanSortProperty; }
     static winrt::DependencyProperty CellEditingTemplateProperty() { return s_CellEditingTemplateProperty; }
     static winrt::DependencyProperty FrozenEdgeProperty() { return s_FrozenEdgeProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
@@ -51,10 +64,14 @@ public:
     static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty MaxWidthProperty() { return s_MaxWidthProperty; }
     static winrt::DependencyProperty MinWidthProperty() { return s_MinWidthProperty; }
+    static winrt::DependencyProperty SortCycleProperty() { return s_SortCycleProperty; }
+    static winrt::DependencyProperty SortDirectionProperty() { return s_SortDirectionProperty; }
+    static winrt::DependencyProperty SortMemberPathProperty() { return s_SortMemberPathProperty; }
     static winrt::DependencyProperty VisibilityProperty() { return s_VisibilityProperty; }
     static winrt::DependencyProperty WidthProperty() { return s_WidthProperty; }
 
     static GlobalDependencyProperty s_ActualWidthProperty;
+    static GlobalDependencyProperty s_CanSortProperty;
     static GlobalDependencyProperty s_CellEditingTemplateProperty;
     static GlobalDependencyProperty s_FrozenEdgeProperty;
     static GlobalDependencyProperty s_HeaderProperty;
@@ -63,11 +80,18 @@ public:
     static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_MaxWidthProperty;
     static GlobalDependencyProperty s_MinWidthProperty;
+    static GlobalDependencyProperty s_SortCycleProperty;
+    static GlobalDependencyProperty s_SortDirectionProperty;
+    static GlobalDependencyProperty s_SortMemberPathProperty;
     static GlobalDependencyProperty s_VisibilityProperty;
     static GlobalDependencyProperty s_WidthProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnCanSortPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnCellEditingTemplatePropertyChanged(
         winrt::DependencyObject const& sender,

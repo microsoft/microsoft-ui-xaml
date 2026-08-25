@@ -14,10 +14,12 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 #include "TableView.g.cpp"
 
 GlobalDependencyProperty TableViewProperties::s_AlternatingRowBackgroundProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_CanUserSortColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_DensityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_EmptyTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_GridLinesVisibilityProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_GroupHeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_HeadersVisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ItemsSourceProperty{ nullptr };
@@ -30,6 +32,8 @@ TableViewProperties::TableViewProperties()
     : m_beginningEditEventSource{static_cast<TableView*>(this)}
     , m_cellEditEndingEventSource{static_cast<TableView*>(this)}
     , m_selectionChangedEventSource{static_cast<TableView*>(this)}
+    , m_sortedEventSource{static_cast<TableView*>(this)}
+    , m_sortingEventSource{static_cast<TableView*>(this)}
 {
     EnsureProperties();
 }
@@ -46,6 +50,17 @@ void TableViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnAlternatingRowBackgroundPropertyChanged));
+    }
+    if (!s_CanUserSortColumnsProperty)
+    {
+        s_CanUserSortColumnsProperty =
+            InitializeDependencyProperty(
+                L"CanUserSortColumns",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnCanUserSortColumnsPropertyChanged));
     }
     if (!s_ColumnsProperty)
     {
@@ -90,6 +105,17 @@ void TableViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::TableViewGridLinesVisibility>::BoxValueIfNecessary(winrt::TableViewGridLinesVisibility::All),
                 winrt::PropertyChangedCallback(&OnGridLinesVisibilityPropertyChanged));
+    }
+    if (!s_GroupHeaderTemplateProperty)
+    {
+        s_GroupHeaderTemplateProperty =
+            InitializeDependencyProperty(
+                L"GroupHeaderTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                nullptr);
     }
     if (!s_HeadersVisibilityProperty)
     {
@@ -173,10 +199,12 @@ void TableViewProperties::EnsureProperties()
 void TableViewProperties::ClearProperties()
 {
     s_AlternatingRowBackgroundProperty = nullptr;
+    s_CanUserSortColumnsProperty = nullptr;
     s_ColumnsProperty = nullptr;
     s_DensityProperty = nullptr;
     s_EmptyTemplateProperty = nullptr;
     s_GridLinesVisibilityProperty = nullptr;
+    s_GroupHeaderTemplateProperty = nullptr;
     s_HeadersVisibilityProperty = nullptr;
     s_IsReadOnlyProperty = nullptr;
     s_ItemsSourceProperty = nullptr;
@@ -192,6 +220,14 @@ void TableViewProperties::OnAlternatingRowBackgroundPropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnAlternatingRowBackgroundPropertyChanged(args);
+}
+
+void TableViewProperties::OnCanUserSortColumnsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnCanUserSortColumnsPropertyChanged(args);
 }
 
 void TableViewProperties::OnColumnsPropertyChanged(
@@ -279,6 +315,19 @@ winrt::Brush TableViewProperties::AlternatingRowBackground()
     return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_AlternatingRowBackgroundProperty));
 }
 
+void TableViewProperties::CanUserSortColumns(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_CanUserSortColumnsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewProperties::CanUserSortColumns()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_CanUserSortColumnsProperty));
+}
+
 void TableViewProperties::Columns(winrt::IVector<winrt::TableViewColumn> const& value)
 {
     [[gsl::suppress(con)]]
@@ -329,6 +378,19 @@ void TableViewProperties::GridLinesVisibility(winrt::TableViewGridLinesVisibilit
 winrt::TableViewGridLinesVisibility TableViewProperties::GridLinesVisibility()
 {
     return ValueHelper<winrt::TableViewGridLinesVisibility>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_GridLinesVisibilityProperty));
+}
+
+void TableViewProperties::GroupHeaderTemplate(winrt::DataTemplate const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_GroupHeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::DataTemplate TableViewProperties::GroupHeaderTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_GroupHeaderTemplateProperty));
 }
 
 void TableViewProperties::HeadersVisibility(winrt::TableViewHeadersVisibility const& value)
@@ -450,4 +512,24 @@ winrt::event_token TableViewProperties::SelectionChanged(winrt::TypedEventHandle
 void TableViewProperties::SelectionChanged(winrt::event_token const& token)
 {
     m_selectionChangedEventSource.remove(token);
+}
+
+winrt::event_token TableViewProperties::Sorted(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs> const& value)
+{
+    return m_sortedEventSource.add(value);
+}
+
+void TableViewProperties::Sorted(winrt::event_token const& token)
+{
+    m_sortedEventSource.remove(token);
+}
+
+winrt::event_token TableViewProperties::Sorting(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortingEventArgs> const& value)
+{
+    return m_sortingEventSource.add(value);
+}
+
+void TableViewProperties::Sorting(winrt::event_token const& token)
+{
+    m_sortingEventSource.remove(token);
 }

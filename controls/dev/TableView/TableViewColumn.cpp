@@ -275,6 +275,56 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnVisibilityChanged(*this);
         }
     }
+    else if (property == s_CanSortProperty)
+    {
+        // The sort affordance is stamped at header-build time, so opting a column in or out at
+        // runtime has to rebuild the headers for the chevron to appear or disappear.
+        if (auto owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->OnColumnCanSortChanged(*this);
+        }
+    }
+}
+
+void TableViewColumn::CustomSortComparer(winrt::ITableViewSortComparer const& value)
+{
+    if (m_customSortComparer == value)
+    {
+        return;
+    }
+
+    m_customSortComparer = value;
+
+    // Swapping the comparer invalidates the order the column is currently sorted in, so re-apply
+    // the active direction rather than leaving the rows in the old comparer's order.
+    if (auto owner = GetOwningTableView(); owner && SortDirection() != winrt::SortDirection::None)
+    {
+        auto const direction = SortDirection();
+        auto ownerImpl = winrt::get_self<TableView>(owner);
+        // Force a re-sort: SortByColumn no-ops when the column already carries this direction.
+        ownerImpl->SortByColumn(*this, winrt::SortDirection::None);
+        ownerImpl->SortByColumn(*this, direction);
+    }
+}
+
+winrt::hstring TableViewColumn::GetSortMemberPathCore(){
+    return SortMemberPath();
+}
+
+void TableViewColumn::SetSortStateInternal(winrt::SortDirection direction)
+{
+    if (SortDirection() == direction)
+    {
+        return;
+    }
+
+    // Read-only DP: same SetValue-via-key convention as ActualWidth.
+    SetValue(s_SortDirectionProperty, winrt::box_value(direction));
+
+    if (auto owner = GetOwningTableView())
+    {
+        winrt::get_self<TableView>(owner)->RefreshSortIndicators();
+    }
 }
 
 // Lets a derived column refresh its realized cells when one of ITS OWN properties changes.
