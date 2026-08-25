@@ -122,12 +122,16 @@
     <CsWinRTGenerateProjection>true</CsWinRTGenerateProjection>
     <CsWinRTWindowsMetadata>10.0.22621.0</CsWinRTWindowsMetadata>
     <CsWinRTPublicExclusiveToInterfaces>true</CsWinRTPublicExclusiveToInterfaces>
+    <!-- Includes Microsoft.UI.Private.Controls: the app never references those types, but it
+         compiles the control's generic.xaml, whose <Style TargetType="privatecontrols:ResizeGripper">
+         fails to resolve without them. In-repo harness only; a shipping app needs neither. -->
     <CsWinRTFilters>
 -exclude Windows
 -include Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider
 -include Microsoft.UI.Xaml.XamlTypeInfo.IXamlControlsTabularXamlMetaDataProvider
 -include Microsoft.UI.Xaml.XamlTypeInfo.IXamlControlsTabularXamlMetaDataProviderStatics
 -include Microsoft.UI.Xaml.Controls.Tabular
+-include Microsoft.UI.Private.Controls
     </CsWinRTFilters>
   </PropertyGroup>
   <Target Name="UseTabularWinmdForCsWinRT" BeforeTargets="CsWinRTPrepareProjection;CsWinRTGenerateProjection">

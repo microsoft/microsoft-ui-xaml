@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 #include "TableView.g.cpp"
 
 GlobalDependencyProperty TableViewProperties::s_AlternatingRowBackgroundProperty{ nullptr };
+GlobalDependencyProperty TableViewProperties::s_CanUserResizeColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_ColumnsProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_DensityProperty{ nullptr };
 GlobalDependencyProperty TableViewProperties::s_EmptyTemplateProperty{ nullptr };
@@ -46,6 +47,17 @@ void TableViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnAlternatingRowBackgroundPropertyChanged));
+    }
+    if (!s_CanUserResizeColumnsProperty)
+    {
+        s_CanUserResizeColumnsProperty =
+            InitializeDependencyProperty(
+                L"CanUserResizeColumns",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnCanUserResizeColumnsPropertyChanged));
     }
     if (!s_ColumnsProperty)
     {
@@ -173,6 +185,7 @@ void TableViewProperties::EnsureProperties()
 void TableViewProperties::ClearProperties()
 {
     s_AlternatingRowBackgroundProperty = nullptr;
+    s_CanUserResizeColumnsProperty = nullptr;
     s_ColumnsProperty = nullptr;
     s_DensityProperty = nullptr;
     s_EmptyTemplateProperty = nullptr;
@@ -192,6 +205,14 @@ void TableViewProperties::OnAlternatingRowBackgroundPropertyChanged(
 {
     auto owner = sender.as<winrt::TableView>();
     winrt::get_self<TableView>(owner)->OnAlternatingRowBackgroundPropertyChanged(args);
+}
+
+void TableViewProperties::OnCanUserResizeColumnsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableView>();
+    winrt::get_self<TableView>(owner)->OnCanUserResizeColumnsPropertyChanged(args);
 }
 
 void TableViewProperties::OnColumnsPropertyChanged(
@@ -277,6 +298,19 @@ void TableViewProperties::AlternatingRowBackground(winrt::Brush const& value)
 winrt::Brush TableViewProperties::AlternatingRowBackground()
 {
     return ValueHelper<winrt::Brush>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_AlternatingRowBackgroundProperty));
+}
+
+void TableViewProperties::CanUserResizeColumns(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableView*>(this)->SetValue(s_CanUserResizeColumnsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewProperties::CanUserResizeColumns()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableView*>(this)->GetValue(s_CanUserResizeColumnsProperty));
 }
 
 void TableViewProperties::Columns(winrt::IVector<winrt::TableViewColumn> const& value)

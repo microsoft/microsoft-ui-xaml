@@ -16,6 +16,25 @@
 // Included here (not the shared CppWinRTIncludes.h) to keep the rebuild scope local to TableView.
 #include <winrt/Microsoft.UI.System.h>
 
+// One in-flight resize drag. The gripper owns the gesture; this is only the host's anchor for it,
+// kept reachable so Escape can cancel the drag in flight.
+struct ColumnResizeDragState
+{
+    // Weak: the handlers that own this state are registered on the gripper itself, so a strong
+    // reference here is a cycle the XAML reference tracker cannot see.
+    winrt::weak_ref<winrt::ResizeGripper> gripper{ nullptr };
+    double startValue{ 0.0 };
+    // The column's Width as authored: reverting a canceled drag to startValue would rewrite an
+    // Auto or Star column as fixed pixels.
+    winrt::GridLength startWidth{};
+    // Set once a DragDelta has actually written Width, so a canceled press that never moved
+    // leaves the column completely untouched.
+    bool didWrite{ false };
+    // Set once any DragDelta arrived, even one the bounds swallowed. Drives the announcement, so a
+    // press that never moved stays silent while a step held at a bound still reports the width.
+    bool didDelta{ false };
+};
+
 // Per-instance cache of density metrics and the resolved gridline brush. Held as a
 // TableView member (not a process-global map keyed by `this`) so instances on
 // different UI threads never share or concurrently mutate one container. Grouped into
@@ -108,6 +127,20 @@ public:
 
     // TableViewColumn calls this when header templates change so realized headers refresh.
     void RebuildHeaders();
+
+    // Toggling it adds or removes every gripper, so the header band is rebuilt.
+    void OnCanUserResizeColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+    // The gripper owns the resize mechanics; this only positions it and forwards the pointer drag.
+    void AppendResizeGripperVisual(
+        const winrt::Grid& headerCell,
+        const winrt::TableViewColumn& column);
+
+    winrt::ResizeGripper FindResizeGripperForColumn(const winrt::TableViewColumn& column) const;
+
+    // Idempotent; safe from any pointer end-event, the gripper's Unloaded, or TableView's own.
+    void CancelColumnResizeDrag();
+    void AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column);
 
     // Coalesces bursts of column-driven header rebuilds (bulk Columns edits, per-column Header /
     // FrozenEdge changes) into a single RebuildHeaders on the next dispatcher tick, so N column
@@ -499,6 +532,8 @@ private:
     tracker_ref<winrt::FrameworkElement> m_headerRow{ this };
     tracker_ref<winrt::Panel> m_headerHost{ this };
     tracker_ref<winrt::ScrollViewer> m_headerScroller{ this };
+    // Keeps the header band locked to the body when focus moves to an off-screen header.
+    winrt::UIElement::BringIntoViewRequested_revoker m_headerBringIntoViewRevoker{};
     tracker_ref<winrt::ScrollViewer> m_bodyScroller{ this };
 
     winrt::event_token m_rowElementPreparedToken{};
@@ -508,6 +543,8 @@ private:
     // Body-viewport resize invalidates measure so Star columns resolve during the table layout pass.
     winrt::FrameworkElement::SizeChanged_revoker m_bodyScrollerSizeChangedRevoker{};
     winrt::event_token m_headerHostLoadedToken{};
+    // Set while a drag is in flight, so Escape can reach the gripper that owns it.
+    std::shared_ptr<ColumnResizeDragState> m_activeColumnResizeDrag{};
     winrt::event_token m_rowsRepeaterLoadedToken{};
     winrt::event_token m_pendingFocusLayoutToken{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_emptyStateCollectionChangedRevoker{};
@@ -568,6 +605,13 @@ private:
     void OnKeyDownForNavigation(
         const winrt::IInspectable& sender,
         const winrt::KeyRoutedEventArgs& args);
+
+    // Left/Right resize for the column whose header has focus; the gripper is a pointer
+    // affordance here, not a tab stop.
+    bool TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args);
+    // Redirects a header's bring-into-view onto the body scroller, so the header cannot scroll
+    // independently of the columns it labels.
+    void OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs& args);
 
     // Tunneling PreviewKeyDown captures the focused row BEFORE the framework's built-in focus
     // navigation moves it (and marks the key Handled), so OnKeyDownForNavigation can anchor on the

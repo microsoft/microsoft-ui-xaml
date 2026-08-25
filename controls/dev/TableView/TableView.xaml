@@ -57,11 +57,10 @@
                                     BorderThickness="0,0,0,1">
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
-                                                  HorizontalScrollMode="Auto"
-                                                  IsHitTestVisible="False"
+                                                  HorizontalScrollMode="Disabled"
                                                   VerticalScrollMode="Disabled"
                                                   HorizontalScrollBarVisibility="Hidden"
-                                                  VerticalScrollBarVisibility="Disabled">                                        
+                                                  VerticalScrollBarVisibility="Disabled">
                                         <controls:TableViewCellsPanel x:Name="PART_HeaderHost" />
                                     </ScrollViewer>
                                 </Grid>

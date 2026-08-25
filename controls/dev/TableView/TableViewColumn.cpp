@@ -268,6 +268,14 @@ void TableViewColumn::OnPropertyChanged(const winrt::DependencyPropertyChangedEv
             winrt::get_self<TableView>(owner)->OnColumnFrozenEdgeChanged(*this);
         }
     }
+    else if (property == s_CanResizeProperty)
+    {
+        // Adds or removes this column's gripper, so the header band has to be rebuilt.
+        if (auto owner = GetOwningTableView())
+        {
+            winrt::get_self<TableView>(owner)->QueueRebuildHeaders();
+        }
+    }
     else if (property == s_VisibilityProperty)
     {
         if (auto owner = GetOwningTableView())
@@ -356,3 +364,4 @@ void TableViewColumn::UpdateActualWidth()
         SetValue(s_ActualWidthProperty, winrt::box_value(clamped));
     }
 }
+

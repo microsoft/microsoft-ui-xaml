@@ -35,6 +35,7 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\SortIndicator\SortIndicator.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ResizeGripper\ResizeGripper.vcxitems" Label="Shared" />
     <!-- TableView control (hosted only in the Tabular binary) -->
     <Import Project="$(MSBuildThisFileDirectory)dev\TableView\TableView.vcxitems" Label="Shared" />
   </ImportGroup>

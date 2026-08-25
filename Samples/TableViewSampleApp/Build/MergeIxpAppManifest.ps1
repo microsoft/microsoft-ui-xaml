@@ -138,6 +138,11 @@ foreach ($tabularClass in @(
     'Microsoft.UI.Xaml.Controls.Tabular.TableViewRowAutomationPeer',
     'Microsoft.UI.Xaml.Controls.Tabular.TableViewColumnHeaderAutomationPeer',
     'Microsoft.UI.Xaml.Controls.Tabular.TableViewCellAutomationPeer',
+    # Framework-internal primitives TableView creates for column resize.
+    'Microsoft.UI.Private.Controls.ResizeGripper',
+    'Microsoft.UI.Private.Controls.ResizeGripperDragDeltaEventArgs',
+    'Microsoft.UI.Private.Controls.ResizeGripperDragCompletedEventArgs',
+    'Microsoft.UI.Private.Controls.ResizeGripperAutomationPeer',
     'Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider'
 )) {
     [void]$sb.AppendLine("    <winrtv1:activatableClass name='$(Escape-XmlAttr $tabularClass)' threadingModel='both'/>")

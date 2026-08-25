@@ -5,11 +5,180 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "ResizeGripper.h"
 #include "GridCoordinateHelper.h"
+#include "ResourceAccessor.h"
+#include "Utils.h"
 
 #include <algorithm>
+#include <cmath>
 
 // Row keyboard navigation and its focus/measurement helpers live here.
+
+namespace
+{
+    bool IsKeyDown(winrt::VirtualKey key)
+    {
+        return (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(key) &
+            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    }
+
+    // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
+    // enough: the walk must actually reach the header host, or a focused cell (an open editor,
+    // most visibly) would resolve to a column and let arrow keys resize it.
+    winrt::TableViewColumn ResolveFocusedHeaderColumn(
+        const winrt::IInspectable& source,
+        const winrt::Panel& headerHost)
+    {
+        if (!headerHost)
+        {
+            return nullptr;
+        }
+
+        winrt::TableViewColumn candidate{ nullptr };
+        auto current = source.try_as<winrt::DependencyObject>();
+        while (current)
+        {
+            if (current == headerHost)
+            {
+                return candidate;
+            }
+
+            if (!candidate)
+            {
+                if (auto const element = current.try_as<winrt::FrameworkElement>())
+                {
+                    candidate = element.Tag().try_as<winrt::TableViewColumn>();
+                }
+            }
+            current = winrt::VisualTreeHelper::GetParent(current);
+        }
+
+        return nullptr;
+    }
+
+    // The focused header is the element AT is on, so attribute the announcement to its peer.
+    void AnnounceColumnWidthOn(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column)
+    {
+        auto const element = announcer.try_as<winrt::UIElement>();
+        if (!element || !column)
+        {
+            return;
+        }
+
+        auto peer = winrt::FrameworkElementAutomationPeer::FromElement(element);
+        if (!peer)
+        {
+            return;
+        }
+
+        winrt::hstring headerName = peer.GetName();
+        if (headerName.empty())
+        {
+            if (auto const stringable = column.Header().try_as<winrt::IStringable>())
+            {
+                headerName = stringable.ToString();
+            }
+        }
+
+        // Whole pixels: sub-pixel precision is noise in an announcement.
+        auto const width = winrt::to_hstring(static_cast<int32_t>(std::lround(column.ActualWidth())));
+
+        try
+        {
+            auto const format = ResourceAccessor::GetLocalizedStringResource(SR_TableViewColumnWidthChanged);
+            if (format.empty())
+            {
+                return;
+            }
+
+            peer.RaiseNotificationEvent(
+                winrt::AutomationNotificationKind::Other,
+                winrt::AutomationNotificationProcessing::MostRecent,
+                StringUtil::FormatString(format, headerName.c_str(), width.c_str()),
+                L"TableViewColumnWidthChangedActivityId");
+        }
+        catch (...)
+        {
+            // The host app may not merge the control's PRI; a missing string must not break resize.
+        }
+    }
+}
+
+// Both input paths end in DragCompleted, so the announcement lives there rather than in the key
+// handler: a pointer resize was otherwise completely silent to assistive technology.
+void TableView::AnnounceColumnWidth(const winrt::IInspectable& announcer, const winrt::TableViewColumn& column)
+{
+    AnnounceColumnWidthOn(announcer, column);
+}
+
+// Left/Right resizes the column whose header has focus; Shift takes the large step, and Ctrl is
+// accepted as an alias. Tab moves between headers, so the arrows are free to resize. Driving the
+// gripper's own Begin/Try/End keeps pointer and keyboard on one clamping path.
+bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& args)
+{
+    if (args.Handled())
+    {
+        return false;
+    }
+
+    // Escape aborts a pointer drag in flight; the host reverts to the width it captured at
+    // DragStarted. Checked before the arrow keys because it is valid regardless of focus.
+    if (args.Key() == winrt::Windows::System::VirtualKey::Escape)
+    {
+        if (auto const drag = m_activeColumnResizeDrag)
+        {
+            CancelColumnResizeDrag();
+            args.Handled(true);
+            return true;
+        }
+        return false;
+    }
+
+    const auto key = args.Key();
+    if (key != winrt::Windows::System::VirtualKey::Left &&
+        key != winrt::Windows::System::VirtualKey::Right)
+    {
+        return false;
+    }
+
+    // Alt is reserved: Alt alone opens the window menu.
+    if (IsKeyDown(winrt::VirtualKey::Menu))
+    {
+        return false;
+    }
+
+    if (!CanUserResizeColumns())
+    {
+        return false;
+    }
+
+    auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get());
+    if (!column || !column.CanResize())
+    {
+        return false;
+    }
+
+    auto const gripper = FindResizeGripperForColumn(column);
+    if (!gripper)
+    {
+        return false;
+    }
+
+    // The gripper owns direction, the RTL mirror, the step size and the Shift multiplier: one
+    // implementation for both key paths.
+    if (!gripper.TryKeyboardStep(key))
+    {
+        return false;
+    }
+
+    // The gripper carries no UIA value, so the resize is otherwise silent. The announcement is
+    // raised from DragCompleted, which both input paths reach.
+
+    // Consume even at a bound, so the key does not fall through to focus navigation.
+    args.Handled(true);
+    return true;
+}
 
 void TableView::OnPreviewKeyDownForNavigation(
     const winrt::IInspectable& /*sender*/,
@@ -58,6 +227,13 @@ void TableView::OnKeyDownForNavigation(
                 }
             }
         }
+    }
+
+    // Column resize from a focused header: after the editing guard, so an open editor keeps its
+    // arrow keys, and before row navigation, since the header band is not part of it.
+    if (TryHandleHeaderColumnResizeKey(args))
+    {
+        return;
     }
 
     // Registered with handledEventsToo so navigation can still run after the ancestor
@@ -127,9 +303,7 @@ void TableView::OnKeyDownForNavigation(
     // Ctrl+Arrow moves the focus cursor WITHOUT selecting, matching ListViewBase. Without it a
     // keyboard-only user cannot review other rows and come back, and every row they pass through
     // raises SelectionChanged plus UIA selection events - a selection storm for a screen reader.
-    const bool isControlDown =
-        (winrt::InputKeyboardSource::GetKeyStateForCurrentThread(winrt::VirtualKey::Control) &
-            winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+    const bool isControlDown = IsKeyDown(winrt::VirtualKey::Control);
 
     // Focus was not on one of our rows (the user clicked a header, tabbed away and back, or closed
     // a dialog). With selection on, resume relative-navigation from the SELECTED row rather than

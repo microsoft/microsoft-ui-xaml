@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
@@ -58,16 +58,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <!-- Group header fallback strings -->
-  <data name="TableViewGroupHeaderCountFormat" xml:space="preserve">
-    <value>({0})</value>
-    <comment>Format string for the item count shown in group headers. {0} is the culture-formatted item count.</comment>
+  <data name="ResizeGripperName" xml:space="preserve">
+    <value>Resize gripper</value>
+    <comment>Automation name for the Resize gripper.</comment>
   </data>
-  <!-- Automation peer strings -->
-  <data name="TableViewColumnWidthChanged" xml:space="preserve">
-    <value>Column %1!s! width: %2!s! pixels.</value>
-    <comment>Assistive-technology announcement raised when a TableView column is resized with the keyboard while its header has focus. %1!s! is the column header text; %2!s! is the whole-pixel width.</comment>
+  <data name="ResizeGripperNameFormat" xml:space="preserve">
+    <value>%1!s!, %2!s!</value>
+    <comment>Automation name format for the Resize gripper. %1 is the column header text, %2 is the resize gripper name.</comment>
   </data>
-  <!-- Sort direction names (used in SaveLayoutToJson serialization — not localized at runtime but
-       kept here for documentation; code uses invariant English for round-trip fidelity) -->
 </root>

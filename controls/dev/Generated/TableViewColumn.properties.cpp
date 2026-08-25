@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 #include "TableViewColumn.g.cpp"
 
 GlobalDependencyProperty TableViewColumnProperties::s_ActualWidthProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_CanResizeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CellEditingTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_FrozenEdgeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderProperty{ nullptr };
@@ -42,6 +43,17 @@ void TableViewColumnProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(120.0),
                 nullptr);
+    }
+    if (!s_CanResizeProperty)
+    {
+        s_CanResizeProperty =
+            InitializeDependencyProperty(
+                L"CanResize",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnCanResizePropertyChanged));
     }
     if (!s_CellEditingTemplateProperty)
     {
@@ -158,6 +170,7 @@ void TableViewColumnProperties::EnsureProperties()
 void TableViewColumnProperties::ClearProperties()
 {
     s_ActualWidthProperty = nullptr;
+    s_CanResizeProperty = nullptr;
     s_CellEditingTemplateProperty = nullptr;
     s_FrozenEdgeProperty = nullptr;
     s_HeaderProperty = nullptr;
@@ -168,6 +181,14 @@ void TableViewColumnProperties::ClearProperties()
     s_MinWidthProperty = nullptr;
     s_VisibilityProperty = nullptr;
     s_WidthProperty = nullptr;
+}
+
+void TableViewColumnProperties::OnCanResizePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableViewColumn>();
+    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
 }
 
 void TableViewColumnProperties::OnCellEditingTemplatePropertyChanged(
@@ -261,6 +282,19 @@ void TableViewColumnProperties::ActualWidth(double value)
 double TableViewColumnProperties::ActualWidth()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_ActualWidthProperty));
+}
+
+void TableViewColumnProperties::CanResize(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_CanResizeProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewColumnProperties::CanResize()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CanResizeProperty));
 }
 
 void TableViewColumnProperties::CellEditingTemplate(winrt::DataTemplate const& value)

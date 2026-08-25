@@ -1,0 +1,87 @@
+﻿// Framework-internal: the private namespace (not the MUX_INTERNAL attribute) is what keeps this
+// out of every shipped WinMD. Move to MU_XCP_NAMESPACE + MUX_PREVIEW only if it is ever exposed.
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
+// TotalDelta spans the whole gesture from DragStarted; Delta is the change since the last raise.
+[MUX_INTERNAL]
+[default_interface]
+[webhosthidden]
+runtimeclass ResizeGripperDragDeltaEventArgs
+{
+    Double Delta{ get; };
+    Double TotalDelta{ get; };
+}
+
+// Canceled means the gesture was torn down (pointer canceled, capture lost, unloaded) rather than
+// released: the host should revert to the width it captured at DragStarted, not keep the last one.
+[MUX_INTERNAL]
+[default_interface]
+[webhosthidden]
+runtimeclass ResizeGripperDragCompletedEventArgs
+{
+    Double TotalDelta{ get; };
+    Boolean Canceled{ get; };
+}
+
+// Policy-free drag handle. Owns no layout, no value and no bounds: it reports how far the user has
+// dragged, and the host decides what that means and clamps it.
+[MUX_INTERNAL]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+unsealed runtimeclass ResizeGripper : Microsoft.UI.Xaml.Controls.Control
+{
+    ResizeGripper();
+
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsDragging{ get; };
+
+    // The frame drags are measured in. A host sets this to an ancestor that does NOT move while the
+    // drag resizes something: the gripper travels with the edge it drags, so the default frame (the
+    // gripper itself) feeds the resize back into the gesture and stalls it, while the XamlRoot
+    // content picks up any scale or zoom applied between it and the gripper. Null falls back to the
+    // XamlRoot content, which is correct whenever nothing between it and the gripper is scaled.
+    Microsoft.UI.Xaml.UIElement ManipulationContainer{ get; set; };
+
+    // Qualifier the automation peer prepends to its localized name, so N grippers in one band are
+    // distinguishable ("Price, Resize gripper"). Declared rather than read off Tag: Tag is a
+    // general-purpose slot a host may already be using, and a silent wrong name is an a11y bug.
+    String OwnerName{ get; set; };
+
+    // The axis the drag is measured along, which for a divider is perpendicular to how it looks:
+    // Horizontal drags left/right. Named DragOrientation rather than Orientation because the
+    // primitive owns no shape - the host sizes it - so the control's own layout axis is not
+    // something it can describe. Only horizontal mirrors under RTL.
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
+    Microsoft.UI.Xaml.Controls.Orientation DragOrientation{ get; set; };
+
+    // How far one arrow key travels. Step size is host policy, so it is settable rather than baked
+    // in; Shift multiplies it by 4.
+    [MUX_DEFAULT_VALUE("8.0")]
+    Double KeyboardIncrement{ get; set; };
+
+    // Raise the same events a pointer drag would, so a keyboard step is indistinguishable from the
+    // gesture. TryDrag takes the offset from where the drag began and returns whether it moved far
+    // enough to raise DragDelta. Pass canceled to EndDrag when the gesture was torn down.
+    void BeginDrag();
+    Boolean TryDrag(Double totalDelta);
+    void EndDrag(Boolean canceled);
+
+    // One arrow key as a complete one-step drag. Callable because a host that keeps focus on its
+    // own element never lets the gripper see the key, and would otherwise have to re-derive the
+    // direction, the RTL mirror and the Shift multiplier. False when the key is not on this axis.
+    Boolean TryKeyboardStep(Windows.System.VirtualKey key);
+
+    event Windows.Foundation.TypedEventHandler<ResizeGripper, ResizeGripperDragDeltaEventArgs> DragDelta;
+    event Windows.Foundation.TypedEventHandler<ResizeGripper, Object> DragStarted;
+    event Windows.Foundation.TypedEventHandler<ResizeGripper, ResizeGripperDragCompletedEventArgs> DragCompleted;
+
+    static Microsoft.UI.Xaml.DependencyProperty IsDraggingProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty ManipulationContainerProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty OwnerNameProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty DragOrientationProperty{ get; };
+    static Microsoft.UI.Xaml.DependencyProperty KeyboardIncrementProperty{ get; };
+};
+
+}

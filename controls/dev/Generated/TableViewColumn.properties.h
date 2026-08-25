@@ -12,6 +12,9 @@ public:
     void ActualWidth(double value);
     double ActualWidth();
 
+    void CanResize(bool value);
+    bool CanResize();
+
     void CellEditingTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate CellEditingTemplate();
 
@@ -43,6 +46,7 @@ public:
     winrt::GridLength Width();
 
     static winrt::DependencyProperty ActualWidthProperty() { return s_ActualWidthProperty; }
+    static winrt::DependencyProperty CanResizeProperty() { return s_CanResizeProperty; }
     static winrt::DependencyProperty CellEditingTemplateProperty() { return s_CellEditingTemplateProperty; }
     static winrt::DependencyProperty FrozenEdgeProperty() { return s_FrozenEdgeProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
@@ -55,6 +59,7 @@ public:
     static winrt::DependencyProperty WidthProperty() { return s_WidthProperty; }
 
     static GlobalDependencyProperty s_ActualWidthProperty;
+    static GlobalDependencyProperty s_CanResizeProperty;
     static GlobalDependencyProperty s_CellEditingTemplateProperty;
     static GlobalDependencyProperty s_FrozenEdgeProperty;
     static GlobalDependencyProperty s_HeaderProperty;
@@ -68,6 +73,10 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnCanResizePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnCellEditingTemplatePropertyChanged(
         winrt::DependencyObject const& sender,
