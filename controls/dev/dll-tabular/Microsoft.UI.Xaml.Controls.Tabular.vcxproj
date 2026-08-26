@@ -15,6 +15,18 @@
     <XamlCodeGenerationControlFlags>NoPageCodeGen;NoTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <!-- Tabular has no PGO profile yet, so keep missing-profile verification non-fatal. -->
     <PGOVerifyFailureTreatedAsError>false</PGOVerifyFailureTreatedAsError>
+    <!-- Now that XamlCompile consumes the fully-merged public winmd (via MergedWinMD, see the
+         ProjectReference below) instead of MUXC's pre-merge winmd, Tabular can emit its own theme XBF. -->
+    <!-- Theme XBFs live under Tabular's own PRI root, matching how Charts scopes its resources
+         (ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/...). Without this they collide with
+         MUXC's Microsoft.UI.Xaml root on merge (PRI277). -->
+    <TabularBinaryEmitsThemeResources>true</TabularBinaryEmitsThemeResources>
+    <!-- Resources resolve via the component's own resource-map alias, not ms-appx:///, which would
+         bind to the hosting process's package. See OSClient PR 16542065. -->
+    <XamlResourceMapName>TabularControlsAlias</XamlResourceMapName>
+    <ProjectPriIndexName>TabularControlsAlias</ProjectPriIndexName>
+    <AppxPrependPriInitialPath>true</AppxPrependPriInitialPath>
+    <AppxPriInitialPath>$(MUXTabularTargetName)</AppxPriInitialPath>
   </PropertyGroup>
   <Import Project="$(ProjectRoot)\perf\pgo\Microsoft.WinUI.PGO.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -22,6 +34,9 @@
   <Import Project="$(MUXCProjectRoot)Tabular.ProjectImports.targets" />
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\Lightup\Microsoft.UI.Xaml.Controls.Lightup.vcxproj" />
+    <!-- Ordering only: XamlCompile below consumes MergedWinMD's public winmd on disk. MergedWinMD
+         depends on Tabular's idl project (never this project), so this is not a cycle. -->
+    <ProjectReference Include="$(ProjectRoot)MergedWinMD\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -34,10 +49,12 @@
   <PropertyGroup>
     <CppWinRTParameters>$(CppWinRTParameters) -reference "$(XamlBuildOutputRoot)\controls\dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd"</CppWinRTParameters>
   </PropertyGroup>
-  <!-- Fail clearly when single-project builds run before MUXC produced the winmds Tabular consumes. -->
+  <!-- Fail clearly when single-project builds run before MUXC produced the component winmd Tabular's
+       C++/WinRT projection consumes. The XamlCompile winmd (MergedWinMD's public output) no longer
+       needs a disk probe here: the ProjectReference above makes MSBuild build it first. -->
   <Target Name="EnsureMuxcComponentWinMDBuilt" BeforeTargets="CppWinRTMakeComponentProjection;ClCompile">
-    <Error Condition="!Exists('$(XamlBuildOutputRoot)\controls\dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd') Or !Exists('$(XamlBuildOutputRoot)\controls\dev\dll\Merged\Microsoft.winmd')"
-           Text="Microsoft.UI.Xaml.Controls.Tabular consumes MUXC's component winmd (dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd, used by C++/WinRT) and MUXC's merged winmd (dev\dll\Merged\Microsoft.winmd, used by the XAML markup compiler), which have not been built. Build the in-box controls DLL first (e.g. 'controls\Build.cmd product'), then build Tabular." />
+    <Error Condition="!Exists('$(XamlBuildOutputRoot)\controls\dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd')"
+           Text="Microsoft.UI.Xaml.Controls.Tabular consumes MUXC's component winmd (dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd, used by C++/WinRT), which has not been built. Build the in-box controls DLL first (e.g. 'controls\Build.cmd product'), then build Tabular." />
   </Target>
   <ItemDefinitionGroup>
     <Link>

@@ -101,6 +101,7 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"Density", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity", statics.DensityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"EmptyTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.EmptyTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"GridLinesVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGridLinesVisibility", statics.GridLinesVisibilityProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"GroupHeaderTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.GroupHeaderTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"HeadersVisibility", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility", statics.HeadersVisibilityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"IsReadOnly", L"Boolean", statics.IsReadOnlyProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"ItemsSource", L"Object", statics.ItemsSourceProperty(), false /* isContent */);
@@ -265,6 +266,110 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeader",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeader",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.ContentControl",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::ITableViewGroupHeaderFactory>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeader"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::ITableViewGroupHeaderStatics statics = GetFactory<winrt::ITableViewGroupHeaderStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupHeader");
+                    {
+                        xamlType.AddDPMember(L"IsExpandable", L"Boolean", statics.IsExpandableProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsExpanded", L"Boolean", statics.IsExpandedProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupInfo",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewGroupInfo",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"IsExpandable", /* propertyName */
+                        L"Boolean", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().IsExpandable()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"IsExpanded", /* propertyName */
+                        L"Boolean", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().IsExpanded()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ItemCount", /* propertyName */
+                        L"Int32", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().ItemCount()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"ItemCountText", /* propertyName */
+                        L"String", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().ItemCountText()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"Key", /* propertyName */
+                        L"Object", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewGroupInfo>().Key(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"KeyText", /* propertyName */
+                        L"String", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().KeyText()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                    xamlType.AddMember(
+                        L"Level", /* propertyName */
+                        L"Int32", /* propertyType */
+                        [](winrt::IInspectable instance) { return box_value(instance.as<winrt::TableViewGroupInfo>().Level()); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Tabular.TableViewHeadersVisibility",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -406,166 +511,6 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactoryAttribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactoryAttribute",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Attribute",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.CustomAttributes.MUXHasCustomActivationFactoryAttribute"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.CustomAttributes.MUXOverrideEnsurePropertiesAttribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.CustomAttributes.MUXOverrideEnsurePropertiesAttribute",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Attribute",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.CustomAttributes.MUXOverrideEnsurePropertiesAttribute"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallbackAttribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallbackAttribute",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Attribute",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallbackAttribute"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallbackMethodNameAttribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallbackMethodNameAttribute",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Attribute",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyChangedCallbackMethodNameAttribute"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyDefaultValueAttribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyDefaultValueAttribute",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Attribute",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyDefaultValueAttribute"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyNeedsDependencyPropertyFieldAttribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyNeedsDependencyPropertyFieldAttribute",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Attribute",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyNeedsDependencyPropertyFieldAttribute"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyTypeAttribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyTypeAttribute",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Attribute",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyTypeAttribute"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
-        L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyValidationCallbackAttribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>(
-                /* Arg 1 - TypeName */ 
-                (PCWSTR)L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyValidationCallbackAttribute",
-                /* Arg 2 - BaseTypeName */ 
-                (PCWSTR)L"Attribute",
-                /* Arg 3 - Activator func */ 
-                (std::function<winrt::IInspectable()>)[](){ return ActivateInstance(L"Microsoft.UI.Xaml.CustomAttributes.MUXPropertyValidationCallbackAttribute"); },
-                /* Arg 4 - Populate properties func */ 
-                nullptr
-            );
-
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsTabularXamlMetaDataProvider",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -587,16 +532,6 @@ Entry c_typeEntries[] =
     // Register types encountered 
     {
         /* Arg1 TypeName */ 
-        L"Attribute",
-        /* Arg2 CreateXamlTypeCallback */ 
-        []()
-        {
-            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Attribute", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
-            return static_cast<winrt::IXamlType>(*xamlType);
-        }
-    },
-    {
-        /* Arg1 TypeName */ 
         L"Boolean",
         /* Arg2 CreateXamlTypeCallback */ 
         []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Boolean"); }
@@ -606,6 +541,12 @@ Entry c_typeEntries[] =
         L"Double",
         /* Arg2 CreateXamlTypeCallback */ 
         []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Double"); }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Int32",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Int32"); }
     },
     {
         /* Arg1 TypeName */ 
@@ -630,9 +571,9 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
-        L"Int32",
+        L"Microsoft.UI.Xaml.Controls.ContentControl",
         /* Arg2 CreateXamlTypeCallback */ 
-        []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Int32"); }
+        []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.Controls.ContentControl"); }
     },
     {
         /* Arg1 TypeName */ 
@@ -702,6 +643,12 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"String",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"String"); }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"ValueType",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -738,6 +685,7 @@ std::wstring_view c_knownNamespacePrefixes[] =
 #include "SortIndicator.properties.h"
 #include "TableView.properties.h"
 #include "TableViewColumn.properties.h"
+#include "TableViewGroupHeader.properties.h"
 #include "TableViewRow.properties.h"
 #include "TableViewTemplateColumn.properties.h"
 
@@ -748,6 +696,7 @@ void ClearTypeProperties()
     SortIndicatorProperties::ClearProperties();
     TableViewProperties::ClearProperties();
     TableViewColumnProperties::ClearProperties();
+    TableViewGroupHeaderProperties::ClearProperties();
     TableViewRowProperties::ClearProperties();
     TableViewTemplateColumnProperties::ClearProperties();
 }

@@ -51,8 +51,10 @@
                       Condition="Exists('$(WinUIDetailsLibPath)\Microsoft.UI.Xaml.Controls.Charts.winmd')">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.Charts.dll</ImplementationDll>
     </MuxControlsWinMD>
-    <!-- Gated off until public-winmd dedup + framework-MSIX wiring lands. -->
-    <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\dev\dll-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd" Condition="'$(IncludeTabularControlsInPublicMetadata)' == 'true'">
+    <!-- Tabular merges into the public winmd on the same terms as Charts above. Produced by the
+         metadata-only idl project (controls\idl-tabular\Microsoft.UI.Xaml.Controls.Tabular.idl.vcxproj), not
+         by Microsoft.UI.Xaml.Controls.Tabular.vcxproj, mirroring MuxControlsWinMD's MUXC entry above. -->
+    <MuxControlsWinMD Include="$(XamlBuildOutputRoot)\controls\idl-tabular\Unmerged\Microsoft.UI.Xaml.Controls.Tabular.g.winmd">
       <ImplementationDll>Microsoft.UI.Xaml.Controls.Tabular.dll</ImplementationDll>
     </MuxControlsWinMD>
 
@@ -88,6 +90,7 @@
     <UnMergedMuxProject Include="$(XamlSourcePath)\xcp\dxaml\idl\winrt\core\Microsoft.ui.xaml.coretypes.vcxproj" />
     <UnMergedMuxProject Include="$(XamlSourcePath)\phone\idl\phone.vcxproj" />
     <UnMergedMuxControlsWinMdProject Include="$(MuxControlsPath)\idl\Microsoft.UI.Xaml.Controls.idl.vcxproj" />
+    <UnMergedMuxControlsWinMdProject Include="$(MuxControlsPath)\idl-tabular\Microsoft.UI.Xaml.Controls.Tabular.idl.vcxproj" />
   </ItemGroup>
 
   <ItemGroup>
