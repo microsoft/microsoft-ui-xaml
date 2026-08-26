@@ -184,7 +184,7 @@ public:
         return m_list[i];
     }
 
-    ~CGITCookieList()
+    void Clear()
     {
         XUINT32 size = m_list.size();
 
@@ -192,6 +192,13 @@ public:
         {
             ReleaseInterface(m_list[i]);
         }
+
+        m_list.clear();
+    }
+
+    ~CGITCookieList()
+    {
+        Clear();
     }
 
 private:
@@ -343,6 +350,24 @@ public:
         ReleaseInterface(pHandler);
 
         RRETURN(hr);
+    }
+
+    void Clear()
+    {
+        if (!m_fInitialized)
+        {
+            return;
+        }
+
+        Lock raiseLock(m_csRaise);
+        Lock addRemoveLock(m_csAddRemove);
+
+        m_pHandlers->Clear();
+
+        if (m_pHandlersCopy)
+        {
+            m_pHandlersCopy->Clear();
+        }
     }
 
 private:
