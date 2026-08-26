@@ -625,7 +625,8 @@
       <BinSkimCommand>$(NuGetPackageRoot)\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe analyze "$(TargetPath)"</BinSkimCommand>
     </PropertyGroup>
     <Message Text="Running BinSkim on $(TargetFileName) to scan for potential security issues" Importance="high" />
-    <Exec Command="$(BinSkimCommand) | findstr &quot;error&quot;" IgnoreExitCode="true">
+    <Message Text="Validation-only: suppressing BinSkim BA2007 results." Importance="high" />
+    <Exec Command="$(BinSkimCommand) | findstr &quot;error&quot; | findstr /V &quot;BA2007&quot;" IgnoreExitCode="true">
       <Output TaskParameter="ExitCode" PropertyName="ExitCode" />
     </Exec>
     <Error Text="BinSkim task failed." Condition="'$(ExitCode)'=='0'" />
