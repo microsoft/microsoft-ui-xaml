@@ -1030,53 +1030,50 @@ ToggleSwitch::AdjustTranslationBoundsForDrag()
     BOOLEAN isOn = FALSE;
     IFC_RETURN(get_IsOn(&isOn));
 
+    ctl::ComPtr<xaml::IDependencyObject> spKnobVisualDO;
     if (!isOn)
     {
-        ctl::ComPtr<xaml::IDependencyObject> spKnobOffDO;
-        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"SwitchKnobOff")).Get(), &spKnobOffDO));
-
-        if (spKnobOffDO)
-        {
-            auto spKnobOffElement = spKnobOffDO.AsOrNull<xaml::IFrameworkElement>();
-
-            if (spKnobOffElement)
-            {
-                xaml::Thickness knobVisualMargin = {};
-                IFC_RETURN(spKnobOffElement->get_Margin(&knobVisualMargin));
-
-                if (knobVisualMargin.Left > 0)
-                {
-                    const DOUBLE clampMax = m_maxKnobTranslation - knobVisualMargin.Left;
-                    if (clampMax >= m_minKnobTranslation)
-                    {
-                        m_dragVisualClampMax = clampMax;
-                    }
-                }
-            }
-        }
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"SwitchKnobOff")).Get(), &spKnobVisualDO));
     }
     else
     {
-        ctl::ComPtr<xaml::IDependencyObject> spKnobOnDO;
-        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"SwitchKnobOn")).Get(), &spKnobOnDO));
+        IFC_RETURN(GetTemplateChild(wrl_wrappers::HStringReference(STR_LEN_PAIR(L"SwitchKnobOn")).Get(), &spKnobVisualDO));
+    }
 
-        if (spKnobOnDO)
+    auto spKnobVisualElement = spKnobVisualDO.AsOrNull<xaml::IFrameworkElement>();
+    auto spKnobVisualUIElement = spKnobVisualDO.AsOrNull<xaml::IUIElement>();
+
+    if (spKnobVisualElement && spKnobVisualUIElement)
+    {
+        DOUBLE knobWidth = 0;
+        DOUBLE knobVisualWidth = 0;
+        ctl::ComPtr<xaml::IUIElement> spKnobUIElement;
+        ctl::ComPtr<xaml_media::IGeneralTransform> spTransform;
+        wf::Point knobVisualOrigin = {};
+
+        IFC_RETURN(m_tpKnob->get_ActualWidth(&knobWidth));
+        IFC_RETURN(spKnobVisualElement->get_ActualWidth(&knobVisualWidth));
+        IFC_RETURN(m_tpKnob.As(&spKnobUIElement));
+        IFC_RETURN(spKnobVisualUIElement->TransformToVisual(spKnobUIElement.Get(), &spTransform));
+        IFC_RETURN(spTransform->TransformPoint({}, &knobVisualOrigin));
+
+        if (!isOn)
         {
-            auto spKnobOnElement = spKnobOnDO.AsOrNull<xaml::IFrameworkElement>();
-
-            if (spKnobOnElement)
+            const DOUBLE restingMargin = knobVisualOrigin.X;
+            const DOUBLE clampMax = m_maxKnobTranslation - restingMargin;
+            if (restingMargin > 0 && clampMax >= m_minKnobTranslation)
             {
-                xaml::Thickness knobVisualMargin = {};
-                IFC_RETURN(spKnobOnElement->get_Margin(&knobVisualMargin));
-
-                if (knobVisualMargin.Right > 0)
-                {
-                    const DOUBLE clampMin = m_minKnobTranslation + knobVisualMargin.Right;
-                    if (clampMin <= m_maxKnobTranslation)
-                    {
-                        m_dragVisualClampMin = clampMin;
-                    }
-                }
+                m_dragVisualClampMax = clampMax;
+            }
+        }
+        else
+        {
+            const DOUBLE restingMargin =
+                knobWidth - knobVisualOrigin.X - knobVisualWidth;
+            const DOUBLE clampMin = m_minKnobTranslation + restingMargin;
+            if (restingMargin > 0 && clampMin <= m_maxKnobTranslation)
+            {
+                m_dragVisualClampMin = clampMin;
             }
         }
     }
