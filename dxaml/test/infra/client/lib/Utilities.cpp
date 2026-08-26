@@ -292,40 +292,6 @@ namespace Private { namespace Infrastructure {
         return Utilities::RunCommandLineWithExitCode(commandLine, &exitCode);
     }
 
-    HRESULT Utilities::SetImageCompareTolerance(INT32 tolerance)
-    {
-        m_imageCompareTolerance = tolerance;
-        return S_OK;
-    }
-
-    HRESULT Utilities::GetImageCompareTolerance(INT32* tolerance)
-    {
-        *tolerance = m_imageCompareTolerance;
-        return S_OK;
-    }
-
-    HRESULT Utilities::SetDCompXmlVariable(HSTRING name, HSTRING value)
-    {
-        COM_START
-        {
-            m_dcompXmlVariables[std::wstring(WindowsGetStringRawBuffer(name, nullptr))] =
-                std::wstring(WindowsGetStringRawBuffer(value, nullptr));
-        }
-        COM_END
-    }
-
-    HRESULT Utilities::ClearDCompXmlVariables()
-    {
-        m_dcompXmlVariables.clear();
-        return S_OK;
-    }
-
-    HRESULT Utilities::HasDCompXmlVariables(BOOLEAN* hasVariables)
-    {
-        *hasVariables = !m_dcompXmlVariables.empty();
-        return S_OK;
-    }
-
     HRESULT Utilities::VerifyMockDCompOutput(
         mdc::SurfaceComparison surfaceComparison
         )
@@ -441,11 +407,6 @@ namespace Private { namespace Infrastructure {
                 std::vector<WEX::Common::String> surfaceVariations;
                 ByteByByteComparer comparer;
 
-                if (!m_dcompXmlVariables.empty())
-                {
-                    comparer.SetVariables(m_dcompXmlVariables);
-                }
-
                 bool success = false;
 
                 // First verification pass checks the mdc output XML files.
@@ -537,15 +498,6 @@ namespace Private { namespace Infrastructure {
                     wrl::Wrappers::HStringReference strVariation(static_cast<const wchar_t*>(surfaceVariation));
                     ImageComparer imageComparer;
 
-                    // Apply per-channel pixel tolerance if set by the test
-                    // via SetImageCompareTolerance(). This tolerates minor
-                    // rounding differences across OS/driver versions (e.g.
-                    // the WIC JPEG decoder IDCT rounding change in 25H2).
-                    if (m_imageCompareTolerance > 0)
-                    {
-                        imageComparer.SetTolerance(m_imageCompareTolerance);
-                    }
-
                     wrl::Wrappers::HString diffFileNameSuffix;
                     LogThrow_IfFailed(diffFileNameSuffix.Set(L".diff.png"));
                     const auto diffFileNameHelper = GenerateFileNameHelper(strVariation.Get(), diffFileNameSuffix.Get());
@@ -624,7 +576,6 @@ namespace Private { namespace Infrastructure {
                 }
             }
         }
-
         COM_END
     }
 
@@ -1469,6 +1420,17 @@ namespace Private { namespace Infrastructure {
 
     }
 
+    // Returns true when the test run was launched with /p:SwitcherMode=true, i.e. the lifted
+    // system-composition switcher is engaged process-wide (see ModuleSetup in ModuleCleanup.cpp).
+    // Under switcher the composition tree can differ from the baseline WUC path, so a
+    // switcher-specific baseline (.master.switcher.<ext>) is preferred when present.
+    static bool IsSwitcherMode()
+    {
+        WEX::Common::String switcherModeParam;
+        return SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"SwitcherMode", switcherModeParam))
+            && (switcherModeParam.CompareNoCase(L"true") == 0 || switcherModeParam == L"1");
+    }
+
     bool Utilities::DoVerification(
         _In_ PCWSTR fileExtension,
         _In_opt_ HSTRING variation,
@@ -1501,7 +1463,32 @@ namespace Private { namespace Infrastructure {
         wrl::ComPtr<wst::IStorageFile> spMasterFile;
 
         spOutputFile = GetStorageFile(strOutputFilenameWithPath.Get());
-        spMasterFile = GetStorageFile(strMasterFilenameWithPath.Get());
+
+        // Under switcher mode, prefer a switcher-specific baseline (.master.switcher.<ext>) if one
+        // exists. This lets the switcher path own a different visual tree without overwriting the
+        // baseline WUC masters, so non-switcher runs keep comparing against .master.<ext> unchanged.
+        if (IsSwitcherMode())
+        {
+            wrl::Wrappers::HString switcherSuffix;
+            LogThrow_IfFailed(switcherSuffix.Set((std::wstring(L".master.switcher.") + fileExtension).c_str()));
+            auto switcherHelper = GenerateFileNameHelper(variation, switcherSuffix.Get());
+            wrl::Wrappers::HString switcherFilenameWithPath = GetFileName(PrependPath(GetMastersFolderPath(), switcherHelper));
+            wrl::ComPtr<wst::IStorageFile> spSwitcherMaster = GetStorageFile(switcherFilenameWithPath.Get());
+            if (spSwitcherMaster)
+            {
+                spMasterFile = spSwitcherMaster;
+                LogThrow_IfFailed(masterFileNameSuffix.Set((std::wstring(L".master.switcher.") + fileExtension).c_str()));
+                masterFileNameHelper = switcherHelper;
+                const wrl::Wrappers::HString switcherFilename = GetFileName(switcherHelper);
+                LogThrow_IfFailed(strMasterFilename.Set(switcherFilename.GetRawBuffer(nullptr)));
+                LogThrow_IfFailed(strMasterFilenameWithPath.Set(switcherFilenameWithPath.GetRawBuffer(nullptr)));
+            }
+        }
+
+        if (!spMasterFile)
+        {
+            spMasterFile = GetStorageFile(strMasterFilenameWithPath.Get());
+        }
 
         // If neither file exists, then this file was apparently not needed (such as due to this
         // index being for a surface which is no longer referenced).  Everything is good in this

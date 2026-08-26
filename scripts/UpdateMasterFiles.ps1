@@ -1,7 +1,4 @@
-﻿# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See LICENSE in the project root for license information.
-
-# 
+﻿# 
 # UpdateMasterFiles.ps1:
 #
 #   After running tests with associated masters files, the current masters and any new snapshots that don't match the masters
@@ -10,11 +7,17 @@
 #   Alternatively, you can download the "helixTestOutput" artifact from a lab build, extract it to a folder, and point this at
 #   that folder in order to have this script update masters from a lab build.
 #
+#   -switcher: write switcher-specific baselines (.master.switcher.<ext>) instead of overwriting .master.<ext>. Use after a
+#   run with /p:SwitcherMode=true. Only outputs that differ from the baseline are saved; identical ones are skipped and any
+#   stale .master.switcher.<ext> is removed. The lift test infra (Utilities::DoVerification) prefers .master.switcher.<ext>
+#   under SwitcherMode and falls back to .master.<ext>, so baseline (non-switcher) runs are unaffected.
+#
 
 Param(
     [Parameter(Mandatory = $true)]
     [string]$NewMastersDirectory,
     [switch]$release,
+    [switch]$switcher,
     [switch]$v
 )
 
@@ -40,6 +43,29 @@ foreach ($newMaster in $newMuxMasters)
     $oldMasterPath = Join-Path $muxMasterFilesDirectory $oldMaster.Name
     $oldMasterReleasePath = Join-Path $muxMasterReleaseFilesDirectory $oldMaster.Name
     $target = $null
+
+    # Switcher mode: never overwrite the baseline .master.xml. Instead, if the switcher output differs
+    # from the baseline, write a switcher-specific baseline (.master.switcher.<ext>) so non-switcher runs
+    # keep using the original master. If the output is identical to the baseline, no switcher master is
+    # needed; remove any stale one so the fallback to .master.<ext> stays clean.
+    if ($switcher)
+    {
+        if ([System.IO.File]::Exists($oldMasterPath))
+        {
+            $switcherTarget = $oldMasterPath -replace "\.master\.", ".master.switcher."
+            if ((Get-FileHash $newMaster.FullName).Hash -eq (Get-FileHash $oldMasterPath).Hash)
+            {
+                if ($v) { Write-Host "Skipping (switcher output matches baseline): $($oldMaster.Name)" }
+                if ([System.IO.File]::Exists($switcherTarget)) { Remove-Item $switcherTarget; Write-Host "Removed stale switcher master: $switcherTarget" }
+            }
+            else
+            {
+                Write-Host "Copying $($newMaster.FullName) to $switcherTarget..."
+                Copy-Item $newMaster.FullName $switcherTarget
+            }
+        }
+        continue
+    }
 
     # If in release mode, check the release dir first and then fall back to normal path
     if ($release -and [System.IO.File]::Exists($oldMasterReleasePath))
