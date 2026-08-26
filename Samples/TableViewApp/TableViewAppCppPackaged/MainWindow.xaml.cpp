@@ -32,18 +32,18 @@ namespace winrt::TableViewAppCppPackaged::implementation
 
     MainWindow::MainWindow()
     {
-        InitializeComponent();
+        // Populate before InitializeComponent so the markup x:Bind picks it up.
+        m_people = single_threaded_observable_vector<Windows::Foundation::IInspectable>();
+        m_people.Append(MakePerson(L"Alice", 30));
+        m_people.Append(MakePerson(L"Bob", 25));
+        m_people.Append(MakePerson(L"Carol", 40));
 
-        auto items = single_threaded_observable_vector<Windows::Foundation::IInspectable>();
-        items.Append(MakePerson(L"Alice", 30));
-        items.Append(MakePerson(L"Bob", 25));
-        items.Append(MakePerson(L"Carol", 40));
-        MarkupTable().ItemsSource(items);
+        InitializeComponent();
 
         // Second instance built entirely from code, to cover the non-markup activation path.
         auto codeTable = TableView{};
         codeTable.Height(160);
-        codeTable.ItemsSource(items);
+        codeTable.ItemsSource(m_people);
         codeTable.Columns().Append(MakeColumn(L"Name", L"NameCell"));
         codeTable.Columns().Append(MakeColumn(L"Age", L"AgeCell"));
         CodeTableHost().Children().Append(codeTable);

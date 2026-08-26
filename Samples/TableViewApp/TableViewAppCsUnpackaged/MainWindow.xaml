@@ -30,7 +30,7 @@
             </StackPanel>
 
             <!-- Instantiated from markup. -->
-            <tabular:TableView x:Name="MarkupTable" Grid.Row="1"
+            <tabular:TableView x:Name="MarkupTable" Grid.Row="1" ItemsSource="{x:Bind People}"
                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
                 <tabular:TableViewTextColumn Header="Age" Binding="{Binding Age}" />

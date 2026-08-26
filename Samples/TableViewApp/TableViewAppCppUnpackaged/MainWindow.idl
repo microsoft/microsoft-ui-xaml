@@ -13,5 +13,6 @@ namespace TableViewAppCppUnpackaged
     runtimeclass MainWindow : Microsoft.UI.Xaml.Window
     {
         MainWindow();
+        Windows.Foundation.Collections.IObservableVector<IInspectable> People{ get; };
     }
 }
