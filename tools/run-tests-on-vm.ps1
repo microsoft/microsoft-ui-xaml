@@ -3,12 +3,12 @@
 # Uses PowerShell Direct (Hyper-V VMBus transport) -- no network config,
 # no WinRM, no firewall rules needed.
 #
-# Usage:
-#   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTestName"
-#   .\run-tests-on-vm.ps1 -VMName "MyVM" "Button*" -HostingMode WPF
-#   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -SkipPayload
-#   .\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -FullCopy
-#   .\run-tests-on-vm.ps1 -VMName "MyVM" -Stop          # kill any running test
+# Usage from the repository root:
+#   .\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName "MyVM" "MyTestName"
+#   .\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName "MyVM" "Button*" -HostingMode WPF
+#   .\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -SkipPayload
+#   .\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName "MyVM" "MyTest" -FullCopy
+#   .\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName "MyVM" -Stop
 #
 # First run will prompt for VM credentials and cache them (encrypted, per-user).
 # Subsequent runs reuse the cached credential automatically.
@@ -660,7 +660,7 @@ echo %ERRORLEVEL% > "$exitFile"
 
 # -- Resolve platform/config --------------------------------------------
 if (-not $Platform) {
-    $Platform = if ($env:BUILDPLATFORM) { $env:BUILDPLATFORM } else { "x86" }
+    $Platform = if ($env:BUILDPLATFORM) { $env:BUILDPLATFORM } else { "x64" }
 }
 if (-not $Configuration) {
     $Configuration = if ($env:_BuildType) { $env:_BuildType } else { "chk" }
@@ -700,7 +700,7 @@ if ($Stop) {
 
 if (-not $TestName) {
     Write-Host "Error: TestName is required (unless using -Stop)." -ForegroundColor Red
-    Write-Host "Usage: run-tests-on-vm.ps1 -VMName <vm> <testname>" -ForegroundColor Yellow
+    Write-Host "Usage: .\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName <vm> <testname>" -ForegroundColor Yellow
     Remove-PSSession $session
     exit 1
 }
