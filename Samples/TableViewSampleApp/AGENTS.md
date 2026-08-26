@@ -6,17 +6,24 @@ end-user quick start lives in [README.md](README.md); this file is the deep refe
 
 ## Why this sample is unusual
 
-`TableView` currently ships as a **split binary**: the control lives in
-`Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL, and it is **not
-yet exposed through the WindowsAppSDK NuGet package**. A normal WinUI app can't just add a package
-reference and use it. To consume the locally built control, the sample:
+`TableView` lives in `Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL.
+Its API **is** published through the WindowsAppSDK NuGet package: type information reaches the public
+winmd, activation registrations are emitted, and the control's theme resources ship and resolve. A
+packaged app that references the package can use `TableView` with **no** workarounds — that path is
+covered by a standalone verification app outside the repo.
+
+This sample is deliberately wired the other way. It builds **unpackaged and self-contained** and
+consumes the **freshly built control output** rather than the package, so a developer can iterate on
+the control without a package round-trip. To do that it:
 
 1. links the freshly built native control DLL,
 2. regenerates its WinRT projection from the freshly built WinMD, and
-3. reconstructs, at build and startup time, the pieces the WindowsAppSDK packaging would normally
-   provide (activatable-class registrations, theme resources, default styles).
+3. reconstructs, at build and startup time, the pieces packaged deployment would otherwise provide
+   (activatable-class registrations, theme resources, default styles).
 
-Every workaround below disappears once `TableView` is delivered in-box through WindowsAppSDK.
+Every workaround below is a consequence of that unpackaged, build-output-linked configuration — not
+of a gap in the product. They retire when the sample is re-pointed at the package, not merely by
+deleting them; removed while the sample still links build outputs, the sample stops working.
 
 ## Environment setup
 
@@ -77,9 +84,10 @@ the projected IIDs match the control exactly.
 
 ### c. Include the TableView theme resources — sourced from the control, never checked in
 
-The split binary's theme resources are **not** deployed to consuming apps, so the sample compiles
-and merges them itself. To guarantee they can never drift from the control, the sample references
-the canonical sources directly instead of checking in copies:
+The control's theme resources ship in the package and resolve for a packaged app, but this sample is
+unpackaged and links build outputs, so nothing deploys them here — it compiles and merges them itself.
+To guarantee they can never drift from the control, the sample references the canonical sources
+directly instead of checking in copies:
 
 - `TabularSurfaces_themeresources.xaml` ← `controls\dev\CommonStyles\TabularSurfaces_themeresources.xaml`
 - `TableView_themeresources.xaml` ← `controls\dev\TableView\TableView_themeresources.xaml`

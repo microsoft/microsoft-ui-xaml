@@ -4,10 +4,15 @@ A small, self-contained WinUI 3 desktop app that exercises the live public API o
 `Microsoft.UI.Xaml.Controls.Tabular.TableView` control. The left panel lets you tweak columns,
 sizing, headers, grid lines, density, backgrounds, and more while the table updates in real time.
 
-`TableView` currently ships as a **split binary** (`Microsoft.UI.Xaml.Controls.Tabular.dll`) that
-is not yet available through the WindowsAppSDK NuGet package, so this sample links the locally built
-control and needs a few build workarounds (described below). They all disappear once the control
-ships in-box. Deeper architecture notes live in [AGENTS.md](AGENTS.md).
+`TableView` ships in `Microsoft.UI.Xaml.Controls.Tabular.dll`, separate from the main framework DLL.
+Its API **is** now published through the WindowsAppSDK NuGet package — type information, activation
+registrations and theme resources all ship — so an ordinary packaged WinUI app can add a package
+reference and use the control with no workarounds at all.
+
+This sample predates that and is wired differently: it builds **unpackaged and self-contained**, and
+links the **freshly built control output** rather than the package, so it can exercise a locally built
+control without a package round-trip. That choice, not a gap in the product, is what the workarounds
+below exist for. They retire when the sample is re-pointed at the package.
 
 ## Prerequisites
 
@@ -37,8 +42,8 @@ which the sample consumes:
 
 ### What the sample project does for you
 
-Because `TableView` is a split binary that isn't in WinAppSDK/NuGet yet, the project automates a few
-workarounds during build:
+Because this sample builds unpackaged and self-contained against raw build outputs rather than
+against the package, the project automates a few workarounds during build:
 
 - **Stages `Microsoft.UI.Xaml.Controls.Tabular.dll` next to the EXE.**
   *Why:* the control is a separate binary; without the DLL, activation fails with
@@ -47,7 +52,8 @@ workarounds during build:
   *Why:* keeps the generated projection in sync with the built control and avoids `E_NOINTERFACE`
   caused by stale metadata.
 - **Includes the TableView theme resources, sourced directly from the control.**
-  *Why:* the split binary doesn't deploy its theme resources to consuming apps; without them the
+  *Why:* the control's theme resources ship in the package, but this sample is unpackaged and links
+  build outputs, so nothing deploys them here; without them the
   control renders unstyled or blank. The sample references the control's resources at their
   canonical locations (and the built `generic.xaml`) rather than checking in copies, so they can
   never drift from the control.
