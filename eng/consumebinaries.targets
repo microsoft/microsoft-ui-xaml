@@ -46,6 +46,11 @@
             <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Controls.dll">
                 <AssociatedSolution>$(ProjectRoot)controls\MUXControls.sln</AssociatedSolution>
             </XamlProduct>
+            <!-- Tabular's activation registrations are emitted from its winmd (eng\productmetadata.props),
+                 so its DLL must ship in the same payload or packaging fails with APPX0703. -->
+            <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Controls.Tabular.dll">
+                <AssociatedSolution>$(ProjectRoot)controls\MUXControls.sln</AssociatedSolution>
+            </XamlProduct>
         </ItemGroup>
         <Error Condition="!Exists('%(XamlProduct.Identity)')" Text="%(XamlProduct.Identity) does not exist.  Please build %(XamlProduct.AssociatedSolution) before building." />
     </Target>
