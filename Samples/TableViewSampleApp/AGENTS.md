@@ -46,9 +46,12 @@ sample's.
 
 ## Two things worth knowing
 
-**Merge `TabularControlsResources`.** `App.xaml` merges it next to `XamlControlsResources`. The
-control finds its own `generic.xaml` unaided, so without this the table still renders — but the
-column header row and the theme brushes are missing, which looks like a control bug and is not one.
+**Nothing needs merging.** The control resolves its own `generic.xaml` and theme resources from the
+package, so `App.xaml` merges only `XamlControlsResources`. Verified by removing every Tabular
+dictionary from this sample and confirming all eight column headers and the rows still render, and
+again by the `TableViewApp` matrix (C#/C++ x packaged/unpackaged), none of which merge anything
+Tabular-specific. If a table appears with no header row, the cause is almost always **no declared
+columns**, not a missing dictionary.
 
 **`TableView` is `[MUX_PREVIEW]`.** C# usage raises `CS8305`, suppressed via `NoWarn` in the project
 file. XAML usage raises `WMC1501` once per page; those are deliberately left visible.

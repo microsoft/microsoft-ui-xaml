@@ -43,25 +43,19 @@ BuildOutput\obj\amd64chk\Samples\TableViewSampleApp\TableViewSampleApp.exe
 
 ## Using TableView in your own app
 
-Two things, both ordinary:
+Reference `Microsoft.WindowsAppSDK.WinUI` and use the control. Nothing else — the control resolves
+its own default style and theme resources from the package, so there is no dictionary to merge and
+no URI to configure. The `TableViewApp` samples alongside this one demonstrate that in all four
+consumer shapes (C# and C++, packaged and unpackaged).
 
-1. Reference `Microsoft.WindowsAppSDK.WinUI`.
-2. Merge the control's theme dictionary alongside `XamlControlsResources`, so its brushes and
-   metrics are in scope:
+Declare columns, or the table renders rows with no header row and no cells:
 
-   ```xml
-   <Application.Resources>
-     <ResourceDictionary>
-       <ResourceDictionary.MergedDictionaries>
-         <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-         <TabularControlsResources xmlns="using:Microsoft.UI.Xaml.Controls.Tabular" />
-       </ResourceDictionary.MergedDictionaries>
-     </ResourceDictionary>
-   </Application.Resources>
-   ```
-
-   Without the second dictionary the control still gets its template, but the column header row and
-   the theme brushes will be missing.
+```xml
+<tabular:TableView x:Name="Table">
+  <tabular:TableViewTextColumn Header="Name" Binding="{Binding Name}" />
+  <tabular:TableViewTextColumn Header="Age"  Binding="{Binding Age}" />
+</tabular:TableView>
+```
 
 `TableView` is `[MUX_PREVIEW]`, so C# usage raises `CS8305` and XAML usage raises `WMC1501`
 ("for evaluation purposes only"). This sample suppresses `CS8305`; the XAML warnings are left

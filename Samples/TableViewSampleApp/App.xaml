@@ -8,9 +8,6 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- TableView's theme resources ship in the package; merge the control's own
-                     dictionary to bring its brushes and metrics into scope. -->
-                <TabularControlsResources xmlns="using:Microsoft.UI.Xaml.Controls.Tabular" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- TemplateColumn cell: a progress-bar visual bound to Score. -->
