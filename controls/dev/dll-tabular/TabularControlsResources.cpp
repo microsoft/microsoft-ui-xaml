@@ -21,9 +21,8 @@ void TabularControlsResources::UpdateSource()
 
     winrt::Uri uri{
         [isPerf2026Enabled]() -> hstring {
-            // Authority-less, matching MUXC (XamlControlsResources.cpp). A consuming app's build expands
-            // every reference PRI into its own resources.pri, which erases component root map names, so
-            // the alias authority does not exist outside this repo. The path must match AppxPriInitialPath.
+            // Authority-less: a consuming app's build folds this component's PRI into its own and
+            // drops component root map names. Path must match AppxPriInitialPath.
             hstring packagePrefix = L"ms-appx:///" MUXTABULARROOT_NAMESPACE_STR "/Themes/";
             hstring postfix = isPerf2026Enabled ? L"themeresources_perf2026.xaml" : L"themeresources.xaml";
 

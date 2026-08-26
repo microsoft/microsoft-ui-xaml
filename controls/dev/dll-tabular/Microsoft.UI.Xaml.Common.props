@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <!--
-  Tabular builds with MUXC's settings plus a two-define delta, so this file imports the MUXC
-  property sheet instead of copying it. The copy it replaced had drifted to a verbatim duplicate
-  of controls\dev\dll\Microsoft.UI.Xaml.Common.props with ten extra lines, which meant every MUXC
-  build-setting change had to be mirrored by hand or the two binaries silently diverged.
-
-  Imported by file-relative path, not $(MUXCProjectRoot): the Tabular vcxproj imports this file as
-  its very first import, before environment.props has defined that property.
-
-  The MUXC sheet is safe to import from this directory - its only non-property paths are
-  GetPathOfFileAbove(environment.props), which resolves from the MUXC sheet's own location, and
-  ScriptPath="..\..\tools\", which is project-relative and identical for both sibling projects.
+  Tabular builds with MUXC's settings plus a two-define delta, so this imports the MUXC sheet
+  rather than copying it. Imported by file-relative path, not $(MUXCProjectRoot): the Tabular
+  vcxproj imports this as its first import, before environment.props defines that property.
 -->
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)..\dll\Microsoft.UI.Xaml.Common.props" />

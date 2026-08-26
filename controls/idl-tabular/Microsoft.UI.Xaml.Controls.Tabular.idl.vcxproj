@@ -2,19 +2,13 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <!--
   Metadata-only counterpart to Microsoft.UI.Xaml.Controls.Tabular.vcxproj, mirroring how MUXC splits
-  controls\idl\Microsoft.UI.Xaml.Controls.idl.vcxproj (metadata) from controls\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj
-  (implementation). This project runs MIDL only and produces Tabular's unmerged winmd; MergedWinMD
-  consumes that winmd (never this project's DLL sibling) to build the public Microsoft.UI.Xaml.winmd, and
-  Microsoft.UI.Xaml.Controls.Tabular.vcxproj consumes MergedWinMD's OUTPUT for XamlCompile. This breaks the
-  cycle that a single combined project would have: MergedWinMD needs Tabular's winmd as input, so the
-  project that runs XamlCompile against the merged public winmd cannot be the same project that produces
-  the pre-merge winmd MergedWinMD depends on.
+  controls\idl from controls\dev\dll. Runs MIDL only and produces Tabular's unmerged winmd, which
+  MergedWinMD consumes; the DLL project then runs XamlCompile against MergedWinMD's output. Splitting
+  them breaks the cycle a single project would have.
 
-  This project has its own intermediate directory (see IntDir below) so its PRI layout files, which
-  have fixed names, cannot race the MUXC idl project's. If MSBuild reports MSB8028 claiming this
-  project shares controls\idl\, that is stale output: .tlog and FileListAbsolute.txt files left in
-  BuildOutput\obj\<flavor>\controls\idl\ by builds from before this project existed. Delete the
-  *Tabular* entries under that directory and the warning goes away; IntDir itself is correct.
+  Has its own IntDir so its fixed-name PRI layout files cannot race the MUXC idl project's. An
+  MSB8028 naming controls\idl\ means stale output from before this project existed; delete the
+  *Tabular* entries there.
 -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>

@@ -15,17 +15,10 @@
     <XamlCodeGenerationControlFlags>NoPageCodeGen;NoTypeInfoCodeGen</XamlCodeGenerationControlFlags>
     <!-- Tabular has no PGO profile yet, so keep missing-profile verification non-fatal. -->
     <PGOVerifyFailureTreatedAsError>false</PGOVerifyFailureTreatedAsError>
-    <!-- Now that XamlCompile consumes the fully-merged public winmd (via MergedWinMD, see the
-         ProjectReference below) instead of MUXC's pre-merge winmd, Tabular can emit its own theme XBF. -->
-    <!-- Theme XBFs live under Tabular's own PRI root, matching how Charts scopes its resources
-         (ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/...). Without this they collide with
-         MUXC's Microsoft.UI.Xaml root on merge (PRI277). -->
+    <!-- Theme XBFs live under Tabular's own PRI root; sharing MUXC's collides on merge (PRI277). -->
     <TabularBinaryEmitsThemeResources>true</TabularBinaryEmitsThemeResources>
-    <!-- Load-bearing: these put the theme XBFs at Microsoft.UI.Xaml.Controls.Tabular/Themes/... in
-         the PRI, which is exactly the path the control's authority-less ms-appx:/// default-style
-         URI resolves (see TabularControlsResources.cpp). Changing them without changing that URI
-         breaks default styles. The PRI's root map name is left to default to the target name,
-         matching MUXC, which sets neither XamlResourceMapName nor ProjectPriIndexName. -->
+    <!-- Load-bearing: sets the PRI path the control's ms-appx:/// default-style URI resolves
+         (see TabularControlsResources.cpp). Change one and you must change the other. -->
     <AppxPrependPriInitialPath>true</AppxPrependPriInitialPath>
     <AppxPriInitialPath>$(MUXTabularTargetName)</AppxPriInitialPath>
   </PropertyGroup>
@@ -35,14 +28,11 @@
   <Import Project="$(MUXCProjectRoot)Tabular.ProjectImports.targets" />
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\Lightup\Microsoft.UI.Xaml.Controls.Lightup.vcxproj" />
-    <!-- Ordering only: XamlCompile below consumes MergedWinMD's public winmd on disk. MergedWinMD
-         depends on Tabular's idl project (never this project), so this is not a cycle. -->
+    <!-- Ordering only: XamlCompile consumes MergedWinMD's output on disk. Not a cycle, because
+         MergedWinMD depends on Tabular's idl project, never this one. -->
     <ProjectReference Include="$(ProjectRoot)MergedWinMD\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" />
-    <!-- Ordering only: EnsureMuxcComponentWinMDBuilt below requires MUXC's component winmd
-         (dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd) on disk for the C++/WinRT projection.
-         MergedWinMD only sequences MUXC's *idl* project, not the DLL that emits that winmd, so
-         without this edge a single-solution build can schedule Tabular first and hit that error.
-         MUXC never references Tabular, so this is not a cycle. -->
+    <!-- Ordering only: EnsureMuxcComponentWinMDBuilt needs MUXC's component winmd on disk, and
+         MergedWinMD sequences only MUXC's idl project, not the DLL that emits it. -->
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\dll\Microsoft.UI.Xaml.Controls.vcxproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>

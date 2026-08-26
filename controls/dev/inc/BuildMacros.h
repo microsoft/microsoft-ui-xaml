@@ -11,6 +11,5 @@
 #define MUXCONTROLSROOT_NAMESPACE_STR L"Microsoft.UI.Xaml"
 #define MUXCONTROLSMEDIA_NAMESPACE_STR L"Microsoft.UI.Xaml.Media"
 
-// Tabular ships its own resource map, so its theme resources are addressed under this root
-// rather than MUXC's; sharing MUXC's root caused a PRI277 collision.
+// Tabular's theme resources are addressed under its own root, not MUXC's (PRI277 collision).
 #define MUXTABULARROOT_NAMESPACE_STR L"Microsoft.UI.Xaml.Controls.Tabular"
