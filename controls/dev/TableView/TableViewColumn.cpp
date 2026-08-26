@@ -5,6 +5,7 @@
 #include "common.h"
 #include "TableViewColumn.h"
 #include "TableView.h"
+#include "TableViewColumnHeaderAutomationPeer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -291,6 +292,15 @@ void TableViewColumn::NotifyCellContentChanged()
     }
 }
 
+winrt::AutomationPeer TableViewColumn::GetOrCreateHeaderAutomationPeerInternal(winrt::TableView const& owner)
+{
+    if (!m_headerAutomationPeer)
+    {
+        m_headerAutomationPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, *this);
+    }
+    return m_headerAutomationPeer;
+}
+
 bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
 {
     // Keep the owner weak to avoid TableView -> Columns -> Column -> TableView cycles.
@@ -310,6 +320,9 @@ bool TableViewColumn::SetOwningTableViewInternal(winrt::TableView const& owner)
     else
     {
         m_owningTableView = nullptr;
+
+        // The cached peer holds the old owner; drop it so a reattach rebuilds it.
+        m_headerAutomationPeer = nullptr;
         return true;
     }
 }

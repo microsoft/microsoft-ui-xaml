@@ -62,11 +62,7 @@ winrt::AutomationControlType TableViewColumnHeaderAutomationPeer::GetAutomationC
 
 int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()
 {
-    // Every header peer shares the TableView owner, so their auto-generated UIA
-    // RuntimeIds collide (WinUI AutomationPeer has no overridable GetRuntimeIdCore).
-    // Expose the 1-based column position so AT (Narrator) can still distinguish and
-    // announce "column i of n"; combined with the distinct GetNameCore this makes each
-    // header individually identifiable.
+    // 1-based column position so AT can announce "column i of n".
     const auto index = GetColumnIndex();
     return index >= 0 ? index + 1 : -1;
 }

@@ -4,9 +4,9 @@
 #include "pch.h"
 #include "common.h"
 #include "TableView.h"
+#include "TableViewColumn.h"
 #include "TableViewTextColumn.h"
 #include "TableViewRow.h"
-#include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewCellAutomationPeer.properties.cpp"
@@ -205,7 +205,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewCellAutomationPeer::
         {
             if (auto const owner = winrt::get_self<TableViewRow>(row)->GetOwningTableView())
             {
-                auto const headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(owner, column);
+                auto const headerPeer = winrt::get_self<TableViewColumn>(column)->GetOrCreateHeaderAutomationPeerInternal(owner);
                 headers.push_back(ProviderFromPeer(headerPeer));
             }
         }

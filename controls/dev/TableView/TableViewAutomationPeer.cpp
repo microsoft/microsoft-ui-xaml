@@ -5,8 +5,8 @@
 #include "common.h"
 #include "TableView.h"
 #include "TableViewRow.h"
+#include "TableViewColumn.h"
 #include "TableViewAutomationPeer.h"
-#include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewCellAutomationPeer.h"
 #include "TableViewAutomationHelpers.h"
 #include "TableViewAutomationPeer.properties.cpp"
@@ -305,8 +305,8 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
                 {
                     continue;
                 }
-                // TableView ownership allows pre-realization enumeration but shares RuntimeId.
-                auto headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(tableView, column);
+                // TableView ownership allows pre-realization enumeration; the cached peer keeps RuntimeId stable.
+                auto const headerPeer = winrt::get_self<TableViewColumn>(column)->GetOrCreateHeaderAutomationPeerInternal(tableView);
                 headers.push_back(ProviderFromPeer(headerPeer));
             }
         }

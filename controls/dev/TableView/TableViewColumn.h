@@ -64,6 +64,10 @@ public:
     void ResetDesiredWidthInternal();
     double DesiredWidthInternal() const noexcept { return m_desiredWidth; }
 
+    // Returns this column's header automation peer, cached so the peer instance - and therefore its
+    // UIA RuntimeId - stays stable across enumeration, reorder and virtualization.
+    winrt::AutomationPeer GetOrCreateHeaderAutomationPeerInternal(winrt::TableView const& owner);
+
 private:
     // Write the resolved, clamped width into the read-only ActualWidth DP.
     void UpdateActualWidth();
@@ -72,4 +76,7 @@ private:
     double m_desiredWidth{ 0.0 };
 
     weak_ref<winrt::TableView> m_owningTableView{ nullptr };
+
+    // Cached header automation peer; see GetOrCreateHeaderAutomationPeerInternal.
+    winrt::AutomationPeer m_headerAutomationPeer{ nullptr };
 };

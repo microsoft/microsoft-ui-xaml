@@ -7,8 +7,8 @@
 #include "TableViewColumnHeaderAutomationPeer.g.h"
 
 // UIA peer for a TableView column header; reports header name, type, and bounds.
-// Distinct per-column RuntimeIds are not yet implemented; peers share the TableView
-// owner-derived identity. TableView ownership allows pre-realization enumeration.
+// TableView ownership allows pre-realization enumeration. The peer is cached per column
+// (TableViewColumn::GetOrCreateHeaderAutomationPeerInternal) so its RuntimeId stays stable.
 class TableViewColumnHeaderAutomationPeer :
     public ReferenceTracker<TableViewColumnHeaderAutomationPeer, winrt::implementation::TableViewColumnHeaderAutomationPeerT>
 {
@@ -19,8 +19,7 @@ public:
     hstring GetClassNameCore();
     hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
-    // Header peers share the TableView owner, so RuntimeIds currently collide; expose
-    // visible column position so AT can distinguish columns until distinct RuntimeIds are implemented.
+    // PositionInSet/SizeOfSet announce "column i of n" for AT.
     int32_t GetPositionInSetCore();
     int32_t GetSizeOfSetCore();
 
