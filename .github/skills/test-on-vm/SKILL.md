@@ -5,9 +5,9 @@ description: EXPERIMENTAL. Run locally built WinUI interaction tests on a Hyper-
 
 # Run WinUI Tests on a Hyper-V VM
 
-Use `tools\run-tests-on-vm.ps1`. It refreshes the local test payload, deploys
-it to the VM, performs required machine setup, and runs tests on the VM's
-interactive desktop.
+Run `tools\run-tests-on-vm.ps1` through `initrun.ps1`. It refreshes the local
+test payload, deploys it to the VM, performs required machine setup, and runs
+tests on the VM's interactive desktop.
 
 This skill and script are experimental and may not be stable.
 
@@ -40,16 +40,16 @@ encrypted under `~\.winui-test`. Use `-ResetCredential` to replace them.
 
 ```powershell
 # Run a specific test
-.\tools\run-tests-on-vm.ps1 -VMName <vm> <testname>
+.\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName <vm> <testname>
 
 # Wildcard match
-.\tools\run-tests-on-vm.ps1 -VMName <vm> *CommandBar*
+.\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName <vm> *CommandBar*
 
 # Force full copy instead of incremental
-.\tools\run-tests-on-vm.ps1 -VMName <vm> -FullCopy <testname>
+.\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName <vm> -FullCopy <testname>
 
 # Stop a stuck test run
-.\tools\run-tests-on-vm.ps1 -VMName <vm> -Stop
+.\initrun.ps1 .\tools\run-tests-on-vm.ps1 -VMName <vm> -Stop
 ```
 
 ## Payload Rules
@@ -67,8 +67,8 @@ files incrementally.
 
 | Option | Purpose |
 |--------|---------|
-| `-Platform` | `x86`, `x64`, or `arm64`; inferred when omitted |
-| `-Configuration` | `chk` or `fre`; inferred when omitted |
+| `-Platform` | `x86`, `x64`, or `arm64`; uses the build environment, then defaults to `x64` |
+| `-Configuration` | `chk` or `fre`; uses the build environment, then defaults to `chk` |
 | `-FullCopy` | Copy the full refreshed payload instead of only changes |
 | `-SkipPayload` | Rare: deploy the existing payload without refreshing it |
 | `-SkipPrerun` | Skip `testmachine-prerun.cmd` |
