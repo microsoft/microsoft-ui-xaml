@@ -37,6 +37,12 @@
     <!-- Ordering only: XamlCompile below consumes MergedWinMD's public winmd on disk. MergedWinMD
          depends on Tabular's idl project (never this project), so this is not a cycle. -->
     <ProjectReference Include="$(ProjectRoot)MergedWinMD\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" />
+    <!-- Ordering only: EnsureMuxcComponentWinMDBuilt below requires MUXC's component winmd
+         (dev\dll\Unmerged\Microsoft.UI.Xaml.Controls.g.winmd) on disk for the C++/WinRT projection.
+         MergedWinMD only sequences MUXC's *idl* project, not the DLL that emits that winmd, so
+         without this edge a single-solution build can schedule Tabular first and hit that error.
+         MUXC never references Tabular, so this is not a cycle. -->
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\dll\Microsoft.UI.Xaml.Controls.vcxproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
