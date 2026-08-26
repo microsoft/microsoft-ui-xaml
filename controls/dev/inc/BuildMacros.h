@@ -14,5 +14,3 @@
 // Tabular ships its own resource map, so its theme resources are addressed under this root
 // rather than MUXC's; sharing MUXC's root caused a PRI277 collision.
 #define MUXTABULARROOT_NAMESPACE_STR L"Microsoft.UI.Xaml.Controls.Tabular"
-// Resource-map alias: ms-appx authority so lookups bind to this component, not the host process.
-#define MUXTABULARALIAS_STR L"TabularControlsAlias"

@@ -21,8 +21,11 @@
          (ms-appx:///Microsoft.UI.Xaml.Controls.Tabular/Themes/...). Without this they collide with
          MUXC's Microsoft.UI.Xaml root on merge (PRI277). -->
     <TabularBinaryEmitsThemeResources>true</TabularBinaryEmitsThemeResources>
-    <!-- Resources resolve via the component's own resource-map alias, not ms-appx:///, which would
-         bind to the hosting process's package. See OSClient PR 16542065. -->
+    <!-- Names the root resource map of the standalone Microsoft.UI.Xaml.Controls.Tabular.pri.
+         Note this alias is NOT how the control addresses its resources at runtime: a consuming
+         app's build expands every referenced PRI into its own resources.pri and drops component
+         root-map names, so the control uses an authority-less ms-appx:/// URI whose path matches
+         AppxPriInitialPath below (see TabularControlsResources.cpp). -->
     <XamlResourceMapName>TabularControlsAlias</XamlResourceMapName>
     <ProjectPriIndexName>TabularControlsAlias</ProjectPriIndexName>
     <AppxPrependPriInitialPath>true</AppxPrependPriInitialPath>
