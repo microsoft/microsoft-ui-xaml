@@ -59,7 +59,7 @@ void ResizeGripperProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ResizeGripper>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(8.0),
+                ValueHelper<double>::BoxValueIfNecessary(c_defaultKeyboardIncrement),
                 winrt::PropertyChangedCallback(&OnKeyboardIncrementPropertyChanged));
     }
     if (!s_ManipulationContainerProperty)

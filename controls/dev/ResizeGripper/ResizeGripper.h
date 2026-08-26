@@ -18,6 +18,10 @@
 #include "ResizeGripper.g.h"
 #include "ResizeGripper.properties.h"
 
+// The registered default for KeyboardIncrement, and the fallback when a host supplies an unusable
+// one - the two must agree, so the IDL's MUX_DEFAULT_VALUE names this rather than restating 8.0.
+constexpr double c_defaultKeyboardIncrement{ 8.0 };
+
 class ResizeGripper :
     public ReferenceTracker<ResizeGripper, winrt::implementation::ResizeGripperT>,
     public ResizeGripperProperties
@@ -42,6 +46,7 @@ public:
     void OnManipulationStarted(winrt::ManipulationStartedRoutedEventArgs const& args);
     void OnManipulationDelta(winrt::ManipulationDeltaRoutedEventArgs const& args);
     void OnManipulationCompleted(winrt::ManipulationCompletedRoutedEventArgs const& args);
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
     // IUIElement overrides
     winrt::AutomationPeer OnCreateAutomationPeer();
@@ -51,6 +56,7 @@ private:
     void UpdateManipulationMode();
     void UpdateVisualState();
     void UpdateOrientationVisualState();
+    bool IsHorizontalDrag();
     double EffectiveKeyboardIncrement();
     void OnIsEnabledChanged(const winrt::IInspectable& sender, const winrt::DependencyPropertyChangedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);

@@ -27,8 +27,8 @@
 
     <Style TargetType="privatecontrols:ResizeGripper">
         <!-- A pointer affordance by default: a host that wants it focusable sets IsTabStop="True"
-             and routes its own KeyDown into TryKeyboardStep. TableView keeps focus on the header
-             cell, where the column commands live. -->
+             and the gripper handles its own arrow keys. TableView keeps focus on the header cell,
+             where the column commands live. -->
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />

@@ -24,8 +24,8 @@ runtimeclass ResizeGripperDragCompletedEventArgs
     Boolean Canceled{ get; };
 }
 
-// Policy-free drag handle. Owns no layout, no value and no bounds: it reports how far the user has
-// dragged, and the host decides what that means and clamps it.
+// Drag handle. Owns the gesture, its own presentation and the keyboard step; owns no value and no
+// bounds - it reports how far the user has dragged, and the host clamps that and applies it.
 //
 // Template contract (MIDL3 does not surface [TemplatePart], so this block is it):
 //   Required parts:      none. No GetTemplateChild call; a template may omit everything.
@@ -64,9 +64,9 @@ unsealed runtimeclass ResizeGripper : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Microsoft.UI.Xaml.Controls.Orientation DragOrientation{ get; set; };
 
-    // How far one arrow key travels. Step size is host policy, so it is settable rather than baked
-    // in; Shift multiplies it by 4.
-    [MUX_DEFAULT_VALUE("8.0")]
+    // How far one arrow key travels; Shift multiplies it. Step size is host policy, so it is
+    // settable rather than baked in.
+    [MUX_DEFAULT_VALUE("c_defaultKeyboardIncrement")]
     Double KeyboardIncrement{ get; set; };
 
     // Raise the same events a pointer drag would, so a keyboard step is indistinguishable from the
@@ -76,9 +76,9 @@ unsealed runtimeclass ResizeGripper : Microsoft.UI.Xaml.Controls.Control
     Boolean TryDrag(Double totalDelta);
     void EndDrag(Boolean canceled);
 
-    // One arrow key as a complete one-step drag. Callable because a host that keeps focus on its
-    // own element never lets the gripper see the key, and would otherwise have to re-derive the
-    // direction, the RTL mirror and the Shift multiplier. False when the key is not on this axis.
+    // One arrow key as a complete one-step drag. The gripper acts on its own keys when a host makes
+    // it focusable; a host that keeps focus on its own element calls this instead, so neither path
+    // re-derives the direction, the RTL mirror or the step. False when the key is not on this axis.
     Boolean TryKeyboardStep(Windows.System.VirtualKey key);
 
     event Windows.Foundation.TypedEventHandler<ResizeGripper, ResizeGripperDragDeltaEventArgs> DragDelta;

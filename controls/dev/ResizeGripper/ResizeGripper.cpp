@@ -15,12 +15,9 @@ namespace
     // Sub-pixel jitter should not reach the host. DIPs.
     constexpr double c_dragDeadband{ 0.5 };
 
-    // Shift takes a coarser step. Kept as a constant rather than a second property: KeyboardIncrement
-    // already lets a host choose the base step.
+    // Shift takes a coarser step. A multiplier rather than a second absolute size, so it holds
+    // whatever KeyboardIncrement a host chooses.
     constexpr double c_largeIncrementMultiplier{ 4.0 };
-
-    // Matches the KeyboardIncrement default; used when a host supplies an unusable one.
-    constexpr double c_defaultKeyboardIncrement{ 8.0 };
 
     bool IsShiftKeyDown()
     {
@@ -60,7 +57,6 @@ void ResizeGripper::OnApplyTemplate()
 {
     __super::OnApplyTemplate();
     m_templateApplied = true;
-    UpdateResizeCursor();
     UpdateOrientationVisualState();
     UpdateVisualState();
 }
@@ -69,7 +65,9 @@ void ResizeGripper::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerEntered(args);
     m_isPointerOver = true;
-    // A cursor assigned before the element is live does not stick (microsoft-ui-xaml#7062).
+    // Without this the shape never appears at all. It still only survives until the next pointer
+    // move - the framework's per-move walk does not pick ProtectedCursor back up
+    // (microsoft-ui-xaml#7062), and re-asserting it per move was measured to have no effect.
     UpdateResizeCursor();
     UpdateVisualState();
 }
@@ -93,17 +91,24 @@ void ResizeGripper::UpdateVisualState()
     winrt::VisualStateManager::GoToState(*this, state, true /* useTransitions */);
 }
 
+// The axis the drag is measured along. One definition: the pointer and keyboard paths deriving it
+// separately, with opposite-polarity tests, is where an axis bug hides.
+bool ResizeGripper::IsHorizontalDrag()
+{
+    return DragOrientation() != winrt::Orientation::Vertical;
+}
+
 void ResizeGripper::UpdateOrientationVisualState()
 {
     winrt::VisualStateManager::GoToState(*this,
-        (DragOrientation() == winrt::Orientation::Vertical) ? L"Vertical" : L"Horizontal",
+        IsHorizontalDrag() ? L"Horizontal" : L"Vertical",
         true /* useTransitions */);
 }
 
 // Owned by the primitive so every host gets the right shape, keyed off the direction of travel.
-// Two guards, both of which cause a visibly flickering cursor when missed:
-//  - nothing before OnApplyTemplate. Assigning ProtectedCursor that early does not stick reliably
-//    (microsoft-ui-xaml#7062), so the shape gets re-resolved while the pointer is already over us.
+// Two guards, both of which cause a visibly wrong or flickering cursor when missed:
+//  - nothing before OnApplyTemplate. Assigning ProtectedCursor that early does not stick
+//    (microsoft-ui-xaml#7062), which is why the shape is resolved on pointer entry instead.
 //  - never reassign the shape already in effect. Handing the input system a brand new
 //    InputSystemCursor makes the pointer visibly reset even when the shape is identical.
 void ResizeGripper::UpdateResizeCursor()
@@ -113,9 +118,9 @@ void ResizeGripper::UpdateResizeCursor()
         return;
     }
 
-    const auto shape = (DragOrientation() == winrt::Orientation::Vertical)
-        ? winrt::InputSystemCursorShape::SizeNorthSouth
-        : winrt::InputSystemCursorShape::SizeWestEast;
+    const auto shape = IsHorizontalDrag()
+        ? winrt::InputSystemCursorShape::SizeWestEast
+        : winrt::InputSystemCursorShape::SizeNorthSouth;
 
     if (auto const current = ProtectedCursor().try_as<winrt::InputSystemCursor>();
         current && current.CursorShape() == shape)
@@ -130,9 +135,9 @@ void ResizeGripper::UpdateResizeCursor()
 // ScrollViewer keep panning on the axis we do not resize.
 void ResizeGripper::UpdateManipulationMode()
 {
-    ManipulationMode((DragOrientation() == winrt::Orientation::Vertical)
-        ? winrt::ManipulationModes::TranslateY
-        : winrt::ManipulationModes::TranslateX);
+    ManipulationMode(IsHorizontalDrag()
+        ? winrt::ManipulationModes::TranslateX
+        : winrt::ManipulationModes::TranslateY);
 }
 
 void ResizeGripper::OnManipulationStarting(winrt::ManipulationStartingRoutedEventArgs const& args)
@@ -182,7 +187,7 @@ void ResizeGripper::OnManipulationDelta(winrt::ManipulationDeltaRoutedEventArgs 
 {
     __super::OnManipulationDelta(args);
 
-    const bool isHorizontal = DragOrientation() != winrt::Orientation::Vertical;
+    const bool isHorizontal = IsHorizontalDrag();
     const auto translation = args.Cumulative().Translation;
     double totalDelta = isHorizontal ? translation.X : translation.Y;
 
@@ -307,12 +312,12 @@ double ResizeGripper::EffectiveKeyboardIncrement()
     return std::max(raw, c_dragDeadband);
 }
 
-// One implementation of "an arrow key is a one-step drag", callable so a host that owns focus
-// itself (and therefore never lets the gripper see the key) still gets the same step size, Shift
-// multiplier and RTL mirror. Returns false when the key is not one this gripper acts on.
+// One implementation of "an arrow key is a one-step drag", used by OnKeyDown when the gripper has
+// focus and callable by a host that keeps focus on its own element. Returns false when the key is
+// not one this gripper acts on.
 bool ResizeGripper::TryKeyboardStep(winrt::VirtualKey key)
 {
-    const bool isHorizontal = DragOrientation() == winrt::Orientation::Horizontal;
+    const bool isHorizontal = IsHorizontalDrag();
 
     double direction = 0.0;
     switch (key)
@@ -365,4 +370,16 @@ bool ResizeGripper::TryKeyboardStep(winrt::VirtualKey key)
 winrt::AutomationPeer ResizeGripper::OnCreateAutomationPeer()
 {
     return winrt::make<ResizeGripperAutomationPeer>(*this);
+}
+
+// A host that opts into IsTabStop gets working arrow keys without wiring anything: the increment
+// lives here, so acting on the key does too.
+void ResizeGripper::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    __super::OnKeyDown(args);
+
+    if (!args.Handled() && TryKeyboardStep(args.Key()))
+    {
+        args.Handled(true);
+    }
 }
