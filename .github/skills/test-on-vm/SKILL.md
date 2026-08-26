@@ -67,8 +67,8 @@ files incrementally.
 
 | Option | Purpose |
 |--------|---------|
-| `-Platform` | `x86`, `x64`, or `arm64`; uses the build environment, then defaults to `x64` |
-| `-Configuration` | `chk` or `fre`; uses the build environment, then defaults to `chk` |
+| `-Platform` | `x86`, `x64`, or `arm64`; uses `$env:BUILDPLATFORM`, then defaults to `x64` |
+| `-Configuration` | `chk` or `fre`; uses `$env:_BuildType`, then defaults to `chk` |
 | `-FullCopy` | Copy the full refreshed payload instead of only changes |
 | `-SkipPayload` | Rare: deploy the existing payload without refreshing it |
 | `-SkipPrerun` | Skip `testmachine-prerun.cmd` |
