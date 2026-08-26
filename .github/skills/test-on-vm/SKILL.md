@@ -25,11 +25,12 @@ Also verify:
 - The caller is a local admin or a member of **Hyper-V Administrators**.
 - The command uses `initial_wait` of at least **180 seconds**.
 
-For missing Hyper-V permissions, run this once from an admin prompt, then log
-out and back in:
+For missing Hyper-V permissions, ask the user for confirmation before making
+this permanent host change. If they approve, run it once from an admin prompt,
+then have them log out and back in:
 
 ```powershell
-Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member $env:USERNAME
+Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member "$env:USERDOMAIN\$env:USERNAME"
 ```
 
 The first run prompts for VM credentials in a separate window and caches them
@@ -68,7 +69,6 @@ files incrementally.
 |--------|---------|
 | `-Platform` | `x86`, `x64`, or `arm64`; inferred when omitted |
 | `-Configuration` | `chk` or `fre`; inferred when omitted |
-| `-Mode` | Payload mode: `Auto`, `DevTestSuite`, `All`, or `PGO` |
 | `-FullCopy` | Copy the full refreshed payload instead of only changes |
 | `-SkipPayload` | Rare: deploy the existing payload without refreshing it |
 | `-SkipPrerun` | Skip `testmachine-prerun.cmd` |
@@ -92,15 +92,24 @@ The first prerun configures full crash dumps under `C:\dumps` on the VM, with
 up to three dumps per process. Pull one back through PowerShell Direct:
 
 ```powershell
-$cred = Import-Clixml "$env:USERPROFILE\.winui-test\vmcred-<vm>.xml"
-$session = New-PSSession -VMName <vm> -Credential $cred
-Invoke-Command -Session $session { Get-ChildItem C:\dumps\*.dmp }
-Copy-Item -FromSession $session -Path "C:\dumps\<dump>.dmp" -Destination "D:\dumps\"
-Remove-PSSession $session
+$vmName = "<vm>"
+$credentialKey = $vmName -replace '[^a-zA-Z0-9]', '_'
+$cred = Import-Clixml (Join-Path $env:USERPROFILE ".winui-test\vmcred-$credentialKey.xml")
+$destination = Join-Path $env:TEMP "WinUIDumps"
+New-Item -ItemType Directory -Path $destination -Force | Out-Null
+
+$session = New-PSSession -VMName $vmName -Credential $cred
+try {
+    Invoke-Command -Session $session { Get-ChildItem C:\dumps\*.dmp }
+    Copy-Item -FromSession $session -Path "C:\dumps\<dump>.dmp" -Destination $destination
+}
+finally {
+    Remove-PSSession $session
+}
 ```
 
 For a quick local analysis:
 
 ```powershell
-cdb -z "D:\dumps\<dump>.dmp" -c "!analyze -v; ~*k; q"
+cdb -z "$env:TEMP\WinUIDumps\<dump>.dmp" -c "!analyze -v; ~*k; q"
 ```
