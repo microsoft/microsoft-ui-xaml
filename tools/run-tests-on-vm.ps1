@@ -154,7 +154,7 @@ function Connect-TestVM {
         Write-Host ""
         Write-Host "  This permanently changes host group membership. Confirm with the user first." -ForegroundColor Yellow
         Write-Host "  Then run once from an admin prompt and log out and back in:" -ForegroundColor Yellow
-        Write-Host "    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member '$env:USERDOMAIN\$env:USERNAME'" -ForegroundColor White
+        Write-Host "    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member (whoami)" -ForegroundColor White
         exit 1
     }
 
