@@ -26,10 +26,14 @@ namespace
     // Row cells carry the same column Tag as header cells, so finding a tagged ancestor is not
     // enough: the walk must actually reach the header host, or a focused cell (an open editor,
     // most visibly) would resolve to a column and let arrow keys resize it.
+    // Returns the focused header cell in headerCell, so a caller that needs the cell does not have
+    // to scan the header band again to find what this walk already passed through.
     winrt::TableViewColumn ResolveFocusedHeaderColumn(
         const winrt::IInspectable& source,
-        const winrt::Panel& headerHost)
+        const winrt::Panel& headerHost,
+        winrt::FrameworkElement& headerCell)
     {
+        headerCell = nullptr;
         if (!headerHost)
         {
             return nullptr;
@@ -49,11 +53,16 @@ namespace
                 if (auto const element = current.try_as<winrt::FrameworkElement>())
                 {
                     candidate = element.Tag().try_as<winrt::TableViewColumn>();
+                    if (candidate)
+                    {
+                        headerCell = element;
+                    }
                 }
             }
             current = winrt::VisualTreeHelper::GetParent(current);
         }
 
+        headerCell = nullptr;
         return nullptr;
     }
 
@@ -153,13 +162,14 @@ bool TableView::TryHandleHeaderColumnResizeKey(const winrt::KeyRoutedEventArgs& 
         return false;
     }
 
-    auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get());
+    winrt::FrameworkElement headerCell{ nullptr };
+    auto const column = ResolveFocusedHeaderColumn(args.OriginalSource(), m_headerHost.get(), headerCell);
     if (!column || !column.CanResize())
     {
         return false;
     }
 
-    auto const gripper = FindResizeGripperForColumn(column);
+    auto const gripper = FindResizeGripperInCell(headerCell);
     if (!gripper)
     {
         return false;

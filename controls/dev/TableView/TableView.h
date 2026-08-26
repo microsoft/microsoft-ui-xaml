@@ -134,9 +134,11 @@ public:
     // The gripper owns the resize mechanics; this only positions it and forwards the pointer drag.
     void AppendResizeGripperVisual(
         const winrt::Grid& headerCell,
-        const winrt::TableViewColumn& column);
+        const winrt::TableViewColumn& column,
+        double gripperWidth,
+        const winrt::hstring& headerText);
 
-    winrt::ResizeGripper FindResizeGripperForColumn(const winrt::TableViewColumn& column) const;
+    winrt::ResizeGripper FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const;
 
     // Idempotent; safe from any pointer end-event, the gripper's Unloaded, or TableView's own.
     void CancelColumnResizeDrag();

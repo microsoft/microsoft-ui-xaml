@@ -1209,7 +1209,8 @@ void TableView::OnRowElementIndexChanged(
     RefreshRowSelectionState(row);
 }
 
-// One header-text extraction for the header cell's automation name and the gripper's Tag.
+// One header-text extraction per column, shared by the header cell's automation name and the
+// gripper's OwnerName.
 static winrt::hstring GetColumnHeaderText(const winrt::TableViewColumn& column)
 {
     if (auto const header = column.Header())
@@ -1246,6 +1247,14 @@ void TableView::RebuildHeaders()
     // Header cells share the density row min-height so the header band matches the body rows.
     const double cachedRowMinHeight = GetDensityRowMinHeight();
     const double cachedHeaderFontSize = GetHeaderFontSize();
+    // unbox_value_or, not unbox_value: the key is app-overridable and a non-double would throw out
+    // of RebuildHeaders; a non-positive or non-finite override would flow straight into Width().
+    double cachedResizeGripperWidth = winrt::unbox_value_or<double>(
+        LookupElementResource(*this, s_ResizeGripperWidthKey), c_resizeGripperWidthFallback);
+    if (!std::isfinite(cachedResizeGripperWidth) || cachedResizeGripperWidth <= 0.0)
+    {
+        cachedResizeGripperWidth = c_resizeGripperWidthFallback;
+    }
 
     if (auto columns = Columns())
     {
@@ -1268,9 +1277,10 @@ void TableView::RebuildHeaders()
             const bool headerIsResizable = CanUserResizeColumns() && column.CanResize();
             headerCell.IsTabStop(headerIsResizable);
             headerCell.UseSystemFocusVisuals(headerIsResizable);
-            if (auto const headerName = GetColumnHeaderText(column); !headerName.empty())
+            const winrt::hstring headerText = GetColumnHeaderText(column);
+            if (!headerText.empty())
             {
-                winrt::AutomationProperties::SetName(headerCell, headerName);
+                winrt::AutomationProperties::SetName(headerCell, headerText);
             }
             winrt::AutomationProperties::SetAccessibilityView(headerCell, winrt::AccessibilityView::Content);
             // Match the body row min-height so the header band and rows render at the same height.
@@ -1314,9 +1324,9 @@ void TableView::RebuildHeaders()
             headerCell.Tag(column);
 
             // After the grid line, so it wins the hit test on the shared edge.
-            if (CanUserResizeColumns() && column.CanResize())
+            if (headerIsResizable)
             {
-                AppendResizeGripperVisual(headerCell, column);
+                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText);
             }
 
             host.Children().Append(headerCell);
@@ -1483,19 +1493,25 @@ void TableView::OnHeaderBringIntoViewRequested(const winrt::BringIntoViewRequest
         offset = bounds.X + bounds.Width - viewport;
     }
 
+    // Clamped before the comparison: a negative offset would otherwise mark the event handled
+    // while the clamped scroll went nowhere.
+    offset = std::max(0.0, offset);
+
     if (std::abs(offset - current) >= 0.5)
     {
         // Handled only when we actually redirect. Marking it unconditionally also silenced
         // ancestor scrollers, so a TableView below the fold never scrolled into view on header
         // focus. The header scroller cannot scroll itself anyway (HorizontalScrollMode=Disabled).
         args.Handled(true);
-        bodyScroller.ChangeView(std::max(0.0, offset), nullptr, nullptr, true /* disableAnimation */);
+        bodyScroller.ChangeView(offset, nullptr, nullptr, true /* disableAnimation */);
     }
 }
 
 void TableView::AppendResizeGripperVisual(
     const winrt::Grid& headerCell,
-    const winrt::TableViewColumn& column)
+    const winrt::TableViewColumn& column,
+    double gripperWidth,
+    const winrt::hstring& headerText)
 {
     // A real gripper in the tree, so the pointer has something to hit before any drag starts.
     auto weakThis = get_weak();
@@ -1505,21 +1521,12 @@ void TableView::AppendResizeGripperVisual(
     // Pointer affordance only here: the header cell owns keyboard focus, and one tab stop per
     // column would sit between the user and the data.
     gripperVisual.IsTabStop(false);
-    double gripperWidth = winrt::unbox_value_or<double>(
-        LookupElementResource(*this, s_ResizeGripperWidthKey), c_resizeGripperWidthFallback);
-    // unbox_value_or, not unbox_value: the key is app-overridable, and a non-double would throw out
-    // of RebuildHeaders. A non-positive or non-finite override would flow straight into Width().
-    if (!std::isfinite(gripperWidth) || gripperWidth <= 0.0)
-    {
-        gripperWidth = c_resizeGripperWidthFallback;
-    }
     // XAML already mirrors HorizontalAlignment under RTL, so Right IS the logical-end edge -
     // selecting Left for RTL mirrors a second time and lands the gripper on the leading edge,
     // disagreeing with the header grid line, which uses Right unconditionally.
     gripperVisual.HorizontalAlignment(winrt::HorizontalAlignment::Right);
     gripperVisual.Width(gripperWidth);
     // The peer names itself from OwnerName, so N grippers in one header band are distinguishable.
-    const winrt::hstring headerText = GetColumnHeaderText(column);
     if (!headerText.empty())
     {
         gripperVisual.OwnerName(headerText);
@@ -1670,35 +1677,23 @@ void TableView::CancelColumnResizeDrag()
 }
 
 // The header cell is tagged with its column; the gripper is one of its children.
-winrt::ResizeGripper TableView::FindResizeGripperForColumn(const winrt::TableViewColumn& column) const
+// The gripper is one of the header cell's children; the caller already has the cell.
+winrt::ResizeGripper TableView::FindResizeGripperInCell(const winrt::FrameworkElement& headerCell) const
 {
-    auto const host = m_headerHost.get();
-    if (!host || !column)
+    auto const cell = headerCell.try_as<winrt::Panel>();
+    if (!cell)
     {
         return nullptr;
     }
 
-    auto const children = host.Children();
-    const uint32_t count = children.Size();
-    for (uint32_t i = 0; i < count; ++i)
+    auto const cellChildren = cell.Children();
+    const uint32_t cellCount = cellChildren.Size();
+    for (uint32_t j = 0; j < cellCount; ++j)
     {
-        auto const cell = children.GetAt(i).try_as<winrt::Panel>();
-        auto const cellElement = cell ? cell.try_as<winrt::FrameworkElement>() : nullptr;
-        if (!cellElement || cellElement.Tag().try_as<winrt::TableViewColumn>() != column)
+        if (auto const gripper = cellChildren.GetAt(j).try_as<winrt::ResizeGripper>())
         {
-            continue;
+            return gripper;
         }
-
-        auto const cellChildren = cell.Children();
-        const uint32_t cellCount = cellChildren.Size();
-        for (uint32_t j = 0; j < cellCount; ++j)
-        {
-            if (auto const gripper = cellChildren.GetAt(j).try_as<winrt::ResizeGripper>())
-            {
-                return gripper;
-            }
-        }
-        return nullptr;
     }
 
     return nullptr;
