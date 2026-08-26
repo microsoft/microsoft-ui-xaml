@@ -652,4 +652,97 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         RunOnUIThread([&]() { VERIFY_IS_FALSE(toggleSwitch->IsOn); });
     }
 
+    void ToggleSwitchIntegrationTests::KnobMaintainsMarginsFromTrackDuringDrag()
+    {
+        TestCleanupWrapper cleanup;
+        xaml_controls::ToggleSwitch^ toggleSwitch = nullptr;
+        xaml::FrameworkElement^ knob = nullptr;
+        xaml::FrameworkElement^ knobBounds = nullptr;
+
+        RunOnUIThread([&]()
+        {
+            toggleSwitch = ref new xaml_controls::ToggleSwitch();
+            toggleSwitch->IsOn = false;
+            TestServices::WindowHelper->WindowContent = toggleSwitch;
+        });
+        TestServices::WindowHelper->WaitForIdle();
+
+        RunOnUIThread([&]()
+        {
+            knob = TreeHelper::GetVisualChildByName(toggleSwitch, L"SwitchKnob");
+            knobBounds = TreeHelper::GetVisualChildByName(toggleSwitch, L"SwitchKnobBounds");
+            VERIFY_IS_NOT_NULL(knob);
+            VERIFY_IS_NOT_NULL(knobBounds);
+        });
+
+        auto dragAndVerifyMargin = [&](bool isOn, int dragDeltaX)
+        {
+            RunOnUIThread([&]()
+            {
+                toggleSwitch->IsOn = isOn;
+            });
+            TestServices::WindowHelper->WaitForIdle();
+
+            bool isMouseButtonDown = false;
+            TestCleanupWrapper releaseMouse([&]()
+            {
+                if (isMouseButtonDown)
+                {
+                    TestServices::InputHelper->MouseButtonUp(knob, 0, 0, MouseButton::Left);
+                    TestServices::WindowHelper->WaitForIdle();
+                }
+            });
+
+            TestServices::InputHelper->MouseButtonDown(knob, 0, 0, MouseButton::Left);
+            isMouseButtonDown = true;
+            TestServices::WindowHelper->WaitForIdle();
+
+            TestServices::InputHelper->MoveMouse(knob, dragDeltaX, 0);
+            TestServices::WindowHelper->WaitForIdle();
+
+            RunOnUIThread([&]()
+            {
+                VERIFY_IS_TRUE(ControlHelper::IsInVisualState(toggleSwitch, L"CommonStates", L"Pressed"));
+                VERIFY_IS_TRUE(ControlHelper::IsInVisualState(toggleSwitch, L"ToggleStates", L"Dragging"));
+
+                auto transform = safe_cast<xaml_media::TranslateTransform^>(knob->RenderTransform);
+                const double knobTranslation = transform->X;
+                const double knobWidth = knob->ActualWidth;
+                const double trackWidth = knobBounds->ActualWidth;
+
+                LOG_OUTPUT(
+                    L"IsOn: %d, knob translation: %f, knob width: %f, track width: %f",
+                    isOn,
+                    knobTranslation,
+                    knobWidth,
+                    trackWidth);
+
+                if (isOn)
+                {
+                    VERIFY_IS_GREATER_THAN(
+                        knobTranslation,
+                        0.0,
+                        L"Knob left edge should not touch the track boundary while dragging from On.");
+                }
+                else
+                {
+                    VERIFY_IS_LESS_THAN(
+                        knobTranslation + knobWidth,
+                        trackWidth,
+                        L"Knob right edge should not touch the track boundary while dragging from Off.");
+                }
+            });
+
+            TestServices::InputHelper->MouseButtonUp(knob, 0, 0, MouseButton::Left);
+            isMouseButtonDown = false;
+            TestServices::WindowHelper->WaitForIdle();
+        };
+
+        LOG_OUTPUT(L"Dragging from Off toward the right track boundary.");
+        dragAndVerifyMargin(false /*isOn*/, 30 /*dragDeltaX*/);
+
+        LOG_OUTPUT(L"Dragging from On toward the left track boundary.");
+        dragAndVerifyMargin(true /*isOn*/, -30 /*dragDeltaX*/);
+    }
+
 } } } } } } // Microsoft::UI::Xaml::Tests::Controls::ToggleSwitch

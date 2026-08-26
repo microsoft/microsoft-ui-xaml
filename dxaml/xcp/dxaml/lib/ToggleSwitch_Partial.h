@@ -128,6 +128,9 @@ namespace DirectUI
             _In_ xaml::ISizeChangedEventArgs *pArgs);
 
         _Check_return_ HRESULT
+        AdjustTranslationBoundsForDrag();
+
+        _Check_return_ HRESULT
         TapHandler(
             _In_ IInspectable *pSender,
             _In_ xaml_input::ITappedRoutedEventArgs *pArgs);
@@ -155,6 +158,10 @@ namespace DirectUI
         DOUBLE m_minKnobTranslation;
         
         DOUBLE m_maxKnobTranslation;
+
+        // Visual-only drag limits; -1 means no additional clamp.
+        DOUBLE m_dragVisualClampMax;
+        DOUBLE m_dragVisualClampMin;
 
         DOUBLE m_curtainTranslation;
         
