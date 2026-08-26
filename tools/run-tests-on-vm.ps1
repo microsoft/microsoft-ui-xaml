@@ -37,7 +37,7 @@ param(
     [switch]$SkipPayload,
 
     # CreateTestPayload mode. Most tests use DevTestSuite.
-    [ValidateSet("Auto", "DevTestSuite", "All", "PGO")]
+    [ValidateSet("Auto", "DevTestSuite")]
     [string]$Mode = "Auto",
 
     # Force a full copy instead of incremental
@@ -152,8 +152,9 @@ function Connect-TestVM {
     if (-not $isAdmin -and -not $inHyperVGroup) {
         Write-Host "Error: PS Direct requires local admin or 'Hyper-V Administrators' membership." -ForegroundColor Red
         Write-Host ""
-        Write-Host "  One-time fix (run once from an admin prompt, then log out and back in):" -ForegroundColor Yellow
-        Write-Host "    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member `$env:USERNAME" -ForegroundColor White
+        Write-Host "  This permanently changes host group membership. Confirm with the user first." -ForegroundColor Yellow
+        Write-Host "  Then run once from an admin prompt and log out and back in:" -ForegroundColor Yellow
+        Write-Host "    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member '$env:USERDOMAIN\$env:USERNAME'" -ForegroundColor White
         exit 1
     }
 
