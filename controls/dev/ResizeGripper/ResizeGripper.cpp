@@ -65,10 +65,6 @@ void ResizeGripper::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerEntered(args);
     m_isPointerOver = true;
-    // Without this the shape never appears at all. It still only survives until the next pointer
-    // move - the framework's per-move walk does not pick ProtectedCursor back up
-    // (microsoft-ui-xaml#7062), and re-asserting it per move was measured to have no effect.
-    UpdateResizeCursor();
     UpdateVisualState();
 }
 
@@ -105,6 +101,14 @@ void ResizeGripper::UpdateOrientationVisualState()
         true /* useTransitions */);
 }
 
+// PARKED - deliberately not called. The framework drops ProtectedCursor on the next pointer move,
+// so setting it made the resize shape appear as the pointer arrived and revert immediately, which
+// is a flicker rather than an affordance. Measured: dwell on a divider reads an arrow 40 samples
+// out of 40; re-asserting per pointer move changed nothing. Tracked as ADO 63771830 / related to
+// microsoft-ui-xaml#7062. The shape logic below is correct and stays put: restore the calls in
+// OnPointerEntered and in the DragOrientation branch of OnPropertyChanged once the framework holds
+// the cursor. Until then the hover separator carries the affordance.
+//
 // Owned by the primitive so every host gets the right shape, keyed off the direction of travel.
 // Two guards, both of which cause a visibly wrong or flickering cursor when missed:
 //  - nothing before OnApplyTemplate. Assigning ProtectedCursor that early does not stick
@@ -292,7 +296,6 @@ void ResizeGripper::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 {
     if (args.Property() == s_DragOrientationProperty)
     {
-        UpdateResizeCursor();
         UpdateOrientationVisualState();
         UpdateManipulationMode();
     }
