@@ -12,7 +12,7 @@
 // This bloats the file size of MUXC.dll by 50%, so we turn this C++/WinRT feature off.
 #define WINRT_NO_SOURCE_LOCATION
 
-#pragma warning(disable : 6221) // Disable implicit cast warning for C++/WinRT headers (tracked by Bug 17528784: C++/WinRT headers trigger C6221 comparing e.code() to int-typed things)
+#pragma warning(disable : 6221) // C++/WinRT headers trigger C6221 comparing e.code() to int-typed things.
 
 // Disable factory caching in CppWinRT as the global COM pointers that are released during dll/process
 // unload are not safe. Setting this makes CppWinRT just call get_activation_factory directly every time.
