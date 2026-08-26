@@ -56,19 +56,9 @@ std::atomic<DllGetActivationFactory_t> s_muxGetFactory{ nullptr };
 std::atomic<bool> s_muxFactoryResolved{ false };
 std::atomic<bool> s_bypassTraceEmitted{ false };
 
-// Namespace prefixes (each ending in '.') that the Tabular DLL PRODUCES *outside* its own
-// Microsoft.UI.Xaml.Controls.Tabular.* subtree. Every runtimeclass compiled into this DLL --
-// see controls\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.idl and the control IDLs merged
-// after it per controls\Tabular.ProjectImports.targets -- lives either under
-// Microsoft.UI.Xaml.Controls.Tabular.* (already excluded below) or under one of these prefixes.
-// This is the ONE place to add a prefix the next time a Tabular control lands a runtimeclass
-// outside that subtree (e.g. a future Automation.Peers/Data carve-out).
-//
-// Matching requires the trailing '.' so a prefix can only match a full namespace component --
-// e.g. "Microsoft.UI.Xaml.XamlTypeInfo." can never accidentally match an unrelated sibling
-// namespace such as "Microsoft.UI.Xaml.XamlTypeInfoSomethingElse.".
+// Tabular-owned namespaces outside its Microsoft.UI.Xaml.Controls.Tabular.* subtree.
+// Prefixes end in '.' so they only match a whole namespace component.
 constexpr std::array<std::wstring_view, 1> kTabularOwnedNamespacesOutsideSubtree{
-    // XamlControlsTabularXamlMetaDataProvider (Microsoft.UI.Xaml.Controls.Tabular.idl, MU_X_XTI_NAMESPACE)
     L"Microsoft.UI.Xaml.XamlTypeInfo.",
 };
 
@@ -176,12 +166,8 @@ int32_t __stdcall MuxcActivationHandler(
             [&name](std::wstring_view prefix) { return name.starts_with(prefix); }))
     {
         // Route base framework types (Microsoft.UI.Xaml.*) to the in-proc framework dll (Microsoft.ui.xaml.dll);
-        // the Tabular subtree (Microsoft.UI.Xaml.Controls.Tabular.*) and this Tabular DLL's other own
-        // namespaces (kTabularOwnedNamespacesOutsideSubtree, above) fall through here instead, so they
-        // resolve locally via RoGetActivationFactory / this DLL's own factory below. MUXC controls
-        // (Microsoft.UI.Xaml.Controls.*) live in the controls dll, not the framework dll, so they don't
-        // resolve here either and fall through the same way. Add new Tabular-owned, out-of-subtree
-        // namespaces to kTabularOwnedNamespacesOutsideSubtree, not here.
+        // the Tabular subtree falls through here. MUXC controls (Microsoft.UI.Xaml.Controls.*) live in the controls
+        // dll, not the framework dll, so they don't resolve here and fall through to RoGetActivationFactory below.
         auto muxGetFactory = GetMuxActivationFactoryFn();
         if (muxGetFactory)
         {
