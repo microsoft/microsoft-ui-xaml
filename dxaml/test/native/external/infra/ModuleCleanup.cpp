@@ -4,11 +4,13 @@
 #include <RpcServer.h>
 #include <ResourcesPriHelper.h>
 #include <WexTestClass.h>
+#include <RuntimeParameters.h>
 
 #include <crtdbg.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <Windows.h>
+#include <roapi.h>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -112,6 +114,51 @@ bool ModuleSetup()
     // have overridden our CRT report settings.
     ApplyCrtSuppression();
 #endif
+
+    // SwitcherMode test parameter — when /p:SwitcherMode=true is passed on the te.exe
+    // command line, enable the lifted system-composition switcher process-wide before
+    // any Compositor object is created. Must run before RpcServerStart so any
+    // Compositor created on the test server side picks up the switched backend.
+    //
+    // This is the single opt-in point used by the entire 1,416-test switcher-coverage
+    // run defined in docs/SwitcherTestCoverageScope.md. Mirrors the per-class
+    // CompositionEngine::TrySetProcessEngine(System) call already present in
+    // SwitcherTests::ClassSetup; centralizing it here lets any test in any DLL that
+    // links this shared infra opt in via the same flag.
+    //
+    // Hard-fail policy: if the caller explicitly requested SwitcherMode=true but
+    // switcher cannot engage (API missing, OS feature flag off, etc.), fail the
+    // whole module loudly rather than silently running tests in baseline mode and
+    // producing a false-positive "switcher coverage" green run.
+    WEX::Common::String switcherModeParam;
+    if (SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"SwitcherMode", switcherModeParam))
+        && (switcherModeParam.CompareNoCase(L"true") == 0 || switcherModeParam == L"1"))
+    {
+        try
+        {
+            // UAP/packaged hosting may enter ModuleSetup before COM/WinRT is initialized on this
+            // thread, making the WinRT CompositionEngine activation fail with CO_E_NOTINITIALIZED
+            // (0x800401F0). Ensure an MTA apartment; leave it up for the host (WPF already inits).
+            ::RoInitialize(RO_INIT_MULTITHREADED);
+
+            bool ok = Microsoft::UI::Composition::CompositionEngine::TrySetProcessEngine(
+                Microsoft::UI::Composition::CompositionEngineType::System);
+
+            if (!ok)
+            {
+                LOG_OUTPUT(L"FAIL: SwitcherMode=true requested but TrySetProcessEngine(System) did not engage (ok=%d)",
+                    static_cast<int>(ok));
+                return false;
+            }
+            LOG_OUTPUT(L"SwitcherMode=true: switcher engaged process-wide via TrySetProcessEngine(System)");
+        }
+        catch (Platform::Exception^ ex)
+        {
+            LOG_OUTPUT(L"FAIL: SwitcherMode=true requested but CompositionEngine API not available (hr=0x%08x)",
+                ex->HResult);
+            return false;
+        }
+    }
 
     VERIFY_SUCCEEDED(ConfigureResourcesPri(false /* configureManaged */));
     VERIFY_SUCCEEDED(RpcServerStart());

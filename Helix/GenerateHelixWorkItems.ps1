@@ -27,6 +27,11 @@ Param(
 
     [bool]$IsValidateWindowsAppSDKRun = $false,
 
+    # When true, engages the lifted system-composition switcher for this pass by passing
+    # /p:SwitcherMode=true to te.exe. This both flips the backend in ModuleSetup and makes the
+    # test infra prefer .master.switcher.<ext> baselines (falling back to .master.<ext>).
+    [bool]$SwitcherMode = $false,
+
     [string]$TaefExePath
 )
 
@@ -74,6 +79,10 @@ elseif($HostingMode -eq "Win32Explicit")
 
 if ($HostingMode) {
     $taefExtraParameters = "/p:HostingMode=$HostingMode"
+}
+
+if ($SwitcherMode) {
+    $taefExtraParameters = "$taefExtraParameters /p:SwitcherMode=true".Trim()
 }
 
 $TestBinaryDirectoryPath = $TestBinaryPath

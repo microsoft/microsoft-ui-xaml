@@ -15,6 +15,7 @@ param (
   [switch]$Stat,
   [switch]$forceHostingMode,
   [string]$fromFile,
+  [switch]$SwitcherInputTests,
   [switch]$SkipPackageUninstall
 )
 
@@ -35,6 +36,7 @@ if (!$TestQuery)
       -TerminateOnFirstFailure: run tests until the first failure is encountered.
       -Stat: display statistics about the test suite from your query rather than run them.
       -FromFile:<file> : select test names from the given file, rather than the main testQuery param (which is ignored)
+      -SwitcherInputTests: select the input tests that are ready to run in switcher mode.
       -SkipPackageUninstall: skip uninstalling previous versions of sample apps. This is useful if using dll redirection since uninstalling the app deletes the entire app folder.
 
     This script passes through unrecognized arguments to TAEF.  See `"te.exe /!`" for TAEF parameters.
@@ -90,6 +92,11 @@ $TestDir = $PSScriptRoot
 Push-Location $TestDir
 Set-Location $TestDir
 
+if ($SwitcherInputTests)
+{
+    $fromFile = Join-Path $PSScriptRoot "SwitcherInputTests.txt"
+}
+
 if (!$SkipPackageUninstall)
 {
     # Note - Make sure that this list is kept in sync with controls\test\testinfra\MUXTestInfra\TestAppInstallHelper.cs
@@ -98,10 +105,6 @@ if (!$SkipPackageUninstall)
     Get-AppxPackage "WinUICsDesktopSampleApp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
     Get-AppxPackage "Microsoft.WinUI3ControlsGallery.Debug" | Remove-AppxPackage -ErrorAction SilentlyContinue;
     Get-AppxPackage "Microsoft.WinUI3ControlsGallery" | Remove-AppxPackage -ErrorAction SilentlyContinue;
-    Get-AppxPackage "DisableXamlGeneratedMainCs" | Remove-AppxPackage -ErrorAction SilentlyContinue;
-    Get-AppxPackage "DisableXamlGeneratedMainNoCtorCs" | Remove-AppxPackage -ErrorAction SilentlyContinue;
-    Get-AppxPackage "DisableXamlGeneratedMainCpp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
-    Get-AppxPackage "DisableXamlGeneratedMainNoCtorCpp" | Remove-AppxPackage -ErrorAction SilentlyContinue;
 }
 
 [string[]]$argsEx = $null
