@@ -30,7 +30,7 @@ this permanent host change. If they approve, run it once from an admin prompt,
 then have them log out and back in:
 
 ```powershell
-Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member "$env:USERDOMAIN\$env:USERNAME"
+Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member (whoami)
 ```
 
 The first run prompts for VM credentials in a separate window and caches them
