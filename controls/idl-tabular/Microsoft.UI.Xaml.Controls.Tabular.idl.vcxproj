@@ -65,6 +65,10 @@
   <ItemGroup>
     <ProjectReference Include="$(MUXProjectRoot)dxaml\xcp\dxaml\idl\winrt\controls\Microsoft.ui.xaml.controls.controls.vcxproj" />
     <ProjectReference Include="$(MUXProjectRoot)dxaml\xcp\dxaml\idl\winrt\core\Microsoft.ui.xaml.coretypes.vcxproj" />
+    <!-- Ordering only: MIDL references MUXC's unmerged winmd from dev\dll (see
+         Tabular.ProjectImports.targets) for the CustomAttributes types this IDL no longer redeclares.
+         MUXC's DLL project emits it and references only Lightup, so this is not a cycle. -->
+    <ProjectReference Include="$(MuxControlsPath)\dev\dll\Microsoft.UI.Xaml.Controls.vcxproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <PropertyGroup>
