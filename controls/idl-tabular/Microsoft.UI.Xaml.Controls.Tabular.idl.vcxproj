@@ -10,10 +10,11 @@
   project that runs XamlCompile against the merged public winmd cannot be the same project that produces
   the pre-merge winmd MergedWinMD depends on.
 
-  This project intentionally shares controls\idl\ with Microsoft.UI.Xaml.Controls.idl.vcxproj (MSBuild
-  warns MSB8028 about the shared intermediate directory); all generated file names differ (this project's
-  IDL/winmd are suffixed ".Tabular"), so the shared directory is benign, and it keeps Tabular's winmd at
-  the productmetadata.props path other projects already expect.
+  This project has its own intermediate directory (see IntDir below) so its PRI layout files, which
+  have fixed names, cannot race the MUXC idl project's. If MSBuild reports MSB8028 claiming this
+  project shares controls\idl\, that is stale output: .tlog and FileListAbsolute.txt files left in
+  BuildOutput\obj\<flavor>\controls\idl\ by builds from before this project existed. Delete the
+  *Tabular* entries under that directory and the warning goes away; IntDir itself is correct.
 -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
