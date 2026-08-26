@@ -4,6 +4,7 @@ parameters:
   runTestJobName: 'RunStaticTests'
   dependsOn: ''
   MUXFinalRelease: false
+  windowsAppSdkVersion: 'latest'
 
 jobs:
 - job: ${{ parameters.runTestJobName }}
@@ -18,6 +19,10 @@ jobs:
     ob_outputDirectory: '$(Build.SourcesDirectory)\out'
     ob_sdl_codeSignValidation_excludes: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
     ob_sdl_prefast_enabled: false   # this job does no native build
+    ${{ if ne(parameters.windowsAppSdkVersion, 'latest') }}:
+      windowsAppSdkVersionArgument: '-Version ${{ parameters.windowsAppSdkVersion }}'
+    ${{ else }}:
+      windowsAppSdkVersionArgument: ''
 
   steps:
   # This is a temporarily workaround to avoid getting non-fatal "folder C:\__t\NativeCompilerPrefast not found"
@@ -38,12 +43,12 @@ jobs:
 
   # In this pipeline configuration, 'NuGetCommand' is ambiguous so the specific task guid must be used instead
   # See known NuGet task issue notes.
-  # The pinned public release is installed into a temp directory to ensure it isn't used elsewhere for a build.
+  # Install the latest public release by default, or the version supplied by the caller.
   - task: NuGetCommand@2
-    displayName: 'NuGet install Microsoft.WindowsAppSDK 2.4.0'
+    displayName: 'NuGet install Microsoft.WindowsAppSDK'
     inputs:
       command: 'custom'
-      arguments: 'install Microsoft.WindowsAppSDK -Version 2.4.0 -DependencyVersion Lowest -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config -NonInteractive'
+      arguments: 'install Microsoft.WindowsAppSDK $(windowsAppSdkVersionArgument) -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config -NonInteractive'
 
   - task: NuGetCommand@2
     displayName: 'NuGet install WinMDVersionVerifyLcr 1.0.2'
