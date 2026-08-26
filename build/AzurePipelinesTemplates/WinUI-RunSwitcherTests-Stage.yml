@@ -1,0 +1,115 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# Runs the composition switcher tests on a ge_current lab VM under /p:SwitcherMode=true.
+# Self-contained (modeled on WinUI-PGO-Train-Stage.yml, which uses the same ge_current pool) so
+# it does not touch the shared per-OS RunTests matrix.
+#
+# First run targets the two engagement certifiers ("*SwitcherTests*") to prove the switcher
+# engages end-to-end in the pipeline. To run the full master-backed suite, change testSelector
+# to:  "*" -TestsWithMasterFilesOnly   (keep /p:SwitcherMode=true so switcher masters are selected).
+parameters:
+  - name: testSelector
+    type: string
+    default: '*SwitcherTests*'
+
+stages:
+- stage: RunSwitcherTests
+  displayName: Run Switcher Tests (ge_current)
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - job: RunSwitcherTests_x64chk
+    pool:
+      type: windows
+      isCustom: true
+      name: WinDevPool-Test
+      demands: ImageOverride -equals ge_current-vhdx_enterprise
+    timeoutInMinutes: 180
+    variables:
+      buildPlatform: 'x64'
+      normalizedConfiguration: 'chk'
+      buildFolderName: x64chk
+      incomingArtifactsPath: $(Build.ArtifactStagingDirectory)\incoming
+      testPayloadDir: $(Build.SourcesDirectory)\TestPayload
+      testPayloadDirInner: $(testPayloadDir)\x64chk
+      ob_outputDirectory: c:\uploadroot
+      ob_artifactBaseName: 'switcher_x64chk'
+      ob_sdl_binskim_enabled: false
+
+    steps:
+    - script: |
+        reg query "HKLM\Software\Microsoft\Windows NT\CurrentVersion"
+      displayName: Display OS version info
+
+    - task: NuGetAuthenticate@1
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore Lifted XAML dependencies'
+      inputs:
+        command: 'custom'
+        arguments: 'restore packages.config -ConfigFile nuget.config -PackagesDirectory $(Build.SourcesDirectory)\packages'
+        includeNuGetOrg: false
+
+    - template: WinUI-DownloadPipelineArtifacts-Steps.yml
+      parameters:
+        enableUseOutputFromPreviousBuild: true
+        artifactName: drop_x64chk
+        targetPath: $(incomingArtifactsPath)
+
+    - task: powershell@2
+      displayName: Prepare test payload
+      inputs:
+        targetType: filePath
+        filePath: test\CreateTestPayload.ps1
+        arguments: -BinSourceRoot $(incomingArtifactsPath) -Platform x64 -Configuration chk -Mode DevTestSuite -ShowPayload -SkipSymbols
+
+    # Force the lifted system-composition switcher ON for this .exe-less run. On a ge_current image
+    # the velocity feature ships enabled-by-default; this regkey (ForceOn) satisfies the support
+    # gate deterministically. No reboot: the key is read at runtime by dcompi.
+    - powershell: |
+        reg add "HKLM\Software\Microsoft\WinUI\RenderingEngine\Switcher" /v GlobalOverride /t REG_DWORD /d 1 /f /reg:64
+        reg add "HKLM\Software\Microsoft\WinUI\RenderingEngine\Switcher" /v GlobalOverride /t REG_DWORD /d 1 /f /reg:32
+      displayName: 'Switcher: set GlobalOverride regkey'
+
+    - task: powershell@2
+      displayName: Run Switcher Tests (WPF)
+      timeoutInMinutes: 120
+      inputs:
+        targetType: inline
+        workingDirectory: $(testPayloadDirInner)
+        script: |
+          .\runtests.cmd "${{ parameters.testSelector }}" -HostingMode:WPF /p:SwitcherMode=true
+          exit $LASTEXITCODE
+
+    - task: PublishTestResults@2
+      condition: always()
+      inputs:
+        testResultsFormat: xUnit
+        testResultsFiles: 'te.wtl;testResults-*.xml'
+        searchFolder: $(testPayloadDirInner)
+        mergeTestResults: true
+        failTaskOnFailedTests: true
+        testRunTitle: 'SwitcherTests x64chk'
+
+    # Publish the generated .save.xml trees + diffs/screenshots so switcher baselines can be
+    # captured from this run (they are intentionally NOT committed; see PR description).
+    - task: CopyFiles@2
+      condition: always()
+      displayName: Collect generated trees for baselining
+      inputs:
+        sourceFolder: '$(USERPROFILE)\Pictures\XamlTAEFOutput'
+        contents: |
+          **\*.save.xml
+          **\*.out.xml
+          **\*.png
+          **\*.jpg
+        targetFolder: $(ob_outputDirectory)\SwitcherBaselining
+        ignoreMakeDirErrors: true
+
+    - task: PublishPipelineArtifact@1
+      condition: always()
+      displayName: Publish switcher output for baselining
+      inputs:
+        targetPath: $(ob_outputDirectory)
+        artifact: '$(ob_artifactBaseName)'
