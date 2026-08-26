@@ -15,9 +15,8 @@
          it is set on, so the themed Background must live on the child ThemeRoot. -->
     <Grid x:Name="RootGrid">
         <Grid.Resources>
-            <!-- x:Bind compiles the binding against Person, so no runtime type info is needed.
-                 Classic {Binding} cannot be used here: the XAML compiler only emits IXamlType for
-                 types it sees in markup, and Person is constructed from code. -->
+            <!-- x:Bind, not {Binding}: C++/WinRT needs an IXamlType, which the XAML compiler emits
+                 only for types seen in markup. See README.md. -->
             <DataTemplate x:Key="NameCell" x:DataType="local:Person">
                 <TextBlock Text="{x:Bind Name}" Margin="8,4" VerticalAlignment="Center" />
             </DataTemplate>
