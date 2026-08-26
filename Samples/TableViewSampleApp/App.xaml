@@ -8,11 +8,9 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- The dll's themeresources are not deployed to consuming apps, so ship + merge
-                     them directly. Required for the app-compiled split-binary generic.xaml to
-                     resolve its ThemeResource keys. -->
-                <ResourceDictionary Source="ms-appx:///TabularSurfaces_themeresources.xaml" />
-                <ResourceDictionary Source="ms-appx:///TableView_themeresources.xaml" />
+                <!-- TableView's theme resources ship in the package; merge the control's own
+                     dictionary to bring its brushes and metrics into scope. -->
+                <TabularControlsResources xmlns="using:Microsoft.UI.Xaml.Controls.Tabular" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- TemplateColumn cell: a progress-bar visual bound to Score. -->
