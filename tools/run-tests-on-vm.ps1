@@ -152,8 +152,7 @@ function Connect-TestVM {
     if (-not $isAdmin -and -not $inHyperVGroup) {
         Write-Host "Error: PS Direct requires local admin or 'Hyper-V Administrators' membership." -ForegroundColor Red
         Write-Host ""
-        Write-Host "  This permanently changes host group membership. Confirm with the user first." -ForegroundColor Yellow
-        Write-Host "  Then run once from an admin prompt and log out and back in:" -ForegroundColor Yellow
+        Write-Host "  One-time fix (run once from an admin prompt, then log out and back in):" -ForegroundColor Yellow
         Write-Host "    Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member (whoami)" -ForegroundColor White
         exit 1
     }
