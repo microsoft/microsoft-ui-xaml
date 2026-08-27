@@ -325,6 +325,28 @@ Pilot issue links and observed results will be added here after the workflows ha
 | Feature proposal | [Fork #35](https://github.com/niels9001/microsoft-ui-xaml/issues/35#issuecomment-5439088490) | Avoid bug-only reproduction guidance. | Classified the issue as a feature proposal and did not request bug reproduction information. |
 | Legacy GenAI action | [Actions run](https://github.com/niels9001/microsoft-ui-xaml/actions/runs/33071662766) | Compare model judgments with deterministic retrieval. | Model calls returned HTTP 410 during a retirement brownout, but the action still concluded successfully with no duplicates. |
 
+### Pilot screenshots
+
+The screenshots below are from the copied issues in the public fork and show the actual GitHub Actions comments.
+
+#### Exact-title duplicate cluster
+
+[Open the pilot comment on fork issue #4](https://github.com/niels9001/microsoft-ui-xaml/issues/4#issuecomment-5439086935).
+
+![GitHub Actions comment listing three high-confidence exact-title duplicate candidates](https://github.com/user-attachments/assets/50db1f4e-39f3-4592-a873-da939f7a483c)
+
+#### Incomplete bug form
+
+[Open the pilot comment on fork issue #5](https://github.com/niels9001/microsoft-ui-xaml/issues/5#issuecomment-5439087067).
+
+![GitHub Actions comment identifying an incomplete expected behavior field](https://github.com/user-attachments/assets/dc58b81e-9732-4c58-8722-79c931bc859c)
+
+#### Feature proposal
+
+[Open the pilot comment on fork issue #35](https://github.com/niels9001/microsoft-ui-xaml/issues/35#issuecomment-5439088490).
+
+![GitHub Actions comment recognizing a feature proposal and avoiding bug reproduction guidance](https://github.com/user-attachments/assets/1269f557-e031-42ac-8476-158d7cea6ccc)
+
 ## Evaluation
 
 The pilot records the following for each issue:
