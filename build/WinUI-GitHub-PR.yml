@@ -1,10 +1,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-# GitHub-facing wrapper for Azure Pipelines PR validation.
-#
-# This file is intentionally separate from the internal Azure Repos PR pipeline
-# so the existing ADO PR validation path can remain unchanged.
+# Temporary validation pipeline proving that a GitHub-owned template can use
+# WinUIInternalFeedUri without importing a template from @WinUIInternal.
 
 trigger: none
 
@@ -17,50 +15,19 @@ pr:
     - feature/*
   drafts: true
 
-name: WinUI-GitHub-PR_$(Date:yyyyMMdd)$(Rev:.r)
-
-parameters:
-- name: runFullValidation
-  displayName: "Run full WinUI PR validation stages"
-  type: boolean
-  default: true
-- name: MUXFinalRelease
-  type: boolean
-  default: false
-- name: runArm64Tests
-  displayName: "Enable running tests on arm64"
-  type: boolean
-  default: true
-- name: runStaticAnalysis
-  displayName: "Run Static Analysis (e.g., PREFast, APIScan)"
-  type: boolean
-  default: false
+name: WinUI-GitHub-FeedVariableValidation_$(Date:yyyyMMdd)$(Rev:.r)
 
 variables:
-- template: AzurePipelinesTemplates\WindowsAppSDK-Versions.yml@WindowsAppSDKVersionConfig
-- template: build\AzurePipelinesTemplates\WinUI-BuildVariables.yml@WinUIInternal
-- group: WinUI-Variable-Library
+- group: WinUI-InternalFeed
 - name: WindowsContainerImage
   value: 'onebranch.azurecr.io/windows/ltsc2022/vse2022:latest'
 
 resources:
   repositories:
-    - repository: templates
-      type: git
-      name: OneBranch.Pipelines/GovernedTemplates
-      ref: refs/heads/main
-    - repository: WinUIInternal
-      type: git
-      name: WinUI/microsoft-ui-xaml-lift
-      ref: refs/heads/main
-    - repository: WindowsAppSDKConfig
-      type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
-    - repository: WindowsAppSDKVersionConfig
-      type: git
-      name: ProjectReunion/WindowsAppSDKConfig
-      ref: refs/heads/main
+  - repository: templates
+    type: git
+    name: OneBranch.Pipelines/GovernedTemplates
+    ref: refs/heads/main
 
 extends:
   template: v2/Microsoft.NonOfficial.yml@templates
@@ -73,115 +40,60 @@ extends:
     platform:
       name: 'windows_undocked'
     git:
-      # Recursively check out submodules so the public github.com/microsoft/WinUI-Gallery
-      # submodule (Samples/WinUIGallery) is available for GitHub PR sample-build validation.
-      submodules: recursive
+      submodules: false
     globalsdl:
       tsa:
         enabled: false
       enableXFGCheck: false
       codeql:
         tsandjs:
-          enabled: true
+          enabled: false
         python:
           enabled: false
         psscriptanalyzer:
-          enable: true
+          enable: false
       prefast:
-        ${{ if eq(parameters.runStaticAnalysis, 'true') }}:
-          enabled: true
-        ${{ else }}:
-          enabled: false
-        break: true
+        enabled: false
       apiscan:
         enabled: false
-        break: false
       binskim:
-        enabled: true
-        analyzeTargetGlob: $(BinskimExclusion)
-        break: true
+        enabled: false
 
     stages:
-    - stage: ValidateGitHubPrContext
-      displayName: Validate GitHub PR context
+    - stage: ValidateInternalFeedVariable
+      displayName: Validate internal feed variable
+      condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
       jobs:
-      - job: ValidateGitHubPrContext
-        displayName: Validate GitHub PR context
+      - job: DownloadPrivatePackage
+        displayName: Download private package
         pool:
           type: windows
         variables:
+          packagesDir: '$(Agent.TempDirectory)\WinUI-FeedVariableValidation\packages'
           ob_outputDirectory: '$(Build.SourcesDirectory)\out'
         steps:
-        - checkout: self
-          submodules: false
-          fetchDepth: 1
-          fetchTags: false
+        - checkout: none
+
+        - task: NuGetAuthenticate@1
+          displayName: Authenticate to Azure Artifacts
+
+        - task: NuGetCommand@2
+          displayName: Download WinMDVersionVerifyLcr 1.0.2 through WinUIInternalFeedUri
+          inputs:
+            command: custom
+            arguments: 'install WinMDVersionVerifyLcr -Version 1.0.2 -OutputDirectory "$(packagesDir)" -Source "$(WinUIInternalFeedUri)" -NoCache -DirectDownload -NonInteractive'
 
         - task: PowerShell@2
-          displayName: Validate GitHub PR context
+          displayName: Verify package download
           inputs:
             targetType: inline
+            pwsh: true
             script: |
-              $ErrorActionPreference = 'Stop'
+              $verifier = Get-ChildItem -Path '$(packagesDir)' -Filter WinMDVersionVerifyLcr.exe -Recurse |
+                Select-Object -First 1
 
-              Write-Host "Build.Reason=$env:BUILD_REASON"
-              Write-Host "Build.Repository.Provider=$env:BUILD_REPOSITORY_PROVIDER"
-              Write-Host "Build.Repository.Name=$env:BUILD_REPOSITORY_NAME"
-              Write-Host "Build.SourceBranch=$env:BUILD_SOURCEBRANCH"
-              Write-Host "System.PullRequest.TargetBranch=$env:SYSTEM_PULLREQUEST_TARGETBRANCH"
-
-              if ($env:BUILD_REPOSITORY_PROVIDER -notin @('GitHub', 'GitHubEnterprise')) {
-                throw "Expected a GitHub-backed Azure Pipelines run, but Build.Repository.Provider was '$env:BUILD_REPOSITORY_PROVIDER'."
+              if (-not $verifier) {
+                throw "WinMDVersionVerifyLcr.exe was not found under $(packagesDir)."
               }
 
-              if ($env:BUILD_REASON -eq 'PullRequest') {
-                $targetBranch = $env:SYSTEM_PULLREQUEST_TARGETBRANCH
-                $allowedExactTargetBranches = @('main', 'winui3/main', 'refs/heads/main', 'refs/heads/winui3/main')
-                $isAllowedFeatureBranch = $targetBranch -like 'feature/*' -or $targetBranch -like 'refs/heads/feature/*'
-                if (($allowedExactTargetBranches -notcontains $targetBranch) -and -not $isAllowedFeatureBranch) {
-                  throw "Unexpected GitHub PR target branch '$env:SYSTEM_PULLREQUEST_TARGETBRANCH'."
-                }
-              }
-
-              Write-Host "GitHub PR context validation completed."
-
-    - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: GitHubPR
-          buildScenarioApps: true
-          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-          pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
-          buildProductOnly: false
-          dependsOn: ValidateGitHubPrContext
-
-    - ${{ if and(eq(parameters.runFullValidation, true), eq(parameters.MUXFinalRelease, false)) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-BuildWinUI-Stage.yml@WinUIInternal
-        parameters:
-          stageName: Build_MUXFinalRelease
-          pipelineKind: PR-2
-          buildScenarioApps: false
-          MUXFinalRelease: true
-          runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-          pgoBuildModeMSBuildArg: '/p:PGOBuildMode=Off'
-          buildProductOnly: true
-          dependsOn: ValidateGitHubPrContext
-
-    - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunTests-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: PR
-          # Test results are published but do not gate the pipeline yet.
-          failOnTestFailure: false
-
-    - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
-        parameters:
-          MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
-
-    - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal
-        parameters:
-          pipelineKind: GitHubPR
-          dependsOn: Build
+              Write-Host "Successfully downloaded WinMDVersionVerifyLcr 1.0.2 from the internal feed."
