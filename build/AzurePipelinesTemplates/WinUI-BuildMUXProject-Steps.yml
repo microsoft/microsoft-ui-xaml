@@ -202,22 +202,6 @@ steps:
         projectCaching: ${{ parameters.projectCaching }}
         runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
 
-  # Tabular builds from its own MUXControlsTabular.sln rather than from MUXControls.sln:
-  # Microsoft.UI.Xaml.Controls.Tabular.vcxproj has no ProjectReference to MUXC -- it consumes
-  # MUXC's already-built component and merged winmds (see EnsureMuxcComponentWinMDBuilt in that
-  # vcxproj). The dependency is therefore sequenced by step order here rather than inferred from
-  # a solution graph, so this step MUST stay after the MUXControls.sln step above.
-  - ${{ if eq(parameters.buildProductOnly, 'false') }}:
-    - template: WinUI-BuildProject-Steps.yml
-      parameters:
-        solutionName: MUXControlsTabular.sln
-        solutionPath: $(Build.SourcesDirectory)\controls
-        nugetConfigPath: nuget.config
-        msBuildArgs: '/p:MUXFinalRelease=${{ parameters.MUXFinalRelease }} ${{ parameters.pgoBuildModeMSBuildArg }} /p:DisableWarnForInvalidRestoreProjects=true ${{parameters.additionalMSBuildOptions}} /p:WinUIVersion=$(versionFinal) /p:PublishAot=$(publishAotValue)'
-        msbuildInstallDir: $(_buildToolsDirectory)
-        projectCaching: ${{ parameters.projectCaching }}
-        runStaticAnalysis: ${{ parameters.runStaticAnalysis }}
-
   - script: |
      dir /b /s $(Build.SourcesDirectory)\packages\*.nupkg
     displayName: 'List contents of packages dir'
