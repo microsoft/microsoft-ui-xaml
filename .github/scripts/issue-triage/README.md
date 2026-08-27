@@ -5,16 +5,47 @@ Deterministic duplicate-issue detection used by
 
 ## Behavior
 
-The workflow runs on every issue that is opened, edited, or reopened.
+The workflow runs on every issue that is opened, edited, or reopened, **provided the issue
+carries `needs-triage`, `bug`, or `feature proposal`**. Both issue templates apply
+`needs-triage`, so this covers real reports while excluding tracking-epic sub-tasks, which
+are generated in near-identical families and produced almost only false positives during
+evaluation.
 
 1. `detect` (read-only) retrieves up to 30 candidate issues through the GitHub search API and
    scores them with deterministic text similarity.
 2. `publish` (`issues: write`) runs **only** when at least one candidate scores at or above the
    threshold. It creates or updates a single canonical comment identified by
-   `<!-- winui-duplicate-detection:v1 -->` and applies the `possible-duplicate` label.
+   `<!-- winui-duplicate-detection:v1 -->`.
+3. When the strongest match is **High** confidence, `publish` additionally submits GitHub's
+   native duplicate suggestion, which renders an accept/decline chip on the issue so a
+   maintainer can confirm and close in one click.
 
-When no candidate clears the threshold, nothing is commented and no label is applied.
-Issues are never closed and no resolution label is applied.
+When no candidate clears the threshold, nothing is commented. The workflow never applies or
+removes labels, never closes issues, and never edits the issue body.
+
+## Duplicate suggestion chip
+
+The chip is submitted with:
+
+```
+PATCH /repos/{owner}/{repo}/issues/{issue_number}
+X-GitHub-Api-Version: 2026-03-10
+
+{
+  "state": { "value": "closed", "rationale": "...", "confidence": "HIGH", "suggest": true },
+  "state_reason": "duplicate",
+  "duplicate_issue_id": <id of the canonical issue>
+}
+```
+
+`suggest: true` tells GitHub to hold the close for human review rather than applying it. The
+approach is adapted from the issue-triage workflow in
+[microsoft/PowerToys](https://github.com/microsoft/PowerToys/blob/main/.github/workflows/issue-triage.md).
+
+Because this relies on a preview API, the step verifies the response: if GitHub reports the
+issue as `closed`, and the closure is attributable to this request, the workflow reopens the
+issue and fails. Set `ENABLE_DUPLICATE_SUGGESTION` to anything other than `true` to disable
+the chip and run comment-only.
 
 ## Scoring
 
@@ -28,7 +59,9 @@ Issues are never closed and no resolution label is applied.
 
 Version and metadata sections (`NuGet package version`, `Windows version`, `Screenshots`,
 `Additional context`) are excluded so two unrelated reports on the same Windows build do not
-score as similar. Confidence bands: High `>= 0.80`, Medium `>= 0.70`, otherwise Low.
+score as similar. Leading structural title prefixes such as `[WinUI OSS] Phase 4:` are stripped
+before titles are compared, because epic sub-tasks share them as boilerplate.
+Confidence bands: High `>= 0.80`, Medium `>= 0.70`, otherwise Low.
 
 The default threshold is `0.62`, set through `SIMILARITY_THRESHOLD` in the workflow.
 

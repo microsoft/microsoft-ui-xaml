@@ -70,6 +70,11 @@ CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 FORM_HEADING = re.compile(r"^###\s+(.+?)\s*$", re.MULTILINE)
 WORD = re.compile(r"[A-Za-z][A-Za-z0-9_]{2,}")
 
+# Structural title prefixes such as "[WinUI OSS] Phase 4: ". Epic sub-tasks share these,
+# which inflates title similarity between issues that are deliberately distinct work items.
+TITLE_TAG = re.compile(r"^\s*(?:\[[^\]]{1,40}\]\s*)+")
+TITLE_STEP = re.compile(r"^\s*[A-Za-z]+\s+\d+\s*:\s*")
+
 # Control, API, and exception names such as NavigationView or COMException. The pattern
 # requires an internal capital followed by a lowercase letter, so plain words such as
 # "Windows" are not treated as identifiers while acronym prefixes such as "COM" are kept.
@@ -206,14 +211,28 @@ def _jaccard(left: set, right: set) -> float:
     return len(left & right) / len(left | right)
 
 
+def strip_title_prefix(title: str) -> str:
+    """Remove leading bracketed tags and numbered step prefixes from a title.
+
+    Tracking epics generate sub-tasks such as "[WinUI OSS] Phase 4: Update metadata
+    factory layer". The shared prefix is boilerplate, not evidence of duplication, so it
+    is removed before titles are compared. If stripping would leave nothing meaningful,
+    the original title is kept.
+    """
+    stripped = TITLE_TAG.sub("", title or "")
+    stripped = TITLE_STEP.sub("", stripped)
+    stripped = stripped.strip()
+    return stripped if len(stripped) >= 10 else (title or "").strip()
+
+
 def similarity(source: Issue, candidate: Issue):
     """Score two issues in [0, 1] and return the identifiers they share.
 
     Title agreement dominates because WinUI reports repeat the same control name and
     symptom. Body agreement and shared technical identifiers refine the ranking.
     """
-    source_title = normalize_text(source.title)
-    candidate_title = normalize_text(candidate.title)
+    source_title = strip_title_prefix(normalize_text(source.title))
+    candidate_title = strip_title_prefix(normalize_text(candidate.title))
 
     title_overlap = _jaccard(tokenize(source_title), tokenize(candidate_title))
     title_ratio = difflib.SequenceMatcher(
@@ -425,10 +444,20 @@ def retrieve_candidates(repo: str, source: Issue, token: str) -> list:
 
 def write_output(found: bool, comment: str, matches: list) -> None:
     output_path = os.environ.get("GITHUB_OUTPUT")
+    top = matches[0] if matches else None
     payload = {
         "found": "true" if found else "false",
         "count": str(len(matches)),
         "numbers": json.dumps([match.issue.number for match in matches]),
+        # The strongest match drives the optional duplicate suggestion chip.
+        "top_number": str(top.issue.number) if top else "",
+        "top_confidence": top.confidence.upper() if top else "",
+        "top_reason": (
+            "Deterministic text similarity scored this report %.2f against #%d."
+            % (top.score, top.issue.number)
+            if top
+            else ""
+        ),
     }
     if not output_path:
         print(json.dumps(payload, indent=2))

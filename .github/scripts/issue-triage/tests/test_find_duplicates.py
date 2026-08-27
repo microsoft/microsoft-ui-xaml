@@ -250,5 +250,67 @@ class RetryDelayTests(unittest.TestCase):
         self.assertLessEqual(delay, fd.MAX_BACKOFF_SECONDS)
 
 
+class TitlePrefixTests(unittest.TestCase):
+    def test_strips_bracketed_tag_and_numbered_step(self):
+        self.assertEqual(
+            fd.strip_title_prefix("[WinUI OSS] Phase 4: Update metadata factory layer"),
+            "Update metadata factory layer",
+        )
+
+    def test_strips_multiple_bracketed_tags(self):
+        self.assertEqual(fd.strip_title_prefix("[A][B] Something is broken here"), "Something is broken here")
+
+    def test_leaves_ordinary_titles_untouched(self):
+        title = "Expander content flashes during first expansion"
+        self.assertEqual(fd.strip_title_prefix(title), title)
+
+    def test_keeps_original_when_stripping_leaves_too_little(self):
+        self.assertEqual(fd.strip_title_prefix("[WinUI OSS] Crash"), "[WinUI OSS] Crash")
+
+    def test_epic_subtasks_no_longer_score_as_duplicates(self):
+        left = make_issue(1, "[WinUI OSS] Phase 4: Update metadata factory layer")
+        right = make_issue(2, "[WinUI OSS] Phase 4: Rewrite metadata module layer")
+        score, _ = fd.similarity(left, right)
+        self.assertLess(score, fd.HIGH_CONFIDENCE)
+
+    def test_genuine_duplicates_still_score_high(self):
+        title = "WinUI Key event does not correctly recognize French keyboard characters"
+        score, _ = fd.similarity(make_issue(1, title, BUG_BODY), make_issue(2, title, BUG_BODY))
+        self.assertGreaterEqual(score, fd.HIGH_CONFIDENCE)
+
+
+class OutputTests(unittest.TestCase):
+    def test_top_match_fields_are_written(self):
+        import tempfile
+
+        match = fd.Match(issue=make_issue(42, "Expander flashes"), score=0.91)
+        path = os.path.join(tempfile.mkdtemp(), "out.txt")
+        os.environ["GITHUB_OUTPUT"] = path
+        try:
+            fd.write_output(True, fd.render_comment([match]), [match])
+            with open(path, encoding="utf-8") as handle:
+                written = handle.read()
+        finally:
+            del os.environ["GITHUB_OUTPUT"]
+        self.assertIn("top_number=42", written)
+        self.assertIn("top_confidence=HIGH", written)
+        self.assertIn("found=true", written)
+
+    def test_empty_match_list_writes_blank_top_fields(self):
+        import tempfile
+
+        path = os.path.join(tempfile.mkdtemp(), "out.txt")
+        os.environ["GITHUB_OUTPUT"] = path
+        try:
+            fd.write_output(False, "", [])
+            with open(path, encoding="utf-8") as handle:
+                written = handle.read()
+        finally:
+            del os.environ["GITHUB_OUTPUT"]
+        self.assertIn("found=false", written)
+        self.assertIn("top_number=", written)
+        self.assertNotIn("top_confidence=HIGH", written)
+
+
 if __name__ == "__main__":
     unittest.main()
