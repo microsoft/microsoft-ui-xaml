@@ -1,0 +1,245 @@
+name: Fork PR validation
+
+# Automates the full lifecycle of validating a *fork* PR against the internal
+# WinUI-GitHub-PR (OneBranch) pipeline. Fork PRs get no secrets, so the pipeline
+# fails at "Install Pipeline Tools" (401). We promote the fork's IDENTICAL head
+# commit to a validation/... branch in this repo and open a draft "shadow" PR;
+# because both PRs share the head SHA, the resulting check also lands on the fork
+# PR and satisfies the required-check gate. See scripts/PromoteForkPR.ps1.
+#
+# THREE event-driven jobs:
+#   * validate  (issue_comment)              — a maintainer comments `/validate`
+#                                              [optionally `/validate <sha>`] to
+#                                              promote the CURRENT reviewed head.
+#   * invalidate (pull_request_target,        — the fork pushed a NEW commit; tear
+#                 synchronize)                  down the now-stale shadow + branch
+#                                              and prompt for a fresh `/validate`.
+#                                              We NEVER auto-promote new commits.
+#   * cleanup   (pull_request_target, closed) — the fork PR was closed/merged;
+#                                              remove the shadow PR + branch.
+#
+# SECURITY MODEL:
+#   * All jobs run in the BASE repo/default-branch context and only ever act on
+#     git objects + PR metadata (fetch/push/close/comment). They NEVER check out
+#     or execute fork code, so holding GITHUB_TOKEN here is safe. Fork code only
+#     runs later, in the credentialed ADO pipeline — the accepted, maintainer-
+#     gated risk of the promotion pattern.
+#   * The maintainer's `/validate` comment IS the review acknowledgement: only
+#     OWNER/MEMBER/COLLABORATOR can trigger it, posted after reviewing the exact
+#     head SHA (that is what -IReviewedTheSha asserts).
+#   * Every new commit invalidates the prior validation — un-reviewed fork code is
+#     never promoted automatically.
+#
+# MERGE-TIME ENABLEMENT CHECKLIST (do these when this lands on the default branch):
+#   [ ] 1. REQUIRED — GitHub repo setting "Allow GitHub Actions to create and
+#          approve pull requests" = ON (Settings > Actions > General > Workflow
+#          permissions). Without it the branch push succeeds but the shadow PR
+#          cannot be created, so no check is produced. (Verified in lab.)
+#   [ ] 2. VERIFY ON FIRST RUN — after the first /validate, confirm the bot's
+#          `/azp run` on the shadow PR actually starts the ADO build. If Azure
+#          DevOps does not treat the Actions bot as a team member, a maintainer
+#          must comment `/azp run` on the shadow PR once (the report comment says
+#          so). Consider queuing via `az pipelines run` if this recurs.
+#   [ ] 3. RECOMMENDED — in the ADO WinUI-GitHub-PR pipeline (Triggers > PR
+#          validation), turn OFF "Build pull requests from forks of this
+#          repository" so the ORIGINAL fork PR stops auto-running and 401-ing;
+#          all validation then flows through /validate. The shadow PR is an
+#          internal branch and gets secrets regardless of this toggle.
+#   [ ] 4. OPTIONAL — create a `fork-validation` label for triage (best-effort;
+#          the script ignores it if missing).
+#
+# This file must exist on the DEFAULT branch for issue_comment /
+# pull_request_target triggers to fire.
+#
+# NOTE: this pipeline also requires a team member's comment before building an
+# INTERNAL PR ("On all pull requests"). After promotion this workflow posts
+# `/azp run` on the shadow PR to start the build. That comment is authored by the
+# Actions bot — if Azure DevOps does not treat the bot as a team member, the
+# build will wait until a maintainer comments `/azp run` on the shadow PR (or you
+# switch to queuing via `az pipelines run` with ADO auth). Verify on first use.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [synchronize, closed]
+
+permissions:
+  contents: write        # push/delete the validation/... branch
+  pull-requests: write   # open/close the draft shadow PR + comment
+  issues: write          # react to the command comment
+
+concurrency:
+  # Serialize all lifecycle events for a single fork PR so a new-commit
+  # invalidate can't race a still-running /validate promotion.
+  group: fork-validation-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    # Coarse gate: only comment events, only on PRs (not issues), when the comment
+    # mentions the command, and only for maintainers/collaborators. The exact-match
+    # check in the Detect step rejects loose matches (quoted replies, suffixes).
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '/validate') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Detect command
+        id: detect
+        env:
+          # Passed via env (not inlined into the script) to avoid injection.
+          BODY: ${{ github.event.comment.body }}
+        run: |
+          # Only treat it as the command if some line is exactly "/validate" or
+          # "/validate <sha>" (7-40 hex chars), ignoring surrounding whitespace.
+          # This rejects quoted replies ("> /validate"), inline mentions, and
+          # suffixes ("/validate-x"). A trailing hex token is the pinned SHA.
+          match=false
+          sha=
+          while IFS= read -r line; do
+            if printf '%s' "$line" | grep -qE '^[[:space:]]*/validate[[:space:]]*$'; then
+              match=true
+            elif printf '%s' "$line" | grep -qE '^[[:space:]]*/validate[[:space:]]+[0-9a-fA-F]{7,40}[[:space:]]*$'; then
+              match=true
+              sha=$(printf '%s' "$line" | grep -oE '[0-9a-fA-F]{7,40}' | head -n1)
+            fi
+          done < <(printf '%s\n' "$BODY")
+          echo "match=$match" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Acknowledge the command
+        if: steps.detect.outputs.match == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api "repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
+            -H "Accept: application/vnd.github+json" \
+            -f content='eyes' || true
+
+      - name: Checkout base repo (default branch)
+        if: steps.detect.outputs.match == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # persist-credentials (default true) so the script's `git push` works.
+
+      - name: Promote fork head -> validation branch + shadow PR
+        id: promote
+        if: steps.detect.outputs.match == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+          PINNED_SHA: ${{ steps.detect.outputs.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # If the maintainer pinned a SHA, only proceed when it still matches the
+          # PR head — so we promote exactly the commit that was reviewed.
+          if ($env:PINNED_SHA) {
+            $head = (gh pr view $env:PR --repo $env:REPO --json headRefOid --jq '.headRefOid').Trim()
+            if (-not $head.StartsWith($env:PINNED_SHA) -and -not $env:PINNED_SHA.StartsWith($head)) {
+              throw "Pinned SHA '$($env:PINNED_SHA)' no longer matches PR head '$head'. Re-review and re-comment."
+            }
+          }
+          # The /validate comment from a maintainer is the SHA review; assert it.
+          ./scripts/PromoteForkPR.ps1 -PrNumber ([int]$env:PR) -Repo $env:REPO `
+            -Promote -IReviewedTheSha -ReuseBranch
+
+      - name: Kick the shadow PR build (satisfy internal-PR comment gate)
+        id: azprun
+        if: steps.promote.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+        run: |
+          # Internal PRs require a team member's comment before building, so the
+          # freshly-opened shadow PR won't build on its own. Post `/azp run` to
+          # start it. Caveat: this comment is authored by the Actions bot; if ADO
+          # doesn't treat the bot as a team member the build still waits, and a
+          # maintainer must comment `/azp run` on the shadow PR manually (or the
+          # build must be queued via `az pipelines run`). See workflow header.
+          SHADOW=$(gh pr list --repo "$REPO" --head "validation/fork-pr/$PR/latest" --state open --json number --jq '.[0].number')
+          if [ -z "$SHADOW" ]; then
+            echo "No open shadow PR found for validation/fork-pr/$PR/latest; nothing to trigger."
+            exit 0
+          fi
+          echo "shadow=$SHADOW" >> "$GITHUB_OUTPUT"
+          gh pr comment "$SHADOW" --repo "$REPO" --body "/azp run"
+
+      - name: Report result
+        if: always() && steps.detect.outputs.match == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+          OUTCOME: ${{ steps.promote.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$OUTCOME" = "success" ]; then
+            SHADOW=$(gh pr list --repo "$REPO" --head "validation/fork-pr/$PR/latest" --state open --json url --jq '.[0].url')
+            gh pr comment "$PR" --repo "$REPO" --body "✅ Promoted this fork PR's head into a validation branch${SHADOW:+ ($SHADOW)} and posted \`/azp run\` to start the trusted build. The **WinUI-GitHub-PR (OneBranch)** check runs on the shared head SHA and will report back here. If it doesn't start shortly, a maintainer may need to comment \`/azp run\` on the shadow PR. [Workflow run]($RUN_URL)"
+          else
+            gh pr comment "$PR" --repo "$REPO" --body "❌ Fork-validation promotion failed. See the [workflow run]($RUN_URL) for details (a new commit on the fork requires a fresh \`/validate\`)."
+          fi
+
+  invalidate:
+    # A fork PR pushed a new commit. Tear down the now-stale validation and prompt
+    # for a fresh /validate. Only fork PRs that actually have a validation shadow
+    # produce a visible effect (the script no-ops otherwise). Never auto-promotes.
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action == 'synchronize' &&
+      github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base repo (default branch)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Invalidate stale validation + prompt re-/validate
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          NEW_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/PromoteForkPR.ps1 -PrNumber ([int]$env:PR) -Repo $env:REPO `
+            -Invalidate -NewSha $env:NEW_SHA
+
+  cleanup:
+    # The fork PR was closed or merged. Remove the shadow PR + validation branch.
+    if: >-
+      github.event_name == 'pull_request_target' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base repo (default branch)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cleanup shadow PR + validation branch
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          ./scripts/PromoteForkPR.ps1 -PrNumber ([int]$env:PR) -Repo $env:REPO -Cleanup
