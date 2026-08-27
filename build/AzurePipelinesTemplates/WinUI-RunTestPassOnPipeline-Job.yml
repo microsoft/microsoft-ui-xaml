@@ -73,6 +73,34 @@ jobs:
       script: |
         Get-Item -Path 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion'
 
+  # Validation-only provisioning until Evergreen is included in the Win10-2019-LTSC image.
+  - ${{ if eq( parameters.testOS, 'Win10-RS5' ) }}:
+    - task: PowerShell@2
+      displayName: 'Install Evergreen WebView2 Runtime on RS5'
+      inputs:
+        targetType: 'inline'
+        script: |
+          $ErrorActionPreference = 'Stop'
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+          $installerPath = Join-Path $env:Agent_TempDirectory 'MicrosoftEdgeWebview2Setup.exe'
+          try {
+            Invoke-WebRequest -UseBasicParsing -Uri 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $installerPath
+
+            $signature = Get-AuthenticodeSignature -FilePath $installerPath
+            if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'O=Microsoft Corporation') {
+              throw "Evergreen WebView2 bootstrapper signature validation failed. Status: $($signature.Status); signer: $($signature.SignerCertificate.Subject)"
+            }
+
+            $installer = Start-Process -FilePath $installerPath -ArgumentList '/silent', '/install' -Wait -PassThru
+            if ($installer.ExitCode -ne 0) {
+              throw "Evergreen WebView2 bootstrapper exited with code $($installer.ExitCode)."
+            }
+          }
+          finally {
+            Remove-Item -Path $installerPath -Force -ErrorAction SilentlyContinue
+          }
+
   - template: WinUI-DownloadPipelineArtifacts-Steps.yml
     parameters:
       itemPattern: '**/@(helixworkitems|TestPayload)/**'

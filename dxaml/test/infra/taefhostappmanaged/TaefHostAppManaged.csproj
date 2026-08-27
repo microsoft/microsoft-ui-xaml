@@ -262,12 +262,6 @@
         <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
       </BinplaceItem>
     </ItemGroup>
-    <!-- Copy mini_installer.exe if the Microsoft.UI.DCPP.Dependencies.Edge package has been restored (which only happens in the pipelines) -->
-    <ItemGroup Condition="('$(arch)'=='x86' or '$(arch)'=='amd64') and Exists('$(NugetPackageDirectory)\Microsoft.UI.DCPP.Dependencies.Edge.144.0.3719.82')">
-      <BinplaceItem Include="$(NugetPackageDirectory)\Microsoft.UI.DCPP.Dependencies.Edge.144.0.3719.82\edge\mini_installer\$(DependencyPlatform)\mini_installer.exe">
-        <Destination>$(TestDependenciesResourcesDestinationPath)</Destination>
-      </BinplaceItem>
-    </ItemGroup>
   </Target>
   <Target Name="AppxExternalBinaries" BeforeTargets="GetPackagingOutputs" DependsOnTargets="ChooseExternalBinaries">
     <ItemGroup>
