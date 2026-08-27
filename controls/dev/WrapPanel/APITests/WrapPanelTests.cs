@@ -180,8 +180,7 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 foreach (var orientation in new[] { Orientation.Horizontal, Orientation.Vertical })
                 {
-                    Log.Comment("Verify finite measurement for {0} orientation", orientation);
-
+                    Log.Comment("Verify finite DesiredSize for {0} orientation when measured with an infinite primary axis", orientation);
                     var panel = new WrapPanel
                     {
                         Orientation = orientation,
