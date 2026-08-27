@@ -38,7 +38,7 @@ namespace TableViewAppCsPackaged
             });
             CodeTableHost.Children.Add(codeTable);
 
-            StatusText.Text = $"markup TableView: {MarkupTable != null}; code TableView: {CodeTableHost.Children.Count}; items: {People.Count}.";
+            StatusText.Text = $"Both tables are bound to the same {People.Count} items.";
         }
 
         private void ToggleTheme_Click(object sender, RoutedEventArgs e)

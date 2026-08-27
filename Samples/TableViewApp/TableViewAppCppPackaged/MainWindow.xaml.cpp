@@ -48,7 +48,7 @@ namespace winrt::TableViewAppCppPackaged::implementation
         codeTable.Columns().Append(MakeColumn(L"Age", L"AgeCell"));
         CodeTableHost().Children().Append(codeTable);
 
-        StatusText().Text(L"markup TableView + code TableView OK; items: 3");
+        StatusText().Text(L"Both tables are bound to the same 3 items.");
     }
 
     void MainWindow::ToggleTheme_Click(IInspectable const&, RoutedEventArgs const&)

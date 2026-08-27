@@ -41,14 +41,28 @@
             </StackPanel>
 
             <!-- Instantiated from markup. -->
-            <tabular:TableView x:Name="MarkupTable" Grid.Row="1" ItemsSource="{x:Bind People}"
-                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid Grid.Row="1" RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Table 1 - instantiated from MARKUP (XAML)" FontWeight="SemiBold" />
+                <tabular:TableView x:Name="MarkupTable" Grid.Row="1" ItemsSource="{x:Bind People}"
+                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <tabular:TableViewTemplateColumn Header="Name" CellTemplate="{StaticResource NameCell}" />
                 <tabular:TableViewTemplateColumn Header="Age" CellTemplate="{StaticResource AgeCell}" />
-            </tabular:TableView>
+                </tabular:TableView>
+            </Grid>
 
             <!-- A second TableView is added here from code-behind. -->
-            <StackPanel x:Name="CodeTableHost" Grid.Row="2" />
+            <Grid Grid.Row="2" RowSpacing="6">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Table 2 - created in CODE-BEHIND" FontWeight="SemiBold" />
+                <StackPanel x:Name="CodeTableHost" Grid.Row="1" />
+            </Grid>
         </Grid>
     </Grid>
 </Window>
