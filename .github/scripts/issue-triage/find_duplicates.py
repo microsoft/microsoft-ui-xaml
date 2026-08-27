@@ -25,9 +25,16 @@ API_ROOT = "https://api.github.com"
 
 MAX_CANDIDATES = 30
 MAX_SUGGESTIONS = 5
+MAX_QUERIES = 6
 DEFAULT_THRESHOLD = 0.62
 HIGH_CONFIDENCE = 0.80
 MEDIUM_CONFIDENCE = 0.70
+
+# The search API allows 30 requests per minute. Pace requests to stay under that limit
+# and retry with header-driven backoff when a secondary limit is still hit.
+MIN_SEARCH_INTERVAL_SECONDS = 2.2
+MAX_SEARCH_ATTEMPTS = 4
+MAX_BACKOFF_SECONDS = 75
 
 COMMENT_MARKER = "<!-- winui-duplicate-detection:v1 -->"
 
@@ -303,18 +310,56 @@ def _request(url: str, token: str) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def _retry_delay(error: urllib.error.HTTPError, attempt: int) -> float:
+    """Derive a wait time from GitHub rate-limit headers, falling back to backoff.
+
+    Secondary rate limits send `Retry-After`; primary limits send `x-ratelimit-reset`.
+    """
+    headers = getattr(error, "headers", None)
+    retry_after = headers.get("Retry-After") if headers else None
+    if retry_after:
+        try:
+            return min(float(retry_after) + 1, MAX_BACKOFF_SECONDS)
+        except ValueError:
+            pass
+
+    reset = headers.get("x-ratelimit-reset") if headers else None
+    remaining = headers.get("x-ratelimit-remaining") if headers else None
+    if reset and remaining == "0":
+        try:
+            return min(max(float(reset) - time.time() + 1, 1.0), MAX_BACKOFF_SECONDS)
+        except ValueError:
+            pass
+
+    return min(8.0 * (2**attempt), MAX_BACKOFF_SECONDS)
+
+
+_last_search_at = 0.0
+
+
+def _throttle() -> None:
+    global _last_search_at
+    elapsed = time.time() - _last_search_at
+    if _last_search_at and elapsed < MIN_SEARCH_INTERVAL_SECONDS:
+        time.sleep(MIN_SEARCH_INTERVAL_SECONDS - elapsed)
+    _last_search_at = time.time()
+
+
 def search_issues(repo: str, query: str, token: str, per_page: int = 20) -> list:
     params = urllib.parse.urlencode(
         {"q": "repo:" + repo + " is:issue " + query, "per_page": per_page, "sort": "updated"}
     )
     payload = None
-    for attempt in range(3):
+    for attempt in range(MAX_SEARCH_ATTEMPTS):
+        _throttle()
         try:
             payload = _request(API_ROOT + "/search/issues?" + params, token)
             break
         except urllib.error.HTTPError as error:
-            if error.code in (403, 429) and attempt < 2:
-                time.sleep(5 * (attempt + 1))
+            if error.code in (403, 429) and attempt < MAX_SEARCH_ATTEMPTS - 1:
+                delay = _retry_delay(error, attempt)
+                print("Rate limited (%s). Waiting %.1fs before retry." % (error.code, delay))
+                time.sleep(delay)
                 continue
             raise RetrievalError("search failed (%s) for query: %s" % (error.code, query))
         except urllib.error.URLError:
@@ -362,7 +407,7 @@ def build_queries(source: Issue) -> list:
     for query in queries:
         if query not in deduped:
             deduped.append(query)
-    return deduped[:8]
+    return deduped[:MAX_QUERIES]
 
 
 def retrieve_candidates(repo: str, source: Issue, token: str) -> list:

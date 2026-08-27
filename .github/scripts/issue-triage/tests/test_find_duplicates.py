@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 import unittest
+import urllib.error
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -211,13 +213,41 @@ class QueryTests(unittest.TestCase):
     def test_queries_are_bounded_and_unique(self):
         source = make_issue(1, "NavigationView selection is lost after Frame navigation", BUG_BODY)
         queries = fd.build_queries(source)
-        self.assertLessEqual(len(queries), 8)
+        self.assertLessEqual(len(queries), fd.MAX_QUERIES)
         self.assertEqual(len(queries), len(set(queries)))
         self.assertTrue(any("NavigationView" in query for query in queries))
 
     def test_short_title_skips_exact_phrase_query(self):
         queries = fd.build_queries(make_issue(1, "Crash"))
         self.assertFalse(any(query.startswith('in:title "') for query in queries))
+
+
+class RetryDelayTests(unittest.TestCase):
+    @staticmethod
+    def _error(headers):
+        return urllib.error.HTTPError("https://api.github.com", 403, "Forbidden", headers, None)
+
+    def test_retry_after_header_is_honored(self):
+        delay = fd._retry_delay(self._error({"Retry-After": "12"}), 0)
+        self.assertEqual(delay, 13.0)
+
+    def test_rate_limit_reset_is_honored_when_exhausted(self):
+        headers = {"x-ratelimit-remaining": "0", "x-ratelimit-reset": str(int(time.time()) + 20)}
+        delay = fd._retry_delay(self._error(headers), 0)
+        self.assertGreater(delay, 15.0)
+        self.assertLessEqual(delay, fd.MAX_BACKOFF_SECONDS)
+
+    def test_falls_back_to_exponential_backoff(self):
+        self.assertEqual(fd._retry_delay(self._error({}), 0), 8.0)
+        self.assertEqual(fd._retry_delay(self._error({}), 1), 16.0)
+
+    def test_delay_is_capped(self):
+        delay = fd._retry_delay(self._error({"Retry-After": "100000"}), 0)
+        self.assertEqual(delay, fd.MAX_BACKOFF_SECONDS)
+
+    def test_malformed_headers_do_not_raise(self):
+        delay = fd._retry_delay(self._error({"Retry-After": "soon"}), 2)
+        self.assertLessEqual(delay, fd.MAX_BACKOFF_SECONDS)
 
 
 if __name__ == "__main__":
