@@ -263,13 +263,23 @@ older reports as strong candidates for the newest report without automatically c
 
 ### Pilot modes
 
-1. **Baseline:** Run the repository's current similar-issues bot on the copied issues.
-2. **Candidate retrieval:** Run deterministic retrieval and store results in the workflow log.
-3. **Comment-only triage:** Publish the canonical comment without applying labels or suggesting closure.
-4. **Digest:** Create a maintainer-facing digest from the validated comments.
+1. **Candidate retrieval:** Run deterministic title/body retrieval.
+2. **Comment-only intake:** Parse the WinUI issue form and update the same canonical comment.
+3. **Legacy GenAI comparison:** Run the pinned GitHub Models dedupe action previously used by PowerToys.
+4. **Digest:** Create a maintainer-facing digest from validated comments in a later pilot iteration.
 
-The first two modes establish a comparison point. Comment-only triage and the digest demonstrate the proposed
-experience.
+The deterministic and comment-only modes establish a reliable comparison point. The legacy action is retained only to
+document its current behavior and is not the proposed production architecture.
+
+Initial public runs:
+
+* [Deterministic retrieval and intake run](https://github.com/niels9001/microsoft-ui-xaml/actions/runs/33071945420)
+* [Legacy GenAI comparison run](https://github.com/niels9001/microsoft-ui-xaml/actions/runs/33071662766)
+
+The GenAI comparison did not produce a usable verdict. Every model request returned HTTP 410 because GitHub Models was
+in a scheduled retirement brownout. The action nevertheless completed successfully and reported no duplicates. This
+success-shaped failure confirms that the production design must own model invocation, fail closed on model errors, and
+must not treat an empty legacy-action result as evidence that an issue is unique.
 
 ### Public examples
 
@@ -277,10 +287,11 @@ Pilot issue links and observed results will be added here after the workflows ha
 
 | Scenario | Pilot issue | Expected result | Observed result |
 | --- | --- | --- | --- |
-| Exact-title duplicate cluster | Pending | Find the other copied `#11646`-`#11649` reports. | Pending |
-| Similar symptom, different root cause | Pending | Surface candidates conservatively or return none. | Pending |
-| Missing minimal reproduction | Pending | Recommend `needs-repro` without changing labels. | Pending |
-| Feature proposal | Pending | Avoid bug-only reproduction guidance. | Pending |
+| Exact-title duplicate cluster | [Fork #4](https://github.com/niels9001/microsoft-ui-xaml/issues/4#issuecomment-5439086935) | Find the other copied `#11646`-`#11649` reports. | Ranked fork issues #10, #6, and #2 as high-confidence exact-title matches. |
+| Unique bug | [Fork #5](https://github.com/niels9001/microsoft-ui-xaml/issues/5#issuecomment-5439087067) | Return no duplicate when the threshold is not met. | Returned no candidates. |
+| Incomplete bug form | [Fork #5](https://github.com/niels9001/microsoft-ui-xaml/issues/5#issuecomment-5439087067) | Identify missing or very short investigation fields without changing labels. | Identified `Expected behavior` as incomplete and left labels unchanged. |
+| Feature proposal | [Fork #35](https://github.com/niels9001/microsoft-ui-xaml/issues/35#issuecomment-5439088490) | Avoid bug-only reproduction guidance. | Classified the issue as a feature proposal and did not request bug reproduction information. |
+| Legacy GenAI action | [Actions run](https://github.com/niels9001/microsoft-ui-xaml/actions/runs/33071662766) | Compare model judgments with deterministic retrieval. | Model calls returned HTTP 410 during a retirement brownout, but the action still concluded successfully with no duplicates. |
 
 ## Evaluation
 
