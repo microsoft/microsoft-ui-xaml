@@ -109,15 +109,6 @@ steps:
       arguments: 'restore build\packages.TestInProduction.config -Source $(WinUIInternalFeedUri) -PackagesDirectory $(Build.SourcesDirectory)\packages'
       includeNuGetOrg: false
 
-  # Note: Restore the WebView2 Runtime package from the authenticated WinUI.Dependencies feed.
-  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    displayName: 'NuGet restore WebView2 Runtime installer'
-    condition: succeeded()
-    inputs:
-      command: 'custom'
-      arguments: 'restore build\packages.webview2.config -Source $(WinUIInternalFeedUri) -PackagesDirectory $(Build.SourcesDirectory)\packages'
-      includeNuGetOrg: false
-
   - task: VSBuild@1
     displayName: 'Restore Maestro dependencies'
     condition: and(succeeded(), ne(variables['Build.Repository.Provider'], 'GitHub'), ne(variables['Build.Repository.Provider'], 'GitHubEnterprise'))
