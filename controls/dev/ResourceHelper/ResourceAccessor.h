@@ -233,6 +233,15 @@ public:
 #define SR_DownloadWebView2Runtime L"DownloadWebView2Runtime"
 
 #define SR_TableViewGroupHeaderCountFormat L"TableViewGroupHeaderCountFormat"
+#define SR_TableViewGroupHeaderNull L"TableViewGroupHeaderNull"
+#define SR_TableViewGroupHeaderFallback L"TableViewGroupHeaderFallback"
+#define SR_TableViewSortedAscending L"TableViewSortedAscending"
+#define SR_TableViewSortedDescending L"TableViewSortedDescending"
+#define SR_TableViewSortCleared L"TableViewSortCleared"
+#define SR_TableViewSortClearedAll L"TableViewSortClearedAll"
+#define SR_TableViewSortAscendingHelpText L"TableViewSortAscendingHelpText"
+#define SR_TableViewSortDescendingHelpText L"TableViewSortDescendingHelpText"
+#define SR_TableViewSortNoneHelpText L"TableViewSortNoneHelpText"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
 

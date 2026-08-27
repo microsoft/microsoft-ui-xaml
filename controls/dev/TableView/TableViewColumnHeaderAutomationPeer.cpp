@@ -8,14 +8,38 @@
 #include "TableViewAutomationHelpers.h"
 #include "TableViewColumnHeaderAutomationPeer.h"
 #include "TableViewColumnHeaderAutomationPeer.properties.cpp"
+#include "ResourceAccessor.h"
 
 #include <limits>
+
+namespace
+{
+    // Two 32-bit halves of the column's stable IUnknown, which is the cheapest per-column
+    // identity available here. Widen to 64-bit before shifting so this stays correct on 32-bit,
+    // where uintptr_t is 32-bit and `>> 32` would be an out-of-range shift; the high part is
+    // simply 0 there.
+    std::array<int32_t, 2> RuntimeIdPartsForColumn(winrt::TableViewColumn const& column)
+    {
+        if (!column)
+        {
+            return { 0, 0 };
+        }
+
+        const uint64_t identity = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(winrt::get_unknown(column)));
+        return
+        {
+            static_cast<int32_t>(identity & 0xffffffffull),
+            static_cast<int32_t>((identity >> 32) & 0xffffffffull)
+        };
+    }
+}
 
 TableViewColumnHeaderAutomationPeer::TableViewColumnHeaderAutomationPeer(
     winrt::TableView const& owner,
     winrt::TableViewColumn const& column)
     : ReferenceTracker(owner)
     , m_column(winrt::make_weak(column))
+    , m_columnRuntimeIdParts(RuntimeIdPartsForColumn(column))
 {
 }
 
@@ -60,13 +84,107 @@ winrt::AutomationControlType TableViewColumnHeaderAutomationPeer::GetAutomationC
     return winrt::AutomationControlType::HeaderItem;
 }
 
+winrt::com_array<int32_t> TableViewColumnHeaderAutomationPeer::GetRuntimeIdCore()
+{
+    // Header peers are all owned by the TableView, so the owner-derived RuntimeId the base
+    // would supply is identical for every column - a UIA protocol violation that makes the
+    // headers indistinguishable to assistive technology. Build a self-contained id instead:
+    // the UiaAppendRuntimeId prefix keeps it well-formed as a framework-appended runtime id,
+    // the control-family tag namespaces it, and the column identity parts make it unique and
+    // stable for the lifetime of the column.
+    return winrt::com_array<int32_t>({
+        3, // UiaAppendRuntimeId
+        static_cast<int32_t>(0x54564348), // 'TVCH' control-family tag
+        m_columnRuntimeIdParts[0],
+        m_columnRuntimeIdParts[1]
+    });
+}
+
+hstring TableViewColumnHeaderAutomationPeer::GetAutomationIdCore()
+{
+    // An author-supplied id on the realized header always wins.
+    if (auto const headerElement = GetHeaderElement())
+    {
+        if (auto const automationId = winrt::AutomationProperties::GetAutomationId(headerElement);
+            !automationId.empty())
+        {
+            return automationId;
+        }
+    }
+
+    // Otherwise fall back to the same column identity backing the RuntimeId, so headers stay
+    // addressable in UI automation before their templates realize.
+    std::wstring automationId{ L"TableViewColumnHeader_" };
+    automationId.append(std::to_wstring(m_columnRuntimeIdParts[0]));
+    automationId.push_back(L'_');
+    automationId.append(std::to_wstring(m_columnRuntimeIdParts[1]));
+    return hstring{ automationId };
+}
+
+hstring TableViewColumnHeaderAutomationPeer::GetHelpTextCore()
+{
+    auto const column = m_column.get();
+    if (!column)
+    {
+        return __super::GetHelpTextCore();
+    }
+
+    // Only a column the control will actually sort reports a sort state; on any other column the
+    // absence of help text is the honest answer.
+    if (!IsSortableColumn())
+    {
+        return __super::GetHelpTextCore();
+    }
+
+    switch (column.SortDirection())
+    {
+    case winrt::SortDirection::Ascending:
+        return ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortAscendingHelpText);
+    case winrt::SortDirection::Descending:
+        return ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortDescendingHelpText);
+    case winrt::SortDirection::None:
+    default:
+        return ResourceAccessor::GetLocalizedStringResource(SR_TableViewSortNoneHelpText);
+    }
+}
+
+winrt::IInspectable TableViewColumnHeaderAutomationPeer::GetPatternCore(winrt::PatternInterface patternInterface)
+{
+    if (patternInterface == winrt::PatternInterface::Invoke && IsSortableColumn())
+    {
+        return *this;
+    }
+
+    return __super::GetPatternCore(patternInterface);
+}
+
+void TableViewColumnHeaderAutomationPeer::Invoke()
+{
+    if (auto const column = m_column.get())
+    {
+        if (auto const owner = Owner().try_as<winrt::TableView>())
+        {
+            winrt::get_self<TableView>(owner)->ToggleSortDirection(column);
+        }
+    }
+}
+
+bool TableViewColumnHeaderAutomationPeer::IsSortableColumn()
+{
+    auto const column = m_column.get();
+    if (!column || !column.CanSort())
+    {
+        return false;
+    }
+
+    auto const owner = Owner().try_as<winrt::TableView>();
+    return owner && owner.CanUserSortColumns();
+}
+
 int32_t TableViewColumnHeaderAutomationPeer::GetPositionInSetCore()
 {
-    // Every header peer shares the TableView owner, so their auto-generated UIA
-    // RuntimeIds collide (WinUI AutomationPeer has no overridable GetRuntimeIdCore).
-    // Expose the 1-based column position so AT (Narrator) can still distinguish and
-    // announce "column i of n"; combined with the distinct GetNameCore this makes each
-    // header individually identifiable.
+    // Complements the distinct RuntimeId and GetNameCore: expose the 1-based visible column
+    // position so AT (Narrator) can announce "column i of n" as the user moves across headers.
     const auto index = GetColumnIndex();
     return index >= 0 ? index + 1 : -1;
 }

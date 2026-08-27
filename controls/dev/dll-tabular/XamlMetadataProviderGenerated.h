@@ -80,6 +80,47 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.ITableViewSortComparer",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.ITableViewSortComparer",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                nullptr
+            );
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.SortDirection",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.SortDirection",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"None") return box_value(winrt::SortDirection::None);
+                    if (fromString == L"Ascending") return box_value(winrt::SortDirection::Ascending);
+                    if (fromString == L"Descending") return box_value(winrt::SortDirection::Descending);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Tabular.TableView",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -97,6 +138,7 @@ Entry c_typeEntries[] =
                     winrt::ITableViewStatics statics = GetFactory<winrt::ITableViewStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableView");
                     {
                         xamlType.AddDPMember(L"AlternatingRowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.AlternatingRowBackgroundProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanUserSortColumns", L"Boolean", statics.CanUserSortColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Columns", L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn>", statics.ColumnsProperty(), true /* isContent */);
                         xamlType.AddDPMember(L"Density", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity", statics.DensityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"EmptyTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.EmptyTemplateProperty(), false /* isContent */);
@@ -163,6 +205,7 @@ Entry c_typeEntries[] =
                     winrt::ITableViewColumnStatics statics = GetFactory<winrt::ITableViewColumnStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn");
                     {
                         xamlType.AddDPMember(L"ActualWidth", L"Double", statics.ActualWidthProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanSort", L"Boolean", statics.CanSortProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellEditingTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.CellEditingTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Header", L"Object", statics.HeaderProperty(), true /* isContent */);
@@ -171,10 +214,21 @@ Entry c_typeEntries[] =
                         xamlType.AddDPMember(L"IsReadOnly", L"Boolean", statics.IsReadOnlyProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MaxWidth", L"Double", statics.MaxWidthProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"MinWidth", L"Double", statics.MinWidthProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"SortCycle", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSortCycle", statics.SortCycleProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"SortDirection", L"Microsoft.UI.Xaml.Controls.Tabular.SortDirection", statics.SortDirectionProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"SortMemberPath", L"String", statics.SortMemberPathProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Visibility", L"Microsoft.UI.Xaml.Visibility", statics.VisibilityProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Width", L"Microsoft.UI.Xaml.GridLength", statics.WidthProperty(), false /* isContent */);
                     }
 
+                    xamlType.AddMember(
+                        L"CustomSortComparer", /* propertyName */
+                        L"Microsoft.UI.Xaml.Controls.Tabular.ITableViewSortComparer", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewColumn>().CustomSortComparer(); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewColumn>().CustomSortComparer(value ? value.as<winrt::Microsoft::UI::Xaml::Controls::Tabular::ITableViewSortComparer>() : nullptr); },
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
                 });
 
             return static_cast<winrt::IXamlType>(*xamlType);
@@ -436,6 +490,57 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSortCycle",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make<EnumXamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSortCycle",
+                /* Arg 2 - CreateFromString func */ 
+                (std::function<winrt::IInspectable(hstring)>)[](hstring fromString)
+                {
+                    if (fromString == L"AscendingDescending") return box_value(winrt::TableViewSortCycle::AscendingDescending);
+                    if (fromString == L"AscendingDescendingNone") return box_value(winrt::TableViewSortCycle::AscendingDescendingNone);
+                    if (fromString == L"DescendingAscending") return box_value(winrt::TableViewSortCycle::DescendingAscending);
+                    if (fromString == L"DescendingAscendingNone") return box_value(winrt::TableViewSortCycle::DescendingAscendingNone);
+                    throw winrt::hresult_invalid_argument();
+                });
+
+            return xamlType;
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSource",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Tabular.TableViewSource",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Object",
+                /* Arg 3 - Activator func */ 
+                nullptr,
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    xamlType.AddMember(
+                        L"View", /* propertyName */
+                        L"Windows.Foundation.Collections.IObservableVector`1<Object>", /* propertyType */
+                        [](winrt::IInspectable instance) { return instance.as<winrt::TableViewSource>().View(); },
+                        nullptr, /* setter */
+                        false, /* isContent */
+                        false, /* isDependencyProperty */
+                        false /* isAttachable */);
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Tabular.TableViewTemplateColumn",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -480,7 +585,7 @@ Entry c_typeEntries[] =
                         L"Binding", /* propertyName */
                         L"Microsoft.UI.Xaml.Data.Binding", /* propertyType */
                         [](winrt::IInspectable instance) { return instance.as<winrt::TableViewTextColumn>().Binding(); },
-                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewTextColumn>().Binding(value.as<winrt::Microsoft::UI::Xaml::Data::Binding>()); },
+                        [](winrt::IInspectable instance, winrt::IInspectable value) { instance.as<winrt::TableViewTextColumn>().Binding(value ? value.as<winrt::Microsoft::UI::Xaml::Data::Binding>() : nullptr); },
                         false, /* isContent */
                         false, /* isDependencyProperty */
                         false /* isAttachable */);
@@ -654,6 +759,21 @@ Entry c_typeEntries[] =
         []()
         {
             auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"ValueType", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Windows.Foundation.Collections.IObservableVector`1<Object>",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>((PCWSTR)L"Windows.Foundation.Collections.IObservableVector`1<Object>", (PCWSTR)L"Object" /* BaseTypeName */ , nullptr /* Activator Func */, nullptr /* PopulatePropertiesFunc */ );
+            xamlType->SetCollectionAddFunc((std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)>)[](winrt::IInspectable const& collection, winrt::IInspectable const& value)
+            {
+                collection.as<winrt::Windows::Foundation::Collections::IObservableVector<winrt::IInspectable>>().Append(unbox_value<winrt::IInspectable>(value));
+            });
+
             return static_cast<winrt::IXamlType>(*xamlType);
         }
     },

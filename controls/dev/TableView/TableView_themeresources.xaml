@@ -13,10 +13,10 @@
                  the single canonical source
                  controls/dev/CommonStyles/TabularSurfaces_themeresources.xaml (with last-resort
                  re-resolving {ThemeResource} fallbacks at the root of TableView.xaml for hosts that do
-                 not merge it). The brushes were previously mirrored here too, but that duplicated every
-                 TabularSurface* x:Key in the same Default/Light/HighContrast dictionaries; with Tabular
-                 theme-XBF emission enabled the two ThemeResources pages merge and the overlapping keys
-                 would raise a duplicate-key build failure. Keep brushes out of this page. -->
+                 not merge it). Keep brushes out of this page: mirroring them here duplicates every
+                 TabularSurface* x:Key across the same Default/Light/HighContrast dictionaries, and
+                 with theme-XBF emission enabled for this binary the two ThemeResources pages merge
+                 and the overlapping keys raise a duplicate-key build failure. -->
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
