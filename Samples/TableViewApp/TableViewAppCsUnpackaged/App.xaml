@@ -8,6 +8,10 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Tabular ships its own theme resources, exactly as MUXC ships XamlControlsResources.
+                     TableView's column-header style resolves SortIndicatorForeground from this
+                     dictionary, so activation fails without it. -->
+                <TabularControlsResources xmlns="using:Microsoft.UI.Xaml.Controls.Tabular" />
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->

@@ -435,6 +435,15 @@
       <!-- Unmerged winmds carry the midlrt 'winrtbase' placeholder, which only mdmerge resolves. -->
       <ReferencePath Remove="@(ReferencePath)" Condition="$([System.String]::new('%(RootDir)%(Directory)').Contains('Unmerged'))" />
     </ItemGroup>
+    <!-- Pass2 below does not read @(ReferencePath): for native projects the SDK's MarkupCompilePass2
+         already snapshotted it into @(XamlReferencesToCompile) (via @(WinMDReferenceToCompile)) before
+         this target ran. Filter that snapshot identically, or Pass2 still sees the pre-merge winmds and
+         fails with WMC1006 "cannot resolve assembly: winrtbase". -->
+    <ItemGroup>
+      <XamlReferencesToCompile Remove="@(XamlReferencesToCompile)" Condition="'%(Filename)%(Extension)' == 'Microsoft.UI.Xaml.winmd' and $([System.String]::new('%(RootDir)%(Directory)').Contains('private'))" />
+      <XamlReferencesToCompile Remove="@(XamlReferencesToCompile)" Condition="'%(Filename)%(Extension)' == 'Microsoft.winmd' and $([System.String]::new('%(RootDir)%(Directory)').Contains('dev\dll\Merged'))" />
+      <XamlReferencesToCompile Remove="@(XamlReferencesToCompile)" Condition="$([System.String]::new('%(RootDir)%(Directory)').Contains('Unmerged'))" />
+    </ItemGroup>
     <CallTarget Targets="SDKRedistOutputGroup" Condition="'$(IncludeSDKRedistOutputGroup)' == 'true'">
       <Output TaskParameter="TargetOutputs" ItemName="_SDKRedistOutputGroupOutput_xaml" />
     </CallTarget>

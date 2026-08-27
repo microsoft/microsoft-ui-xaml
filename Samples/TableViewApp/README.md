@@ -13,10 +13,19 @@ separately-built control set.
 
 ## What they prove
 
-Each app references `Microsoft.WindowsAppSDK.WinUI` **and nothing else**. `App.xaml` merges only
-`XamlControlsResources`, exactly as ChartApp does. There is no projection regeneration, no manifest
-injection, no theme resources compiled from the control source, no staged DLL, and no type seed —
-the control resolves its own default style and theme resources from the package.
+Each app references `Microsoft.WindowsAppSDK.WinUI` **and nothing else**. `App.xaml` merges
+`XamlControlsResources` plus `TabularControlsResources`. There is no projection regeneration, no
+manifest injection, no theme resources compiled from the control source, no staged DLL, and no type
+seed — the control resolves its own default style and theme resources from the package.
+
+`TabularControlsResources` is Tabular's own theme-resource dictionary, the exact analogue of
+`XamlControlsResources` for MUXC, and merging it is a normal part of consuming the control set
+rather than a workaround. It is required: `TableView`'s column-header style resolves
+`SortIndicatorForeground` from it, and `SortIndicator` ships in the Tabular DLL rather than in MUXC
+(`controls/Tabular.ProjectImports.targets` is the only importer of `SortIndicator.vcxitems`).
+Without the merge the app throws `XamlParseException 0x802B000A` — "Cannot find a Resource with the
+Name/Key SortIndicatorForeground" — during the first layout pass, which surfaces as a
+`0xC000027B` stowed exception a few seconds after launch.
 
 Each app instantiates `TableView` **twice on purpose**:
 
