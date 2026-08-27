@@ -40,6 +40,12 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ConfigureThenRemoveDefaultMediaPlayer)
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(PausesAndResumesMediaPlayerWhenRemovedFromTree)
+            END_TEST_METHOD()
+
+            BEGIN_TEST_METHOD(PausesMediaPlayerWhenWindowCloses)
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(ParseSourceUri)
             TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
             END_TEST_METHOD()
@@ -66,4 +72,3 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
 
     } } }
 } } } }
-

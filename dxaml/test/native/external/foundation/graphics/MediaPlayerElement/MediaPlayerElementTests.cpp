@@ -479,5 +479,156 @@ void MediaPlayerElementTests::ConfigureThenRemoveDefaultMediaPlayer()
     });
 }
 
+void MediaPlayerElementTests::PausesAndResumesMediaPlayerWhenRemovedFromTree()
+{
+    TestCleanupWrapper cleanup;
+
+    auto playingEvent = std::make_shared<Event>();
+    auto pausedEvent = std::make_shared<Event>();
+    auto playbackStateChangedRegistration = CreateSafeEventRegistration(MediaPlaybackSession, PlaybackStateChanged);
+    xaml_controls::Grid^ root = nullptr;
+    xaml_controls::MediaPlayerElement^ mpe = nullptr;
+    MediaPlayer^ player = nullptr;
+
+    RunOnUIThread([&]()
+    {
+        root = ref new xaml_controls::Grid();
+        mpe = ref new xaml_controls::MediaPlayerElement();
+        mpe->AutoPlay = true;
+        root->Children->Append(mpe);
+        TestServices::WindowHelper->WindowContent = root;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        player = mpe->MediaPlayer;
+        VERIFY_IS_NOT_NULL(player);
+
+        playbackStateChangedRegistration.Attach(
+            player->PlaybackSession,
+            ref new wf::TypedEventHandler<MediaPlaybackSession^, Platform::Object^>(
+                [&](MediaPlaybackSession^ session, Platform::Object^)
+                {
+                    if (session->PlaybackState == MediaPlaybackState::Playing)
+                    {
+                        playingEvent->Set();
+                    }
+                    else if (session->PlaybackState == MediaPlaybackState::Paused)
+                    {
+                        pausedEvent->Set();
+                    }
+                }));
+
+        mpe->Source = ::Windows::Media::Core::MediaSource::CreateFromUri(
+            ref new Uri(GetResourcesPath() + L"testfile.wmv"));
+    });
+
+    playingEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(MediaPlaybackState::Playing, player->PlaybackSession->PlaybackState);
+        root->Children->RemoveAt(0);
+    });
+
+    pausedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(MediaPlaybackState::Paused, player->PlaybackSession->PlaybackState);
+        VERIFY_ARE_EQUAL(player, mpe->MediaPlayer);
+
+        playingEvent->Reset();
+        root->Children->Append(mpe);
+    });
+
+    playingEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(MediaPlaybackState::Playing, player->PlaybackSession->PlaybackState);
+        VERIFY_ARE_EQUAL(player, mpe->MediaPlayer);
+    });
+}
+
+void MediaPlayerElementTests::PausesMediaPlayerWhenWindowCloses()
+{
+    auto playingEvent = std::make_shared<Event>();
+    auto pausedEvent = std::make_shared<Event>();
+    auto playbackStateChangedRegistration = CreateSafeEventRegistration(MediaPlaybackSession, PlaybackStateChanged);
+    Window^ window = nullptr;
+    xaml_controls::MediaPlayerElement^ mpe = nullptr;
+    MediaPlayer^ player = nullptr;
+    bool windowIsOpen = false;
+
+    TestCleanupWrapper cleanup([&]()
+    {
+        if (windowIsOpen)
+        {
+            RunOnUIThread([&]()
+            {
+                window->Close();
+                windowIsOpen = false;
+                window = nullptr;
+                mpe = nullptr;
+                player = nullptr;
+            });
+        }
+    });
+
+    RunOnUIThread([&]()
+    {
+        window = ref new Window();
+        mpe = ref new xaml_controls::MediaPlayerElement();
+        mpe->AutoPlay = true;
+        window->Content = mpe;
+        window->Activate();
+        windowIsOpen = true;
+    });
+    TestServices::WindowHelper->WaitForIdle();
+
+    RunOnUIThread([&]()
+    {
+        player = mpe->MediaPlayer;
+        VERIFY_IS_NOT_NULL(player);
+
+        playbackStateChangedRegistration.Attach(
+            player->PlaybackSession,
+            ref new wf::TypedEventHandler<MediaPlaybackSession^, Platform::Object^>(
+                [&](MediaPlaybackSession^ session, Platform::Object^)
+                {
+                    if (session->PlaybackState == MediaPlaybackState::Playing)
+                    {
+                        playingEvent->Set();
+                    }
+                    else if (session->PlaybackState == MediaPlaybackState::Paused)
+                    {
+                        pausedEvent->Set();
+                    }
+                }));
+
+        mpe->Source = ::Windows::Media::Core::MediaSource::CreateFromUri(
+            ref new Uri(GetResourcesPath() + L"testfile.wmv"));
+    });
+
+    playingEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(MediaPlaybackState::Playing, player->PlaybackSession->PlaybackState);
+        window->Close();
+        windowIsOpen = false;
+    });
+
+    pausedEvent->WaitForDefault();
+
+    RunOnUIThread([&]()
+    {
+        VERIFY_ARE_EQUAL(MediaPlaybackState::Paused, player->PlaybackSession->PlaybackState);
+        VERIFY_ARE_EQUAL(player, mpe->MediaPlayer);
+    });
+}
+
     } } }
 } } } }
