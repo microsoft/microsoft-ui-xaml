@@ -15,6 +15,9 @@ public:
     void CanUserResizeColumns(bool value);
     bool CanUserResizeColumns();
 
+    void CanUserSortColumns(bool value);
+    bool CanUserSortColumns();
+
     void Columns(winrt::IVector<winrt::TableViewColumn> const& value);
     winrt::IVector<winrt::TableViewColumn> Columns();
 
@@ -26,6 +29,9 @@ public:
 
     void GridLinesVisibility(winrt::TableViewGridLinesVisibility const& value);
     winrt::TableViewGridLinesVisibility GridLinesVisibility();
+
+    void GroupHeaderTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate GroupHeaderTemplate();
 
     void HeadersVisibility(winrt::TableViewHeadersVisibility const& value);
     winrt::TableViewHeadersVisibility HeadersVisibility();
@@ -50,10 +56,12 @@ public:
 
     static winrt::DependencyProperty AlternatingRowBackgroundProperty() { return s_AlternatingRowBackgroundProperty; }
     static winrt::DependencyProperty CanUserResizeColumnsProperty() { return s_CanUserResizeColumnsProperty; }
+    static winrt::DependencyProperty CanUserSortColumnsProperty() { return s_CanUserSortColumnsProperty; }
     static winrt::DependencyProperty ColumnsProperty() { return s_ColumnsProperty; }
     static winrt::DependencyProperty DensityProperty() { return s_DensityProperty; }
     static winrt::DependencyProperty EmptyTemplateProperty() { return s_EmptyTemplateProperty; }
     static winrt::DependencyProperty GridLinesVisibilityProperty() { return s_GridLinesVisibilityProperty; }
+    static winrt::DependencyProperty GroupHeaderTemplateProperty() { return s_GroupHeaderTemplateProperty; }
     static winrt::DependencyProperty HeadersVisibilityProperty() { return s_HeadersVisibilityProperty; }
     static winrt::DependencyProperty IsReadOnlyProperty() { return s_IsReadOnlyProperty; }
     static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
@@ -64,10 +72,12 @@ public:
 
     static GlobalDependencyProperty s_AlternatingRowBackgroundProperty;
     static GlobalDependencyProperty s_CanUserResizeColumnsProperty;
+    static GlobalDependencyProperty s_CanUserSortColumnsProperty;
     static GlobalDependencyProperty s_ColumnsProperty;
     static GlobalDependencyProperty s_DensityProperty;
     static GlobalDependencyProperty s_EmptyTemplateProperty;
     static GlobalDependencyProperty s_GridLinesVisibilityProperty;
+    static GlobalDependencyProperty s_GroupHeaderTemplateProperty;
     static GlobalDependencyProperty s_HeadersVisibilityProperty;
     static GlobalDependencyProperty s_IsReadOnlyProperty;
     static GlobalDependencyProperty s_ItemsSourceProperty;
@@ -82,10 +92,16 @@ public:
     void CellEditEnding(winrt::event_token const& token);
     winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs> const& value);
     void SelectionChanged(winrt::event_token const& token);
+    winrt::event_token Sorted(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs> const& value);
+    void Sorted(winrt::event_token const& token);
+    winrt::event_token Sorting(winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortingEventArgs> const& value);
+    void Sorting(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewBeginningEditEventArgs>> m_beginningEditEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewCellEditEndingEventArgs>> m_cellEditEndingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TableView, winrt::SelectionChangedEventArgs>> m_selectionChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortedEventArgs>> m_sortedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TableView, winrt::TableViewSortingEventArgs>> m_sortingEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
@@ -95,6 +111,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnCanUserResizeColumnsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnCanUserSortColumnsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

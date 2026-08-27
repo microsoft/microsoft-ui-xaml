@@ -63,6 +63,42 @@
     <value>({0})</value>
     <comment>Format string for the item count shown in group headers. {0} is the culture-formatted item count.</comment>
   </data>
+  <data name="TableViewGroupHeaderNull" xml:space="preserve">
+    <value>(null)</value>
+    <comment>Placeholder text shown in group headers when the grouping key is null.</comment>
+  </data>
+  <data name="TableViewGroupHeaderFallback" xml:space="preserve">
+    <value>(group)</value>
+    <comment>Placeholder text shown in group headers when the grouping key cannot be converted to a string.</comment>
+  </data>
+  <data name="TableViewSortedAscending" xml:space="preserve">
+    <value>Sorted by %1!s! ascending.</value>
+    <comment>Screen-reader announcement after the rows are sorted ascending. %1!s! is the column header text.</comment>
+  </data>
+  <data name="TableViewSortedDescending" xml:space="preserve">
+    <value>Sorted by %1!s! descending.</value>
+    <comment>Screen-reader announcement after the rows are sorted descending. %1!s! is the column header text.</comment>
+  </data>
+  <data name="TableViewSortCleared" xml:space="preserve">
+    <value>Sorting cleared for %1!s!.</value>
+    <comment>Screen-reader announcement after sorting is removed from one column. %1!s! is the column header text.</comment>
+  </data>
+  <data name="TableViewSortClearedAll" xml:space="preserve">
+    <value>All sorting cleared.</value>
+    <comment>Screen-reader announcement after sorting is removed from every column.</comment>
+  </data>
+  <data name="TableViewSortAscendingHelpText" xml:space="preserve">
+    <value>Sorted ascending</value>
+    <comment>Help text reported by a column header that is currently sorted ascending.</comment>
+  </data>
+  <data name="TableViewSortDescendingHelpText" xml:space="preserve">
+    <value>Sorted descending</value>
+    <comment>Help text reported by a column header that is currently sorted descending.</comment>
+  </data>
+  <data name="TableViewSortNoneHelpText" xml:space="preserve">
+    <value>Not sorted</value>
+    <comment>Help text reported by a sortable column header that is not currently sorted.</comment>
+  </data>
   <!-- Automation peer strings -->
   <data name="TableViewColumnWidthChanged" xml:space="preserve">
     <value>Column %1!s! width: %2!s! pixels.</value>

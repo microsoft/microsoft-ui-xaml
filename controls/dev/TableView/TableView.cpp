@@ -8,6 +8,8 @@
 #include "TableViewRow.h"
 #include "TableViewCellsPanel.h"
 #include "TableViewAutomationPeer.h"
+#include "TableViewSource.h"
+#include "SortIndicator.h"
 #include "RuntimeProfiler.h"
 #include "TVDiag.h"
 
@@ -25,11 +27,29 @@ static constexpr std::wstring_view s_ResizeGripperWidthKey{ L"TableViewResizeGri
 // Matches TableViewResizeGripperWidth in the theme dictionaries; used when that key is missing or
 // unusable.
 static constexpr double c_resizeGripperWidthFallback{ 8.0 };
-// Separator drawn on the column's logical-end edge while the gripper is hovered.
+static constexpr std::wstring_view s_SortIndicatorName{ L"TableViewSortIndicator"sv };
 // ScrollViewer template names are documented; ancestors are resolved by walking from child parts.
 
 namespace
 {
+    // cppwinrt's == compares raw ABI pointers, which can differ for the same object across a QI,
+    // so fall back to canonical IUnknown identity.
+    bool IsSameObject(winrt::IInspectable const& left, winrt::IInspectable const& right)
+    {
+        if (left == right)
+        {
+            return true;
+        }
+
+        if (!left || !right)
+        {
+            return false;
+        }
+
+        return left.as<winrt::Windows::Foundation::IUnknown>() ==
+               right.as<winrt::Windows::Foundation::IUnknown>();
+    }
+
     winrt::ScrollViewer FindScrollViewerAncestor(winrt::DependencyObject const& start)
     {
         winrt::DependencyObject node = start;
@@ -264,6 +284,19 @@ TableView::TableView()
         });
     AddHandler(winrt::UIElement::PreviewKeyDownEvent(), winrt::box_value(m_previewKeyDownHandler), false /* handledEventsToo */);
 
+    // The header cell's subtree does not observe the ambient FlowDirection auto-flip, so
+    // RebuildHeaders stamps the trailing-edge alignment from the control's FlowDirection. That
+    // stamp is not self-updating: rebuild the headers when the direction actually flips.
+    RegisterPropertyChangedCallback(
+        winrt::FrameworkElement::FlowDirectionProperty(),
+        [weakThis](winrt::DependencyObject const&, winrt::DependencyProperty const&)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->QueueRebuildHeaders();
+            }
+        });
+
     // Editing gestures. Separate from the navigation handlers above; the key sets are disjoint.
     // handledEventsToo is required because a single-line TextBox marks Enter handled and the commit
     // must still run - each key case in OnKeyDownForEditing owns its own Handled policy.
@@ -428,8 +461,9 @@ void TableView::OnApplyTemplate()
     m_emptyStatePresenter.set(GetTemplateChild(hstring{ s_EmptyStatePresenterPartName }).try_as<winrt::ContentControl>());
     auto weakThis = get_weak();
 
-    // Drive the repeater from the flat ItemsSource DP once the template is alive.
-    UpdateRowsItemsSource();
+    // Drive the repeater from the active source once the template is alive. The source itself is
+    // unchanged, so this only pushes its view into the freshly built repeater.
+    RefreshRowsPipeline();
 
     // Defer ScrollViewer ancestor lookup until Loaded because template parts are not fully connected here.
     if (auto headerHost = m_headerHost.get())
@@ -563,7 +597,7 @@ void TableView::OnRowsRepeaterLoaded(const winrt::IInspectable& /*sender*/, cons
     {
         // Only re-source cached pages after Unloaded actually drained the repeater.
         m_rowsSourceDrained = false;
-        UpdateRowsItemsSource();
+        RefreshRowsPipeline();
     }
 
     if (m_bodyScroller.get())
@@ -674,8 +708,18 @@ void TableView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChan
     // stale content no longer pins the columns.
     ResetColumnDesiredWidths();
 
-    // PART_RowsRepeater is driven from the flat ItemsSource DP.
-    UpdateRowsItemsSource();
+    // A different collection invalidates any projection we synthesized over the old one, so the
+    // shaping state that lived in it goes with it. AdoptItemsSource mints a fresh projection here
+    // (the active source is still available to it as the previous source to detach), and
+    // RefreshRowsPipeline then pushes the new view into the repeater. This is the only path that
+    // reassigns the active source - every other re-entry keeps it and only refreshes the pipeline.
+
+    // PART_RowsRepeater is driven from the flat ItemsSource DP. The sort belonged to the discarded
+    // projection, so the reported sort state and the chevron go with it - otherwise they describe
+    // an order the new rows are not in.
+    ResetSortStateForNewItemsSource();
+    AdoptItemsSource();
+    RefreshRowsPipeline();
 }
 
 void TableView::OnHeadersVisibilityPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -800,14 +844,87 @@ void TableView::RefreshRowBackgroundsOnRealizedRows()
     });
 }
 
-void TableView::UpdateRowsItemsSource()
+void TableView::AdoptItemsSource()
 {
-    // Push the flat ItemsSource DP into the repeater when one exists.
-    winrt::IInspectable rowsSource = ItemsSource();
+    auto const itemsSource = ItemsSource();
+    auto tableViewSource = itemsSource.try_as<winrt::TableViewSource>();
+
+    // Normalize the source. When the app hands us a plain collection, project it through a
+    // TableViewSource of our own so the control has exactly one row pipeline rather than a shaped
+    // path and a raw one. This mirrors ItemsControl, which always routes ItemsSource through a
+    // collection view, so the grid above it never has to ask what kind of source it was given.
+    //
+    // This runs only when ItemsSource actually changes, so there is never a prior projection to
+    // reuse here - a different collection invalidated it, and the re-entries that must keep the
+    // active projection (OnApplyTemplate, repeater Loaded, a shaping verb) go through
+    // RefreshRowsPipeline and never reach this method.
+    if (!tableViewSource && itemsSource)
+    {
+        // Deliberately unguarded. The shaping engine accepts exactly the collection interfaces
+        // ItemsSourceView does, so a source it refuses is one XAML cannot project either, and
+        // ItemsRepeater raises that as an error rather than degrading. Let it surface.
+        tableViewSource = winrt::TableViewSource::From(itemsSource);
+    }
+
+    // Detach the previous source before adopting the new one. Swapping ItemsSource between two
+    // TableViewSources leaves the old one alive and still subscribed to the app's collection, so
+    // without this it keeps a back-pointer to this control and a later rebuild of that discarded
+    // source would drive a TableView it no longer belongs to.
+    if (auto const previouslyOwned = m_activeSource.get(); previouslyOwned && previouslyOwned != tableViewSource)
+    {
+        winrt::get_self<::TableViewSource>(previouslyOwned)->SetOwningTableView(nullptr);
+    }
+
+    m_activeSource.set(tableViewSource);
+
+    if (tableViewSource)
+    {
+        auto* const sourceImpl = winrt::get_self<::TableViewSource>(tableViewSource);
+        sourceImpl->SetOwningTableView(*this);
+
+        // The source raises this rather than calling back into TableView by name, so the shaping
+        // stack stays below the control. Weak, because the control owns the source through
+        // m_activeSource and a strong capture would be a cycle.
+        auto weakThis = get_weak();
+
+        sourceImpl->SetShapingChangedHandler([weakThis](bool reorderOnly)
+        {
+            if (auto strongThis = weakThis.get())
+            {
+                strongThis->OnTableViewSourceShapingChanged(reorderOnly);
+            }
+        });
+    }
+}
+
+void TableView::RefreshRowsPipeline()
+{
+    // Recompute the cached row view from whatever the active source currently projects. A shaping
+    // verb can swap the projection underneath us, so this is refreshed on every re-entry, not just
+    // on a source change.
+    winrt::IInspectable rowsSource{ nullptr };
+
+    if (auto const activeSource = m_activeSource.get())
+    {
+        // Straight through: for a TableViewSource the row view IS the projection's view.
+        m_rowsItemsSourceView = winrt::get_self<::TableViewSource>(activeSource)->GetItemsSourceView();
+        rowsSource = m_rowsItemsSourceView ? m_rowsItemsSourceView.as<winrt::IInspectable>() : nullptr;
+    }
+    else
+    {
+        // Null ItemsSource: nothing to project, so the repeater empties out below.
+        m_rowsItemsSourceView = nullptr;
+    }
 
     if (auto repeater = m_rowsRepeater.get())
     {
-        repeater.ItemsSource(rowsSource);
+        // ItemsRepeater has no identity short-circuit: re-assigning the same source tears down
+        // every container and resets scroll. Guard so a theme-change or Loaded repump does not
+        // blow away realized rows.
+        if (!IsSameObject(repeater.ItemsSource(), rowsSource))
+        {
+            repeater.ItemsSource(rowsSource);
+        }
 
         UpdateEmptyStateCollectionChangedSubscription();
         UpdateEmptyState();
@@ -817,6 +934,36 @@ void TableView::UpdateRowsItemsSource()
         ResolveSelectionAfterSourceChange();
     }
     // else: OnApplyTemplate hasn't run yet; the repeater will be sourced from there.
+}
+
+void TableView::OnTableViewSourceShapingChanged(bool reorderOnly)
+{
+    // A programmatic shaping verb rewrites the projection with no input event behind it, so
+    // nothing else tells a UIA client that the rows it cached are stale. A pure re-order keeps the
+    // same children in a new order; anything else can add or remove them.
+    if (!winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::StructureChanged))
+    {
+        return;
+    }
+
+    auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
+    if (!peer)
+    {
+        peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(*this);
+    }
+
+    if (auto const tableViewPeer = peer.try_as<winrt::TableViewAutomationPeer>())
+    {
+        auto* const impl = winrt::get_self<TableViewAutomationPeer>(tableViewPeer);
+        if (reorderOnly)
+        {
+            impl->RaiseStructureChangedForSortChange();
+        }
+        else
+        {
+            impl->RaiseStructureChangedForVirtualizationReset();
+        }
+    }
 }
 
 void TableView::OnEmptyTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -1148,6 +1295,7 @@ void TableView::OnRowElementPrepared(
         RefreshRowSelectionState(row);
         InvalidateMeasure();
     }
+
 }
 
 void TableView::OnRowElementClearing(
@@ -1185,6 +1333,7 @@ void TableView::OnRowElementClearing(
         winrt::get_self<TableViewRow>(row)->SetOwningTableViewInternal(nullptr);
         InvalidateMeasure();
     }
+
 }
 
 void TableView::OnRowElementIndexChanged(
@@ -1255,6 +1404,14 @@ void TableView::RebuildHeaders()
     {
         cachedResizeGripperWidth = c_resizeGripperWidthFallback;
     }
+    const bool canUserSortColumns = CanUserSortColumns();
+
+    // Logical-end (trailing) edge alignment must mirror under RTL. The header cell's subtree does
+    // not observe the ambient FlowDirection auto-flip, so read the control's FlowDirection and swap
+    // explicitly. This is a build-time stamp, kept current because a runtime FlowDirection flip
+    // rebuilds the headers.
+    const bool isRightToLeft = FlowDirection() == winrt::FlowDirection::RightToLeft;
+    const auto logicalEndAlignment = isRightToLeft ? winrt::HorizontalAlignment::Left : winrt::HorizontalAlignment::Right;
 
     if (auto columns = Columns())
     {
@@ -1313,7 +1470,7 @@ void TableView::RebuildHeaders()
                 winrt::Border headerGridLine;
                 headerGridLine.Name(winrt::hstring{ s_HeaderGridLineName });
                 headerGridLine.Width(1);
-                headerGridLine.HorizontalAlignment(winrt::HorizontalAlignment::Right);
+                headerGridLine.HorizontalAlignment(logicalEndAlignment);
                 headerGridLine.IsHitTestVisible(false);
                 headerGridLine.Visibility(wantVerticalHeaderLines ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
                 headerGridLine.Background(cachedHeaderGridLineBrush);
@@ -1323,10 +1480,43 @@ void TableView::RebuildHeaders()
             // Tag header cells so frozen-column refresh can map them back to columns.
             headerCell.Tag(column);
 
-            // After the grid line, so it wins the hit test on the shared edge.
+            // Sort affordance. Gated on both the control-wide and the per-column opt-in, so an
+            // opted-out column carries no chevron and no click handler at all.
+            if (canUserSortColumns && column.CanSort())
+            {
+                // Hosted in its own panel so the chevron sits on the logical trailing edge without
+                // competing with the header content's Stretch alignment.
+                winrt::StackPanel indicatorHost;
+                indicatorHost.Orientation(winrt::Orientation::Horizontal);
+                indicatorHost.HorizontalAlignment(logicalEndAlignment);
+                indicatorHost.VerticalAlignment(winrt::VerticalAlignment::Center);
+                // The chevron is decoration on top of a clickable header: letting it take the hit
+                // would create a dead spot in the middle of the click target.
+                indicatorHost.IsHitTestVisible(false);
+                AppendSortIndicatorVisual(indicatorHost, column);
+                headerCell.Children().Append(indicatorHost);
+
+                // Weak: the handler is owned by a visual the control also owns, so a strong
+                // capture would keep the TableView alive through its own header.
+                auto weakThis = get_weak();
+                headerCell.Tapped([weakThis, column](auto const&, winrt::TappedRoutedEventArgs const& args)
+                {
+                    if (auto strongThis = weakThis.get())
+                    {
+                        if (strongThis->ToggleSortDirection(column))
+                        {
+                            args.Handled(true);
+                        }
+                    }
+                });
+            }
+
+            // Last, so it wins the hit test on the edge it shares with the grid line and the sort
+            // affordance. The gripper marks the press handled, which also keeps a resize drag from
+            // reaching the header's Tapped handler and sorting the column.
             if (headerIsResizable)
             {
-                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText);
+                AppendResizeGripperVisual(headerCell, column, cachedResizeGripperWidth, headerText, logicalEndAlignment);
             }
 
             host.Children().Append(headerCell);
@@ -1338,8 +1528,97 @@ void TableView::RebuildHeaders()
     ApplyGridLinesToHeader();
 }
 
-double TableView::GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const
+// Builds the chevron for one header. The indicator is a display-only primitive: it owns no sort
+// policy, so the control sets Direction and nothing else.
+void TableView::AppendSortIndicatorVisual(const winrt::Panel& host, const winrt::TableViewColumn& column)
 {
+    if (!host || !column)
+    {
+        return;
+    }
+
+    winrt::SortIndicator indicator;
+    indicator.Name(winrt::hstring{ s_SortIndicatorName });
+    indicator.VerticalAlignment(winrt::VerticalAlignment::Center);
+    indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
+    // The header cell already reports the sort state through its automation peer's help text;
+    // surfacing the chevron separately would make AT announce the same thing twice.
+    winrt::AutomationProperties::SetAccessibilityView(indicator, winrt::AccessibilityView::Raw);
+    host.Children().Append(indicator);
+}
+
+winrt::SortIndicatorDirection TableView::ToSortIndicatorDirection(winrt::SortDirection direction)
+{
+    // Two distinct WinRT enums with matching numeric values; map explicitly rather than casting so
+    // a future divergence is a compile error rather than a wrong glyph.
+    switch (direction)
+    {
+    case winrt::SortDirection::Ascending:
+        return winrt::SortIndicatorDirection::Ascending;
+    case winrt::SortDirection::Descending:
+        return winrt::SortIndicatorDirection::Descending;
+    case winrt::SortDirection::None:
+    default:
+        return winrt::SortIndicatorDirection::None;
+    }
+}
+
+void TableView::RefreshSortIndicators()
+{
+    auto host = m_headerHost.get();
+    if (!host)
+    {
+        return;
+    }
+
+    for (auto const& child : host.Children())
+    {
+        auto const headerCell = child.try_as<winrt::FrameworkElement>();
+        if (!headerCell)
+        {
+            continue;
+        }
+
+        auto const column = headerCell.Tag().try_as<winrt::TableViewColumn>();
+        if (!column)
+        {
+            continue;
+        }
+
+        // FindName rather than a cached element list: header cells are rebuilt wholesale, so a
+        // cache would have to be invalidated in lockstep with every rebuild.
+        if (auto const indicator = headerCell.FindName(winrt::hstring{ s_SortIndicatorName }).try_as<winrt::SortIndicator>())
+        {
+            indicator.Direction(ToSortIndicatorDirection(column.SortDirection()));
+        }
+    }
+}
+
+void TableView::OnCanUserSortColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
+{
+    // The gate turning off must also drop any sort it was responsible for; leaving the rows in a
+    // sorted order with no affordance to change it would strand the user.
+    if (!CanUserSortColumns())
+    {
+        ClearSort();
+    }
+
+    // The chevron and the click handler are stamped at header-build time.
+    QueueRebuildHeaders();
+}
+
+void TableView::OnColumnCanSortChanged(const winrt::TableViewColumn& column){
+    // A column that just opted out must not keep an active sort applied to it.
+    if (column && !column.CanSort() && column.SortDirection() != winrt::SortDirection::None)
+    {
+        SortByColumn(column, winrt::SortDirection::None);
+    }
+
+    // The chevron and the click handler are stamped at header-build time.
+    QueueRebuildHeaders();
+}
+
+double TableView::GetHeaderMeasuredWidthForColumn(const winrt::TableViewColumn& column) const{
     // Own the header host's concrete panel type here so the layout engine (TableView_Layout.cpp)
     // pulls the header's measured width through this seam and never casts to TableViewCellsPanel.
     if (auto headerHost = m_headerHost.get())
@@ -1511,7 +1790,8 @@ void TableView::AppendResizeGripperVisual(
     const winrt::Grid& headerCell,
     const winrt::TableViewColumn& column,
     double gripperWidth,
-    const winrt::hstring& headerText)
+    const winrt::hstring& headerText,
+    winrt::HorizontalAlignment logicalEndAlignment)
 {
     // A real gripper in the tree, so the pointer has something to hit before any drag starts.
     auto weakThis = get_weak();
@@ -1521,10 +1801,10 @@ void TableView::AppendResizeGripperVisual(
     // Pointer affordance only here: the header cell owns keyboard focus, and one tab stop per
     // column would sit between the user and the data.
     gripperVisual.IsTabStop(false);
-    // XAML already mirrors HorizontalAlignment under RTL, so Right IS the logical-end edge -
-    // selecting Left for RTL mirrors a second time and lands the gripper on the leading edge,
-    // disagreeing with the header grid line, which uses Right unconditionally.
-    gripperVisual.HorizontalAlignment(winrt::HorizontalAlignment::Right);
+    // Same explicit logical-end alignment the grid line and the sort affordance use: the header
+    // cell's subtree does not observe the ambient FlowDirection auto-flip, so the gripper has to be
+    // told which edge is trailing or it lands opposite the grid line under RTL.
+    gripperVisual.HorizontalAlignment(logicalEndAlignment);
     gripperVisual.Width(gripperWidth);
     // The peer names itself from OwnerName, so N grippers in one header band are distinguishable.
     if (!headerText.empty())

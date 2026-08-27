@@ -689,6 +689,9 @@
         }
     }
 
+    // Reference-typed setters forward null unchanged: a null IInspectable means "clear this
+    // property", and the target setters accept null for that. Calling .as<T>() on a null value
+    // would throw instead, so XAML could never clear a reference-typed property.
     string GetSnippet_SetValue(Type type, PropertyInfo property)
     {
         if (property.PropertyType.IsPrimitive)
@@ -707,11 +710,11 @@
                 var inner = property.PropertyType.GetGenericArguments()[0];
                 if (inner.IsPrimitive)
                 {
-                    return string.Format("instance.as<winrt::{0}>().{1}(value.as<winrt::IReference<{2}>>())", type.Name, property.Name, GetPrimitiveTypeName(inner.Name));
+                    return string.Format("instance.as<winrt::{0}>().{1}(value ? value.as<winrt::IReference<{2}>>() : nullptr)", type.Name, property.Name, GetPrimitiveTypeName(inner.Name));
                 }
                 else
                 {
-                    return string.Format("instance.as<winrt::{0}>().{1}(value.as<winrt::IReference<winrt::{2}>>())", type.Name, property.Name, GetValueTypeName(inner));
+                    return string.Format("instance.as<winrt::{0}>().{1}(value ? value.as<winrt::IReference<winrt::{2}>>() : nullptr)", type.Name, property.Name, GetValueTypeName(inner));
                 }
             }
             
@@ -728,7 +731,7 @@
 
         var propertyType = new WinRtType(property.PropertyType);
 
-        return string.Format("instance.as<winrt::{0}>().{1}(value.as<{2}>())", type.Name, property.Name, propertyType.CppWinRtName);
+        return string.Format("instance.as<winrt::{0}>().{1}(value ? value.as<{2}>() : nullptr)", type.Name, property.Name, propertyType.CppWinRtName);
     }
 
     void WriteCreateFromStringFunc(Type type)
