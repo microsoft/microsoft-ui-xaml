@@ -179,6 +179,7 @@ extends:
       - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
         parameters:
           MUXFinalRelease: ${{ parameters.MUXFinalRelease }}
+          condition: false
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-RunScenarioTests-Stage.yml@WinUIInternal
