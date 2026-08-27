@@ -25,13 +25,16 @@ Also verify:
 - The caller is a local admin or a member of **Hyper-V Administrators**.
 - The command uses `initial_wait` of at least **180 seconds**.
 
-For missing Hyper-V permissions, ask the user for confirmation before making
-this permanent host change. If they approve, run it once from an admin prompt,
-then have them log out and back in:
+If Hyper-V permissions are missing, **do not add the user to the group**. Tell
+the user to open an administrator PowerShell window and run this command
+themselves:
 
 ```powershell
 Add-LocalGroupMember -Group 'Hyper-V Administrators' -Member (whoami)
 ```
+
+Tell the user to sign out and back in afterward. Wait for them to confirm they
+have completed these steps before retrying the test.
 
 The first run prompts for VM credentials in a separate window and caches them
 encrypted under `~\.winui-test`. Use `-ResetCredential` to replace them.
@@ -83,7 +86,7 @@ files incrementally.
 |---------|-------|-----|
 | `Could not launch app`, foreground-window errors, or an empty UIA tree | VM desktop is locked or not visible | Keep the VM desktop unlocked and active |
 | `Failed to connect to VM` | VM not running or wrong credentials | Start the VM; use `-ResetCredential` to re-enter credentials |
-| Permission error | Need Hyper-V Administrators membership | Run the one-time group command above |
+| Permission error | Need Hyper-V Administrators membership | Have the user follow the permission steps above |
 | Incomplete payload or prerun failure | Stale payload or partial deployment | Omit `-SkipPayload`; retry with `-FullCopy` if needed |
 
 ## Crash Dumps
