@@ -6,6 +6,8 @@
 #include "TableView.h"
 #include "TableViewAutomationPeer.g.h"
 
+#include <vector>
+
 class TableViewAutomationPeer :
     public ReferenceTracker<TableViewAutomationPeer, winrt::implementation::TableViewAutomationPeerT>
 {
@@ -39,6 +41,29 @@ public:
         winrt::AutomationProperty const& property,
         winrt::IInspectable const& value);
 
+    // Internal — raised by TableView when a programmatic shaping verb rewrote the projection.
+    // A reshape has no input event behind it, so this is the only signal an AT client gets that
+    // the rows it cached are stale.
+    void RaiseStructureChangedForSortChange();
+    void RaiseStructureChangedForVirtualizationReset();
+
 private:
+    // One peer per column, kept alive for as long as the column stays in Columns(). Each call
+    // to GetColumnHeaders must hand back the same provider for a given column: minting a fresh
+    // peer per call yields unstable provider identity and leaves the returned providers with no
+    // owner keeping them alive.
+    struct ColumnHeaderPeerCacheEntry
+    {
+        winrt::weak_ref<winrt::TableViewColumn> column{ nullptr };
+        winrt::AutomationPeer peer{ nullptr };
+    };
+
+    winrt::AutomationPeer GetOrCreateColumnHeaderPeer(
+        winrt::TableView const& tableView,
+        winrt::TableViewColumn const& column);
+
+    void RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType);
     com_ptr<TableView> GetImpl();
+
+    std::vector<ColumnHeaderPeerCacheEntry> m_columnHeaderPeerCache;
 };

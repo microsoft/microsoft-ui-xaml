@@ -14,6 +14,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls::Tabular
 #include "TableViewColumn.g.cpp"
 
 GlobalDependencyProperty TableViewColumnProperties::s_ActualWidthProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_CanSortProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_CellEditingTemplateProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_FrozenEdgeProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_HeaderProperty{ nullptr };
@@ -22,6 +23,9 @@ GlobalDependencyProperty TableViewColumnProperties::s_HeaderTemplateSelectorProp
 GlobalDependencyProperty TableViewColumnProperties::s_IsReadOnlyProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_MaxWidthProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_MinWidthProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_SortCycleProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_SortDirectionProperty{ nullptr };
+GlobalDependencyProperty TableViewColumnProperties::s_SortMemberPathProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_VisibilityProperty{ nullptr };
 GlobalDependencyProperty TableViewColumnProperties::s_WidthProperty{ nullptr };
 
@@ -42,6 +46,17 @@ void TableViewColumnProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(120.0),
                 nullptr);
+    }
+    if (!s_CanSortProperty)
+    {
+        s_CanSortProperty =
+            InitializeDependencyProperty(
+                L"CanSort",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnCanSortPropertyChanged));
     }
     if (!s_CellEditingTemplateProperty)
     {
@@ -131,6 +146,39 @@ void TableViewColumnProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(20.0),
                 winrt::PropertyChangedCallback(&OnMinWidthPropertyChanged));
     }
+    if (!s_SortCycleProperty)
+    {
+        s_SortCycleProperty =
+            InitializeDependencyProperty(
+                L"SortCycle",
+                winrt::name_of<winrt::TableViewSortCycle>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<winrt::TableViewSortCycle>::BoxValueIfNecessary(winrt::TableViewSortCycle::AscendingDescending),
+                nullptr);
+    }
+    if (!s_SortDirectionProperty)
+    {
+        s_SortDirectionProperty =
+            InitializeDependencyProperty(
+                L"SortDirection",
+                winrt::name_of<winrt::SortDirection>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<winrt::SortDirection>::BoxValueIfNecessary(winrt::SortDirection::None),
+                nullptr);
+    }
+    if (!s_SortMemberPathProperty)
+    {
+        s_SortMemberPathProperty =
+            InitializeDependencyProperty(
+                L"SortMemberPath",
+                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::TableViewColumn>(),
+                false /* isAttached */,
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_VisibilityProperty)
     {
         s_VisibilityProperty =
@@ -158,6 +206,7 @@ void TableViewColumnProperties::EnsureProperties()
 void TableViewColumnProperties::ClearProperties()
 {
     s_ActualWidthProperty = nullptr;
+    s_CanSortProperty = nullptr;
     s_CellEditingTemplateProperty = nullptr;
     s_FrozenEdgeProperty = nullptr;
     s_HeaderProperty = nullptr;
@@ -166,8 +215,19 @@ void TableViewColumnProperties::ClearProperties()
     s_IsReadOnlyProperty = nullptr;
     s_MaxWidthProperty = nullptr;
     s_MinWidthProperty = nullptr;
+    s_SortCycleProperty = nullptr;
+    s_SortDirectionProperty = nullptr;
+    s_SortMemberPathProperty = nullptr;
     s_VisibilityProperty = nullptr;
     s_WidthProperty = nullptr;
+}
+
+void TableViewColumnProperties::OnCanSortPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TableViewColumn>();
+    winrt::get_self<TableViewColumn>(owner)->OnPropertyChanged(args);
 }
 
 void TableViewColumnProperties::OnCellEditingTemplatePropertyChanged(
@@ -261,6 +321,19 @@ void TableViewColumnProperties::ActualWidth(double value)
 double TableViewColumnProperties::ActualWidth()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_ActualWidthProperty));
+}
+
+void TableViewColumnProperties::CanSort(bool value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_CanSortProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    }
+}
+
+bool TableViewColumnProperties::CanSort()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_CanSortProperty));
 }
 
 void TableViewColumnProperties::CellEditingTemplate(winrt::DataTemplate const& value)
@@ -365,6 +438,45 @@ void TableViewColumnProperties::MinWidth(double value)
 double TableViewColumnProperties::MinWidth()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_MinWidthProperty));
+}
+
+void TableViewColumnProperties::SortCycle(winrt::TableViewSortCycle const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_SortCycleProperty, ValueHelper<winrt::TableViewSortCycle>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::TableViewSortCycle TableViewColumnProperties::SortCycle()
+{
+    return ValueHelper<winrt::TableViewSortCycle>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_SortCycleProperty));
+}
+
+void TableViewColumnProperties::SortDirection(winrt::SortDirection const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_SortDirectionProperty, ValueHelper<winrt::SortDirection>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::SortDirection TableViewColumnProperties::SortDirection()
+{
+    return ValueHelper<winrt::SortDirection>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_SortDirectionProperty));
+}
+
+void TableViewColumnProperties::SortMemberPath(winrt::hstring const& value)
+{
+    [[gsl::suppress(con)]]
+    {
+    static_cast<TableViewColumn*>(this)->SetValue(s_SortMemberPathProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    }
+}
+
+winrt::hstring TableViewColumnProperties::SortMemberPath()
+{
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<TableViewColumn*>(this)->GetValue(s_SortMemberPathProperty));
 }
 
 void TableViewColumnProperties::Visibility(winrt::Visibility const& value)

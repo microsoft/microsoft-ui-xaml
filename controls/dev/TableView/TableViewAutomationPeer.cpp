@@ -103,6 +103,23 @@ winrt::AutomationControlType TableViewAutomationPeer::GetAutomationControlTypeCo
     return winrt::AutomationControlType::DataGrid;
 }
 
+void TableViewAutomationPeer::RaiseStructureChangedForSortChange()
+{
+    // Same children, new order.
+    RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenReordered);
+}
+
+void TableViewAutomationPeer::RaiseStructureChangedForVirtualizationReset()
+{
+    // Membership or bucketing changed, so any cached child could be gone.
+    RaiseStructureChanged(winrt::AutomationStructureChangeType::ChildrenInvalidated);
+}
+
+void TableViewAutomationPeer::RaiseStructureChanged(winrt::AutomationStructureChangeType const& structureChangeType)
+{
+    RaiseStructureChangedEvent(structureChangeType, nullptr);
+}
+
 com_ptr<TableView> TableViewAutomationPeer::GetImpl()
 {
     com_ptr<TableView> impl = nullptr;
@@ -264,9 +281,13 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetS
         {
             if (auto const rowPeer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(rowElement))
             {
-                std::vector<winrt::IRawElementProviderSimple> selection;
-                selection.push_back(ProviderFromPeer(rowPeer));
-                return winrt::com_array(selection);
+                // An empty selection is a valid answer; an array holding a null provider is not.
+                if (auto const provider = ProviderFromPeer(rowPeer))
+                {
+                    std::vector<winrt::IRawElementProviderSimple> selection;
+                    selection.push_back(provider);
+                    return winrt::com_array(selection);
+                }
             }
         }
     }
@@ -290,6 +311,7 @@ bool TableViewAutomationPeer::IsSelectionRequired()
 winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetColumnHeaders()
 {
     std::vector<winrt::IRawElementProviderSimple> headers;
+    std::vector<ColumnHeaderPeerCacheEntry> liveCache;
 
     // Key off visible logical Columns() so headers enumerate before templates realize.
     if (auto const tableView = Owner().try_as<winrt::TableView>())
@@ -298,6 +320,7 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
         {
             const auto count = columns.Size();
             headers.reserve(count);
+            liveCache.reserve(count);
             for (uint32_t i = 0; i < count; i++)
             {
                 auto const column = columns.GetAt(i);
@@ -305,14 +328,56 @@ winrt::com_array<winrt::IRawElementProviderSimple> TableViewAutomationPeer::GetC
                 {
                     continue;
                 }
-                // TableView ownership allows pre-realization enumeration but shares RuntimeId.
-                auto headerPeer = winrt::make<TableViewColumnHeaderAutomationPeer>(tableView, column);
-                headers.push_back(ProviderFromPeer(headerPeer));
+
+                auto headerPeer = GetOrCreateColumnHeaderPeer(tableView, column);
+                if (!headerPeer)
+                {
+                    continue;
+                }
+
+                // The peer is cached even when it currently has no provider: ProviderFromPeer only
+                // yields one for a peer UIA has connected, so a transiently unconnected peer must
+                // keep its identity for the next enumeration rather than being rebuilt.
+                liveCache.push_back({ winrt::make_weak(column), headerPeer });
+
+                // A provider array must not contain nulls - UIA marshals every element.
+                if (auto const provider = ProviderFromPeer(headerPeer))
+                {
+                    headers.push_back(provider);
+                }
             }
         }
     }
 
+    // Replacing the cache wholesale drops peers for columns that are gone or no longer visible.
+    m_columnHeaderPeerCache = std::move(liveCache);
+
     return winrt::com_array(headers);
+}
+
+winrt::AutomationPeer TableViewAutomationPeer::GetOrCreateColumnHeaderPeer(
+    winrt::TableView const& tableView,
+    winrt::TableViewColumn const& column)
+{
+    if (!tableView || !column)
+    {
+        return nullptr;
+    }
+
+    // Looked up against the cache as it stood at the previous enumeration, so a column that
+    // survives keeps the very same peer - and therefore the same provider identity - across calls.
+    for (auto const& entry : m_columnHeaderPeerCache)
+    {
+        if (entry.peer && entry.column.get() == column)
+        {
+            return entry.peer;
+        }
+    }
+
+    // The TableView owns the peer so headers stay enumerable before their templates realize;
+    // TableViewColumnHeaderAutomationPeer supplies its own per-column RuntimeId and AutomationId
+    // to keep the headers distinguishable despite the shared owner.
+    return winrt::make<TableViewColumnHeaderAutomationPeer>(tableView, column);
 }
 
 static winrt::hstring ItemToName(winrt::IInspectable const& item)
