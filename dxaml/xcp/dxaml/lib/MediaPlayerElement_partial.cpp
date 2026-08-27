@@ -920,3 +920,4 @@ EVENT_IMPL(ManipulationInertiaStarting)
 EVENT_IMPL(ManipulationStarted)
 EVENT_IMPL(ManipulationDelta)
 EVENT_IMPL(ManipulationCompleted)
+
