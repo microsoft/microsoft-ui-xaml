@@ -886,3 +886,4 @@ EVENT_IMPL(ManipulationInertiaStarting)
 EVENT_IMPL(ManipulationStarted)
 EVENT_IMPL(ManipulationDelta)
 EVENT_IMPL(ManipulationCompleted)
+// Keep content after the final macro expansion to avoid MSVC C5032 at end of file.
