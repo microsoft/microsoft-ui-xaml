@@ -16,9 +16,9 @@ evaluation.
 2. `publish` (`issues: write`) runs **only** when at least one candidate scores at or above the
    threshold. It creates or updates a single canonical comment identified by
    `<!-- winui-duplicate-detection:v1 -->`.
-3. When the strongest match is **High** confidence, `publish` can additionally submit GitHub's
-   native duplicate suggestion, which renders an accept/decline chip on the issue. This step is
-   **off by default**; see below.
+3. When the strongest match is **High** confidence, `publish` also submits GitHub's native
+   duplicate suggestion, which renders an accept/decline agent suggestion chip at the top of
+   the issue.
 
 When no candidate clears the threshold, nothing is commented. The workflow never applies or
 removes labels, never closes issues, and never edits the issue body.
@@ -42,22 +42,46 @@ X-GitHub-Api-Version: 2026-03-10
 approach is adapted from the issue-triage workflow in
 [microsoft/PowerToys](https://github.com/microsoft/PowerToys/blob/main/.github/workflows/issue-triage.md).
 
-**This step is disabled by default** (`ENABLE_DUPLICATE_SUGGESTION: "false"`). Direct probing
-against a repository without the duplicate-detection preview produced this result:
+### Verifying the suggestion
 
-| Request | Result |
-| --- | --- |
-| `suggest: true` | HTTP 200, issue stays open, no chip, nothing recorded in REST or GraphQL |
-| `suggest: false` | Issue is closed with `state_reason: duplicate` |
+The PATCH returns HTTP 200 whether or not a suggestion was recorded, and pending suggestions are
+**not exposed through REST** — reading them back from the REST issue payload shows nothing, which
+makes the write look like a no-op. They are only visible through the GraphQL `pendingSuggestions`
+union on `Issue`:
 
-The payload is therefore understood, and only the suggestion behavior is gated behind the
-preview. Enabling this step on a repository without the preview would produce a green workflow
-run that has no effect. Turn it on only after confirming the preview is active, and verify the
-chip visually the first time it runs.
+```graphql
+query($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    issue(number: $number) {
+      pendingSuggestions {
+        __typename
+        ... on PendingCloseSuggestion {
+          stateReason
+          actor { login }
+          duplicateOf { ... on Issue { number } }
+        }
+      }
+    }
+  }
+}
+```
 
-Because this relies on a preview API, the step also verifies the response: if GitHub reports the
-issue as `closed`, and the closure is attributable to this request, the workflow reopens the
-issue and fails.
+A recorded suggestion appears as a `PendingCloseSuggestion` with `stateReason: DUPLICATE`. The
+workflow runs this query twice:
+
+- **Before** the write. GitHub keys pending suggestions by actor: re-submitting as the same
+  actor replaces the previous entry rather than stacking a second one, and a different actor
+  gets its own entry. The step therefore skips the write when its own suggestion already points
+  at the same canonical issue, and defers entirely when a human has proposed a duplicate.
+- **After** the write, to confirm the suggestion actually landed. If nothing is recorded, the
+  step fails instead of reporting a false success.
+
+Maintainers resolve a pending suggestion from the chip in the UI; the equivalent API operations
+are the `applyPendingIssueSuggestions` and `rejectPendingIssueSuggestions` GraphQL mutations.
+
+The step additionally guards against the close being applied rather than suggested: if GitHub
+reports the issue as `closed`, and the closure is attributable to this request, the workflow
+reopens the issue and fails.
 
 ## Scoring
 

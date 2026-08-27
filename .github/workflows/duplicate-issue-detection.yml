@@ -99,23 +99,19 @@ jobs:
               core.info('Existing comment is already current.');
             }
 
-      # Submits GitHub's native duplicate suggestion, which renders an accept/decline chip
-      # on the issue so a maintainer can confirm and close in one click. `suggest: true`
-      # means GitHub holds the close for human review instead of applying it. Approach
-      # adapted from the issue-triage workflow in microsoft/PowerToys.
+      # Submits GitHub's native duplicate suggestion, which renders an accept/decline
+      # "agent suggestion" chip on the issue so a maintainer can confirm and close in one
+      # click. `suggest: true` means GitHub holds the close for human review instead of
+      # applying it. Approach adapted from the issue-triage workflow in microsoft/PowerToys.
       #
-      # Disabled by default. Direct probing showed that on a repository without the
-      # duplicate-detection preview enabled, `suggest: true` returns HTTP 200 and does
-      # nothing at all: no chip, no pending state, nothing queryable through REST or
-      # GraphQL. The same request with `suggest: false` closes the issue, so the payload
-      # is understood; only the suggestion behavior is gated. Enable this only once the
-      # preview is confirmed active, otherwise the step reports success while having no
-      # effect.
+      # Pending suggestions are not exposed through REST, only through the GraphQL
+      # `pendingSuggestions` union, which this step uses both to stay idempotent and to
+      # confirm the suggestion actually landed.
       - name: Suggest duplicate for maintainer review
         if: needs.detect.outputs.top_confidence == 'HIGH' && env.ENABLE_DUPLICATE_SUGGESTION == 'true'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
-          ENABLE_DUPLICATE_SUGGESTION: "false"
+          ENABLE_DUPLICATE_SUGGESTION: "true"
           TOP_NUMBER: ${{ needs.detect.outputs.top_number }}
           TOP_REASON: ${{ needs.detect.outputs.top_reason }}
         with:
@@ -149,6 +145,58 @@ jobs:
             }
             if (canonical.pull_request) {
               core.info(`#${canonicalNumber} is a pull request. Skipping suggestion.`);
+              return;
+            }
+
+            // Pending suggestions are only visible through GraphQL. Reuse this query both
+            // before the write, to skip redundant or competing writes, and after it, to
+            // confirm the suggestion was actually recorded.
+            const pendingQuery = `
+              query($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  issue(number: $number) {
+                    pendingSuggestions {
+                      __typename
+                      ... on PendingCloseSuggestion {
+                        stateReason
+                        actor { login }
+                        duplicateOf { ... on Issue { number } }
+                      }
+                    }
+                  }
+                }
+              }`;
+
+            // GitHub keys pending suggestions by actor: re-submitting as the same actor
+            // replaces the previous entry, while a different actor gets its own.
+            const isOurs = (suggestion) =>
+              (suggestion.actor?.login ?? '').startsWith('github-actions');
+
+            async function pendingDuplicateSuggestions() {
+              const result = await github.graphql(pendingQuery, {
+                owner, repo, number: issue_number,
+              });
+              const pending = result?.repository?.issue?.pendingSuggestions ?? [];
+              return pending.filter(
+                (suggestion) =>
+                  suggestion.__typename === 'PendingCloseSuggestion' &&
+                  suggestion.stateReason === 'DUPLICATE'
+              );
+            }
+
+            const existing = await pendingDuplicateSuggestions();
+
+            // A human already proposed a duplicate here. Do not compete with them.
+            if (existing.some((s) => !isOurs(s))) {
+              core.info(
+                'A duplicate suggestion from another actor is already pending. Skipping.'
+              );
+              return;
+            }
+            if (existing.some((s) => isOurs(s) && s.duplicateOf?.number === canonicalNumber)) {
+              core.info(
+                `A duplicate suggestion pointing at #${canonicalNumber} is already pending. Nothing to do.`
+              );
               return;
             }
 
@@ -203,10 +251,17 @@ jobs:
 
             core.info(`Submitted duplicate suggestion pointing at #${canonicalNumber}.`);
 
-            // A silent no-op is the expected outcome when the duplicate-detection preview
-            // is not enabled, so do not let this step imply the chip was rendered.
-            core.warning(
-              'GitHub does not expose pending duplicate suggestions through REST or GraphQL, ' +
-              'so this step cannot confirm the chip was rendered. Verify visually on the issue ' +
-              'the first time this runs.'
+            // `suggest: true` returns HTTP 200 whether or not a suggestion was recorded,
+            // so confirm through GraphQL instead of trusting the status code.
+            const recorded = await pendingDuplicateSuggestions();
+            if (!recorded.some((s) => s.duplicateOf?.number === canonicalNumber)) {
+              core.setFailed(
+                `The API accepted the request but no pending duplicate suggestion for ` +
+                `#${canonicalNumber} is recorded on this issue.`
+              );
+              return;
+            }
+
+            core.notice(
+              `Duplicate suggestion pointing at #${canonicalNumber} is pending maintainer review.`
             );
