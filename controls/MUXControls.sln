@@ -332,6 +332,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RadioMenuFlyoutItem", "Radi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RadioMenuFlyoutItem", "dev\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems", "{3353A4A7-87B3-4E43-8F8D-43C7380D1D56}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioMenuFlyoutItem_APITests", "dev\RadioMenuFlyoutItem\APITests\RadioMenuFlyoutItem_APITests.shproj", "{9F3C7A21-6D4E-4B58-8C1A-2E5D0B79F384}"
+EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioMenuFlyoutItem_InteractionTests", "dev\RadioMenuFlyoutItem\InteractionTests\RadioMenuFlyoutItem_InteractionTests.shproj", "{89EC8D06-CA59-49A9-AEFE-32DCC9DD8020}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadioMenuFlyoutItem_TestUI", "dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.shproj", "{50E838A2-A886-46C9-AB0B-A57F510CE643}"
@@ -1550,6 +1552,7 @@ Global
 		{00832735-360B-46BB-9BFA-B8C281951D55} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{3353A4A7-87B3-4E43-8F8D-43C7380D1D56} = {00832735-360B-46BB-9BFA-B8C281951D55}
 		{89EC8D06-CA59-49A9-AEFE-32DCC9DD8020} = {00832735-360B-46BB-9BFA-B8C281951D55}
+		{9F3C7A21-6D4E-4B58-8C1A-2E5D0B79F384} = {00832735-360B-46BB-9BFA-B8C281951D55}
 		{50E838A2-A886-46C9-AB0B-A57F510CE643} = {00832735-360B-46BB-9BFA-B8C281951D55}
 		{4873DE1A-27B5-47ED-9EDC-69727FD2095C} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{499B8BF7-BCA1-4C23-BAA7-59E2C551BE4B} = {4873DE1A-27B5-47ED-9EDC-69727FD2095C}
@@ -1900,6 +1903,7 @@ Global
 		dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\RadioButtons\APITests\RadioButtons_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
+		dev\RadioMenuFlyoutItem\APITests\RadioMenuFlyoutItem_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\RadioMenuFlyoutItem\TestUI\RadioMenuFlyoutItem_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\RatingControl\APITests\RatingControl_APITests.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
 		dev\RatingControl\TestUI\RatingControl_TestUI.projitems*{4e6f8103-9e20-40dd-8fe0-1e73964bb800}*SharedItemsImports = 5
@@ -1968,6 +1972,7 @@ Global
 		dev\DropDownButton\DropDownButton.vcxitems*{8613ed91-ade3-4c5c-a09a-041187841eb3}*SharedItemsImports = 9
 		dev\PullToRefresh\PTRTracing\PTRTracing.vcxitems*{890a5548-0515-4099-b526-0539fe9a0376}*SharedItemsImports = 9
 		dev\RadioMenuFlyoutItem\InteractionTests\RadioMenuFlyoutItem_InteractionTests.projitems*{89ec8d06-ca59-49a9-aefe-32dcc9dd8020}*SharedItemsImports = 13
+		dev\RadioMenuFlyoutItem\APITests\RadioMenuFlyoutItem_APITests.projitems*{9f3c7a21-6d4e-4b58-8c1a-2e5d0b79f384}*SharedItemsImports = 13
 		dev\PersonPicture\TestUI\PersonPicture_TestUI.projitems*{8a1690fb-aa8c-461a-840c-89cdbb44bdba}*SharedItemsImports = 13
 		dev\RadialGradientBrush\RadialGradientBrush.vcxitems*{8b056b8f-c1ab-4a80-bd17-deace9897e6a}*SharedItemsImports = 9
 		dev\MenuBar\MenuBar.vcxitems*{8bc9ceb8-8b4a-11d0-8d11-00a0c91bc942}*SharedItemsImports = 9
