@@ -264,6 +264,7 @@ MediaPlayerElement::OnPropertyChanged2(_In_ const PropertyChangedParams& args)
             if (args.m_pDP->GetIndex() == KnownPropertyIndex::MediaPlayerElement_MediaPlayer)
             {
                 IFC_RETURN(get_MediaPlayer(&m_spMediaPlayer));
+                m_resumeMediaPlayerOnEnter = false;
                 IFC_RETURN(UpdateTransportControlsState());
                 IFC_RETURN(UpdateAutoPlay());
                 IFC_RETURN(UpdateSource());
@@ -700,6 +701,12 @@ MediaPlayerElement::EnterImpl(
     {
         IFC_RETURN(UpdateAutoPlay());
 
+        if (m_resumeMediaPlayerOnEnter && m_spMediaPlayer)
+        {
+            m_resumeMediaPlayerOnEnter = false;
+            LOG_IF_FAILED(m_spMediaPlayer->Play());
+        }
+
         IFC_RETURN(UpdateTimedTextSource());
     }
 
@@ -721,7 +728,7 @@ MediaPlayerElement::LeaveImpl(
         IFC_RETURN(m_spTimedTextSource->SetMediaPlayer(nullptr));
     }
 
-    bool shouldPauseMediaPlayer = false;
+    bool shouldPauseMediaPlayer = bLive && !bVisualTreeBeingReset;
     if (bLive && bVisualTreeBeingReset)
     {
         if (CContentRoot* contentRoot = VisualTree::GetContentRootForElement(GetHandle()))
@@ -732,9 +739,36 @@ MediaPlayerElement::LeaveImpl(
 
     IFC_RETURN(__super::LeaveImpl(bLive, bSkipNameRegistration, bCoercedIsEnabled, bVisualTreeBeingReset));
 
-    if (shouldPauseMediaPlayer && m_spMediaPlayer)
+    if (shouldPauseMediaPlayer && m_spMediaPlayer && !m_resumeMediaPlayerOnEnter)
     {
-        LOG_IF_FAILED(m_spMediaPlayer->Pause());
+        ctl::ComPtr<wmp::IMediaPlayer3> spMediaPlayer3;
+        ctl::ComPtr<wmp::IMediaPlaybackSession> spPlaybackSession;
+        wmp::MediaPlaybackState playbackState{};
+
+        HRESULT stateResult = m_spMediaPlayer.As(&spMediaPlayer3);
+        if (SUCCEEDED(stateResult))
+        {
+            stateResult = spMediaPlayer3->get_PlaybackSession(&spPlaybackSession);
+        }
+        if (SUCCEEDED(stateResult) && spPlaybackSession)
+        {
+            stateResult = spPlaybackSession->get_PlaybackState(&playbackState);
+        }
+        else if (SUCCEEDED(stateResult))
+        {
+            stateResult = E_UNEXPECTED;
+        }
+
+        if (SUCCEEDED(stateResult) &&
+            (playbackState == wmp::MediaPlaybackState_Playing ||
+             playbackState == wmp::MediaPlaybackState_Buffering))
+        {
+            const HRESULT pauseResult = m_spMediaPlayer->Pause();
+            if (SUCCEEDED(pauseResult))
+            {
+                m_resumeMediaPlayerOnEnter = true;
+            }
+        }
     }
 
     return S_OK;
@@ -886,4 +920,3 @@ EVENT_IMPL(ManipulationInertiaStarting)
 EVENT_IMPL(ManipulationStarted)
 EVENT_IMPL(ManipulationDelta)
 EVENT_IMPL(ManipulationCompleted)
-// Keep content after the final macro expansion to avoid MSVC C5032 at end of file.

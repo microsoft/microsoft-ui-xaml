@@ -121,5 +121,6 @@ namespace DirectUI
         ctl::ComPtr<wmp::IMediaPlayer> m_spMediaPlayer;
         ctl::ComPtr<CTimedTextSource> m_spTimedTextSource;
         bool m_bInit;
+        bool m_resumeMediaPlayerOnEnter{ false };
     };
 }

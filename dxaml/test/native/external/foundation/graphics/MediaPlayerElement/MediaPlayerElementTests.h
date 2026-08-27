@@ -40,6 +40,9 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests {
             BEGIN_TEST_METHOD(ConfigureThenRemoveDefaultMediaPlayer)
             END_TEST_METHOD()
 
+            BEGIN_TEST_METHOD(PausesAndResumesMediaPlayerWhenRemovedFromTree)
+            END_TEST_METHOD()
+
             BEGIN_TEST_METHOD(PausesMediaPlayerWhenWindowCloses)
             END_TEST_METHOD()
 
