@@ -103,11 +103,19 @@ jobs:
       # on the issue so a maintainer can confirm and close in one click. `suggest: true`
       # means GitHub holds the close for human review instead of applying it. Approach
       # adapted from the issue-triage workflow in microsoft/PowerToys.
+      #
+      # Disabled by default. Direct probing showed that on a repository without the
+      # duplicate-detection preview enabled, `suggest: true` returns HTTP 200 and does
+      # nothing at all: no chip, no pending state, nothing queryable through REST or
+      # GraphQL. The same request with `suggest: false` closes the issue, so the payload
+      # is understood; only the suggestion behavior is gated. Enable this only once the
+      # preview is confirmed active, otherwise the step reports success while having no
+      # effect.
       - name: Suggest duplicate for maintainer review
         if: needs.detect.outputs.top_confidence == 'HIGH' && env.ENABLE_DUPLICATE_SUGGESTION == 'true'
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         env:
-          ENABLE_DUPLICATE_SUGGESTION: "true"
+          ENABLE_DUPLICATE_SUGGESTION: "false"
           TOP_NUMBER: ${{ needs.detect.outputs.top_number }}
           TOP_REASON: ${{ needs.detect.outputs.top_reason }}
         with:
@@ -194,3 +202,11 @@ jobs:
             }
 
             core.info(`Submitted duplicate suggestion pointing at #${canonicalNumber}.`);
+
+            // A silent no-op is the expected outcome when the duplicate-detection preview
+            // is not enabled, so do not let this step imply the chip was rendered.
+            core.warning(
+              'GitHub does not expose pending duplicate suggestions through REST or GraphQL, ' +
+              'so this step cannot confirm the chip was rendered. Verify visually on the issue ' +
+              'the first time this runs.'
+            );
