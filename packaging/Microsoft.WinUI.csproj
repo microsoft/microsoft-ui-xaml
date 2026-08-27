@@ -89,5 +89,10 @@
   
   <ItemGroup>
     <ProjectReference Include="$(ProjectRoot)\MergedWinMD\MergedWinMD.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
+    <!-- Ordering only: MergedWinMD pulls in Tabular's idl project, which is enough for the merged
+         winmd and therefore for the activatable-class registrations, but not for the DLL those
+         registrations name. Without this the package can ship Tabular's registrations with no
+         Tabular binary, and every consuming .wapproj fails with APPX0703. -->
+    <ProjectReference Include="$(MuxControlsPath)\dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.vcxproj" ReferenceOutputAssembly="false" LinkLibraryDependencies="false" />
   </ItemGroup>
 </Project>
