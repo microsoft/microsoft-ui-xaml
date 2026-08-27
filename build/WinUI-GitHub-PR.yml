@@ -72,7 +72,10 @@ extends:
           packagesDir: '$(Agent.TempDirectory)\WinUI-FeedVariableValidation\packages'
           ob_outputDirectory: '$(Build.SourcesDirectory)\out'
         steps:
-        - checkout: none
+        - checkout: self
+          submodules: false
+          fetchDepth: 1
+          fetchTags: false
 
         - task: NuGetAuthenticate@1
           displayName: Authenticate to Azure Artifacts
