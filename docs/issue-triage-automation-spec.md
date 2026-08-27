@@ -40,6 +40,7 @@ needs strong retrieval and conservative decisions.
 
 * Surface up to five likely duplicate candidates with a short, evidence-based reason and confidence.
 * Parse the existing bug and feature proposal forms before using a model.
+* Suggest the best matching existing `area-*` label and optionally apply it after the advisory pilot.
 * Detect whether a bug includes actionable reproduction steps, actual and expected behavior, package version, and
   Windows version.
 * Recommend `needs-author-feedback` or `needs-repro` when investigation is blocked.
@@ -54,6 +55,7 @@ needs strong retrieval and conservative decisions.
 
 * Automatically closing issues during the initial rollout.
 * Replacing maintainer judgment about severity, priority, roadmap fit, or API design.
+* Automatically setting priority, severity, milestones, assignees, or roadmap labels.
 * Sending public issue content, attachments, or reproduction projects to a third-party service.
 * Mirroring issue comments or attachments into the public pilot repository.
 * Changing the existing internal bug mirroring process.
@@ -71,6 +73,8 @@ When an issue is opened or its original content is edited, the workflow creates 
 ## Automated triage
 
 **Summary:** The first expansion of an Expander briefly renders with an incorrect transition.
+
+**Suggested area:** `area-Expander`
 
 **Information needed:** Please attach a minimal WinUI 3 reproduction or provide XAML and code-behind that reproduces
 the first-expansion behavior.
@@ -108,7 +112,8 @@ Each entry links to the issue and its canonical triage comment. The digest is a 
 duplicate judgments.
 
 After the advisory phase has demonstrated acceptable precision, the workflow may submit GitHub's native duplicate
-suggestion. A maintainer must still accept or decline that suggestion. The workflow must not directly close the issue.
+suggestion. This is the GitHub issue action that renders an accept/decline chip near the top of the issue, allowing a
+maintainer to confirm the duplicate and close it in one click. The workflow must not directly close the issue.
 
 ## Architecture
 
@@ -122,6 +127,7 @@ A repository-owned script reads the event and GitHub API responses, then produce
 * issue kind: bug, feature proposal, or other;
 * parsed issue-form fields;
 * existing labels;
+* an allowlist of existing `area-*` labels and deterministic area candidates;
 * package and Windows versions;
 * reproduction completeness;
 * a content hash of the title and original body; and
@@ -170,7 +176,33 @@ The model receives only the triggering issue and the deterministic candidate set
 The model may not search GitHub, run arbitrary shell commands, edit files, publish comments, apply labels, or close
 issues. Its response uses a strict schema.
 
-### 4. Verification
+### 4. Area and ownership classification
+
+The repository currently has more than 120 `area-*` labels and a smaller set of `team-*` ownership labels. The
+automation should use the existing taxonomy rather than inventing labels.
+
+Area classification combines:
+
+* exact control, API, event, property, namespace, and exception names;
+* the issue title and parsed form sections;
+* labels on strongly related duplicate candidates; and
+* a bounded model choice from the deterministic candidate set.
+
+The model may return one primary area and up to two alternatives, but every value must exactly match an existing label.
+The publication policy is conservative:
+
+* never create a new area or team label;
+* never remove or replace an area label applied by a human;
+* apply at most one primary `area-*` label when the issue has none and confidence is high;
+* show medium-confidence classifications only in the canonical comment;
+* do not change priority, severity, milestones, assignees, or resolution labels; and
+* do not remove `needs-triage` during the initial rollout.
+
+`team-*` labels should not be selected directly by the model. If the repository wants ownership routing, a
+maintainer-owned configuration maps stable area labels to teams. This keeps ownership changes reviewable and avoids
+encoding the organization chart in prompts.
+
+### 5. Verification
 
 Repository-owned code verifies that:
 
@@ -178,25 +210,25 @@ Repository-owned code verifies that:
 * every suggested duplicate was in the deterministic candidate set;
 * no more than five candidates were returned;
 * issue numbers and confidence values have valid types;
-* recommended labels are in an allowlist;
+* recommended labels are existing allowlisted `area-*` or workflow labels;
 * output fields are bounded; and
 * the issue is still open.
 
 If verification fails, the workflow publishes nothing.
 
-### 5. Publication
+### 6. Publication
 
 A separate job with `issues: write` rebuilds current evidence and performs the write. It:
 
 * finds the existing comment by `<!-- winui-ai-triage:canonical:v1 -->`;
 * creates or updates that one comment;
-* optionally applies only pilot-approved workflow labels;
+* optionally applies one validated area label and only pilot-approved workflow labels;
 * skips closed issues; and
 * records enough hidden state to support the digest without trusting rendered Markdown.
 
 The model job has read-only issue access. Only the validated publication job receives write permission.
 
-### 6. Digest
+### 7. Digest
 
 The daily digest reads validated hidden state from canonical triage comments. It does not run duplicate detection.
 Every run re-checks that:
@@ -330,21 +362,26 @@ Compare results with normal triage for two weeks.
 
 ### Phase 2: Advisory comments
 
-Enable the canonical comment for a percentage of new issues. Do not apply labels or submit duplicate suggestions.
+Enable the canonical comment for a percentage of new issues. Include the suggested area and alternatives, but do not
+apply labels or submit duplicate suggestions.
 
 ### Phase 3: Triage labels and digest
 
-Allow the validated publication job to apply `needs-repro` and `needs-author-feedback` when required. Enable the daily
-digest. Existing resource-management rules continue to handle author responses and inactivity.
+Allow the validated publication job to apply one high-confidence `area-*` label, plus `needs-repro` and
+`needs-author-feedback` when required. Enable the daily digest. Existing resource-management rules continue to handle
+author responses and inactivity. Keep `needs-triage` until maintainers decide that automated area routing is reliable
+enough to replace that queue.
 
 ### Phase 4: Native duplicate suggestions
 
 If precision remains above the agreed threshold, allow the workflow to submit GitHub's native duplicate suggestion for
-high-confidence matches. Maintainer approval remains mandatory.
+high-confidence matches. GitHub displays the accept/decline action chip on the issue; accepting it performs the linked
+duplicate closure. Maintainer approval remains mandatory.
 
 ## Open questions
 
-* Which existing labels should be used as deterministic area filters?
+* Which area-to-team mappings should be repository-owned configuration, and who approves changes to that map?
+* Should more than one `area-*` label ever be applied automatically?
 * Should closed issues be eligible as canonical reports indefinitely or only within a time window?
 * Should edited issues be reassessed immediately or after a short debounce period?
 * Who owns the daily digest, and should it be an issue, discussion, or project view?
