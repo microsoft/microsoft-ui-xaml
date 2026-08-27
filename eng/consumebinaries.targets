@@ -46,8 +46,9 @@
             <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Controls.dll">
                 <AssociatedSolution>$(ProjectRoot)controls\MUXControls.sln</AssociatedSolution>
             </XamlProduct>
-            <!-- Tabular's activation registrations are emitted from its winmd (eng\productmetadata.props),
-                 so its DLL must ship in the same payload or packaging fails with APPX0703. -->
+            <!-- Tabular ships beside MUXC's controls DLL, so it is validated here too. This list is
+                 an existence check, not the payload mechanism; copying is done by
+                 _UpdateMUXFilesToCopyForApp above via a wildcard. -->
             <XamlProduct Include="$(XamlProductDir)Microsoft.UI.Xaml.Controls.Tabular.dll">
                 <AssociatedSolution>$(ProjectRoot)controls\MUXControls.sln</AssociatedSolution>
             </XamlProduct>
