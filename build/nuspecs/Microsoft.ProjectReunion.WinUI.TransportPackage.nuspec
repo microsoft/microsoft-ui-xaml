@@ -57,7 +57,6 @@ Please note that the APIs contained in this package are subject to change before
     <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*" target="lib" />
     <file src="$PACKAGEROOT$\lib\uap10.0\**\*.xaml" target="lib\uap10.0" />
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Text.*" target="lib\uap10.0" />
-    <!-- Wildcard also carries Tabular's winmd. -->
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Xaml.*" target="lib\uap10.0" />
     <file src="$PACKAGEROOT$\manifests*\**" target="manifests" />
     <file src="$PACKAGEROOT$\runtimes\**\Microsoft.UI.Xaml\**" target="runtimes" />

@@ -49,10 +49,8 @@
     <file src="$PACKAGEROOT$\lib\**\Microsoft.WinUI*" target="lib" />
     <file src="$PACKAGEROOT$\lib\uap10.0\**\*.xaml" target="lib\native" />
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Text.*" target="metadata" />
-    <!-- Wildcard also carries Tabular's winmd. -->
     <file src="$PACKAGEROOT$\lib\uap10.0\Microsoft.UI.Xaml.*" target="metadata" />
     <file src="$PACKAGEROOT$\runtimes-framework\**\Microsoft.UI.Xaml\**" target="runtimes-framework" />
-    <!-- Wildcard also carries Tabular's dll/.pri. -->
     <file src="$PACKAGEROOT$\runtimes-framework\**\Microsoft.UI.Xaml.*" target="runtimes-framework" />
     <file src="$PACKAGEROOT$\runtimes-framework\**\WinUIEdit.dll" target="runtimes-framework" />
     <file src="$PACKAGEROOT$\tools\**" target="tools" />
