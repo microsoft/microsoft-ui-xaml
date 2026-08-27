@@ -16,6 +16,7 @@ jobs:
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
     packagesDir: $(Agent.TempDirectory)\WinUI-RunStaticTests-Job\packages
+    winMDVersionVerifyLcrVersion: '1.0.2'
     ob_outputDirectory: '$(Build.SourcesDirectory)\out'
     ob_sdl_codeSignValidation_excludes: '-|packaging\**;-|**\Test\**;-|**\Taef\**;-|**\TestDependencies\**;-|**\Microsoft.Internal.FrameworkUdk.dll'
     ob_sdl_prefast_enabled: false   # this job does no native build
@@ -50,12 +51,16 @@ jobs:
       command: 'custom'
       arguments: 'install Microsoft.WindowsAppSDK $(windowsAppSdkVersionArgument) -OutputDirectory $(packagesDir) -ConfigFile $(Build.SourcesDirectory)\nuget.config -NonInteractive'
 
-  - task: NuGetCommand@2
-    displayName: 'NuGet install WinMDVersionVerifyLcr 1.0.2'
+  - task: DownloadPackage@1
+    displayName: 'Download WinMDVersionVerifyLcr $(winMDVersionVerifyLcrVersion)'
     condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
     inputs:
-      command: 'custom'
-      arguments: 'install WinMDVersionVerifyLcr -Version 1.0.2 -DependencyVersion Ignore -Source "$(WinUILKGDependenciesFeedUri)" -OutputDirectory $(packagesDir) -NonInteractive'
+      packageType: 'nuget'
+      feed: 'WinUI.Dependencies'
+      definition: 'WinMDVersionVerifyLcr'
+      version: '$(winMDVersionVerifyLcrVersion)'
+      extract: true
+      downloadPath: '$(packagesDir)\WinMDVersionVerifyLcr\$(winMDVersionVerifyLcrVersion)'
 
   - template: WinUI-DownloadPipelineArtifacts-Steps.yml
     parameters:
@@ -70,7 +75,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: $(Build.SourcesDirectory)\build\PipelineScripts\VerifyWinMDCompat.ps1
-      arguments: -WinMDPath '$(artifactsDir)\packaging\Release\lib\uap10.0' -PackagesDirectory '$(packagesDir)' -isRelease:$${{ parameters.MUXFinalRelease }}
+      arguments: -WinMDPath '$(artifactsDir)\packaging\Release\lib\uap10.0' -PackagesDirectory '$(packagesDir)' -WinMDVersionVerifyLcrVersion '$(winMDVersionVerifyLcrVersion)' -isRelease:$${{ parameters.MUXFinalRelease }}
       pwsh: true
 
   - powershell: |
