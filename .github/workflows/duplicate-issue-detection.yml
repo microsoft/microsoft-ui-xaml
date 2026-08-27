@@ -1,0 +1,111 @@
+name: Duplicate issue detection
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: duplicate-detection-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+env:
+  DUPLICATE_LABEL: possible-duplicate
+
+jobs:
+  detect:
+    # Issue text is untrusted input, so this job only reads and never writes.
+    if: github.event.issue.state == 'open' && github.event.issue.pull_request == null
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      found: ${{ steps.detect.outputs.found }}
+      comment: ${{ steps.detect.outputs.comment }}
+      numbers: ${{ steps.detect.outputs.numbers }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - id: detect
+        run: python3 .github/scripts/issue-triage/find_duplicates.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          SIMILARITY_THRESHOLD: "0.62"
+
+  publish:
+    needs: detect
+    if: needs.detect.outputs.found == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Comment and label
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          COMMENT_BODY: ${{ needs.detect.outputs.comment }}
+        with:
+          script: |
+            const marker = '<!-- winui-duplicate-detection:v1 -->';
+            const label = process.env.DUPLICATE_LABEL;
+            const body = process.env.COMMENT_BODY;
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.issue.number;
+
+            // Re-check state in the write job instead of trusting the detect job.
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number });
+            if (issue.state !== 'open') {
+              core.info(`Issue #${issue_number} is no longer open. Skipping.`);
+              return;
+            }
+            if (!body || !body.includes(marker)) {
+              core.setFailed('Detector produced no canonical comment body.');
+              return;
+            }
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number, per_page: 100,
+            });
+            const existing = comments.find(
+              (comment) => comment.user.type === 'Bot' && comment.body.includes(marker)
+            );
+
+            if (existing) {
+              if (existing.body.trim() !== body.trim()) {
+                await github.rest.issues.updateComment({
+                  owner, repo, comment_id: existing.id, body,
+                });
+                core.info(`Updated comment ${existing.id}.`);
+              } else {
+                core.info('Existing comment is already current.');
+              }
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+              core.info('Created duplicate-detection comment.');
+            }
+
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: label });
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name: label,
+                color: 'ededed',
+                description: 'Automated triage found similar existing issues; needs maintainer review.',
+              });
+            }
+
+            if (!issue.labels.some((item) => (item.name || item) === label)) {
+              await github.rest.issues.addLabels({ owner, repo, issue_number, labels: [label] });
+              core.info(`Applied ${label}.`);
+            }
