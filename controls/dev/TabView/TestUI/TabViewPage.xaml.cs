@@ -12,6 +12,7 @@ using System.Windows.Input;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Shapes;
 using System.Reflection;
+using System.Collections.Generic;
 
 using System.Collections.ObjectModel;
 using Windows.Devices.PointOfService;
@@ -33,6 +34,8 @@ namespace MUXControlsTestApp
     {
         int _newTabNumber = 1;
         SymbolIconSource _iconSource;
+        VisualStateGroup firstTabDragDropVisualStateGroup;
+        readonly List<string> firstTabDragDropVisualStateLog = new List<string>();
 
         public TabViewPage()
         {
@@ -173,6 +176,54 @@ namespace MUXControlsTestApp
         public void GetTab1ToolTipButton_Click(object sender, RoutedEventArgs e)
         {
             GetToolTipStringForUIElement(SecondTab, Tab1ToolTipTextBlock);
+        }
+
+        public void ResetFirstTabDragDropVisualStateLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (firstTabDragDropVisualStateGroup == null)
+            {
+                firstTabDragDropVisualStateGroup = FindDragDropVisualStateGroup(FirstTab);
+
+                if (firstTabDragDropVisualStateGroup != null)
+                {
+                    firstTabDragDropVisualStateGroup.CurrentStateChanged +=
+                        (s, args) => firstTabDragDropVisualStateLog.Add(args.NewState?.Name ?? "none");
+                }
+            }
+
+            firstTabDragDropVisualStateLog.Clear();
+            FirstTabDragDropVisualStateTextBlock.Text = string.Empty;
+            FirstTabDragDropVisualStateLogTextBlock.Text = string.Empty;
+        }
+
+        public void GetFirstTabDragDropVisualStateButton_Click(object sender, RoutedEventArgs e)
+        {
+            FirstTabDragDropVisualStateTextBlock.Text = firstTabDragDropVisualStateGroup?.CurrentState?.Name ?? "none";
+            FirstTabDragDropVisualStateLogTextBlock.Text = string.Join(",", firstTabDragDropVisualStateLog);
+        }
+
+        // The drag/drop visual state group in the TabViewItem template is unnamed, so find it by the states it holds.
+        private static VisualStateGroup FindDragDropVisualStateGroup(TabViewItem tabViewItem)
+        {
+            if (VisualTreeHelper.GetChildrenCount(tabViewItem) == 0)
+            {
+                return null;
+            }
+
+            var templateRoot = VisualTreeHelper.GetChild(tabViewItem, 0) as FrameworkElement;
+
+            foreach (var group in VisualStateManager.GetVisualStateGroups(templateRoot))
+            {
+                foreach (var state in group.States)
+                {
+                    if (state.Name == "DragDropVisualVisible")
+                    {
+                        return group;
+                    }
+                }
+            }
+
+            return null;
         }
 
         public void GetToolTipStringForUIElement(UIElement item, TextBlock textBlock)
