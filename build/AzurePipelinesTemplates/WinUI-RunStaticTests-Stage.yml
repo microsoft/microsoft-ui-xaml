@@ -9,8 +9,6 @@ stages:
   displayName: Run Static Tests Stage
   dependsOn: Build
   condition: not(failed())
-  variables:
-  - group: WinUI-InternalFeed
   jobs:
   - template: WinUI-RunStaticTests-Job.yml
     parameters:
