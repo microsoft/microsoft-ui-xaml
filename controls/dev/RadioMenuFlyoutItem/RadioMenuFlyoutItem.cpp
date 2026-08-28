@@ -58,10 +58,13 @@ void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChang
     }
     else if (property == s_GroupNameProperty)
     {
-        // Move the registration over to the new group. IsChecked is frequently applied before GroupName
-        // (that is the order the properties appear in for typical XAML markup), which would otherwise
-        // leave this item registered under the group it no longer belongs to.
-        UpdateCheckedItemInGroup();
+        // Move an existing registration over to the new group. IsChecked is frequently applied before
+        // GroupName. Only do this while actually registered: an unloaded item keeps IsChecked,
+        // and it could take over the new group over from an item that is actually still in the tree.
+        if (m_isRegistered)
+        {
+            UpdateCheckedItemInGroup();
+        }
     }
 }
 
@@ -107,9 +110,18 @@ void RadioMenuFlyoutItem::UpdateCheckedItemInGroup()
                     // Uncheck the previously checked item.
                     RadioMenuFlyoutItem* rawPreviousCheckedItem = winrt::get_self<RadioMenuFlyoutItem>(previousCheckedItem);
                     rawPreviousCheckedItem->IsChecked(false);
+
+                    // Unchecking runs app code, which can re-enter this method and move us to another
+                    // group or uncheck us. We need to validate that we are still checked and in the same
+                    // group before registering ourselves.
+                    if (!IsChecked() || GroupName() != groupName)
+                    {
+                        return;
+                    }
                 }
             }
         }
+
         // Previously we used get_weak() here, but we found the potential to hit a 
         // refcounting problem where in some scenarios the outer object gets
         // an extra Release() in this process.
