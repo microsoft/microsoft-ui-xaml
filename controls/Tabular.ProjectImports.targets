@@ -35,6 +35,7 @@
     <Import Project="$(MSBuildThisFileDirectory)dev\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
     <Import Project="$(MSBuildThisFileDirectory)dev\SortIndicator\SortIndicator.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ResizeGripper\ResizeGripper.vcxitems" Label="Shared" />
     <!-- Tabular shaping stack: layer 1 (shape descriptions + pipeline) and layer 2 (live
          projection). Grouping and live shaping arrive in later changes. -->
     <Import Project="$(MSBuildThisFileDirectory)dev\TabularShaping\TabularShaping.vcxitems" Label="Shared" />

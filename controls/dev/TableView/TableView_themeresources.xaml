@@ -20,6 +20,7 @@
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
+            <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
 
             <!-- Header/cell chrome metrics as theme tokens (tunable without code edits). -->
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
@@ -37,6 +38,7 @@
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
+            <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">30</x:Double>
             <x:Double x:Key="TableViewRowMinHeightComfortable">48</x:Double>
@@ -53,6 +55,7 @@
             <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
             <x:Double x:Key="TableViewHeaderFontSize">14</x:Double>
             <x:Double x:Key="TableViewCellFontSize">14</x:Double>
+            <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
             <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
             <x:Double x:Key="TableViewRowMinHeightCompact">30</x:Double>
             <x:Double x:Key="TableViewRowMinHeightComfortable">48</x:Double>

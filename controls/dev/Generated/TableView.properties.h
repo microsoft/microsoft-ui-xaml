@@ -12,6 +12,9 @@ public:
     void AlternatingRowBackground(winrt::Brush const& value);
     winrt::Brush AlternatingRowBackground();
 
+    void CanUserResizeColumns(bool value);
+    bool CanUserResizeColumns();
+
     void CanUserSortColumns(bool value);
     bool CanUserSortColumns();
 
@@ -52,6 +55,7 @@ public:
     winrt::TableViewSelectionMode SelectionMode();
 
     static winrt::DependencyProperty AlternatingRowBackgroundProperty() { return s_AlternatingRowBackgroundProperty; }
+    static winrt::DependencyProperty CanUserResizeColumnsProperty() { return s_CanUserResizeColumnsProperty; }
     static winrt::DependencyProperty CanUserSortColumnsProperty() { return s_CanUserSortColumnsProperty; }
     static winrt::DependencyProperty ColumnsProperty() { return s_ColumnsProperty; }
     static winrt::DependencyProperty DensityProperty() { return s_DensityProperty; }
@@ -67,6 +71,7 @@ public:
     static winrt::DependencyProperty SelectionModeProperty() { return s_SelectionModeProperty; }
 
     static GlobalDependencyProperty s_AlternatingRowBackgroundProperty;
+    static GlobalDependencyProperty s_CanUserResizeColumnsProperty;
     static GlobalDependencyProperty s_CanUserSortColumnsProperty;
     static GlobalDependencyProperty s_ColumnsProperty;
     static GlobalDependencyProperty s_DensityProperty;
@@ -102,6 +107,10 @@ public:
     static void ClearProperties();
 
     static void OnAlternatingRowBackgroundPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnCanUserResizeColumnsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
