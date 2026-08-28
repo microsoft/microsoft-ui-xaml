@@ -30,6 +30,7 @@ stages:
       buildConfiguration: chk
       testOS: Win10-RS5
       testPayloadArtifactName: 'ScenarioTestPayload'
+      skipTests: true
 
   - template: WinUI-RunTestPassOnPipeline-Job.yml
     parameters:

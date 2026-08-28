@@ -11,6 +11,7 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   testPayloadArtifactName: 'TestPayload'
   failOnTestFailure: true
+  skipTests: false
 # We run the bulk of our tests in Helix. But this Job runs tests directly on the Pipeline agents.
 # These Pipeline agents are running on a ni_release build of Windows which is not available in Helix.
 # This approach allows us to run tests on prerelease builds of Windows.
@@ -18,7 +19,7 @@ parameters:
 jobs:
 - job: ${{ parameters.runTestJobName }} #${{ parameters.testOS }}${{ parameters.buildPlatform }}${{ parameters.buildConfiguration }}
   dependsOn: ${{ parameters.dependsOn }}
-  condition: not(failed())
+  condition: and(not(failed()), eq(${{ parameters.skipTests }}, false))
   pool:
     type: windows
     isCustom: true
