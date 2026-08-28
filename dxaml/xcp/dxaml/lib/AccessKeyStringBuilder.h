@@ -10,5 +10,5 @@
 namespace AccessKeyStringBuilder
 {
     _Check_return_ HRESULT GetAccessKeyMessageFromElement(_In_ ctl::ComPtr <DirectUI::DependencyObject>& spOwner, _Out_ HSTRING *returnValue);
+    _Check_return_ HRESULT GetEffectiveAccessKeyFromElement(_In_ ctl::ComPtr<DirectUI::DependencyObject>& spOwner, _Out_ HSTRING* returnValue);
 }
-

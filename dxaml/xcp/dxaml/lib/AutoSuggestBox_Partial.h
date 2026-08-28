@@ -35,6 +35,11 @@ namespace DirectUI
 
         _Check_return_ HRESULT ProgrammaticSubmitQuery();
 
+        bool IsEditableTextBoxPart(_In_ xaml_controls::ITextBox* textBox) const
+        {
+            return m_tpTextBoxPart.Get() == textBox;
+        }
+
     protected:
         _Check_return_ HRESULT PrepareState() override;
 
