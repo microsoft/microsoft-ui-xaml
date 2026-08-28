@@ -141,6 +141,34 @@ bool ModuleSetup()
             // (0x800401F0). Ensure an MTA apartment; leave it up for the host (WPF already inits).
             ::RoInitialize(RO_INIT_MULTITHREADED);
 
+            // Sanctioned public-API LAF unlock. When the test agent is not otherwise pre-unlocked, the
+            // CompositionEngine Limited Access Feature must be unlocked for this (packaged TAEF host)
+            // process before the switcher will engage. The token is supplied by the pipeline as the
+            // SwitcherLafToken runtime parameter (mapped from the WinUI-InternalFeed pipeline variable
+            // CompositionSwitcherLafToken) — never hardcoded, since this test ships to the public repo.
+            // No-op when the parameter is absent (e.g. local runs on an already-unlocked machine); the
+            // TrySetProcessEngine call below remains the real gate and hard-fails if switcher can't engage.
+            WEX::Common::String switcherLafToken;
+            if (SUCCEEDED(WEX::TestExecution::RuntimeParameters::TryGetValue(L"SwitcherLafToken", switcherLafToken))
+                && !switcherLafToken.IsEmpty())
+            {
+                try
+                {
+                    auto unlockResult = Windows::ApplicationModel::LimitedAccessFeatures::TryUnlockFeature(
+                        ref new Platform::String(L"com.microsoft.windows.composition.engine"),
+                        ref new Platform::String(static_cast<const wchar_t*>(switcherLafToken)),
+                        ref new Platform::String(
+                            L"8wekyb3d8bbwe has registered their use of "
+                            L"com.microsoft.windows.composition.engine with Microsoft and agrees to the terms of use."));
+                    LOG_OUTPUT(L"SwitcherMode: LAF TryUnlockFeature status=%d",
+                        static_cast<int>(unlockResult->Status));
+                }
+                catch (Platform::Exception^ ex)
+                {
+                    LOG_OUTPUT(L"SwitcherMode: LAF TryUnlockFeature threw hr=0x%08x", ex->HResult);
+                }
+            }
+
             bool ok = Microsoft::UI::Composition::CompositionEngine::TrySetProcessEngine(
                 Microsoft::UI::Composition::CompositionEngineType::System);
 

@@ -19,7 +19,7 @@ stages:
   dependsOn: Build
   condition: succeeded()
   jobs:
-  - job: RunSwitcherTests_x64chk
+  - job: RunSwitcherTests_x86chk
     pool:
       type: windows
       isCustom: true
@@ -27,15 +27,29 @@ stages:
       demands: ImageOverride -equals ge_current-vhdx_enterprise
     timeoutInMinutes: 180
     variables:
-      buildPlatform: 'x64'
-      normalizedConfiguration: 'chk'
-      buildFolderName: x64chk
-      incomingArtifactsPath: $(Build.ArtifactStagingDirectory)\incoming
-      testPayloadDir: $(Build.SourcesDirectory)\TestPayload
-      testPayloadDirInner: $(testPayloadDir)\x64chk
-      ob_outputDirectory: c:\uploadroot
-      ob_artifactBaseName: 'switcher_x64chk'
-      ob_sdl_binskim_enabled: false
+      # WinUI-InternalFeed (group 6276) carries the CompositionSwitcherLafToken variable that unlocks the
+      # CompositionEngine LAF for the switcher. It is referenced by name only; the value lives in ADO
+      # Library and never appears in this (public) yaml. This group is already loaded/authorized for the
+      # WinUI-GitHub-PR pipeline (def 195405).
+      - group: WinUI-InternalFeed
+      - name: buildPlatform
+        value: 'x86'
+      - name: normalizedConfiguration
+        value: 'chk'
+      - name: buildFolderName
+        value: x86chk
+      - name: incomingArtifactsPath
+        value: $(Build.ArtifactStagingDirectory)\incoming
+      - name: testPayloadDir
+        value: $(Build.SourcesDirectory)\TestPayload
+      - name: testPayloadDirInner
+        value: $(testPayloadDir)\x86chk
+      - name: ob_outputDirectory
+        value: c:\uploadroot
+      - name: ob_artifactBaseName
+        value: 'switcher_x86chk'
+      - name: ob_sdl_binskim_enabled
+        value: false
 
     steps:
     - script: |
@@ -54,7 +68,7 @@ stages:
     - template: WinUI-DownloadPipelineArtifacts-Steps.yml
       parameters:
         enableUseOutputFromPreviousBuild: true
-        artifactName: drop_x64chk
+        artifactName: drop_x86chk
         targetPath: $(incomingArtifactsPath)
 
     - task: powershell@2
@@ -62,7 +76,7 @@ stages:
       inputs:
         targetType: filePath
         filePath: test\CreateTestPayload.ps1
-        arguments: -BinSourceRoot $(incomingArtifactsPath) -Platform x64 -Configuration chk -Mode DevTestSuite -ShowPayload -SkipSymbols
+        arguments: -BinSourceRoot $(incomingArtifactsPath) -Platform x86 -Configuration chk -Mode DevTestSuite -ShowPayload -SkipSymbols
 
     # The switcher is engaged via the public CompositionEngine Limited Access Feature API
     # (CompositionEngine::TrySetProcessEngine(System), called from the test's ModuleSetup under
@@ -78,7 +92,7 @@ stages:
         targetType: inline
         workingDirectory: $(testPayloadDirInner)
         script: |
-          .\runtests.cmd "${{ parameters.testSelector }}" -HostingMode:WPF /p:SwitcherMode=true
+          .\runtests.cmd "${{ parameters.testSelector }}" -HostingMode:WPF /p:SwitcherMode=true /p:SwitcherLafToken=$(CompositionSwitcherLafToken)
           exit $LASTEXITCODE
 
     - task: PublishTestResults@2
@@ -89,7 +103,7 @@ stages:
         searchFolder: $(testPayloadDirInner)
         mergeTestResults: true
         failTaskOnFailedTests: true
-        testRunTitle: 'SwitcherTests x64chk'
+        testRunTitle: 'SwitcherTests x86chk'
 
     # Publish the generated .save.xml trees + diffs/screenshots so switcher baselines can be
     # captured from this run (they are intentionally NOT committed; see PR description).

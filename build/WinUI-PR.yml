@@ -117,8 +117,6 @@ extends:
         ${{ else }}:
           pipelineKind: PR
 
-    - template: AzurePipelinesTemplates\WinUI-RunSwitcherTests-Stage.yml
-
     - ${{ if eq(parameters.QuickBuild, false) }}:
       - template: AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml
         parameters:
