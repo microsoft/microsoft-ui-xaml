@@ -116,6 +116,22 @@ Only realized rows contribute, so `Auto` sizes to the widest *realized* cell. `A
 - **Fixed columns wider than the viewport.** When the `Pixel` + `Auto` (fixed) columns already exceed the viewport, the space left for `*` is zero, so `*` columns collapse to their `MinWidth` and the body scrolls horizontally. This matches WPF `DataGrid`'s star-vs-fixed behavior.
 - **Width-dependent cell height.** Cells are measured unconstrained (infinite width) to learn their measured width, then arranged at the resolved column width. A `CellTemplate` whose *height* depends on its *width* (a wrapping `TextBlock`, an aspect-fit image) is measured for its single-line/unwrapped height and is clipped when arranged narrower. The built-in `TableViewTextColumn` uses single-line `CharacterEllipsis`, so it is unaffected; authors of wrapping `TableViewTemplateColumn` content should set an explicit row height or avoid width-dependent wrapping in v1.
 
+## Column resize (`ResizeGripper`)
+
+Interactive column resize is a **policy split** between a framework-internal primitive and the table. `ResizeGripper` (`Microsoft.UI.Private.Controls`, shipped only in `Microsoft.UI.Xaml.Controls.Tabular.dll`) is a *delta source*: it owns the gesture and reports how far the user has dragged. It owns no value, no bounds and no layout, because `TableViewColumn` already owns `Width`/`MinWidth`/`MaxWidth`/`ActualWidth` — a second copy of that state is what the primitive deliberately avoids.
+
+**The primitive owns** the hit target, its own presentation (visual states plus the `ResizeGripperSeparatorBrush`/`ResizeGripperSeparatorThickness` theme keys), the resize cursor, the input protocol, and the gesture state machine: `IsDragging`, a 0.5 DIP deadband, rejection of non-finite deltas, re-entrancy guards, and cancel semantics.
+
+**The table owns** every policy decision: whether a column gets a gripper at all (`CanUserResizeColumns` + `TableViewColumn.CanResize`), the gripper's placement and width (`TableViewResizeGripperWidth`), the anchor captured at `DragStarted`, clamping the reported delta to `MinWidth`/`MaxWidth`, writing `Width`, reverting on cancel, and the UIA width announcement.
+
+**Protocol.** `BeginDrag()` → zero or more `DragDelta` → `EndDrag(canceled)`. `DragDelta` carries `Delta` (since the last raise) and `TotalDelta` (from the start of the gesture), so a host applies `TotalDelta` against the anchor it captured rather than accumulating. `DragCompleted.Canceled` distinguishes a torn-down gesture (Escape, a canceled contact, the header rebuilt mid-drag) from a release: on cancel the host restores the **authored `GridLength`**, so a canceled drag cannot silently rewrite an `Auto` or `*` column as fixed pixels. `BeginDrag`/`TryDrag`/`EndDrag` are public so a host can drive the identical gesture from its own input handling — that is how keyboard resize stays indistinguishable from a pointer drag.
+
+**Input.** Pointer input arrives as manipulation events, so pointer capture, touch and pen contacts, and multi-pointer arbitration come from the framework's gesture recognizer rather than from each host. `ManipulationMode` is a single translate axis and is set in the constructor, not the default style: a host whose style failed to load must not silently lose pointer resize. Because the gripper travels with the edge it drags, `ManipulationStarting` reparents the measurement frame — the default container is the element itself, whose motion would feed back into the gesture and stall it.
+
+**Axis and RTL.** `DragOrientation` is the axis the drag is **measured along**, which for a divider is perpendicular to how it looks: `Horizontal` drags left/right. It is named `DragOrientation` rather than `Orientation` precisely because the primitive owns no shape — the host sizes it — so the control's own layout axis is not something it can describe. This is also the opposite of the Windows Community Toolkit's `SizerBase.Orientation`, which describes the bar; the distinct name prevents a silent mix-up. The primitive normalizes to a **logical** delta, so positive always grows in reading order and both input paths agree; only the horizontal axis mirrors under RTL.
+
+**Keyboard.** The header cell, not the gripper, is the keyboard target — column commands belong there, and one tab stop per column would sit between the user and the data. The table therefore sets `IsTabStop(false)` on the gripper and routes Left/Right into `TryKeyboardStep(VirtualKey)`, which owns direction, the RTL mirror, `KeyboardIncrement` and the Shift multiplier so both keyboard paths cannot drift apart.
+
 ## Row virtualization
 
 Rows are virtualized by `ItemsRepeater` on the vertical axis. With the vertical `StackLayout`, only rows whose realization rect intersects the body viewport — plus two viewports of cache on each side — are materialized as `TableViewRow` instances; off-screen rows return to the recycle pool. `StackLayout` is used instead of a uniform two-axis layout because row heights vary with density and template content.
@@ -279,7 +295,7 @@ Row recycling, cell rebuild and dependency-property change callbacks can all run
 
 ## Out of Scope
 
-Delivered later in the v1 stack: row selection · single-column sort · filtering · grouping · two-level hierarchy · column resize · column reorder · navigation-state persistence · shaping primitives · samples · tests · theme-XBF emission.
+Delivered later in the v1 stack: row selection · single-column sort · filtering · grouping · two-level hierarchy · column reorder · navigation-state persistence · shaping primitives · samples · tests · theme-XBF emission.
 
 Out of v1 / follow-up work (see Non-goals): `Auto` auto-shrink (v1 widths grow monotonically) · trailing frozen columns · multi-column sort · column virtualization · row headers · clipboard · incremental loading · multi-cell row edit transactions · editing a11y announcements.
 

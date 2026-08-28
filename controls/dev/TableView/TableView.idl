@@ -128,6 +128,12 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     [MUX_DEFAULT_VALUE("std::numeric_limits<double>::infinity()")]
     Double MaxWidth { get; set; };
 
+    // Gates the resize affordance for this column only; the owner's CanUserResizeColumns gates all of them.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanResize { get; set; };
+
     // Read-only DP written by the column's width resolve; the header host and realized cell panels
     // arrange each cell to this width (no per-cell binding).
     [MUX_DEFAULT_VALUE("120.0")]
@@ -208,6 +214,7 @@ unsealed runtimeclass TableViewColumn : Microsoft.UI.Xaml.DependencyObject
     static Microsoft.UI.Xaml.DependencyProperty WidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MinWidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty MaxWidthProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanResizeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty ActualWidthProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty FrozenEdgeProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty VisibilityProperty { get; };
@@ -446,6 +453,11 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("winrt::TableViewGridLinesVisibility::All")]
     TableViewGridLinesVisibility GridLinesVisibility { get; set; };
 
+    // Master switch for the column-resize affordance; a column opts out individually via CanResize.
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean CanUserResizeColumns { get; set; };
+
     // Opt-in row banding; null brushes preserve the theme row background.
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Microsoft.UI.Xaml.Media.Brush RowBackground { get; set; };
@@ -567,6 +579,7 @@ unsealed runtimeclass TableView : Microsoft.UI.Xaml.Controls.Control
     static Microsoft.UI.Xaml.DependencyProperty ColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty HeadersVisibilityProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty GridLinesVisibilityProperty { get; };
+    static Microsoft.UI.Xaml.DependencyProperty CanUserResizeColumnsProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty RowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty AlternatingRowBackgroundProperty { get; };
     static Microsoft.UI.Xaml.DependencyProperty EmptyTemplateProperty { get; };

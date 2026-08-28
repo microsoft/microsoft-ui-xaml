@@ -396,10 +396,10 @@ void constexpr specialize_guids()
 // Primitives namespace is currently empty (no tabular primitives yet); its
 // forward-declared sub-namespaces keep the using-directives well-formed.
 #include "winrt/Microsoft.UI.Xaml.Controls.Tabular.h"
-// Framework-internal primitives (SortIndicator) live in the private namespace, which Tabular shares
-// verbatim with MUXC -- see MU_PRIVATE_CONTROLS_NAMESPACE in Microsoft.UI.Xaml.Controls.Tabular.idl.
-// The generated metadata provider names those types unqualified, so alias the namespace here for the
-// same reason the public Tabular one is aliased.
+// Framework-internal primitives (SortIndicator, ResizeGripper) live in the private namespace, which
+// Tabular shares verbatim with MUXC -- see MU_PRIVATE_CONTROLS_NAMESPACE in
+// Microsoft.UI.Xaml.Controls.Tabular.idl. The generated metadata provider names those types
+// unqualified, so alias the namespace here for the same reason the public Tabular one is aliased.
 #include "winrt/Microsoft.UI.Private.Controls.h"
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular { namespace implementation {} namespace factory_implementation {} }
 namespace winrt::Microsoft::UI::Xaml::Controls::Tabular::Primitives { namespace implementation {} namespace factory_implementation {} }

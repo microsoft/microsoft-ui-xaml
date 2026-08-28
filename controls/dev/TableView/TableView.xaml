@@ -6,6 +6,8 @@
 
     <x:Double x:Key="TableViewRowMinHeight">40</x:Double>
     <Thickness x:Key="TableViewHeaderCellPadding">8,4,8,4</Thickness>
+    <!-- Mirrored: TableView_themeresources.xaml is not emitted for the Tabular binary. -->
+    <x:Double x:Key="TableViewResizeGripperWidth">8</x:Double>
         
     <SolidColorBrush x:Key="TabularSurfaceRowBackgroundBrush" Color="Transparent" />
     <SolidColorBrush x:Key="TabularSurfaceRowForegroundBrush" Color="{ThemeResource TextFillColorPrimary}" />
@@ -57,11 +59,10 @@
                                     BorderThickness="0,0,0,1">
                                 <Grid>
                                     <ScrollViewer x:Name="PART_HeaderScroller"
-                                                  HorizontalScrollMode="Auto"
-                                                  IsHitTestVisible="False"
+                                                  HorizontalScrollMode="Disabled"
                                                   VerticalScrollMode="Disabled"
                                                   HorizontalScrollBarVisibility="Hidden"
-                                                  VerticalScrollBarVisibility="Disabled">                                        
+                                                  VerticalScrollBarVisibility="Disabled">
                                         <controls:TableViewCellsPanel x:Name="PART_HeaderHost" />
                                     </ScrollViewer>
                                 </Grid>

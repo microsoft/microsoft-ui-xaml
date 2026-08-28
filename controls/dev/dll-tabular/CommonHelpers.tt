@@ -79,6 +79,7 @@
     static readonly string[] s_privateTypesNeedingXamlMetadata = new string[]
     {
         "Microsoft.UI.Private.Controls.SortIndicator",
+        "Microsoft.UI.Private.Controls.ResizeGripper",
     };
 
     static bool ShouldIncludePrivateTypeInXamlMetadata(Type t)
@@ -103,6 +104,19 @@
     static IEnumerable<Type> GetMetadataTypesFromList(string assemblyPathList, string referenceWinmds)
     {
         var allTypes = GetTypesFromList(assemblyPathList, referenceWinmds);
+
+        // A renamed or moved entry would otherwise stop matching silently, and the only symptom is
+        // a control that comes up with no template at runtime. Fail the build instead.
+        foreach (var typeName in s_privateTypesNeedingXamlMetadata)
+        {
+            if (!allTypes.Any(t => t.FullName == typeName))
+            {
+                throw new InvalidOperationException(
+                    "s_privateTypesNeedingXamlMetadata lists '" + typeName + "', which no type in this winmd matches. " +
+                    "Update the allow-list in controls\\dev\\dll-tabular\\CommonHelpers.tt.");
+            }
+        }
+
         return
             allTypes
             .Where(t =>

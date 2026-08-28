@@ -54,6 +54,36 @@ Entry c_typeEntries[] =
 {
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Private.Controls.ResizeGripper",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []()
+        {
+            auto xamlType = winrt::make_self<XamlType>(
+                /* Arg 1 - TypeName */ 
+                (PCWSTR)L"Microsoft.UI.Private.Controls.ResizeGripper",
+                /* Arg 2 - BaseTypeName */ 
+                (PCWSTR)L"Microsoft.UI.Xaml.Controls.Control",
+                /* Arg 3 - Activator func */ 
+                (std::function<winrt::IInspectable()>)[](){ return ActivateInstanceWithFactory<winrt::IResizeGripperFactory>(L"Microsoft.UI.Private.Controls.ResizeGripper"); },
+                /* Arg 4 - Populate properties func */ 
+                (std::function<void(XamlTypeBase&)>)[](XamlTypeBase& xamlType)
+                {
+                    winrt::IResizeGripperStatics statics = GetFactory<winrt::IResizeGripperStatics>(L"Microsoft.UI.Private.Controls.ResizeGripper");
+                    {
+                        xamlType.AddDPMember(L"DragOrientation", L"Microsoft.UI.Xaml.Controls.Orientation", statics.DragOrientationProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"IsDragging", L"Boolean", statics.IsDraggingProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"KeyboardIncrement", L"Double", statics.KeyboardIncrementProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"ManipulationContainer", L"Microsoft.UI.Xaml.UIElement", statics.ManipulationContainerProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"OwnerName", L"String", statics.OwnerNameProperty(), false /* isContent */);
+                    }
+
+                });
+
+            return static_cast<winrt::IXamlType>(*xamlType);
+        }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Private.Controls.SortIndicator",
         /* Arg2 CreateXamlTypeCallback */ 
         []()
@@ -138,6 +168,7 @@ Entry c_typeEntries[] =
                     winrt::ITableViewStatics statics = GetFactory<winrt::ITableViewStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableView");
                     {
                         xamlType.AddDPMember(L"AlternatingRowBackground", L"Microsoft.UI.Xaml.Media.Brush", statics.AlternatingRowBackgroundProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanUserResizeColumns", L"Boolean", statics.CanUserResizeColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanUserSortColumns", L"Boolean", statics.CanUserSortColumnsProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"Columns", L"Windows.Foundation.Collections.IVector`1<Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn>", statics.ColumnsProperty(), true /* isContent */);
                         xamlType.AddDPMember(L"Density", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewDensity", statics.DensityProperty(), false /* isContent */);
@@ -205,6 +236,7 @@ Entry c_typeEntries[] =
                     winrt::ITableViewColumnStatics statics = GetFactory<winrt::ITableViewColumnStatics>(L"Microsoft.UI.Xaml.Controls.Tabular.TableViewColumn");
                     {
                         xamlType.AddDPMember(L"ActualWidth", L"Double", statics.ActualWidthProperty(), false /* isContent */);
+                        xamlType.AddDPMember(L"CanResize", L"Boolean", statics.CanResizeProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CanSort", L"Boolean", statics.CanSortProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"CellEditingTemplate", L"Microsoft.UI.Xaml.DataTemplate", statics.CellEditingTemplateProperty(), false /* isContent */);
                         xamlType.AddDPMember(L"FrozenEdge", L"Microsoft.UI.Xaml.Controls.Tabular.TableViewFrozenEdge", statics.FrozenEdgeProperty(), false /* isContent */);
@@ -694,6 +726,12 @@ Entry c_typeEntries[] =
     },
     {
         /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.Controls.Orientation",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.Controls.Orientation"); }
+    },
+    {
+        /* Arg1 TypeName */ 
         L"Microsoft.UI.Xaml.Controls.Panel",
         /* Arg2 CreateXamlTypeCallback */ 
         []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.Controls.Panel"); }
@@ -733,6 +771,12 @@ Entry c_typeEntries[] =
         L"Microsoft.UI.Xaml.ResourceDictionary",
         /* Arg2 CreateXamlTypeCallback */ 
         []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.ResourceDictionary"); }
+    },
+    {
+        /* Arg1 TypeName */ 
+        L"Microsoft.UI.Xaml.UIElement",
+        /* Arg2 CreateXamlTypeCallback */ 
+        []() { return winrt::make<PrimitiveXamlType>((PCWSTR)L"Microsoft.UI.Xaml.UIElement"); }
     },
     {
         /* Arg1 TypeName */ 
@@ -802,6 +846,7 @@ std::wstring_view c_knownNamespacePrefixes[] =
 };
 }
 
+#include "ResizeGripper.properties.h"
 #include "SortIndicator.properties.h"
 #include "TableView.properties.h"
 #include "TableViewColumn.properties.h"
@@ -813,6 +858,7 @@ namespace {
 
 void ClearTypeProperties()
 {
+    ResizeGripperProperties::ClearProperties();
     SortIndicatorProperties::ClearProperties();
     TableViewProperties::ClearProperties();
     TableViewColumnProperties::ClearProperties();
