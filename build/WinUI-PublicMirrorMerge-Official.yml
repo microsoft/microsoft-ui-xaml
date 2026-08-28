@@ -1,0 +1,61 @@
+# Automatically merges the exact GitHub mirror into the internal integration
+# branch. The target remains a user branch during initial validation;
+# production promotion only changes targetBranchName.
+
+trigger: none
+pr: none
+
+parameters:
+- name: sourceBranchName
+  displayName: Exact public mirror branch
+  type: string
+  default: github/internal/main
+- name: targetBranchName
+  displayName: Internal integration branch
+  type: string
+  default: user/hmishra/ado/main
+
+variables:
+- template: AzurePipelinesTemplates\WinUI-BuildVariables.yml
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: OneBranch.Pipelines/GovernedTemplates
+    ref: refs/heads/main
+  pipelines:
+  - pipeline: githubToInternalMirror
+    source: \OneBranch\microsoft-ui-xaml-lift\WinUI-MirrorGitHubToInternal-Official
+    trigger:
+      branches:
+        include:
+        - main
+
+extends:
+  template: v2/Microsoft.Official.yml@templates
+  parameters:
+    featureFlags:
+      EnableCDPxPAT: false
+      ensureArtifactsDirExists: true
+      WindowsHostVersion:
+        Version: 2022
+        Network: KS3
+    platform:
+      name: windows_undocked
+    globalsdl:
+      tsa:
+        enabled: false
+      evidence:
+        enabled: false
+      evidenceV2:
+        enabled: false
+    git:
+      submodules: false
+      persistCredentials: true
+
+    stages:
+    - template: AzurePipelinesTemplates\WinUI-PublicMirrorMerge-Stage.yml@self
+      parameters:
+        sourceBranchName: ${{ parameters.sourceBranchName }}
+        targetBranchName: ${{ parameters.targetBranchName }}

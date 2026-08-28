@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{24494873-7E9F-4FDD-BB56-00119F19A904}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);RESIZEGRIPPER_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ResizeGripper.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResizeGripper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResizeGripperAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResizeGripperDragCompletedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ResizeGripperDragDeltaEventArgs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ResizeGripper.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ResizeGripper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ResizeGripperAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ResizeGripperDragCompletedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ResizeGripperDragDeltaEventArgs.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)ResizeGripper.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <!-- No separate Perf2026 visual; reuse the page so that dictionary still carries a style. -->
+    <Page Include="$(MSBuildThisFileDirectory)ResizeGripper.xaml">
+      <Version>RS1</Version>
+      <Type>StylePerf2026</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)ResizeGripper.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ResizeGripperAutomationPeer.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
+  </ItemGroup>
+</Project>

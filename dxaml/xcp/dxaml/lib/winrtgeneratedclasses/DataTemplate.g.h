@@ -12,8 +12,26 @@
 #pragma once
 
 #include "FrameworkTemplate.g.h"
-
+#include <FeatureFlags.h>
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi) 
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE override
+#else
+#define FEATURE_EXPERIMENTALAPI_OVERRIDE
+#endif
 #define __DataTemplate_GUID "2ba5f834-0618-4292-bb15-ea4f88f4ecd2"
+
+#pragma region forwarders
+namespace ctl
+{
+    
+    template<typename impl_type>
+    class interface_forwarder< ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi, impl_type> final
+        : public ctl::iinspectable_forwarder_base< ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi, impl_type>
+    {
+        impl_type* This() { return this->This_helper<impl_type>(); }
+    };
+}
+#pragma endregion
 
 namespace DirectUI
 {
@@ -26,6 +44,9 @@ namespace DirectUI
         public DirectUI::FrameworkTemplate
         , public ABI::Microsoft::UI::Xaml::IDataTemplate
         , public ABI::Microsoft::UI::Xaml::IElementFactory
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ctl::forwarder_holder< ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi, DataTemplateGenerated >
+#endif
     {
         friend class DirectUI::DataTemplate;
 
@@ -34,6 +55,9 @@ namespace DirectUI
         BEGIN_INTERFACE_MAP(DataTemplateGenerated, DirectUI::FrameworkTemplate)
             INTERFACE_ENTRY(DataTemplateGenerated, ABI::Microsoft::UI::Xaml::IDataTemplate)
             INTERFACE_ENTRY(DataTemplateGenerated, ABI::Microsoft::UI::Xaml::IElementFactory)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(DataTemplateGenerated, ABI::Microsoft::UI::Xaml::IDataTemplateFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(DataTemplateGenerated, DirectUI::FrameworkTemplate)
 
     public:
@@ -85,15 +109,22 @@ namespace DirectUI
        public ctl::BetterAggregableCoreObjectActivationFactory
         , public ABI::Microsoft::UI::Xaml::IDataTemplateFactory
         , public ABI::Microsoft::UI::Xaml::IDataTemplateStatics
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+        , public ABI::Microsoft::UI::Xaml::IDataTemplateFactoryFeature_ExperimentalApi
+#endif
     {
         BEGIN_INTERFACE_MAP(DataTemplateFactory, ctl::BetterAggregableCoreObjectActivationFactory)
             INTERFACE_ENTRY(DataTemplateFactory, ABI::Microsoft::UI::Xaml::IDataTemplateFactory)
             INTERFACE_ENTRY(DataTemplateFactory, ABI::Microsoft::UI::Xaml::IDataTemplateStatics)
+#if WI_IS_FEATURE_PRESENT(Feature_ExperimentalApi)
+            INTERFACE_ENTRY(DataTemplateFactory, ABI::Microsoft::UI::Xaml::IDataTemplateFactoryFeature_ExperimentalApi)
+#endif
         END_INTERFACE_MAP(DataTemplateFactory, ctl::BetterAggregableCoreObjectActivationFactory)
 
     public:
         // Factory methods.
         IFACEMETHOD(CreateInstance)(_In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppInstance);
+        IFACEMETHOD(CreateInstanceFromCallback)(_In_ ABI::Microsoft::UI::Xaml::IDataTemplateElementFactory* pElementFactory, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppInstance);
 
         // Static properties.
 
@@ -120,6 +151,7 @@ namespace DirectUI
 
 
     private:
+        _Check_return_ HRESULT CreateInstanceFromCallbackImpl(_In_ ABI::Microsoft::UI::Xaml::IDataTemplateElementFactory* pElementFactory, _In_opt_ IInspectable* pOuter, _Outptr_ IInspectable** ppInner, _Outptr_ ABI::Microsoft::UI::Xaml::IDataTemplate** ppInstance);
 
         // Customized static properties.
 

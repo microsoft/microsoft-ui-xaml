@@ -64,12 +64,22 @@
 #include <CValueBoxer.h>
 #include <rendertargetbitmapmgr.h>
 
+#ifdef XAMLPROFILER_ENABLED
+#include <XcpAllocation.h>
+#endif
+
 using namespace DirectUI;
 using namespace DCompHelpers;
 using namespace Focus;
 using namespace Theming;
 
 #ifdef XAMLPROFILER_ENABLED
+#if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
+// Recovers the concrete core object's requested allocation size from the debug allocator's
+// validation header. Defined in the allocation library (XcpAllocationDebug.cpp); forward-declared
+// here to avoid pulling the allocator's private headers into the core.
+_Check_return_ UINT64 XcpDebugGetAllocationSize(_In_opt_ const void *pAddress) noexcept;
+#endif
 // Computes the DXaml-peer InstanceHandle for a core object so the XAML Profiler can bridge a
 // tree node back to the live element (e.g. to highlight it in the target app). This is the same
 // value XAML Diagnostics / the WinUISnoop tap use as an InstanceHandle (see HandleMap::GetHandle):
@@ -99,6 +109,21 @@ uint64_t XamlProfilerGetPeerHandle(_In_opt_ const CDependencyObject* obj) noexce
         return handle;
     }
     return 0;
+}
+
+uint64_t XamlProfilerGetCoreSize(_In_opt_ const CDependencyObject* obj) noexcept
+{
+    if (obj == nullptr)
+    {
+        return 0;
+    }
+#if XCP_MONITOR && DBG && !defined(NO_XCP_NEW_AND_DELETE) && !defined(_PREFAST_)
+    return XcpDebugGetAllocationSize(obj);
+#elif !defined(NO_XCP_NEW_AND_DELETE)
+    return static_cast<uint64_t>(XcpAllocation::OSMemoryGetBlockSize(obj));
+#else
+    return 0;
+#endif
 }
 #endif // XAMLPROFILER_ENABLED
 
@@ -1280,13 +1305,31 @@ _Check_return_ HRESULT CUIElement::EnterImpl(_In_ CDependencyObject *pNamescopeO
 #ifdef XAMLPROFILER_ENABLED
     if (XamlProfilerTracing::IsEnabled())
     {
+        // Best-effort XAML source location for this element. Populated only when source-info
+        // storage is enabled in the process (e.g. the profiler enables the XAML-Diagnostics
+        // provider) and this element has a peer carrying stored source info; otherwise the
+        // values remain empty/0 and the profiler simply shows no location.
+        UINT32 sourceLine = 0;
+        UINT32 sourceColumn = 0;
+        xstring_ptr sourceUri;
+        xstring_ptr sourceHash;
+        TryGetSourceInfoFromPeer(&sourceLine, &sourceColumn, &sourceUri, &sourceHash);
+
         XamlProfilerTracing::ElementEnteredTree(
             reinterpret_cast<uint64_t>(this),
             reinterpret_cast<uint64_t>(GetUIElementParentInternal()),
             static_cast<bool>(params.fIsLive),
             GetDebugLabel().GetBuffer(),
             GetTemplatedParent() != nullptr,
-            XamlProfilerGetPeerHandle(this));
+            XamlProfilerGetPeerHandle(this),
+            // Core block size (bytes) of the concrete object. It's a fixed per-type struct size —
+            // timing- and live-state-independent — so we always measure it here, for both live and
+            // non-live enters. (Elements frequently first enter as non-live, e.g. during parse, so
+            // gating on fIsLive would leave most nodes reporting 0.)
+            XamlProfilerGetCoreSize(this),
+            sourceUri.GetBuffer(),
+            sourceLine,
+            sourceColumn);
     }
 #endif // XAMLPROFILER_ENABLED
 

@@ -73,7 +73,12 @@ CsWinRT from the freshly built WinMD (`CsWinRTFilters` include the
 `Microsoft.UI.Xaml.Controls.Tabular` namespace and the Tabular XAML metadata provider types) so
 the projected IIDs match the control exactly.
 
-*Prevents:* `E_NOINTERFACE` from stale metadata.
+The filters also include `Microsoft.UI.Private.Controls`, the framework-internal primitive
+namespace (`ResizeGripper`). The app never references those types, but it compiles the control's
+`generic.xaml`, which carries `<Style TargetType="privatecontrols:ResizeGripper">`; without the
+projection the XAML compiler cannot resolve that `TargetType` and the build fails (`WMC0110`).
+
+*Prevents:* `E_NOINTERFACE` from stale metadata; an unresolvable private `TargetType`.
 
 ### c. Include the TableView theme resources — sourced from the control, never checked in
 
@@ -108,7 +113,9 @@ is standard WindowsAppSDK behavior for unpackaged apps, not a defect.
 `appxfragment` into the app's side-by-side manifest, adding the lifted-WinRT activatable-class
 registrations (CoreMessaging, Dispatching, Input, Windowing, etc.) that the mock aggregator's
 runtime MSIX omits. It also emits registrations for the split Tabular runtimeclasses (enumerated
-from the built Tabular WinMDs), and stages the per-RID native component DLLs next to the executable.
+from the built Tabular WinMDs) — including the framework-internal
+`Microsoft.UI.Private.Controls.ResizeGripper*` primitives that TableView creates for column
+resize — and stages the per-RID native component DLLs next to the executable.
 
 *Prevents:* `REGDB_E_CLASSNOTREG` at startup when `DispatcherQueueController` is activated, and
 `CLASS_E_CLASSNOTAVAILABLE` when the Tabular metadata provider / `TableView` is activated.

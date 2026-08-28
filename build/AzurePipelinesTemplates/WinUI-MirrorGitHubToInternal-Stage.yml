@@ -39,14 +39,6 @@ stages:
     - script: set
       displayName: Display machine environment variables
 
-    # This keeps Guardian happy without exposing other internal .config files.
-    - task: CopyFiles@2
-      displayName: Copy TSA configuration to `$(Build.SourcesDirectory)`
-      inputs:
-        SourceFolder: '$(Pipeline.Workspace)\$(targetRepoRelativePath)'
-        TargetFolder: '$(Build.SourcesDirectory)'
-        Contents: '.config\tsaoptions.json'
-
     - task: PowerShell@2
       displayName: Mirror GitHub source to internal repository
       inputs:

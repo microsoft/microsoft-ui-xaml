@@ -335,6 +335,12 @@ namespace DirectUI
         static int _targetCount;
         static int _unreachableCount;
 
+    public:
+        // Returns the number of peers marked unreachable by the last GC cycle.
+        // Used by TriggerCollectionForOrphanedObjects to decide whether
+        // additional GC cycles are needed for the finalization cascade.
+        static int GetUnreachableCount() { return _unreachableCount; }
+
     private:
 
         void ResetLastFindWalkIdForAllPeers();

@@ -190,6 +190,11 @@ namespace Microsoft { namespace UI { namespace Xaml { namespace Tests { namespac
         END_TEST_METHOD()
 #endif // MUX_PRERELEASE
 
+        BEGIN_TEST_METHOD(ContentSetInMarkupIsReleasedWhenCleared)
+            TEST_METHOD_PROPERTY(L"Description", L"Validates that the markup-loaded Window content tree is released (not held for the Window's lifetime) once Window.Content is cleared.")
+            TEST_METHOD_PROPERTY(L"Hosting:Mode", L"WPF")
+        END_TEST_METHOD()
+
     };
 
 } } } } } }

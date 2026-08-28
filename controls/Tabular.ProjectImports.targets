@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!--
+  Imports for the parallel Microsoft.UI.Xaml.Controls.Tabular.dll ("TabularControls").
+  Scoped subset of ProjectImports.targets: the TableView control plus the shared helper
+  infra it requires. TableView is hosted ONLY in the Tabular winmd (it is not added to
+  MUXC's controls\ProjectImports.targets), which avoids duplicate-type collisions when the
+  Tabular DLL references the MUXC winmd for ItemsRepeater / ScrollView / ScrollPresenter
+  (which stay in MUXC).
+  See docs/design-notes/TabularControls/TableView-dev-spec.md.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <!-- Common/Generated/inc carry shared headers TableView + peers include directly. -->
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MUXCProjectRoot)dev\Common;$(MUXCProjectRoot)dev\Generated;$(MUXCProjectRoot)dev\inc</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <!--
+    Swap the shared metadata IDL for the Tabular-renamed copy. MidlShared.props (imported at the
+    vcxproj BEFORE this file) unconditionally adds controls\idl\Microsoft.UI.Xaml.Controls.idl, which
+    DEFINES XamlControlsXamlMetaDataProvider + XamlControlsResources — the same runtimeclasses MUXC's
+    referenced winmd owns. To reference MUXC's winmd from C++/WinRT without a duplicate-runtimeclass
+    collision, the Tabular DLL must PRODUCE differently-named types, so it compiles
+    Microsoft.UI.Xaml.Controls.Tabular.idl instead. This must be the FIRST @(Midl) entry so its MUX_*
+    macros + CustomAttributes (kept verbatim from the shared IDL) are visible to every control IDL the
+    MergeIDLFiles target #includes after it. MIDL never references MUXC's winmd, so no MIDL2003. -->
+  <ItemGroup>
+    <Midl Remove="$(MUXCProjectRoot)idl\Microsoft.UI.Xaml.Controls.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)dev\dll-tabular\Microsoft.UI.Xaml.Controls.Tabular.idl" />
+  </ItemGroup>
+  <ImportGroup>
+    <!-- Shared helper infra (no Midl/runtimeclasses; safe to compile into the Tabular DLL as well as MUXC) -->
+    <Import Project="$(MSBuildThisFileDirectory)dev\DllHost\DllHost.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\Telemetry\Telemetry.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\SortIndicator\SortIndicator.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ResizeGripper\ResizeGripper.vcxitems" Label="Shared" />
+    <!-- Tabular shaping stack: layer 1 (shape descriptions + pipeline) and layer 2 (live
+         projection). Grouping and live shaping arrive in later changes. -->
+    <Import Project="$(MSBuildThisFileDirectory)dev\TabularShaping\TabularShaping.vcxitems" Label="Shared" />
+    <Import Project="$(MSBuildThisFileDirectory)dev\ShapedItemsSource\ShapedItemsSource.vcxitems" Label="Shared" />
+    <!-- TableView control (hosted only in the Tabular binary) -->
+    <Import Project="$(MSBuildThisFileDirectory)dev\TableView\TableView.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <!--
+    Theme-XBF emission is off here (TabularBinaryEmitsThemeResources off, MergeMuxMuxcGenericResourceFiles
+    disabled — inherited from the empty binary), so no DefaultStyle/ThemeResources pages are consumed; the
+    control themes via the included TabularSurface pages + inline fallbacks. Self-themed emission is
+    re-enabled in a later change.
+
+    GridCoordinateHelper: an internal C++ helper (used only by TableView's row keyboard
+    navigation). Compiled directly here; not projected into the winmd.
+  -->
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)dev\Common\GridCoordinateHelper.h" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)dev\Common\GridCoordinateHelper.cpp" />
+  </ItemGroup>
+  <!-- TabularSurface* surface tokens consumed by TableView.xaml. Listed explicitly because no imported
+       vcxitems carries it; pages owned by an imported vcxitems arrive with that import. -->
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)dev\CommonStyles\TabularSurfaces_themeresources.xaml">
+      <Type>ThemeResources</Type>
+      <Priority>2</Priority>
+    </Page>
+  </ItemGroup>
+</Project>

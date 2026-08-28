@@ -118,6 +118,31 @@ namespace Tests { namespace Native { namespace External { namespace Framework {
             Object^ m_source;
         };
 
+        // This custom markup extension simply returns the string set on its
+        // 'Value' property from ProvideValue(). It is useful for verifying how
+        // the markup extension scanner tokenizes property values, including
+        // escaped and quoted characters.
+        [::Windows::Foundation::Metadata::WebHostHiddenAttribute]
+        [Microsoft::UI::Xaml::Data::BindableAttribute]
+        public ref class EchoStringExtension sealed
+            : public Microsoft::UI::Xaml::Markup::MarkupExtension
+        {
+        public:
+            EchoStringExtension() {}
+
+            property Platform::String^ Value
+            {
+                Platform::String^ get() { return m_value; }
+                void set(Platform::String^ value) { m_value = value; }
+            }
+
+        protected:
+            virtual Object^ ProvideValue() override;
+
+        private:
+            Platform::String^ m_value;
+        };
+
         // This custom markup extension invokes the previously-set static callback function
         // when ProvideValue is called. ProvideValue itself simply returns nullptr
         [::Windows::Foundation::Metadata::WebHostHiddenAttribute]

@@ -82,7 +82,9 @@
     <DotNetCoreTargetFrameworkMoniker>$(_DotNetMoniker)-windows$(WindowsTargetPlatformVersion)</DotNetCoreTargetFrameworkMoniker>
     <!-- For compat reasons, this should always be .NET 6, as it controls the .NET version the Microsoft.WinUI.dll CSWinRT projection assembly targets. -->
     <WindowsAppSdkTargetFrameworkMoniker>net6.0-windows$(WindowsAppSdkTargetPlatformVersion)</WindowsAppSdkTargetFrameworkMoniker>
-    <SamplesTargetFrameworkMoniker>$(WindowsAppSdkTargetFrameworkMoniker)</SamplesTargetFrameworkMoniker>
+    <!-- Deliberately decoupled from the moniker above: .NET 6 is out of support, and samples need a
+         newer runtime to use recent C# features (eg. 'required' members and 'init'-only setters). -->
+    <SamplesTargetFrameworkMoniker>net8.0-windows$(WindowsAppSdkTargetPlatformVersion)</SamplesTargetFrameworkMoniker>
     <MicrosoftCsWinRTPackageVersion>2.1.1</MicrosoftCsWinRTPackageVersion>
     <MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>38</MicrosoftWindowsSDKNetRefPackVersionSuffixOverride>
     <WebView2PackageVersion>1.0.3719.77</WebView2PackageVersion>

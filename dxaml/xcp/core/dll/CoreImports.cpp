@@ -3918,6 +3918,14 @@ _Check_return_ HRESULT CDataTemplate_LoadContent(
     RRETURN(pNativeInstance->LoadContent(returnValue));
 }
 
+_Check_return_ HRESULT CDataTemplate_SetHasElementFactory(
+    _In_ CDataTemplate* pNativeInstance,
+    _In_ bool hasElementFactory)
+{
+    pNativeInstance->SetHasElementFactory(hasElementFactory);
+    return S_OK;
+}
+
 _Check_return_ HRESULT LayoutTransitionElement_Destroy(
     _In_ CCoreServices* pCore,
     _In_opt_ CUIElement* pTargetUIElement,

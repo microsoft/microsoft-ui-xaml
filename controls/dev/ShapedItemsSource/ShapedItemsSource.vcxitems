@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    ShapedItemsSource — layer 2 of the Tabular shaping stack: the LIVE PROJECTION.
+
+    Layer 1 decides what the shape should be; layer 2 holds the shape that currently exists and
+    keeps it live as the source changes. It owns ShapedGroup, the bucket type that publishes
+    itself as an ICollectionViewGroup so layers 3 and 4 can read a group through a declared
+    contract instead of a magic-string property probe.
+
+    Depends on layer 1 only. Layer 3 is a SIBLING, not a consumer: it takes ICollectionViewGroup as
+    a contract, so it never links against this layer.
+  -->
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{9D3C5B71-6E48-4A2F-8C10-7F4B2E9A6D53}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)RowIdentity.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ShapedItemsSource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)RowIdentity.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ShapedItemsSource.cpp" />
+  </ItemGroup>
+</Project>
