@@ -210,7 +210,10 @@ namespace MUXControlsTestApp
                 return null;
             }
 
-            var templateRoot = VisualTreeHelper.GetChild(tabViewItem, 0) as FrameworkElement;
+            if (VisualTreeHelper.GetChild(tabViewItem, 0) is not FrameworkElement templateRoot)
+            {
+                return null;
+            }
 
             foreach (var group in VisualStateManager.GetVisualStateGroups(templateRoot))
             {
