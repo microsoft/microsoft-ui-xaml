@@ -180,7 +180,7 @@ extends:
     # CompositionEngine LAF via the CompositionSwitcherLafToken variable (ADO Library group WinUI-InternalFeed,
     # referenced by name only — the value never appears in this public yaml).
     - ${{ if eq(parameters.runFullValidation, true) }}:
-      - template: build\AzurePipelinesTemplates\WinUI-RunSwitcherTests-Stage.yml
+      - template: build\AzurePipelinesTemplates\WinUI-RunSwitcherTests-Stage.yml@self
 
     - ${{ if eq(parameters.runFullValidation, true) }}:
       - template: build\AzurePipelinesTemplates\WinUI-RunStaticTests-Stage.yml@WinUIInternal
