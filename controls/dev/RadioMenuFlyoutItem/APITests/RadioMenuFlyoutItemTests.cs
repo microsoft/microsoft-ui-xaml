@@ -130,5 +130,119 @@ namespace Microsoft.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(newItem.IsChecked, "The new item should be checked.");
             });
         }
+
+        [TestMethod]
+        [TestProperty("RegressionBug", "11098")]
+        public void VerifyMovingToANewGroupKeepsAnotherItemsRegistration()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var movedItem = new RadioMenuFlyoutItem() { GroupName = "VerifyStaleEraseGroupOne" };
+                movedItem.IsChecked = true;
+
+                // Takes the group over. This leaves movedItem unchecked while it still remembers being
+                // registered under the group, which is the state that used to erase the wrong entry.
+                var groupOwner = new RadioMenuFlyoutItem() { GroupName = "VerifyStaleEraseGroupOne" };
+                groupOwner.IsChecked = true;
+
+                Verify.IsFalse(movedItem.IsChecked, "The first item should have been unchecked by the new group owner.");
+
+                movedItem.GroupName = "VerifyStaleEraseGroupTwo";
+                movedItem.IsChecked = true;
+
+                var newItem = new RadioMenuFlyoutItem() { GroupName = "VerifyStaleEraseGroupOne" };
+                newItem.IsChecked = true;
+
+                Verify.IsFalse(groupOwner.IsChecked,
+                    "The group owner should still have been registered for its group, and so be unchecked by the new item.");
+                Verify.IsTrue(newItem.IsChecked, "The new item should be checked.");
+                Verify.IsTrue(movedItem.IsChecked, "The item that moved to another group should still be checked.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("RegressionBug", "11098")]
+        public void VerifyGroupNameChangeOnAnUnloadedItemDoesNotClaimTheGroup()
+        {
+            StackPanel panel = null;
+            RadioMenuFlyoutItem unloadedItem = null;
+            RadioMenuFlyoutItem groupOwner = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                unloadedItem = new RadioMenuFlyoutItem() { GroupName = "VerifyDetachedGroupOne" };
+                unloadedItem.IsChecked = true;
+
+                panel = new StackPanel();
+                panel.Children.Add(unloadedItem);
+
+                Content = panel;
+                Content.UpdateLayout();
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Unloading drops the registration, but IsChecked stays true.
+                panel.Children.Remove(unloadedItem);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                groupOwner = new RadioMenuFlyoutItem() { GroupName = "VerifyDetachedGroupTwo" };
+                groupOwner.IsChecked = true;
+
+                // An item that is no longer in the tree must not take the group over from one that is.
+                unloadedItem.GroupName = "VerifyDetachedGroupTwo";
+
+                Verify.IsTrue(groupOwner.IsChecked, "An unloaded item joining the group should not uncheck its owner.");
+
+                var newItem = new RadioMenuFlyoutItem() { GroupName = "VerifyDetachedGroupTwo" };
+                newItem.IsChecked = true;
+
+                Verify.IsFalse(groupOwner.IsChecked,
+                    "The group owner should still have been registered for its group, and so be unchecked by the new item.");
+                Verify.IsTrue(newItem.IsChecked, "The new item should be checked.");
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("RegressionBug", "11098")]
+        public void VerifyGroupNameChangedWhileUncheckingDoesNotLeaveTwoRegistrations()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var previousOwner = new RadioMenuFlyoutItem() { GroupName = "VerifyReentrantGroupOne" };
+                previousOwner.IsChecked = true;
+
+                var newOwner = new RadioMenuFlyoutItem() { GroupName = "VerifyReentrantGroupOne" };
+
+                // Re-enters the registration update from the middle of it: unchecking previousOwner runs
+                // this callback, which moves newOwner to another group before the registration is written.
+                previousOwner.RegisterPropertyChangedCallback(RadioMenuFlyoutItem.IsCheckedProperty, (sender, dp) =>
+                {
+                    if (!previousOwner.IsChecked)
+                    {
+                        newOwner.GroupName = "VerifyReentrantGroupTwo";
+                    }
+                });
+
+                newOwner.IsChecked = true;
+
+                Verify.IsFalse(previousOwner.IsChecked, "The previous owner should have been unchecked.");
+                Verify.AreEqual("VerifyReentrantGroupTwo", newOwner.GroupName, "The item should have moved to the second group.");
+
+                // The item only belongs to the second group now, so the first one must not reach it.
+                var itemInFirstGroup = new RadioMenuFlyoutItem() { GroupName = "VerifyReentrantGroupOne" };
+                itemInFirstGroup.IsChecked = true;
+
+                Verify.IsTrue(newOwner.IsChecked,
+                    "An item that moved to another group while unchecking should not be unchecked by the group it left.");
+                Verify.IsTrue(itemInFirstGroup.IsChecked, "The item in the first group should be checked.");
+            });
+        }
     }
 }
